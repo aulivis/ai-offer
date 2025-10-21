@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import LandingHeader from '@/components/LandingHeader';
 
 export default function Home() {
   const features = [
@@ -36,17 +37,7 @@ export default function Home() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
 
       <div className="relative">
-        <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
-          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-800">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 bg-white font-display text-base">P</span>
-            Propono
-          </Link>
-          <nav className="flex items-center gap-3 text-sm text-slate-500">
-            <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/demo">Termék</Link>
-            <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/billing">Csomagok</Link>
-            <Link className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900" href="/login">Bejelentkezés</Link>
-          </nav>
-        </header>
+        <LandingHeader />
 
         <main className="mx-auto flex max-w-6xl flex-col gap-20 px-6 pb-20">
           <section className="grid gap-12 lg:grid-cols-[0.95fr_1fr] lg:items-center">
@@ -74,7 +65,7 @@ export default function Home() {
                   Csomagok megtekintése
                 </Link>
               </div>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Próbáld ki kártya nélkül – Propono Start: 5 ajánlat / hó</p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Próbáld ki kártya nélkül – Ingyenes csomag: 3 ajánlat / hó</p>
             </div>
 
             <div className="relative">

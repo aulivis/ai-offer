@@ -5,7 +5,7 @@ import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
 
-const STARTER_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
+const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
@@ -13,7 +13,7 @@ export default function BillingPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
-  const [plan, setPlan] = useState<'free' | 'starter' | 'pro' | null>(null);
+  const [plan, setPlan] = useState<'free' | 'standard' | 'pro' | null>(null);
   const [usage, setUsage] = useState<{ offersGenerated: number; periodStart: string | null } | null>(null);
 
   useEffect(() => {
@@ -31,7 +31,8 @@ export default function BillingPage() {
         sb.from('usage_counters').select('offers_generated, period_start').eq('user_id', user.id).maybeSingle(),
       ]);
 
-      setPlan((profile?.plan as 'free' | 'starter' | 'pro' | undefined) ?? 'free');
+      const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
+      setPlan(rawPlan === 'starter' ? 'standard' : rawPlan);
       setUsage({
         offersGenerated: Number(usageRow?.offers_generated ?? 0),
         periodStart: usageRow?.period_start ?? null,
@@ -74,17 +75,23 @@ export default function BillingPage() {
     }
   }
 
-  const planLimit = useMemo(() => {
+  const planLimit = useMemo<number | null>(() => {
     if (plan === 'pro') return null;
-    if (plan === 'starter') return 20;
-    return 5;
+    if (plan === 'standard') return 10;
+    return 3;
   }, [plan]);
 
+  const privilegedEmail = 'tiens.robert@hotmail.com';
+  const hasUnlimitedEmail = (email ?? '').toLowerCase() === privilegedEmail;
+  const effectiveLimit = hasUnlimitedEmail ? null : planLimit;
+
   const offersThisMonth = usage?.offersGenerated ?? 0;
-  const remainingQuota = planLimit === null ? 'Korlátlan' : Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU');
-  const planLabels: Record<'free' | 'starter' | 'pro', string> = {
+  const remainingQuota = effectiveLimit === null
+    ? 'Korlátlan'
+    : Math.max(effectiveLimit - offersThisMonth, 0).toLocaleString('hu-HU');
+  const planLabels: Record<'free' | 'standard' | 'pro', string> = {
     free: 'Ingyenes csomag',
-    starter: 'Propono Start',
+    standard: 'Propono Standard',
     pro: 'Propono Pro',
   };
 
@@ -115,7 +122,9 @@ export default function BillingPage() {
           <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Havi keret</dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">{planLimit === null ? 'Korlátlan' : `${planLimit.toLocaleString('hu-HU')} ajánlat`}</dd>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">
+                {effectiveLimit === null ? 'Korlátlan' : `${effectiveLimit.toLocaleString('hu-HU')} ajánlat`}
+              </dd>
               <p className="mt-1 text-xs text-slate-500">Automatikus újraindulás minden hónapban.</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
@@ -125,7 +134,7 @@ export default function BillingPage() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Felhasználható keret</dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuota}{planLimit === null ? '' : ' ajánlat'}</dd>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuota}{effectiveLimit === null ? '' : ' ajánlat'}</dd>
               <p className="mt-1 text-xs text-slate-500">Generálások, amelyek még rendelkezésre állnak.</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
@@ -150,25 +159,25 @@ export default function BillingPage() {
         <section className="grid gap-6 md:grid-cols-2">
           <article className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Belépő csomag</div>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Start</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Standard</h2>
             <p className="mt-3 text-sm text-slate-500">
-              5 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és tételes árkalkuláció kis csapatoknak.
+              10 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és tételes árkalkuláció kis csapatoknak.
             </p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">1 490</span>
               <span className="text-sm text-slate-500">Ft / hó</span>
             </div>
             <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
-              <li>• 5 ajánlat / hónap</li>
+              <li>• 10 ajánlat / hónap</li>
               <li>• PDF export</li>
               <li>• Alap sablonok és logófeltöltés</li>
             </ul>
             <button
-              onClick={() => startCheckout(STARTER_PRICE)}
-              disabled={loading === STARTER_PRICE}
+              onClick={() => startCheckout(STANDARD_PRICE)}
+              disabled={loading === STANDARD_PRICE}
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {loading === STARTER_PRICE ? 'Átirányítás…' : 'Propono Start megrendelése'}
+              {loading === STANDARD_PRICE ? 'Átirányítás…' : 'Propono Standard megrendelése'}
             </button>
           </article>
 
@@ -199,7 +208,10 @@ export default function BillingPage() {
           </article>
         </section>
 
-        <p className="text-sm text-slate-500">Bejelentkezett e-mail: <span className="font-medium text-slate-700">{email ?? '—'}</span></p>
+        <p className="text-sm text-slate-500">
+          Bejelentkezett e-mail: <span className="font-medium text-slate-700">{email ?? '—'}</span>
+          {hasUnlimitedEmail && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Korlátlan jogosultság</span>}
+        </p>
       </div>
     </AppFrame>
   );
