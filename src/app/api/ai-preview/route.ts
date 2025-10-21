@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { supabaseServer } from '@/app/lib/supabaseServer';
-import { envServer } from '@/env.server'
+import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 
 export const runtime = 'nodejs';

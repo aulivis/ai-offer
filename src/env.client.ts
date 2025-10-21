@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+/*
+ * Client-side environment variables.
+ *
+ * Only public variables prefixed with NEXT_PUBLIC_ should appear here.
+ * These are compiled into the client bundle and safe to expose.
+ */
 const ClientEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
