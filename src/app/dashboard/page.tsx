@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 
@@ -21,6 +21,11 @@ type Offer = {
 const STATUS_LABELS: Record<Offer['status'], string> = {
   draft: 'Vázlat',
   sent: 'Kiküldve',
+  accepted: 'Elfogadva',
+  lost: 'Elutasítva',
+};
+
+const DECISION_LABELS: Record<'accepted' | 'lost', string> = {
   accepted: 'Elfogadva',
   lost: 'Elutasítva',
 };
@@ -60,6 +65,45 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
   );
 }
 
+function StatusStep({
+  title,
+  description,
+  dateLabel,
+  highlight = false,
+  children,
+}: {
+  title: string;
+  description: string;
+  dateLabel: string;
+  highlight?: boolean;
+  children?: ReactNode;
+}) {
+  return (
+    <div
+      className={`flex gap-3 rounded-2xl border px-4 py-3 ${
+        highlight ? 'border-slate-900/15 bg-white/90 shadow-sm' : 'border-slate-200/60 bg-white/60'
+      }`}
+    >
+      <span className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-slate-900' : 'bg-slate-300'}`} />
+      <div className="flex-1 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-slate-700">{title}</p>
+          <span className="text-xs uppercase tracking-wide text-slate-400">{dateLabel || '—'}</span>
+        </div>
+        <p className="text-xs text-slate-500">{description}</p>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function isoDateInput(value: string | null): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+}
+
 function formatDate(value: string | null) {
   if (!value) return '—';
   const date = new Date(value);
@@ -71,6 +115,7 @@ export default function DashboardPage() {
   const sb = supabaseBrowser();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // keresés/szűrés/rendezés
   const [q, setQ] = useState('');
@@ -104,6 +149,71 @@ export default function DashboardPage() {
     return Array.from(s).sort();
   }, [offers]);
 
+  async function applyPatch(offer: Offer, patch: Partial<Offer>) {
+    setUpdatingId(offer.id);
+    try {
+      const { error } = await sb.from('offers').update(patch).eq('id', offer.id);
+      if (error) {
+        console.error('Offer status update failed', error);
+        alert('Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.');
+        return;
+      }
+      setOffers((prev) => prev.map((item) => (item.id === offer.id ? { ...item, ...patch } : item)));
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function markSent(offer: Offer, date?: string) {
+    const timestamp = date ? new Date(`${date}T00:00:00`) : new Date();
+    if (Number.isNaN(timestamp.getTime())) return;
+    const patch: Partial<Offer> = {
+      sent_at: timestamp.toISOString(),
+      status: offer.status === 'draft' ? 'sent' : offer.status,
+    };
+    if (offer.status === 'draft') {
+      patch.decision = null;
+      patch.decided_at = null;
+    }
+    await applyPatch(offer, patch);
+  }
+
+  async function markDecision(offer: Offer, decision: 'accepted' | 'lost', date?: string) {
+    const timestamp = date ? new Date(`${date}T00:00:00`) : new Date();
+    if (Number.isNaN(timestamp.getTime())) return;
+    const patch: Partial<Offer> = {
+      status: decision,
+      decision,
+      decided_at: timestamp.toISOString(),
+    };
+    if (!offer.sent_at) {
+      patch.sent_at = timestamp.toISOString();
+    }
+    await applyPatch(offer, patch);
+  }
+
+  async function revertToSent(offer: Offer) {
+    const patch: Partial<Offer> = {
+      status: 'sent',
+      decision: null,
+      decided_at: null,
+    };
+    if (!offer.sent_at) {
+      patch.sent_at = new Date().toISOString();
+    }
+    await applyPatch(offer, patch);
+  }
+
+  async function revertToDraft(offer: Offer) {
+    const patch: Partial<Offer> = {
+      status: 'draft',
+      sent_at: null,
+      decided_at: null,
+      decision: null,
+    };
+    await applyPatch(offer, patch);
+  }
+
   const filtered = useMemo(() => {
     let list = offers.slice();
 
@@ -135,18 +245,6 @@ export default function DashboardPage() {
 
     return list;
   }, [offers, q, statusFilter, industryFilter, sortBy, sortDir]);
-
-  async function updateStatus(o: Offer, next: Offer['status'], date?: string) {
-    const patch: Partial<Offer> = { status: next };
-    const today = date ? new Date(date) : new Date();
-
-    if (next === 'sent') patch.sent_at = today.toISOString();
-    if (next === 'accepted') { patch.decision = 'accepted'; patch.decided_at = today.toISOString(); }
-    if (next === 'lost') { patch.decision = 'lost'; patch.decided_at = today.toISOString(); }
-
-    await sb.from('offers').update(patch).eq('id', o.id);
-    setOffers(prev => prev.map(x => x.id === o.id ? { ...x, ...patch } : x));
-  }
 
   return (
     <AppFrame
@@ -264,11 +362,14 @@ export default function DashboardPage() {
 
       {!loading && filtered.length > 0 && (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((o) => (
-            <div
-              key={o.id}
-              className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
-            >
+          {filtered.map((o) => {
+            const isUpdating = updatingId === o.id;
+            const isDecided = o.status === 'accepted' || o.status === 'lost';
+            return (
+              <div
+                key={o.id}
+                className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
+              >
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div className="min-w-0 space-y-1">
                   <p className="truncate text-base font-semibold text-slate-900">{o.title || '(névtelen)'}</p>
@@ -302,40 +403,122 @@ export default function DashboardPage() {
                 ) : null}
               </dl>
 
-              <div className="mt-6 space-y-2 text-sm text-slate-500">
-                {o.status !== 'sent' && (
-                  <label className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                    <span className="font-medium text-slate-600">Küldve</span>
-                    <input
-                      type="date"
-                      className="w-36 rounded-xl border border-slate-200 px-3 py-1 text-sm text-slate-700 focus:border-slate-300 focus:outline-none"
-                      onChange={(e) => updateStatus(o, 'sent', e.target.value)}
-                    />
-                  </label>
+              <div className="mt-6 space-y-3">
+                <StatusStep
+                  title="Kiküldve az ügyfélnek"
+                  description="Add meg, mikor küldted el az ajánlatot."
+                  dateLabel={formatDate(o.sent_at)}
+                  highlight={o.status !== 'draft'}
+                >
+                  {o.sent_at ? (
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                        <span>Dátum módosítása</span>
+                        <input
+                          type="date"
+                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
+                          value={isoDateInput(o.sent_at)}
+                          onChange={(e) => markSent(o, e.target.value)}
+                          disabled={isUpdating}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                      <button
+                        onClick={() => markSent(o)}
+                        disabled={isUpdating}
+                        className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                      >
+                        Jelölés (ma)
+                      </button>
+                      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                        <span>Dátum választása</span>
+                        <input
+                          type="date"
+                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
+                          onChange={(e) => {
+                            if (!e.target.value) return;
+                            markSent(o, e.target.value);
+                          }}
+                          disabled={isUpdating}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </StatusStep>
+
+                <StatusStep
+                  title="Ügyfél döntése"
+                  description="Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot."
+                  dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
+                  highlight={isDecided}
+                >
+                  {isDecided ? (
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${
+                          o.status === 'accepted'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-rose-100 text-rose-700'
+                        }`}
+                      >
+                        {DECISION_LABELS[o.status]}
+                      </span>
+                      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                        <span>Döntés dátuma</span>
+                        <input
+                          type="date"
+                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
+                          value={isoDateInput(o.decided_at)}
+                          onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
+                          disabled={isUpdating}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                      <button
+                        onClick={() => markDecision(o, 'accepted')}
+                        disabled={isUpdating}
+                        className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Megjelölés: Elfogadva
+                      </button>
+                      <button
+                        onClick={() => markDecision(o, 'lost')}
+                        disabled={isUpdating}
+                        className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Megjelölés: Elutasítva
+                      </button>
+                    </div>
+                  )}
+                </StatusStep>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2 text-xs text-slate-500">
+                {o.status !== 'draft' && (
+                  <button
+                    onClick={() => revertToDraft(o)}
+                    disabled={isUpdating}
+                    className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Vissza vázlatba
+                  </button>
                 )}
-                {o.status !== 'accepted' && (
-                  <label className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                    <span className="font-medium text-slate-600">Elfogadva</span>
-                    <input
-                      type="date"
-                      className="w-36 rounded-xl border border-slate-200 px-3 py-1 text-sm text-slate-700 focus:border-slate-300 focus:outline-none"
-                      onChange={(e) => updateStatus(o, 'accepted', e.target.value)}
-                    />
-                  </label>
-                )}
-                {o.status !== 'lost' && (
-                  <label className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2">
-                    <span className="font-medium text-slate-600">Elutasítva</span>
-                    <input
-                      type="date"
-                      className="w-36 rounded-xl border border-slate-200 px-3 py-1 text-sm text-slate-700 focus:border-slate-300 focus:outline-none"
-                      onChange={(e) => updateStatus(o, 'lost', e.target.value)}
-                    />
-                  </label>
+                {isDecided && (
+                  <button
+                    onClick={() => revertToSent(o)}
+                    disabled={isUpdating}
+                    className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Döntés törlése
+                  </button>
                 )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </AppFrame>

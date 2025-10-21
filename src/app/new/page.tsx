@@ -5,6 +5,8 @@ import StepIndicator from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import AppFrame from '@/components/AppFrame';
+import { priceTableHtml, summarize } from '@/app/lib/pricing';
+import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 
 type Step1Form = {
   industry: string;
@@ -290,11 +292,20 @@ export default function NewOfferWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.title, form.description, form.deadline, form.language, form.brandVoice, form.industry, form.style]);
 
-  const totals = useMemo(() => {
-    const net = rows.reduce((s, r) => s + (Number(r.qty)||0) * (Number(r.unitPrice)||0), 0);
-    const vat = rows.reduce((s, r) => s + (Number(r.qty)||0) * (Number(r.unitPrice)||0) * ((Number(r.vat)||0)/100), 0);
-    return { net, vat, gross: net + vat };
-  }, [rows]);
+  const totals = useMemo(() => summarize(rows), [rows]);
+
+  const pricePreviewHtml = useMemo(() => priceTableHtml(rows), [rows]);
+  const previewMarkup = useMemo(() => {
+    const companyName = (client.company_name || '').trim() || 'Címzett neve';
+    const title = form.title.trim() || 'Árajánlat';
+    const body = (editedHtml || previewHtml) || '<p>(nincs előnézet)</p>';
+    return offerBodyMarkup({
+      title,
+      companyName,
+      aiBodyHtml: body,
+      priceTableHtml: pricePreviewHtml,
+    });
+  }, [client.company_name, editedHtml, form.title, previewHtml, pricePreviewHtml]);
 
   async function ensureClient(): Promise<string|undefined> {
     const name = (client.company_name || '').trim();
@@ -563,11 +574,14 @@ export default function NewOfferWizard() {
                 <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
                 <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
               </div>
-              <div className="min-h-[260px] rounded-2xl border border-slate-200 bg-white/90 p-4 propono-doc">
+              <div className="min-h-[260px] rounded-2xl border border-slate-200 bg-white/90 p-4 overflow-auto">
                 {previewLoading ? (
                   <div className="text-sm text-slate-500">AI írja az ajánlatodat…</div>
                 ) : (
-                  <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                  <>
+                    <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
+                    <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
+                  </>
                 )}
               </div>
               <p className="text-xs text-slate-500">Az előnézet automatikusan frissül, amikor befejezed a mezők kitöltését.</p>
@@ -617,8 +631,9 @@ export default function NewOfferWizard() {
                 <h2 className="text-sm font-semibold text-slate-700">AI-szöveg szerkesztése</h2>
                 <span className="text-xs font-medium text-slate-400">Ez kerül a PDF-be</span>
               </div>
+              <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
               <div
-                className="min-h-[300px] rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm text-slate-700 propono-doc"
+                className="min-h-[300px] rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm text-slate-700 offer-doc__content overflow-auto"
                 contentEditable
                 suppressContentEditableWarning
                 onInput={(e) => setEditedHtml((e.target as HTMLDivElement).innerHTML)}
