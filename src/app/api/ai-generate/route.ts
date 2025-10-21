@@ -242,7 +242,7 @@ export async function POST(req: NextRequest) {
       planLimit = null;
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     let deviceId = cookieStore.get('propono_device_id')?.value;
     if (!deviceId) {
       deviceId = randomUUID();
@@ -292,6 +292,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ---- AI szöveg (override elsőbbség) ----
+    const safeTitle = sanitizeInput(title);
     let aiHtml = '';
     let structuredSections: OfferSections | null = null;
     if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
@@ -313,7 +314,6 @@ export async function POST(req: NextRequest) {
           : 'Stílus: részletes, mégis jól tagolt; tömör bekezdések és áttekinthető felsorolások.';
 
       // Sanitize user inputs before passing to OpenAI
-      const safeTitle = sanitizeInput(title);
       const safeIndustry = sanitizeInput(industry);
       const safeDescription = sanitizeInput(description);
       const safeDeadline = sanitizeInput(deadline || '—');
@@ -404,7 +404,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     await sb.from('offers').insert({
       id: offerId,
       user_id: user.id,
-      title: sanitizeInput(title),
+      title: safeTitle,
       industry: sanitizeInput(industry),
       recipient_id: clientId || null,
       inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },

@@ -81,6 +81,8 @@ export default function SettingsPage() {
     return e;
   }, [profile]);
 
+  const hasErrors = Object.keys(errors).length > 0;
+
   const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0F172A';
   const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
 
@@ -120,7 +122,7 @@ export default function SettingsPage() {
       setSaving(true);
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
-      if (Object.keys(errors).length) { alert('Kérjük, javítsd a piros mezőket.'); return; }
+      if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
       const { data, error } = await sb.from('profiles').upsert({
@@ -402,8 +404,9 @@ export default function SettingsPage() {
           </div>
 
           <button
+            type="button"
             onClick={saveProfile}
-            disabled={saving || Object.keys(errors).length > 0}
+            disabled={saving || hasErrors}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {saving ? 'Mentés…' : 'Mentés'}
@@ -522,6 +525,17 @@ export default function SettingsPage() {
             className="hidden"
             onChange={handleLogoChange}
           />
+
+          <div className="flex items-center justify-end pt-2">
+            <button
+              type="button"
+              onClick={saveProfile}
+              disabled={saving || hasErrors}
+              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {saving ? 'Mentés…' : 'Márka mentése'}
+            </button>
+          </div>
         </section>
 
         <section className={`${cardClass} space-y-6`}>
