@@ -54,20 +54,63 @@ ${styleAddon}
 Ne találj ki árakat, az árképzés külön jelenik meg.
 `;
 
-    const completion = await openai.chat.completions.create({
+    const encoder = new TextEncoder();
+    const stream = await openai.responses.stream({
       model: 'gpt-4o-mini',
-      messages: [
+      temperature: 0.4,
+      input: [
         { role: 'system', content: BASE_SYSTEM_PROMPT },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.4,
     });
 
-    const rawHtml = completion.choices?.[0]?.message?.content?.trim() || '<p>(nincs előnézet)</p>';
-    const html = sanitizeHTML(rawHtml);
-    return NextResponse.json({ html });
-  } catch (e: any) {
-    console.error('ai-preview error:', e?.message || e);
+    const readable = new ReadableStream<Uint8Array>({
+      start(controller) {
+        let accumulated = '';
+
+        const push = (payload: Record<string, unknown>) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
+        };
+
+        stream.on('response.output_text.delta', (event) => {
+          if (!event.delta) return;
+          accumulated += event.delta;
+          push({ type: 'delta', html: sanitizeHTML(accumulated) });
+        });
+
+        stream.on('end', () => {
+          const finalHtml = sanitizeHTML(accumulated || '<p>(nincs előnézet)</p>');
+          push({ type: 'done', html: finalHtml });
+          controller.close();
+        });
+
+        stream.on('abort', (error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error);
+          push({ type: 'error', message });
+          controller.close();
+        });
+
+        stream.on('error', (error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error);
+          push({ type: 'error', message });
+          controller.close();
+        });
+      },
+      cancel() {
+        stream.abort();
+      },
+    });
+
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('ai-preview error:', message);
     return NextResponse.json({ error: 'Preview failed' }, { status: 500 });
   }
 }

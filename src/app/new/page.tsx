@@ -27,11 +27,49 @@ type ClientForm = {
 type Activity = { id:string; name:string; unit:string; default_unit_price:number; default_vat:number; industries:string[] };
 type Client = { id:string; company_name:string; address?:string; tax_id?:string; representative?:string; phone?:string; email?:string };
 
+type OfferSections = {
+  introduction: string;
+  project_summary: string;
+  scope: string[];
+  deliverables: string[];
+  schedule: string[];
+  assumptions: string[];
+  next_steps: string[];
+  closing: string;
+};
+
+function isOfferSections(value: unknown): value is OfferSections {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+
+  const isNonEmptyString = (key: keyof OfferSections) => {
+    const val = obj[key as string];
+    return typeof val === 'string' && val.trim().length > 0;
+  };
+
+  const isStringArray = (key: keyof OfferSections) => {
+    const val = obj[key as string];
+    return (
+      Array.isArray(val) &&
+      val.length > 0 &&
+      val.every((item) => typeof item === 'string' && item.trim().length > 0)
+    );
+  };
+
+  return (
+    isNonEmptyString('introduction') &&
+    isNonEmptyString('project_summary') &&
+    isNonEmptyString('closing') &&
+    ['scope', 'deliverables', 'schedule', 'assumptions', 'next_steps'].every((key) =>
+      isStringArray(key as keyof OfferSections)
+    )
+  );
+}
+
 export default function NewOfferWizard() {
   const sb = supabaseBrowser();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState<string|null>(null);
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>(['Marketing','Informatika','Építőipar','Tanácsadás','Szolgáltatás']);
 
@@ -62,6 +100,7 @@ export default function NewOfferWizard() {
   const [previewHtml, setPreviewHtml] = useState<string>('<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>');
   const [previewLoading, setPreviewLoading] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout|null>(null);
+  const previewAbortRef = useRef<AbortController|null>(null);
 
   // edit on step 3
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -71,8 +110,6 @@ export default function NewOfferWizard() {
     (async () => {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { location.href = '/login'; return; }
-      setEmail(user.email ?? null);
-
       const { data: prof } = await sb.from('profiles').select('industries').eq('id', user.id).maybeSingle();
       if (prof?.industries?.length) {
         setAvailableIndustries(prof.industries);
@@ -88,6 +125,14 @@ export default function NewOfferWizard() {
         .eq('user_id', user.id).order('company_name');
       setClientList(cl || []);
     })();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (previewAbortRef.current) {
+        previewAbortRef.current.abort();
+      }
+    };
   }, []);
 
   const filteredActivities = useMemo(() => {
@@ -119,27 +164,114 @@ export default function NewOfferWizard() {
 
   // === Preview hívó ===
   async function callPreview() {
+    if (!form.title && !form.description) {
+      if (previewAbortRef.current) {
+        previewAbortRef.current.abort();
+        previewAbortRef.current = null;
+      }
+      setPreviewLoading(false);
+      return;
+    }
+
+    let controller: AbortController | null = null;
     try {
-      if (!form.title && !form.description) return;
+      if (previewAbortRef.current) {
+        previewAbortRef.current.abort();
+      }
+
       setPreviewLoading(true);
+
       const { data: session } = await sb.auth.getSession();
       const token = session.session?.access_token;
       if (!token) return;
 
+      controller = new AbortController();
+      previewAbortRef.current = controller;
+
       const resp = await fetch('/api/ai-preview', {
         method: 'POST',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          industry: form.industry, title: form.title, description: form.description,
-          deadline: form.deadline, language: form.language, brandVoice: form.brandVoice, style: form.style
-        })
+          industry: form.industry,
+          title: form.title,
+          description: form.description,
+          deadline: form.deadline,
+          language: form.language,
+          brandVoice: form.brandVoice,
+          style: form.style,
+        }),
+        signal: controller.signal,
       });
-      const j = await resp.json();
-      if (resp.ok) {
-        setPreviewHtml(j.html || '<p>(nincs előnézet)</p>');
-        setEditedHtml(j.html || '');
+
+      if (!resp.ok) {
+        let message = `Hiba az előnézet betöltésekor (${resp.status})`;
+        try {
+          const data = await resp.json();
+          if (data?.error) message = data.error;
+        } catch {
+          /* ignore JSON parse errors */
+        }
+        console.error(message);
+        return;
       }
-    } finally { setPreviewLoading(false); }
+
+      if (!resp.body) {
+        setPreviewHtml('<p>(nincs előnézet)</p>');
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let latestHtml = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let boundary: number;
+        while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+          const rawEvent = buffer.slice(0, boundary).trim();
+          buffer = buffer.slice(boundary + 2);
+          if (!rawEvent || !rawEvent.startsWith('data:')) continue;
+          const jsonPart = rawEvent.replace(/^data:\s*/, '');
+          if (!jsonPart) continue;
+
+          try {
+            const payload = JSON.parse(jsonPart) as { type?: string; html?: string; message?: string };
+            if (payload.type === 'delta' || payload.type === 'done') {
+              if (typeof payload.html === 'string') {
+                latestHtml = payload.html;
+                setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
+                if (payload.type === 'done') {
+                  setEditedHtml((prev) => prev || (payload.html || ''));
+                }
+              }
+            } else if (payload.type === 'error') {
+              console.error('AI stream hiba:', payload.message);
+            }
+          } catch (err: unknown) {
+            console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
+          }
+        }
+      }
+
+      if (!latestHtml) {
+        setPreviewHtml('<p>(nincs előnézet)</p>');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+      if (typeof error === 'object' && error && 'name' in error && (error as { name?: string }).name === 'AbortError') return;
+      console.error('Előnézet hiba:', error);
+    } finally {
+      const shouldClear = !controller || previewAbortRef.current === controller;
+      if (previewAbortRef.current === controller) {
+        previewAbortRef.current = null;
+      }
+      if (shouldClear) {
+        setPreviewLoading(false);
+      }
+    }
   }
   const onBlurTrigger = () => callPreview();
   useEffect(() => {
@@ -192,7 +324,7 @@ export default function NewOfferWizard() {
 
       const cid = await ensureClient();
 
-      const resp = await fetch('/api/generate-offer', {
+      const resp = await fetch('/api/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -203,11 +335,34 @@ export default function NewOfferWizard() {
         })
       });
 
-      if (!resp.ok) {
-        let msg = `Hiba a generálásnál (${resp.status})`;
-        try { const j = await resp.json(); msg = j.error || msg; } catch {}
-        alert(msg); return;
+      const raw = await resp.text();
+      let payload: unknown = null;
+      if (raw) {
+        try {
+          payload = JSON.parse(raw);
+        } catch (err: unknown) {
+          console.error('Nem sikerült értelmezni az AI válaszát', err, raw);
+        }
       }
+
+      const payloadObj = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
+      const okFlag = payloadObj && typeof payloadObj.ok === 'boolean' ? (payloadObj.ok as boolean) : undefined;
+      const errorMessage = payloadObj && typeof payloadObj.error === 'string' ? (payloadObj.error as string) : undefined;
+      const sectionsData = payloadObj ? (payloadObj.sections as unknown) : null;
+
+      if (!resp.ok || okFlag === false) {
+        const msg = errorMessage || `Hiba a generálásnál (${resp.status})`;
+        alert(msg);
+        return;
+      }
+
+      if (sectionsData) {
+        if (!isOfferSections(sectionsData)) {
+          alert('A struktúrált AI válasz hiányos, próbáld újra a generálást.');
+          return;
+        }
+      }
+
       location.href = '/dashboard';
     } finally { setLoading(false); }
   }
@@ -248,14 +403,14 @@ export default function NewOfferWizard() {
                   onChange={e=>setForm(f=>({...f, deadline:e.target.value}))} onBlur={onBlurTrigger}/>
               </div>
               <div><label className="text-sm text-neutral-700">Nyelv</label>
-                <select className="mt-1 border rounded p-2 w-full" value={form.language}
-                  onChange={e=>setForm(f=>({...f, language:e.target.value as any}))} onBlur={onBlurTrigger}>
+                  <select className="mt-1 border rounded p-2 w-full" value={form.language}
+                    onChange={e=>setForm(f=>({...f, language:e.target.value as Step1Form['language']}))} onBlur={onBlurTrigger}>
                   <option value="hu">Magyar</option><option value="en">English</option>
                 </select>
               </div>
               <div><label className="text-sm text-neutral-700">Hangnem</label>
-                <select className="mt-1 border rounded p-2 w-full" value={form.brandVoice}
-                  onChange={e=>setForm(f=>({...f, brandVoice:e.target.value as any}))} onBlur={onBlurTrigger}>
+                  <select className="mt-1 border rounded p-2 w-full" value={form.brandVoice}
+                    onChange={e=>setForm(f=>({...f, brandVoice:e.target.value as Step1Form['brandVoice']}))} onBlur={onBlurTrigger}>
                   <option value="friendly">Barátságos</option><option value="formal">Formális</option>
                 </select>
               </div>
