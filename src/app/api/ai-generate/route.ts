@@ -12,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getCurrentUser, getUserProfile } from '@/lib/services/user';
-import { getOrInitUsage, incrementOfferCount } from '@/lib/services/usage';
+import { checkAndIncrementUsage } from '@/lib/services/usage';
 import { enqueuePdfJob } from '@/lib/queue/pdf';
 
 export const runtime = 'nodejs';
@@ -219,16 +219,21 @@ export async function POST(req: NextRequest) {
 
     // ---- Limit (havi) ----
 
-    // Fetch usage counter (initialize if missing) and profile info
-    const { usage, isNewPeriod } = await getOrInitUsage(sb, user.id);
     const profile = await getUserProfile(sb, user.id);
-
     const plan = (profile?.plan as 'free' | 'starter' | 'pro' | undefined) ?? 'free';
-    const limit = plan === 'pro' ? Number.POSITIVE_INFINITY : plan === 'starter' ? 20 : 5;
+    const planLimit = plan === 'pro' ? null : plan === 'starter' ? 20 : 5;
 
-    const currentCount = isNewPeriod ? 0 : usage.offers_generated || 0;
+    const quota = await checkAndIncrementUsage(sb, user.id, planLimit);
 
-    if (currentCount >= limit) {
+    console.info('Usage quota check', {
+      userId: user.id,
+      plan,
+      limit: planLimit,
+      allowed: quota.allowed,
+      offersGenerated: quota.offersGenerated,
+    });
+
+    if (!quota.allowed) {
       return NextResponse.json(
         { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
         { status: 402 }
@@ -350,10 +355,6 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       pdf_url: null,
       status: 'draft',
     });
-
-    // ---- számláló frissítés ----
-    // Atomically increment the usage counter via the service helper
-    await incrementOfferCount(sb, user.id, currentCount, isNewPeriod);
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
 
