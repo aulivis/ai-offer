@@ -18,6 +18,13 @@ export type QuotaCheckResult = {
   periodStart: string;
 };
 
+type CounterKind = 'user' | 'device';
+
+const COUNTER_CONFIG: Record<CounterKind, { table: string; column: string; rpc: string }> = {
+  user: { table: 'usage_counters', column: 'user_id', rpc: 'check_and_increment_usage' },
+  device: { table: 'device_usage_counters', column: 'device_id', rpc: 'check_and_increment_device_usage' },
+};
+
 function normalizeDate(value: unknown, fallback: string): string {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return value.toISOString().slice(0, 10);
@@ -33,14 +40,16 @@ function normalizeDate(value: unknown, fallback: string): string {
 
 async function fallbackUsageUpdate(
   sb: SupabaseClient,
-  userId: string,
+  kind: CounterKind,
+  targetId: string,
   limit: number | null,
   periodStart: string
 ): Promise<QuotaCheckResult> {
+  const { table, column } = COUNTER_CONFIG[kind];
   const { data: existing, error: selectError } = await sb
-    .from('usage_counters')
+    .from(table)
     .select('period_start, offers_generated')
-    .eq('user_id', userId)
+    .eq(column, targetId)
     .maybeSingle();
 
   if (selectError && selectError.code !== 'PGRST116') {
@@ -49,9 +58,10 @@ async function fallbackUsageUpdate(
 
   let usageRow = existing;
   if (!usageRow) {
+    const insertPayload = { [column]: targetId, period_start: periodStart, offers_generated: 0 } as Record<string, unknown>;
     const { data: inserted, error: insertError } = await sb
-      .from('usage_counters')
-      .insert({ user_id: userId, period_start: periodStart, offers_generated: 0 })
+      .from(table)
+      .insert(insertPayload)
       .select('period_start, offers_generated')
       .maybeSingle();
     if (insertError) {
@@ -65,9 +75,9 @@ async function fallbackUsageUpdate(
 
   if (currentPeriod !== periodStart) {
     const { data: resetRow, error: resetError } = await sb
-      .from('usage_counters')
+      .from(table)
       .update({ period_start: periodStart, offers_generated: 0 })
-      .eq('user_id', userId)
+      .eq(column, targetId)
       .select('period_start, offers_generated')
       .maybeSingle();
     if (resetError) {
@@ -82,9 +92,9 @@ async function fallbackUsageUpdate(
   }
 
   const { data: updatedRow, error: updateError } = await sb
-    .from('usage_counters')
+    .from(table)
     .update({ offers_generated: generated + 1, period_start: currentPeriod })
-    .eq('user_id', userId)
+    .eq(column, targetId)
     .select('period_start, offers_generated')
     .maybeSingle();
   if (updateError) {
@@ -119,7 +129,7 @@ export async function checkAndIncrementUsage(
   if (error) {
     const message = error.message ?? '';
     if (message.toLowerCase().includes('check_and_increment_usage')) {
-      return fallbackUsageUpdate(sb, userId, Number.isFinite(limit ?? NaN) ? limit : null, periodStart);
+      return fallbackUsageUpdate(sb, 'user', userId, Number.isFinite(limit ?? NaN) ? limit : null, periodStart);
     }
     throw new Error(`Failed to update usage counter: ${message}`);
   }
@@ -130,5 +140,76 @@ export async function checkAndIncrementUsage(
     offersGenerated: Number(result?.offers_generated ?? 0),
     periodStart: String(result?.period_start ?? periodStart),
   };
+}
+
+export async function checkAndIncrementDeviceUsage(
+  sb: SupabaseClient,
+  deviceId: string,
+  limit: number | null
+): Promise<QuotaCheckResult> {
+  const { iso: periodStart } = currentMonthStart();
+  const rpcPayload = {
+    p_device_id: deviceId,
+    p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+    p_period_start: periodStart,
+  } as const;
+
+  const { data, error } = await sb.rpc('check_and_increment_device_usage', rpcPayload);
+  if (error) {
+    const message = error.message ?? '';
+    if (message.toLowerCase().includes('check_and_increment_device_usage')) {
+      return fallbackUsageUpdate(
+        sb,
+        'device',
+        deviceId,
+        Number.isFinite(limit ?? NaN) ? limit : null,
+        periodStart
+      );
+    }
+    throw new Error(`Failed to update device usage counter: ${message}`);
+  }
+
+  const [result] = Array.isArray(data) ? data : [data];
+  return {
+    allowed: Boolean(result?.allowed),
+    offersGenerated: Number(result?.offers_generated ?? 0),
+    periodStart: String(result?.period_start ?? periodStart),
+  };
+}
+
+export async function rollbackUsageIncrement(sb: SupabaseClient, userId: string, expectedPeriod: string) {
+  const { data: existing, error } = await sb
+    .from('usage_counters')
+    .select('offers_generated, period_start')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('Failed to load usage counter for rollback', error);
+    return;
+  }
+
+  if (!existing) {
+    return;
+  }
+
+  const currentCount = Number(existing.offers_generated ?? 0);
+  if (currentCount <= 0) {
+    return;
+  }
+
+  const periodStart = normalizeDate(existing.period_start, expectedPeriod);
+  if (periodStart !== expectedPeriod) {
+    return;
+  }
+
+  const { error: updateError } = await sb
+    .from('usage_counters')
+    .update({ offers_generated: currentCount - 1 })
+    .eq('user_id', userId);
+
+  if (updateError) {
+    console.warn('Failed to rollback usage counter increment', updateError);
+  }
 }
 

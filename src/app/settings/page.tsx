@@ -123,7 +123,7 @@ export default function SettingsPage() {
       if (Object.keys(errors).length) { alert('Kérjük, javítsd a piros mezőket.'); return; }
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
-      await sb.from('profiles').upsert({
+      const { data, error } = await sb.from('profiles').upsert({
         id: user.id,
         company_name: profile.company_name ?? '',
         company_address: profile.company_address ?? '',
@@ -134,8 +134,20 @@ export default function SettingsPage() {
         brand_logo_url: profile.brand_logo_url ?? null,
         brand_color_primary: primary,
         brand_color_secondary: secondary,
-      }, { onConflict: 'id' });
+      }, { onConflict: 'id' }).select('brand_logo_url, brand_color_primary, brand_color_secondary').maybeSingle();
+      if (error) {
+        throw error;
+      }
+      setProfile((prev) => ({
+        ...prev,
+        brand_logo_url: data?.brand_logo_url ?? prev.brand_logo_url ?? null,
+        brand_color_primary: data?.brand_color_primary ?? primary ?? null,
+        brand_color_secondary: data?.brand_color_secondary ?? secondary ?? null,
+      }));
       alert('Mentve!');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt a mentés közben.';
+      alert(`Nem sikerült menteni: ${message}`);
     } finally { setSaving(false); }
   }
 
@@ -153,6 +165,22 @@ export default function SettingsPage() {
       }
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
+      const ensureResp = await fetch('/api/storage/ensure-brand-bucket', { method: 'POST' });
+      if (!ensureResp.ok) {
+        let message = 'Nem sikerült előkészíteni a tárhelyet.';
+        try {
+          const payload: unknown = await ensureResp.json();
+          if (payload && typeof payload === 'object' && 'error' in payload) {
+            const errorValue = (payload as { error?: unknown }).error;
+            if (typeof errorValue === 'string' && errorValue.trim()) {
+              message = errorValue;
+            }
+          }
+        } catch {
+          // ignore JSON parse errors
+        }
+        throw new Error(message);
+      }
       const extension = (file.name.split('.').pop() || 'png').toLowerCase();
       const path = `${user.id}/brand-logo.${extension}`;
       const { error } = await sb.storage.from('brand-assets').upload(path, file, {
@@ -170,7 +198,8 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Logo upload error', error);
-      alert('Nem sikerült feltölteni a logót. Próbáld újra.');
+      const message = error instanceof Error ? error.message : 'Nem sikerült feltölteni a logót. Próbáld újra.';
+      alert(message);
     } finally {
       setLogoUploading(false);
     }

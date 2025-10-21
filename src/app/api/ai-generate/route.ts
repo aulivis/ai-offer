@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { randomUUID } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 // Use shared pricing utilities and HTML template helpers.  The
 // summarization and table HTML generation are centralised in
@@ -12,7 +14,7 @@ import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getCurrentUser, getUserProfile } from '@/lib/services/user';
-import { checkAndIncrementUsage } from '@/lib/services/usage';
+import { checkAndIncrementUsage, checkAndIncrementDeviceUsage, rollbackUsageIncrement } from '@/lib/services/usage';
 import { enqueuePdfJob } from '@/lib/queue/pdf';
 
 export const runtime = 'nodejs';
@@ -220,8 +222,40 @@ export async function POST(req: NextRequest) {
     // ---- Limit (havi) ----
 
     const profile = await getUserProfile(sb, user.id);
-    const plan = (profile?.plan as 'free' | 'starter' | 'pro' | undefined) ?? 'free';
-    const planLimit = plan === 'pro' ? null : plan === 'starter' ? 20 : 5;
+    const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
+    const plan: 'free' | 'standard' | 'pro' = rawPlan === 'starter' ? 'standard' : rawPlan;
+
+    const privilegedEmail = 'tiens.robert@hotmail.com';
+    const normalizedEmail = typeof user.email === 'string' ? user.email.toLowerCase() : '';
+
+    let planLimit: number | null;
+    if (plan === 'pro') {
+      planLimit = null;
+    } else if (plan === 'standard') {
+      planLimit = 10;
+    } else {
+      planLimit = 3;
+    }
+
+    const hasUnlimitedEmail = normalizedEmail === privilegedEmail;
+    if (hasUnlimitedEmail) {
+      planLimit = null;
+    }
+
+    const cookieStore = cookies();
+    let deviceId = cookieStore.get('propono_device_id')?.value;
+    if (!deviceId) {
+      deviceId = randomUUID();
+      cookieStore.set({
+        name: 'propono_device_id',
+        value: deviceId,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24 * 365,
+        path: '/',
+      });
+    }
 
     const quota = await checkAndIncrementUsage(sb, user.id, planLimit);
 
@@ -238,6 +272,23 @@ export async function POST(req: NextRequest) {
         { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
         { status: 402 }
       );
+    }
+
+    if (plan === 'free' && !hasUnlimitedEmail && planLimit !== null) {
+      const deviceQuota = await checkAndIncrementDeviceUsage(sb, deviceId, 3);
+      console.info('Device quota check', {
+        deviceId,
+        limit: 3,
+        allowed: deviceQuota.allowed,
+        offersGenerated: deviceQuota.offersGenerated,
+      });
+      if (!deviceQuota.allowed) {
+        await rollbackUsageIncrement(sb, user.id, quota.periodStart);
+        return NextResponse.json(
+          { error: 'Elérted a havi ajánlatlimitálást ezen az eszközön.' },
+          { status: 402 }
+        );
+      }
     }
 
     // ---- AI szöveg (override elsőbbség) ----

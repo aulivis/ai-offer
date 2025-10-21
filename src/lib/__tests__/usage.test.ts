@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkAndIncrementUsage } from '../services/usage';
+import { checkAndIncrementUsage, checkAndIncrementDeviceUsage, rollbackUsageIncrement } from '../services/usage';
 
 describe('checkAndIncrementUsage', () => {
   const rpc = vi.fn();
@@ -131,5 +131,120 @@ describe('checkAndIncrementUsage', () => {
 
     expect(result).toEqual({ allowed: true, offersGenerated: 1, periodStart: '2024-07-01' });
     expect(from).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('checkAndIncrementDeviceUsage', () => {
+  const rpc = vi.fn();
+  const from = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockClient = { rpc, from } as any;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-07-05T12:00:00.000Z'));
+    rpc.mockReset();
+    from.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('invokes the device RPC with normalized payload', async () => {
+    rpc.mockResolvedValue({ data: { allowed: true, offers_generated: 2, period_start: '2024-07-01' }, error: null });
+
+    const result = await checkAndIncrementDeviceUsage(mockClient, 'device-123', 3);
+
+    expect(rpc).toHaveBeenCalledWith('check_and_increment_device_usage', {
+      p_device_id: 'device-123',
+      p_limit: 3,
+      p_period_start: '2024-07-01',
+    });
+    expect(result).toEqual({ allowed: true, offersGenerated: 2, periodStart: '2024-07-01' });
+  });
+
+  it('falls back to manual updates when the RPC is missing', async () => {
+    rpc.mockResolvedValue({
+      data: null,
+      error: { message: 'Could not find the function public.check_and_increment_device_usage(p_limit, p_period_start, p_device_id) in the schema cache' },
+    });
+
+    const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
+    selectBuilder.select.mockReturnValue(selectBuilder);
+    selectBuilder.eq.mockReturnValue(selectBuilder);
+    selectBuilder.maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const insertBuilder = { insert: vi.fn(), select: vi.fn(), maybeSingle: vi.fn() };
+    insertBuilder.insert.mockReturnValue(insertBuilder);
+    insertBuilder.select.mockReturnValue(insertBuilder);
+    insertBuilder.maybeSingle.mockResolvedValue({
+      data: { period_start: '2024-07-01', offers_generated: 0 },
+      error: null,
+    });
+
+    const updateBuilder = { update: vi.fn(), eq: vi.fn(), select: vi.fn(), maybeSingle: vi.fn() };
+    updateBuilder.update.mockReturnValue(updateBuilder);
+    updateBuilder.eq.mockReturnValue(updateBuilder);
+    updateBuilder.select.mockReturnValue(updateBuilder);
+    updateBuilder.maybeSingle.mockResolvedValue({
+      data: { period_start: '2024-07-01', offers_generated: 1 },
+      error: null,
+    });
+
+    from
+      .mockReturnValueOnce(selectBuilder as never)
+      .mockReturnValueOnce(insertBuilder as never)
+      .mockReturnValueOnce(updateBuilder as never);
+
+    const result = await checkAndIncrementDeviceUsage(mockClient, 'device-321', 3);
+
+    expect(result).toEqual({ allowed: true, offersGenerated: 1, periodStart: '2024-07-01' });
+    expect(from).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('rollbackUsageIncrement', () => {
+  const from = vi.fn();
+  const mockClient = { from } as unknown as Parameters<typeof rollbackUsageIncrement>[0];
+  const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+  beforeEach(() => {
+    from.mockReset();
+    warnSpy.mockClear();
+  });
+
+  it('reduces the counter when the period matches and count is positive', async () => {
+    const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
+    selectBuilder.select.mockReturnValue(selectBuilder);
+    selectBuilder.eq.mockReturnValue(selectBuilder);
+    selectBuilder.maybeSingle.mockResolvedValue({ data: { offers_generated: 2, period_start: '2024-07-01' }, error: null });
+
+    const updateBuilder = { update: vi.fn(), eq: vi.fn() };
+    updateBuilder.update.mockReturnValue(updateBuilder);
+    updateBuilder.eq.mockResolvedValue({ error: null });
+
+    from
+      .mockReturnValueOnce(selectBuilder as never)
+      .mockReturnValueOnce(updateBuilder as never);
+
+    await rollbackUsageIncrement(mockClient, 'user-1', '2024-07-01');
+
+    expect(updateBuilder.update).toHaveBeenCalledWith({ offers_generated: 1 });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('skips rollback when the counter is missing', async () => {
+    const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
+    selectBuilder.select.mockReturnValue(selectBuilder);
+    selectBuilder.eq.mockReturnValue(selectBuilder);
+    selectBuilder.maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    from.mockReturnValueOnce(selectBuilder as never);
+
+    await rollbackUsageIncrement(mockClient, 'user-2', '2024-07-01');
+
+    expect(from).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });
