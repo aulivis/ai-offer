@@ -6,12 +6,9 @@
  * are assumed to be sanitized already.
  */
 
-export interface OfferHtmlProps {
-  title: string;
-  companyName: string;
-  aiBodyHtml: string;
-  priceTableHtml: string;
-}
+import { offerBodyMarkup, OFFER_DOCUMENT_PDF_STYLES, OFFER_DOCUMENT_STYLES, type OfferDocumentMarkupProps } from './offerDocument';
+
+export type OfferHtmlProps = OfferDocumentMarkupProps;
 
 export function offerHtml({ title, companyName, aiBodyHtml, priceTableHtml }: OfferHtmlProps): string {
   return `
@@ -21,54 +18,12 @@ export function offerHtml({ title, companyName, aiBodyHtml, priceTableHtml }: Of
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 2rem;
-            color: #1a1a1a;
-          }
-          header {
-            text-align: right;
-            margin-bottom: 2rem;
-          }
-          h1 {
-            font-size: 24px;
-            margin: 0;
-          }
-          .company {
-            font-size: 14px;
-            color: #555;
-          }
-          .content {
-            margin-top: 1rem;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 2rem;
-          }
-          th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            font-size: 12px;
-          }
-          th {
-            background-color: #f5f5f5;
-          }
-          tfoot td {
-            font-weight: bold;
-          }
+          ${OFFER_DOCUMENT_PDF_STYLES}
+          ${OFFER_DOCUMENT_STYLES}
         </style>
       </head>
       <body>
-        <header>
-          <div class="company">${companyName}</div>
-          <h1>${title}</h1>
-        </header>
-        <div class="content">
-          ${aiBodyHtml}
-        </div>
-        ${priceTableHtml}
+        ${offerBodyMarkup({ title, companyName, aiBodyHtml, priceTableHtml })}
       </body>
     </html>
   `;

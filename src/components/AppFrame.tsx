@@ -22,26 +22,27 @@ export default function AppFrame({ title, description, actions, children }: AppF
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-slate-100/80">
-      <div className="border-b border-slate-200 bg-white/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]" />
+      <div className="relative">
+        <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
           <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900">
-            <span className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-slate-100 font-display text-base">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 bg-white font-display text-base">
               P
             </span>
             Propono
           </Link>
-          <nav className="flex items-center gap-2 text-sm">
+          <nav className="flex items-center gap-2 text-sm text-slate-500">
             {navLinks.map((link) => {
               const active = pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-lg px-3 py-1.5 transition-colors ${
+                  className={`rounded-full px-3.5 py-1.5 transition ${
                     active
                       ? 'bg-slate-900 text-white shadow-sm'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                      : 'hover:bg-slate-200/60 hover:text-slate-900'
                   }`}
                 >
                   {link.label}
@@ -49,20 +50,20 @@ export default function AppFrame({ title, description, actions, children }: AppF
               );
             })}
           </nav>
-        </div>
-      </div>
-
-      <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-10">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="font-display text-3xl text-slate-900">{title}</h1>
-            {description ? <p className="mt-1 max-w-2xl text-sm text-slate-500">{description}</p> : null}
-          </div>
-          {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
         </header>
 
-        {children}
-      </main>
+        <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 pb-16 pt-4">
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="font-display text-3xl text-slate-900">{title}</h1>
+              {description ? <p className="mt-1 max-w-2xl text-sm text-slate-500">{description}</p> : null}
+            </div>
+            {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+          </header>
+
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

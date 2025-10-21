@@ -53,7 +53,7 @@ export function summarize(rows: PriceRow[]): { net: number; vat: number; gross: 
 export function priceTableHtml(rows: PriceRow[]): string {
   const totals = summarize(rows);
   return `
-    <table>
+    <table class="offer-doc__pricing-table">
       <thead>
         <tr>
           <th>Tétel</th>
