@@ -7,6 +7,7 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { PriceRow, priceTableHtml } from '@/app/lib/pricing';
 import { offerHtml } from '@/app/lib/htmlTemplate';
 import OpenAI from 'openai';
+import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import puppeteer from 'puppeteer';
 import { v4 as uuid } from 'uuid';
 import { Buffer } from 'buffer';
@@ -17,18 +18,153 @@ import { getOrInitUsage, incrementOfferCount } from '@/lib/services/usage';
 
 export const runtime = 'nodejs';
 
-// System prompt for our OpenAI assistant.  See report for details on
-// structure and style guidelines.
+// System prompt for our OpenAI assistant.  The model should populate the
+// JSON schema defined below using természetes, gördülékeny magyar üzleti
+// nyelv.  HTML-t nem kell visszaadni, azt a szerver állítja elő a
+// struktúrált mezőkből.
 const SYSTEM_PROMPT = `
 Te egy magyar üzleti ajánlatíró asszisztens vagy.
 Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
 Kerüld az anglicizmusokat, helyette magyar kifejezéseket használj.
-Adj vissza TISZTA HTMLT (nincs külső CSS), csak címsorok, bekezdések és felsorolások.
-Szerkezet: Bevezető, Projekt összefoglaló, Terjedelem, Szállítandók, Ütemezés, Feltételezések & Kizárások, Következő lépések, Zárás.
-Nyelv: magyar, kivéve ha a bemenet kifejezetten angol.
-Hangnem: professzionális, de barátságos.
+A megadott JSON sémát töltsd ki: minden mező magyar szöveg legyen, HTML jelölés nélkül.
+A felsorolás típusú mezők rövid, lényegretörő pontokat tartalmazzanak.
 Ne találj ki árakat; az árképzés külön jelenik meg az alkalmazásban.
 `;
+
+type OfferSections = {
+  introduction: string;
+  project_summary: string;
+  scope: string[];
+  deliverables: string[];
+  schedule: string[];
+  assumptions: string[];
+  next_steps: string[];
+  closing: string;
+};
+
+const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
+  type: 'json_schema',
+  name: 'offer_sections',
+  description: 'Strukturált magyar ajánlati szekciók',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: [
+      'introduction',
+      'project_summary',
+      'scope',
+      'deliverables',
+      'schedule',
+      'assumptions',
+      'next_steps',
+      'closing',
+    ],
+    properties: {
+      introduction: {
+        type: 'string',
+        description: 'Rövid bevezető bekezdés a címzett köszöntésével.',
+      },
+      project_summary: {
+        type: 'string',
+        description: 'A projekt céljának és hátterének összefoglalása.',
+      },
+      scope: {
+        type: 'array',
+        minItems: 3,
+        items: {
+          type: 'string',
+          description: 'Terjedelemhez tartozó kulcsfeladat.',
+        },
+      },
+      deliverables: {
+        type: 'array',
+        minItems: 3,
+        items: {
+          type: 'string',
+          description: 'A szállítandó eredmények felsorolása.',
+        },
+      },
+      schedule: {
+        type: 'array',
+        minItems: 3,
+        items: {
+          type: 'string',
+          description: 'Kulcs mérföldkövek és céldátumok.',
+        },
+      },
+      assumptions: {
+        type: 'array',
+        minItems: 3,
+        items: {
+          type: 'string',
+          description: 'Feltételezések és kizárások.',
+        },
+      },
+      next_steps: {
+        type: 'array',
+        minItems: 2,
+        items: {
+          type: 'string',
+          description: 'Következő lépések, teendők.',
+        },
+      },
+      closing: {
+        type: 'string',
+        description: 'Udvarias záró bekezdés cselekvésre ösztönzéssel.',
+      },
+    },
+  },
+};
+
+function safeParagraph(value: string | undefined): string {
+  const trimmed = (value || '').trim();
+  return trimmed ? `<p>${sanitizeInput(trimmed)}</p>` : '<p>-</p>';
+}
+
+function safeList(items: string[] | undefined): string {
+  const normalized = (items || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean);
+  if (!normalized.length) return '<p>-</p>';
+  return `<ul>${normalized.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+}
+
+function sectionsToHtml(sections: OfferSections): string {
+  const html = `
+    <h2>Bevezető</h2>
+    ${safeParagraph(sections.introduction)}
+    <h2>Projekt összefoglaló</h2>
+    ${safeParagraph(sections.project_summary)}
+    <h2>Terjedelem</h2>
+    ${safeList(sections.scope)}
+    <h2>Szállítandók</h2>
+    ${safeList(sections.deliverables)}
+    <h2>Ütemezés</h2>
+    ${safeList(sections.schedule)}
+    <h2>Feltételezések &amp; Kizárások</h2>
+    ${safeList(sections.assumptions)}
+    <h2>Következő lépések</h2>
+    ${safeList(sections.next_steps)}
+    <h2>Zárás</h2>
+    ${safeParagraph(sections.closing)}
+  `;
+
+  return sanitizeHTML(html);
+}
+
+function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
+  return {
+    introduction: sanitizeInput((sections.introduction || '').trim()),
+    project_summary: sanitizeInput((sections.project_summary || '').trim()),
+    scope: (sections.scope || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
+    deliverables: (sections.deliverables || [])
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean),
+    schedule: (sections.schedule || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
+    assumptions: (sections.assumptions || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
+    next_steps: (sections.next_steps || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
+    closing: sanitizeInput((sections.closing || '').trim()),
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -75,8 +211,9 @@ export async function POST(req: NextRequest) {
     let user;
     try {
       user = await getCurrentUser(sb, access_token);
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message || 'Invalid user' }, { status: 401 });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid user';
+      return NextResponse.json({ error: message }, { status: 401 });
     }
 
     // ---- Limit (havi) ----
@@ -99,6 +236,7 @@ export async function POST(req: NextRequest) {
 
     // ---- AI szöveg (override elsőbbség) ----
     let aiHtml = '';
+    let structuredSections: OfferSections | null = null;
     if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
       // Sanitize override HTML to strip scripts
       aiHtml = sanitizeHTML(aiOverrideHtml.trim());
@@ -129,6 +267,7 @@ export async function POST(req: NextRequest) {
 Nyelv: ${safeLanguage}
 Hangnem: ${safeBrand}
 Iparág: ${safeIndustry}
+Ajánlat címe: ${safeTitle}
 Projekt leírás: ${safeDescription}
 Határidő: ${safeDeadline}
 ${styleAddon}
@@ -136,21 +275,27 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 `;
 
       try {
-        const completion = await openai.chat.completions.create({
+        const response = await openai.responses.parse<OfferSections>({
           model: 'gpt-4o-mini',
-          messages: [
+          temperature: 0.4,
+          input: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: userPrompt },
           ],
-          temperature: 0.4,
+          text: { format: OFFER_SECTIONS_FORMAT },
         });
-        aiHtml = sanitizeHTML(
-          completion.choices[0]?.message?.content?.trim() ?? '<p>(nincs tartalom)</p>'
-        );
-      } catch (e: any) {
-        console.error('OpenAI error:', e?.message || e);
+
+        structuredSections = response.output_parsed as OfferSections | null;
+        if (!structuredSections) {
+          throw new Error('Structured output missing');
+        }
+
+        aiHtml = sectionsToHtml(structuredSections);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('OpenAI structured output error:', message);
         return NextResponse.json(
-          { error: 'OpenAI hívás sikertelen. Ellenőrizd az API-kulcsot.' },
+          { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
           { status: 502 }
         );
       }
@@ -169,7 +314,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     try {
       // Build the full HTML for PDF using sanitized pieces
       const html = offerHtml({
-        title: sanitizeInput(title || 'Árajánlat'),
+        title: safeTitle || 'Árajánlat',
         companyName: sanitizeInput(profile?.company_name || ''),
         aiBodyHtml: aiHtml,
         priceTableHtml: priceTable,
@@ -197,8 +342,9 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         const { data: pub } = sb.storage.from('offers').getPublicUrl(path);
         pdfUrl = pub?.publicUrl || null;
       }
-    } catch (e: any) {
-      console.error('PDF error:', e?.message || e);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('PDF error:', message);
       // PDF hiba esetén is mentünk ajánlatot; a pdf_url null marad
     }
 
@@ -220,14 +366,18 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // Atomically increment the usage counter via the service helper
     await incrementOfferCount(sb, user.id, currentCount, isNewPeriod);
 
+    const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
+
     return NextResponse.json({
       ok: true,
       id: offerId,
       pdfUrl,
       note: pdfUrl ? undefined : 'PDF generálás kihagyva (ideiglenes).',
+      sections: sectionsPayload,
     });
-  } catch (e: any) {
-    console.error('Server error:', e);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Server error:', message);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
