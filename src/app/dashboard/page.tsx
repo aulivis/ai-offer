@@ -1,10 +1,11 @@
 'use client';
 
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { useToast } from '@/components/ToastProvider';
+import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 
 type Offer = {
   id: string;
@@ -19,6 +20,7 @@ type Offer = {
   recipient_id: string | null;
   recipient?: { company_name: string | null } | null;
 };
+
 
 const STATUS_LABELS: Record<Offer['status'], string> = {
   draft: 'Vázlat',
@@ -130,6 +132,10 @@ export default function DashboardPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // keresés/szűrés/rendezés
   const [q, setQ] = useState('');
@@ -138,10 +144,37 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
 
+  const fetchPage = useCallback(async (
+    user: string,
+    pageNumber: number,
+  ): Promise<{ items: Offer[]; count: number | null }> => {
+    const from = pageNumber * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data, error, count } = await sb
+      .from('offers')
+      .select(
+        'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )',
+        { count: 'exact' },
+      )
+      .eq('user_id', user)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      items: Array.isArray(data) ? (data as Offer[]) : [],
+      count: typeof count === 'number' ? count : null,
+    };
+  }, [sb]);
+
   useEffect(() => {
     let active = true;
 
-    const loadOffers = async () => {
+    const loadInitialPage = async () => {
+      setLoading(true);
       try {
         const { data: { user }, error } = await sb.auth.getUser();
         if (error) {
@@ -150,27 +183,21 @@ export default function DashboardPage() {
 
         if (!user) {
           router.push('/login');
-          if (active) {
-            setLoading(false);
-          }
           return;
         }
 
-        const { data, error: offersError } = await sb
-          .from('offers')
-          .select(
-            'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )',
-          )
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (offersError) {
-          throw offersError;
+        if (!active) {
+          return;
         }
 
-        if (active) {
-          setOffers(Array.isArray(data) ? (data as Offer[]) : []);
+        setUserId(user.id);
+        const { items, count } = await fetchPage(user.id, 0);
+        if (!active) {
+          return;
         }
+        setOffers(items);
+        setPageIndex(0);
+        setTotalCount(count);
       } catch (error) {
         console.error('Failed to load offers', error);
         const message = error instanceof Error
@@ -188,12 +215,42 @@ export default function DashboardPage() {
       }
     };
 
-    loadOffers();
+    loadInitialPage();
 
     return () => {
       active = false;
     };
-  }, [router, sb, showToast]);
+  }, [fetchPage, router, sb, showToast]);
+
+  const hasMore = totalCount !== null ? offers.length < totalCount : false;
+
+  const handleLoadMore = useCallback(async () => {
+    if (!userId || isLoadingMore || !hasMore) {
+      return;
+    }
+    setIsLoadingMore(true);
+    try {
+      const nextPage = pageIndex + 1;
+      const { items, count } = await fetchPage(userId, nextPage);
+      setOffers((prev) => mergeOfferPages(prev, items));
+      if (count !== null) {
+        setTotalCount(count);
+      }
+      setPageIndex(nextPage);
+    } catch (error) {
+      console.error('Failed to load offers', error);
+      const message = error instanceof Error
+        ? error.message
+        : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+      showToast({
+        title: 'További ajánlatok betöltése sikertelen',
+        description: message,
+        variant: 'error',
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [fetchPage, hasMore, isLoadingMore, pageIndex, showToast, userId]);
 
   const industries = useMemo(() => {
     const s = new Set<string>();
@@ -357,6 +414,21 @@ export default function DashboardPage() {
   const avgDecisionLabel = stats.avgDecisionDays !== null
     ? `${stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} nap`
     : '—';
+  const totalOffersCount = totalCount ?? stats.total;
+  const displayedCount = totalCount !== null
+    ? Math.min(offers.length, totalCount)
+    : offers.length;
+  const monthlyHelper = `Ebben a hónapban ${stats.createdThisMonth.toLocaleString('hu-HU')} új ajánlat`;
+  const totalHelper = totalCount !== null
+    ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat • ${monthlyHelper}`
+    : monthlyHelper;
+  const paginationSummary = totalCount !== null
+    ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat`
+    : null;
+  const noOffersLoaded = !loading && offers.length === 0;
+  const emptyMessage = noOffersLoaded
+    ? 'Még nem hoztál létre ajánlatokat. Kezdd egy újjal a „+ Új ajánlat” gombbal.'
+    : 'Nincs találat. Próbálj másik keresést vagy szűrőt.';
 
   return (
     <AppFrame
@@ -374,8 +446,8 @@ export default function DashboardPage() {
       <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Létrehozott ajánlatok"
-          value={stats.total.toLocaleString('hu-HU')}
-          helper={`Ebben a hónapban ${stats.createdThisMonth.toLocaleString('hu-HU')} új ajánlat`}
+          value={totalOffersCount.toLocaleString('hu-HU')}
+          helper={totalHelper}
         />
         <MetricCard
           label="Kiküldött ajánlatok"
@@ -490,14 +562,22 @@ export default function DashboardPage() {
       )}
 
       {!loading && filtered.length === 0 && (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white/60 p-12 text-center text-slate-500">
-          Nincs találat. Próbálj másik keresést vagy szűrőt.
+        <div className="space-y-4 rounded-3xl border border-dashed border-slate-300 bg-white/60 p-12 text-center text-slate-500">
+          <p>{emptyMessage}</p>
+          {hasMore ? (
+            <LoadMoreButton
+              appearance="outline"
+              onClick={handleLoadMore}
+              isLoading={isLoadingMore}
+            />
+          ) : null}
         </div>
       )}
 
       {!loading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((o) => {
+        <>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((o) => {
             const isUpdating = updatingId === o.id;
             const isDecided = o.status === 'accepted' || o.status === 'lost';
             return (
@@ -654,8 +734,23 @@ export default function DashboardPage() {
                 </div>
               </div>
             );
-          })}
-        </div>
+            })}
+          </div>
+
+          <div className="mt-6 flex flex-col items-center gap-3 text-center">
+            {paginationSummary ? (
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{paginationSummary}</p>
+            ) : null}
+            {hasMore ? (
+              <LoadMoreButton
+                onClick={handleLoadMore}
+                isLoading={isLoadingMore}
+              />
+            ) : (
+              <p className="text-xs text-slate-400">Az összes ajánlat megjelenítve.</p>
+            )}
+          </div>
+        </>
       )}
     </AppFrame>
   );
