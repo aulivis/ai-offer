@@ -6,14 +6,14 @@ import { LoadMoreButton, mergeOfferPages } from '../offersPagination';
 
 describe('mergeOfferPages', () => {
   it('keeps existing offers and appends new unique ones', () => {
-    const previous = [
+    const previous: Array<{ id: string; title: string }> = [
       { id: '1', title: 'Első' },
       { id: '2', title: 'Második' },
-    ] as any;
-    const incoming = [
+    ];
+    const incoming: Array<{ id: string; title: string }> = [
       { id: '2', title: 'Második módosítva' },
       { id: '3', title: 'Harmadik' },
-    ] as any;
+    ];
 
     const result = mergeOfferPages(previous, incoming);
 
