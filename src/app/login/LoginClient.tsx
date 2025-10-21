@@ -8,9 +8,13 @@ export default function LoginClient() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMagicLoading, setIsMagicLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   async function sendMagic() {
     setError(null);
+    if (!email) return;
+    setIsMagicLoading(true);
     try {
       const sb = supabaseBrowser();
       const { error } = await sb.auth.signInWithOtp({
@@ -22,6 +26,32 @@ export default function LoginClient() {
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
       setError(message);
+    } finally {
+      setIsMagicLoading(false);
+    }
+  }
+
+  async function signInWithGoogle() {
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      const sb = supabaseBrowser();
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      if (error) setError(error.message);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
+      setError(message);
+    } finally {
+      setIsGoogleLoading(false);
     }
   }
 
@@ -53,9 +83,23 @@ export default function LoginClient() {
             <button
               onClick={sendMagic}
               className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-              disabled={!email || sent}
+              disabled={!email || sent || isMagicLoading}
+              aria-busy={isMagicLoading}
             >
-              {sent ? 'Link elküldve' : 'Magic link küldése'}
+              {sent ? 'Link elküldve' : isMagicLoading ? 'Küldés...' : 'Magic link küldése'}
+            </button>
+
+            <div className="relative py-1 text-center text-xs uppercase tracking-wide text-slate-400">
+              <span className="bg-white px-2">vagy</span>
+            </div>
+
+            <button
+              onClick={signInWithGoogle}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              disabled={isGoogleLoading}
+              aria-busy={isGoogleLoading}
+            >
+              {isGoogleLoading ? 'Csatlakozás...' : 'Bejelentkezés Google-lel'}
             </button>
 
             {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
