@@ -5,6 +5,7 @@ import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 
 const STARTER_PRICE = process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
+const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
 export default function BillingPage() {
   const [email, setEmail] = useState<string | null>(null);
@@ -25,7 +26,7 @@ export default function BillingPage() {
   async function startCheckout(priceId: string) {
     try {
       setLoading(priceId);
-      const resp = await fetch('/api/checkout', {
+      const resp = await fetch(CHECKOUT_API_PATH, {
         method: 'POST',
         headers: { 'Content-Type':'application/json' },
         body: JSON.stringify({ priceId, email })
