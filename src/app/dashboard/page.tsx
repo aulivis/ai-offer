@@ -1,8 +1,10 @@
 'use client';
 
 import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
+import { useToast } from '@/components/ToastProvider';
 
 type Offer = {
   id: string;
@@ -122,7 +124,9 @@ function formatDate(value: string | null) {
 }
 
 export default function DashboardPage() {
-  const sb = supabaseBrowser();
+  const router = useRouter();
+  const { showToast } = useToast();
+  const sb = useMemo(() => supabaseBrowser(), []);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -135,23 +139,61 @@ export default function DashboardPage() {
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
 
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { location.href = '/login'; return; }
+    let active = true;
 
-      const { data, error } = await sb
-        .from('offers')
-        .select('id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+    const loadOffers = async () => {
+      try {
+        const { data: { user }, error } = await sb.auth.getUser();
+        if (error) {
+          throw error;
+        }
 
-      if (!error) {
-        setOffers(Array.isArray(data) ? (data as Offer[]) : []);
+        if (!user) {
+          router.push('/login');
+          if (active) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        const { data, error: offersError } = await sb
+          .from('offers')
+          .select(
+            'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )',
+          )
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (offersError) {
+          throw offersError;
+        }
+
+        if (active) {
+          setOffers(Array.isArray(data) ? (data as Offer[]) : []);
+        }
+      } catch (error) {
+        console.error('Failed to load offers', error);
+        const message = error instanceof Error
+          ? error.message
+          : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+        showToast({
+          title: 'Ajánlatok betöltése sikertelen',
+          description: message,
+          variant: 'error',
+        });
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    };
+
+    loadOffers();
+
+    return () => {
+      active = false;
+    };
+  }, [router, sb, showToast]);
 
   const industries = useMemo(() => {
     const s = new Set<string>();
@@ -164,11 +206,19 @@ export default function DashboardPage() {
     try {
       const { error } = await sb.from('offers').update(patch).eq('id', offer.id);
       if (error) {
-        console.error('Offer status update failed', error);
-        alert('Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.');
-        return;
+        throw error;
       }
       setOffers((prev) => prev.map((item) => (item.id === offer.id ? { ...item, ...patch } : item)));
+    } catch (error) {
+      console.error('Offer status update failed', error);
+      const message = error instanceof Error
+        ? error.message
+        : 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.';
+      showToast({
+        title: 'Állapot frissítése sikertelen',
+        description: message,
+        variant: 'error',
+      });
     } finally {
       setUpdatingId(null);
     }

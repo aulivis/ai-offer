@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
+import { useToast } from './ToastProvider';
 
 const navLinks = [
   { href: '/dashboard', label: 'Ajánlatok' },
@@ -22,18 +23,24 @@ export type AppFrameProps = {
 
 export default function AppFrame({ title, description, actions, children }: AppFrameProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [authState, setAuthState] = useState<'checking' | 'ready'>('checking');
+  const { showToast } = useToast();
+  const supabase = useMemo(() => supabaseBrowser(), []);
 
   useEffect(() => {
     let active = true;
 
     (async () => {
       try {
-        const { data: { user } } = await supabaseBrowser().auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          throw error;
+        }
 
         if (!user) {
-          const redirectTo = typeof window !== 'undefined' ? window.location.pathname : '/login';
-          window.location.href = `/login?redirect=${encodeURIComponent(redirectTo)}`;
+          const redirectTo = pathname || '/login';
+          router.push(`/login?redirect=${encodeURIComponent(redirectTo)}`);
           return;
         }
 
@@ -42,16 +49,22 @@ export default function AppFrame({ title, description, actions, children }: AppF
         }
       } catch (error) {
         console.error('Failed to verify authentication status.', error);
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
+        const message = error instanceof Error
+          ? error.message
+          : 'Ismeretlen hiba történt a hitelesítés során.';
+        showToast({
+          title: 'Hitelesítés sikertelen',
+          description: message,
+          variant: 'error',
+        });
+        router.push('/login');
       }
     })();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [pathname, router, showToast, supabase]);
 
   if (authState !== 'ready') {
     return (
