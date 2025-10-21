@@ -3,13 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans",
+               "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+               "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +17,59 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  .prose h1, .prose h2, .prose h3 { color: #111; }
+  .prose p, .prose li { color: #222; }
+}
+
+@layer utilities {
+  .propono-doc {
+    font-family: Arial, sans-serif;
+    color: #111;
+  }
+  .propono-doc h1 {
+    font-size: 20px;
+    margin: 0 0 8px;
+    font-weight: 700;
+  }
+  .propono-doc h2 {
+    font-size: 16px;
+    margin: 18px 0 8px;
+    font-weight: 700;
+  }
+  .propono-doc p {
+    line-height: 1.5;
+    margin: 6px 0;
+  }
+  .propono-doc ul {
+    margin: 8px 0 8px 20px;
+    list-style: disc;
+  }
+  .propono-doc table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  .propono-doc th,
+  .propono-doc td {
+    border: 1px solid #e5e5e5;
+    padding: 8px;
+    text-align: left;
+  }
+  .propono-doc .muted {
+    color: #666;
+    font-size: 12px;
+    margin-top: 24px;
+  }
 }
