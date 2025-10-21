@@ -1,29 +1,132 @@
 'use client';
 
-type Props = { step: number; total: number; labels: string[] };
-export default function StepIndicator({ step, total, labels }: Props) {
+import type { ReactNode, SVGProps } from 'react';
+
+export type StepIndicatorStatus = 'completed' | 'current' | 'upcoming';
+export type StepIndicatorTone = 'default' | 'error';
+
+export type StepIndicatorStep = {
+  label: string;
+  status: StepIndicatorStatus;
+  tone?: StepIndicatorTone;
+  onSelect?: () => void;
+};
+
+type Props = {
+  steps: StepIndicatorStep[];
+};
+
+function classNames(...values: Array<string | false | null | undefined>) {
+  return values.filter(Boolean).join(' ');
+}
+
+function CheckIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" strokeWidth={1.5} stroke="currentColor" aria-hidden="true" {...props}>
+      <path d="M5 10.5 8.5 14 15 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ExclamationIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" strokeWidth={1.5} stroke="currentColor" aria-hidden="true" {...props}>
+      <path d="M10 5v6" strokeLinecap="round" />
+      <path d="M10 14.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function renderBadge(step: StepIndicatorStep): ReactNode {
+  const tone = step.tone ?? 'default';
+
+  if (tone === 'error') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-rose-600">
+        Hiányos
+      </span>
+    );
+  }
+
+  if (step.status === 'completed') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+        Kész
+      </span>
+    );
+  }
+
+  if (step.status === 'current') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+        Folyamatban
+      </span>
+    );
+  }
+
+  return null;
+}
+
+export default function StepIndicator({ steps }: Props) {
   return (
     <ol className="flex flex-wrap items-center gap-4">
-      {Array.from({ length: total }).map((_, i) => {
-        const active = i + 1 <= step;
-        const current = i + 1 === step;
+      {steps.map((step, index) => {
+        const tone = step.tone ?? 'default';
+        const clickable = step.status === 'completed' && typeof step.onSelect === 'function';
+
+        const circleClasses = classNames(
+          'grid h-10 w-10 place-items-center rounded-full border text-sm font-medium transition',
+          tone === 'error'
+            ? 'border-rose-300 bg-rose-50 text-rose-600'
+            : step.status === 'completed'
+              ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
+              : step.status === 'current'
+                ? 'border-slate-900 bg-white text-slate-900 shadow-sm'
+                : 'border-slate-200 bg-white text-slate-400',
+        );
+
+        const labelClasses = classNames(
+          'text-sm transition-colors',
+          tone === 'error'
+            ? 'font-semibold text-rose-600'
+            : step.status === 'current'
+              ? 'font-semibold text-slate-900'
+              : step.status === 'completed'
+                ? 'text-slate-700'
+                : 'text-slate-400',
+        );
+
+        const indicatorContent: ReactNode = (() => {
+          if (tone === 'error' && step.status !== 'completed') {
+            return <ExclamationIcon className="h-5 w-5" />;
+          }
+
+          if (step.status === 'completed') {
+            return <CheckIcon className="h-5 w-5" />;
+          }
+
+          return index + 1;
+        })();
+
         return (
-          <li key={i} className="flex items-center gap-3">
-            <span
-              className={`grid h-9 w-9 place-items-center rounded-full border text-sm font-medium transition ${
-                active ? 'border-slate-900 bg-slate-900 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-400'
-              }`}
+          <li key={index} className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={clickable ? step.onSelect : undefined}
+              disabled={!clickable}
+              aria-current={step.status === 'current' ? 'step' : undefined}
+              className={classNames(
+                'flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/40',
+                clickable ? 'cursor-pointer' : 'cursor-default',
+              )}
             >
-              {i + 1}
-            </span>
-            <span
-              className={`text-sm ${
-                current ? 'font-semibold text-slate-900' : active ? 'text-slate-600' : 'text-slate-400'
-              }`}
-            >
-              {labels[i] || `Lépés ${i + 1}`}
-            </span>
-            {i < total - 1 && <span className="h-px w-10 rounded bg-slate-200" />}
+              <span className={circleClasses}>{indicatorContent}</span>
+              <span className="flex flex-col items-start gap-1">
+                <span className={labelClasses}>{step.label}</span>
+                {renderBadge(step)}
+              </span>
+            </button>
+            {index < steps.length - 1 && <span className="h-px w-10 rounded bg-slate-200" aria-hidden="true" />}
           </li>
         );
       })}
