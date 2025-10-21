@@ -101,6 +101,7 @@ export default function NewOfferWizard() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout|null>(null);
   const previewAbortRef = useRef<AbortController|null>(null);
+  const previewRequestIdRef = useRef(0);
 
   // edit on step 3
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -164,21 +165,21 @@ export default function NewOfferWizard() {
 
   // === Preview hívó ===
   async function callPreview() {
+    const nextRequestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = nextRequestId;
+
+    if (previewAbortRef.current) {
+      previewAbortRef.current.abort();
+      previewAbortRef.current = null;
+    }
+
     if (!form.title && !form.description) {
-      if (previewAbortRef.current) {
-        previewAbortRef.current.abort();
-        previewAbortRef.current = null;
-      }
       setPreviewLoading(false);
       return;
     }
 
     let controller: AbortController | null = null;
     try {
-      if (previewAbortRef.current) {
-        previewAbortRef.current.abort();
-      }
-
       setPreviewLoading(true);
 
       const { data: session } = await sb.auth.getSession();
@@ -242,9 +243,11 @@ export default function NewOfferWizard() {
             if (payload.type === 'delta' || payload.type === 'done') {
               if (typeof payload.html === 'string') {
                 latestHtml = payload.html;
-                setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
-                if (payload.type === 'done') {
-                  setEditedHtml((prev) => prev || (payload.html || ''));
+                if (previewRequestIdRef.current === nextRequestId) {
+                  setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
+                  if (payload.type === 'done') {
+                    setEditedHtml((prev) => prev || (payload.html || ''));
+                  }
                 }
               }
             } else if (payload.type === 'error') {
@@ -256,7 +259,7 @@ export default function NewOfferWizard() {
         }
       }
 
-      if (!latestHtml) {
+      if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
         setPreviewHtml('<p>(nincs előnézet)</p>');
       }
     } catch (error) {
@@ -264,11 +267,11 @@ export default function NewOfferWizard() {
       if (typeof error === 'object' && error && 'name' in error && (error as { name?: string }).name === 'AbortError') return;
       console.error('Előnézet hiba:', error);
     } finally {
-      const shouldClear = !controller || previewAbortRef.current === controller;
+      const isLatest = previewRequestIdRef.current === nextRequestId;
       if (previewAbortRef.current === controller) {
         previewAbortRef.current = null;
       }
-      if (shouldClear) {
+      if (isLatest) {
         setPreviewLoading(false);
       }
     }
