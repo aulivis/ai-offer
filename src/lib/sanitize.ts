@@ -1,9 +1,54 @@
-// Utility functions for sanitizing user-provided content.  These helpers
-// provide a minimal level of protection against cross‑site scripting (XSS)
-// attacks by escaping dangerous characters and stripping script tags from
-// HTML.  In a production environment you should prefer a well‑tested
-// sanitization library such as `sanitize-html` or DOMPurify.  For the
-// purposes of this MVP we implement simple helpers locally.
+import sanitizeHtml from 'sanitize-html';
+
+// Utility functions for sanitizing user-provided content. These helpers
+// provide a consistent layer of protection against cross‑site scripting
+// (XSS) by escaping dangerous characters in plain text and normalising any
+// HTML fragments through a vetted sanitizer (`sanitize-html`).
+
+const HTML_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: [
+    'a',
+    'b',
+    'blockquote',
+    'br',
+    'em',
+    'div',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'hr',
+    'i',
+    'li',
+    'ol',
+    'p',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'table',
+    'tbody',
+    'td',
+    'tfoot',
+    'th',
+    'thead',
+    'tr',
+    'u',
+    'ul',
+  ],
+  allowedAttributes: {
+    a: ['href', 'title', 'target', 'rel'],
+    td: ['colspan', 'rowspan'],
+    th: ['colspan', 'rowspan'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  allowedSchemesByTag: {
+    a: ['http', 'https', 'mailto'],
+  },
+  allowProtocolRelative: false,
+};
 
 /**
  * Escape special characters in a plain string to prevent it from being
@@ -34,18 +79,17 @@ export function sanitizeInput(input: string | undefined | null): string {
 }
 
 /**
- * Remove any <script>...</script> blocks from a string of HTML.  This
- * provides a basic layer of defence against malicious scripts embedded
- * inside AI‑generated or user‑supplied HTML.  It does not attempt to
- * whitelist tags or attributes; for more robust sanitization consider
- * using a dedicated library.
+ * Sanitize a fragment of HTML using a strict allowlist so it can be safely
+ * persisted or rendered. Any elements or attributes not in
+ * {@link HTML_SANITIZE_OPTIONS} are stripped, and dangerous URI schemes are
+ * rejected.
  *
  * @param html The raw HTML to sanitize.
- * @returns Sanitized HTML with script tags removed.
+ * @returns Sanitized HTML that conforms to the allowlist.
  */
 export function sanitizeHTML(html: string | undefined | null): string {
   if (!html) return '';
-  // Remove <script> tags and their contents.  The regex uses a non‑greedy
-  // match to ensure nested tags are removed properly.
-  return String(html).replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  return sanitizeHtml(String(html), HTML_SANITIZE_OPTIONS);
 }
+
+export { HTML_SANITIZE_OPTIONS };
