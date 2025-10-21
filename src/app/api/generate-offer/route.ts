@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/app/lib/supabaseServer';
-import { summarize, PriceRow } from '@/app/lib/pricing';
+// Use shared pricing utilities and HTML template helpers.  The
+// summarization and table HTML generation are centralised in
+// `app/lib/pricing.ts`, and the full document template lives in
+// `app/lib/htmlTemplate.ts`.
+import { PriceRow, priceTableHtml } from '@/app/lib/pricing';
 import { offerHtml } from '@/app/lib/htmlTemplate';
 import OpenAI from 'openai';
 import puppeteer from 'puppeteer';
 import { v4 as uuid } from 'uuid';
 import { Buffer } from 'buffer';
+import { envServer } from '@/env.server';
+import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
+import { getCurrentUser, getUserProfile } from '@/lib/services/user';
+import { getOrInitUsage, incrementOfferCount } from '@/lib/services/usage';
 
 export const runtime = 'nodejs';
 
+// System prompt for our OpenAI assistant.  See report for details on
+// structure and style guidelines.
 const SYSTEM_PROMPT = `
 Te egy magyar üzleti ajánlatíró asszisztens vagy.
 Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
@@ -22,6 +32,9 @@ Ne találj ki árakat; az árképzés külön jelenik meg az alkalmazásban.
 
 export async function POST(req: NextRequest) {
   try {
+    // Parse and sanitize the incoming JSON body.  Sanitizing early
+    // prevents any malicious scripts or HTML fragments from reaching
+    // our AI prompts or being persisted in the database.
     const body = await req.json();
     const {
       title,
@@ -30,7 +43,7 @@ export async function POST(req: NextRequest) {
       deadline,
       language = 'hu',
       brandVoice = 'friendly',
-      style = 'detailed', // 'compact' | 'detailed'
+      style = 'detailed',
       prices = [],
       aiOverrideHtml,
       clientId,
@@ -58,45 +71,24 @@ export async function POST(req: NextRequest) {
     const access_token = authHeader.split(' ')[1];
 
     const sb = supabaseServer();
-    const { data: userData, error: getUserErr } = await sb.auth.getUser(access_token);
-    if (getUserErr) {
-      console.error('Supabase getUser error:', getUserErr.message || getUserErr);
-      return NextResponse.json({ error: 'Auth failed: token ellenőrzés hibás' }, { status: 401 });
-    }
-    const user = userData?.user;
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid user: érvénytelen token vagy más projekthez tartozik' },
-        { status: 401 }
-      );
+    // Use service helper to fetch current user or throw
+    let user;
+    try {
+      user = await getCurrentUser(sb, access_token);
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message || 'Invalid user' }, { status: 401 });
     }
 
     // ---- Limit (havi) ----
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-    const monthStr = monthStart.toISOString().slice(0, 10);
 
-    let { data: usage } = await sb
-      .from('usage_counters')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    // Fetch usage counter (initialize if missing) and profile info
+    const { usage, isNewPeriod } = await getOrInitUsage(sb, user.id);
+    const profile = await getUserProfile(sb, user.id);
 
-    if (!usage) {
-      await sb.from('usage_counters').insert({
-        user_id: user.id, period_start: monthStr, offers_generated: 0
-      });
-      const res = await sb.from('usage_counters').select('*').eq('user_id', user.id).maybeSingle();
-      usage = res.data || { user_id: user.id, period_start: monthStr, offers_generated: 0 };
-    }
-
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
     const plan = (profile?.plan as 'free' | 'starter' | 'pro' | undefined) ?? 'free';
     const limit = plan === 'pro' ? Number.POSITIVE_INFINITY : plan === 'starter' ? 20 : 5;
 
-    const isNewMonth = usage.period_start !== monthStr;
-    const currentCount = isNewMonth ? 0 : usage.offers_generated || 0;
+    const currentCount = isNewPeriod ? 0 : usage.offers_generated || 0;
 
     if (currentCount >= limit) {
       return NextResponse.json(
@@ -108,27 +100,37 @@ export async function POST(req: NextRequest) {
     // ---- AI szöveg (override elsőbbség) ----
     let aiHtml = '';
     if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
-      aiHtml = aiOverrideHtml.trim();
+      // Sanitize override HTML to strip scripts
+      aiHtml = sanitizeHTML(aiOverrideHtml.trim());
     } else {
-      if (!process.env.OPENAI_API_KEY) {
+      // Check for OpenAI API key via typed env helper
+      if (!envServer.OPENAI_API_KEY) {
         return NextResponse.json(
           { error: 'OPENAI_API_KEY hiányzik az .env.local fájlból.' },
           { status: 500 }
         );
       }
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
 
       const styleAddon =
         style === 'compact'
           ? 'Stílus: rövid, lényegretörő, 3–5 bekezdés és néhány felsorolás, sallang nélkül.'
           : 'Stílus: részletes, mégis jól tagolt; tömör bekezdések és áttekinthető felsorolások.';
 
+      // Sanitize user inputs before passing to OpenAI
+      const safeTitle = sanitizeInput(title);
+      const safeIndustry = sanitizeInput(industry);
+      const safeDescription = sanitizeInput(description);
+      const safeDeadline = sanitizeInput(deadline || '—');
+      const safeLanguage = sanitizeInput(language);
+      const safeBrand = sanitizeInput(brandVoice);
+
       const userPrompt = `
-Nyelv: ${language}
-Hangnem: ${brandVoice}
-Iparág: ${industry}
-Projekt leírás: ${description}
-Határidő: ${deadline || '—'}
+Nyelv: ${safeLanguage}
+Hangnem: ${safeBrand}
+Iparág: ${safeIndustry}
+Projekt leírás: ${safeDescription}
+Határidő: ${safeDeadline}
 ${styleAddon}
 Ne találj ki árakat, az árképzés külön jelenik meg.
 `;
@@ -142,7 +144,9 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           ],
           temperature: 0.4,
         });
-        aiHtml = completion.choices[0]?.message?.content?.trim() ?? '<p>(nincs tartalom)</p>';
+        aiHtml = sanitizeHTML(
+          completion.choices[0]?.message?.content?.trim() ?? '<p>(nincs tartalom)</p>'
+        );
       } catch (e: any) {
         console.error('OpenAI error:', e?.message || e);
         return NextResponse.json(
@@ -154,50 +158,21 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     // ---- Ár tábla HTML ----
     const rows: PriceRow[] = prices || [];
-    const totals = summarize(rows);
-
-    const priceTableHtml = `
-      <table>
-        <thead>
-          <tr>
-            <th>Tétel</th>
-            <th>Mennyiség</th>
-            <th>Egység</th>
-            <th>Egységár (HUF)</th>
-            <th>ÁFA %</th>
-            <th>Összesen (nettó)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr>
-              <td>${r.name || ''}</td>
-              <td>${r.qty || 0}</td>
-              <td>${r.unit || ''}</td>
-              <td>${(r.unitPrice ?? 0).toLocaleString('hu-HU')}</td>
-              <td>${r.vat ?? 0}</td>
-              <td>${(((r.qty || 0) * (r.unitPrice || 0)) || 0).toLocaleString('hu-HU')}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-        <tfoot>
-          <tr><td colspan="5"><b>Nettó összesen</b></td><td><b>${totals.net.toLocaleString('hu-HU')} Ft</b></td></tr>
-          <tr><td colspan="5">ÁFA</td><td>${totals.vat.toLocaleString('hu-HU')} Ft</td></tr>
-          <tr><td colspan="5"><b>Bruttó összesen</b></td><td><b>${totals.gross.toLocaleString('hu-HU')} Ft</b></td></tr>
-        </tfoot>
-      </table>
-    `;
+    // Use shared price table HTML builder.  This returns a complete
+    // `<table>` element including header, body and footer with totals.
+    const priceTable = priceTableHtml(rows);
 
     // ---- PDF render ----
     const offerId = uuid();
     let pdfUrl: string | null = null;
 
     try {
+      // Build the full HTML for PDF using sanitized pieces
       const html = offerHtml({
-        title: title || 'Árajánlat',
-        companyName: profile?.company_name || '',
+        title: sanitizeInput(title || 'Árajánlat'),
+        companyName: sanitizeInput(profile?.company_name || ''),
         aiBodyHtml: aiHtml,
-        priceTableHtml,
+        priceTableHtml: priceTable,
       });
 
       const browser = await puppeteer.launch({
@@ -231,10 +206,10 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     await sb.from('offers').insert({
       id: offerId,
       user_id: user.id,
-      title,
-      industry,
+      title: sanitizeInput(title),
+      industry: sanitizeInput(industry),
       recipient_id: clientId || null,
-      inputs: { description, deadline, language, brandVoice, style },
+      inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },
       ai_text: aiHtml,
       price_json: rows,
       pdf_url: pdfUrl,
@@ -242,15 +217,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     });
 
     // ---- számláló frissítés ----
-    if (isNewMonth) {
-      await sb.from('usage_counters').upsert({
-        user_id: user.id, period_start: monthStr, offers_generated: 1
-      });
-    } else {
-      await sb.from('usage_counters')
-        .update({ offers_generated: currentCount + 1 })
-        .eq('user_id', user.id);
-    }
+    // Atomically increment the usage counter via the service helper
+    await incrementOfferCount(sb, user.id, currentCount, isNewPeriod);
 
     return NextResponse.json({
       ok: true,

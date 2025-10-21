@@ -1,25 +1,75 @@
-export function offerHtml(params: {
+/**
+ * Build a complete HTML document for the generated offer PDF.  This
+ * helper encapsulates the structure and inline CSS so that the PDF
+ * generation logic in the API route can focus on business logic.  The
+ * AI‑generated body (`aiBodyHtml`) and the price table (`priceTableHtml`)
+ * are assumed to be sanitized already.
+ */
+
+export interface OfferHtmlProps {
   title: string;
-  companyName?: string;
-  aiBodyHtml: string;   // <<< fontos: AI szöveg ehhez a kulcshoz kötve
+  companyName: string;
+  aiBodyHtml: string;
   priceTableHtml: string;
-}) {
-  const { title, companyName, aiBodyHtml, priceTableHtml } = params;
-  return `<!doctype html><html><head>
-<meta charset="utf-8" />
-<style>
-  body { font-family: Arial, sans-serif; padding: 28px; color:#111; }
-  h1 { font-size:20px; margin-bottom:8px; }
-  h2 { font-size:16px; margin-top:18px; }
-  table { width:100%; border-collapse: collapse; margin-top:12px; }
-  th, td { border:1px solid #e5e5e5; padding:8px; text-align:left; }
-  .muted { color:#666; font-size:12px; margin-top:24px; }
-</style></head><body>
-  <h1>${title || 'Árajánlat'}</h1>
-  ${companyName ? `<div class="muted">${companyName}</div>` : ``}
-  <div>${aiBodyHtml}</div>
-  <h2>Árkalkuláció</h2>
-  ${priceTableHtml}
-  <div class="muted">Megjegyzés: AI által generált tartalom; kiküldés előtt ellenőrizze.</div>
-</body></html>`;
+}
+
+export function offerHtml({ title, companyName, aiBodyHtml, priceTableHtml }: OfferHtmlProps): string {
+  return `
+    <!DOCTYPE html>
+    <html lang="hu">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            color: #1a1a1a;
+          }
+          header {
+            text-align: right;
+            margin-bottom: 2rem;
+          }
+          h1 {
+            font-size: 24px;
+            margin: 0;
+          }
+          .company {
+            font-size: 14px;
+            color: #555;
+          }
+          .content {
+            margin-top: 1rem;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+          }
+          th {
+            background-color: #f5f5f5;
+          }
+          tfoot td {
+            font-weight: bold;
+          }
+        </style>
+      </head>
+      <body>
+        <header>
+          <div class="company">${companyName}</div>
+          <h1>${title}</h1>
+        </header>
+        <div class="content">
+          ${aiBodyHtml}
+        </div>
+        ${priceTableHtml}
+      </body>
+    </html>
+  `;
 }

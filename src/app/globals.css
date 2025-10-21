@@ -1,75 +1,33 @@
+/* Tailwind v4 mód: import + reference */
 @import "tailwindcss";
+@reference "tailwindcss/utilities";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Világos/sötét mód meta */
+:root { color-scheme: light; }
+:root.dark,
+[data-theme="dark"] { color-scheme: dark; }
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans",
-               "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-               "Courier New", monospace;
+/* Alap háttér + szöveg (utility-k @apply-olva, most már működik) */
+html, body {
+  @apply bg-slate-50 text-slate-900;
+}
+.dark html, .dark body,
+[data-theme="dark"] body {
+  @apply bg-ink-900 text-slate-200;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Finom tipográfia */
+.tabular { font-variant-numeric: tabular-nums; }
 
-@layer base {
-  html {
-    color-scheme: light;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-sans);
-  }
+/* Linkek */
+a { @apply text-brand-blue-500 hover:text-brand-blue-600; }
 
-  .prose h1, .prose h2, .prose h3 { color: #111; }
-  .prose p, .prose li { color: #222; }
-}
+/* Kártya */
+.card { @apply rounded-lg bg-white shadow-card border border-slate-200; }
+.dark .card { @apply bg-ink-900 border-slate-700; }
 
-@layer utilities {
-  .propono-doc {
-    font-family: Arial, sans-serif;
-    color: #111;
-  }
-  .propono-doc h1 {
-    font-size: 20px;
-    margin: 0 0 8px;
-    font-weight: 700;
-  }
-  .propono-doc h2 {
-    font-size: 16px;
-    margin: 18px 0 8px;
-    font-weight: 700;
-  }
-  .propono-doc p {
-    line-height: 1.5;
-    margin: 6px 0;
-  }
-  .propono-doc ul {
-    margin: 8px 0 8px 20px;
-    list-style: disc;
-  }
-  .propono-doc table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 12px;
-  }
-  .propono-doc th,
-  .propono-doc td {
-    border: 1px solid #e5e5e5;
-    padding: 8px;
-    text-align: left;
-  }
-  .propono-doc .muted {
-    color: #666;
-    font-size: 12px;
-    margin-top: 24px;
-  }
+/* Sticky CTA sáv (wizard) */
+.sticky-cta {
+  @apply fixed bottom-0 inset-x-0 bg-white/80 backdrop-blur border-t border-slate-200 py-3 px-4;
 }
+.dark .sticky-cta { @apply bg-ink-900/80 border-slate-700; }
