@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { envClient } from '@/env.client';
+import AppFrame from '@/components/AppFrame';
 
 const STARTER_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
@@ -33,8 +34,19 @@ export default function BillingPage() {
         body: JSON.stringify({ priceId, email })
       });
       if (!resp.ok) {
-        const j = await resp.json().catch(()=> ({} as any));
-        alert(j.error || 'Nem sikerült elindítani a fizetést.');
+        let message = 'Nem sikerült elindítani a fizetést.';
+        try {
+          const payload: unknown = await resp.json();
+          if (payload && typeof payload === 'object' && 'error' in payload) {
+            const errorValue = (payload as { error?: unknown }).error;
+            if (typeof errorValue === 'string' && errorValue.trim()) {
+              message = errorValue;
+            }
+          }
+        } catch {
+          // ignore JSON parse errors
+        }
+        alert(message);
         setLoading(null);
         return;
       }
@@ -49,82 +61,76 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-semibold">Propono előfizetés</h1>
-        <p className="text-gray-600 mt-2">
-          Válaszd ki a csomagot. A fizetés biztonságosan, a Stripe felületén történik.
-        </p>
-
+    <AppFrame
+      title="Előfizetés"
+      description="Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést."
+    >
+      <div className="space-y-8">
         {status === 'success' && (
-          <div className="mt-4 p-3 rounded-lg bg-green-100 text-green-800">
-            Sikeres fizetés! A csomagod hamarosan frissül.
+          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 px-5 py-4 text-sm font-medium text-emerald-700">
+            Sikeres fizetés! A csomagod néhány percen belül frissül.
           </div>
         )}
         {status === 'cancel' && (
-          <div className="mt-4 p-3 rounded-lg bg-yellow-100 text-yellow-800">
-            A fizetést megszakítottad. Próbáld újra, ha készen állsz.
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+            A fizetés megszakadt. Próbáld újra, amikor készen állsz a váltásra.
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-6 mt-8">
-          {/* Propono Start */}
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <div className="text-sm font-medium text-gray-500">Belépő csomag</div>
-            <h2 className="text-2xl font-semibold mt-1">Propono Start</h2>
-            <p className="text-gray-600 mt-2">
-              5 automatikusan generált, professzionális AI-ajánlat havonta.
-              Letisztult PDF, tételes árkalkuláció.
+        <section className="grid gap-6 md:grid-cols-2">
+          <article className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Belépő csomag</div>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Start</h2>
+            <p className="mt-3 text-sm text-slate-500">
+              5 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és tételes árkalkuláció kis csapatoknak.
             </p>
-            <div className="mt-4">
-              <span className="text-3xl font-bold">1 490</span>{' '}
-              <span className="text-base text-gray-600">Ft / hó</span>
+            <div className="mt-6 flex items-baseline gap-2 text-slate-900">
+              <span className="text-3xl font-semibold">1 490</span>
+              <span className="text-sm text-slate-500">Ft / hó</span>
             </div>
-            <ul className="mt-4 text-sm text-gray-700 space-y-1">
+            <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
               <li>• 5 ajánlat / hónap</li>
               <li>• PDF export</li>
-              <li>• Alap sablonok</li>
+              <li>• Alap sablonok és logófeltöltés</li>
             </ul>
             <button
               onClick={() => startCheckout(STARTER_PRICE)}
               disabled={loading === STARTER_PRICE}
-              className="mt-6 w-full rounded-lg bg-black text-white py-2"
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading === STARTER_PRICE ? 'Átirányítás…' : 'Propono Start megrendelése'}
             </button>
-          </div>
+          </article>
 
-          {/* Propono Pro */}
-          <div className="rounded-2xl border bg-white p-6 shadow-sm ring-2 ring-black/5">
-            <div className="text-sm font-medium text-purple-600">Népszerű</div>
-            <h2 className="text-2xl font-semibold mt-1">Propono Pro</h2>
-            <p className="text-gray-600 mt-2">
-              Korlátlan ajánlatgenerálás, márkázott PDF, fejlett sablonok és prioritásos támogatás.
-              Ügynökségeknek és növekvő csapatoknak.
-            </p>
-            <div className="mt-4">
-              <span className="text-3xl font-bold">6 990</span>{' '}
-              <span className="text-base text-gray-600">Ft / hó</span>
+          <article className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-lg ring-1 ring-slate-900/5">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+              Népszerű választás
             </div>
-            <ul className="mt-4 text-sm text-gray-700 space-y-1">
-              <li>• Korlátlan ajánlat</li>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900">Propono Pro</h2>
+            <p className="mt-3 text-sm text-slate-500">
+              Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonkönyvtár és prioritásos támogatás növekvő csapatoknak.
+            </p>
+            <div className="mt-6 flex items-baseline gap-2 text-slate-900">
+              <span className="text-3xl font-semibold">6 990</span>
+              <span className="text-sm text-slate-500">Ft / hó</span>
+            </div>
+            <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
+              <li>• Korlátlan ajánlat & verziókövetés</li>
               <li>• Márkázott PDF & sablonkönyvtár</li>
-              <li>• Prioritásos AI-szövegírási beállítások</li>
+              <li>• Prioritásos AI-szöveg finomhangolás</li>
             </ul>
             <button
               onClick={() => startCheckout(PRO_PRICE)}
               disabled={loading === PRO_PRICE}
-              className="mt-6 w-full rounded-lg bg-black text-white py-2"
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading === PRO_PRICE ? 'Átirányítás…' : 'Propono Pro megrendelése'}
             </button>
-          </div>
-        </div>
+          </article>
+        </section>
 
-        <div className="mt-8 text-sm text-gray-500">
-          Bejelentkezett e-mail: {email ?? '—'}
-        </div>
+        <p className="text-sm text-slate-500">Bejelentkezett e-mail: <span className="font-medium text-slate-700">{email ?? '—'}</span></p>
       </div>
-    </div>
+    </AppFrame>
   );
 }

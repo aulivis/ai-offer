@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import StepIndicator from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
+import AppFrame from '@/components/AppFrame';
 
 type Step1Form = {
   industry: string;
@@ -66,6 +67,10 @@ function isOfferSections(value: unknown): value is OfferSections {
   );
 }
 
+const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const textareaClass = 'w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
+
 export default function NewOfferWizard() {
   const sb = supabaseBrowser();
   const [step, setStep] = useState(1);
@@ -126,6 +131,7 @@ export default function NewOfferWizard() {
         .eq('user_id', user.id).order('company_name');
       setClientList(cl || []);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -371,178 +377,312 @@ export default function NewOfferWizard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      <StepIndicator step={step} total={3} labels={['Projekt részletek', 'Tételek', 'Előnézet & PDF']} />
+    <AppFrame
+      title="Új ajánlat"
+      description="Kövesd a háromlépéses varázslót: add meg a projekt részleteit, igazítsd a tételeket, majd generáld le a PDF-et."
+    >
+      <div className="space-y-8">
+        <div className={`${cardClass} space-y-4`}>
+          <StepIndicator step={step} total={3} labels={['Projekt részletek', 'Tételek', 'Előnézet & PDF']} />
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              <span className="h-2 w-2 rounded-full bg-slate-400" />
+              AI asszisztens
+            </span>
+            <span>Az előnézet néhány másodperc alatt frissül, amint megadod a kulcsadatokat.</span>
+          </div>
+        </div>
 
-      {step === 1 && (
-        <section className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            {/* Iparág stb. (mint korábban) */}
-            <div>
-              <label className="text-sm text-neutral-700">Iparág</label>
-              <select className="mt-1 border rounded p-2 w-full"
-                value={form.industry}
-                onChange={e=>setForm(f=>({...f, industry:e.target.value}))}
-                onBlur={onBlurTrigger}>
-                {availableIndustries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-sm text-neutral-700">Ajánlat címe</label>
-              <input className="mt-1 border rounded p-2 w-full" placeholder="Pl. Weboldal fejlesztés"
-                value={form.title} onChange={e=>setForm(f=>({...f, title:e.target.value}))} onBlur={onBlurTrigger}/>
-            </div>
-
-            <div>
-              <label className="text-sm text-neutral-700">Rövid projektleírás</label>
-              <textarea className="mt-1 border rounded p-2 w-full h-28"
-                value={form.description} onChange={e=>setForm(f=>({...f, description:e.target.value}))} onBlur={onBlurTrigger}/>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div><label className="text-sm text-neutral-700">Határidő</label>
-                <input className="mt-1 border rounded p-2 w-full" value={form.deadline}
-                  onChange={e=>setForm(f=>({...f, deadline:e.target.value}))} onBlur={onBlurTrigger}/>
-              </div>
-              <div><label className="text-sm text-neutral-700">Nyelv</label>
-                  <select className="mt-1 border rounded p-2 w-full" value={form.language}
-                    onChange={e=>setForm(f=>({...f, language:e.target.value as Step1Form['language']}))} onBlur={onBlurTrigger}>
-                  <option value="hu">Magyar</option><option value="en">English</option>
-                </select>
-              </div>
-              <div><label className="text-sm text-neutral-700">Hangnem</label>
-                  <select className="mt-1 border rounded p-2 w-full" value={form.brandVoice}
-                    onChange={e=>setForm(f=>({...f, brandVoice:e.target.value as Step1Form['brandVoice']}))} onBlur={onBlurTrigger}>
-                  <option value="friendly">Barátságos</option><option value="formal">Formális</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Stílus */}
-            <div className="pt-1">
-              <div className="text-sm text-neutral-700 mb-1">Ajánlat stílusa</div>
-              <div className="flex gap-3">
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="radio" name="style" checked={form.style==='compact'}
-                    onChange={()=>setForm(f=>({...f, style:'compact'}))}/> Kompakt
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="radio" name="style" checked={form.style==='detailed'}
-                    onChange={()=>setForm(f=>({...f, style:'detailed'}))}/> Részletes
-                </label>
-              </div>
-            </div>
-
-            {/* Címzett (opcionális) */}
-            <div className="rounded-xl border p-3 bg-white">
-              <div className="font-medium mb-2">Címzett (opcionális)</div>
-              <div className="relative">
-                <input className="border rounded p-2 w-full" placeholder="Cégnév"
-                  value={client.company_name}
-                  onChange={(e)=>{ setClientId(undefined); setClient(c=>({...c, company_name:e.target.value})); setShowClientDrop(true); }}
-                  onFocus={()=>setShowClientDrop(true)} />
-                {showClientDrop && filteredClients.length>0 && (
-                  <div className="absolute z-10 bg-white border rounded mt-1 w-full max-h-48 overflow-auto">
-                    {filteredClients.map(c=>(
-                      <div key={c.id} className="px-3 py-2 hover:bg-neutral-50 cursor-pointer"
-                        onMouseDown={()=>pickClient(c)}>
-                        {c.company_name} {c.email ? <span className="text-xs text-neutral-500">– {c.email}</span> : null}
-                      </div>
+        {step === 1 && (
+          <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className={`${cardClass} space-y-6`}>
+              <div className="grid gap-4">
+                <label className="grid gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Iparág</span>
+                  <select
+                    className={inputFieldClass}
+                    value={form.industry}
+                    onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}
+                    onBlur={onBlurTrigger}
+                  >
+                    {availableIndustries.map(ind => (
+                      <option key={ind} value={ind}>{ind}</option>
                     ))}
+                  </select>
+                </label>
+
+                <label className="grid gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Ajánlat címe</span>
+                  <input
+                    className={inputFieldClass}
+                    placeholder="Pl. Weboldal fejlesztés"
+                    value={form.title}
+                    onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                    onBlur={onBlurTrigger}
+                  />
+                </label>
+
+                <label className="grid gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Rövid projektleírás</span>
+                  <textarea
+                    className={`${textareaClass} h-32`}
+                    value={form.description}
+                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                    onBlur={onBlurTrigger}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <label className="grid gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Határidő</span>
+                  <input
+                    className={inputFieldClass}
+                    value={form.deadline}
+                    onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
+                    onBlur={onBlurTrigger}
+                  />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Nyelv</span>
+                  <select
+                    className={inputFieldClass}
+                    value={form.language}
+                    onChange={e => setForm(f => ({ ...f, language: e.target.value as Step1Form['language'] }))}
+                    onBlur={onBlurTrigger}
+                  >
+                    <option value="hu">Magyar</option>
+                    <option value="en">English</option>
+                  </select>
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Hangnem</span>
+                  <select
+                    className={inputFieldClass}
+                    value={form.brandVoice}
+                    onChange={e => setForm(f => ({ ...f, brandVoice: e.target.value as Step1Form['brandVoice'] }))}
+                    onBlur={onBlurTrigger}
+                  >
+                    <option value="friendly">Barátságos</option>
+                    <option value="formal">Formális</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="space-y-3">
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Ajánlat stílusa</span>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    { value: 'compact' as const, label: 'Kompakt', description: 'Tömör, lényegre törő ajánlat' },
+                    { value: 'detailed' as const, label: 'Részletes', description: 'Kibontott háttérrel és indoklással' },
+                  ].map(option => {
+                    const active = form.style === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, style: option.value }))}
+                        className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${active ? 'border-slate-900 bg-slate-900 text-white shadow-sm' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+                      >
+                        <span className="font-semibold">{option.label}</span>
+                        <span className="mt-1 block text-xs text-inherit opacity-80">{option.description}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">Címzett (opcionális)</p>
+                    <p className="text-xs text-slate-500">Elmentjük az ügyfelet, így később gyorsabban kitölthető.</p>
                   </div>
+                </div>
+                <div className="relative">
+                  <input
+                    className={inputFieldClass}
+                    placeholder="Cégnév"
+                    value={client.company_name}
+                    onChange={(e) => { setClientId(undefined); setClient(c => ({ ...c, company_name: e.target.value })); setShowClientDrop(true); }}
+                    onFocus={() => setShowClientDrop(true)}
+                  />
+                  {showClientDrop && filteredClients.length > 0 && (
+                    <div className="absolute z-10 mt-2 max-h-48 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                      {filteredClients.map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-slate-50"
+                          onMouseDown={() => pickClient(c)}
+                        >
+                          <span className="font-medium text-slate-700">{c.company_name}</span>
+                          {c.email ? <span className="text-xs text-slate-400">{c.email}</span> : null}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    className={inputFieldClass}
+                    placeholder="Cím"
+                    value={client.address || ''}
+                    onChange={e => setClient(c => ({ ...c, address: e.target.value }))}
+                  />
+                  <input
+                    className={inputFieldClass}
+                    placeholder="Adószám"
+                    value={client.tax_id || ''}
+                    onChange={e => setClient(c => ({ ...c, tax_id: e.target.value }))}
+                  />
+                  <input
+                    className={inputFieldClass}
+                    placeholder="Képviselő neve"
+                    value={client.representative || ''}
+                    onChange={e => setClient(c => ({ ...c, representative: e.target.value }))}
+                  />
+                  <input
+                    className={inputFieldClass}
+                    placeholder="Telefon"
+                    value={client.phone || ''}
+                    onChange={e => setClient(c => ({ ...c, phone: e.target.value }))}
+                  />
+                  <input
+                    className={`${inputFieldClass} sm:col-span-2`}
+                    placeholder="E-mail"
+                    value={client.email || ''}
+                    onChange={e => setClient(c => ({ ...c, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className={`${cardClass} space-y-4`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
+                <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
+              </div>
+              <div className="min-h-[260px] rounded-2xl border border-slate-200 bg-white/90 p-4 propono-doc">
+                {previewLoading ? (
+                  <div className="text-sm text-slate-500">AI írja az ajánlatodat…</div>
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
                 )}
               </div>
+              <p className="text-xs text-slate-500">Az előnézet automatikusan frissül, amikor befejezed a mezők kitöltését.</p>
+            </div>
+          </section>
+        )}
 
-              <div className="grid md:grid-cols-2 gap-2 mt-2">
-                <input className="border rounded p-2" placeholder="Cím"
-                  value={client.address || ''} onChange={e=>setClient(c=>({...c, address:e.target.value}))}/>
-                <input className="border rounded p-2" placeholder="Adószám"
-                  value={client.tax_id || ''} onChange={e=>setClient(c=>({...c, tax_id:e.target.value}))}/>
-                <input className="border rounded p-2" placeholder="Képviselő neve"
-                  value={client.representative || ''} onChange={e=>setClient(c=>({...c, representative:e.target.value}))}/>
-                <input className="border rounded p-2" placeholder="Telefon"
-                  value={client.phone || ''} onChange={e=>setClient(c=>({...c, phone:e.target.value}))}/>
-                <input className="border rounded p-2 md:col-span-2" placeholder="E-mail"
-                  value={client.email || ''} onChange={e=>setClient(c=>({...c, email:e.target.value}))}/>
+        {step === 2 && (
+          <section className="space-y-6">
+            {filteredActivities.length > 0 && (
+              <div className={`${cardClass} space-y-3`}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-semibold text-slate-700">Gyors tétel beszúrása</h2>
+                    <p className="text-xs text-slate-500">Iparág: {form.industry}</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {filteredActivities.map(a => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => setRows(r => [{ name: a.name, qty: 1, unit: a.unit || 'db', unitPrice: Number(a.default_unit_price || 0), vat: Number(a.default_vat || 27) }, ...r])}
+                      className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                    >
+                      + {a.name}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <p className="text-xs text-neutral-500 mt-2">
-                Ha megadod, elmentjük az ügyfelet és később automatikusan felkínáljuk.
-              </p>
-            </div>
-          </div>
+            )}
 
-          {/* Preview */}
-          <div className="rounded-2xl bg-white p-4 border">
-            <div className="text-sm text-neutral-600">AI előnézet (formázott)</div>
-            <div className="mt-2 min-h-48 border rounded p-3 propono-doc">
-              {previewLoading ? <div className="text-neutral-500">AI írja az ajánlatodat…</div>
-                : <div dangerouslySetInnerHTML={{ __html: previewHtml }} />}
-            </div>
-            <p className="text-xs text-neutral-500 mt-2">
-              Az előnézet onBlur-kor és gépelés után 0,8 mp csendet követően frissül. <b>A szöveg a 3. lépésben szerkeszthető lesz.</b>
-            </p>
-          </div>
-        </section>
-      )}
+            <EditablePriceTable rows={rows} onChange={setRows} />
 
-      {step === 2 && (
-        <section className="space-y-3">
-          {/* iparág szerinti gyors tételek */}
-          {filteredActivities.length > 0 && (
-            <div className="rounded-xl border bg-white p-3">
-              <div className="text-sm text-neutral-700 mb-2">Gyors tétel beszúrása (iparág: {form.industry})</div>
-              <div className="flex flex-wrap gap-2">
-                {filteredActivities.map(a => (
-                  <button key={a.id} type="button"
-                    onClick={()=>setRows(r => [{ name:a.name, qty:1, unit:a.unit||'db', unitPrice:Number(a.default_unit_price||0), vat:Number(a.default_vat||27) }, ...r])}
-                    className="px-2 py-1 rounded border text-sm bg-white hover:bg-neutral-50">+ {a.name}</button>
-                ))}
+            <div className="flex flex-col items-end gap-1 text-sm text-slate-500">
+              <span><strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')} Ft</span>
+              <span>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</span>
+              <span><strong className="text-slate-700">Bruttó:</strong> {totals.gross.toLocaleString('hu-HU')} Ft</span>
+            </div>
+          </section>
+        )}
+
+        {step === 3 && (
+          <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className={`${cardClass} space-y-4`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-slate-700">AI-szöveg szerkesztése</h2>
+                <span className="text-xs font-medium text-slate-400">Ez kerül a PDF-be</span>
               </div>
+              <div
+                className="min-h-[300px] rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm text-slate-700 propono-doc"
+                contentEditable
+                suppressContentEditableWarning
+                onInput={(e) => setEditedHtml((e.target as HTMLDivElement).innerHTML)}
+                dangerouslySetInnerHTML={{ __html: editedHtml || previewHtml }}
+              />
+              <p className="text-xs text-slate-500">Tartsd meg a címsorokat és listákat a jobb olvashatóságért.</p>
             </div>
-          )}
 
-          <EditablePriceTable rows={rows} onChange={setRows} />
-          <div className="text-right text-sm text-neutral-700">
-            <div>Nettó: {totals.net.toLocaleString('hu-HU')} Ft</div>
-            <div>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</div>
-            <div><b>Bruttó: {totals.gross.toLocaleString('hu-HU')} Ft</b></div>
-          </div>
-        </section>
-      )}
-
-      {step === 3 && (
-        <section className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-2xl bg-white p-4 border">
-            <div className="text-sm text-neutral-600">AI-szöveg szerkesztése (ez kerül a PDF-be)</div>
-            <div className="mt-2 min-h-48 border rounded p-3 propono-doc"
-              contentEditable suppressContentEditableWarning
-              onInput={(e)=>setEditedHtml((e.target as HTMLDivElement).innerHTML)}
-              dangerouslySetInnerHTML={{ __html: editedHtml || previewHtml }} />
-            <p className="text-xs text-neutral-500 mt-2">Félkövér, címsorok, listák megmaradnak.</p>
-          </div>
-
-          <div className="rounded-2xl bg-white p-4 border space-y-3">
-            <div className="font-medium">Összegzés</div>
-            <div className="text-sm text-neutral-700">
-              <div><b>Cím:</b> {form.title || '—'}</div>
-              <div><b>Iparág:</b> {form.industry}</div>
-              <div><b>Címzett:</b> {client.company_name || '—'}</div>
-              <div><b>Stílus:</b> {form.style === 'compact' ? 'Kompakt' : 'Részletes'}</div>
-              <div className="mt-2"><b>Bruttó összesen:</b> {totals.gross.toLocaleString('hu-HU')} Ft</div>
+            <div className={`${cardClass} space-y-4`}>
+              <div>
+                <h2 className="text-sm font-semibold text-slate-700">Összegzés</h2>
+                <p className="mt-1 text-xs text-slate-500">A PDF generálása után az ajánlat megjelenik a listádban.</p>
+              </div>
+              <dl className="grid gap-2 text-sm text-slate-600">
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">Cím</dt>
+                  <dd className="font-medium text-slate-700">{form.title || '—'}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">Iparág</dt>
+                  <dd className="font-medium text-slate-700">{form.industry}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">Címzett</dt>
+                  <dd className="font-medium text-slate-700">{client.company_name || '—'}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-400">Stílus</dt>
+                  <dd className="font-medium text-slate-700">{form.style === 'compact' ? 'Kompakt' : 'Részletes'}</dd>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+                  <dt className="text-slate-500">Bruttó összesen</dt>
+                  <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
+                </div>
+              </dl>
+              <button
+                onClick={generate}
+                disabled={loading}
+                className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {loading ? 'Generálás…' : 'PDF generálása és mentés'}
+              </button>
             </div>
-            <button onClick={generate} disabled={loading} className="w-full bg-black text-white rounded p-2">
-              {loading ? 'Generálás…' : 'PDF generálása és mentés'}
+          </section>
+        )}
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            onClick={() => setStep(s => Math.max(1, s - 1))}
+            disabled={step === 1}
+            className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:border-slate-200 disabled:text-slate-300 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
+          >
+            Vissza
+          </button>
+          {step < 3 && (
+            <button
+              onClick={() => setStep(s => Math.min(3, s + 1))}
+              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            >
+              Tovább
             </button>
-          </div>
-        </section>
-      )}
-
-      {/* navigáció */}
-      <div className="flex items-center justify-between">
-        <button onClick={()=>setStep(s=>Math.max(1, s-1))} disabled={step===1} className="px-4 py-2 border rounded disabled:opacity-50">Vissza</button>
-        <div>{step<3 && <button onClick={()=>setStep(s=>Math.min(3, s+1))} className="px-4 py-2 bg-black text-white rounded">Tovább</button>}</div>
+          )}
+        </div>
       </div>
-    </div>
+    </AppFrame>
   );
 }

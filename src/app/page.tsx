@@ -1,200 +1,182 @@
-export default function Home() {
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 -z-10 opacity-80">
-        <div className="absolute -top-40 left-1/2 h-[620px] w-[620px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.35),_transparent_65%)]" />
-        <div className="absolute top-1/3 -left-32 h-64 w-64 rounded-full bg-[radial-gradient(circle_at_center,_rgba(192,132,252,0.35),_transparent_65%)]" />
-        <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-[radial-gradient(circle_at_center,_rgba(96,165,250,0.25),_transparent_65%)]" />
-      </div>
+import Link from 'next/link';
 
-      <div className="mx-auto flex max-w-6xl flex-col px-6 pb-20 pt-10 md:pt-16">
-        <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3 text-sm uppercase tracking-[0.28em] text-slate-400">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/70 shadow-lg ring-1 ring-slate-700">
-              <span className="text-base font-semibold text-slate-100">P</span>
-            </span>
-            Propono AI ajánlatkészítő
-          </div>
-          <nav className="flex items-center gap-4 text-sm text-slate-300">
-            <a href="/dashboard" className="transition hover:text-white">
-              Termék
-            </a>
-            <a href="/billing" className="transition hover:text-white">
-              Csomagok
-            </a>
-            <a href="/login" className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-slate-200 transition hover:border-white hover:text-white">
-              Bejelentkezés
-            </a>
+export default function Home() {
+  const features = [
+    {
+      title: 'Egységes arculat minden ajánlatban',
+      description: 'Mentett sablonok, logó és vizuális elemek automatikusan kerülnek bele minden dokumentumba.'
+    },
+    {
+      title: 'Percek helyett másodpercek',
+      description: 'Az AI feldolgozza a briefet, javaslatot tesz a szövegre és tételes kalkulációt készít.'
+    },
+    {
+      title: 'Megosztható és mérhető',
+      description: 'Nyomon követheted az ajánlat megnyitását, elfogadását és visszajelzéseit.'
+    }
+  ];
+
+  const steps = [
+    {
+      title: '1. Projekt részletek',
+      description: 'Add meg az ügyfél igényeit, az iparágat és a fontos határidőket.'
+    },
+    {
+      title: '2. Tételek & árazás',
+      description: 'Válassz sablonokból vagy add meg saját tételeidet, automatikus ÁFA-számítással.'
+    },
+    {
+      title: '3. Előnézet & küldés',
+      description: 'Finomhangold az AI által készített szöveget, majd generáld le a PDF-et egy kattintással.'
+    }
+  ];
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
+
+      <div className="relative">
+        <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
+          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-800">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 bg-white font-display text-base">P</span>
+            Propono
+          </Link>
+          <nav className="flex items-center gap-3 text-sm text-slate-500">
+            <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/dashboard">Termék</Link>
+            <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/billing">Csomagok</Link>
+            <Link className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900" href="/login">Bejelentkezés</Link>
           </nav>
         </header>
 
-        <main className="mt-16 grid gap-16 md:mt-20">
-          <section className="grid items-start gap-14 md:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:gap-20">
-            <div className="flex flex-col gap-7">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-800 bg-slate-900/70 px-4 py-1 text-xs font-medium text-slate-300 shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-sky-400" />
-                Új: 30 másodperces ajánlatgenerálás
-              </div>
-              <h1 className="text-4xl font-semibold leading-tight text-white md:text-5xl lg:text-6xl">
-                Profi, magyar nyelvű árajánlat <span className="text-sky-300">AI asszisztenssel</span>
+        <main className="mx-auto flex max-w-6xl flex-col gap-20 px-6 pb-20">
+          <section className="grid gap-12 lg:grid-cols-[0.95fr_1fr] lg:items-center">
+            <div className="space-y-7">
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Új: 30 másodperces ajánlatgenerálás
+              </span>
+              <h1 className="text-4xl font-semibold leading-tight text-slate-900 md:text-5xl">
+                Profi, magyar nyelvű árajánlat <span className="text-slate-500">AI asszisztenssel</span>
               </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-slate-300">
-                A <strong>Propono</strong> megírja, megszerkeszti és PDF-be rendezi az ajánlataidat. Gyorsabb ügyfélkommunikáció, egységes márkaélmény és mérhető eredmények – minden vállalkozásnak, aki komolyan veszi a növekedést.
+              <p className="max-w-xl text-lg leading-relaxed text-slate-600">
+                A Propono megírja, megszerkeszti és PDF-be rendezi az ajánlataidat. Gyors ügyfélkommunikáció, egységes márkaélmény és mérhető eredmények – mindez a csapatod munkáját támogatva.
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <a
+                <Link
                   href="/new"
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-sky-500/20 transition hover:bg-slate-100"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
                 >
                   Ajánlat készítése
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/billing"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:border-white hover:text-white"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
                 >
                   Csomagok megtekintése
-                </a>
+                </Link>
               </div>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
-                Próbáld ki kártya nélkül – Propono Start: 5 ajánlat / hó
-              </p>
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Próbáld ki kártya nélkül – Propono Start: 5 ajánlat / hó</p>
             </div>
 
-            <div className="relative flex flex-col gap-5 rounded-3xl border border-slate-800/60 bg-slate-900/70 p-6 backdrop-blur">
-              <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
-                <span>Élő előnézet</span>
-                <span className="rounded-full border border-sky-500/40 px-3 py-1 text-[10px] font-semibold text-sky-300">PDF draft</span>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 shadow-inner shadow-slate-900/40">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-slate-200">„Webfejlesztési árajánlat”</p>
-                    <p className="text-xs text-slate-500">Generálva 18 másodperce</p>
-                  </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-300">
-                    <span className="h-2 w-2 rounded-full bg-sky-400" />
-                    AI kész
-                  </span>
+            <div className="relative">
+              <div className="absolute inset-0 -translate-x-6 rounded-[32px] bg-gradient-to-br from-slate-200 via-white to-white blur-2xl" />
+              <div className="relative rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl">
+                <div className="flex items-center justify-between text-xs uppercase tracking-[0.24em] text-slate-400">
+                  <span>Előnézet</span>
+                  <span className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold text-slate-600">PDF draft</span>
                 </div>
-                <div className="mt-5 space-y-4 text-sm text-slate-300">
-                  <div className="flex items-start justify-between rounded-lg border border-slate-800/80 bg-slate-900/80 p-4">
-                    <div>
-                      <p className="font-medium text-slate-200">Projekt összefoglaló</p>
-                      <p className="mt-1 text-xs text-slate-500">Személyre szabott intro, ami vállalkozásod hangján szól</p>
+                <div className="mt-4 space-y-4 text-sm text-slate-600">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">„Webfejlesztési árajánlat”</p>
+                        <p className="text-xs text-slate-400">Generálva 18 másodperce</p>
+                      </div>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-[11px] font-medium text-white">
+                        <span className="h-2 w-2 rounded-full bg-emerald-400" /> AI kész
+                      </span>
                     </div>
-                    <svg className="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0-6 6m6-6-6-6" />
-                    </svg>
                   </div>
-                  <div className="flex items-start justify-between rounded-lg border border-slate-800/80 bg-slate-900/80 p-4">
-                    <div>
-                      <p className="font-medium text-slate-200">Tételes kalkuláció</p>
-                      <p className="mt-1 text-xs text-slate-500">Nettó, ÁFA és bruttó számítás automatikusan</p>
+                  {['Projekt összefoglaló', 'Tételes kalkuláció', 'Letölthető PDF'].map((item) => (
+                    <div key={item} className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4">
+                      <div>
+                        <p className="font-semibold text-slate-800">{item}</p>
+                        <p className="text-xs text-slate-500">Személyre szabott tartalom a márkád hangján</p>
+                      </div>
+                      <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0-6 6m6-6-6-6" />
+                      </svg>
                     </div>
-                    <svg className="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0-6 6m6-6-6-6" />
-                    </svg>
-                  </div>
-                  <div className="flex items-start justify-between rounded-lg border border-slate-800/80 bg-slate-900/80 p-4">
-                    <div>
-                      <p className="font-medium text-slate-200">Letölthető PDF</p>
-                      <p className="mt-1 text-xs text-slate-500">Logó, színek, aláírás – minden egy dokumentumban</p>
-                    </div>
-                    <svg className="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0-6 6m6-6-6-6" />
-                    </svg>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="grid gap-8 rounded-3xl border border-slate-800/60 bg-slate-900/50 p-8 backdrop-blur md:grid-cols-3">
-            {[
-              {
-                title: 'Egységes arculat minden ajánlatban',
-                description:
-                  'Mentett sablonok, logó és vizuális elemek automatikusan kerülnek bele minden dokumentumba.',
-              },
-              {
-                title: 'Percek helyett másodpercek',
-                description:
-                  'A mesterséges intelligencia feldolgozza a briefet, felajánlja a szöveget, és azonnal kalkulálja a tételeket.',
-              },
-              {
-                title: 'Megosztható és mérhető',
-                description:
-                  'Az ügyfél megnyitása, elfogadása és visszajelzése is követhető – így tudod, hol tart az üzlet.',
-              },
-            ].map((item) => (
-              <div key={item.title} className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-6 shadow-inner shadow-slate-900/30">
-                <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                <p className="text-sm text-slate-300">{item.description}</p>
+          <section className="grid gap-6 lg:grid-cols-3">
+            {features.map((feature) => (
+              <div key={feature.title} className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-slate-900">{feature.title}</h3>
+                <p className="mt-2 text-sm text-slate-500">{feature.description}</p>
               </div>
             ))}
           </section>
 
-          <section className="grid items-center gap-10 rounded-3xl border border-slate-800/60 bg-slate-900/50 p-10 backdrop-blur md:grid-cols-[0.65fr_1fr]">
+          <section className="grid gap-10 rounded-[32px] border border-slate-200 bg-white/80 p-10 shadow-sm lg:grid-cols-[0.6fr_1fr]">
             <div className="space-y-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Hogyan működik</p>
-              <h2 className="text-3xl font-semibold text-white md:text-4xl">
-                Három lépés a jobb ügyfélélményhez
-              </h2>
-              <p className="text-sm text-slate-300">
-                A Propono végigvisz a brief felvételétől a jóváhagyott ajánlatig. Tiszta folyamat, amit az ügyfelek is szeretnek.
-              </p>
+              <span className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500">Hogyan működik</span>
+              <h2 className="text-3xl font-semibold text-slate-900">Három lépés a jobb ügyfélélményhez</h2>
+              <p className="text-sm text-slate-500">A Propono végigvisz a brief felvételétől a jóváhagyott ajánlatig. Tiszta folyamat, amit az ügyfelek is szeretnek.</p>
             </div>
-            <ol className="space-y-6 text-sm text-slate-200">
-              {[
-                {
-                  title: '1. Add meg az ügyfél igényeit',
-                  description:
-                    'Töltsd ki a rövid kérdőívet vagy másold be a briefet – a Propono felismeri a kulcspontokat.',
-                },
-                {
-                  title: '2. Finomhangold a szöveget',
-                  description:
-                    'A generált ajánlatot élőben szerkesztheted, hozzáadhatsz saját tételeket és megjegyzéseket.',
-                },
-                {
-                  title: '3. Küldd és kövesd az elfogadást',
-                  description:
-                    'Egy kattintással PDF vagy megosztható link. Értesítést kapsz, ha az ügyfél megnyitja vagy elfogadja.',
-                },
-              ].map((step) => (
-                <li key={step.title} className="flex gap-4 rounded-2xl border border-slate-800/70 bg-slate-950/60 p-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-900 font-semibold text-slate-200">
+            <ol className="space-y-4">
+              {steps.map((step) => (
+                <li key={step.title} className="flex gap-4 rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-sm font-semibold text-slate-600">
                     {step.title.slice(0, 2)}
                   </div>
                   <div className="space-y-1">
-                    <p className="text-base font-semibold text-white">{step.title}</p>
-                    <p className="text-sm text-slate-300">{step.description}</p>
+                    <p className="text-base font-semibold text-slate-900">{step.title}</p>
+                    <p className="text-sm text-slate-500">{step.description}</p>
                   </div>
                 </li>
               ))}
             </ol>
           </section>
 
-          <section className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-gradient-to-r from-sky-500/20 via-sky-400/10 to-transparent p-10">
-            <div className="space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-200">Ajánlatkészítés újragondolva</p>
-              <h2 className="text-3xl font-semibold text-white md:text-4xl">Kezdd el ma, és ments meg órákat minden héten</h2>
-              <p className="max-w-xl text-sm text-slate-200">
-                Ingyenes kipróbálás, bármikor lemondható. A Propono AI valós ügyféladatokon tanult, így te a szakmai munkára koncentrálhatsz.
-              </p>
+          <section className="grid gap-8 lg:grid-cols-[1fr_0.6fr]">
+            <div className="rounded-[32px] border border-slate-200 bg-white/90 p-8 shadow-sm">
+              <h3 className="text-2xl font-semibold text-slate-900">Szerkeszthető, márkázott PDF percek alatt</h3>
+              <p className="mt-3 text-sm text-slate-500">Logó, színek, aláírás – minden automatikusan kerül az ajánlatba. A generált dokumentumot élőben szerkesztheted, majd elküldheted megosztható linken vagy PDF-ben.</p>
+              <div className="mt-6 grid gap-3 text-sm text-slate-500 md:grid-cols-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="font-semibold text-slate-800">Dinamikus sablonok</p>
+                  <p>Mentett iparágakhoz igazított blokkstruktúrák.</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="font-semibold text-slate-800">Átlátható státuszok</p>
+                  <p>Kövesd, mikor nyitotta meg vagy fogadta el az ügyfél.</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-6 text-sm text-slate-500">
+              „A Propono-val a csapatunk 70%-kal gyorsabban készít ajánlatokat, miközben az ügyfelek egységes márkaélményt kapnak.”
+              <p className="mt-4 font-semibold text-slate-800">— Kiss Júlia, ügynökségvezető</p>
+            </div>
+          </section>
+
+          <section className="rounded-[32px] border border-slate-200 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-10 text-white">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">Ajánlatkészítés újragondolva</span>
+                <h2 className="text-3xl font-semibold">Kezdd el ma, és ments meg órákat minden héten</h2>
+                <p className="max-w-xl text-sm text-white/70">Ingyenes kipróbálás, bármikor lemondható. A Propono AI valós ügyféladatokon tanult, így te a szakmai munkára koncentrálhatsz.</p>
+              </div>
               <div className="flex flex-wrap gap-3">
-                <a
-                  href="/new"
-                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-sky-500/30 transition hover:bg-slate-100"
-                >
+                <Link href="/new" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100">
                   Indítás ingyen
-                </a>
-                <a
-                  href="/dashboard"
-                  className="inline-flex items-center justify-center rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition hover:border-white"
-                >
+                </Link>
+                <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60">
                   Nézd meg a demót
-                </a>
+                </Link>
               </div>
             </div>
           </section>
