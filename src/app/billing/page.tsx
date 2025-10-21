@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
+import { envClient } from '@/env.client';
 
-const STARTER_PRICE = process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
-const PRO_PRICE = process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
+const STARTER_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
+const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
 export default function BillingPage() {

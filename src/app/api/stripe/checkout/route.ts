@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { envServer } from '@/env.server';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,8 +13,8 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
-      success_url: `${process.env.APP_URL}/billing?status=success`,
-      cancel_url: `${process.env.APP_URL}/billing?status=cancel`,
+      success_url: `${envServer.APP_URL}/billing?status=success`,
+      cancel_url: `${envServer.APP_URL}/billing?status=cancel`,
     });
 
     return NextResponse.json({ url: session.url });
