@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
@@ -11,6 +13,9 @@ const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
 export default function BillingPage() {
   const supabase = useSupabase();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { status: authStatus, user } = useRequireAuth();
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
@@ -18,18 +23,25 @@ export default function BillingPage() {
   const [usage, setUsage] = useState<{ offersGenerated: number; periodStart: string | null } | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setStatus(params.get('status') || null);
+    setStatus(searchParams?.get('status') || null);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      return;
+    }
+
+    let active = true;
 
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { location.href = '/login'; return; }
-      setEmail(user?.email ?? null);
-
       const [{ data: profile }, { data: usageRow }] = await Promise.all([
         supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
         supabase.from('usage_counters').select('offers_generated, period_start').eq('user_id', user.id).maybeSingle(),
       ]);
+
+      if (!active) {
+        return;
+      }
 
       const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
       setPlan(rawPlan === 'starter' ? 'standard' : rawPlan);
@@ -37,8 +49,13 @@ export default function BillingPage() {
         offersGenerated: Number(usageRow?.offers_generated ?? 0),
         periodStart: usageRow?.period_start ?? null,
       });
+      setEmail(user.email ?? null);
     })();
-  }, [supabase]);
+
+    return () => {
+      active = false;
+    };
+  }, [authStatus, supabase, user]);
 
   async function startCheckout(priceId: string) {
     try {
@@ -66,7 +83,7 @@ export default function BillingPage() {
         return;
       }
       const { url } = await resp.json();
-      if (url) window.location.href = url;
+      if (url) router.push(url);
       else setLoading(null);
     } catch (e) {
       console.error(e);

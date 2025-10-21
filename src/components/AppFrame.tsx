@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { ReactNode, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { ReactNode, useEffect } from 'react';
 
 import { useToast } from './ToastProvider';
-import { useSupabase } from './SupabaseProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 const navLinks = [
   { href: '/dashboard', label: 'Ajánlatok' },
@@ -23,50 +23,22 @@ export type AppFrameProps = {
 
 export default function AppFrame({ title, description, actions, children }: AppFrameProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [authState, setAuthState] = useState<'checking' | 'ready'>('checking');
   const { showToast } = useToast();
-  const supabase = useSupabase();
+  const { error, status } = useRequireAuth();
 
   useEffect(() => {
-    let active = true;
+    if (!error) {
+      return;
+    }
+    console.error('Failed to verify authentication status.', error);
+    showToast({
+      title: 'Hitelesítés sikertelen',
+      description: error.message,
+      variant: 'error',
+    });
+  }, [error, showToast]);
 
-    (async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          throw error;
-        }
-
-        if (!user) {
-          const redirectTo = pathname || '/login';
-          router.push(`/login?redirect=${encodeURIComponent(redirectTo)}`);
-          return;
-        }
-
-        if (active) {
-          setAuthState('ready');
-        }
-      } catch (error) {
-        console.error('Failed to verify authentication status.', error);
-        const message = error instanceof Error
-          ? error.message
-          : 'Ismeretlen hiba történt a hitelesítés során.';
-        showToast({
-          title: 'Hitelesítés sikertelen',
-          description: message,
-          variant: 'error',
-        });
-        router.push('/login');
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, [pathname, router, showToast, supabase]);
-
-  if (authState !== 'ready') {
+  if (status !== 'authenticated') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
         <span className="text-sm font-medium">Betöltés…</span>

@@ -1,11 +1,11 @@
 'use client';
 
 import { ReactNode, useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Offer = {
   id: string;
@@ -126,9 +126,9 @@ function formatDate(value: string | null) {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const { showToast } = useToast();
   const sb = useSupabase();
+  const { status: authStatus, user } = useRequireAuth();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -173,23 +173,15 @@ export default function DashboardPage() {
   useEffect(() => {
     let active = true;
 
+    if (authStatus !== 'authenticated' || !user) {
+      return () => {
+        active = false;
+      };
+    }
+
     const loadInitialPage = async () => {
       setLoading(true);
       try {
-        const { data: { user }, error } = await sb.auth.getUser();
-        if (error) {
-          throw error;
-        }
-
-        if (!user) {
-          router.push('/login');
-          return;
-        }
-
-        if (!active) {
-          return;
-        }
-
         setUserId(user.id);
         const { items, count } = await fetchPage(user.id, 0);
         if (!active) {
@@ -220,7 +212,7 @@ export default function DashboardPage() {
     return () => {
       active = false;
     };
-  }, [fetchPage, router, sb, showToast]);
+  }, [authStatus, fetchPage, showToast, sb, user]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 
