@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import AppFrame from '@/components/AppFrame';
+import { useSupabase } from '@/components/SupabaseProvider';
 
 type Profile = {
   company_name?: string;
@@ -54,7 +54,7 @@ const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3
 const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
 
 export default function SettingsPage() {
-  const sb = supabaseBrowser();
+  const supabase = useSupabase();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -88,11 +88,11 @@ export default function SettingsPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { location.href = '/login'; return; }
       setEmail(user.email ?? null);
 
-      const { data: prof } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
       const industries = prof?.industries ?? [];
       setProfile({
         company_name: prof?.company_name ?? '',
@@ -107,25 +107,24 @@ export default function SettingsPage() {
       });
       setNewAct(prev => ({ ...prev, industries }));
 
-      const { data: list } = await sb.from('activities')
+      const { data: list } = await supabase.from('activities')
         .select('id,name,unit,default_unit_price,default_vat,industries')
         .eq('user_id', user.id).order('name');
       setActs((list as ActivityRow[]) || []);
 
       setLoading(false);
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [supabase]);
 
   async function saveProfile() {
     try {
       setSaving(true);
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
-      const { data, error } = await sb.from('profiles').upsert({
+      const { data, error } = await supabase.from('profiles').upsert({
         id: user.id,
         company_name: profile.company_name ?? '',
         company_address: profile.company_address ?? '',
@@ -165,7 +164,7 @@ export default function SettingsPage() {
         alert('A logó mérete legfeljebb 4 MB lehet.');
         return;
       }
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const ensureResp = await fetch('/api/storage/ensure-brand-bucket', { method: 'POST' });
       if (!ensureResp.ok) {
@@ -185,14 +184,14 @@ export default function SettingsPage() {
       }
       const extension = (file.name.split('.').pop() || 'png').toLowerCase();
       const path = `${user.id}/brand-logo.${extension}`;
-      const { error } = await sb.storage.from('brand-assets').upload(path, file, {
+      const { error } = await supabase.storage.from('brand-assets').upload(path, file, {
         upsert: true,
         contentType: file.type || 'image/png',
       });
       if (error) {
         throw error;
       }
-      const { data } = sb.storage.from('brand-assets').getPublicUrl(path);
+      const { data } = supabase.storage.from('brand-assets').getPublicUrl(path);
       const publicUrl = data?.publicUrl;
       if (publicUrl) {
         setProfile((prev) => ({ ...prev, brand_logo_url: publicUrl }));
@@ -220,9 +219,9 @@ export default function SettingsPage() {
     if (!newAct.name.trim()) { alert('Add meg a tevékenység nevét.'); return; }
     try {
       setActSaving(true);
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const ins = await sb.from('activities').insert({
+      const ins = await supabase.from('activities').insert({
         user_id: user.id,
         name: newAct.name.trim(),
         unit: newAct.unit || 'db',
@@ -237,7 +236,7 @@ export default function SettingsPage() {
   }
 
   async function deleteActivity(id: string) {
-    await sb.from('activities').delete().eq('id', id);
+    await supabase.from('activities').delete().eq('id', id);
     setActs(prev => prev.filter(a => a.id !== id));
   }
 

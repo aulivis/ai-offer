@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import StepIndicator from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
-import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
+import { useSupabase } from '@/components/SupabaseProvider';
 
 type Step1Form = {
   industry: string;
@@ -80,7 +80,7 @@ const textareaClass = 'w-full rounded-2xl border border-slate-200 bg-white px-3 
 const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
 
 export default function NewOfferWizard() {
-  const sb = supabaseBrowser();
+  const sb = useSupabase();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -151,8 +151,7 @@ export default function NewOfferWizard() {
         .eq('user_id', user.id).order('company_name');
       setClientList(cl || []);
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sb]);
 
   useEffect(() => {
     return () => {

@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
+import { useSupabase } from '@/components/SupabaseProvider';
 
 const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
 export default function BillingPage() {
+  const supabase = useSupabase();
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
@@ -21,14 +22,13 @@ export default function BillingPage() {
     setStatus(params.get('status') || null);
 
     (async () => {
-      const sb = supabaseBrowser();
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { location.href = '/login'; return; }
       setEmail(user?.email ?? null);
 
       const [{ data: profile }, { data: usageRow }] = await Promise.all([
-        sb.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
-        sb.from('usage_counters').select('offers_generated, period_start').eq('user_id', user.id).maybeSingle(),
+        supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
+        supabase.from('usage_counters').select('offers_generated, period_start').eq('user_id', user.id).maybeSingle(),
       ]);
 
       const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
@@ -38,7 +38,7 @@ export default function BillingPage() {
         periodStart: usageRow?.period_start ?? null,
       });
     })();
-  }, []);
+  }, [supabase]);
 
   async function startCheckout(priceId: string) {
     try {

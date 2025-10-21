@@ -1,11 +1,11 @@
 'use client';
 
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
-import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
+import { useSupabase } from '@/components/SupabaseProvider';
 
 type Offer = {
   id: string;
@@ -128,7 +128,7 @@ function formatDate(value: string | null) {
 export default function DashboardPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const sb = useMemo(() => supabaseBrowser(), []);
+  const sb = useSupabase();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
