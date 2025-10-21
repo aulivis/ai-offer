@@ -20,7 +20,7 @@ html, body {
 .tabular { font-variant-numeric: tabular-nums; }
 
 /* Linkek */
-a { @apply text-brand-blue-500 hover:text-brand-blue-600; }
+a { @apply text-inherit no-underline; }
 
 /* Kártya */
 .card { @apply rounded-lg bg-white shadow-card border border-slate-200; }

@@ -3,6 +3,7 @@ import { checkAndIncrementUsage } from '../services/usage';
 
 describe('checkAndIncrementUsage', () => {
   const rpc = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockClient = { rpc } as any;
 
   beforeEach(() => {

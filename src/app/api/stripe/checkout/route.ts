@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Stripe error:', err);
     return NextResponse.json({ error: 'Stripe session creation failed' }, { status: 500 });
   }

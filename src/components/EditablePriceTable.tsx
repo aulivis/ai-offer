@@ -17,9 +17,13 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
     return { net, vat, gross };
   }, [rows]);
 
-  const update = (idx: number, key: keyof PriceRow, val: any) => {
+  const update = (idx: number, key: keyof PriceRow, val: string | number) => {
     const next = [...rows];
-    (next[idx] as any)[key] = key === 'qty' || key === 'unitPrice' || key === 'vat' ? Number(val) : val;
+    if (key === 'qty' || key === 'unitPrice' || key === 'vat') {
+      next[idx][key] = Number(val) as PriceRow[typeof key];
+    } else {
+      next[idx][key] = String(val) as PriceRow[typeof key];
+    }
     onChange(next);
   };
 
@@ -27,48 +31,77 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
   const removeRow = (idx: number) => onChange(rows.filter((_, i) => i !== idx));
 
   return (
-    <div className="rounded-xl border bg-white overflow-hidden">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white/80 shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+        <table className="w-full text-sm text-slate-600">
+          <thead className="bg-slate-50 text-slate-500">
             <tr className="text-left">
-              <th className="p-3">Tétel</th>
-              <th className="p-3 w-24">Menny.</th>
-              <th className="p-3 w-24">Egység</th>
-              <th className="p-3 w-36">Egységár (Ft)</th>
-              <th className="p-3 w-24">ÁFA %</th>
-              <th className="p-3 w-36">Nettó össz.</th>
-              <th className="p-3 w-16"></th>
+              <th className="px-4 py-3 font-medium">Tétel</th>
+              <th className="w-24 px-4 py-3 font-medium">Menny.</th>
+              <th className="w-28 px-4 py-3 font-medium">Egység</th>
+              <th className="w-36 px-4 py-3 font-medium">Egységár (Ft)</th>
+              <th className="w-24 px-4 py-3 font-medium">ÁFA %</th>
+              <th className="w-36 px-4 py-3 text-right font-medium">Nettó össz.</th>
+              <th className="w-16 px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {rows.map((r, idx) => (
-              <tr key={idx} className="border-t">
-                <td className="p-2">
-                  <input className="w-full border rounded p-2" placeholder="Megnevezés"
-                    value={r.name} onChange={e=>update(idx, 'name', e.target.value)} />
+              <tr key={idx} className="border-t border-slate-100">
+                <td className="px-4 py-3">
+                  <input
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    placeholder="Megnevezés"
+                    value={r.name}
+                    onChange={(e) => update(idx, 'name', e.target.value)}
+                  />
                 </td>
-                <td className="p-2">
-                  <input type="number" min={0} className="w-full border rounded p-2"
-                    value={r.qty} onChange={e=>update(idx, 'qty', e.target.value)} />
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    value={r.qty}
+                    onChange={(e) => update(idx, 'qty', e.target.value)}
+                  />
                 </td>
-                <td className="p-2">
-                  <input className="w-full border rounded p-2" placeholder="db / óra / m²"
-                    value={r.unit} onChange={e=>update(idx, 'unit', e.target.value)} />
+                <td className="px-4 py-3">
+                  <input
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    placeholder="db / óra / m²"
+                    value={r.unit}
+                    onChange={(e) => update(idx, 'unit', e.target.value)}
+                  />
                 </td>
-                <td className="p-2">
-                  <input type="number" min={0} className="w-full border rounded p-2"
-                    value={r.unitPrice} onChange={e=>update(idx, 'unitPrice', e.target.value)} />
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    value={r.unitPrice}
+                    onChange={(e) => update(idx, 'unitPrice', e.target.value)}
+                  />
                 </td>
-                <td className="p-2">
-                  <input type="number" min={0} className="w-full border rounded p-2"
-                    value={r.vat} onChange={e=>update(idx, 'vat', e.target.value)} />
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    value={r.vat}
+                    onChange={(e) => update(idx, 'vat', e.target.value)}
+                  />
                 </td>
-                <td className="p-2 text-right pr-3">
-                  {((r.qty||0)*(r.unitPrice||0)).toLocaleString('hu-HU')}
+                <td className="px-4 py-3 text-right font-medium text-slate-700">
+                  {((r.qty || 0) * (r.unitPrice || 0)).toLocaleString('hu-HU')}
                 </td>
-                <td className="p-2 text-right">
-                  <button type="button" onClick={()=>removeRow(idx)} className="text-red-600 text-sm">Törlés</button>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    type="button"
+                    onClick={() => removeRow(idx)}
+                    className="text-xs font-medium text-rose-500 transition hover:text-rose-600"
+                  >
+                    Törlés
+                  </button>
                 </td>
               </tr>
             ))}
@@ -76,14 +109,18 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
         </table>
       </div>
 
-      <div className="flex items-center justify-between p-3">
-        <button type="button" onClick={addRow} className="px-3 py-1.5 border rounded">
-          + Tétel hozzáadása
+      <div className="flex flex-col gap-4 border-t border-slate-100 bg-white/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          onClick={addRow}
+          className="w-full rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 sm:w-auto"
+        >
+          + Új tétel
         </button>
-        <div className="text-sm">
-          <div><b>Nettó:</b> {totals.net.toLocaleString('hu-HU')} Ft</div>
-          <div>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</div>
-          <div><b>Bruttó:</b> {totals.gross.toLocaleString('hu-HU')} Ft</div>
+        <div className="grid gap-1 text-right text-sm text-slate-500">
+          <span><strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')} Ft</span>
+          <span>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</span>
+          <span><strong className="text-slate-700">Bruttó:</strong> {totals.gross.toLocaleString('hu-HU')} Ft</span>
         </div>
       </div>
     </div>

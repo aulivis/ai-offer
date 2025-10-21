@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font */
 // src/app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased">
+      <body className="bg-slate-50 font-sans text-slate-900 antialiased">
         {children}
       </body>
     </html>
