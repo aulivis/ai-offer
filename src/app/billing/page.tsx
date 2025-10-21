@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
@@ -13,6 +13,8 @@ export default function BillingPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
+  const [plan, setPlan] = useState<'free' | 'starter' | 'pro' | null>(null);
+  const [usage, setUsage] = useState<{ offersGenerated: number; periodStart: string | null } | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -21,7 +23,19 @@ export default function BillingPage() {
     (async () => {
       const sb = supabaseBrowser();
       const { data: { user } } = await sb.auth.getUser();
+      if (!user) { location.href = '/login'; return; }
       setEmail(user?.email ?? null);
+
+      const [{ data: profile }, { data: usageRow }] = await Promise.all([
+        sb.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
+        sb.from('usage_counters').select('offers_generated, period_start').eq('user_id', user.id).maybeSingle(),
+      ]);
+
+      setPlan((profile?.plan as 'free' | 'starter' | 'pro' | undefined) ?? 'free');
+      setUsage({
+        offersGenerated: Number(usageRow?.offers_generated ?? 0),
+        periodStart: usageRow?.period_start ?? null,
+      });
     })();
   }, []);
 
@@ -60,12 +74,68 @@ export default function BillingPage() {
     }
   }
 
+  const planLimit = useMemo(() => {
+    if (plan === 'pro') return null;
+    if (plan === 'starter') return 20;
+    return 5;
+  }, [plan]);
+
+  const offersThisMonth = usage?.offersGenerated ?? 0;
+  const remainingQuota = planLimit === null ? 'Korlátlan' : Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU');
+  const planLabels: Record<'free' | 'starter' | 'pro', string> = {
+    free: 'Ingyenes csomag',
+    starter: 'Propono Start',
+    pro: 'Propono Pro',
+  };
+
+  const periodStartDate = useMemo(() => {
+    if (!usage?.periodStart) return new Date();
+    const parsed = new Date(usage.periodStart);
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  }, [usage?.periodStart]);
+  const resetDate = new Date(periodStartDate.getFullYear(), periodStartDate.getMonth() + 1, 1);
+  const resetLabel = resetDate.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+
   return (
     <AppFrame
       title="Előfizetés"
       description="Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést."
     >
       <div className="space-y-8">
+        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-700">Aktuális csomag</h2>
+              <p className="text-xs text-slate-500">Állapotod és kvótáid havi bontásban.</p>
+            </div>
+            <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
+              {plan ? planLabels[plan] : '—'}
+            </span>
+          </div>
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Havi keret</dt>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{planLimit === null ? 'Korlátlan' : `${planLimit.toLocaleString('hu-HU')} ajánlat`}</dd>
+              <p className="mt-1 text-xs text-slate-500">Automatikus újraindulás minden hónapban.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">E hónapban létrehozva</dt>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{offersThisMonth.toLocaleString('hu-HU')} ajánlat</dd>
+              <p className="mt-1 text-xs text-slate-500">Az AI generált PDF-ek számát mutatja.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Felhasználható keret</dt>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuota}{planLimit === null ? '' : ' ajánlat'}</dd>
+              <p className="mt-1 text-xs text-slate-500">Generálások, amelyek még rendelkezésre állnak.</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Keret visszaállása</dt>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{resetLabel}</dd>
+              <p className="mt-1 text-xs text-slate-500">A számláló minden hónap első napján nullázódik.</p>
+            </div>
+          </dl>
+        </section>
+
         {status === 'success' && (
           <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 px-5 py-4 text-sm font-medium text-emerald-700">
             Sikeres fizetés! A csomagod néhány percen belül frissül.

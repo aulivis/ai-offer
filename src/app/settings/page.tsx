@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import AppFrame from '@/components/AppFrame';
 
@@ -11,6 +12,9 @@ type Profile = {
   company_phone?: string;
   company_email?: string;
   industries?: string[];
+  brand_logo_url?: string | null;
+  brand_color_primary?: string | null;
+  brand_color_secondary?: string | null;
 };
 
 type ActivityRow = {
@@ -39,6 +43,13 @@ function validateAddress(v: string) {
   return (v?.trim()?.length || 0) >= 8;
 }
 
+function normalizeColorHex(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
+  return `#${trimmed.slice(1).toUpperCase()}`;
+}
+
 const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
 const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
 
@@ -53,14 +64,25 @@ export default function SettingsPage() {
   const [newAct, setNewAct] = useState({ name: '', unit: 'db', price: 0, vat: 27, industries: [] as string[] });
   const [actSaving, setActSaving] = useState(false);
   const [newIndustry, setNewIndustry] = useState('');
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   const errors = useMemo(() => {
     const e: Record<string, string> = {};
     if (profile.company_phone && !validatePhoneHU(profile.company_phone)) e.phone = 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).';
     if (profile.company_tax_id && !validateTaxHU(profile.company_tax_id)) e.tax = 'Adószám formátum: 12345678-1-12';
     if (profile.company_address && !validateAddress(profile.company_address)) e.address = 'A cím legyen legalább 8 karakter.';
+    if (profile.brand_color_primary && !normalizeColorHex(profile.brand_color_primary)) {
+      e.brandPrimary = 'Adj meg egy #RRGGBB formátumú hex színt.';
+    }
+    if (profile.brand_color_secondary && !normalizeColorHex(profile.brand_color_secondary)) {
+      e.brandSecondary = 'Adj meg egy #RRGGBB formátumú hex színt.';
+    }
     return e;
   }, [profile]);
+
+  const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0F172A';
+  const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
 
   useEffect(() => {
     (async () => {
@@ -77,6 +99,9 @@ export default function SettingsPage() {
         company_phone: prof?.company_phone ?? '',
         company_email: prof?.company_email ?? (user.email ?? ''),
         industries,
+        brand_logo_url: prof?.brand_logo_url ?? null,
+        brand_color_primary: prof?.brand_color_primary ?? '#0F172A',
+        brand_color_secondary: prof?.brand_color_secondary ?? '#F3F4F6',
       });
       setNewAct(prev => ({ ...prev, industries }));
 
@@ -96,9 +121,68 @@ export default function SettingsPage() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
       if (Object.keys(errors).length) { alert('Kérjük, javítsd a piros mezőket.'); return; }
-      await sb.from('profiles').upsert({ id: user.id, ...profile }, { onConflict: 'id' });
+      const primary = normalizeColorHex(profile.brand_color_primary);
+      const secondary = normalizeColorHex(profile.brand_color_secondary);
+      await sb.from('profiles').upsert({
+        id: user.id,
+        company_name: profile.company_name ?? '',
+        company_address: profile.company_address ?? '',
+        company_tax_id: profile.company_tax_id ?? '',
+        company_phone: profile.company_phone ?? '',
+        company_email: profile.company_email ?? '',
+        industries: profile.industries ?? [],
+        brand_logo_url: profile.brand_logo_url ?? null,
+        brand_color_primary: primary,
+        brand_color_secondary: secondary,
+      }, { onConflict: 'id' });
       alert('Mentve!');
     } finally { setSaving(false); }
+  }
+
+  function triggerLogoUpload() {
+    logoInputRef.current?.click();
+  }
+
+  async function uploadLogo(file: File) {
+    setLogoUploading(true);
+    try {
+      const maxSize = 4 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('A logó mérete legfeljebb 4 MB lehet.');
+        return;
+      }
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const extension = (file.name.split('.').pop() || 'png').toLowerCase();
+      const path = `${user.id}/brand-logo.${extension}`;
+      const { error } = await sb.storage.from('brand-assets').upload(path, file, {
+        upsert: true,
+        contentType: file.type || 'image/png',
+      });
+      if (error) {
+        throw error;
+      }
+      const { data } = sb.storage.from('brand-assets').getPublicUrl(path);
+      const publicUrl = data?.publicUrl;
+      if (publicUrl) {
+        setProfile((prev) => ({ ...prev, brand_logo_url: publicUrl }));
+        alert('Logó feltöltve. Ne felejtsd el a mentést.');
+      }
+    } catch (error) {
+      console.error('Logo upload error', error);
+      alert('Nem sikerült feltölteni a logót. Próbáld újra.');
+    } finally {
+      setLogoUploading(false);
+    }
+  }
+
+  function handleLogoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadLogo(file).finally(() => {
+        if (e.target) e.target.value = '';
+      });
+    }
   }
 
   async function addActivity() {
@@ -295,6 +379,120 @@ export default function SettingsPage() {
           >
             {saving ? 'Mentés…' : 'Mentés'}
           </button>
+        </section>
+
+        <section className={`${cardClass} space-y-6`}>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Márka megjelenés</h2>
+            <p className="mt-1 text-sm text-slate-500">Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.</p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Elsődleges szín</span>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={primaryPreview}
+                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))}
+                  className="h-11 w-16 cursor-pointer rounded-md border border-slate-200 bg-white"
+                />
+                <input
+                  className={`${inputFieldClass} font-mono`}
+                  value={profile.brand_color_primary || ''}
+                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))}
+                  placeholder="#0F172A"
+                />
+              </div>
+              {errors.brandPrimary && <span className="text-xs text-rose-500">{errors.brandPrimary}</span>}
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Másodlagos szín</span>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={secondaryPreview}
+                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))}
+                  className="h-11 w-16 cursor-pointer rounded-md border border-slate-200 bg-white"
+                />
+                <input
+                  className={`${inputFieldClass} font-mono`}
+                  value={profile.brand_color_secondary || ''}
+                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))}
+                  placeholder="#F3F4F6"
+                />
+              </div>
+              {errors.brandSecondary && <span className="text-xs text-rose-500">{errors.brandSecondary}</span>}
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-4 lg:flex-row">
+            <div className="flex flex-1 items-start gap-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+              {profile.brand_logo_url ? (
+                // A kis méretű előnézethez nem szükséges képtömörítés, ezért marad a sima <img> elem.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={profile.brand_logo_url}
+                  alt="Feltöltött logó"
+                  className="h-16 w-16 flex-none rounded-lg border border-slate-200 bg-white object-contain p-1"
+                />
+              ) : (
+                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg border border-slate-200 bg-white text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                  Nincs logó
+                </div>
+              )}
+              <div className="flex-1 text-sm text-slate-500">
+                <p className="font-semibold text-slate-700">Logó feltöltése</p>
+                <p className="text-xs text-slate-400">PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={triggerLogoUpload}
+                    disabled={logoUploading}
+                    className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
+                  </button>
+                  {profile.brand_logo_url && (
+                    <a
+                      href={profile.brand_logo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                    >
+                      Megnyitás új lapon
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Minta előnézet</span>
+              <div
+                className="rounded-2xl border border-slate-200 p-4 shadow-inner"
+                style={{ background: secondaryPreview }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: primaryPreview }}>
+                  Céged neve
+                </p>
+                <p className="mt-2 text-base font-semibold" style={{ color: primaryPreview }}>
+                  Ajánlat címe
+                </p>
+                <p className="text-xs text-slate-600">Így jelenik meg a fejléced a generált dokumentumokban.</p>
+                <div className="mt-4 h-1.5 w-24 rounded-full" style={{ background: primaryPreview }} />
+              </div>
+            </div>
+          </div>
+
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml"
+            className="hidden"
+            onChange={handleLogoChange}
+          />
         </section>
 
         <section className={`${cardClass} space-y-6`}>

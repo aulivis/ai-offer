@@ -7,8 +7,13 @@ import { sanitizeInput } from '@/lib/sanitize';
  */
 export const OFFER_DOCUMENT_STYLES = `
   .offer-doc {
+    --brand-primary: #0f172a;
+    --brand-primary-contrast: #ffffff;
+    --brand-secondary: #f3f4f6;
+    --brand-secondary-border: #d1d5db;
+    --brand-secondary-text: #1f2937;
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--brand-secondary-border);
     border-radius: 32px;
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     color: #1f2937;
@@ -22,9 +27,16 @@ export const OFFER_DOCUMENT_STYLES = `
     align-items: flex-end;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.65rem;
     margin-bottom: 2.75rem;
     text-align: right;
+  }
+  .offer-doc__logo {
+    align-self: flex-end;
+    border-radius: 14px;
+    max-height: 72px;
+    max-width: 260px;
+    object-fit: contain;
   }
   .offer-doc__company {
     color: #6b7280;
@@ -34,7 +46,7 @@ export const OFFER_DOCUMENT_STYLES = `
     text-transform: uppercase;
   }
   .offer-doc__title {
-    color: #0f172a;
+    color: var(--brand-primary);
     font-size: 1.9rem;
     font-weight: 700;
     letter-spacing: -0.01em;
@@ -47,7 +59,7 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content h2,
   .offer-doc__content h3,
   .offer-doc__content h4 {
-    color: #111827;
+    color: var(--brand-primary);
     font-size: 1.15rem;
     font-weight: 600;
     margin: 2.2rem 0 0.9rem;
@@ -77,9 +89,9 @@ export const OFFER_DOCUMENT_STYLES = `
     width: 100%;
   }
   .offer-doc__pricing-table thead th {
-    background: #f3f4f6;
-    border-bottom: 1px solid #d1d5db;
-    color: #1f2937;
+    background: var(--brand-secondary);
+    border-bottom: 1px solid var(--brand-secondary-border);
+    color: var(--brand-secondary-text);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -87,24 +99,24 @@ export const OFFER_DOCUMENT_STYLES = `
     text-transform: uppercase;
   }
   .offer-doc__pricing-table tbody td {
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--brand-secondary-border);
     color: #374151;
     padding: 0.6rem 0.75rem;
     vertical-align: top;
   }
   .offer-doc__pricing-table tbody tr:last-child td {
-    border-bottom: 1px solid #d1d5db;
+    border-bottom: 1px solid var(--brand-secondary-border);
   }
   .offer-doc__pricing-table tfoot td {
     font-weight: 600;
     padding: 0.75rem 0.75rem;
   }
   .offer-doc__pricing-table tfoot tr:first-child td {
-    border-top: 2px solid #111827;
+    border-top: 2px solid var(--brand-primary);
   }
   .offer-doc__pricing-table tfoot tr:last-child td {
-    background: #111827;
-    color: #ffffff;
+    background: var(--brand-primary);
+    color: var(--brand-primary-contrast);
   }
 `;
 
@@ -124,11 +136,49 @@ export const OFFER_DOCUMENT_PDF_STYLES = `
   }
 `;
 
+export interface OfferBrandingOptions {
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+}
+
 export interface OfferDocumentMarkupProps {
   title: string;
   companyName: string;
   aiBodyHtml: string;
   priceTableHtml: string;
+  branding?: OfferBrandingOptions;
+}
+
+function normalizeColor(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
+  return `#${trimmed.slice(1).toUpperCase()}`;
+}
+
+function contrastColor(hex: string): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.6 ? '#111827' : '#ffffff';
+}
+
+function sanitizeLogoUrl(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -141,13 +191,24 @@ export function offerBodyMarkup({
   companyName,
   aiBodyHtml,
   priceTableHtml,
+  branding,
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
+  const primaryColor = normalizeColor(branding?.primaryColor) ?? '#0F172A';
+  const secondaryColor = normalizeColor(branding?.secondaryColor) ?? '#F3F4F6';
+  const secondaryBorder = '#D1D5DB';
+  const primaryContrast = contrastColor(primaryColor);
+  const logoUrl = sanitizeLogoUrl(branding?.logoUrl);
+  const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #1F2937;`;
+  const logoMarkup = logoUrl
+    ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
+    : '';
 
   return `
-    <article class="offer-doc">
+    <article class="offer-doc" style="${styleAttr}">
       <header class="offer-doc__header">
+        ${logoMarkup}
         <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>
         <h1 class="offer-doc__title">${safeTitle}</h1>
       </header>

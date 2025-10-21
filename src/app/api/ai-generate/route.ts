@@ -316,11 +316,18 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // ---- PDF queueing ----
     const offerId = uuid();
     const storagePath = `${user.id}/${offerId}.pdf`;
+    const brandingOptions = {
+      primaryColor: typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
+      secondaryColor: typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
+      logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
+    };
+
     const html = offerHtml({
       title: safeTitle || 'Árajánlat',
       companyName: sanitizeInput(profile?.company_name || ''),
       aiBodyHtml: aiHtml,
       priceTableHtml: priceTable,
+      branding: brandingOptions,
     });
 
     const downloadToken = uuid();
