@@ -8,13 +8,12 @@ import { PriceRow, priceTableHtml } from '@/app/lib/pricing';
 import { offerHtml } from '@/app/lib/htmlTemplate';
 import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
-import puppeteer from 'puppeteer';
 import { v4 as uuid } from 'uuid';
-import { Buffer } from 'buffer';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getCurrentUser, getUserProfile } from '@/lib/services/user';
 import { getOrInitUsage, incrementOfferCount } from '@/lib/services/usage';
+import { enqueuePdfJob } from '@/lib/queue/pdf';
 
 export const runtime = 'nodejs';
 
@@ -183,6 +182,7 @@ export async function POST(req: NextRequest) {
       prices = [],
       aiOverrideHtml,
       clientId,
+      pdfWebhookUrl,
     } = body as {
       title: string;
       industry: string;
@@ -194,6 +194,7 @@ export async function POST(req: NextRequest) {
       prices: PriceRow[];
       aiOverrideHtml?: string;
       clientId?: string;
+      pdfWebhookUrl?: string;
     };
 
     // ---- Auth ----
@@ -307,45 +308,33 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // `<table>` element including header, body and footer with totals.
     const priceTable = priceTableHtml(rows);
 
-    // ---- PDF render ----
+    // ---- PDF queueing ----
     const offerId = uuid();
-    let pdfUrl: string | null = null;
+    const storagePath = `${user.id}/${offerId}.pdf`;
+    const html = offerHtml({
+      title: safeTitle || 'Árajánlat',
+      companyName: sanitizeInput(profile?.company_name || ''),
+      aiBodyHtml: aiHtml,
+      priceTableHtml: priceTable,
+    });
+
+    const downloadToken = uuid();
 
     try {
-      // Build the full HTML for PDF using sanitized pieces
-      const html = offerHtml({
-        title: safeTitle || 'Árajánlat',
-        companyName: sanitizeInput(profile?.company_name || ''),
-        aiBodyHtml: aiHtml,
-        priceTableHtml: priceTable,
+      await enqueuePdfJob(sb, {
+        jobId: downloadToken,
+        offerId,
+        userId: user.id,
+        storagePath,
+        html,
+        callbackUrl: typeof pdfWebhookUrl === 'string' ? pdfWebhookUrl : undefined,
       });
-
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      });
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
-
-      const pdfData = await page.pdf({ format: 'A4', printBackground: true });
-      const pdfBuffer = Buffer.from(pdfData);
-      await browser.close();
-
-      const path = `${user.id}/${offerId}.pdf`;
-      const upload = await sb.storage.from('offers').upload(path, pdfBuffer, {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
-      if (upload.error) {
-        console.error('Storage upload error:', upload.error.message);
-      } else {
-        const { data: pub } = sb.storage.from('offers').getPublicUrl(path);
-        pdfUrl = pub?.publicUrl || null;
-      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('PDF error:', message);
-      // PDF hiba esetén is mentünk ajánlatot; a pdf_url null marad
+      console.error('PDF queue error:', message);
+      return NextResponse.json({
+        error: 'Nem sikerült sorba állítani a PDF generálási feladatot.',
+      }, { status: 502 });
     }
 
     // ---- Ajánlat mentése ----
@@ -358,7 +347,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },
       ai_text: aiHtml,
       price_json: rows,
-      pdf_url: pdfUrl,
+      pdf_url: null,
       status: 'draft',
     });
 
@@ -371,8 +360,10 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     return NextResponse.json({
       ok: true,
       id: offerId,
-      pdfUrl,
-      note: pdfUrl ? undefined : 'PDF generálás kihagyva (ideiglenes).',
+      pdfUrl: null,
+      downloadToken,
+      status: 'pending',
+      note: 'A PDF generálása folyamatban van. Frissíts később.',
       sections: sectionsPayload,
     });
   } catch (error) {
