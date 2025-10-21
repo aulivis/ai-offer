@@ -74,6 +74,21 @@ export function useOfferWizard(initialRows: PriceRow[] = [
     setStep((prev) => (prev > 1 ? ((prev - 1) as Step) : prev));
   }, []);
 
+  const goToStep = useCallback(
+    (target: Step) => {
+      if (target >= step) {
+        return;
+      }
+
+      if (!isStepValid(target)) {
+        return;
+      }
+
+      setStep(target);
+    },
+    [isStepValid, step],
+  );
+
   const inlineErrors = attemptedSteps[step] ? validation[step] ?? [] : [];
   const isNextDisabled = attemptedSteps[step] && !isStepValid(step);
 
@@ -91,10 +106,12 @@ export function useOfferWizard(initialRows: PriceRow[] = [
     setPricingRows: updatePricingRows,
     goNext,
     goPrev,
+    goToStep,
     inlineErrors,
     isNextDisabled,
     attemptedSteps,
     validation,
     isCurrentStepValid: isStepValid(step),
+    isStepValid,
   } as const;
 }

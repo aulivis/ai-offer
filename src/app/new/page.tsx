@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import StepIndicator from '@/components/StepIndicator';
+import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
@@ -405,6 +405,24 @@ export default function NewOfferWizard() {
     } finally { setLoading(false); }
   }
 
+  const wizardSteps: StepIndicatorStep[] = [
+    {
+      label: 'Projekt részletek',
+      status: step === 1 ? 'current' : step > 1 ? 'completed' : 'upcoming',
+      onSelect: () => setStep(1),
+    },
+    {
+      label: 'Tételek',
+      status: step === 2 ? 'current' : step > 2 ? 'completed' : 'upcoming',
+      onSelect: () => setStep(2),
+    },
+    {
+      label: 'Előnézet & PDF',
+      status: step === 3 ? 'current' : 'upcoming',
+      onSelect: () => setStep(3),
+    },
+  ];
+
   return (
     <AppFrame
       title="Új ajánlat"
@@ -412,7 +430,7 @@ export default function NewOfferWizard() {
     >
       <div className="space-y-8">
         <div className={`${cardClass} space-y-4`}>
-          <StepIndicator step={step} total={3} labels={['Projekt részletek', 'Tételek', 'Előnézet & PDF']} />
+          <StepIndicator steps={wizardSteps} />
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
               <span className="h-2 w-2 rounded-full bg-slate-400" />

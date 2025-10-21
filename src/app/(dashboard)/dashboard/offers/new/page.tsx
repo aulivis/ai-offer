@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import AppFrame from '@/components/AppFrame';
 import EditablePriceTable from '@/components/EditablePriceTable';
-import StepIndicator from '@/components/StepIndicator';
+import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { useOfferWizard } from './useOfferWizard';
 
 export default function NewOfferPage() {
@@ -17,8 +17,12 @@ export default function NewOfferPage() {
     setPricingRows,
     goNext,
     goPrev,
+    goToStep,
     inlineErrors,
     isNextDisabled,
+    attemptedSteps,
+    validation,
+    isStepValid,
   } = useOfferWizard();
 
   const totals = useMemo(() => {
@@ -31,6 +35,29 @@ export default function NewOfferPage() {
     return { net, vat, gross: net + vat };
   }, [pricingRows]);
 
+  const wizardSteps = useMemo(() => {
+    const definitions: Array<{ label: string; id: 1 | 2 | 3 }> = [
+      { label: 'Projekt részletek', id: 1 },
+      { label: 'Árazás', id: 2 },
+      { label: 'Összegzés', id: 3 },
+    ];
+
+    return definitions.map(({ label, id }) => {
+      const hasErrors = (validation[id]?.length ?? 0) > 0;
+      const attempted = attemptedSteps[id];
+      const status: StepIndicatorStep['status'] =
+        step === id ? 'current' : isStepValid(id) && step > id ? 'completed' : 'upcoming';
+      const tone: StepIndicatorStep['tone'] = attempted && hasErrors ? 'error' : 'default';
+
+      return {
+        label,
+        status,
+        tone,
+        onSelect: () => goToStep(id),
+      } satisfies StepIndicatorStep;
+    });
+  }, [attemptedSteps, goToStep, isStepValid, step, validation]);
+
   return (
     <AppFrame
       title="Új ajánlat"
@@ -38,11 +65,7 @@ export default function NewOfferPage() {
     >
       <div className="space-y-8">
         <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
-          <StepIndicator
-            step={step}
-            total={3}
-            labels={['Projekt részletek', 'Árazás', 'Összegzés']}
-          />
+          <StepIndicator steps={wizardSteps} />
         </div>
 
         {step === 1 && (
