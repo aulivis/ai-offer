@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
@@ -8,6 +9,7 @@ import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor from '@/components/RichTextEditor';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Step1Form = {
   industry: string;
@@ -82,6 +84,8 @@ const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm
 
 export default function NewOfferWizard() {
   const sb = useSupabase();
+  const router = useRouter();
+  const { status: authStatus, user } = useRequireAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -124,17 +128,24 @@ export default function NewOfferWizard() {
 
   // auth + preload
   useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      return;
+    }
+
+    let active = true;
+
     (async () => {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) { location.href = '/login'; return; }
       const { data: prof } = await sb
         .from('profiles')
         .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url')
         .eq('id', user.id)
         .maybeSingle();
+      if (!active) {
+        return;
+      }
       if (prof?.industries?.length) {
         setAvailableIndustries(prof.industries);
-        setForm(f=>({ ...f, industry: prof.industries[0] }));
+        setForm((f) => ({ ...f, industry: prof.industries?.[0] ?? f.industry }));
       }
       setProfileCompanyName(prof?.company_name ?? '');
       setBranding({
@@ -143,16 +154,31 @@ export default function NewOfferWizard() {
         logoUrl: prof?.brand_logo_url ?? null,
       });
 
-      const { data: acts } = await sb.from('activities')
+      const { data: acts } = await sb
+        .from('activities')
         .select('id,name,unit,default_unit_price,default_vat,industries')
-        .eq('user_id', user.id).order('name');
+        .eq('user_id', user.id)
+        .order('name');
+      if (!active) {
+        return;
+      }
       setActivities(acts || []);
 
-      const { data: cl } = await sb.from('clients').select('id,company_name,address,tax_id,representative,phone,email')
-        .eq('user_id', user.id).order('company_name');
+      const { data: cl } = await sb
+        .from('clients')
+        .select('id,company_name,address,tax_id,representative,phone,email')
+        .eq('user_id', user.id)
+        .order('company_name');
+      if (!active) {
+        return;
+      }
       setClientList(cl || []);
     })();
-  }, [sb]);
+
+    return () => {
+      active = false;
+    };
+  }, [authStatus, sb, user]);
 
   useEffect(() => {
     return () => {
@@ -332,24 +358,31 @@ export default function NewOfferWizard() {
     // meglévő?
     if (clientId) return clientId;
 
-    const { data: { user } } = await sb.auth.getUser();
     if (!user) return undefined;
 
     // próbáljuk meglévő alapján
-    const { data: match } = await sb.from('clients')
-      .select('id').eq('user_id', user.id).ilike('company_name', name).maybeSingle();
+    const { data: match } = await sb
+      .from('clients')
+      .select('id')
+      .eq('user_id', user.id)
+      .ilike('company_name', name)
+      .maybeSingle();
     if (match?.id) return match.id;
 
     // új felvitel
-    const ins = await sb.from('clients').insert({
-      user_id: user.id,
-      company_name: name,
-      address: client.address || null,
-      tax_id: client.tax_id || null,
-      representative: client.representative || null,
-      phone: client.phone || null,
-      email: client.email || null
-    }).select('id').single();
+    const ins = await sb
+      .from('clients')
+      .insert({
+        user_id: user.id,
+        company_name: name,
+        address: client.address || null,
+        tax_id: client.tax_id || null,
+        representative: client.representative || null,
+        phone: client.phone || null,
+        email: client.email || null,
+      })
+      .select('id')
+      .single();
 
     return ins.data?.id;
   }
@@ -359,7 +392,7 @@ export default function NewOfferWizard() {
       setLoading(true);
       const { data: session } = await sb.auth.getSession();
       const token = session.session?.access_token;
-      if (!token) { alert('Nem vagy bejelentkezve.'); location.href = '/login'; return; }
+      if (!token) { alert('Nem vagy bejelentkezve.'); router.replace('/login'); return; }
 
       const cid = await ensureClient();
 
@@ -402,7 +435,7 @@ export default function NewOfferWizard() {
         }
       }
 
-      location.href = '/dashboard';
+      router.replace('/dashboard');
     } finally { setLoading(false); }
   }
 

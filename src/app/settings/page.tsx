@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Profile = {
   company_name?: string;
@@ -55,6 +56,7 @@ const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm
 
 export default function SettingsPage() {
   const supabase = useSupabase();
+  const { status: authStatus, user } = useRequireAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -87,12 +89,17 @@ export default function SettingsPage() {
   const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
 
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { location.href = '/login'; return; }
-      setEmail(user.email ?? null);
+    if (authStatus !== 'authenticated' || !user) {
+      return;
+    }
 
+    let active = true;
+
+    (async () => {
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      if (!active) {
+        return;
+      }
       const industries = prof?.industries ?? [];
       setProfile({
         company_name: prof?.company_name ?? '',
@@ -105,21 +112,29 @@ export default function SettingsPage() {
         brand_color_primary: prof?.brand_color_primary ?? '#0F172A',
         brand_color_secondary: prof?.brand_color_secondary ?? '#F3F4F6',
       });
-      setNewAct(prev => ({ ...prev, industries }));
+      setNewAct((prev) => ({ ...prev, industries }));
 
-      const { data: list } = await supabase.from('activities')
+      const { data: list } = await supabase
+        .from('activities')
         .select('id,name,unit,default_unit_price,default_vat,industries')
-        .eq('user_id', user.id).order('name');
+        .eq('user_id', user.id)
+        .order('name');
+      if (!active) {
+        return;
+      }
       setActs((list as ActivityRow[]) || []);
-
+      setEmail(user.email ?? null);
       setLoading(false);
     })();
-  }, [supabase]);
+
+    return () => {
+      active = false;
+    };
+  }, [authStatus, supabase, user]);
 
   async function saveProfile() {
     try {
       setSaving(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
       const primary = normalizeColorHex(profile.brand_color_primary);
@@ -164,7 +179,6 @@ export default function SettingsPage() {
         alert('A logó mérete legfeljebb 4 MB lehet.');
         return;
       }
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const ensureResp = await fetch('/api/storage/ensure-brand-bucket', { method: 'POST' });
       if (!ensureResp.ok) {
@@ -219,7 +233,6 @@ export default function SettingsPage() {
     if (!newAct.name.trim()) { alert('Add meg a tevékenység nevét.'); return; }
     try {
       setActSaving(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const ins = await supabase.from('activities').insert({
         user_id: user.id,
