@@ -42,7 +42,7 @@ export default function Home() {
             Propono
           </Link>
           <nav className="flex items-center gap-3 text-sm text-slate-500">
-            <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/dashboard">Termék</Link>
+            <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/demo">Termék</Link>
             <Link className="rounded-full px-3 py-1.5 transition hover:bg-slate-200/60 hover:text-slate-900" href="/billing">Csomagok</Link>
             <Link className="rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900" href="/login">Bejelentkezés</Link>
           </nav>
@@ -174,7 +174,7 @@ export default function Home() {
                 <Link href="/new" className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100">
                   Indítás ingyen
                 </Link>
-                <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60">
+                <Link href="/demo" className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60">
                   Nézd meg a demót
                 </Link>
               </div>

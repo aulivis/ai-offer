@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+
+import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 
 const navLinks = [
   { href: '/dashboard', label: 'Ajánlatok' },
@@ -20,6 +22,44 @@ export type AppFrameProps = {
 
 export default function AppFrame({ title, description, actions, children }: AppFrameProps) {
   const pathname = usePathname();
+  const [authState, setAuthState] = useState<'checking' | 'ready'>('checking');
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const { data: { user } } = await supabaseBrowser().auth.getUser();
+
+        if (!user) {
+          const redirectTo = typeof window !== 'undefined' ? window.location.pathname : '/login';
+          window.location.href = `/login?redirect=${encodeURIComponent(redirectTo)}`;
+          return;
+        }
+
+        if (active) {
+          setAuthState('ready');
+        }
+      } catch (error) {
+        console.error('Failed to verify authentication status.', error);
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (authState !== 'ready') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
+        <span className="text-sm font-medium">Betöltés…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
