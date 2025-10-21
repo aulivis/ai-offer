@@ -370,152 +370,153 @@ export default function DashboardPage() {
                 key={o.id}
                 className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
               >
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <div className="min-w-0 space-y-1">
-                  <p className="truncate text-base font-semibold text-slate-900">{o.title || '(névtelen)'}</p>
-                  <p className="truncate text-sm text-slate-500">{(o.recipient?.company_name || '').trim() || '—'}</p>
-                </div>
-                <StatusBadge status={o.status} />
-              </div>
-
-              <dl className="space-y-2 text-sm text-slate-600">
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-slate-400">Létrehozva</dt>
-                  <dd className="font-medium text-slate-700">{formatDate(o.created_at)}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <dt className="text-slate-400">Iparág</dt>
-                  <dd className="font-medium text-slate-700">{o.industry || 'Ismeretlen'}</dd>
-                </div>
-                {o.pdf_url ? (
-                  <div className="flex items-center justify-between gap-4">
-                    <dt className="text-slate-400">Export</dt>
-                    <dd>
-                      <a
-                        className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-                        href={o.pdf_url}
-                        target="_blank"
-                      >
-                        PDF megnyitása
-                      </a>
-                    </dd>
+                <div className="mb-4 flex items-start justify-between gap-4">
+                  <div className="min-w-0 space-y-1">
+                    <p className="truncate text-base font-semibold text-slate-900">{o.title || '(névtelen)'}</p>
+                    <p className="truncate text-sm text-slate-500">{(o.recipient?.company_name || '').trim() || '—'}</p>
                   </div>
-                ) : null}
-              </dl>
+                  <StatusBadge status={o.status} />
+                </div>
 
-              <div className="mt-6 space-y-3">
-                <StatusStep
-                  title="Kiküldve az ügyfélnek"
-                  description="Add meg, mikor küldted el az ajánlatot."
-                  dateLabel={formatDate(o.sent_at)}
-                  highlight={o.status !== 'draft'}
-                >
-                  {o.sent_at ? (
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                        <span>Dátum módosítása</span>
-                        <input
-                          type="date"
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
-                          value={isoDateInput(o.sent_at)}
-                          onChange={(e) => markSent(o, e.target.value)}
-                          disabled={isUpdating}
-                        />
-                      </label>
+                <dl className="space-y-2 text-sm text-slate-600">
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-slate-400">Létrehozva</dt>
+                    <dd className="font-medium text-slate-700">{formatDate(o.created_at)}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-slate-400">Iparág</dt>
+                    <dd className="font-medium text-slate-700">{o.industry || 'Ismeretlen'}</dd>
+                  </div>
+                  {o.pdf_url ? (
+                    <div className="flex items-center justify-between gap-4">
+                      <dt className="text-slate-400">Export</dt>
+                      <dd>
+                        <a
+                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                          href={o.pdf_url}
+                          target="_blank"
+                        >
+                          PDF megnyitása
+                        </a>
+                      </dd>
                     </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-                      <button
-                        onClick={() => markSent(o)}
-                        disabled={isUpdating}
-                        className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-                      >
-                        Jelölés (ma)
-                      </button>
-                      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                        <span>Dátum választása</span>
-                        <input
-                          type="date"
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
-                          onChange={(e) => {
-                            if (!e.target.value) return;
-                            markSent(o, e.target.value);
-                          }}
-                          disabled={isUpdating}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </StatusStep>
+                  ) : null}
+                </dl>
 
-                <StatusStep
-                  title="Ügyfél döntése"
-                  description="Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot."
-                  dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
-                  highlight={isDecided}
-                >
-                  {isDecided ? (
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${
-                          o.status === 'accepted'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-rose-100 text-rose-700'
-                        }`}
-                      >
-                        {DECISION_LABELS[o.status]}
-                      </span>
-                      <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                        <span>Döntés dátuma</span>
-                        <input
-                          type="date"
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
-                          value={isoDateInput(o.decided_at)}
-                          onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
-                          disabled={isUpdating}
-                        />
-                      </label>
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-                      <button
-                        onClick={() => markDecision(o, 'accepted')}
-                        disabled={isUpdating}
-                        className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Megjelölés: Elfogadva
-                      </button>
-                      <button
-                        onClick={() => markDecision(o, 'lost')}
-                        disabled={isUpdating}
-                        className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Megjelölés: Elutasítva
-                      </button>
-                    </div>
-                  )}
-                </StatusStep>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2 text-xs text-slate-500">
-                {o.status !== 'draft' && (
-                  <button
-                    onClick={() => revertToDraft(o)}
-                    disabled={isUpdating}
-                    className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                <div className="mt-6 space-y-3">
+                  <StatusStep
+                    title="Kiküldve az ügyfélnek"
+                    description="Add meg, mikor küldted el az ajánlatot."
+                    dateLabel={formatDate(o.sent_at)}
+                    highlight={o.status !== 'draft'}
                   >
-                    Vissza vázlatba
-                  </button>
-                )}
-                {isDecided && (
-                  <button
-                    onClick={() => revertToSent(o)}
-                    disabled={isUpdating}
-                    className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                    {o.sent_at ? (
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                          <span>Dátum módosítása</span>
+                          <input
+                            type="date"
+                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
+                            value={isoDateInput(o.sent_at)}
+                            onChange={(e) => markSent(o, e.target.value)}
+                            disabled={isUpdating}
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                        <button
+                          onClick={() => markSent(o)}
+                          disabled={isUpdating}
+                          className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                        >
+                          Jelölés (ma)
+                        </button>
+                        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                          <span>Dátum választása</span>
+                          <input
+                            type="date"
+                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
+                            onChange={(e) => {
+                              if (!e.target.value) return;
+                              markSent(o, e.target.value);
+                            }}
+                            disabled={isUpdating}
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </StatusStep>
+
+                  <StatusStep
+                    title="Ügyfél döntése"
+                    description="Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot."
+                    dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
+                    highlight={isDecided}
                   >
-                    Döntés törlése
-                  </button>
-                )}
+                    {isDecided ? (
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                        <span
+                          className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${
+                            o.status === 'accepted'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-rose-100 text-rose-700'
+                          }`}
+                        >
+                          {DECISION_LABELS[o.status]}
+                        </span>
+                        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                          <span>Döntés dátuma</span>
+                          <input
+                            type="date"
+                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
+                            value={isoDateInput(o.decided_at)}
+                            onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
+                            disabled={isUpdating}
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                        <button
+                          onClick={() => markDecision(o, 'accepted')}
+                          disabled={isUpdating}
+                          className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Megjelölés: Elfogadva
+                        </button>
+                        <button
+                          onClick={() => markDecision(o, 'lost')}
+                          disabled={isUpdating}
+                          className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Megjelölés: Elutasítva
+                        </button>
+                      </div>
+                    )}
+                  </StatusStep>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2 text-xs text-slate-500">
+                  {o.status !== 'draft' && (
+                    <button
+                      onClick={() => revertToDraft(o)}
+                      disabled={isUpdating}
+                      className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Vissza vázlatba
+                    </button>
+                  )}
+                  {isDecided && (
+                    <button
+                      onClick={() => revertToSent(o)}
+                      disabled={isUpdating}
+                      className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Döntés törlése
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
