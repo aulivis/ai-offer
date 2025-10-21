@@ -30,6 +30,12 @@ type ClientForm = {
 type Activity = { id:string; name:string; unit:string; default_unit_price:number; default_vat:number; industries:string[] };
 type Client = { id:string; company_name:string; address?:string; tax_id?:string; representative?:string; phone?:string; email?:string };
 
+type BrandingState = {
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  logoUrl?: string | null;
+};
+
 type OfferSections = {
   introduction: string;
   project_summary: string;
@@ -109,6 +115,8 @@ export default function NewOfferWizard() {
   const debounceRef = useRef<NodeJS.Timeout|null>(null);
   const previewAbortRef = useRef<AbortController|null>(null);
   const previewRequestIdRef = useRef(0);
+  const [branding, setBranding] = useState<BrandingState>({});
+  const [profileCompanyName, setProfileCompanyName] = useState('');
 
   // edit on step 3
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -118,11 +126,21 @@ export default function NewOfferWizard() {
     (async () => {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { location.href = '/login'; return; }
-      const { data: prof } = await sb.from('profiles').select('industries').eq('id', user.id).maybeSingle();
+      const { data: prof } = await sb
+        .from('profiles')
+        .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url')
+        .eq('id', user.id)
+        .maybeSingle();
       if (prof?.industries?.length) {
         setAvailableIndustries(prof.industries);
         setForm(f=>({ ...f, industry: prof.industries[0] }));
       }
+      setProfileCompanyName(prof?.company_name ?? '');
+      setBranding({
+        primaryColor: prof?.brand_color_primary ?? null,
+        secondaryColor: prof?.brand_color_secondary ?? null,
+        logoUrl: prof?.brand_logo_url ?? null,
+      });
 
       const { data: acts } = await sb.from('activities')
         .select('id,name,unit,default_unit_price,default_vat,industries')
@@ -296,16 +314,17 @@ export default function NewOfferWizard() {
 
   const pricePreviewHtml = useMemo(() => priceTableHtml(rows), [rows]);
   const previewMarkup = useMemo(() => {
-    const companyName = (client.company_name || '').trim() || 'Címzett neve';
+    const headerCompany = profileCompanyName.trim() || 'Vállalkozásod neve';
     const title = form.title.trim() || 'Árajánlat';
     const body = (editedHtml || previewHtml) || '<p>(nincs előnézet)</p>';
     return offerBodyMarkup({
       title,
-      companyName,
+      companyName: headerCompany,
       aiBodyHtml: body,
       priceTableHtml: pricePreviewHtml,
+      branding,
     });
-  }, [client.company_name, editedHtml, form.title, previewHtml, pricePreviewHtml]);
+  }, [branding, editedHtml, form.title, previewHtml, pricePreviewHtml, profileCompanyName]);
 
   async function ensureClient(): Promise<string|undefined> {
     const name = (client.company_name || '').trim();
@@ -576,7 +595,13 @@ export default function NewOfferWizard() {
               </div>
               <div className="min-h-[260px] rounded-2xl border border-slate-200 bg-white/90 p-4 overflow-auto">
                 {previewLoading ? (
-                  <div className="text-sm text-slate-500">AI írja az ajánlatodat…</div>
+                  <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
+                    <div className="flex items-center gap-3">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+                      <span>Az AI most készíti az előnézetet…</span>
+                    </div>
+                    <p className="text-xs text-slate-400">Ez néhány másodpercet is igénybe vehet.</p>
+                  </div>
                 ) : (
                   <>
                     <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />

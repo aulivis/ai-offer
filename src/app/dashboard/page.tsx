@@ -65,6 +65,16 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
   );
 }
 
+function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
+      {helper ? <p className="mt-2 text-xs text-slate-500">{helper}</p> : null}
+    </div>
+  );
+}
+
 function StatusStep({
   title,
   description,
@@ -246,6 +256,58 @@ export default function DashboardPage() {
     return list;
   }, [offers, q, statusFilter, industryFilter, sortBy, sortDir]);
 
+  const stats = useMemo(() => {
+    const total = offers.length;
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const createdThisMonth = offers.filter((offer) => {
+      if (!offer.created_at) return false;
+      const created = new Date(offer.created_at).getTime();
+      return Number.isFinite(created) && created >= monthStart;
+    }).length;
+
+    const sentStatuses: Offer['status'][] = ['sent', 'accepted', 'lost'];
+    const sent = offers.filter((offer) => sentStatuses.includes(offer.status)).length;
+    const accepted = offers.filter((offer) => offer.status === 'accepted').length;
+    const inReview = offers.filter((offer) => offer.status === 'sent').length;
+    const drafts = offers.filter((offer) => offer.status === 'draft').length;
+
+    const acceptanceRate = sent > 0 ? (accepted / sent) * 100 : null;
+
+    const decisionDurations: number[] = [];
+    offers.forEach((offer) => {
+      if (offer.status !== 'accepted' || !offer.decided_at) return;
+      const decided = new Date(offer.decided_at).getTime();
+      const sentAt = offer.sent_at ? new Date(offer.sent_at).getTime() : (offer.created_at ? new Date(offer.created_at).getTime() : NaN);
+      if (!Number.isFinite(decided) || !Number.isFinite(sentAt)) return;
+      const diffDays = (decided - sentAt) / (1000 * 60 * 60 * 24);
+      if (diffDays >= 0) {
+        decisionDurations.push(diffDays);
+      }
+    });
+    const avgDecisionDays = decisionDurations.length
+      ? decisionDurations.reduce((sum, value) => sum + value, 0) / decisionDurations.length
+      : null;
+
+    return {
+      total,
+      sent,
+      accepted,
+      inReview,
+      drafts,
+      acceptanceRate,
+      avgDecisionDays,
+      createdThisMonth,
+    };
+  }, [offers]);
+
+  const acceptanceLabel = stats.acceptanceRate !== null
+    ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
+    : '—';
+  const avgDecisionLabel = stats.avgDecisionDays !== null
+    ? `${stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} nap`
+    : '—';
+
   return (
     <AppFrame
       title="Ajánlatok"
@@ -259,6 +321,29 @@ export default function DashboardPage() {
         </a>
       )}
     >
+      <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Létrehozott ajánlatok"
+          value={stats.total.toLocaleString('hu-HU')}
+          helper={`Ebben a hónapban ${stats.createdThisMonth.toLocaleString('hu-HU')} új ajánlat`}
+        />
+        <MetricCard
+          label="Kiküldött ajánlatok"
+          value={stats.sent.toLocaleString('hu-HU')}
+          helper={`${stats.inReview.toLocaleString('hu-HU')} ajánlat döntésre vár`}
+        />
+        <MetricCard
+          label="Elfogadott ajánlatok"
+          value={stats.accepted.toLocaleString('hu-HU')}
+          helper={`Elfogadási arány: ${acceptanceLabel}`}
+        />
+        <MetricCard
+          label="Átlagos döntési idő"
+          value={avgDecisionLabel}
+          helper={`${stats.drafts.toLocaleString('hu-HU')} vázlat készül`}
+        />
+      </section>
+
       <section className="rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
           <div className="flex-1 space-y-1">
