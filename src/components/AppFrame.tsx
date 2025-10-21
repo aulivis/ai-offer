@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
-import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import { useToast } from './ToastProvider';
+import { useSupabase } from './SupabaseProvider';
 
 const navLinks = [
   { href: '/dashboard', label: 'Ajánlatok' },
@@ -26,7 +26,7 @@ export default function AppFrame({ title, description, actions, children }: AppF
   const router = useRouter();
   const [authState, setAuthState] = useState<'checking' | 'ready'>('checking');
   const { showToast } = useToast();
-  const supabase = useMemo(() => supabaseBrowser(), []);
+  const supabase = useSupabase();
 
   useEffect(() => {
     let active = true;

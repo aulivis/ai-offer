@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { supabaseBrowser } from '@/app/lib/supabaseBrowser';
 import LandingHeader from '@/components/LandingHeader';
+import { useSupabase } from '@/components/SupabaseProvider';
 
 export default function LoginClient() {
+  const supabase = useSupabase();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,8 +17,7 @@ export default function LoginClient() {
     if (!email) return;
     setIsMagicLoading(true);
     try {
-      const sb = supabaseBrowser();
-      const { error } = await sb.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: `${location.origin}/dashboard` },
       });
@@ -35,8 +35,7 @@ export default function LoginClient() {
     setError(null);
     setIsGoogleLoading(true);
     try {
-      const sb = supabaseBrowser();
-      const { error } = await sb.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${location.origin}/dashboard`,

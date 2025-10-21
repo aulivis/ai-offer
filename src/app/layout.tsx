@@ -4,6 +4,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 import { ToastProvider } from '@/components/ToastProvider';
+import { SupabaseProvider } from '@/components/SupabaseProvider';
 
 export const metadata: Metadata = {
   title: 'Propono — AI offers',
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-slate-50 font-sans text-slate-900 antialiased">
-        <ToastProvider>{children}</ToastProvider>
+        <SupabaseProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </SupabaseProvider>
       </body>
     </html>
   );
