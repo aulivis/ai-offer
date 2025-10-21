@@ -64,39 +64,79 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       ],
     });
 
+    let removeStreamListeners: (() => void) | null = null;
+
     const readable = new ReadableStream<Uint8Array>({
       start(controller) {
         let accumulated = '';
+        let closed = false;
 
-        const push = (payload: Record<string, unknown>) => {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
+        const closeStream = () => {
+          if (closed) return;
+          closed = true;
+          removeStreamListeners?.();
+          removeStreamListeners = null;
+          try {
+            controller.close();
+          } catch (closeError) {
+            if (!(closeError instanceof TypeError && closeError.message.includes('closed'))) {
+              throw closeError;
+            }
+          }
         };
 
-        stream.on('response.output_text.delta', (event) => {
+        const push = (payload: Record<string, unknown>) => {
+          if (closed) return;
+          try {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
+          } catch (enqueueError) {
+            if (enqueueError instanceof TypeError && enqueueError.message.includes('closed')) {
+              closeStream();
+            } else {
+              throw enqueueError;
+            }
+          }
+        };
+
+        const handleDelta = (event: { delta?: string }) => {
           if (!event.delta) return;
           accumulated += event.delta;
           push({ type: 'delta', html: sanitizeHTML(accumulated) });
-        });
+        };
 
-        stream.on('end', () => {
+        const handleEnd = () => {
           const finalHtml = sanitizeHTML(accumulated || '<p>(nincs előnézet)</p>');
           push({ type: 'done', html: finalHtml });
-          controller.close();
-        });
+          closeStream();
+        };
 
-        stream.on('abort', (error: unknown) => {
+        const handleAbort = (error: unknown) => {
           const message = error instanceof Error ? error.message : String(error);
           push({ type: 'error', message });
-          controller.close();
-        });
+          closeStream();
+        };
 
-        stream.on('error', (error: unknown) => {
+        const handleError = (error: unknown) => {
           const message = error instanceof Error ? error.message : String(error);
           push({ type: 'error', message });
-          controller.close();
-        });
+          closeStream();
+        };
+
+        removeStreamListeners = () => {
+          stream.off('response.output_text.delta', handleDelta);
+          stream.off('end', handleEnd);
+          stream.off('abort', handleAbort);
+          stream.off('error', handleError);
+        };
+
+        stream.on('response.output_text.delta', handleDelta);
+        stream.on('end', handleEnd);
+        stream.on('abort', handleAbort);
+        stream.on('error', handleError);
       },
       cancel() {
+        removeStreamListeners?.();
+        removeStreamListeners = null;
         stream.abort();
       },
     });
