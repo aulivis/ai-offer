@@ -7,6 +7,7 @@ import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 import { useSupabase } from '@/components/SupabaseProvider';
+import RichTextEditor from '@/components/RichTextEditor';
 
 type Step1Form = {
   industry: string;
@@ -674,12 +675,10 @@ export default function NewOfferWizard() {
                 <span className="text-xs font-medium text-slate-400">Ez kerül a PDF-be</span>
               </div>
               <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
-              <div
-                className="min-h-[300px] rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm text-slate-700 offer-doc__content overflow-auto"
-                contentEditable
-                suppressContentEditableWarning
-                onInput={(e) => setEditedHtml((e.target as HTMLDivElement).innerHTML)}
-                dangerouslySetInnerHTML={{ __html: editedHtml || previewHtml }}
+              <RichTextEditor
+                value={editedHtml || previewHtml}
+                onChange={(html) => setEditedHtml(html)}
+                placeholder="Formázd át a generált szöveget..."
               />
               <p className="text-xs text-slate-500">Tartsd meg a címsorokat és listákat a jobb olvashatóságért.</p>
             </div>
