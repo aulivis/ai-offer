@@ -75,7 +75,7 @@ describe('enqueuePdfJob schema cache recovery', () => {
 
     expect(insertMock).toHaveBeenCalledTimes(2);
     expect(rpcMock).toHaveBeenNthCalledWith(1, 'refresh_pdf_jobs_schema_cache');
-    expect(rpcMock).toHaveBeenNthCalledWith(2, 'pgrest.schema_cache_reload');
+    expect(rpcMock).toHaveBeenNthCalledWith(2, 'pgrest_schema_cache_reload');
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -110,10 +110,10 @@ describe('enqueuePdfJob schema cache recovery', () => {
 
     expect(insertMock).toHaveBeenCalledTimes(2);
     expect(rpcMock).toHaveBeenNthCalledWith(1, 'refresh_pdf_jobs_schema_cache');
-    expect(rpcMock).toHaveBeenNthCalledWith(2, 'pgrest.schema_cache_reload');
+    expect(rpcMock).toHaveBeenNthCalledWith(2, 'pgrest_schema_cache_reload');
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0];
-    expect(url).toContain('/rest/v1/rpc/pgrest.schema_cache_reload');
+    expect(url).toContain('/rest/v1/rpc/pgrest_schema_cache_reload');
     expect(init).toMatchObject({
       method: 'POST',
       headers: expect.objectContaining({

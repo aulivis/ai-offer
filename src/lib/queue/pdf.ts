@@ -17,7 +17,7 @@ export interface PdfJobInput {
 
 const SCHEMA_CACHE_ERROR_FRAGMENT = "could not find the table 'public.pdf_jobs' in the schema cache";
 const SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT = 'could not find the function';
-const PGREST_SCHEMA_CACHE_RPC = 'pgrest.schema_cache_reload';
+const PGREST_SCHEMA_CACHE_RPC = 'pgrest_schema_cache_reload';
 const PGREST_SCHEMA_CACHE_RPC_FRAGMENT = 'pgrest.schema_cache_reload';
 
 function isRefreshFunctionMissing(message: string): boolean {
@@ -42,11 +42,11 @@ async function refreshSchemaCacheViaHttp() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // PostgREST only accepts profiles for schemas that are explicitly
-      // whitelisted in `db-schemas`.  Supabase projects include `public` by
-      // default, so we use it instead of the `pgrest` helper schema to avoid
-      // 406/PGRST106 errors when the helper profile is disabled.
-      // https://docs.postgrest.org/en/stable/schema_reloading.html
+      // The helper RPC is exposed in the `public` schema (as a thin wrapper
+      // around the PostgREST-provided `pgrest.schema_cache_reload` function),
+      // so we can continue to use the default schema profile without
+      // triggering 406/PGRST106 errors when the helper schema isn't
+      // whitelisted. https://docs.postgrest.org/en/stable/schema_reloading.html
       'Content-Profile': 'public',
       'Accept-Profile': 'public',
       apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
