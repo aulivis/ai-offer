@@ -1,5 +1,5 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.44.4';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.44.4';
 import puppeteer from 'https://deno.land/x/puppeteer@16.2.0/mod.ts';
 
 function assertEnv(value: string | undefined, name: string): string {
@@ -59,6 +59,25 @@ serve(async (request) => {
     .update({ status: 'processing', started_at: new Date().toISOString() })
     .eq('id', jobId);
 
+  const payload = (job.payload ?? {}) as PdfJobPayload;
+  const html = typeof payload.html === 'string' && payload.html ? payload.html : '';
+  if (!html) {
+    return new Response(JSON.stringify({ error: 'Job payload missing HTML' }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 400,
+    });
+  }
+
+  const usagePeriodStart = normalizeDate(
+    typeof payload.usagePeriodStart === 'string' ? payload.usagePeriodStart : null,
+    new Date(job.created_at ?? new Date()).toISOString().slice(0, 10),
+  );
+  const userLimit = Number.isFinite(payload.userLimit ?? NaN) ? Number(payload.userLimit) : null;
+  const deviceId = typeof payload.deviceId === 'string' && payload.deviceId ? payload.deviceId : null;
+  const deviceLimit = Number.isFinite(payload.deviceLimit ?? NaN) ? Number(payload.deviceLimit) : null;
+
+  let uploadedToStorage = false;
+
   try {
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -66,7 +85,7 @@ serve(async (request) => {
     });
 
     const page = await browser.newPage();
-    await page.setContent(job.payload.html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdfBinary = await page.pdf({ format: 'A4', printBackground: true });
     await page.close();
     await browser.close();
@@ -82,8 +101,22 @@ serve(async (request) => {
       throw new Error(upload.error.message);
     }
 
+    uploadedToStorage = true;
+
     const { data: publicUrlData } = supabase.storage.from('offers').getPublicUrl(job.storage_path);
     const pdfUrl = publicUrlData?.publicUrl ?? null;
+
+    const usageResult = await incrementUsage(supabase, 'user', job.user_id, userLimit, usagePeriodStart);
+    if (!usageResult.allowed) {
+      throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
+    }
+
+    if (deviceId && deviceLimit !== null) {
+      const deviceResult = await incrementUsage(supabase, 'device', deviceId, deviceLimit, usagePeriodStart);
+      if (!deviceResult.allowed) {
+        throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
+      }
+    }
 
     await supabase
       .from('offers')
@@ -124,6 +157,14 @@ serve(async (request) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
+    if (uploadedToStorage) {
+      try {
+        await supabase.storage.from('offers').remove([job.storage_path]);
+      } catch (cleanupError) {
+        console.error('Failed to remove uploaded PDF after error:', cleanupError);
+      }
+    }
+
     await supabase
       .from('pdf_jobs')
       .update({
@@ -139,3 +180,159 @@ serve(async (request) => {
     });
   }
 });
+type CounterKind = 'user' | 'device';
+
+type UsageConfig = {
+  table: string;
+  column: string;
+  rpc: 'check_and_increment_usage' | 'check_and_increment_device_usage';
+};
+
+const COUNTER_CONFIG: Record<CounterKind, UsageConfig> = {
+  user: { table: 'usage_counters', column: 'user_id', rpc: 'check_and_increment_usage' },
+  device: { table: 'device_usage_counters', column: 'device_id', rpc: 'check_and_increment_device_usage' },
+};
+
+function normalizeDate(value: unknown, fallback: string): string {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  if (typeof value === 'string' && value) {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString().slice(0, 10);
+    }
+  }
+  return fallback;
+}
+
+async function ensureUsageCounter(
+  supabase: SupabaseClient,
+  kind: CounterKind,
+  targetId: string,
+  periodStart: string
+): Promise<{ periodStart: string; offersGenerated: number }> {
+  const config = COUNTER_CONFIG[kind];
+  const { data: existing, error: selectError } = await supabase
+    .from(config.table)
+    .select('period_start, offers_generated')
+    .eq(config.column, targetId)
+    .maybeSingle();
+
+  if (selectError && selectError.code !== 'PGRST116') {
+    throw new Error(`Failed to load usage counter: ${selectError.message}`);
+  }
+
+  let usageRow = existing;
+  if (!usageRow) {
+    const insertPayload = {
+      [config.column]: targetId,
+      period_start: periodStart,
+      offers_generated: 0,
+    } as Record<string, unknown>;
+    const { data: inserted, error: insertError } = await supabase
+      .from(config.table)
+      .insert(insertPayload)
+      .select('period_start, offers_generated')
+      .maybeSingle();
+    if (insertError) {
+      throw new Error(`Failed to initialise usage counter: ${insertError.message}`);
+    }
+    usageRow = inserted ?? { period_start: periodStart, offers_generated: 0 };
+  }
+
+  let currentPeriod = normalizeDate(usageRow?.period_start, periodStart);
+  let generated = Number(usageRow?.offers_generated ?? 0);
+
+  if (currentPeriod !== periodStart) {
+    const { data: resetRow, error: resetError } = await supabase
+      .from(config.table)
+      .update({ period_start: periodStart, offers_generated: 0 })
+      .eq(config.column, targetId)
+      .select('period_start, offers_generated')
+      .maybeSingle();
+    if (resetError) {
+      throw new Error(`Failed to reset usage counter: ${resetError.message}`);
+    }
+    currentPeriod = normalizeDate(resetRow?.period_start, periodStart);
+    generated = Number(resetRow?.offers_generated ?? 0);
+  }
+
+  return { periodStart: currentPeriod, offersGenerated: generated };
+}
+
+async function fallbackIncrement(
+  supabase: SupabaseClient,
+  kind: CounterKind,
+  targetId: string,
+  limit: number | null,
+  periodStart: string
+) {
+  const config = COUNTER_CONFIG[kind];
+  const state = await ensureUsageCounter(supabase, kind, targetId, periodStart);
+
+  if (typeof limit === 'number' && Number.isFinite(limit) && state.offersGenerated >= limit) {
+    return { allowed: false, offersGenerated: state.offersGenerated, periodStart: state.periodStart };
+  }
+
+  const { data: updatedRow, error: updateError } = await supabase
+    .from(config.table)
+    .update({ offers_generated: state.offersGenerated + 1, period_start: state.periodStart })
+    .eq(config.column, targetId)
+    .select('period_start, offers_generated')
+    .maybeSingle();
+
+  if (updateError) {
+    throw new Error(`Failed to bump usage counter: ${updateError.message}`);
+  }
+
+  const period = normalizeDate(updatedRow?.period_start, state.periodStart);
+  const offersGenerated = Number(updatedRow?.offers_generated ?? state.offersGenerated + 1);
+  return { allowed: true, offersGenerated, periodStart: period };
+}
+
+async function incrementUsage(
+  supabase: SupabaseClient,
+  kind: CounterKind,
+  targetId: string,
+  limit: number | null,
+  periodStart: string
+) {
+  const config = COUNTER_CONFIG[kind];
+  const rpcPayload =
+    kind === 'user'
+      ? {
+          p_user_id: targetId,
+          p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+          p_period_start: periodStart,
+        }
+      : {
+          p_device_id: targetId,
+          p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+          p_period_start: periodStart,
+        };
+
+  const { data, error } = await supabase.rpc(config.rpc, rpcPayload as Record<string, unknown>);
+  if (error) {
+    const message = error.message ?? '';
+    if (message.toLowerCase().includes(config.rpc)) {
+      return fallbackIncrement(supabase, kind, targetId, Number.isFinite(limit ?? NaN) ? limit : null, periodStart);
+    }
+    throw new Error(`Failed to update usage counter: ${message}`);
+  }
+
+  const [result] = Array.isArray(data) ? data : [data];
+  return {
+    allowed: Boolean(result?.allowed),
+    offersGenerated: Number(result?.offers_generated ?? 0),
+    periodStart: String(result?.period_start ?? periodStart),
+  };
+}
+
+type PdfJobPayload = {
+  html: string;
+  usagePeriodStart?: string | null;
+  userLimit?: number | null;
+  deviceId?: string | null;
+  deviceLimit?: number | null;
+};

@@ -15,8 +15,12 @@ import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getCurrentUser, getUserProfile } from '@/lib/services/user';
-import { checkAndIncrementUsage, checkAndIncrementDeviceUsage, rollbackUsageIncrement } from '@/lib/services/usage';
-import { enqueuePdfJob } from '@/lib/queue/pdf';
+import {
+  currentMonthStart,
+  getDeviceUsageSnapshot,
+  getUsageSnapshot,
+} from '@/lib/services/usage';
+import { countPendingPdfJobs, enqueuePdfJob } from '@/lib/queue/pdf';
 
 export const runtime = 'nodejs';
 
@@ -405,39 +409,46 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const quota = await checkAndIncrementUsage(sb, user.id, planLimit);
+    const { iso: usagePeriodStart } = currentMonthStart();
+    const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
 
-    console.info('Usage quota check', {
-      userId: user.id,
-      plan,
-      limit: planLimit,
-      allowed: quota.allowed,
-      offersGenerated: quota.offersGenerated,
-    });
-
-    if (!quota.allowed) {
-      return NextResponse.json(
-        { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
-        { status: 402 }
-      );
+    let pendingCount = 0;
+    if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+      pendingCount = await countPendingPdfJobs(sb, { userId: user.id, periodStart: usagePeriodStart });
+      const projectedUsage = usageSnapshot.offersGenerated + pendingCount;
+      if (projectedUsage >= planLimit) {
+        return NextResponse.json(
+          { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
+          { status: 402 }
+        );
+      }
     }
 
-    if (plan === 'free' && !hasUnlimitedEmail && planLimit !== null) {
-      const deviceQuota = await checkAndIncrementDeviceUsage(sb, deviceId, 3);
-      console.info('Device quota check', {
+    const deviceLimit = plan === 'free' && !hasUnlimitedEmail && typeof planLimit === 'number' ? 3 : null;
+    if (deviceLimit !== null) {
+      const deviceSnapshot = await getDeviceUsageSnapshot(sb, deviceId, usagePeriodStart);
+      const devicePending = await countPendingPdfJobs(sb, {
+        userId: user.id,
+        periodStart: usagePeriodStart,
         deviceId,
-        limit: 3,
-        allowed: deviceQuota.allowed,
-        offersGenerated: deviceQuota.offersGenerated,
       });
-      if (!deviceQuota.allowed) {
-        await rollbackUsageIncrement(sb, user.id, quota.periodStart);
+      const projectedDeviceUsage = deviceSnapshot.offersGenerated + devicePending;
+      if (projectedDeviceUsage >= deviceLimit) {
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást ezen az eszközön.' },
           { status: 402 }
         );
       }
     }
+
+    console.info('Usage quota snapshot', {
+      userId: user.id,
+      plan,
+      limit: planLimit,
+      confirmed: usageSnapshot.offersGenerated,
+      pendingCount,
+      periodStart: usagePeriodStart,
+    });
 
     // ---- AI szöveg (override elsőbbség) ----
     const safeTitle = sanitizeInput(title);
@@ -547,6 +558,10 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         storagePath,
         html,
         callbackUrl: typeof pdfWebhookUrl === 'string' ? pdfWebhookUrl : undefined,
+        usagePeriodStart,
+        userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
+        deviceId: deviceLimit !== null ? deviceId : null,
+        deviceLimit,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

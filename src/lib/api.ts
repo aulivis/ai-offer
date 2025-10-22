@@ -8,7 +8,6 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.status = options?.status;
     if (options && 'cause' in options) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       (this as { cause?: unknown }).cause = options.cause;
     }
     Object.setPrototypeOf(this, new.target.prototype);

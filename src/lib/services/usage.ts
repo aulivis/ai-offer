@@ -20,7 +20,10 @@ export type QuotaCheckResult = {
 
 type CounterKind = 'user' | 'device';
 
-const COUNTER_CONFIG: Record<CounterKind, { table: string; column: string; rpc: string }> = {
+const COUNTER_CONFIG: Record<
+  CounterKind,
+  { table: string; column: string; rpc: 'check_and_increment_usage' | 'check_and_increment_device_usage' }
+> = {
   user: { table: 'usage_counters', column: 'user_id', rpc: 'check_and_increment_usage' },
   device: { table: 'device_usage_counters', column: 'device_id', rpc: 'check_and_increment_device_usage' },
 };
@@ -38,13 +41,14 @@ function normalizeDate(value: unknown, fallback: string): string {
   return fallback;
 }
 
-async function fallbackUsageUpdate(
+type UsageState = { periodStart: string; offersGenerated: number };
+
+async function ensureUsageCounter(
   sb: SupabaseClient,
   kind: CounterKind,
   targetId: string,
-  limit: number | null,
   periodStart: string
-): Promise<QuotaCheckResult> {
+): Promise<UsageState> {
   const { table, column } = COUNTER_CONFIG[kind];
   const { data: existing, error: selectError } = await sb
     .from(table)
@@ -58,7 +62,10 @@ async function fallbackUsageUpdate(
 
   let usageRow = existing;
   if (!usageRow) {
-    const insertPayload = { [column]: targetId, period_start: periodStart, offers_generated: 0 } as Record<string, unknown>;
+    const insertPayload = { [column]: targetId, period_start: periodStart, offers_generated: 0 } as Record<
+      string,
+      unknown
+    >;
     const { data: inserted, error: insertError } = await sb
       .from(table)
       .insert(insertPayload)
@@ -87,13 +94,27 @@ async function fallbackUsageUpdate(
     generated = Number(resetRow?.offers_generated ?? 0);
   }
 
-  if (typeof limit === 'number' && Number.isFinite(limit) && generated >= limit) {
-    return { allowed: false, offersGenerated: generated, periodStart: currentPeriod };
+  return { periodStart: currentPeriod, offersGenerated: generated };
+}
+
+async function fallbackUsageUpdate(
+  sb: SupabaseClient,
+  kind: CounterKind,
+  targetId: string,
+  limit: number | null,
+  periodStart: string
+): Promise<QuotaCheckResult> {
+  const { table, column } = COUNTER_CONFIG[kind];
+  const state = await ensureUsageCounter(sb, kind, targetId, periodStart);
+  const { periodStart: currentPeriod, offersGenerated } = state;
+
+  if (typeof limit === 'number' && Number.isFinite(limit) && offersGenerated >= limit) {
+    return { allowed: false, offersGenerated, periodStart: currentPeriod };
   }
 
   const { data: updatedRow, error: updateError } = await sb
     .from(table)
-    .update({ offers_generated: generated + 1, period_start: currentPeriod })
+    .update({ offers_generated: offersGenerated + 1, period_start: currentPeriod })
     .eq(column, targetId)
     .select('period_start, offers_generated')
     .maybeSingle();
@@ -102,9 +123,31 @@ async function fallbackUsageUpdate(
   }
 
   const finalPeriod = normalizeDate(updatedRow?.period_start, currentPeriod);
-  const finalCount = Number(updatedRow?.offers_generated ?? generated + 1);
+  const finalCount = Number(updatedRow?.offers_generated ?? offersGenerated + 1);
 
   return { allowed: true, offersGenerated: finalCount, periodStart: finalPeriod };
+}
+
+export async function getUsageSnapshot(
+  sb: SupabaseClient,
+  userId: string,
+  periodStartOverride?: string
+): Promise<UsageState> {
+  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
+    ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+    : currentMonthStart().iso;
+  return ensureUsageCounter(sb, 'user', userId, periodStart);
+}
+
+export async function getDeviceUsageSnapshot(
+  sb: SupabaseClient,
+  deviceId: string,
+  periodStartOverride?: string
+): Promise<UsageState> {
+  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
+    ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+    : currentMonthStart().iso;
+  return ensureUsageCounter(sb, 'device', deviceId, periodStart);
 }
 
 /**
@@ -116,9 +159,13 @@ async function fallbackUsageUpdate(
 export async function checkAndIncrementUsage(
   sb: SupabaseClient,
   userId: string,
-  limit: number | null
+  limit: number | null,
+  periodStartOverride?: string
 ): Promise<QuotaCheckResult> {
-  const { iso: periodStart } = currentMonthStart();
+  const { iso: defaultPeriod } = currentMonthStart();
+  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
+    ? normalizeDate(periodStartOverride, defaultPeriod)
+    : defaultPeriod;
   const rpcPayload = {
     p_user_id: userId,
     p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
@@ -145,9 +192,13 @@ export async function checkAndIncrementUsage(
 export async function checkAndIncrementDeviceUsage(
   sb: SupabaseClient,
   deviceId: string,
-  limit: number | null
+  limit: number | null,
+  periodStartOverride?: string
 ): Promise<QuotaCheckResult> {
-  const { iso: periodStart } = currentMonthStart();
+  const { iso: defaultPeriod } = currentMonthStart();
+  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
+    ? normalizeDate(periodStartOverride, defaultPeriod)
+    : defaultPeriod;
   const rpcPayload = {
     p_device_id: deviceId,
     p_limit: Number.isFinite(limit ?? NaN) ? limit : null,

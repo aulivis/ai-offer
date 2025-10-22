@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkAndIncrementUsage, checkAndIncrementDeviceUsage, rollbackUsageIncrement } from '../services/usage';
+import {
+  checkAndIncrementUsage,
+  checkAndIncrementDeviceUsage,
+  rollbackUsageIncrement,
+  getUsageSnapshot,
+} from '../services/usage';
 
 describe('checkAndIncrementUsage', () => {
   const rpc = vi.fn();
@@ -132,6 +137,22 @@ describe('checkAndIncrementUsage', () => {
     expect(result).toEqual({ allowed: true, offersGenerated: 1, periodStart: '2024-07-01' });
     expect(from).toHaveBeenCalledTimes(3);
   });
+
+  it('allows overriding the billing period when provided', async () => {
+    rpc.mockResolvedValue({
+      data: { allowed: true, offers_generated: 4, period_start: '2024-05-01' },
+      error: null,
+    });
+
+    const result = await checkAndIncrementUsage(mockClient, 'user-override', 2, '2024-05-01');
+
+    expect(rpc).toHaveBeenCalledWith('check_and_increment_usage', {
+      p_user_id: 'user-override',
+      p_limit: 2,
+      p_period_start: '2024-05-01',
+    });
+    expect(result).toEqual({ allowed: true, offersGenerated: 4, periodStart: '2024-05-01' });
+  });
 });
 
 describe('checkAndIncrementDeviceUsage', () => {
@@ -201,6 +222,68 @@ describe('checkAndIncrementDeviceUsage', () => {
 
     expect(result).toEqual({ allowed: true, offersGenerated: 1, periodStart: '2024-07-01' });
     expect(from).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('getUsageSnapshot', () => {
+  const from = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockClient = { from } as any;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-07-05T12:00:00.000Z'));
+    from.mockReset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('initializes missing counters and returns zero usage', async () => {
+    const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
+    selectBuilder.select.mockReturnValue(selectBuilder);
+    selectBuilder.eq.mockReturnValue(selectBuilder);
+    selectBuilder.maybeSingle.mockResolvedValue({ data: null, error: null });
+
+    const insertBuilder = { insert: vi.fn(), select: vi.fn(), maybeSingle: vi.fn() };
+    insertBuilder.insert.mockReturnValue(insertBuilder);
+    insertBuilder.select.mockReturnValue(insertBuilder);
+    insertBuilder.maybeSingle.mockResolvedValue({
+      data: { period_start: '2024-07-01', offers_generated: 0 },
+      error: null,
+    });
+
+    from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(insertBuilder as never);
+
+    const result = await getUsageSnapshot(mockClient, 'user-new');
+    expect(result).toEqual({ periodStart: '2024-07-01', offersGenerated: 0 });
+    expect(from).toHaveBeenCalledTimes(2);
+  });
+
+  it('resets counters when the stored period is stale', async () => {
+    const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
+    selectBuilder.select.mockReturnValue(selectBuilder);
+    selectBuilder.eq.mockReturnValue(selectBuilder);
+    selectBuilder.maybeSingle.mockResolvedValue({
+      data: { period_start: '2024-06-01', offers_generated: 5 },
+      error: null,
+    });
+
+    const updateBuilder = { update: vi.fn(), eq: vi.fn(), select: vi.fn(), maybeSingle: vi.fn() };
+    updateBuilder.update.mockReturnValue(updateBuilder);
+    updateBuilder.eq.mockReturnValue(updateBuilder);
+    updateBuilder.select.mockReturnValue(updateBuilder);
+    updateBuilder.maybeSingle.mockResolvedValue({
+      data: { period_start: '2024-07-01', offers_generated: 0 },
+      error: null,
+    });
+
+    from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(updateBuilder as never);
+
+    const result = await getUsageSnapshot(mockClient, 'user-old');
+    expect(result).toEqual({ periodStart: '2024-07-01', offersGenerated: 0 });
+    expect(from).toHaveBeenCalledTimes(2);
   });
 });
 
