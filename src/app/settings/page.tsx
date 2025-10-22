@@ -590,7 +590,7 @@ export default function SettingsPage() {
               />
             </label>
             <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Alap díj (Ft)</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Alap díj (nettó, Ft)</span>
               <input
                 type="number"
                 className={inputFieldClass}
@@ -598,6 +598,7 @@ export default function SettingsPage() {
                 value={newAct.price}
                 onChange={e => setNewAct(a => ({ ...a, price: Number(e.target.value) }))}
               />
+              <span className="text-xs text-slate-500">Az ÁFA-t külön, az alábbi mezőben adhatod meg.</span>
             </label>
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">ÁFA %</span>
