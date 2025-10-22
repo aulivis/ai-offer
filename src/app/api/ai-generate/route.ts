@@ -21,6 +21,7 @@ import {
   getUsageSnapshot,
 } from '@/lib/services/usage';
 import { countPendingPdfJobs, enqueuePdfJob } from '@/lib/queue/pdf';
+import { resolveEffectivePlan } from '@/lib/subscription';
 
 export const runtime = 'nodejs';
 
@@ -365,8 +366,7 @@ export async function POST(req: NextRequest) {
     // ---- Limit (havi) ----
 
     const profile = await getUserProfile(sb, user.id);
-    const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
-    const plan: SubscriptionPlan = rawPlan === 'starter' ? 'standard' : rawPlan;
+    const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null, user.email ?? null);
 
     let sanitizedImageAssets: SanitizedImageAsset[] = [];
     try {
@@ -377,9 +377,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: message }, { status });
     }
 
-    const privilegedEmail = 'tiens.robert@hotmail.com';
-    const normalizedEmail = typeof user.email === 'string' ? user.email.toLowerCase() : '';
-
     let planLimit: number | null;
     if (plan === 'pro') {
       planLimit = null;
@@ -387,11 +384,6 @@ export async function POST(req: NextRequest) {
       planLimit = 10;
     } else {
       planLimit = 3;
-    }
-
-    const hasUnlimitedEmail = normalizedEmail === privilegedEmail;
-    if (hasUnlimitedEmail) {
-      planLimit = null;
     }
 
     const cookieStore = await cookies();
@@ -424,7 +416,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const deviceLimit = plan === 'free' && !hasUnlimitedEmail && typeof planLimit === 'number' ? 3 : null;
+    const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
     if (deviceLimit !== null) {
       const deviceSnapshot = await getDeviceUsageSnapshot(sb, deviceId, usagePeriodStart);
       const devicePending = await countPendingPdfJobs(sb, {
