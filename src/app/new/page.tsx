@@ -10,6 +10,7 @@ import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument'
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 
 type Step1Form = {
   industry: string;
@@ -233,17 +234,13 @@ export default function NewOfferWizard() {
     let controller: AbortController | null = null;
     try {
       setPreviewLoading(true);
-
-      const { data: session } = await sb.auth.getSession();
-      const token = session.session?.access_token;
-      if (!token) return;
-
       controller = new AbortController();
       previewAbortRef.current = controller;
 
-      const resp = await fetch('/api/ai-preview', {
+      const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
+        supabase: sb,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           industry: form.industry,
           title: form.title,
@@ -254,19 +251,10 @@ export default function NewOfferWizard() {
           style: form.style,
         }),
         signal: controller.signal,
+        authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
+        errorMessageBuilder: status => `Hiba az előnézet betöltésekor (${status})`,
+        defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
       });
-
-      if (!resp.ok) {
-        let message = `Hiba az előnézet betöltésekor (${resp.status})`;
-        try {
-          const data = await resp.json();
-          if (data?.error) message = data.error;
-        } catch {
-          /* ignore JSON parse errors */
-        }
-        console.error(message);
-        return;
-      }
 
       if (!resp.body) {
         setPreviewHtml('<p>(nincs előnézet)</p>');
@@ -315,9 +303,14 @@ export default function NewOfferWizard() {
         setPreviewHtml('<p>(nincs előnézet)</p>');
       }
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') return;
-      if (typeof error === 'object' && error && 'name' in error && (error as { name?: string }).name === 'AbortError') return;
-      console.error('Előnézet hiba:', error);
+      if (isAbortError(error)) return;
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : 'Ismeretlen hiba történt az előnézet lekérése közben.';
+      console.error('Előnézet hiba:', message, error);
     } finally {
       const isLatest = previewRequestIdRef.current === nextRequestId;
       if (previewAbortRef.current === controller) {
@@ -402,22 +395,45 @@ export default function NewOfferWizard() {
   async function generate() {
     try {
       setLoading(true);
-      const { data: session } = await sb.auth.getSession();
-      const token = session.session?.access_token;
-      if (!token) { alert('Nem vagy bejelentkezve.'); router.replace('/login'); return; }
-
       const cid = await ensureClient();
+      let resp: Response;
+      try {
+        resp = await fetchWithSupabaseAuth('/api/ai-generate', {
+          supabase: sb,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: form.title,
+            industry: form.industry,
+            description: form.description,
+            deadline: form.deadline,
+            language: form.language,
+            brandVoice: form.brandVoice,
+            style: form.style,
+            prices: rows,
+            aiOverrideHtml: editedHtml || previewHtml,
+            clientId: cid,
+          }),
+          authErrorMessage: 'Nem vagy bejelentkezve.',
+          errorMessageBuilder: status => `Hiba a generálásnál (${status})`,
+          defaultErrorMessage: 'Ismeretlen hiba történt az ajánlat generálása közben.',
+        });
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          alert('Nem vagy bejelentkezve.');
+          router.replace('/login');
+          return;
+        }
 
-      const resp = await fetch('/api/ai-generate', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          title: form.title, industry: form.industry, description: form.description, deadline: form.deadline,
-          language: form.language, brandVoice: form.brandVoice, style: form.style,
-          prices: rows, aiOverrideHtml: editedHtml || previewHtml,
-          clientId: cid
-        })
-      });
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : error instanceof Error
+              ? error.message
+              : 'Ismeretlen hiba történt az ajánlat generálása közben.';
+        alert(message);
+        return;
+      }
 
       const raw = await resp.text();
       let payload: unknown = null;
@@ -434,7 +450,7 @@ export default function NewOfferWizard() {
       const errorMessage = payloadObj && typeof payloadObj.error === 'string' ? (payloadObj.error as string) : undefined;
       const sectionsData = payloadObj ? (payloadObj.sections as unknown) : null;
 
-      if (!resp.ok || okFlag === false) {
+      if (okFlag === false) {
         const msg = errorMessage || `Hiba a generálásnál (${resp.status})`;
         alert(msg);
         return;
