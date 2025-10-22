@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { envServer } from '@/env.server';
+
 export interface PdfJobInput {
   jobId: string;
   offerId: string;
@@ -15,13 +17,61 @@ export interface PdfJobInput {
 
 const SCHEMA_CACHE_ERROR_FRAGMENT = "could not find the table 'public.pdf_jobs' in the schema cache";
 const SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT = 'could not find the function';
+const PGREST_SCHEMA_CACHE_RPC = 'pgrest.schema_cache_reload';
+const PGREST_SCHEMA_CACHE_RPC_FRAGMENT = 'pgrest.schema_cache_reload';
+
+function isRefreshFunctionMissing(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes(SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT) ||
+    (normalized.includes('refresh_pdf_jobs_schema_cache') && normalized.includes('does not exist'))
+  );
+}
+
+async function refreshSchemaCacheViaPostgrest(sb: SupabaseClient) {
+  const { error } = await sb.rpc(PGREST_SCHEMA_CACHE_RPC);
+  if (error) {
+    const message = error.message || '';
+    throw new Error(`Failed to refresh PostgREST schema cache: ${message}`);
+  }
+}
+
+async function refreshSchemaCacheViaHttp() {
+  const endpoint = `${envServer.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/${PGREST_SCHEMA_CACHE_RPC}`;
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`Failed to refresh schema cache via HTTP (${response.status}): ${body}`);
+  }
+}
 
 async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
   const { error } = await sb.rpc('refresh_pdf_jobs_schema_cache');
   if (error) {
     const message = error.message || '';
-    if (message.toLowerCase().includes(SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT)) {
-      console.warn('refresh_pdf_jobs_schema_cache RPC is missing; proceeding without explicit refresh.');
+    if (isRefreshFunctionMissing(message)) {
+      console.warn('refresh_pdf_jobs_schema_cache RPC is missing; attempting PostgREST schema cache reload.');
+      try {
+        await refreshSchemaCacheViaPostgrest(sb);
+      } catch (fallbackError) {
+        const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        if (fallbackMessage.toLowerCase().includes(PGREST_SCHEMA_CACHE_RPC_FRAGMENT)) {
+          console.warn('pgrest.schema_cache_reload RPC is missing; attempting direct HTTP refresh.');
+          await refreshSchemaCacheViaHttp();
+          return;
+        }
+
+        throw new Error(fallbackMessage);
+      }
+
       return;
     }
     throw new Error(`Failed to refresh pdf_jobs schema cache: ${message}`);
