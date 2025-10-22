@@ -135,7 +135,60 @@ function safeList(items: string[] | undefined): string {
   return `<ul>${normalized.map((item) => `<li>${item}</li>`).join('')}</ul>`;
 }
 
-function sectionsToHtml(sections: OfferSections): string {
+function limitList(items: string[] | undefined, max: number): string[] {
+  const normalized = Array.isArray(items) ? items.filter((item) => typeof item === 'string') : [];
+  if (!normalized.length) return [];
+  return normalized.slice(0, Math.max(0, max));
+}
+
+function sectionsToHtml(sections: OfferSections, style: 'compact' | 'detailed'): string {
+  if (style === 'compact') {
+    const intro = sanitizeInput((sections.introduction || '').trim());
+    const summary = sanitizeInput((sections.project_summary || '').trim());
+    const combinedIntro = [intro, summary].filter(Boolean).join(' ');
+
+    const html = `
+      <div class="offer-doc__compact">
+        <section class="offer-doc__compact-intro">
+          <div class="offer-doc__compact-block">
+            <h2>Gyors áttekintés</h2>
+            ${safeParagraph(combinedIntro)}
+          </div>
+          <div class="offer-doc__compact-block offer-doc__compact-block--highlights">
+            <h3>Kiemelt fókuszok</h3>
+            ${safeList(limitList(sections.scope, 3))}
+          </div>
+        </section>
+        <section class="offer-doc__compact-grid">
+          <div class="offer-doc__compact-card">
+            <h3>Szállítandók</h3>
+            ${safeList(limitList(sections.deliverables, 3))}
+          </div>
+          <div class="offer-doc__compact-card">
+            <h3>Menetrend</h3>
+            ${safeList(limitList(sections.schedule, 3))}
+          </div>
+          <div class="offer-doc__compact-card">
+            <h3>Lényeges feltételek</h3>
+            ${safeList(limitList(sections.assumptions, 3))}
+          </div>
+        </section>
+        <section class="offer-doc__compact-bottom">
+          <div class="offer-doc__compact-card offer-doc__compact-card--accent">
+            <h3>Következő lépések</h3>
+            ${safeList(limitList(sections.next_steps, 3))}
+          </div>
+          <div class="offer-doc__compact-card offer-doc__compact-card--closing">
+            <h3>Zárás</h3>
+            ${safeParagraph(sections.closing)}
+          </div>
+        </section>
+      </div>
+    `;
+
+    return sanitizeHTML(html);
+  }
+
   const html = `
     <h2>Bevezető</h2>
     ${safeParagraph(sections.introduction)}
@@ -461,8 +514,8 @@ export async function POST(req: NextRequest) {
 
       const styleAddon =
         style === 'compact'
-          ? 'Stílus: rövid, lényegretörő, 3–5 bekezdés és néhány felsorolás, sallang nélkül.'
-          : 'Stílus: részletes, mégis jól tagolt; tömör bekezdések és áttekinthető felsorolások.';
+          ? 'Stílus: nagyon tömör, 1-2 rövid bekezdés és legfeljebb 3 pontos felsorolások szakaszonként. A hangsúly a lényegi feladatokon legyen, kerülve a töltelékszöveget.'
+          : 'Stílus: részletes és indokolt; adj 2-3 mondatos bekezdéseket és tartalmas felsorolásokat, amelyek megmagyarázzák a javasolt lépéseket.';
 
       // Sanitize user inputs before passing to OpenAI
       const safeIndustry = sanitizeInput(industry);
@@ -498,7 +551,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           throw new Error('Structured output missing');
         }
 
-        aiHtml = sectionsToHtml(structuredSections);
+        aiHtml = sectionsToHtml(structuredSections, style === 'compact' ? 'compact' : 'detailed');
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error('OpenAI structured output error:', message);

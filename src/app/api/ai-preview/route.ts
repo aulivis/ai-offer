@@ -16,6 +16,36 @@ Adj vissza TISZTA HTML-RÉSZLETET (nincs <html>/<body>), csak címsorokat, bekez
 Szerkezet: Bevezető, Projekt összefoglaló, Terjedelem, Szállítandók, Ütemezés, Feltételezések & Kizárások, Következő lépések, Zárás.
 `;
 
+const PREVIEW_ABORT_RETRY_ATTEMPTS = 2;
+const PREVIEW_ABORT_RETRY_DELAY_MS = 250;
+
+function isAbortLikeError(error: unknown): boolean {
+  if (!error) return false;
+
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('request was aborted') || message.includes('aborted')) {
+      return true;
+    }
+    if (error.name === 'AbortError') {
+      return true;
+    }
+  }
+
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const rawMessage = (error as { message?: unknown }).message;
+    if (typeof rawMessage === 'string' && rawMessage.toLowerCase().includes('request was aborted')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function POST(req: NextRequest) {
   try {
     const auth = req.headers.get('authorization');
@@ -35,8 +65,8 @@ export async function POST(req: NextRequest) {
 
     const styleAddon =
       style === 'compact'
-        ? 'Stílus: rövid, lényegretörő, 3–5 bekezdés és néhány felsorolás, sallang nélkül.'
-        : 'Stílus: részletes, mégis jól tagolt; tömör bekezdések és áttekinthető felsorolások.';
+        ? 'Stílus: nagyon tömör és kártyás felépítésű. Használj <div class="offer-doc__compact"> gyökérelemet, benne <section class="offer-doc__compact-intro">, <section class="offer-doc__compact-grid"> és <section class="offer-doc__compact-bottom"> blokkokat. Minden felsorolás legfeljebb 3 rövid pontból álljon.'
+        : 'Stílus: részletes és indokolt; adj 2-3 mondatos bekezdéseket, a HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat.';
 
     const safeLanguage = sanitizeInput(language);
     const safeBrand = sanitizeInput(brandVoice);
@@ -63,32 +93,51 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     let lastError: unknown = null;
 
     for (const model of previewModels) {
-      try {
-        const requestOptions: Parameters<typeof openai.responses.stream>[0] = {
-          model,
-          input: [
-            { role: 'system', content: BASE_SYSTEM_PROMPT },
-            { role: 'user', content: userPrompt },
-          ],
-        };
+      for (let attempt = 0; attempt < PREVIEW_ABORT_RETRY_ATTEMPTS; attempt += 1) {
+        try {
+          const requestOptions: Parameters<typeof openai.responses.stream>[0] = {
+            model,
+            input: [
+              { role: 'system', content: BASE_SYSTEM_PROMPT },
+              { role: 'user', content: userPrompt },
+            ],
+          };
 
-        if (!model.startsWith('o4')) {
-          requestOptions.temperature = 0.4;
-        }
+          if (!model.startsWith('o4')) {
+            requestOptions.temperature = 0.4;
+          }
 
-        stream = await openai.responses.stream(requestOptions);
-        if (model !== previewModels[0]) {
-          console.warn('ai-preview: using fallback model', model, lastError);
-        }
-        break;
-      } catch (error) {
-        lastError = error;
-        const isModelMissing =
-          error instanceof APIError &&
-          (error.status === 404 || error.code === 'model_not_found' || error.code === 'model_not_found_error');
-        if (!isModelMissing || model === previewModels[previewModels.length - 1]) {
+          stream = await openai.responses.stream(requestOptions);
+          if (model !== previewModels[0] || attempt > 0) {
+            console.warn('ai-preview: using fallback model', model, lastError);
+          }
+          break;
+        } catch (error) {
+          lastError = error;
+          const isModelMissing =
+            error instanceof APIError &&
+            (error.status === 404 || error.code === 'model_not_found' || error.code === 'model_not_found_error');
+
+          if (isAbortLikeError(error) && attempt < PREVIEW_ABORT_RETRY_ATTEMPTS - 1) {
+            await wait(PREVIEW_ABORT_RETRY_DELAY_MS);
+            continue;
+          }
+
+          if (isModelMissing) {
+            break;
+          }
+
+          if (isAbortLikeError(error) && model !== previewModels[previewModels.length - 1]) {
+            console.warn('ai-preview: aborted stream, retrying with fallback model', model, error);
+            break;
+          }
+
           throw error;
         }
+      }
+
+      if (stream) {
+        break;
       }
     }
 
@@ -226,6 +275,13 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (isAbortLikeError(error)) {
+      console.error('ai-preview aborted before streaming could start:', message);
+      return NextResponse.json(
+        { error: 'Az OpenAI kapcsolat megszakadt. Próbáld újra néhány másodperc múlva.' },
+        { status: 503 }
+      );
+    }
     if (error instanceof APIError) {
       console.error('ai-preview API error:', message);
       const status = typeof error.status === 'number' ? error.status : 500;
