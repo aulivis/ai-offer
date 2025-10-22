@@ -64,14 +64,19 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     for (const model of previewModels) {
       try {
-        stream = await openai.responses.stream({
+        const requestOptions: Parameters<typeof openai.responses.stream>[0] = {
           model,
-          temperature: 0.4,
           input: [
             { role: 'system', content: BASE_SYSTEM_PROMPT },
             { role: 'user', content: userPrompt },
           ],
-        });
+        };
+
+        if (!model.startsWith('o4')) {
+          requestOptions.temperature = 0.4;
+        }
+
+        stream = await openai.responses.stream(requestOptions);
         if (model !== previewModels[0]) {
           console.warn('ai-preview: using fallback model', model, lastError);
         }
