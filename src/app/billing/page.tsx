@@ -6,6 +6,7 @@ import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { hasUnlimitedAccess, resolveEffectivePlan } from '@/lib/subscription';
 
 type CardBrand = {
@@ -155,34 +156,24 @@ export default function BillingPage() {
   async function startCheckout(priceId: string) {
     try {
       setLoading(priceId);
-      const resp = await fetch(CHECKOUT_API_PATH, {
+      const resp = await fetchWithSupabaseAuth(CHECKOUT_API_PATH, {
+        supabase,
         method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ priceId, email })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, email }),
+        authErrorMessage: 'A fizetés indításához először jelentkezz be.',
+        defaultErrorMessage: 'Nem sikerült elindítani a fizetést.',
       });
-      if (!resp.ok) {
-        let message = 'Nem sikerült elindítani a fizetést.';
-        try {
-          const payload: unknown = await resp.json();
-          if (payload && typeof payload === 'object' && 'error' in payload) {
-            const errorValue = (payload as { error?: unknown }).error;
-            if (typeof errorValue === 'string' && errorValue.trim()) {
-              message = errorValue;
-            }
-          }
-        } catch {
-          // ignore JSON parse errors
-        }
-        alert(message);
-        setLoading(null);
-        return;
-      }
-      const { url } = await resp.json();
+      const { url } = (await resp.json()) as { url?: string | null };
       if (url) router.push(url);
       else setLoading(null);
     } catch (e) {
       console.error(e);
-      alert('Váratlan hiba a fizetés indításakor.');
+      const message =
+        e instanceof ApiError && typeof e.message === 'string' && e.message.trim()
+          ? e.message
+          : 'Váratlan hiba a fizetés indításakor.';
+      alert(message);
       setLoading(null);
     }
   }

@@ -28,6 +28,7 @@ vi.mock('@/env.server', () => ({
     OPENAI_API_KEY: 'test-key',
     STRIPE_SECRET_KEY: 'stripe-key',
     APP_URL: 'http://localhost',
+    STRIPE_PRICE_ALLOWLIST: ['price_123'],
   },
 }));
 
