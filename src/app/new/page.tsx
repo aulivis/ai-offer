@@ -11,6 +11,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
+import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 
 type Step1Form = {
   industry: string;
@@ -82,6 +83,7 @@ function isOfferSections(value: unknown): value is OfferSections {
 const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
 const textareaClass = 'w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
 const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
+const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 
 export default function NewOfferWizard() {
   const sb = useSupabase();
@@ -118,9 +120,12 @@ export default function NewOfferWizard() {
   // preview
   const [previewHtml, setPreviewHtml] = useState<string>('<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>');
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewCountdown, setPreviewCountdown] = useState(PREVIEW_TIMEOUT_SECONDS);
+  const [previewCountdownToken, setPreviewCountdownToken] = useState(0);
   const debounceRef = useRef<NodeJS.Timeout|null>(null);
   const previewAbortRef = useRef<AbortController|null>(null);
   const previewRequestIdRef = useRef(0);
+  const previewCountdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [branding, setBranding] = useState<BrandingState>({});
   const [profileCompanyName, setProfileCompanyName] = useState('');
 
@@ -189,6 +194,35 @@ export default function NewOfferWizard() {
     };
   }, []);
 
+  useEffect(() => {
+    const clearCountdown = () => {
+      if (previewCountdownIntervalRef.current) {
+        clearInterval(previewCountdownIntervalRef.current);
+        previewCountdownIntervalRef.current = null;
+      }
+    };
+
+    if (!previewLoading) {
+      clearCountdown();
+      setPreviewCountdown(PREVIEW_TIMEOUT_SECONDS);
+      return clearCountdown;
+    }
+
+    clearCountdown();
+    setPreviewCountdown(PREVIEW_TIMEOUT_SECONDS);
+    previewCountdownIntervalRef.current = setInterval(() => {
+      setPreviewCountdown((prev) => {
+        if (prev <= 1) {
+          clearCountdown();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return clearCountdown;
+  }, [previewLoading, previewCountdownToken]);
+
   const filteredActivities = useMemo(() => {
     return activities.filter(a =>
       (a.industries||[]).length === 0 ||
@@ -234,6 +268,7 @@ export default function NewOfferWizard() {
     let controller: AbortController | null = null;
     try {
       setPreviewLoading(true);
+      setPreviewCountdownToken((value) => value + 1);
       controller = new AbortController();
       previewAbortRef.current = controller;
 
@@ -677,7 +712,10 @@ export default function NewOfferWizard() {
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
                     <div className="flex items-center gap-3">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
-                      <span>Az AI most készíti az előnézetet…</span>
+                      <div className="flex flex-col">
+                        <span>Az AI most készíti az előnézetet…</span>
+                        <span className="text-xs text-slate-400">Kb. {previewCountdown} mp van hátra…</span>
+                      </div>
                     </div>
                     <p className="text-xs text-slate-400">Ez néhány másodpercet is igénybe vehet.</p>
                   </div>

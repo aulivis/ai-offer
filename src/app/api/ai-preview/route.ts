@@ -3,8 +3,7 @@ import OpenAI from 'openai';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
-
-export const STREAM_TIMEOUT_MS = 45_000;
+import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 const STREAM_TIMEOUT_MESSAGE = 'Az előnézet kérése időtúllépés miatt megszakadt.';
 
 export const runtime = 'nodejs';
