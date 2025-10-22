@@ -275,20 +275,23 @@ export default function SettingsPage() {
         } else {
           const response = await supabase
             .from('profiles')
-            .insert({
-              id: user.id,
-              company_name: profile.company_name ?? '',
-              company_address: profile.company_address ?? '',
-              company_tax_id: profile.company_tax_id ?? '',
-              company_phone: profile.company_phone ?? '',
-              company_email: profile.company_email?.trim() || email || '',
-              industries: sanitizedIndustries,
-              plan,
-              brand_logo_url: profile.brand_logo_url ?? null,
-              brand_color_primary: primary,
-              brand_color_secondary: secondary,
-              offer_template: templateId,
-            })
+            .upsert(
+              {
+                id: user.id,
+                company_name: profile.company_name ?? '',
+                company_address: profile.company_address ?? '',
+                company_tax_id: profile.company_tax_id ?? '',
+                company_phone: profile.company_phone ?? '',
+                company_email: profile.company_email?.trim() || email || '',
+                industries: sanitizedIndustries,
+                plan,
+                brand_logo_url: profile.brand_logo_url ?? null,
+                brand_color_primary: primary,
+                brand_color_secondary: secondary,
+                offer_template: templateId,
+              },
+              { onConflict: 'id' }
+            )
             .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
             .maybeSingle();
           if (response.error) {
@@ -350,20 +353,23 @@ export default function SettingsPage() {
       } else {
         const response = await supabase
           .from('profiles')
-          .insert({
-            id: user.id,
-            company_name: profile.company_name ?? '',
-            company_address: profile.company_address ?? '',
-            company_tax_id: profile.company_tax_id ?? '',
-            company_phone: profile.company_phone ?? '',
-            company_email: profile.company_email ?? '',
-            industries: sanitizedIndustries,
-            plan,
-            brand_logo_url: profile.brand_logo_url ?? null,
-            brand_color_primary: primary,
-            brand_color_secondary: secondary,
-            offer_template: templateId,
-          })
+          .upsert(
+            {
+              id: user.id,
+              company_name: profile.company_name ?? '',
+              company_address: profile.company_address ?? '',
+              company_tax_id: profile.company_tax_id ?? '',
+              company_phone: profile.company_phone ?? '',
+              company_email: profile.company_email ?? '',
+              industries: sanitizedIndustries,
+              plan,
+              brand_logo_url: profile.brand_logo_url ?? null,
+              brand_color_primary: primary,
+              brand_color_secondary: secondary,
+              offer_template: templateId,
+            },
+            { onConflict: 'id' }
+          )
           .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
         if (response.error) {
