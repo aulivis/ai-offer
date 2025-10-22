@@ -757,12 +757,6 @@ export default function NewOfferWizard() {
             )}
 
             <EditablePriceTable rows={rows} onChange={setRows} />
-
-            <div className="flex flex-col items-end gap-1 text-sm text-slate-500">
-              <span><strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')} Ft</span>
-              <span>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</span>
-              <span><strong className="text-slate-700">Bruttó:</strong> {totals.gross.toLocaleString('hu-HU')} Ft</span>
-            </div>
           </section>
         )}
 
