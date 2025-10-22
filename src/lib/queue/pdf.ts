@@ -13,26 +13,54 @@ export interface PdfJobInput {
   deviceLimit?: number | null;
 }
 
+const SCHEMA_CACHE_ERROR_FRAGMENT = "could not find the table 'public.pdf_jobs' in the schema cache";
+
+async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
+  const { error } = await sb.rpc('refresh_pdf_jobs_schema_cache');
+  if (error) {
+    throw new Error(`Failed to refresh pdf_jobs schema cache: ${error.message}`);
+  }
+}
+
+function isSchemaCacheError(message: string | undefined): boolean {
+  if (!message) return false;
+  return message.toLowerCase().includes(SCHEMA_CACHE_ERROR_FRAGMENT);
+}
+
+async function insertPdfJob(sb: SupabaseClient, job: PdfJobInput) {
+  return sb.from('pdf_jobs').insert({
+    id: job.jobId,
+    offer_id: job.offerId,
+    user_id: job.userId,
+    storage_path: job.storagePath,
+    status: 'pending',
+    payload: {
+      html: job.html,
+      usagePeriodStart: job.usagePeriodStart,
+      userLimit: job.userLimit,
+      deviceId: job.deviceId ?? null,
+      deviceLimit: job.deviceLimit ?? null,
+    },
+    callback_url: job.callbackUrl ?? null,
+    download_token: job.jobId,
+  });
+}
+
 export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promise<void> {
   try {
-    const { error } = await sb.from('pdf_jobs').insert({
-      id: job.jobId,
-      offer_id: job.offerId,
-      user_id: job.userId,
-      storage_path: job.storagePath,
-      status: 'pending',
-      payload: {
-        html: job.html,
-        usagePeriodStart: job.usagePeriodStart,
-        userLimit: job.userLimit,
-        deviceId: job.deviceId ?? null,
-        deviceLimit: job.deviceLimit ?? null,
-      },
-      callback_url: job.callbackUrl ?? null,
-      download_token: job.jobId,
-    });
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const { error } = await insertPdfJob(sb, job);
 
-    if (error) {
+      if (!error) {
+        return;
+      }
+
+      if (isSchemaCacheError(error.message) && attempt === 0) {
+        await refreshPdfJobsSchemaCache(sb);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+
       throw new Error(error.message || 'Failed to enqueue PDF job');
     }
   } catch (error) {
@@ -61,21 +89,36 @@ type PendingJobFilters = {
 };
 
 export async function countPendingPdfJobs(sb: SupabaseClient, filters: PendingJobFilters): Promise<number> {
-  let query = sb
-    .from('pdf_jobs')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', filters.userId)
-    .in('status', PENDING_STATUSES)
-    .eq('payload->>usagePeriodStart', filters.periodStart);
+  let lastError: Error | undefined;
 
-  if (filters.deviceId) {
-    query = query.eq('payload->>deviceId', filters.deviceId);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let query = sb
+      .from('pdf_jobs')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', filters.userId)
+      .in('status', PENDING_STATUSES)
+      .eq('payload->>usagePeriodStart', filters.periodStart);
+
+    if (filters.deviceId) {
+      query = query.eq('payload->>deviceId', filters.deviceId);
+    }
+
+    const { count, error } = await query;
+
+    if (!error) {
+      return count ?? 0;
+    }
+
+    lastError = new Error(`Failed to count pending PDF jobs: ${error.message}`);
+
+    if (isSchemaCacheError(error.message) && attempt === 0) {
+      await refreshPdfJobsSchemaCache(sb);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      continue;
+    }
+
+    throw lastError;
   }
 
-  const { count, error } = await query;
-  if (error) {
-    throw new Error(`Failed to count pending PDF jobs: ${error.message}`);
-  }
-
-  return count ?? 0;
+  throw lastError ?? new Error('Failed to count pending PDF jobs due to an unknown error.');
 }
