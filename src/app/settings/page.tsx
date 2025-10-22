@@ -15,6 +15,7 @@ import {
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
 import { resolveEffectivePlan } from '@/lib/subscription';
+import { resolveProfileMutationAction } from './profilePersistence';
 
 type Profile = {
   company_name?: string;
@@ -75,6 +76,7 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<Profile>({ industries: [], offer_template: DEFAULT_OFFER_TEMPLATE_ID });
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
   const [hasProfile, setHasProfile] = useState(false);
+  const [profileLoadError, setProfileLoadError] = useState<Error | null>(null);
 
   const [acts, setActs] = useState<ActivityRow[]>([]);
   const [newAct, setNewAct] = useState({ name: '', unit: 'db', price: 0, vat: 27, industries: [] as string[] });
@@ -162,10 +164,25 @@ export default function SettingsPage() {
     let active = true;
 
     (async () => {
-      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      const { data: prof, error: loadError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
       if (!active) {
         return;
       }
+      if (loadError) {
+        setProfileLoadError(loadError);
+        showToast({
+          title: 'Nem sikerült betölteni a profilod',
+          description: loadError.message || 'Kérjük, próbáld újra egy kicsit később.',
+          variant: 'error',
+        });
+        setLoading(false);
+        return;
+      }
+      setProfileLoadError(null);
       const industries = Array.isArray(prof?.industries)
         ? (prof.industries as string[])
           .map((industry) => (typeof industry === 'string' ? industry.trim() : ''))
@@ -226,6 +243,10 @@ export default function SettingsPage() {
           .filter((industry) => industry.length > 0)
         : [];
       if (scope === 'branding') {
+        const mutationAction = resolveProfileMutationAction({
+          hasProfile,
+          loadError: profileLoadError,
+        });
         let brandingData:
           | {
               brand_logo_url: string | null;
@@ -235,7 +256,7 @@ export default function SettingsPage() {
             }
           | null
           | undefined;
-        if (hasProfile) {
+        if (mutationAction === 'update') {
           const response = await supabase
             .from('profiles')
             .update({
@@ -276,6 +297,7 @@ export default function SettingsPage() {
           brandingData = response.data;
         }
         setHasProfile(true);
+        setProfileLoadError(null);
         setProfile((prev) => ({
           ...prev,
           brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null,
@@ -290,6 +312,10 @@ export default function SettingsPage() {
         return;
       }
 
+      const mutationAction = resolveProfileMutationAction({
+        hasProfile,
+        loadError: profileLoadError,
+      });
       let profileData:
         | {
             brand_logo_url: string | null;
@@ -299,7 +325,7 @@ export default function SettingsPage() {
           }
         | null
         | undefined;
-      if (hasProfile) {
+      if (mutationAction === 'update') {
         const response = await supabase
           .from('profiles')
           .update({
@@ -346,6 +372,7 @@ export default function SettingsPage() {
         profileData = response.data;
       }
       setHasProfile(true);
+      setProfileLoadError(null);
       setProfile((prev) => ({
         ...prev,
         brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null,
