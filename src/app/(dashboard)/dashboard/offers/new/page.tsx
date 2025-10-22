@@ -11,6 +11,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
+import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 
 const DEFAULT_PREVIEW_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
@@ -131,28 +132,15 @@ export default function NewOfferPage() {
     setPreviewStatus('loading');
     setPreviewError(null);
 
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-    if (sessionError || !token) {
-      const message = sessionError?.message ?? 'Nem sikerült hitelesíteni az előnézet lekérését.';
-      if (previewRequestIdRef.current === nextRequestId) {
-        setPreviewStatus('error');
-        setPreviewError(message);
-        setPreviewHtml(DEFAULT_PREVIEW_HTML);
-      }
-      showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
-      return;
-    }
-
     const controller = new AbortController();
     previewAbortRef.current = controller;
 
     try {
-      const resp = await fetch('/api/ai-preview', {
+      const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
+        supabase,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           industry: 'Egyedi projekt',
@@ -164,24 +152,10 @@ export default function NewOfferPage() {
           style: 'detailed',
         }),
         signal: controller.signal,
+        authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
+        errorMessageBuilder: (status) => `Hiba az előnézet betöltésekor (${status})`,
+        defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
       });
-
-      if (!resp.ok) {
-        let message = `Hiba az előnézet betöltésekor (${resp.status})`;
-        try {
-          const data = await resp.json();
-          if (data?.error) message = data.error as string;
-        } catch {
-          /* ignore JSON parse errors */
-        }
-        if (previewRequestIdRef.current === nextRequestId) {
-          setPreviewStatus('error');
-          setPreviewError(message);
-          setPreviewHtml(DEFAULT_PREVIEW_HTML);
-        }
-        showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
-        return;
-      }
 
       if (!resp.body) {
         const message = 'Az AI nem küldött adatot az előnézethez.';
@@ -265,10 +239,7 @@ export default function NewOfferPage() {
         setPreviewError(null);
       }
     } catch (error) {
-      if (
-        (error instanceof DOMException && error.name === 'AbortError') ||
-        (typeof error === 'object' && error && 'name' in error && (error as { name?: string }).name === 'AbortError')
-      ) {
+      if (isAbortError(error)) {
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewStatus('aborted');
           setPreviewError('Az előnézet frissítése megszakadt.');
@@ -278,7 +249,11 @@ export default function NewOfferPage() {
       }
 
       const message =
-        error instanceof Error ? error.message : 'Ismeretlen hiba történt az előnézet lekérése közben.';
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : 'Ismeretlen hiba történt az előnézet lekérése közben.';
       if (previewRequestIdRef.current === nextRequestId) {
         setPreviewStatus('error');
         setPreviewError(message);
