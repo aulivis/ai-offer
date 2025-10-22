@@ -39,4 +39,12 @@ describe('sanitizeHTML', () => {
     const html = '<div>Unsafe < on purpose</div>';
     expect(sanitizeHTML(html)).toBe('<div>Unsafe &lt; on purpose</div>');
   });
+
+  it('allows img tags with safe attributes and strips the rest', () => {
+    const html =
+      '<p>Előnézet</p><img src="data:image/png;base64,AAAA" alt="logo" data-offer-image-key="img-1" width="200" onclick="evil()" />';
+    expect(sanitizeHTML(html)).toBe(
+      '<p>Előnézet</p><img src="data:image/png;base64,AAAA" alt="logo" data-offer-image-key="img-1" />'
+    );
+  });
 });

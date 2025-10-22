@@ -10,6 +10,7 @@ const ALLOWED_TAGS = new Set([
   'blockquote',
   'br',
   'em',
+  'img',
   'div',
   'h1',
   'h2',
@@ -37,12 +38,13 @@ const ALLOWED_TAGS = new Set([
   'ul',
 ]);
 
-const SELF_CLOSING_TAGS = new Set(['br', 'hr']);
+const SELF_CLOSING_TAGS = new Set(['br', 'hr', 'img']);
 
 const ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   a: new Set(['href', 'title', 'target', 'rel']),
   td: new Set(['colspan', 'rowspan']),
   th: new Set(['colspan', 'rowspan']),
+  img: new Set(['src', 'alt', 'data-offer-image-key']),
 };
 
 const DROP_CONTENT_TAGS = new Set(['script', 'style']);
@@ -50,6 +52,7 @@ const DROP_CONTENT_TAGS = new Set(['script', 'style']);
 const URL_ALLOWED_SCHEMES = new Set(['http', 'https', 'mailto']);
 const URL_ALLOWED_SCHEMES_BY_TAG: Record<string, Set<string>> = {
   a: new Set(['http', 'https', 'mailto']),
+  img: new Set(['http', 'https', 'data']),
 };
 
 const ALLOWED_TARGETS = new Set(['_blank', '_self', '_parent', '_top']);
@@ -113,6 +116,9 @@ function sanitiseAttribute(tagName: string, attrName: string, value: string): st
 
   switch (lowerAttr) {
     case 'href':
+      if (!isUrlAllowed(trimmed, tagName)) return null;
+      return escapeAttribute(trimmed);
+    case 'src':
       if (!isUrlAllowed(trimmed, tagName)) return null;
       return escapeAttribute(trimmed);
     case 'title':
