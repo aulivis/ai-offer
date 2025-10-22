@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
@@ -216,7 +216,7 @@ export default function NewOfferWizard() {
   }
 
   // === Preview hívó ===
-  async function callPreview() {
+  const callPreview = useCallback(async () => {
     const nextRequestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = nextRequestId;
 
@@ -327,14 +327,26 @@ export default function NewOfferWizard() {
         setPreviewLoading(false);
       }
     }
-  }
-  const onBlurTrigger = () => callPreview();
+  }, [
+    form.brandVoice,
+    form.deadline,
+    form.description,
+    form.industry,
+    form.language,
+    form.style,
+    form.title,
+    sb,
+  ]);
+  const onBlurTrigger = useCallback(() => {
+    void callPreview();
+  }, [callPreview]);
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { callPreview(); }, 800);
+    debounceRef.current = setTimeout(() => {
+      void callPreview();
+    }, 800);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.title, form.description, form.deadline, form.language, form.brandVoice, form.industry, form.style]);
+  }, [callPreview]);
 
   const totals = useMemo(() => summarize(rows), [rows]);
 
