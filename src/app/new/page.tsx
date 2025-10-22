@@ -7,6 +7,7 @@ import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
+import { DEFAULT_OFFER_TEMPLATE_ID, enforceTemplateForPlan, type OfferTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -150,7 +151,8 @@ export default function NewOfferWizard() {
   const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState<'free' | 'standard' | 'pro'>('free');
+  const [plan, setPlan] = useState<SubscriptionPlan>('free');
+  const [offerTemplate, setOfferTemplate] = useState<OfferTemplateId>(DEFAULT_OFFER_TEMPLATE_ID);
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>(['Marketing','Informatika','Építőipar','Tanácsadás','Szolgáltatás']);
 
@@ -208,7 +210,7 @@ export default function NewOfferWizard() {
     (async () => {
       const { data: prof } = await sb
         .from('profiles')
-        .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url, plan')
+        .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url, plan, offer_template')
         .eq('id', user.id)
         .maybeSingle();
       if (!active) {
@@ -225,15 +227,16 @@ export default function NewOfferWizard() {
         logoUrl: prof?.brand_logo_url ?? null,
       });
       const nextPlanRaw = typeof prof?.plan === 'string' ? prof.plan : 'free';
-      const normalizedPlan =
+      const normalizedPlan: SubscriptionPlan =
         nextPlanRaw === 'pro'
           ? 'pro'
           : nextPlanRaw === 'standard'
-            ? 'standard'
-            : nextPlanRaw === 'starter'
               ? 'standard'
-              : 'free';
+              : nextPlanRaw === 'starter'
+                ? 'standard'
+                : 'free';
       setPlan(normalizedPlan);
+      setOfferTemplate(enforceTemplateForPlan(typeof prof?.offer_template === 'string' ? prof.offer_template : null, normalizedPlan));
 
       const { data: acts } = await sb
         .from('activities')
@@ -640,8 +643,9 @@ export default function NewOfferWizard() {
       aiBodyHtml: body,
       priceTableHtml: pricePreviewHtml,
       branding,
+      templateId: offerTemplate,
     });
-  }, [branding, editedHtml, form.title, previewHtml, pricePreviewHtml, profileCompanyName]);
+  }, [branding, editedHtml, form.title, offerTemplate, previewHtml, pricePreviewHtml, profileCompanyName]);
 
   async function ensureClient(): Promise<string|undefined> {
     const name = (client.company_name || '').trim();

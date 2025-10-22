@@ -10,7 +10,7 @@ import { offerBodyMarkup, OFFER_DOCUMENT_PDF_STYLES, OFFER_DOCUMENT_STYLES, type
 
 export type OfferHtmlProps = OfferDocumentMarkupProps;
 
-export function offerHtml({ title, companyName, aiBodyHtml, priceTableHtml, branding }: OfferHtmlProps): string {
+export function offerHtml({ title, companyName, aiBodyHtml, priceTableHtml, branding, templateId }: OfferHtmlProps): string {
   return `
     <!DOCTYPE html>
     <html lang="hu">
@@ -23,7 +23,7 @@ export function offerHtml({ title, companyName, aiBodyHtml, priceTableHtml, bran
         </style>
       </head>
       <body>
-        ${offerBodyMarkup({ title, companyName, aiBodyHtml, priceTableHtml, branding })}
+        ${offerBodyMarkup({ title, companyName, aiBodyHtml, priceTableHtml, branding, templateId })}
       </body>
     </html>
   `;

@@ -7,6 +7,14 @@ import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import {
+  DEFAULT_OFFER_TEMPLATE_ID,
+  OFFER_TEMPLATES,
+  enforceTemplateForPlan,
+  offerTemplateRequiresPro,
+  type OfferTemplateId,
+  type SubscriptionPlan,
+} from '@/app/lib/offerTemplates';
 
 type Profile = {
   company_name?: string;
@@ -18,6 +26,7 @@ type Profile = {
   brand_logo_url?: string | null;
   brand_color_primary?: string | null;
   brand_color_secondary?: string | null;
+  offer_template?: OfferTemplateId | null;
 };
 
 type ActivityRow = {
@@ -63,7 +72,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
-  const [profile, setProfile] = useState<Profile>({ industries: [] });
+  const [profile, setProfile] = useState<Profile>({ industries: [], offer_template: DEFAULT_OFFER_TEMPLATE_ID });
+  const [plan, setPlan] = useState<SubscriptionPlan>('free');
 
   const [acts, setActs] = useState<ActivityRow[]>([]);
   const [newAct, setNewAct] = useState({ name: '', unit: 'db', price: 0, vat: 27, industries: [] as string[] });
@@ -95,6 +105,43 @@ export default function SettingsPage() {
 
   const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0F172A';
   const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
+  const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
+  const canUseProTemplates = plan === 'pro';
+
+  function renderTemplatePreview(variant: 'modern' | 'premium') {
+    if (variant === 'premium') {
+      return (
+        <div className="flex h-28 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div
+            className="h-16 w-full"
+            style={{ background: `linear-gradient(135deg, ${primaryPreview}, ${secondaryPreview})` }}
+          />
+          <div className="flex flex-1 items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
+            <div className="h-9 w-9 rounded-2xl border border-slate-200 bg-white/80 shadow-sm" />
+            <div className="flex-1 rounded-lg border border-slate-200/70 bg-white px-2 py-1">Ártáblázat</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex h-28 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="h-1.5 w-full" style={{ backgroundColor: primaryPreview }} />
+        <div className="px-3 py-2 text-[10px] text-slate-500">
+          <div className="h-3 w-2/5 rounded-full" style={{ backgroundColor: primaryPreview }} />
+          <div className="mt-3 grid grid-cols-4 gap-1">
+            <div
+              className="col-span-3 rounded-md border border-slate-200/80 bg-white px-2 py-1 shadow-sm"
+              style={{ borderTopColor: primaryPreview }}
+            >
+              Projekt részletek
+            </div>
+            <div className="col-span-1 rounded-md border border-slate-200 bg-slate-50" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
@@ -109,6 +156,18 @@ export default function SettingsPage() {
         return;
       }
       const industries = prof?.industries ?? [];
+      const rawPlan = typeof prof?.plan === 'string' ? prof.plan : 'free';
+      const normalizedPlan: SubscriptionPlan =
+        rawPlan === 'pro'
+          ? 'pro'
+          : rawPlan === 'standard' || rawPlan === 'starter'
+            ? 'standard'
+            : 'free';
+      setPlan(normalizedPlan);
+      const templateId = enforceTemplateForPlan(
+        typeof prof?.offer_template === 'string' ? prof.offer_template : null,
+        normalizedPlan
+      );
       setProfile({
         company_name: prof?.company_name ?? '',
         company_address: prof?.company_address ?? '',
@@ -119,6 +178,7 @@ export default function SettingsPage() {
         brand_logo_url: prof?.brand_logo_url ?? null,
         brand_color_primary: prof?.brand_color_primary ?? '#0F172A',
         brand_color_secondary: prof?.brand_color_secondary ?? '#F3F4F6',
+        offer_template: templateId,
       });
       setNewAct((prev) => ({ ...prev, industries }));
 
@@ -147,6 +207,7 @@ export default function SettingsPage() {
       if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
+      const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
       const { data, error } = await supabase.from('profiles').upsert({
         id: user.id,
         company_name: profile.company_name ?? '',
@@ -158,7 +219,8 @@ export default function SettingsPage() {
         brand_logo_url: profile.brand_logo_url ?? null,
         brand_color_primary: primary,
         brand_color_secondary: secondary,
-      }, { onConflict: 'id' }).select('brand_logo_url, brand_color_primary, brand_color_secondary').maybeSingle();
+        offer_template: templateId,
+      }, { onConflict: 'id' }).select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template').maybeSingle();
       if (error) {
         throw error;
       }
@@ -167,6 +229,10 @@ export default function SettingsPage() {
         brand_logo_url: data?.brand_logo_url ?? prev.brand_logo_url ?? null,
         brand_color_primary: data?.brand_color_primary ?? primary ?? null,
         brand_color_secondary: data?.brand_color_secondary ?? secondary ?? null,
+        offer_template: enforceTemplateForPlan(
+          typeof data?.offer_template === 'string' ? data.offer_template : templateId,
+          plan
+        ),
       }));
       alert('Mentve!');
     } catch (error) {
@@ -596,6 +662,68 @@ export default function SettingsPage() {
               {saving ? 'Mentés…' : 'Márka mentése'}
             </button>
           </div>
+        </section>
+
+        <section className={`${cardClass} space-y-6`}>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Ajánlat sablonok</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket
+              használják.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {OFFER_TEMPLATES.map((template) => {
+              const isSelected = selectedTemplateId === template.id;
+              const requiresPro = offerTemplateRequiresPro(template.id);
+              const disabled = requiresPro && !canUseProTemplates;
+              const cardClassNames = [
+                'flex h-full w-full flex-col gap-3 rounded-2xl border p-4 text-left transition',
+                isSelected
+                  ? 'border-slate-900 shadow-lg ring-2 ring-slate-900/10'
+                  : 'border-slate-200 hover:border-slate-300',
+                disabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-sm',
+              ].join(' ');
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  className={cardClassNames}
+                  onClick={() => {
+                    if (disabled) return;
+                    setProfile((prev) => ({ ...prev, offer_template: template.id }));
+                  }}
+                  disabled={disabled}
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-900">{template.label}</span>
+                    {requiresPro && (
+                      <span className="rounded-full bg-slate-900/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+                        Pro
+                      </span>
+                    )}
+                    {isSelected && (
+                      <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
+                        Aktív
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500">{template.description}</p>
+                  {renderTemplatePreview(template.previewVariant)}
+                  {disabled && (
+                    <p className="text-xs font-medium text-amber-600">Pro előfizetéssel érhető el.</p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {!canUseProTemplates && (
+            <p className="text-xs text-slate-500">
+              A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.
+            </p>
+          )}
         </section>
 
         <section className={`${cardClass} space-y-6`}>
