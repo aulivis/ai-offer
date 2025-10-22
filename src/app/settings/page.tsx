@@ -74,16 +74,21 @@ export default function SettingsPage() {
     if (profile.company_phone && !validatePhoneHU(profile.company_phone)) e.phone = 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).';
     if (profile.company_tax_id && !validateTaxHU(profile.company_tax_id)) e.tax = 'Adószám formátum: 12345678-1-12';
     if (profile.company_address && !validateAddress(profile.company_address)) e.address = 'A cím legyen legalább 8 karakter.';
-    if (profile.brand_color_primary && !normalizeColorHex(profile.brand_color_primary)) {
+
+    const brandPrimary = typeof profile.brand_color_primary === 'string' ? profile.brand_color_primary.trim() : '';
+    if (brandPrimary && !normalizeColorHex(brandPrimary)) {
       e.brandPrimary = 'Adj meg egy #RRGGBB formátumú hex színt.';
     }
-    if (profile.brand_color_secondary && !normalizeColorHex(profile.brand_color_secondary)) {
+
+    const brandSecondary = typeof profile.brand_color_secondary === 'string' ? profile.brand_color_secondary.trim() : '';
+    if (brandSecondary && !normalizeColorHex(brandSecondary)) {
       e.brandSecondary = 'Adj meg egy #RRGGBB formátumú hex színt.';
     }
+
     return e;
   }, [profile]);
 
-  const hasErrors = Object.keys(errors).length > 0;
+  const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);
 
   const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0F172A';
   const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
