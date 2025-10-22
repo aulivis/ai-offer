@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import OpenAI, { APIError } from 'openai';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
@@ -57,14 +57,39 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 `;
 
     const encoder = new TextEncoder();
-    const stream = await openai.responses.stream({
-      model: 'gpt-4o-mini',
-      temperature: 0.4,
-      input: [
-        { role: 'system', content: BASE_SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-    });
+    const previewModels = ['o4-mini', 'gpt-4o-mini'] as const;
+
+    let stream: Awaited<ReturnType<typeof openai.responses.stream>> | null = null;
+    let lastError: unknown = null;
+
+    for (const model of previewModels) {
+      try {
+        stream = await openai.responses.stream({
+          model,
+          temperature: 0.4,
+          input: [
+            { role: 'system', content: BASE_SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt },
+          ],
+        });
+        if (model !== previewModels[0]) {
+          console.warn('ai-preview: using fallback model', model, lastError);
+        }
+        break;
+      } catch (error) {
+        lastError = error;
+        const isModelMissing =
+          error instanceof APIError &&
+          (error.status === 404 || error.code === 'model_not_found' || error.code === 'model_not_found_error');
+        if (!isModelMissing || model === previewModels[previewModels.length - 1]) {
+          throw error;
+        }
+      }
+    }
+
+    if (!stream) {
+      throw lastError instanceof Error ? lastError : new Error('Failed to start preview stream');
+    }
 
     let removeStreamListeners: (() => void) | null = null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -196,6 +221,18 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (error instanceof APIError) {
+      console.error('ai-preview API error:', message);
+      const status = typeof error.status === 'number' ? error.status : 500;
+      const errorMessage =
+        (typeof error.message === 'string' && error.message.trim().length > 0
+          ? error.message
+          : error.error && typeof error.error === 'object'
+            ? String((error.error as { message?: unknown }).message ?? 'Preview failed')
+            : 'Preview failed') || 'Preview failed';
+      return NextResponse.json({ error: errorMessage }, { status });
+    }
+
     console.error('ai-preview error:', message);
     return NextResponse.json({ error: 'Preview failed' }, { status: 500 });
   }
