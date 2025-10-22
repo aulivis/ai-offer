@@ -4,6 +4,9 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 
+export const STREAM_TIMEOUT_MS = 45_000;
+const STREAM_TIMEOUT_MESSAGE = 'Az előnézet kérése időtúllépés miatt megszakadt.';
+
 export const runtime = 'nodejs';
 
 const BASE_SYSTEM_PROMPT = `
@@ -65,6 +68,19 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     });
 
     let removeStreamListeners: (() => void) | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let closeStreamRef: (() => void) | null = null;
+
+    const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      if (removeStreamListeners) {
+        removeStreamListeners();
+        removeStreamListeners = null;
+      }
+    };
 
     const readable = new ReadableStream<Uint8Array>({
       start(controller) {
@@ -74,16 +90,19 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         const closeStream = () => {
           if (closed) return;
           closed = true;
-          removeStreamListeners?.();
-          removeStreamListeners = null;
           try {
             controller.close();
           } catch (closeError) {
             if (!(closeError instanceof TypeError && closeError.message.includes('closed'))) {
               throw closeError;
             }
+          } finally {
+            cleanup();
+            closeStreamRef = null;
           }
         };
+
+        closeStreamRef = closeStream;
 
         const push = (payload: Record<string, unknown>) => {
           if (closed) return;
@@ -122,6 +141,22 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           closeStream();
         };
 
+        const handleTimeout = () => {
+          if (closed) return;
+          try {
+            push({ type: 'error', message: STREAM_TIMEOUT_MESSAGE });
+          } finally {
+            closeStream();
+            try {
+              stream.abort(new Error('Preview stream timed out'));
+            } catch (abortError) {
+              if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
+                console.error('Failed to abort preview stream after timeout:', abortError);
+              }
+            }
+          }
+        };
+
         removeStreamListeners = () => {
           stream.off('response.output_text.delta', handleDelta);
           stream.off('end', handleEnd);
@@ -133,11 +168,21 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         stream.on('end', handleEnd);
         stream.on('abort', handleAbort);
         stream.on('error', handleError);
+
+        timeoutId = setTimeout(handleTimeout, STREAM_TIMEOUT_MS);
       },
       cancel() {
-        removeStreamListeners?.();
-        removeStreamListeners = null;
-        stream.abort();
+        try {
+          stream.abort();
+        } catch (abortError) {
+          if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
+            console.error('Failed to abort preview stream on cancel:', abortError);
+          }
+        } finally {
+          closeStreamRef?.();
+          cleanup();
+          closeStreamRef = null;
+        }
       },
     });
 
