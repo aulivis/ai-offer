@@ -42,14 +42,19 @@ async function refreshSchemaCacheViaHttp() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Content-Profile': 'pgrest',
-      'Accept-Profile': 'pgrest',
+      // PostgREST only accepts profiles for schemas that are explicitly
+      // whitelisted in `db-schemas`.  Supabase projects include `public` by
+      // default, so we use it instead of the `pgrest` helper schema to avoid
+      // 406/PGRST106 errors when the helper profile is disabled.
+      // https://docs.postgrest.org/en/stable/schema_reloading.html
+      'Content-Profile': 'public',
+      'Accept-Profile': 'public',
       apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
     },
   });
 
-  if (!response.ok) {
+  if (!response.ok && response.status !== 406) {
     const body = await response.text().catch(() => '');
     throw new Error(`Failed to refresh schema cache via HTTP (${response.status}): ${body}`);
   }

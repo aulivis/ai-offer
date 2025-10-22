@@ -93,7 +93,7 @@ describe('enqueuePdfJob schema cache recovery', () => {
     const fromMock = vi.fn().mockReturnValue({ insert: insertMock });
     const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
 
-    const fetchSpy = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
+    const fetchSpy = vi.fn().mockResolvedValue(new Response(null, { status: 406 }));
     vi.stubGlobal('fetch', fetchSpy);
 
     const { enqueuePdfJob } = await import('../pdf');
@@ -117,8 +117,8 @@ describe('enqueuePdfJob schema cache recovery', () => {
     expect(init).toMatchObject({
       method: 'POST',
       headers: expect.objectContaining({
-        'Content-Profile': 'pgrest',
-        'Accept-Profile': 'pgrest',
+        'Content-Profile': 'public',
+        'Accept-Profile': 'public',
       }),
     });
   });
