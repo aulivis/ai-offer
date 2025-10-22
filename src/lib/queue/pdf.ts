@@ -14,11 +14,17 @@ export interface PdfJobInput {
 }
 
 const SCHEMA_CACHE_ERROR_FRAGMENT = "could not find the table 'public.pdf_jobs' in the schema cache";
+const SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT = 'could not find the function';
 
 async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
   const { error } = await sb.rpc('refresh_pdf_jobs_schema_cache');
   if (error) {
-    throw new Error(`Failed to refresh pdf_jobs schema cache: ${error.message}`);
+    const message = error.message || '';
+    if (message.toLowerCase().includes(SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT)) {
+      console.warn('refresh_pdf_jobs_schema_cache RPC is missing; proceeding without explicit refresh.');
+      return;
+    }
+    throw new Error(`Failed to refresh pdf_jobs schema cache: ${message}`);
   }
 }
 
