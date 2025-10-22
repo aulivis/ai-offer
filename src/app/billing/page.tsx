@@ -341,11 +341,10 @@ export default function BillingPage() {
                 fizethetnek.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4" aria-label="Támogatott kártyatársaságok">
               {CARD_BRANDS.map((brand) => (
-                <div key={brand.name} className="flex flex-col items-center gap-1.5">
-                  <div aria-hidden className="flex items-center justify-center">{brand.render()}</div>
-                  <span className="text-[0.65rem] font-medium uppercase tracking-[0.3em] text-slate-400">{brand.name}</span>
+                <div key={brand.name} className="flex items-center justify-center" aria-label={brand.name}>
+                  {brand.render()}
                 </div>
               ))}
             </div>
