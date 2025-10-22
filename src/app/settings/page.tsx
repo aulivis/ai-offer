@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { StorageApiError } from '@supabase/storage-js';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
+import { useToast } from '@/components/ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 type Profile = {
@@ -57,6 +59,7 @@ const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm
 export default function SettingsPage() {
   const supabase = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -181,7 +184,11 @@ export default function SettingsPage() {
     try {
       const maxSize = 4 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert('A logó mérete legfeljebb 4 MB lehet.');
+        showToast({
+          title: 'Túl nagy fájl',
+          description: 'A logó mérete legfeljebb 4 MB lehet.',
+          variant: 'error',
+        });
         return;
       }
       if (!user) return;
@@ -214,12 +221,39 @@ export default function SettingsPage() {
       const publicUrl = data?.publicUrl;
       if (publicUrl) {
         setProfile((prev) => ({ ...prev, brand_logo_url: publicUrl }));
-        alert('Logó feltöltve. Ne felejtsd el a mentést.');
+        showToast({
+          title: 'Logó feltöltve',
+          description: 'Ne felejtsd el a mentést.',
+          variant: 'success',
+        });
+      } else {
+        showToast({
+          title: 'Publikus URL hiányzik',
+          description: 'A Supabase nem adott vissza publikus URL-t a logóhoz.',
+          variant: 'error',
+        });
       }
     } catch (error) {
       console.error('Logo upload error', error);
-      const message = error instanceof Error ? error.message : 'Nem sikerült feltölteni a logót. Próbáld újra.';
-      alert(message);
+      if (error instanceof StorageApiError) {
+        const message = error.status === 404
+          ? 'Nem található a brand-assets tároló. Próbáld újra később, vagy vedd fel a kapcsolatot a támogatással.'
+          : error.message || 'Nem sikerült elérni a brand-assets tárolót.';
+        showToast({
+          title: 'Tárhely hiba',
+          description: message,
+          variant: 'error',
+        });
+      } else {
+        const message = error instanceof Error
+          ? error.message
+          : 'Nem sikerült feltölteni a logót. Próbáld újra.';
+        showToast({
+          title: 'Logó feltöltése sikertelen',
+          description: message,
+          variant: 'error',
+        });
+      }
     } finally {
       setLogoUploading(false);
     }
