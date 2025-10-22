@@ -231,41 +231,63 @@ export default function SettingsPage() {
           .filter((industry) => industry.length > 0)
         : [];
       if (scope === 'branding') {
-        const payload = {
-          id: user.id,
-          brand_logo_url: profile.brand_logo_url ?? null,
-          brand_color_primary: primary,
-          brand_color_secondary: secondary,
-          offer_template: templateId,
-          ...(hasProfile
-            ? {}
-            : {
-                company_name: profile.company_name ?? '',
-                company_address: profile.company_address ?? '',
-                company_tax_id: profile.company_tax_id ?? '',
-                company_phone: profile.company_phone ?? '',
-                company_email: (profile.company_email?.trim() || email || ''),
-                industries: sanitizedIndustries,
-                plan,
-              }),
-        };
-
-        const { data, error } = await supabase
-          .from('profiles')
-          .upsert(payload, { onConflict: 'id' })
-          .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
-          .maybeSingle();
-        if (error) {
-          throw error;
+        let brandingData:
+          | {
+              brand_logo_url: string | null;
+              brand_color_primary: string | null;
+              brand_color_secondary: string | null;
+              offer_template: string | null;
+            }
+          | null
+          | undefined;
+        if (hasProfile) {
+          const response = await supabase
+            .from('profiles')
+            .update({
+              brand_logo_url: profile.brand_logo_url ?? null,
+              brand_color_primary: primary,
+              brand_color_secondary: secondary,
+              offer_template: templateId,
+            })
+            .eq('id', user.id)
+            .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .maybeSingle();
+          if (response.error) {
+            throw response.error;
+          }
+          brandingData = response.data;
+        } else {
+          const response = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              company_name: profile.company_name ?? '',
+              company_address: profile.company_address ?? '',
+              company_tax_id: profile.company_tax_id ?? '',
+              company_phone: profile.company_phone ?? '',
+              company_email: profile.company_email?.trim() || email || '',
+              industries: sanitizedIndustries,
+              plan,
+              brand_logo_url: profile.brand_logo_url ?? null,
+              brand_color_primary: primary,
+              brand_color_secondary: secondary,
+              offer_template: templateId,
+            })
+            .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .maybeSingle();
+          if (response.error) {
+            throw response.error;
+          }
+          brandingData = response.data;
         }
         setHasProfile(true);
         setProfile((prev) => ({
           ...prev,
-          brand_logo_url: data?.brand_logo_url ?? profile.brand_logo_url ?? null,
-          brand_color_primary: data?.brand_color_primary ?? primary ?? null,
-          brand_color_secondary: data?.brand_color_secondary ?? secondary ?? null,
+          brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null,
+          brand_color_primary: brandingData?.brand_color_primary ?? primary ?? null,
+          brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
           offer_template: enforceTemplateForPlan(
-            typeof data?.offer_template === 'string' ? data.offer_template : templateId,
+            typeof brandingData?.offer_template === 'string' ? brandingData.offer_template : templateId,
             plan
           ),
         }));
@@ -273,35 +295,70 @@ export default function SettingsPage() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          company_name: profile.company_name ?? '',
-          company_address: profile.company_address ?? '',
-          company_tax_id: profile.company_tax_id ?? '',
-          company_phone: profile.company_phone ?? '',
-          company_email: profile.company_email ?? '',
-          industries: sanitizedIndustries,
-          brand_logo_url: profile.brand_logo_url ?? null,
-          brand_color_primary: primary,
-          brand_color_secondary: secondary,
-          offer_template: templateId,
-        }, { onConflict: 'id' })
-        .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
-        .maybeSingle();
-      if (error) {
-        throw error;
+      let profileData:
+        | {
+            brand_logo_url: string | null;
+            brand_color_primary: string | null;
+            brand_color_secondary: string | null;
+            offer_template: string | null;
+          }
+        | null
+        | undefined;
+      if (hasProfile) {
+        const response = await supabase
+          .from('profiles')
+          .update({
+            company_name: profile.company_name ?? '',
+            company_address: profile.company_address ?? '',
+            company_tax_id: profile.company_tax_id ?? '',
+            company_phone: profile.company_phone ?? '',
+            company_email: profile.company_email ?? '',
+            industries: sanitizedIndustries,
+            brand_logo_url: profile.brand_logo_url ?? null,
+            brand_color_primary: primary,
+            brand_color_secondary: secondary,
+            offer_template: templateId,
+          })
+          .eq('id', user.id)
+          .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .maybeSingle();
+        if (response.error) {
+          throw response.error;
+        }
+        profileData = response.data;
+      } else {
+        const response = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            company_name: profile.company_name ?? '',
+            company_address: profile.company_address ?? '',
+            company_tax_id: profile.company_tax_id ?? '',
+            company_phone: profile.company_phone ?? '',
+            company_email: profile.company_email ?? '',
+            industries: sanitizedIndustries,
+            plan,
+            brand_logo_url: profile.brand_logo_url ?? null,
+            brand_color_primary: primary,
+            brand_color_secondary: secondary,
+            offer_template: templateId,
+          })
+          .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .maybeSingle();
+        if (response.error) {
+          throw response.error;
+        }
+        profileData = response.data;
       }
       setHasProfile(true);
       setProfile((prev) => ({
         ...prev,
-        brand_logo_url: data?.brand_logo_url ?? prev.brand_logo_url ?? null,
-        brand_color_primary: data?.brand_color_primary ?? primary ?? null,
-        brand_color_secondary: data?.brand_color_secondary ?? secondary ?? null,
+        brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null,
+        brand_color_primary: profileData?.brand_color_primary ?? primary ?? null,
+        brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
         industries: sanitizedIndustries,
         offer_template: enforceTemplateForPlan(
-          typeof data?.offer_template === 'string' ? data.offer_template : templateId,
+          typeof profileData?.offer_template === 'string' ? profileData.offer_template : templateId,
           plan
         ),
       }));

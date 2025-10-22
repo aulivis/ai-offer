@@ -523,6 +523,16 @@ export default function NewOfferWizard() {
     void callPreview();
   }, [callPreview, hasPreviewInputs, previewLocked, showToast]);
 
+  useEffect(() => {
+    if (step !== 3) {
+      return;
+    }
+    if (previewLocked || previewLoading || !hasPreviewInputs) {
+      return;
+    }
+    void callPreview();
+  }, [callPreview, hasPreviewInputs, previewLoading, previewLocked, step]);
+
   const handlePickImage = useCallback(() => {
     if (!isProPlan) {
       showToast({
