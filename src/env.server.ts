@@ -15,19 +15,18 @@ const ServerEnvSchema = z.object({
   STRIPE_SECRET_KEY: z.string(),
   APP_URL: z.string().url(),
   STRIPE_PRICE_ALLOWLIST: z
-    .string()
+    .union([z.string(), z.undefined()])
     .transform((value) =>
-      value
-        .split(',')
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0),
-    )
-    .refine((items) => items.length > 0, {
-      message: 'STRIPE_PRICE_ALLOWLIST must contain at least one price id',
-    }),
+      typeof value === 'string'
+        ? value
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0)
+        : [],
+    ),
 });
 
-type ServerEnv = z.infer<typeof ServerEnvSchema> & {
+type ServerEnv = Omit<z.infer<typeof ServerEnvSchema>, 'STRIPE_PRICE_ALLOWLIST'> & {
   STRIPE_PRICE_ALLOWLIST: string[];
 };
 

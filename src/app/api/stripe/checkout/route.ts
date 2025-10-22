@@ -100,7 +100,10 @@ export async function POST(req: NextRequest) {
 
   const { priceId, email } = parsedBody;
 
-  if (!envServer.STRIPE_PRICE_ALLOWLIST.includes(priceId)) {
+  if (
+    envServer.STRIPE_PRICE_ALLOWLIST.length > 0 &&
+    !envServer.STRIPE_PRICE_ALLOWLIST.includes(priceId)
+  ) {
     console.warn('Checkout request rejected due to disallowed price', { requestId, clientId, priceId });
     return buildErrorResponse('A választott előfizetés nem érhető el.', 400);
   }
