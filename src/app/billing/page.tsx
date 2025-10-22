@@ -6,6 +6,7 @@ import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { hasUnlimitedAccess, resolveEffectivePlan } from '@/lib/subscription';
 
 type CardBrand = {
   name: string;
@@ -137,8 +138,8 @@ export default function BillingPage() {
         return;
       }
 
-      const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
-      setPlan(rawPlan === 'starter' ? 'standard' : rawPlan);
+      const effectivePlan = resolveEffectivePlan(profile?.plan ?? null, user.email ?? null);
+      setPlan(effectivePlan);
       setUsage({
         offersGenerated: Number(usageRow?.offers_generated ?? 0),
         periodStart: usageRow?.period_start ?? null,
@@ -192,8 +193,7 @@ export default function BillingPage() {
     return 3;
   }, [plan]);
 
-  const privilegedEmail = 'tiens.robert@hotmail.com';
-  const hasUnlimitedEmail = (email ?? '').toLowerCase() === privilegedEmail;
+  const hasUnlimitedEmail = hasUnlimitedAccess(email);
   const effectiveLimit = hasUnlimitedEmail ? null : planLimit;
 
   const offersThisMonth = usage?.offersGenerated ?? 0;

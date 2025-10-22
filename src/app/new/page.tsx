@@ -14,6 +14,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
+import { resolveEffectivePlan } from '@/lib/subscription';
 
 type Step1Form = {
   industry: string;
@@ -226,17 +227,14 @@ export default function NewOfferWizard() {
         secondaryColor: prof?.brand_color_secondary ?? null,
         logoUrl: prof?.brand_logo_url ?? null,
       });
-      const nextPlanRaw = typeof prof?.plan === 'string' ? prof.plan : 'free';
-      const normalizedPlan: SubscriptionPlan =
-        nextPlanRaw === 'pro'
-          ? 'pro'
-          : nextPlanRaw === 'standard'
-              ? 'standard'
-              : nextPlanRaw === 'starter'
-                ? 'standard'
-                : 'free';
+      const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null, user.email ?? null);
       setPlan(normalizedPlan);
-      setOfferTemplate(enforceTemplateForPlan(typeof prof?.offer_template === 'string' ? prof.offer_template : null, normalizedPlan));
+      setOfferTemplate(
+        enforceTemplateForPlan(
+          typeof prof?.offer_template === 'string' ? prof.offer_template : null,
+          normalizedPlan
+        )
+      );
 
       const { data: acts } = await sb
         .from('activities')

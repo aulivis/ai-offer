@@ -14,6 +14,7 @@ import {
   type OfferTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
+import { resolveEffectivePlan } from '@/lib/subscription';
 
 type Profile = {
   company_name?: string;
@@ -170,13 +171,7 @@ export default function SettingsPage() {
           .map((industry) => (typeof industry === 'string' ? industry.trim() : ''))
           .filter((industry) => industry.length > 0)
         : [];
-      const rawPlan = typeof prof?.plan === 'string' ? prof.plan : 'free';
-      const normalizedPlan: SubscriptionPlan =
-        rawPlan === 'pro'
-          ? 'pro'
-          : rawPlan === 'standard' || rawPlan === 'starter'
-            ? 'standard'
-            : 'free';
+      const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null, user.email ?? null);
       setHasProfile(Boolean(prof));
       setPlan(normalizedPlan);
       const templateId = enforceTemplateForPlan(
