@@ -42,6 +42,8 @@ async function refreshSchemaCacheViaHttp() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Content-Profile': 'pgrest',
+      'Accept-Profile': 'pgrest',
       apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
     },
