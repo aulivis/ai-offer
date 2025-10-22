@@ -258,9 +258,15 @@ export default function SettingsPage() {
     setActs(prev => prev.filter(a => a.id !== id));
   }
 
-  function toggleIndustry(target: string) {
-    setProfile(p => {
-      const set = new Set(p.industries || []);
+  function toggleIndustry(rawTarget: string) {
+    const target = rawTarget.trim();
+    if (!target) return;
+
+    setProfile((p) => {
+      const sanitized = (p.industries || [])
+        .map((industry) => industry.trim())
+        .filter(Boolean);
+      const set = new Set(sanitized);
       if (set.has(target)) {
         set.delete(target);
       } else {
@@ -285,8 +291,11 @@ export default function SettingsPage() {
   function handleManualIndustry(value: string) {
     const val = value.trim();
     if (!val) return;
-    setProfile(p => {
-      const set = new Set(p.industries || []);
+    setProfile((p) => {
+      const sanitized = (p.industries || [])
+        .map((industry) => industry.trim())
+        .filter(Boolean);
+      const set = new Set(sanitized);
       set.add(val);
       return { ...p, industries: Array.from(set) };
     });
