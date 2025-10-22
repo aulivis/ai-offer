@@ -129,13 +129,15 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         };
 
         const handleAbort = (error: unknown) => {
-          const message = error instanceof Error ? error.message : String(error);
+          console.warn('Preview stream aborted:', error);
+          const message = 'Az előnézet kérése megszakadt. Próbáld újra néhány másodperc múlva.';
           push({ type: 'error', message });
           closeStream();
         };
 
         const handleError = (error: unknown) => {
-          const message = error instanceof Error ? error.message : String(error);
+          console.error('Preview stream error:', error);
+          const message = 'Váratlan hiba történt az előnézet készítése közben. Kérjük, próbáld meg újra.';
           push({ type: 'error', message });
           closeStream();
         };

@@ -12,6 +12,7 @@ import RichTextEditor from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { useToast } from '@/components/ToastProvider';
 
 type Step1Form = {
   industry: string;
@@ -89,6 +90,7 @@ export default function NewOfferWizard() {
   const sb = useSupabase();
   const router = useRouter();
   const { status: authStatus, user } = useRequireAuth();
+  const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -122,6 +124,7 @@ export default function NewOfferWizard() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewCountdown, setPreviewCountdown] = useState(PREVIEW_TIMEOUT_SECONDS);
   const [previewCountdownToken, setPreviewCountdownToken] = useState(0);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout|null>(null);
   const previewAbortRef = useRef<AbortController|null>(null);
   const previewRequestIdRef = useRef(0);
@@ -262,6 +265,7 @@ export default function NewOfferWizard() {
 
     if (!form.title && !form.description) {
       setPreviewLoading(false);
+      setPreviewError(null);
       return;
     }
 
@@ -269,6 +273,7 @@ export default function NewOfferWizard() {
     try {
       setPreviewLoading(true);
       setPreviewCountdownToken((value) => value + 1);
+      setPreviewError(null);
       controller = new AbortController();
       previewAbortRef.current = controller;
 
@@ -292,7 +297,10 @@ export default function NewOfferWizard() {
       });
 
       if (!resp.body) {
+        const message = 'Az AI nem küldött adatot az előnézethez.';
         setPreviewHtml('<p>(nincs előnézet)</p>');
+        setPreviewError(message);
+        showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
         return;
       }
 
@@ -300,6 +308,7 @@ export default function NewOfferWizard() {
       const decoder = new TextDecoder();
       let buffer = '';
       let latestHtml = '';
+      let streamErrorMessage: string | null = null;
 
       while (true) {
         const { value, done } = await reader.read();
@@ -326,12 +335,34 @@ export default function NewOfferWizard() {
                 }
               }
             } else if (payload.type === 'error') {
-              console.error('AI stream hiba:', payload.message);
+              streamErrorMessage =
+                typeof payload.message === 'string' && payload.message.trim().length > 0
+                  ? payload.message
+                  : 'Ismeretlen hiba történt az AI előnézet frissítése közben.';
+              break;
             }
           } catch (err: unknown) {
             console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
           }
         }
+
+        if (streamErrorMessage) {
+          try {
+            await reader.cancel();
+          } catch {
+            /* ignore reader cancel errors */
+          }
+          break;
+        }
+      }
+
+      if (streamErrorMessage) {
+        if (previewRequestIdRef.current === nextRequestId) {
+          setPreviewHtml('<p>(nincs előnézet)</p>');
+          setPreviewError(streamErrorMessage);
+        }
+        showToast({ title: 'Előnézet hiba', description: streamErrorMessage, variant: 'error' });
+        return;
       }
 
       if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
@@ -346,6 +377,8 @@ export default function NewOfferWizard() {
             ? error.message
             : 'Ismeretlen hiba történt az előnézet lekérése közben.';
       console.error('Előnézet hiba:', message, error);
+      setPreviewError(message);
+      showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
     } finally {
       const isLatest = previewRequestIdRef.current === nextRequestId;
       if (previewAbortRef.current === controller) {
@@ -363,6 +396,7 @@ export default function NewOfferWizard() {
     form.language,
     form.style,
     form.title,
+    showToast,
     sb,
   ]);
   const onBlurTrigger = useCallback(() => {
@@ -707,6 +741,11 @@ export default function NewOfferWizard() {
                 <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
                 <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
               </div>
+              {previewError ? (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                  {previewError}
+                </div>
+              ) : null}
               <div className="min-h-[260px] rounded-2xl border border-slate-200 bg-white/90 p-4 overflow-auto">
                 {previewLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
