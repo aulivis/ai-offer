@@ -114,6 +114,12 @@ describe('enqueuePdfJob schema cache recovery', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0];
     expect(url).toContain('/rest/v1/rpc/pgrest.schema_cache_reload');
-    expect(init).toMatchObject({ method: 'POST' });
+    expect(init).toMatchObject({
+      method: 'POST',
+      headers: expect.objectContaining({
+        'Content-Profile': 'pgrest',
+        'Accept-Profile': 'pgrest',
+      }),
+    });
   });
 });
