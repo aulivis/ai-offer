@@ -2,25 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
-import EditablePriceTable from '@/components/EditablePriceTable';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
-import { useOfferWizard } from './useOfferWizard';
-import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
-import { priceTableHtml } from '@/app/lib/pricing';
+import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
+import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
+import { OfferSummarySection, type OfferPreviewStatus } from '@/components/offers/OfferSummarySection';
+import { offerBodyMarkup } from '@/app/lib/offerDocument';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
-
-type PreviewStatus = 'idle' | 'loading' | 'streaming' | 'success' | 'error' | 'aborted';
+import { useOfferWizard } from '@/hooks/useOfferWizard';
+import { usePricingRows } from '@/hooks/usePricingRows';
 
 const DEFAULT_PREVIEW_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
-
-const STATUS_TONE_CLASSES: Record<'info' | 'success' | 'error' | 'warning', string> = {
-  info: 'border-slate-200 bg-slate-50/80 text-slate-600',
-  success: 'border-emerald-200 bg-emerald-50/80 text-emerald-700',
-  error: 'border-rose-200 bg-rose-50/80 text-rose-700',
-  warning: 'border-amber-200 bg-amber-50/80 text-amber-700',
-};
 
 export default function NewOfferPage() {
   const {
@@ -44,22 +37,13 @@ export default function NewOfferPage() {
   const { showToast } = useToast();
 
   const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_HTML);
-  const [previewStatus, setPreviewStatus] = useState<PreviewStatus>('idle');
+  const [previewStatus, setPreviewStatus] = useState<OfferPreviewStatus>('idle');
   const [previewError, setPreviewError] = useState<string | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
   const previewDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const totals = useMemo(() => {
-    const net = pricingRows.reduce((sum, row) => sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0), 0);
-    const vat = pricingRows.reduce(
-      (sum, row) =>
-        sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0) * ((Number(row.vat) || 0) / 100),
-      0,
-    );
-    return { net, vat, gross: net + vat };
-  }, [pricingRows]);
-  const pricePreviewHtml = useMemo(() => priceTableHtml(pricingRows), [pricingRows]);
+  const { totals, pricePreviewHtml } = usePricingRows(pricingRows);
   const previewMarkup = useMemo(() => {
     const safeTitle = title.trim() || 'Árajánlat';
     const bodyHtml = previewHtml || DEFAULT_PREVIEW_HTML;
@@ -71,7 +55,14 @@ export default function NewOfferPage() {
     });
   }, [pricePreviewHtml, previewHtml, title]);
   const isStreaming = previewStatus === 'loading' || previewStatus === 'streaming';
-  const statusDescriptor = useMemo(() => {
+  const statusDescriptor = useMemo<
+    | {
+        tone: 'info' | 'success' | 'error' | 'warning';
+        title: string;
+        description?: string;
+      }
+    | null
+  >(() => {
     switch (previewStatus) {
       case 'loading':
         return {
@@ -419,137 +410,31 @@ export default function NewOfferPage() {
         </div>
 
         {step === 1 && (
-          <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
-            <div className="grid gap-5">
-              <label className="grid gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Ajánlat címe</span>
-                <input
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Pl. Weboldal fejlesztés"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                />
-              </label>
-
-              <label className="grid gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Projekt leírása</span>
-                <textarea
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Fogalmazd meg röviden az ügyfél problémáját és a megoldást."
-                  className="h-32 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                />
-              </label>
-            </div>
-          </section>
+          <OfferProjectDetailsSection
+            title={title}
+            description={description}
+            onTitleChange={(event) => setTitle(event.target.value)}
+            onDescriptionChange={(event) => setDescription(event.target.value)}
+          />
         )}
 
         {step === 2 && (
-          <section className="space-y-4">
-            <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-700">Árlista</h2>
-              <p className="mt-1 text-xs text-slate-500">
-                Adj meg legalább egy tételt – ez alapján számoljuk a nettó és bruttó összegeket.
-              </p>
-              <div className="mt-6">
-                <EditablePriceTable rows={pricingRows} onChange={setPricingRows} />
-              </div>
-            </div>
-          </section>
+          <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />
         )}
 
         {step === 3 && (
-          <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-6">
-              <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
-                <h2 className="text-sm font-semibold text-slate-700">Projekt összegzés</h2>
-                <dl className="mt-4 space-y-3 text-sm text-slate-600">
-                  <div className="flex items-center justify-between gap-3">
-                    <dt className="text-slate-400">Cím</dt>
-                    <dd className="font-medium text-slate-700">{title || '—'}</dd>
-                  </div>
-                  <div className="flex items-start justify-between gap-3">
-                    <dt className="text-slate-400">Leírás</dt>
-                    <dd className="max-w-xl text-right text-slate-700">{description || '—'}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="space-y-5 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Az előnézet automatikusan frissül, amikor a fenti mezőket módosítod.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isStreaming ? (
-                      <button
-                        type="button"
-                        onClick={handleAbortPreview}
-                        className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
-                      >
-                        Megszakítás
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleManualRefresh}
-                        className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
-                      >
-                        Újra generálás
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {statusDescriptor ? (
-                  <div className={`rounded-2xl border px-4 py-3 text-sm ${STATUS_TONE_CLASSES[statusDescriptor.tone]}`}>
-                    <div className="flex items-start gap-3">
-                      {isStreaming ? (
-                        <span className="mt-0.5 h-4 w-4 flex-none animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      ) : null}
-                      <div className="space-y-1">
-                        <p className="font-medium">{statusDescriptor.title}</p>
-                        {statusDescriptor.description ? (
-                          <p className="text-xs opacity-80">{statusDescriptor.description}</p>
-                        ) : null}
-                        {previewStatus === 'error' && previewError ? (
-                          <p className="text-xs text-rose-600">{previewError}</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="rounded-2xl border border-slate-200 bg-white/90">
-                  <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
-                  <div className="max-h-[460px] overflow-auto p-4">
-                    <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-700">Díjazás összesítése</h2>
-              <dl className="mt-4 space-y-2 text-sm text-slate-600">
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-slate-400">Nettó összesen</dt>
-                  <dd className="font-medium text-slate-700">{totals.net.toLocaleString('hu-HU')} Ft</dd>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <dt className="text-slate-400">ÁFA</dt>
-                  <dd className="font-medium text-slate-700">{totals.vat.toLocaleString('hu-HU')} Ft</dd>
-                </div>
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-                  <dt className="text-slate-500">Bruttó végösszeg</dt>
-                  <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
-                </div>
-              </dl>
-            </div>
-          </section>
+          <OfferSummarySection
+            title={title}
+            description={description}
+            previewMarkup={previewMarkup}
+            statusDescriptor={statusDescriptor}
+            isStreaming={isStreaming}
+            previewStatus={previewStatus}
+            previewError={previewError}
+            onAbortPreview={handleAbortPreview}
+            onManualRefresh={handleManualRefresh}
+            totals={totals}
+          />
         )}
 
         {inlineErrors.length > 0 && (
