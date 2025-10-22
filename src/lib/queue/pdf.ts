@@ -7,6 +7,10 @@ export interface PdfJobInput {
   storagePath: string;
   html: string;
   callbackUrl?: string;
+  usagePeriodStart: string;
+  userLimit: number | null;
+  deviceId?: string | null;
+  deviceLimit?: number | null;
 }
 
 export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promise<void> {
@@ -17,7 +21,13 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
       user_id: job.userId,
       storage_path: job.storagePath,
       status: 'pending',
-      payload: { html: job.html },
+      payload: {
+        html: job.html,
+        usagePeriodStart: job.usagePeriodStart,
+        userLimit: job.userLimit,
+        deviceId: job.deviceId ?? null,
+        deviceLimit: job.deviceLimit ?? null,
+      },
       callback_url: job.callbackUrl ?? null,
       download_token: job.jobId,
     });
@@ -40,4 +50,32 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
 
     throw new Error('An unknown error occurred while queueing the PDF job.');
   }
+}
+
+const PENDING_STATUSES = ['pending', 'processing'] as const;
+
+type PendingJobFilters = {
+  userId: string;
+  periodStart: string;
+  deviceId?: string | null;
+};
+
+export async function countPendingPdfJobs(sb: SupabaseClient, filters: PendingJobFilters): Promise<number> {
+  let query = sb
+    .from('pdf_jobs')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', filters.userId)
+    .in('status', PENDING_STATUSES)
+    .eq('payload->>usagePeriodStart', filters.periodStart);
+
+  if (filters.deviceId) {
+    query = query.eq('payload->>deviceId', filters.deviceId);
+  }
+
+  const { count, error } = await query;
+  if (error) {
+    throw new Error(`Failed to count pending PDF jobs: ${error.message}`);
+  }
+
+  return count ?? 0;
 }

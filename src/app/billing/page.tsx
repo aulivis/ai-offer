@@ -7,6 +7,87 @@ import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
+type CardBrand = {
+  name: string;
+  render: () => JSX.Element;
+};
+
+const CARD_BRANDS: CardBrand[] = [
+  {
+    name: 'Visa',
+    render: () => (
+      <div className="flex h-12 w-24 items-center justify-center rounded-xl bg-[#1a1f71] shadow-sm">
+        <span className="text-base font-black tracking-[0.3em] text-white">VISA</span>
+      </div>
+    ),
+  },
+  {
+    name: 'Mastercard',
+    render: () => (
+      <div className="flex h-12 w-24 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="relative flex items-center justify-center">
+          <div className="mr-[-0.6rem] h-10 w-10 rounded-full bg-[#eb001b] opacity-90" />
+          <div className="h-10 w-10 rounded-full bg-[#f79e1b] opacity-90" />
+        </div>
+      </div>
+    ),
+  },
+  {
+    name: 'American Express',
+    render: () => (
+      <div className="flex h-12 w-28 items-center justify-center rounded-xl bg-[#2e77bc] shadow-sm">
+        <span className="text-[0.85rem] font-bold tracking-wide text-white">AMEX</span>
+      </div>
+    ),
+  },
+  {
+    name: 'Discover',
+    render: () => (
+      <div className="flex h-12 w-28 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-slate-900">DISCOVER</span>
+          <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]" />
+        </div>
+      </div>
+    ),
+  },
+  {
+    name: 'Diners Club',
+    render: () => (
+      <div className="flex h-12 w-28 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-slate-50">
+            <div className="h-4 w-4 rounded-full bg-[#0a3a66]" />
+          </div>
+          <span className="text-sm font-semibold text-slate-700">DINERS</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    name: 'JCB',
+    render: () => (
+      <div className="flex h-12 w-24 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex h-9 w-16 overflow-hidden rounded-md">
+          <div className="flex-1 bg-[#0b4ea2]" />
+          <div className="flex-1 bg-[#0e9f49]" />
+          <div className="flex-1 bg-[#d71920]" />
+        </div>
+      </div>
+    ),
+  },
+  {
+    name: 'UnionPay',
+    render: () => (
+      <div className="flex h-12 w-28 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex h-9 w-20 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-[#017b94] via-[#026aa7] to-[#df2935]">
+          <span className="text-sm font-semibold text-white">UnionPay</span>
+        </div>
+      </div>
+    ),
+  },
+];
+
 const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
@@ -260,6 +341,26 @@ export default function BillingPage() {
               {loading === PRO_PRICE ? 'Átirányítás…' : 'Propono Pro megrendelése'}
             </button>
           </article>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-xl space-y-2">
+              <h2 className="text-sm font-semibold text-slate-700">Biztonságos bankkártyás fizetés</h2>
+              <p className="text-sm text-slate-500">
+                A Stripe fizetési felülete támogatja a vezető kártyatársaságokat, így Visa, Mastercard, American Express,
+                Discover, Diners Club, JCB és UnionPay kártyákkal is kényelmesen fizethetnek az ügyfeleid.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-6">
+              {CARD_BRANDS.map((brand) => (
+                <div key={brand.name} className="flex flex-col items-center gap-2">
+                  <div aria-hidden className="flex items-center justify-center">{brand.render()}</div>
+                  <span className="text-[0.7rem] font-medium uppercase tracking-wide text-slate-500">{brand.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <p className="text-sm text-slate-500">

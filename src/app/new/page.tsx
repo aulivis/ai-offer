@@ -683,23 +683,21 @@ export default function NewOfferWizard() {
   }
 
   async function generate() {
-    if (!previewLocked) {
-      showToast({
-        title: 'AI előnézet szükséges',
-        description: 'Generálás előtt kérd le az AI előnézetet az első lépésben.',
-        variant: 'error',
-      });
-      return;
-    }
-
     try {
+      if (!previewLocked) {
+        showToast({
+          title: 'Előnézet generálása háttérben',
+          description: 'A mentéshez az AI automatikusan elkészíti a hiányzó szöveges előnézetet.',
+          variant: 'info',
+        });
+      }
       setLoading(true);
       const cid = await ensureClient();
       let resp: Response;
-      const baseHtml = (editedHtml || previewHtml || '').trim();
+      const baseHtml = previewLocked ? (editedHtml || previewHtml || '').trim() : '';
       let htmlForApi = baseHtml;
       let imagePayload: PreparedImagePayload[] = [];
-      if (isProPlan && imageAssets.length > 0) {
+      if (previewLocked && isProPlan && imageAssets.length > 0) {
         const prepared = prepareImagesForSubmission(baseHtml, imageAssets);
         htmlForApi = prepared.html;
         imagePayload = prepared.images;
