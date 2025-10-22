@@ -11,7 +11,7 @@ const { streamMock, getUserMock } = vi.hoisted(() => ({
   getUserMock: vi.fn(),
 }));
 
-import { POST, STREAM_TIMEOUT_MS } from '../route';
+import { POST } from '../route';
 
 vi.mock('@/app/lib/supabaseServer', () => ({
   supabaseServer: () => ({
@@ -104,39 +104,50 @@ afterEach(() => {
 
 describe('ai-preview route streaming', () => {
   it('aborts hung streams after the configured timeout', async () => {
-    vi.useFakeTimers();
-    const fakeStream = new FakeStream();
-    streamMock.mockResolvedValue(fakeStream);
-
-    const response = await POST(createRequest());
-    const reader = response.body?.getReader();
-    expect(reader).toBeDefined();
-
-    const decoder = new TextDecoder();
-    const chunks: string[] = [];
-    const consume = (async () => {
-      while (true) {
-        const { done, value } = await reader!.read();
-        if (done) break;
-        chunks.push(decoder.decode(value, { stream: true }));
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation((callback: TimerHandler) => {
+      if (typeof callback === 'function') {
+        (callback as (...args: unknown[]) => void)();
       }
-      return chunks.join('');
-    })();
+      return 0 as unknown as ReturnType<typeof setTimeout>;
+    });
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout').mockImplementation(() => {});
 
-    await vi.advanceTimersByTimeAsync(STREAM_TIMEOUT_MS);
-    const raw = await consume;
+    try {
+      const fakeStream = new FakeStream();
+      streamMock.mockResolvedValue(fakeStream);
 
-    expect(fakeStream.aborted).toBe(true);
-    const events = parseSse(raw);
-    const lastEvent = events[events.length - 1];
-    expect(lastEvent).toMatchObject({ type: 'error' });
-    expect(JSON.stringify(lastEvent)).toContain('idő');
+      const response = await POST(createRequest());
+      const reader = response.body?.getReader();
+      expect(reader).toBeDefined();
 
-    expect(fakeStream.listenerCount('response.output_text.delta')).toBe(0);
-    expect(fakeStream.listenerCount('end')).toBe(0);
-    expect(fakeStream.listenerCount('abort')).toBe(0);
-    expect(fakeStream.listenerCount('error')).toBe(0);
-    expect(getUserMock).toHaveBeenCalledWith('test-token');
+      const decoder = new TextDecoder();
+      const chunks: string[] = [];
+      const consume = (async () => {
+        while (true) {
+          const { done, value } = await reader!.read();
+          if (done) break;
+          chunks.push(decoder.decode(value, { stream: true }));
+        }
+        return chunks.join('');
+      })();
+
+      const raw = await consume;
+
+      expect(fakeStream.aborted).toBe(true);
+      const events = parseSse(raw);
+      const lastEvent = events[events.length - 1];
+      expect(lastEvent).toMatchObject({ type: 'error' });
+      expect(JSON.stringify(lastEvent)).toContain('idő');
+
+      expect(fakeStream.listenerCount('response.output_text.delta')).toBe(0);
+      expect(fakeStream.listenerCount('end')).toBe(0);
+      expect(fakeStream.listenerCount('abort')).toBe(0);
+      expect(fakeStream.listenerCount('error')).toBe(0);
+      expect(getUserMock).toHaveBeenCalledWith('test-token');
+    } finally {
+      setTimeoutSpy.mockRestore();
+      clearTimeoutSpy.mockRestore();
+    }
   });
 
   it('cleans up listeners even when abort throws during cancel', async () => {
