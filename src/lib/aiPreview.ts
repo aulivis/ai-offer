@@ -1,1 +1,1 @@
-export const STREAM_TIMEOUT_MS = 45_000;
+export const STREAM_TIMEOUT_MS = 30_000;

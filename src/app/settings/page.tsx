@@ -220,15 +220,17 @@ export default function SettingsPage() {
       const secondary = normalizeColorHex(profile.brand_color_secondary);
       const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
       if (scope === 'branding') {
+        const payload = {
+          id: user.id,
+          brand_logo_url: profile.brand_logo_url ?? null,
+          brand_color_primary: primary,
+          brand_color_secondary: secondary,
+          offer_template: templateId,
+        };
+
         const { data, error } = await supabase
           .from('profiles')
-          .update({
-            brand_logo_url: profile.brand_logo_url ?? null,
-            brand_color_primary: primary,
-            brand_color_secondary: secondary,
-            offer_template: templateId,
-          })
-          .eq('id', user.id)
+          .upsert(payload, { onConflict: 'id' })
           .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
         if (error) {
@@ -803,7 +805,6 @@ export default function SettingsPage() {
                 value={newAct.price}
                 onChange={e => setNewAct(a => ({ ...a, price: Number(e.target.value) }))}
               />
-              <span className="text-xs text-slate-500">Az ÁFA-t külön, az alábbi mezőben adhatod meg.</span>
             </label>
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">ÁFA %</span>
