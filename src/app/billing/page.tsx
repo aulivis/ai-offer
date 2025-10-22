@@ -139,9 +139,17 @@ export default function BillingPage() {
 
   const periodStartDate = useMemo(() => parsePeriodStart(usage?.periodStart), [usage?.periodStart]);
   const resetDate = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const next = new Date(periodStartDate);
-    next.setMonth(next.getMonth() + 1, 1);
     next.setHours(0, 0, 0, 0);
+    next.setMonth(next.getMonth() + 1, 1);
+
+    while (next <= today) {
+      next.setMonth(next.getMonth() + 1, 1);
+    }
+
     return next;
   }, [periodStartDate]);
   const resetLabel = useMemo(
