@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { StorageApiError } from '@supabase/storage-js';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
@@ -83,25 +82,35 @@ export default function SettingsPage() {
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   const errors = useMemo(() => {
-    const e: Record<string, string> = {};
-    if (profile.company_phone && !validatePhoneHU(profile.company_phone)) e.phone = 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).';
-    if (profile.company_tax_id && !validateTaxHU(profile.company_tax_id)) e.tax = 'Adószám formátum: 12345678-1-12';
-    if (profile.company_address && !validateAddress(profile.company_address)) e.address = 'A cím legyen legalább 8 karakter.';
+    const general: Record<string, string> = {};
+    const branding: Record<string, string> = {};
+
+    if (profile.company_phone && !validatePhoneHU(profile.company_phone)) {
+      general.phone = 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).';
+    }
+    if (profile.company_tax_id && !validateTaxHU(profile.company_tax_id)) {
+      general.tax = 'Adószám formátum: 12345678-1-12';
+    }
+    if (profile.company_address && !validateAddress(profile.company_address)) {
+      general.address = 'A cím legyen legalább 8 karakter.';
+    }
 
     const brandPrimary = typeof profile.brand_color_primary === 'string' ? profile.brand_color_primary.trim() : '';
     if (brandPrimary && !normalizeColorHex(brandPrimary)) {
-      e.brandPrimary = 'Adj meg egy #RRGGBB formátumú hex színt.';
+      branding.brandPrimary = 'Adj meg egy #RRGGBB formátumú hex színt.';
     }
 
     const brandSecondary = typeof profile.brand_color_secondary === 'string' ? profile.brand_color_secondary.trim() : '';
     if (brandSecondary && !normalizeColorHex(brandSecondary)) {
-      e.brandSecondary = 'Adj meg egy #RRGGBB formátumú hex színt.';
+      branding.brandSecondary = 'Adj meg egy #RRGGBB formátumú hex színt.';
     }
 
-    return e;
+    return { general, branding };
   }, [profile]);
 
-  const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);
+  const hasGeneralErrors = Object.keys(errors.general).length > 0;
+  const hasBrandingErrors = Object.keys(errors.branding).length > 0;
+  const hasErrors = hasGeneralErrors || hasBrandingErrors;
 
   const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0F172A';
   const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
@@ -200,27 +209,62 @@ export default function SettingsPage() {
     };
   }, [authStatus, supabase, user]);
 
-  async function saveProfile() {
+  async function saveProfile(scope: 'all' | 'branding') {
     try {
       setSaving(true);
       if (!user) return;
-      if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
+      if (scope === 'branding') {
+        if (hasBrandingErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
+      } else if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
       const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
-      const { data, error } = await supabase.from('profiles').upsert({
-        id: user.id,
-        company_name: profile.company_name ?? '',
-        company_address: profile.company_address ?? '',
-        company_tax_id: profile.company_tax_id ?? '',
-        company_phone: profile.company_phone ?? '',
-        company_email: profile.company_email ?? '',
-        industries: profile.industries ?? [],
-        brand_logo_url: profile.brand_logo_url ?? null,
-        brand_color_primary: primary,
-        brand_color_secondary: secondary,
-        offer_template: templateId,
-      }, { onConflict: 'id' }).select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template').maybeSingle();
+      if (scope === 'branding') {
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({
+            brand_logo_url: profile.brand_logo_url ?? null,
+            brand_color_primary: primary,
+            brand_color_secondary: secondary,
+            offer_template: templateId,
+          })
+          .eq('id', user.id)
+          .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .maybeSingle();
+        if (error) {
+          throw error;
+        }
+        setProfile((prev) => ({
+          ...prev,
+          brand_logo_url: data?.brand_logo_url ?? profile.brand_logo_url ?? null,
+          brand_color_primary: data?.brand_color_primary ?? primary ?? null,
+          brand_color_secondary: data?.brand_color_secondary ?? secondary ?? null,
+          offer_template: enforceTemplateForPlan(
+            typeof data?.offer_template === 'string' ? data.offer_template : templateId,
+            plan
+          ),
+        }));
+        alert('Mentve!');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          company_name: profile.company_name ?? '',
+          company_address: profile.company_address ?? '',
+          company_tax_id: profile.company_tax_id ?? '',
+          company_phone: profile.company_phone ?? '',
+          company_email: profile.company_email ?? '',
+          industries: profile.industries ?? [],
+          brand_logo_url: profile.brand_logo_url ?? null,
+          brand_color_primary: primary,
+          brand_color_secondary: secondary,
+          offer_template: templateId,
+        }, { onConflict: 'id' })
+        .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+        .maybeSingle();
       if (error) {
         throw error;
       }
@@ -258,11 +302,30 @@ export default function SettingsPage() {
         return;
       }
       if (!user) return;
-      const ensureResp = await fetch('/api/storage/ensure-brand-bucket', { method: 'POST' });
-      if (!ensureResp.ok) {
-        let message = 'Nem sikerült előkészíteni a tárhelyet.';
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        showToast({
+          title: 'Hitelesítési hiba',
+          description: 'Nem sikerült azonosítani a felhasználót. Jelentkezz be újra, majd próbáld meg ismét.',
+          variant: 'error',
+        });
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/storage/upload-brand-logo', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let message = 'Nem sikerült feltölteni a logót. Próbáld újra.';
         try {
-          const payload: unknown = await ensureResp.json();
+          const payload: unknown = await response.json();
           if (payload && typeof payload === 'object' && 'error' in payload) {
             const errorValue = (payload as { error?: unknown }).error;
             if (typeof errorValue === 'string' && errorValue.trim()) {
@@ -274,52 +337,32 @@ export default function SettingsPage() {
         }
         throw new Error(message);
       }
-      const extension = (file.name.split('.').pop() || 'png').toLowerCase();
-      const path = `${user.id}/brand-logo.${extension}`;
-      const { error } = await supabase.storage.from('brand-assets').upload(path, file, {
-        upsert: true,
-        contentType: file.type || 'image/png',
+
+      const payload: unknown = await response.json();
+      const publicUrl = payload && typeof payload === 'object' && 'publicUrl' in payload
+        ? (payload as { publicUrl: unknown }).publicUrl
+        : null;
+
+      if (typeof publicUrl !== 'string' || !publicUrl) {
+        throw new Error('A Supabase nem adott vissza publikus URL-t a logóhoz.');
+      }
+
+      setProfile((prev) => ({ ...prev, brand_logo_url: publicUrl }));
+      showToast({
+        title: 'Logó feltöltve',
+        description: 'Ne felejtsd el a mentést.',
+        variant: 'success',
       });
-      if (error) {
-        throw error;
-      }
-      const { data } = supabase.storage.from('brand-assets').getPublicUrl(path);
-      const publicUrl = data?.publicUrl;
-      if (publicUrl) {
-        setProfile((prev) => ({ ...prev, brand_logo_url: publicUrl }));
-        showToast({
-          title: 'Logó feltöltve',
-          description: 'Ne felejtsd el a mentést.',
-          variant: 'success',
-        });
-      } else {
-        showToast({
-          title: 'Publikus URL hiányzik',
-          description: 'A Supabase nem adott vissza publikus URL-t a logóhoz.',
-          variant: 'error',
-        });
-      }
     } catch (error) {
       console.error('Logo upload error', error);
-      if (error instanceof StorageApiError) {
-        const message = error.status === 404
-          ? 'Nem található a brand-assets tároló. Próbáld újra később, vagy vedd fel a kapcsolatot a támogatással.'
-          : error.message || 'Nem sikerült elérni a brand-assets tárolót.';
-        showToast({
-          title: 'Tárhely hiba',
-          description: message,
-          variant: 'error',
-        });
-      } else {
-        const message = error instanceof Error
-          ? error.message
-          : 'Nem sikerült feltölteni a logót. Próbáld újra.';
-        showToast({
-          title: 'Logó feltöltése sikertelen',
-          description: message,
-          variant: 'error',
-        });
-      }
+      const message = error instanceof Error
+        ? error.message
+        : 'Nem sikerült feltölteni a logót. Próbáld újra.';
+      showToast({
+        title: 'Logó feltöltése sikertelen',
+        description: message,
+        variant: 'error',
+      });
     } finally {
       setLogoUploading(false);
     }
@@ -443,7 +486,7 @@ export default function SettingsPage() {
                 value={profile.company_tax_id || ''}
                 onChange={e => setProfile(p => ({ ...p, company_tax_id: e.target.value }))}
               />
-              {errors.tax && <span className="text-xs text-rose-500">{errors.tax}</span>}
+              {errors.general.tax && <span className="text-xs text-rose-500">{errors.general.tax}</span>}
             </label>
             <label className="grid gap-2 md:col-span-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Cím</span>
@@ -453,7 +496,7 @@ export default function SettingsPage() {
                 value={profile.company_address || ''}
                 onChange={e => setProfile(p => ({ ...p, company_address: e.target.value }))}
               />
-              {errors.address && <span className="text-xs text-rose-500">{errors.address}</span>}
+              {errors.general.address && <span className="text-xs text-rose-500">{errors.general.address}</span>}
             </label>
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Telefon</span>
@@ -463,7 +506,7 @@ export default function SettingsPage() {
                 value={profile.company_phone || ''}
                 onChange={e => setProfile(p => ({ ...p, company_phone: e.target.value }))}
               />
-              {errors.phone && <span className="text-xs text-rose-500">{errors.phone}</span>}
+              {errors.general.phone && <span className="text-xs text-rose-500">{errors.general.phone}</span>}
             </label>
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">E-mail</span>
@@ -531,7 +574,7 @@ export default function SettingsPage() {
 
           <button
             type="button"
-            onClick={saveProfile}
+            onClick={() => saveProfile('all')}
             disabled={saving || hasErrors}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
@@ -562,7 +605,7 @@ export default function SettingsPage() {
                   placeholder="#0F172A"
                 />
               </div>
-              {errors.brandPrimary && <span className="text-xs text-rose-500">{errors.brandPrimary}</span>}
+              {errors.branding.brandPrimary && <span className="text-xs text-rose-500">{errors.branding.brandPrimary}</span>}
             </label>
 
             <label className="grid gap-2">
@@ -581,7 +624,7 @@ export default function SettingsPage() {
                   placeholder="#F3F4F6"
                 />
               </div>
-              {errors.brandSecondary && <span className="text-xs text-rose-500">{errors.brandSecondary}</span>}
+              {errors.branding.brandSecondary && <span className="text-xs text-rose-500">{errors.branding.brandSecondary}</span>}
             </label>
           </div>
 
@@ -655,8 +698,8 @@ export default function SettingsPage() {
           <div className="flex items-center justify-end pt-2">
             <button
               type="button"
-              onClick={saveProfile}
-              disabled={saving || hasErrors}
+              onClick={() => saveProfile('branding')}
+              disabled={saving || hasBrandingErrors}
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {saving ? 'Mentés…' : 'Márka mentése'}

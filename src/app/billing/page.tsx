@@ -11,6 +11,31 @@ const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
+function parsePeriodStart(value: string | null | undefined): Date {
+  if (typeof value !== 'string') {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  }
+
+  const match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(value.trim());
+  if (match) {
+    const [, year, month, day] = match;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    parsed.setHours(0, 0, 0, 0);
+    return parsed;
+  }
+
+  const fallback = new Date(value);
+  if (Number.isNaN(fallback.getTime())) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  }
+  fallback.setHours(0, 0, 0, 0);
+  return fallback;
+}
+
 export default function BillingPage() {
   const supabase = useSupabase();
   const router = useRouter();
@@ -112,13 +137,17 @@ export default function BillingPage() {
     pro: 'Propono Pro',
   };
 
-  const periodStartDate = useMemo(() => {
-    if (!usage?.periodStart) return new Date();
-    const parsed = new Date(usage.periodStart);
-    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-  }, [usage?.periodStart]);
-  const resetDate = new Date(periodStartDate.getFullYear(), periodStartDate.getMonth() + 1, 1);
-  const resetLabel = resetDate.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' });
+  const periodStartDate = useMemo(() => parsePeriodStart(usage?.periodStart), [usage?.periodStart]);
+  const resetDate = useMemo(() => {
+    const next = new Date(periodStartDate);
+    next.setMonth(next.getMonth() + 1, 1);
+    next.setHours(0, 0, 0, 0);
+    return next;
+  }, [periodStartDate]);
+  const resetLabel = useMemo(
+    () => resetDate.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' }),
+    [resetDate]
+  );
 
   return (
     <AppFrame
