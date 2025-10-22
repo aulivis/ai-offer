@@ -1,3 +1,4 @@
+import { DEFAULT_OFFER_TEMPLATE_ID, isOfferTemplateId, type OfferTemplateId } from './offerTemplates';
 import { sanitizeInput } from '@/lib/sanitize';
 
 /**
@@ -13,17 +14,19 @@ export const OFFER_DOCUMENT_STYLES = `
     --brand-secondary-border: #d1d5db;
     --brand-secondary-text: #1f2937;
     background: #ffffff;
-    border: 1px solid var(--brand-secondary-border);
-    border-radius: 32px;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     color: #1f2937;
     font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.65;
     margin: 0 auto;
-    max-width: 720px;
+    max-width: 760px;
+  }
+  .offer-doc--modern {
+    border: 1px solid var(--brand-secondary-border);
+    border-radius: 32px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: 44px;
   }
-  .offer-doc__header {
+  .offer-doc--modern .offer-doc__header {
     align-items: flex-end;
     display: flex;
     flex-direction: column;
@@ -31,21 +34,21 @@ export const OFFER_DOCUMENT_STYLES = `
     margin-bottom: 2.75rem;
     text-align: right;
   }
-  .offer-doc__logo {
+  .offer-doc--modern .offer-doc__logo {
     align-self: flex-end;
     border-radius: 14px;
     max-height: 72px;
     max-width: 260px;
     object-fit: contain;
   }
-  .offer-doc__company {
+  .offer-doc--modern .offer-doc__company {
     color: #6b7280;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
   }
-  .offer-doc__title {
+  .offer-doc--modern .offer-doc__title {
     color: var(--brand-primary);
     font-size: 1.9rem;
     font-weight: 700;
@@ -118,6 +121,89 @@ export const OFFER_DOCUMENT_STYLES = `
     background: var(--brand-primary);
     color: var(--brand-primary-contrast);
   }
+  .offer-doc--premium {
+    border-radius: 36px;
+    box-shadow: 0 32px 70px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+  }
+  .offer-doc__header--premium {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    color: var(--brand-primary-contrast);
+    padding: 48px 48px 32px;
+  }
+  .offer-doc__premium-banner {
+    align-items: center;
+    display: flex;
+    gap: 32px;
+  }
+  .offer-doc__premium-logo-slot {
+    align-items: center;
+    border-radius: 24px;
+    display: flex;
+    height: 140px;
+    justify-content: center;
+    width: 140px;
+  }
+  .offer-doc__premium-logo-slot--filled {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .offer-doc__premium-logo-slot--empty {
+    background: transparent;
+  }
+  .offer-doc__logo--premium {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+  }
+  .offer-doc__premium-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .offer-doc__company--premium {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .offer-doc__title--premium {
+    color: #ffffff;
+    font-size: 2.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .offer-doc__premium-body {
+    background: #f8fafc;
+    padding: 40px 48px 48px;
+  }
+  .offer-doc__content--card {
+    background: #ffffff;
+    border: 1px solid var(--brand-secondary-border);
+    border-radius: 28px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+    padding: 32px 36px;
+  }
+  .offer-doc__table--card {
+    background: #ffffff;
+    border: 1px solid var(--brand-secondary-border);
+    border-radius: 28px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+    margin-top: 32px;
+    overflow: hidden;
+  }
+  .offer-doc__table--card .offer-doc__pricing-table thead th {
+    background: var(--brand-secondary);
+  }
+  .offer-doc__table--card .offer-doc__pricing-table tfoot tr:first-child td {
+    border-top: 3px solid var(--brand-primary);
+  }
+  .offer-doc__table--card .offer-doc__pricing-table tfoot tr:last-child td {
+    background: var(--brand-primary);
+    color: var(--brand-primary-contrast);
+  }
 `;
 
 /**
@@ -148,6 +234,7 @@ export interface OfferDocumentMarkupProps {
   aiBodyHtml: string;
   priceTableHtml: string;
   branding?: OfferBrandingOptions;
+  templateId?: OfferTemplateId | null;
 }
 
 function normalizeColor(value: string | null | undefined): string | null {
@@ -192,6 +279,7 @@ export function offerBodyMarkup({
   aiBodyHtml,
   priceTableHtml,
   branding,
+  templateId,
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
@@ -201,12 +289,41 @@ export function offerBodyMarkup({
   const primaryContrast = contrastColor(primaryColor);
   const logoUrl = sanitizeLogoUrl(branding?.logoUrl);
   const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #1F2937;`;
+  const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
+
+  if (normalizedTemplate === 'premium-banner') {
+    const logoSlot = logoUrl
+      ? `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--filled"><img class="offer-doc__logo offer-doc__logo--premium" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
+      : `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"></div>`;
+    return `
+      <article class="offer-doc offer-doc--premium" style="${styleAttr}">
+        <header class="offer-doc__header offer-doc__header--premium">
+          <div class="offer-doc__premium-banner">
+            ${logoSlot}
+            <div class="offer-doc__premium-text">
+              <div class="offer-doc__company offer-doc__company--premium">${safeCompany || 'Vállalat neve'}</div>
+              <h1 class="offer-doc__title offer-doc__title--premium">${safeTitle}</h1>
+            </div>
+          </div>
+        </header>
+        <div class="offer-doc__premium-body">
+          <section class="offer-doc__content offer-doc__content--card">
+            ${aiBodyHtml}
+          </section>
+          <section class="offer-doc__table offer-doc__table--card">
+            ${priceTableHtml}
+          </section>
+        </div>
+      </article>
+    `;
+  }
+
   const logoMarkup = logoUrl
     ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
     : '';
 
   return `
-    <article class="offer-doc" style="${styleAttr}">
+    <article class="offer-doc offer-doc--modern" style="${styleAttr}">
       <header class="offer-doc__header">
         ${logoMarkup}
         <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>

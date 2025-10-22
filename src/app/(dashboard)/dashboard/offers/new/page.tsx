@@ -7,6 +7,7 @@ import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDeta
 import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
 import { OfferSummarySection, type OfferPreviewStatus } from '@/components/offers/OfferSummarySection';
 import { offerBodyMarkup } from '@/app/lib/offerDocument';
+import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
@@ -53,6 +54,7 @@ export default function NewOfferPage() {
       companyName: 'Vállalkozásod neve',
       aiBodyHtml: bodyHtml,
       priceTableHtml: pricePreviewHtml,
+      templateId: DEFAULT_OFFER_TEMPLATE_ID,
     });
   }, [pricePreviewHtml, previewHtml, title]);
   const isStreaming = previewStatus === 'loading' || previewStatus === 'streaming';

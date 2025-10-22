@@ -8,6 +8,7 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 // `app/lib/htmlTemplate.ts`.
 import { PriceRow, priceTableHtml } from '@/app/lib/pricing';
 import { offerHtml } from '@/app/lib/htmlTemplate';
+import { enforceTemplateForPlan, type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import { v4 as uuid } from 'uuid';
@@ -361,7 +362,7 @@ export async function POST(req: NextRequest) {
 
     const profile = await getUserProfile(sb, user.id);
     const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
-    const plan: 'free' | 'standard' | 'pro' = rawPlan === 'starter' ? 'standard' : rawPlan;
+    const plan: SubscriptionPlan = rawPlan === 'starter' ? 'standard' : rawPlan;
 
     let sanitizedImageAssets: SanitizedImageAsset[] = [];
     try {
@@ -522,12 +523,18 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
     };
 
+    const templateId = enforceTemplateForPlan(
+      typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+      plan
+    );
+
     const html = offerHtml({
       title: safeTitle || 'Árajánlat',
       companyName: sanitizeInput(profile?.company_name || ''),
       aiBodyHtml: aiHtmlForPdf,
       priceTableHtml: priceTable,
       branding: brandingOptions,
+      templateId,
     });
 
     const downloadToken = uuid();
