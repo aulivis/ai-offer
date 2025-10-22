@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
@@ -8,7 +8,7 @@ import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 import { useSupabase } from '@/components/SupabaseProvider';
-import RichTextEditor from '@/components/RichTextEditor';
+import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
@@ -53,6 +53,15 @@ type OfferSections = {
   closing: string;
 };
 
+type OfferImageAsset = {
+  key: string;
+  name: string;
+  dataUrl: string;
+  alt: string;
+  size: number;
+  mime: string;
+};
+
 function isOfferSections(value: unknown): value is OfferSections {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
@@ -85,6 +94,54 @@ const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3
 const textareaClass = 'w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
 const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
+const MAX_IMAGE_COUNT = 3;
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10) / 10;
+
+type PreparedImagePayload = { key: string; dataUrl: string; alt: string };
+
+function prepareImagesForSubmission(html: string, assets: OfferImageAsset[]): {
+  html: string;
+  images: PreparedImagePayload[];
+} {
+  const source = html || '';
+  if (assets.length === 0 || source.trim().length === 0) {
+    return { html: source, images: [] };
+  }
+
+  if (typeof document === 'undefined') {
+    return { html: source, images: [] };
+  }
+
+  const template = document.createElement('template');
+  template.innerHTML = source;
+  const assetMap = new Map(assets.map((asset) => [asset.key, asset]));
+  const usedImages: PreparedImagePayload[] = [];
+
+  const nodes = template.content.querySelectorAll<HTMLImageElement>('img');
+  nodes.forEach((node) => {
+    const key = node.getAttribute('data-offer-image-key');
+    if (!key) {
+      node.remove();
+      return;
+    }
+    const asset = assetMap.get(key);
+    if (!asset) {
+      node.remove();
+      return;
+    }
+    node.removeAttribute('src');
+    node.setAttribute('data-offer-image-key', key);
+    if (asset.alt) {
+      node.setAttribute('alt', asset.alt);
+    } else {
+      node.removeAttribute('alt');
+    }
+    usedImages.push({ key, dataUrl: asset.dataUrl, alt: asset.alt });
+  });
+
+  return { html: template.innerHTML, images: usedImages };
+}
 
 export default function NewOfferWizard() {
   const sb = useSupabase();
@@ -93,6 +150,7 @@ export default function NewOfferWizard() {
   const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState<'free' | 'standard' | 'pro'>('free');
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>(['Marketing','Informatika','Építőipar','Tanácsadás','Szolgáltatás']);
 
@@ -125,7 +183,7 @@ export default function NewOfferWizard() {
   const [previewCountdown, setPreviewCountdown] = useState(PREVIEW_TIMEOUT_SECONDS);
   const [previewCountdownToken, setPreviewCountdownToken] = useState(0);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const debounceRef = useRef<NodeJS.Timeout|null>(null);
+  const [previewLocked, setPreviewLocked] = useState(false);
   const previewAbortRef = useRef<AbortController|null>(null);
   const previewRequestIdRef = useRef(0);
   const previewCountdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -134,6 +192,10 @@ export default function NewOfferWizard() {
 
   // edit on step 3
   const [editedHtml, setEditedHtml] = useState<string>('');
+  const richTextEditorRef = useRef<RichTextEditorHandle | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [imageAssets, setImageAssets] = useState<OfferImageAsset[]>([]);
+  const isProPlan = plan === 'pro';
 
   // auth + preload
   useEffect(() => {
@@ -146,7 +208,7 @@ export default function NewOfferWizard() {
     (async () => {
       const { data: prof } = await sb
         .from('profiles')
-        .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url')
+        .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url, plan')
         .eq('id', user.id)
         .maybeSingle();
       if (!active) {
@@ -162,6 +224,16 @@ export default function NewOfferWizard() {
         secondaryColor: prof?.brand_color_secondary ?? null,
         logoUrl: prof?.brand_logo_url ?? null,
       });
+      const nextPlanRaw = typeof prof?.plan === 'string' ? prof.plan : 'free';
+      const normalizedPlan =
+        nextPlanRaw === 'pro'
+          ? 'pro'
+          : nextPlanRaw === 'standard'
+            ? 'standard'
+            : nextPlanRaw === 'starter'
+              ? 'standard'
+              : 'free';
+      setPlan(normalizedPlan);
 
       const { data: acts } = await sb
         .from('activities')
@@ -188,6 +260,27 @@ export default function NewOfferWizard() {
       active = false;
     };
   }, [authStatus, sb, user]);
+
+  useEffect(() => {
+    setImageAssets((prev) => {
+      if (!prev.length) {
+        return prev;
+      }
+      const source = (editedHtml || previewHtml || '').trim();
+      if (!source) {
+        return [];
+      }
+      const template = document.createElement('template');
+      template.innerHTML = source;
+      const keys = new Set(
+        Array.from(template.content.querySelectorAll('img[data-offer-image-key]'))
+          .map((node) => node.getAttribute('data-offer-image-key'))
+          .filter((value): value is string => typeof value === 'string' && value.length > 0)
+      );
+      const filtered = prev.filter((asset) => keys.has(asset.key));
+      return filtered.length === prev.length ? prev : filtered;
+    });
+  }, [editedHtml, previewHtml]);
 
   useEffect(() => {
     return () => {
@@ -232,6 +325,10 @@ export default function NewOfferWizard() {
       a.industries.includes(form.industry)
     );
   }, [activities, form.industry]);
+  const hasPreviewInputs = form.title.trim().length > 0 && form.description.trim().length > 0;
+  const imageLimitReached = imageAssets.length >= MAX_IMAGE_COUNT;
+  const previewButtonLabel = previewLocked ? 'Előnézet kész' : previewLoading ? 'Generálás…' : 'AI előnézet generálása';
+  const previewButtonDisabled = previewLocked || previewLoading || !hasPreviewInputs;
 
   // === Autocomplete (cég) ===
   const filteredClients = useMemo(() => {
@@ -255,6 +352,9 @@ export default function NewOfferWizard() {
 
   // === Preview hívó ===
   const callPreview = useCallback(async () => {
+    if (previewLocked) {
+      return;
+    }
     const nextRequestId = previewRequestIdRef.current + 1;
     previewRequestIdRef.current = nextRequestId;
 
@@ -263,7 +363,9 @@ export default function NewOfferWizard() {
       previewAbortRef.current = null;
     }
 
-    if (!form.title && !form.description) {
+    const hasTitle = form.title.trim().length > 0;
+    const hasDescription = form.description.trim().length > 0;
+    if (!hasTitle || !hasDescription) {
       setPreviewLoading(false);
       setPreviewError(null);
       return;
@@ -331,6 +433,7 @@ export default function NewOfferWizard() {
                   setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
                   if (payload.type === 'done') {
                     setEditedHtml((prev) => prev || (payload.html || ''));
+                    setPreviewLocked(true);
                   }
                 }
               }
@@ -360,6 +463,7 @@ export default function NewOfferWizard() {
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewHtml('<p>(nincs előnézet)</p>');
           setPreviewError(streamErrorMessage);
+          setPreviewLocked(false);
         }
         showToast({ title: 'Előnézet hiba', description: streamErrorMessage, variant: 'error' });
         return;
@@ -396,19 +500,132 @@ export default function NewOfferWizard() {
     form.language,
     form.style,
     form.title,
+    previewLocked,
     showToast,
     sb,
   ]);
-  const onBlurTrigger = useCallback(() => {
+
+  const handleGeneratePreview = useCallback(() => {
+    if (previewLocked) {
+      return;
+    }
+    if (!hasPreviewInputs) {
+      showToast({
+        title: 'Hiányzó adatok',
+        description: 'Az előnézethez add meg az ajánlat címét és a rövid leírást.',
+        variant: 'warning',
+      });
+      return;
+    }
     void callPreview();
-  }, [callPreview]);
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      void callPreview();
-    }, 800);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [callPreview]);
+  }, [callPreview, hasPreviewInputs, previewLocked, showToast]);
+
+  const handlePickImage = useCallback(() => {
+    if (!isProPlan) {
+      showToast({
+        title: 'Pro funkció',
+        description: 'Képek beszúrása csak Pro előfizetéssel érhető el.',
+        variant: 'warning',
+      });
+      return;
+    }
+    if (!previewLocked) {
+      showToast({
+        title: 'Generálj először AI előnézetet',
+        description: 'A képek beszúrása előtt kérd le az AI előnézetet az első lépésben.',
+        variant: 'info',
+      });
+      return;
+    }
+    fileInputRef.current?.click();
+  }, [isProPlan, previewLocked, showToast]);
+
+  const handleImageInputChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files || files.length === 0) {
+        return;
+      }
+      if (!isProPlan || !previewLocked) {
+        event.target.value = '';
+        return;
+      }
+
+      const remainingSlots = MAX_IMAGE_COUNT - imageAssets.length;
+      if (remainingSlots <= 0) {
+        showToast({
+          title: 'Elérted a képlimitet',
+          description: `Legfeljebb ${MAX_IMAGE_COUNT} képet adhatsz hozzá a PDF-hez.`,
+          variant: 'warning',
+        });
+        event.target.value = '';
+        return;
+      }
+
+      const selectedFiles = Array.from(files).slice(0, remainingSlots);
+      const newAssets: OfferImageAsset[] = [];
+
+      for (const file of selectedFiles) {
+        if (!file.type.startsWith('image/')) {
+          showToast({
+            title: 'Érvénytelen fájl',
+            description: `${file.name} nem képfájl, ezért kihagytuk.`,
+            variant: 'error',
+          });
+          continue;
+        }
+        if (file.size > MAX_IMAGE_SIZE_BYTES) {
+          showToast({
+            title: 'Túl nagy kép',
+            description: `${file.name} mérete legfeljebb ${MAX_IMAGE_SIZE_MB} MB lehet.`,
+            variant: 'error',
+          });
+          continue;
+        }
+
+        try {
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = () => reject(new Error('read-error'));
+            reader.readAsDataURL(file);
+          });
+          const key = crypto.randomUUID();
+          const baseAlt = file.name.replace(/\.[^/.]+$/, '').trim() || 'Kép';
+          newAssets.push({
+            key,
+            name: file.name,
+            dataUrl,
+            alt: baseAlt.slice(0, 80),
+            size: file.size,
+            mime: file.type || 'image/png',
+          });
+        } catch (error) {
+          console.error('Nem sikerült beolvasni a képet', error);
+          showToast({
+            title: 'Kép feldolgozási hiba',
+            description: `${file.name} beolvasása nem sikerült.`,
+            variant: 'error',
+          });
+        }
+      }
+
+      if (newAssets.length) {
+        setImageAssets((prev) => [...prev, ...newAssets]);
+        newAssets.forEach((asset) => {
+          richTextEditorRef.current?.insertImage({ src: asset.dataUrl, alt: asset.alt, dataKey: asset.key });
+        });
+      }
+
+      event.target.value = '';
+    },
+    [imageAssets.length, isProPlan, previewLocked, richTextEditorRef, showToast]
+  );
+
+  const handleRemoveImage = useCallback((key: string) => {
+    setImageAssets((prev) => prev.filter((asset) => asset.key !== key));
+    richTextEditorRef.current?.removeImageByKey(key);
+  }, []);
 
   const totals = useMemo(() => summarize(rows), [rows]);
 
@@ -462,10 +679,27 @@ export default function NewOfferWizard() {
   }
 
   async function generate() {
+    if (!previewLocked) {
+      showToast({
+        title: 'AI előnézet szükséges',
+        description: 'Generálás előtt kérd le az AI előnézetet az első lépésben.',
+        variant: 'error',
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const cid = await ensureClient();
       let resp: Response;
+      const baseHtml = (editedHtml || previewHtml || '').trim();
+      let htmlForApi = baseHtml;
+      let imagePayload: PreparedImagePayload[] = [];
+      if (isProPlan && imageAssets.length > 0) {
+        const prepared = prepareImagesForSubmission(baseHtml, imageAssets);
+        htmlForApi = prepared.html;
+        imagePayload = prepared.images;
+      }
       try {
         resp = await fetchWithSupabaseAuth('/api/ai-generate', {
           supabase: sb,
@@ -480,8 +714,9 @@ export default function NewOfferWizard() {
             brandVoice: form.brandVoice,
             style: form.style,
             prices: rows,
-            aiOverrideHtml: editedHtml || previewHtml,
+            aiOverrideHtml: htmlForApi,
             clientId: cid,
+            imageAssets: imagePayload,
           }),
           authErrorMessage: 'Nem vagy bejelentkezve.',
           errorMessageBuilder: status => `Hiba a generálásnál (${status})`,
@@ -567,7 +802,7 @@ export default function NewOfferWizard() {
               <span className="h-2 w-2 rounded-full bg-slate-400" />
               AI asszisztens
             </span>
-            <span>Az előnézet néhány másodperc alatt frissül, amint megadod a kulcsadatokat.</span>
+            <span>Az AI előnézetet a gomb megnyomásával kérheted le, és ajánlatonként egyszer futtatható.</span>
           </div>
         </div>
 
@@ -581,7 +816,6 @@ export default function NewOfferWizard() {
                     className={inputFieldClass}
                     value={form.industry}
                     onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}
-                    onBlur={onBlurTrigger}
                   >
                     {availableIndustries.map(ind => (
                       <option key={ind} value={ind}>{ind}</option>
@@ -596,7 +830,6 @@ export default function NewOfferWizard() {
                     placeholder="Pl. Weboldal fejlesztés"
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    onBlur={onBlurTrigger}
                   />
                 </label>
 
@@ -606,7 +839,6 @@ export default function NewOfferWizard() {
                     className={`${textareaClass} h-32`}
                     value={form.description}
                     onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                    onBlur={onBlurTrigger}
                   />
                 </label>
               </div>
@@ -618,7 +850,6 @@ export default function NewOfferWizard() {
                     className={inputFieldClass}
                     value={form.deadline}
                     onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                    onBlur={onBlurTrigger}
                   />
                 </label>
                 <label className="grid gap-2">
@@ -627,7 +858,6 @@ export default function NewOfferWizard() {
                     className={inputFieldClass}
                     value={form.language}
                     onChange={e => setForm(f => ({ ...f, language: e.target.value as Step1Form['language'] }))}
-                    onBlur={onBlurTrigger}
                   >
                     <option value="hu">Magyar</option>
                     <option value="en">English</option>
@@ -639,7 +869,6 @@ export default function NewOfferWizard() {
                     className={inputFieldClass}
                     value={form.brandVoice}
                     onChange={e => setForm(f => ({ ...f, brandVoice: e.target.value as Step1Form['brandVoice'] }))}
-                    onBlur={onBlurTrigger}
                   >
                     <option value="friendly">Barátságos</option>
                     <option value="formal">Formális</option>
@@ -737,9 +966,25 @@ export default function NewOfferWizard() {
             </div>
 
             <div className={`${cardClass} space-y-4`}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-                <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
+                  <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {previewLocked ? (
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">Előnézet kész</span>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={handleGeneratePreview}
+                    disabled={previewButtonDisabled}
+                    className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+                    title={hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'}
+                  >
+                    {previewButtonLabel}
+                  </button>
+                </div>
               </div>
               {previewError ? (
                 <div className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
@@ -765,7 +1010,7 @@ export default function NewOfferWizard() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-slate-500">Az előnézet automatikusan frissül, amikor befejezed a mezők kitöltését.</p>
+              <p className="text-xs text-slate-500">Az AI előnézet egyszer kérhető le. A végső módosításokat a PDF szerkesztő lépésében végezheted el.</p>
             </div>
           </section>
         )}
@@ -808,11 +1053,81 @@ export default function NewOfferWizard() {
               </div>
               <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
               <RichTextEditor
+                ref={richTextEditorRef}
                 value={editedHtml || previewHtml}
                 onChange={(html) => setEditedHtml(html)}
                 placeholder="Formázd át a generált szöveget..."
               />
               <p className="text-xs text-slate-500">Tartsd meg a címsorokat és listákat a jobb olvashatóságért.</p>
+              {isProPlan ? (
+                <div className="space-y-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700">Képek a PDF-hez</p>
+                      <p className="text-xs text-slate-500">
+                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB fájlméretig. A képeket csak a PDF generálásához használjuk fel.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handlePickImage}
+                      disabled={imageLimitReached || !previewLocked || previewLoading}
+                      className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+                    >
+                      Kép beszúrása
+                    </button>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageInputChange}
+                  />
+                  {!previewLocked ? (
+                    <p className="text-xs text-slate-500">Előbb generáld le az AI előnézetet, utána adhatod hozzá a képeket.</p>
+                  ) : null}
+                  {imageAssets.length > 0 ? (
+                    <ul className="grid gap-3 sm:grid-cols-2">
+                      {imageAssets.map((asset) => {
+                        const sizeKb = Math.max(1, Math.ceil(asset.size / 1024));
+                        return (
+                          <li
+                            key={asset.key}
+                            className="flex gap-3 rounded-2xl border border-slate-200 bg-white/90 p-3"
+                          >
+                            <img
+                              src={asset.dataUrl}
+                              alt={asset.alt}
+                              className="h-16 w-16 rounded-lg object-cover shadow-sm"
+                            />
+                            <div className="flex flex-1 flex-col justify-between text-xs text-slate-500">
+                              <div>
+                                <p className="font-semibold text-slate-700">{asset.name}</p>
+                                <p className="mt-0.5">{sizeKb} KB • alt: {asset.alt}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(asset.key)}
+                                className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700"
+                              >
+                                Eltávolítás
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-slate-500">Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek meg.</p>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-xs text-slate-500">
+                  Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag a generált dokumentumban kerülnek felhasználásra.
+                </div>
+              )}
             </div>
 
             <div className={`${cardClass} space-y-4`}>

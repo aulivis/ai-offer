@@ -167,6 +167,142 @@ function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
   };
 }
 
+const MAX_IMAGE_COUNT = 3;
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
+
+class ImageAssetError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
+
+type SanitizedImageAsset = {
+  key: string;
+  dataUrl: string;
+  alt: string;
+};
+
+function normalizeImageAssets(
+  input: unknown,
+  plan: 'free' | 'standard' | 'pro'
+): SanitizedImageAsset[] {
+  if (!input) {
+    return [];
+  }
+
+  if (!Array.isArray(input)) {
+    throw new ImageAssetError('Érvénytelen képadatok érkeztek.');
+  }
+
+  if (!input.length) {
+    return [];
+  }
+
+  if (plan !== 'pro') {
+    throw new ImageAssetError('Képfeltöltés csak Pro előfizetéssel érhető el.', 403);
+  }
+
+  if (input.length > MAX_IMAGE_COUNT) {
+    throw new ImageAssetError(`Legfeljebb ${MAX_IMAGE_COUNT} kép tölthető fel.`, 400);
+  }
+
+  const seenKeys = new Set<string>();
+  const sanitized: SanitizedImageAsset[] = [];
+
+  for (const raw of input) {
+    if (!raw || typeof raw !== 'object') {
+      throw new ImageAssetError('Hiányos képadatok érkeztek.');
+    }
+
+    const key = typeof (raw as { key?: unknown }).key === 'string' ? (raw as { key: string }).key.trim() : '';
+    if (!key || key.length > 80) {
+      throw new ImageAssetError('Érvénytelen képazonosító érkezett.');
+    }
+    if (seenKeys.has(key)) {
+      continue;
+    }
+
+    const dataUrl = typeof (raw as { dataUrl?: unknown }).dataUrl === 'string' ? (raw as { dataUrl: string }).dataUrl.trim() : '';
+    if (!dataUrl) {
+      throw new ImageAssetError('Hiányzik a kép tartalma.');
+    }
+
+    const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,/.exec(dataUrl);
+    if (!match) {
+      throw new ImageAssetError('Csak base64-es képek tölthetők fel.');
+    }
+
+    const mime = match[1].toLowerCase();
+    if (!ALLOWED_IMAGE_MIME_TYPES.has(mime)) {
+      throw new ImageAssetError('A kép formátuma nem támogatott (PNG, JPEG vagy WEBP szükséges).');
+    }
+
+    const base64 = dataUrl.slice(match[0].length);
+    let buffer: Buffer;
+    try {
+      buffer = Buffer.from(base64, 'base64');
+    } catch {
+      throw new ImageAssetError('A kép base64 adat sérült.');
+    }
+
+    if (!buffer.length || buffer.length > MAX_IMAGE_SIZE_BYTES) {
+      throw new ImageAssetError('A kép mérete meghaladja a 2 MB-ot.');
+    }
+
+    const altRaw = typeof (raw as { alt?: unknown }).alt === 'string' ? (raw as { alt: string }).alt : '';
+    const alt = sanitizeInput(altRaw).slice(0, 160);
+
+    sanitized.push({ key, dataUrl: `data:${mime};base64,${base64}`, alt });
+    seenKeys.add(key);
+  }
+
+  return sanitized;
+}
+
+const IMG_TAG_REGEX = /<img\b[^>]*>/gi;
+
+function applyImageAssetsToHtml(html: string, images: SanitizedImageAsset[]): {
+  pdfHtml: string;
+  storedHtml: string;
+} {
+  if (!images.length) {
+    return { pdfHtml: html, storedHtml: html.replace(IMG_TAG_REGEX, '') };
+  }
+
+  const imageMap = new Map(images.map((image) => [image.key, image]));
+  let pdfHtml = '';
+  let storedHtml = '';
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = IMG_TAG_REGEX.exec(html)) !== null) {
+    const [tag] = match;
+    pdfHtml += html.slice(lastIndex, match.index);
+    storedHtml += html.slice(lastIndex, match.index);
+
+    const keyMatch =
+      tag.match(/data-offer-image-key\s*=\s*"([^"]+)"/i) || tag.match(/data-offer-image-key\s*=\s*'([^']+)'/i);
+    if (keyMatch) {
+      const key = keyMatch[1] ?? keyMatch[2];
+      const asset = key ? imageMap.get(key) : undefined;
+      if (asset) {
+        const altAttr = asset.alt ? ` alt="${asset.alt}"` : '';
+        pdfHtml += `<img src="${asset.dataUrl}"${altAttr} />`;
+      }
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  pdfHtml += html.slice(lastIndex);
+  storedHtml += html.slice(lastIndex);
+
+  return { pdfHtml, storedHtml };
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Parse and sanitize the incoming JSON body.  Sanitizing early
@@ -185,6 +321,7 @@ export async function POST(req: NextRequest) {
       aiOverrideHtml,
       clientId,
       pdfWebhookUrl,
+      imageAssets,
     } = body as {
       title: string;
       industry: string;
@@ -197,6 +334,7 @@ export async function POST(req: NextRequest) {
       aiOverrideHtml?: string;
       clientId?: string;
       pdfWebhookUrl?: string;
+      imageAssets?: { key: string; dataUrl: string; alt?: string | null }[];
     };
 
     // ---- Auth ----
@@ -224,6 +362,15 @@ export async function POST(req: NextRequest) {
     const profile = await getUserProfile(sb, user.id);
     const rawPlan = (profile?.plan as 'free' | 'standard' | 'starter' | 'pro' | undefined) ?? 'free';
     const plan: 'free' | 'standard' | 'pro' = rawPlan === 'starter' ? 'standard' : rawPlan;
+
+    let sanitizedImageAssets: SanitizedImageAsset[] = [];
+    try {
+      sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
+    } catch (error) {
+      const status = error instanceof ImageAssetError ? error.status : 400;
+      const message = error instanceof ImageAssetError ? error.message : 'Érvénytelen képfeltöltés.';
+      return NextResponse.json({ error: message }, { status });
+    }
 
     const privilegedEmail = 'tiens.robert@hotmail.com';
     const normalizedEmail = typeof user.email === 'string' ? user.email.toLowerCase() : '';
@@ -364,6 +511,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // `<table>` element including header, body and footer with totals.
     const priceTable = priceTableHtml(rows);
 
+    const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(aiHtml, sanitizedImageAssets);
+
     // ---- PDF queueing ----
     const offerId = uuid();
     const storagePath = `${user.id}/${offerId}.pdf`;
@@ -376,7 +525,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     const html = offerHtml({
       title: safeTitle || 'Árajánlat',
       companyName: sanitizeInput(profile?.company_name || ''),
-      aiBodyHtml: aiHtml,
+      aiBodyHtml: aiHtmlForPdf,
       priceTableHtml: priceTable,
       branding: brandingOptions,
     });
@@ -408,7 +557,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       industry: sanitizeInput(industry),
       recipient_id: clientId || null,
       inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },
-      ai_text: aiHtml,
+      ai_text: aiHtmlForStorage,
       price_json: rows,
       pdf_url: null,
       status: 'draft',

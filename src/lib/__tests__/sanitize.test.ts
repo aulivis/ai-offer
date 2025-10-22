@@ -26,4 +26,16 @@ describe('sanitizeHTML', () => {
     expect(clean).toContain('<th colspan="2">Fejléc</th>');
     expect(clean).toContain('<td colspan="2">Tartalom</td>');
   });
+
+  it('sanitises image tags while keeping safe sources', () => {
+    const html = `
+      <img src="http://example.com/logo.png" alt="Logo" data-offer-image-key="hero">
+      <img src="javascript:alert(1)">
+    `;
+
+    const clean = sanitizeHTML(html);
+
+    expect(clean).toContain('<img src="http://example.com/logo.png" alt="Logo" data-offer-image-key="hero" />');
+    expect(clean).not.toContain('javascript:');
+  });
 });
