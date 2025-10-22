@@ -16,74 +16,62 @@ const CARD_BRANDS: CardBrand[] = [
   {
     name: 'Visa',
     render: () => (
-      <div className="flex h-12 w-24 items-center justify-center rounded-xl bg-[#1a1f71] shadow-sm">
-        <span className="text-base font-black tracking-[0.3em] text-white">VISA</span>
-      </div>
+      <span className="text-lg font-black tracking-[0.35em] text-[#1a1f71]">VISA</span>
     ),
   },
   {
     name: 'Mastercard',
     render: () => (
-      <div className="flex h-12 w-24 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="relative flex items-center justify-center">
-          <div className="mr-[-0.6rem] h-10 w-10 rounded-full bg-[#eb001b] opacity-90" />
-          <div className="h-10 w-10 rounded-full bg-[#f79e1b] opacity-90" />
-        </div>
+      <div className="flex items-center">
+        <span aria-hidden className="mr-[-0.55rem] h-7 w-7 rounded-full bg-[#eb001b] opacity-90" />
+        <span aria-hidden className="h-7 w-7 rounded-full bg-[#f79e1b] opacity-90" />
       </div>
     ),
   },
   {
     name: 'American Express',
     render: () => (
-      <div className="flex h-12 w-28 items-center justify-center rounded-xl bg-[#2e77bc] shadow-sm">
-        <span className="text-[0.85rem] font-bold tracking-wide text-white">AMEX</span>
-      </div>
+      <span className="rounded-sm bg-[#2e77bc] px-2 py-0.5 text-[0.8rem] font-bold tracking-[0.2em] text-white">
+        AMEX
+      </span>
     ),
   },
   {
     name: 'Discover',
     render: () => (
-      <div className="flex h-12 w-28 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-900">DISCOVER</span>
-          <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]" />
-        </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DISCOVER</span>
+        <span aria-hidden className="h-5 w-5 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]" />
       </div>
     ),
   },
   {
     name: 'Diners Club',
     render: () => (
-      <div className="flex h-12 w-28 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 bg-slate-50">
-            <div className="h-4 w-4 rounded-full bg-[#0a3a66]" />
-          </div>
-          <span className="text-sm font-semibold text-slate-700">DINERS</span>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 bg-slate-50">
+          <span aria-hidden className="h-3 w-3 rounded-full bg-[#0a3a66]" />
+        </span>
+        <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DINERS</span>
       </div>
     ),
   },
   {
     name: 'JCB',
     render: () => (
-      <div className="flex h-12 w-24 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex h-9 w-16 overflow-hidden rounded-md">
-          <div className="flex-1 bg-[#0b4ea2]" />
-          <div className="flex-1 bg-[#0e9f49]" />
-          <div className="flex-1 bg-[#d71920]" />
-        </div>
+      <div className="flex h-6 w-12 overflow-hidden rounded-sm">
+        <span aria-hidden className="flex-1 bg-[#0b4ea2]" />
+        <span aria-hidden className="flex-1 bg-[#0e9f49]" />
+        <span aria-hidden className="flex-1 bg-[#d71920]" />
       </div>
     ),
   },
   {
     name: 'UnionPay',
     render: () => (
-      <div className="flex h-12 w-28 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex h-9 w-20 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-[#017b94] via-[#026aa7] to-[#df2935]">
-          <span className="text-sm font-semibold text-white">UnionPay</span>
-        </div>
-      </div>
+      <span className="rounded-sm bg-gradient-to-br from-[#017b94] via-[#026aa7] to-[#df2935] px-2 py-0.5 text-[0.7rem] font-semibold text-white">
+        UnionPay
+      </span>
     ),
   },
 ];
@@ -346,17 +334,18 @@ export default function BillingPage() {
         <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl space-y-2">
-              <h2 className="text-sm font-semibold text-slate-700">Biztonságos bankkártyás fizetés</h2>
+              <h2 className="text-sm font-semibold text-slate-700">Biztonságos Stripe fizetés</h2>
               <p className="text-sm text-slate-500">
-                A Stripe fizetési felülete támogatja a vezető kártyatársaságokat, így Visa, Mastercard, American Express,
-                Discover, Diners Club, JCB és UnionPay kártyákkal is kényelmesen fizethetnek az ügyfeleid.
+                A Stripe banki szintű titkosítással védi az ügyfeleid adatait, és támogatja a vezető kártyatársaságokat,
+                így Visa, Mastercard, American Express, Discover, Diners Club, JCB és UnionPay kártyákkal is gond nélkül
+                fizethetnek.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-center gap-4">
               {CARD_BRANDS.map((brand) => (
-                <div key={brand.name} className="flex flex-col items-center gap-2">
+                <div key={brand.name} className="flex flex-col items-center gap-1.5">
                   <div aria-hidden className="flex items-center justify-center">{brand.render()}</div>
-                  <span className="text-[0.7rem] font-medium uppercase tracking-wide text-slate-500">{brand.name}</span>
+                  <span className="text-[0.65rem] font-medium uppercase tracking-[0.3em] text-slate-400">{brand.name}</span>
                 </div>
               ))}
             </div>

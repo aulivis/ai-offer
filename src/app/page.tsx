@@ -65,6 +65,12 @@ export default function Home() {
                   Csomagok megtekintése
                 </Link>
               </div>
+              <p className="flex items-center gap-2 text-sm text-slate-500">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[0.7rem] font-semibold text-emerald-700">
+                  ✓
+                </span>
+                Biztonságos Stripe fizetés – a kártyaadatok védelmével.
+              </p>
               <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Próbáld ki kártya nélkül – Ingyenes csomag: 3 ajánlat / hó</p>
             </div>
 
