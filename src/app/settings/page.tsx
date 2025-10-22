@@ -73,6 +73,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile>({ industries: [], offer_template: DEFAULT_OFFER_TEMPLATE_ID });
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
+  const [hasProfile, setHasProfile] = useState(false);
 
   const [acts, setActs] = useState<ActivityRow[]>([]);
   const [newAct, setNewAct] = useState({ name: '', unit: 'db', price: 0, vat: 27, industries: [] as string[] });
@@ -164,7 +165,11 @@ export default function SettingsPage() {
       if (!active) {
         return;
       }
-      const industries = prof?.industries ?? [];
+      const industries = Array.isArray(prof?.industries)
+        ? (prof.industries as string[])
+          .map((industry) => (typeof industry === 'string' ? industry.trim() : ''))
+          .filter((industry) => industry.length > 0)
+        : [];
       const rawPlan = typeof prof?.plan === 'string' ? prof.plan : 'free';
       const normalizedPlan: SubscriptionPlan =
         rawPlan === 'pro'
@@ -172,6 +177,7 @@ export default function SettingsPage() {
           : rawPlan === 'standard' || rawPlan === 'starter'
             ? 'standard'
             : 'free';
+      setHasProfile(Boolean(prof));
       setPlan(normalizedPlan);
       const templateId = enforceTemplateForPlan(
         typeof prof?.offer_template === 'string' ? prof.offer_template : null,
@@ -219,6 +225,11 @@ export default function SettingsPage() {
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
       const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
+      const sanitizedIndustries = Array.isArray(profile.industries)
+        ? profile.industries
+          .map((industry) => industry.trim())
+          .filter((industry) => industry.length > 0)
+        : [];
       if (scope === 'branding') {
         const payload = {
           id: user.id,
@@ -226,6 +237,17 @@ export default function SettingsPage() {
           brand_color_primary: primary,
           brand_color_secondary: secondary,
           offer_template: templateId,
+          ...(hasProfile
+            ? {}
+            : {
+                company_name: profile.company_name ?? '',
+                company_address: profile.company_address ?? '',
+                company_tax_id: profile.company_tax_id ?? '',
+                company_phone: profile.company_phone ?? '',
+                company_email: (profile.company_email?.trim() || email || ''),
+                industries: sanitizedIndustries,
+                plan,
+              }),
         };
 
         const { data, error } = await supabase
@@ -236,6 +258,7 @@ export default function SettingsPage() {
         if (error) {
           throw error;
         }
+        setHasProfile(true);
         setProfile((prev) => ({
           ...prev,
           brand_logo_url: data?.brand_logo_url ?? profile.brand_logo_url ?? null,
@@ -259,7 +282,7 @@ export default function SettingsPage() {
           company_tax_id: profile.company_tax_id ?? '',
           company_phone: profile.company_phone ?? '',
           company_email: profile.company_email ?? '',
-          industries: profile.industries ?? [],
+          industries: sanitizedIndustries,
           brand_logo_url: profile.brand_logo_url ?? null,
           brand_color_primary: primary,
           brand_color_secondary: secondary,
@@ -270,11 +293,13 @@ export default function SettingsPage() {
       if (error) {
         throw error;
       }
+      setHasProfile(true);
       setProfile((prev) => ({
         ...prev,
         brand_logo_url: data?.brand_logo_url ?? prev.brand_logo_url ?? null,
         brand_color_primary: data?.brand_color_primary ?? primary ?? null,
         brand_color_secondary: data?.brand_color_secondary ?? secondary ?? null,
+        industries: sanitizedIndustries,
         offer_template: enforceTemplateForPlan(
           typeof data?.offer_template === 'string' ? data.offer_template : templateId,
           plan
