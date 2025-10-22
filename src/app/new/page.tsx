@@ -781,21 +781,38 @@ export default function NewOfferWizard() {
     } finally { setLoading(false); }
   }
 
+  const goToStep = useCallback(
+    (nextStep: number) => {
+      if (step === 1 && nextStep > 1 && !previewLocked) {
+        showToast({
+          title: 'Előnézet szükséges',
+          description: 'Generáld le az AI előnézetet a továbblépéshez.',
+          variant: 'warning',
+        });
+        return;
+      }
+
+      const clampedStep = Math.max(1, Math.min(3, nextStep));
+      setStep(clampedStep);
+    },
+    [previewLocked, showToast, step],
+  );
+
   const wizardSteps: StepIndicatorStep[] = [
     {
       label: 'Projekt részletek',
       status: step === 1 ? 'current' : step > 1 ? 'completed' : 'upcoming',
-      onSelect: () => setStep(1),
+      onSelect: () => goToStep(1),
     },
     {
       label: 'Tételek',
       status: step === 2 ? 'current' : step > 2 ? 'completed' : 'upcoming',
-      onSelect: () => setStep(2),
+      onSelect: () => goToStep(2),
     },
     {
       label: 'Előnézet & PDF',
       status: step === 3 ? 'current' : 'upcoming',
-      onSelect: () => setStep(3),
+      onSelect: () => goToStep(3),
     },
   ];
 
@@ -1188,13 +1205,19 @@ export default function NewOfferWizard() {
           </button>
           {step < 3 && (
             <button
-              onClick={() => setStep(s => Math.min(3, s + 1))}
-              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              onClick={() => goToStep(step + 1)}
+              disabled={step === 1 && !previewLocked}
+              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
             >
               Tovább
             </button>
           )}
         </div>
+        {step === 1 && !previewLocked ? (
+          <p className="text-xs font-medium text-slate-500">
+            A továbblépéshez előbb generáld le az AI előnézetet az első lépésben.
+          </p>
+        ) : null}
       </div>
     </AppFrame>
   );
