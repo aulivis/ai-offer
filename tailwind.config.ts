@@ -28,7 +28,23 @@ export default {
           500: '#64748B',
           700: '#334155',
         },
-      },
+         bg: 'var(--color-bg)',
+  'bg-muted': 'var(--color-bg-muted)',
+  fg: 'var(--color-fg)',
+  'fg-muted': 'var(--color-fg-muted)',
+  border: 'var(--color-border)',
+
+  primary: 'var(--color-primary)',
+  'primary-ink': 'var(--color-primary-ink)',
+  accent: 'var(--color-accent)',
+
+  success: 'var(--color-success)',
+  warning: 'var(--color-warning)',
+  danger:  'var(--color-danger)',
+},
+backgroundImage: {
+  'gradient-primary': 'var(--gradient-primary)',
+},
       fontFamily: {
         display: ['"Gota"', '"Work Sans"', 'system-ui'],
         sans: ['"Work Sans"', 'system-ui', 'sans-serif'],

@@ -36,12 +36,45 @@
 }
 
 :root {
-  color-scheme: dark;
-  background-color: var(--color-night-900);
+  /* Semantic tokens (dark as default) */
+  --color-bg: var(--color-night-900);
+  --color-bg-muted: var(--color-night-800);
+  --color-fg: var(--color-graphite-100);
+  --color-fg-muted: var(--color-graphite-400);
+  --color-border: rgba(255,255,255,0.08);
+
+  --color-primary: var(--color-mint-500);
+  --color-primary-ink: #0b1220;
+  --color-accent: var(--color-mint-300);
+
+  --color-success: #17c964;
+  --color-warning: #f5a524;
+  --color-danger:  #f31260;
+
+  --gradient-primary: linear-gradient(90deg, var(--color-mint-600), var(--color-mint-500), var(--color-mint-300));
+}
+
+/* Light mode */
+:root[data-theme="light"] {
+  --color-bg: #ffffff;
+  --color-bg-muted: #f7fafc;
+  --color-fg: #0b1220;
+  --color-fg-muted: #475569;
+  --color-border: rgba(20,24,31,0.12);
+
+  --color-primary: #2dd4bf;
+  --color-primary-ink: #062017;
+  --color-accent: #5eead4;
+
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger:  #dc2626;
 }
 
 html, body {
-  @apply bg-night-900 text-graphite-100 font-sans antialiased;
+  @apply font-sans antialiased;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
   min-height: 100%;
 }
 

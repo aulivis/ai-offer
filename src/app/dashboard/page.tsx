@@ -6,6 +6,7 @@ import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import Link from 'next/link';
 
 type Offer = {
   id: string;
@@ -21,11 +22,10 @@ type Offer = {
   recipient?: { company_name: string | null } | null;
 };
 
+/** PDF storage path extractor (változatlan logika) */
 function extractOfferStoragePath(pdfUrl: string): string | null {
   const normalized = pdfUrl.trim();
-  if (!normalized) {
-    return null;
-  }
+  if (!normalized) return null;
 
   const removeLeadingSlash = (value: string) => value.replace(/^\/+/, '');
 
@@ -52,9 +52,7 @@ function extractOfferStoragePath(pdfUrl: string): string | null {
         const markerIndex = url.pathname.indexOf(marker);
         if (markerIndex !== -1) {
           const extracted = url.pathname.slice(markerIndex + marker.length);
-          if (extracted) {
-            return decodeAndNormalize(extracted);
-          }
+          if (extracted) return decodeAndNormalize(extracted);
         }
       }
 
@@ -64,12 +62,8 @@ function extractOfferStoragePath(pdfUrl: string): string | null {
         return decodeAndNormalize(segments.slice(offersIndex + 1).join('/'));
       }
     } catch (error) {
-      // Fall back to other strategies below.
-      if (normalized.includes('://')) {
-        console.warn('Failed to parse offer PDF storage path', error);
-      }
+      if (normalized.includes('://')) console.warn('Failed to parse offer PDF storage path', error);
     }
-
     return null;
   };
 
@@ -93,7 +87,7 @@ function extractOfferStoragePath(pdfUrl: string): string | null {
   return tryFromUrl() ?? tryFromEncodedMarker() ?? tryFromPlainPath();
 }
 
-
+/** Státusz labellek (HU) */
 const STATUS_LABELS: Record<Offer['status'], string> = {
   draft: 'Vázlat',
   sent: 'Kiküldve',
@@ -116,21 +110,20 @@ type SortDirectionOption = typeof SORT_DIRECTION_OPTIONS[number];
 function isStatusFilterValue(value: string): value is StatusFilterOption {
   return (STATUS_FILTER_OPTIONS as readonly string[]).includes(value);
 }
-
 function isSortByValue(value: string): value is SortByOption {
   return (SORT_BY_OPTIONS as readonly string[]).includes(value);
 }
-
 function isSortDirectionValue(value: string): value is SortDirectionOption {
   return (SORT_DIRECTION_OPTIONS as readonly string[]).includes(value);
 }
 
+/** Penpot-szerű, semantic tokenes státusz badge */
 function StatusBadge({ status }: { status: Offer['status'] }) {
   const map: Record<Offer['status'], string> = {
-    draft: 'border-slate-200 bg-slate-50 text-slate-600',
-    sent: 'border-sky-200 bg-sky-50 text-sky-700',
-    accepted: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    lost: 'border-rose-200 bg-rose-50 text-rose-700',
+    draft: 'border-border bg-bg text-fg-muted',
+    sent: 'border-accent/30 bg-accent/10 text-accent',
+    accepted: 'border-success/30 bg-success/10 text-success',
+    lost: 'border-danger/30 bg-danger/10 text-danger',
   };
   return (
     <span
@@ -141,16 +134,18 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
   );
 }
 
+/** Egyszerű metrika kártya semantic tokenekkel */
 function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
-      {helper ? <p className="mt-2 text-xs text-slate-500">{helper}</p> : null}
+    <div className="rounded-3xl border border-border bg-bg-muted/70 p-5 shadow-card">
+      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
+      <p className="mt-3 text-2xl font-semibold text-fg">{value}</p>
+      {helper ? <p className="mt-2 text-xs text-fg-muted">{helper}</p> : null}
     </div>
   );
 }
 
+/** Idővonal-szerű státusz lépés (semantic + focusbarát) */
 function StatusStep({
   title,
   description,
@@ -166,23 +161,24 @@ function StatusStep({
 }) {
   return (
     <div
-      className={`flex gap-3 rounded-2xl border px-4 py-3 ${
-        highlight ? 'border-slate-900/15 bg-white/90 shadow-sm' : 'border-slate-200/60 bg-white/60'
+      className={`flex gap-3 rounded-3xl border px-4 py-3 ${
+        highlight ? 'border-border bg-bg shadow-card' : 'border-border bg-bg/70'
       }`}
     >
-      <span className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-slate-900' : 'bg-slate-300'}`} />
+      <span className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-primary' : 'bg-fg-muted/40'}`} />
       <div className="flex-1 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-slate-700">{title}</p>
-          <span className="text-xs uppercase tracking-wide text-slate-400">{dateLabel || '—'}</span>
+          <p className="text-sm font-semibold text-fg">{title}</p>
+          <span className="text-xs uppercase tracking-[0.25em] text-fg-muted">{dateLabel || '—'}</span>
         </div>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-xs text-fg-muted">{description}</p>
         {children}
       </div>
     </div>
   );
 }
 
+/** Törlés megerősítése (dialog) — semantic + A11y */
 function DeleteConfirmationDialog({
   offer,
   onCancel,
@@ -194,38 +190,32 @@ function DeleteConfirmationDialog({
   onConfirm: () => void;
   isDeleting: boolean;
 }) {
-  if (!offer) {
-    return null;
-  }
+  if (!offer) return null;
 
   const labelId = `delete-offer-title-${offer.id}`;
   const descriptionId = `delete-offer-description-${offer.id}`;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6"
-      onClick={() => {
-        if (!isDeleting) {
-          onCancel();
-        }
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-fg/20 px-4 py-6"
+      onClick={() => { if (!isDeleting) onCancel(); }}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelId}
         aria-describedby={descriptionId}
-        className="w-full max-w-md rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-2xl backdrop-blur"
+        className="w-full max-w-md rounded-3xl border border-border bg-bg p-6 shadow-pop backdrop-blur"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="space-y-3">
-          <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+          <div className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger">
             Figyelmeztetés
           </div>
-          <h2 id={labelId} className="text-lg font-semibold text-slate-900">
+          <h2 id={labelId} className="text-lg font-semibold text-fg">
             Ajánlat törlése
           </h2>
-          <p id={descriptionId} className="text-sm leading-6 text-slate-600">
+          <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
             Biztosan törlöd a(z) „{offer.title || '(névtelen)'}” ajánlatot? Ez a művelet nem visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
           </p>
         </div>
@@ -233,13 +223,9 @@ function DeleteConfirmationDialog({
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
-            onClick={() => {
-              if (!isDeleting) {
-                onCancel();
-              }
-            }}
+            onClick={() => { if (!isDeleting) onCancel(); }}
             disabled={isDeleting}
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
             Mégse
           </button>
@@ -247,7 +233,7 @@ function DeleteConfirmationDialog({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="inline-flex items-center justify-center rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-400"
+            className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/60 disabled:cursor-not-allowed disabled:brightness-95"
           >
             {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
           </button>
@@ -257,13 +243,13 @@ function DeleteConfirmationDialog({
   );
 }
 
+/** Dátum utilok (változatlan logika) */
 function isoDateInput(value: string | null): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   return date.toISOString().slice(0, 10);
 }
-
 function formatDate(value: string | null) {
   if (!value) return '—';
   const date = new Date(value);
@@ -275,6 +261,7 @@ export default function DashboardPage() {
   const { showToast } = useToast();
   const sb = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
+
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -290,7 +277,7 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>('all');
   const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortByOption>('created');
-  const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
+  const [sortDir, setSortDir] = useState<SortDirectionOption>('desc']);
 
   const fetchPage = useCallback(async (
     user: string,
@@ -308,9 +295,7 @@ export default function DashboardPage() {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return {
       items: Array.isArray(data) ? (data as Offer[]) : [],
@@ -320,11 +305,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     let active = true;
-
     if (authStatus !== 'authenticated' || !user) {
-      return () => {
-        active = false;
-      };
+      return () => { active = false; };
     }
 
     const loadInitialPage = async () => {
@@ -332,61 +314,38 @@ export default function DashboardPage() {
       try {
         setUserId(user.id);
         const { items, count } = await fetchPage(user.id, 0);
-        if (!active) {
-          return;
-        }
+        if (!active) return;
         setOffers(items);
         setPageIndex(0);
         setTotalCount(count);
       } catch (error) {
         console.error('Failed to load offers', error);
-        const message = error instanceof Error
-          ? error.message
-          : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
-        showToast({
-          title: 'Ajánlatok betöltése sikertelen',
-          description: message,
-          variant: 'error',
-        });
+        const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+        showToast({ title: 'Ajánlatok betöltése sikertelen', description: message, variant: 'error' });
       } finally {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     };
 
     loadInitialPage();
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [authStatus, fetchPage, showToast, sb, user]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 
   const handleLoadMore = useCallback(async () => {
-    if (!userId || isLoadingMore || !hasMore) {
-      return;
-    }
+    if (!userId || isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
     try {
       const nextPage = pageIndex + 1;
       const { items, count } = await fetchPage(userId, nextPage);
       setOffers((prev) => mergeOfferPages(prev, items));
-      if (count !== null) {
-        setTotalCount(count);
-      }
+      if (count !== null) setTotalCount(count);
       setPageIndex(nextPage);
     } catch (error) {
       console.error('Failed to load offers', error);
-      const message = error instanceof Error
-        ? error.message
-        : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
-      showToast({
-        title: 'További ajánlatok betöltése sikertelen',
-        description: message,
-        variant: 'error',
-      });
+      const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+      showToast({ title: 'További ajánlatok betöltése sikertelen', description: message, variant: 'error' });
     } finally {
       setIsLoadingMore(false);
     }
@@ -402,20 +361,12 @@ export default function DashboardPage() {
     setUpdatingId(offer.id);
     try {
       const { error } = await sb.from('offers').update(patch).eq('id', offer.id);
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       setOffers((prev) => prev.map((item) => (item.id === offer.id ? { ...item, ...patch } : item)));
     } catch (error) {
       console.error('Offer status update failed', error);
-      const message = error instanceof Error
-        ? error.message
-        : 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.';
-      showToast({
-        title: 'Állapot frissítése sikertelen',
-        description: message,
-        variant: 'error',
-      });
+      const message = error instanceof Error ? error.message : 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.';
+      showToast({ title: 'Állapot frissítése sikertelen', description: message, variant: 'error' });
     } finally {
       setUpdatingId(null);
     }
@@ -443,83 +394,49 @@ export default function DashboardPage() {
       decision,
       decided_at: timestamp.toISOString(),
     };
-    if (!offer.sent_at) {
-      patch.sent_at = timestamp.toISOString();
-    }
+    if (!offer.sent_at) patch.sent_at = timestamp.toISOString();
     await applyPatch(offer, patch);
   }
 
   async function revertToSent(offer: Offer) {
-    const patch: Partial<Offer> = {
-      status: 'sent',
-      decision: null,
-      decided_at: null,
-    };
-    if (!offer.sent_at) {
-      patch.sent_at = new Date().toISOString();
-    }
+    const patch: Partial<Offer> = { status: 'sent', decision: null, decided_at: null };
+    if (!offer.sent_at) patch.sent_at = new Date().toISOString();
     await applyPatch(offer, patch);
   }
 
   async function revertToDraft(offer: Offer) {
-    const patch: Partial<Offer> = {
-      status: 'draft',
-      sent_at: null,
-      decided_at: null,
-      decision: null,
-    };
+    const patch: Partial<Offer> = { status: 'draft', sent_at: null, decided_at: null, decision: null };
     await applyPatch(offer, patch);
   }
 
   const confirmDeleteOffer = useCallback(async () => {
-    if (!offerToDelete) {
-      return;
-    }
+    if (!offerToDelete) return;
 
     setDeletingId(offerToDelete.id);
     try {
       const storagePaths = new Set<string>();
       if (offerToDelete.pdf_url) {
         const storagePathFromUrl = extractOfferStoragePath(offerToDelete.pdf_url);
-        if (storagePathFromUrl) {
-          storagePaths.add(storagePathFromUrl);
-        }
+        if (storagePathFromUrl) storagePaths.add(storagePathFromUrl);
       }
-
-      if (userId) {
-        storagePaths.add(`${userId}/${offerToDelete.id}.pdf`);
-      }
+      if (userId) storagePaths.add(`${userId}/${offerToDelete.id}.pdf`);
 
       const { error } = await sb.from('offers').delete().eq('id', offerToDelete.id);
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const storagePathList = Array.from(storagePaths).filter(Boolean);
-
       if (storagePathList.length > 0) {
         const { error: storageError } = await sb.storage.from('offers').remove(storagePathList);
-        if (storageError) {
-          console.error('Failed to delete offer PDF from storage', storageError);
-        }
+        if (storageError) console.error('Failed to delete offer PDF from storage', storageError);
       }
+
       setOffers((prev) => prev.filter((item) => item.id !== offerToDelete.id));
       setTotalCount((prev) => (typeof prev === 'number' ? Math.max(prev - 1, 0) : prev));
-      showToast({
-        title: 'Ajánlat törölve',
-        description: 'Az ajánlat véglegesen eltávolításra került.',
-        variant: 'success',
-      });
+      showToast({ title: 'Ajánlat törölve', description: 'Az ajánlat véglegesen eltávolításra került.', variant: 'success' });
     } catch (error) {
       console.error('Failed to delete offer', error);
-      const message = error instanceof Error
-        ? error.message
-        : 'Nem sikerült törölni az ajánlatot. Próbáld újra.';
-      showToast({
-        title: 'Törlés sikertelen',
-        description: message,
-        variant: 'error',
-      });
+      const message = error instanceof Error ? error.message : 'Nem sikerült törölni az ajánlatot. Próbáld újra.';
+      showToast({ title: 'Törlés sikertelen', description: message, variant: 'error' });
     } finally {
       setDeletingId(null);
       setOfferToDelete(null);
@@ -527,16 +444,12 @@ export default function DashboardPage() {
   }, [offerToDelete, sb, showToast, userId]);
 
   const handleCancelDelete = useCallback(() => {
-    if (deletingId) {
-      return;
-    }
+    if (deletingId) return;
     setOfferToDelete(null);
   }, [deletingId]);
 
   useEffect(() => {
-    if (!offerToDelete) {
-      return;
-    }
+    if (!offerToDelete) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -544,24 +457,21 @@ export default function DashboardPage() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        if (!deletingId) {
-          setOfferToDelete(null);
-        }
+        if (!deletingId) setOfferToDelete(null);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [offerToDelete, deletingId]);
 
+  /** Szűrés + rendezés (változatlan logika) */
   const filtered = useMemo(() => {
     let list = offers.slice();
 
-    // kereső: cím vagy cég
     if (q.trim()) {
       const t = q.toLowerCase();
       list = list.filter(o =>
@@ -573,7 +483,6 @@ export default function DashboardPage() {
     if (statusFilter !== 'all') list = list.filter(o => o.status === statusFilter);
     if (industryFilter !== 'all') list = list.filter(o => o.industry === industryFilter);
 
-    // rendezés
     list.sort((a, b) => {
       const dir = sortDir === 'asc' ? 1 : -1;
       switch (sortBy) {
@@ -590,6 +499,7 @@ export default function DashboardPage() {
     return list;
   }, [offers, q, statusFilter, industryFilter, sortBy, sortDir]);
 
+  /** Metrikák (változatlan logika) */
   const stats = useMemo(() => {
     const total = offers.length;
     const now = new Date();
@@ -615,9 +525,7 @@ export default function DashboardPage() {
       const sentAt = offer.sent_at ? new Date(offer.sent_at).getTime() : (offer.created_at ? new Date(offer.created_at).getTime() : NaN);
       if (!Number.isFinite(decided) || !Number.isFinite(sentAt)) return;
       const diffDays = (decided - sentAt) / (1000 * 60 * 60 * 24);
-      if (diffDays >= 0) {
-        decisionDurations.push(diffDays);
-      }
+      if (diffDays >= 0) decisionDurations.push(diffDays);
     });
     const avgDecisionDays = decisionDurations.length
       ? decisionDurations.reduce((sum, value) => sum + value, 0) / decisionDurations.length
@@ -635,10 +543,9 @@ export default function DashboardPage() {
     };
   }, [offers]);
 
+  /** Realtime frissítések (változatlan logika) */
   useEffect(() => {
-    if (authStatus !== 'authenticated' || !user) {
-      return;
-    }
+    if (authStatus !== 'authenticated' || !user) return;
 
     const channel = sb
       .channel(`offers-updates-${user.id}`)
@@ -647,22 +554,13 @@ export default function DashboardPage() {
         { event: 'UPDATE', schema: 'public', table: 'offers', filter: `user_id=eq.${user.id}` },
         (payload) => {
           const updated = payload.new as Partial<Offer> & { id?: string };
-          if (!updated || typeof updated.id !== 'string') {
-            return;
-          }
-
+          if (!updated || typeof updated.id !== 'string') return;
           setOffers((prev) => {
             let didChange = false;
             const next = prev.map((item) => {
-              if (item.id !== updated.id) {
-                return item;
-              }
+              if (item.id !== updated.id) return item;
               didChange = true;
-              return {
-                ...item,
-                ...updated,
-                recipient: updated.recipient !== undefined ? updated.recipient : item.recipient,
-              };
+              return { ...item, ...updated, recipient: updated.recipient !== undefined ? updated.recipient : item.recipient };
             });
             return didChange ? next : prev;
           });
@@ -673,10 +571,7 @@ export default function DashboardPage() {
         { event: 'DELETE', schema: 'public', table: 'offers', filter: `user_id=eq.${user.id}` },
         (payload) => {
           const removed = payload.old as { id?: string } | null;
-          if (!removed || typeof removed.id !== 'string') {
-            return;
-          }
-
+          if (!removed || typeof removed.id !== 'string') return;
           setOffers((prev) => {
             const next = prev.filter((item) => item.id !== removed.id);
             if (next.length !== prev.length) {
@@ -688,11 +583,10 @@ export default function DashboardPage() {
       )
       .subscribe();
 
-    return () => {
-      sb.removeChannel(channel);
-    };
+    return () => { sb.removeChannel(channel); };
   }, [authStatus, sb, user]);
 
+  /** Derived UI szövegek */
   const acceptanceLabel = stats.acceptanceRate !== null
     ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
     : '—';
@@ -700,9 +594,7 @@ export default function DashboardPage() {
     ? `${stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} nap`
     : '—';
   const totalOffersCount = totalCount ?? stats.total;
-  const displayedCount = totalCount !== null
-    ? Math.min(offers.length, totalCount)
-    : offers.length;
+  const displayedCount = totalCount !== null ? Math.min(offers.length, totalCount) : offers.length;
   const monthlyHelper = `Ebben a hónapban ${stats.createdThisMonth.toLocaleString('hu-HU')} új ajánlat`;
   const totalHelper = totalCount !== null
     ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat • ${monthlyHelper}`
@@ -718,336 +610,306 @@ export default function DashboardPage() {
   return (
     <>
       <AppFrame
-      title="Ajánlatok"
-      description="Keresés, szűrés és státuszkezelés átlátható kártyákon."
-      actions={(
-        <a
-          href="/new"
-          className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
-        >
-          + Új ajánlat
-        </a>
-      )}
-    >
-      <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          label="Létrehozott ajánlatok"
-          value={totalOffersCount.toLocaleString('hu-HU')}
-          helper={totalHelper}
-        />
-        <MetricCard
-          label="Kiküldött ajánlatok"
-          value={stats.sent.toLocaleString('hu-HU')}
-          helper={`${stats.inReview.toLocaleString('hu-HU')} ajánlat döntésre vár`}
-        />
-        <MetricCard
-          label="Elfogadott ajánlatok"
-          value={stats.accepted.toLocaleString('hu-HU')}
-          helper={`Elfogadási arány: ${acceptanceLabel}`}
-        />
-        <MetricCard
-          label="Átlagos döntési idő"
-          value={avgDecisionLabel}
-          helper={`${stats.drafts.toLocaleString('hu-HU')} vázlat készül`}
-        />
-      </section>
+        title="Ajánlatok"
+        description="Keresés, szűrés és státuszkezelés egy helyen — átlátható kártyákkal."
+        actions={(
+          <Link
+            href="/new"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            + Új ajánlat
+          </Link>
+        )}
+      >
+        {/* Metrikák */}
+        <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Létrehozott ajánlatok" value={totalOffersCount.toLocaleString('hu-HU')} helper={totalHelper} />
+          <MetricCard label="Kiküldött ajánlatok" value={stats.sent.toLocaleString('hu-HU')} helper={`${stats.inReview.toLocaleString('hu-HU')} ajánlat döntésre vár`} />
+          <MetricCard label="Elfogadott ajánlatok" value={stats.accepted.toLocaleString('hu-HU')} helper={`Elfogadási arány: ${acceptanceLabel}`} />
+          <MetricCard label="Átlagos döntési idő" value={avgDecisionLabel} helper={`${stats.drafts.toLocaleString('hu-HU')} vázlat készül`} />
+        </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
-          <div className="flex-1 space-y-1">
-            <label className="text-xs font-medium uppercase tracking-wide text-slate-500">Keresés</label>
-            <input
-              placeholder="Ajánlat cím vagy cég…"
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-          <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-wide text-slate-500">Állapot</label>
-              <select
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm"
-                value={statusFilter}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (isStatusFilterValue(value)) {
-                    setStatusFilter(value);
-                  }
-                }}
-              >
-                <option value="all">Mind</option>
-                <option value="draft">Vázlat</option>
-                <option value="sent">Kiküldve</option>
-                <option value="accepted">Elfogadva</option>
-                <option value="lost">Elutasítva</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-wide text-slate-500">Iparág</label>
-              <select
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm"
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-              >
-                <option value="all">Mind</option>
-                {industries.map((ind) => (
-                  <option key={ind} value={ind}>{ind}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-wide text-slate-500">Rendezés</label>
-              <select
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm"
-                value={sortBy}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (isSortByValue(value)) {
-                    setSortBy(value);
-                  }
-                }}
-              >
-                <option value="created">Dátum</option>
-                <option value="status">Állapot</option>
-                <option value="title">Ajánlat neve</option>
-                <option value="recipient">Címzett</option>
-                <option value="industry">Iparág</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-wide text-slate-500">Irány</label>
-              <select
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm shadow-sm"
-                value={sortDir}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (isSortDirectionValue(value)) {
-                    setSortDir(value);
-                  }
-                }}
-              >
-                <option value="desc">Csökkenő</option>
-                <option value="asc">Növekvő</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {loading && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="animate-pulse rounded-3xl border border-slate-200 bg-white/70 p-5 shadow-sm">
-              <div className="mb-4 h-4 w-3/5 rounded-full bg-slate-200" />
-              <div className="mb-6 h-3 w-2/5 rounded-full bg-slate-100" />
-              <div className="h-10 rounded-2xl bg-slate-100" />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!loading && filtered.length === 0 && (
-        <div className="space-y-4 rounded-3xl border border-dashed border-slate-300 bg-white/60 p-12 text-center text-slate-500">
-          <p>{emptyMessage}</p>
-          {hasMore ? (
-            <LoadMoreButton
-              appearance="outline"
-              onClick={handleLoadMore}
-              isLoading={isLoadingMore}
-            />
-          ) : null}
-        </div>
-      )}
-
-      {!loading && filtered.length > 0 && (
-        <>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((o) => {
-              const isUpdating = updatingId === o.id;
-              const isDeleting = deletingId === o.id;
-              const isBusy = isUpdating || isDeleting;
-              const isDecided = o.status === 'accepted' || o.status === 'lost';
-              return (
-                <div
-                  key={o.id}
-                  className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
-                >
-                <div className="mb-4 flex items-start justify-between gap-4">
-                  <div className="min-w-0 space-y-1">
-                    <p className="truncate text-base font-semibold text-slate-900">{o.title || '(névtelen)'}</p>
-                    <p className="truncate text-sm text-slate-500">{(o.recipient?.company_name || '').trim() || '—'}</p>
-                  </div>
-                  <StatusBadge status={o.status} />
-                </div>
-
-                <dl className="space-y-2 text-sm text-slate-600">
-                  <div className="flex items-center justify-between gap-4">
-                    <dt className="text-slate-400">Létrehozva</dt>
-                    <dd className="font-medium text-slate-700">{formatDate(o.created_at)}</dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <dt className="text-slate-400">Iparág</dt>
-                    <dd className="font-medium text-slate-700">{o.industry || 'Ismeretlen'}</dd>
-                  </div>
-                  {o.pdf_url ? (
-                    <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-400">Export</dt>
-                      <dd>
-                        <a
-                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-                          href={o.pdf_url}
-                          target="_blank"
-                        >
-                          PDF megnyitása
-                        </a>
-                      </dd>
-                    </div>
-                  ) : null}
-                </dl>
-
-                <div className="mt-6 space-y-3">
-                  <StatusStep
-                    title="Kiküldve az ügyfélnek"
-                    description="Add meg, mikor küldted el az ajánlatot."
-                    dateLabel={formatDate(o.sent_at)}
-                    highlight={o.status !== 'draft'}
-                  >
-                    {o.sent_at ? (
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                          <span>Dátum módosítása</span>
-                          <input
-                            type="date"
-                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
-                            value={isoDateInput(o.sent_at)}
-                            onChange={(e) => markSent(o, e.target.value)}
-                            disabled={isBusy}
-                          />
-                        </label>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-                        <button
-                          onClick={() => markSent(o)}
-                          disabled={isBusy}
-                          className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-                        >
-                          Jelölés (ma)
-                        </button>
-                        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                          <span>Dátum választása</span>
-                          <input
-                            type="date"
-                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
-                            onChange={(e) => {
-                              if (!e.target.value) return;
-                              markSent(o, e.target.value);
-                            }}
-                            disabled={isBusy}
-                          />
-                        </label>
-                      </div>
-                    )}
-                  </StatusStep>
-
-                  <StatusStep
-                    title="Ügyfél döntése"
-                    description="Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot."
-                    dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
-                    highlight={isDecided}
-                  >
-                    {isDecided ? (
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                        <span
-                          className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${
-                            o.status === 'accepted'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-rose-100 text-rose-700'
-                          }`}
-                        >
-                          {DECISION_LABELS[o.status]}
-                        </span>
-                        <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5">
-                          <span>Döntés dátuma</span>
-                          <input
-                            type="date"
-                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
-                            value={isoDateInput(o.decided_at)}
-                            onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
-                            disabled={isBusy}
-                          />
-                        </label>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-                        <button
-                          onClick={() => markDecision(o, 'accepted')}
-                          disabled={isBusy}
-                          className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Megjelölés: Elfogadva
-                        </button>
-                        <button
-                          onClick={() => markDecision(o, 'lost')}
-                          disabled={isBusy}
-                          className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Megjelölés: Elutasítva
-                        </button>
-                      </div>
-                    )}
-                  </StatusStep>
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-2 text-xs text-slate-500">
-                  {o.status !== 'draft' && (
-                    <button
-                      onClick={() => revertToDraft(o)}
-                      disabled={isBusy}
-                      className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Vissza vázlatba
-                    </button>
-                  )}
-                  {isDecided && (
-                    <button
-                      onClick={() => revertToSent(o)}
-                      disabled={isBusy}
-                      className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Döntés törlése
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setOfferToDelete(o)}
-                    disabled={isBusy}
-                    className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
-                  </button>
-                </div>
-              </div>
-            );
-            })}
-          </div>
-
-          <div className="mt-6 flex flex-col items-center gap-3 text-center">
-            {paginationSummary ? (
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{paginationSummary}</p>
-            ) : null}
-            {hasMore ? (
-              <LoadMoreButton
-                onClick={handleLoadMore}
-                isLoading={isLoadingMore}
+        {/* Szűrők */}
+        <section className="rounded-3xl border border-border bg-bg-muted/70 p-6 shadow-card">
+          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
+            <div className="flex-1 space-y-1">
+              <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Keresés</label>
+              <input
+                placeholder="Ajánlat cím vagy cég…"
+                className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg placeholder:text-fg-muted shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
               />
-            ) : (
-              <p className="text-xs text-slate-400">Az összes ajánlat megjelenítve.</p>
-            )}
+            </div>
+
+            <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Állapot</label>
+                <select
+                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  value={statusFilter}
+                  onChange={(e) => { const value = e.target.value; if (isStatusFilterValue(value)) setStatusFilter(value); }}
+                >
+                  <option value="all">Mind</option>
+                  <option value="draft">Vázlat</option>
+                  <option value="sent">Kiküldve</option>
+                  <option value="accepted">Elfogadva</option>
+                  <option value="lost">Elutasítva</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Iparág</label>
+                <select
+                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  value={industryFilter}
+                  onChange={(e) => setIndustryFilter(e.target.value)}
+                >
+                  <option value="all">Mind</option>
+                  {industries.map((ind) => (
+                    <option key={ind} value={ind}>{ind}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Rendezés</label>
+                <select
+                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  value={sortBy}
+                  onChange={(e) => { const value = e.target.value; if (isSortByValue(value)) setSortBy(value); }}
+                >
+                  <option value="created">Dátum</option>
+                  <option value="status">Állapot</option>
+                  <option value="title">Ajánlat neve</option>
+                  <option value="recipient">Címzett</option>
+                  <option value="industry">Iparág</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Irány</label>
+                <select
+                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  value={sortDir}
+                  onChange={(e) => { const value = e.target.value; if (isSortDirectionValue(value)) setSortDir(value); }}
+                >
+                  <option value="desc">Csökkenő</option>
+                  <option value="asc">Növekvő</option>
+                </select>
+              </div>
+            </div>
           </div>
-        </>
-      )}
+        </section>
+
+        {/* Skeletonok */}
+        {loading && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse rounded-3xl border border-border bg-bg-muted/70 p-5 shadow-card">
+                <div className="mb-4 h-4 w-3/5 rounded-full bg-bg" />
+                <div className="mb-6 h-3 w-2/5 rounded-full bg-bg" />
+                <div className="h-10 rounded-2xl bg-bg" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Üres / nincs találat */}
+        {!loading && filtered.length === 0 && (
+          <div className="space-y-4 rounded-3xl border border-dashed border-border bg-bg/70 p-12 text-center text-fg-muted">
+            <p>{emptyMessage}</p>
+            {hasMore ? (
+              <LoadMoreButton appearance="outline" onClick={handleLoadMore} isLoading={isLoadingMore} />
+            ) : null}
+          </div>
+        )}
+
+        {/* Lista */}
+        {!loading && filtered.length > 0 && (
+          <>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {filtered.map((o) => {
+                const isUpdating = updatingId === o.id;
+                const isDeleting = deletingId === o.id;
+                const isBusy = isUpdating || isDeleting;
+                const isDecided = o.status === 'accepted' || o.status === 'lost';
+
+                return (
+                  <div
+                    key={o.id}
+                    className="group flex h-full flex-col rounded-3xl border border-border bg-bg/80 p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-pop"
+                  >
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <div className="min-w-0 space-y-1">
+                        <p className="truncate text-base font-semibold text-fg">{o.title || '(névtelen)'}</p>
+                        <p className="truncate text-sm text-fg-muted">{(o.recipient?.company_name || '').trim() || '—'}</p>
+                      </div>
+                      <StatusBadge status={o.status} />
+                    </div>
+
+                    <dl className="space-y-2 text-sm text-fg-muted">
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="">Létrehozva</dt>
+                        <dd className="font-medium text-fg">{formatDate(o.created_at)}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="">Iparág</dt>
+                        <dd className="font-medium text-fg">{o.industry || 'Ismeretlen'}</dd>
+                      </div>
+                      {o.pdf_url ? (
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="">Export</dt>
+                          <dd>
+                            <a
+                              className="rounded-full border border-border px-3 py-1 text-xs font-medium text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              href={o.pdf_url}
+                              target="_blank"
+                            >
+                              PDF megnyitása
+                            </a>
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+
+                    <div className="mt-6 space-y-3">
+                      <StatusStep
+                        title="Kiküldve az ügyfélnek"
+                        description="Add meg, mikor küldted el az ajánlatot."
+                        dateLabel={formatDate(o.sent_at)}
+                        highlight={o.status !== 'draft'}
+                      >
+                        {o.sent_at ? (
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-fg">
+                            <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
+                              <span>Dátum módosítása</span>
+                              <input
+                                type="date"
+                                className="rounded-lg border border-border px-2 py-1 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                value={isoDateInput(o.sent_at)}
+                                onChange={(e) => markSent(o, e.target.value)}
+                                disabled={isBusy}
+                              />
+                            </label>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2 text-xs text-fg">
+                            <button
+                              onClick={() => markSent(o)}
+                              disabled={isBusy}
+                              className="inline-flex items-center rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-ink shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                              Jelölés (ma)
+                            </button>
+                            <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
+                              <span>Dátum választása</span>
+                              <input
+                                type="date"
+                                className="rounded-lg border border-border px-2 py-1 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                onChange={(e) => { if (!e.target.value) return; markSent(o, e.target.value); }}
+                                disabled={isBusy}
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </StatusStep>
+
+                      <StatusStep
+                        title="Ügyfél döntése"
+                        description="Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot."
+                        dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
+                        highlight={isDecided}
+                      >
+                        {isDecided ? (
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-fg">
+                            <span
+                              className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${
+                                o.status === 'accepted'
+                                  ? 'bg-success/10 text-success'
+                                  : 'bg-danger/10 text-danger'
+                              }`}
+                            >
+                              {DECISION_LABELS[o.status]}
+                            </span>
+                            <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
+                              <span>Döntés dátuma</span>
+                              <input
+                                type="date"
+                                className="rounded-lg border border-border px-2 py-1 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                value={isoDateInput(o.decided_at)}
+                                onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
+                                disabled={isBusy}
+                              />
+                            </label>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-2 text-xs text-fg">
+                            <button
+                              onClick={() => markDecision(o, 'accepted')}
+                              disabled={isBusy}
+                              className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-3 py-1.5 font-semibold text-success transition hover:border-success/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-success/50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Megjelölés: Elfogadva
+                            </button>
+                            <button
+                              onClick={() => markDecision(o, 'lost')}
+                              disabled={isBusy}
+                              className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Megjelölés: Elutasítva
+                            </button>
+                          </div>
+                        )}
+                      </StatusStep>
+                    </div>
+
+                    <div className="mt-5 flex flex-wrap gap-2 text-xs text-fg">
+                      {o.status !== 'draft' && (
+                        <button
+                          onClick={() => revertToDraft(o)}
+                          disabled={isBusy}
+                          className="inline-flex items-center rounded-full border border-border px-3 py-1.5 font-semibold text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Vissza vázlatba
+                        </button>
+                      )}
+                      {isDecided && (
+                        <button
+                          onClick={() => revertToSent(o)}
+                          disabled={isBusy}
+                          className="inline-flex items-center rounded-full border border-border px-3 py-1.5 font-semibold text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Döntés törlése
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setOfferToDelete(o)}
+                        disabled={isBusy}
+                        className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 flex flex-col items-center gap-3 text-center">
+              {paginationSummary ? (
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">{paginationSummary}</p>
+              ) : null}
+              {hasMore ? (
+                <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
+              ) : (
+                <p className="text-xs text-fg-muted">Az összes ajánlat megjelenítve.</p>
+              )}
+            </div>
+          </>
+        )}
       </AppFrame>
+
       <DeleteConfirmationDialog
         offer={offerToDelete}
         onCancel={handleCancelDelete}
