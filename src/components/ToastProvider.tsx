@@ -23,9 +23,9 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 let toastIdCounter = 0;
 
 const VARIANT_STYLES: Record<ToastVariant, string> = {
-  default: 'border-border bg-white text-slate-900 shadow-lg',
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-900 shadow-lg',
-  error: 'border-rose-200 bg-rose-50 text-rose-900 shadow-lg',
+  default: 'border-border bg-bg text-fg shadow-card',
+  success: 'border-success/30 bg-success/10 text-success shadow-card',
+  error: 'border-danger/30 bg-danger/10 text-danger shadow-card',
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -70,8 +70,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
               <Button
                 type="button"
+                variant="ghost"
                 onClick={() => removeToast(toast.id)}
-                className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold text-slate-500 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold text-fg transition hover:bg-bg-muted"
               >
                 ×
               </Button>
