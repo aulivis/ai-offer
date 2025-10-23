@@ -72,7 +72,7 @@ export default function Home() {
           {/* HERO */}
           <section className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div className="space-y-8">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted/60 px-4 py-1 text-xs font-medium uppercase tracking-[0.35em] text-fg-muted">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-[rgb(var(--color-bg-muted-rgb)/0.6)] px-4 py-1 text-xs font-medium uppercase tracking-[0.35em] text-fg-muted">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" /> ÚJ GENERÁCIÓS AJÁNLAT
               </span>
 
@@ -115,7 +115,7 @@ export default function Home() {
             {/* Jobb oldali „app preview” kártya */}
             <div className="relative">
               <div className="absolute inset-0 -translate-y-6 translate-x-8 rounded-[40px] bg-gradient-to-br from-bg-muted via-bg to-bg-muted blur-3xl" />
-              <div className="relative overflow-hidden rounded-[40px] border border-border bg-bg-muted/80 shadow-pop">
+              <div className="relative overflow-hidden rounded-[40px] border border-border bg-[rgb(var(--color-bg-muted-rgb)/0.8)] shadow-pop">
                 <div className="flex items-center justify-between border-b border-border px-6 py-5 text-xs uppercase tracking-[0.3em] text-fg-muted">
                   <span>Propono canvas</span>
                   <span className="rounded-full bg-bg px-4 py-1 text-[10px] font-semibold text-accent">

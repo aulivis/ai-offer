@@ -1,9 +1,15 @@
-// tailwind.config.ts
-import type { Config } from 'tailwindcss';
+// tailwind.config.mjs
+const withOpacityValue = (variable) => {
+  return ({ opacityValue }) => {
+    if (opacityValue !== undefined) {
+      return `rgb(var(${variable}) / ${opacityValue})`;
+    }
 
-const withOpacityValue = (variable: string) => `rgb(var(${variable}) / <alpha-value>)`;
+    return `rgb(var(${variable}) / 1)`;
+  };
+};
 
-export default {
+const config = {
   content: [
     './src/app/**/*.{ts,tsx}',
     './src/components/**/*.{ts,tsx}',
@@ -58,4 +64,6 @@ export default {
     },
   },
   plugins: [],
-} satisfies Config;
+};
+
+export default config;

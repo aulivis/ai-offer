@@ -115,9 +115,21 @@ a {
 }
 
 .card {
-  @apply rounded-3xl bg-bg-muted/60 shadow-card border border-border backdrop-blur;
+  border-radius: var(--radius-3xl);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  background-color: rgb(var(--color-bg-muted-rgb) / 0.6);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }
 
 .sticky-cta {
-  @apply fixed bottom-0 inset-x-0 bg-bg-muted/90 backdrop-blur border-t border-border py-3 px-4;
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-border);
+  background-color: rgb(var(--color-bg-muted-rgb) / 0.9);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }
