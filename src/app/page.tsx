@@ -54,52 +54,43 @@ export default function Home() {
       <div className="relative">
         <LandingHeader className="border-b border-border/60 bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
 
-        <main id="main" className="mx-auto flex max-w-6xl flex-col gap-28 px-6 py-24 md:gap-32 md:py-28">
+        <main id="main" className="flex flex-col gap-28 md:gap-32">
           {/* HERO */}
-          <section className="grid gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div className="space-y-10">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-[rgb(var(--color-bg-muted-rgb)/0.96)] px-5 py-1.5 text-sm font-semibold uppercase tracking-[0.42em] text-fg-muted">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" /> ÚJ GENERÁCIÓS AJÁNLAT
+          <section className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-32 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex max-w-xl flex-1 flex-col gap-8">
+              <span className="inline-flex w-fit items-center rounded-full border border-[#00E5B0] bg-[#00E5B0]/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#00E5B0]">
+                Ajánlatkészítés újragondolva
               </span>
 
-              <h1 className="text-5xl font-bold tracking-[-0.025em] md:text-6xl">
-                Magyar{' '}
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  AI ajánlat designer
-                </span>
+              <h1 className="max-w-[14ch] text-5xl font-extrabold leading-[1.1] tracking-tight text-fg md:text-6xl">
+                Készíts lenyűgöző ajánlatokat.
+                <br />
+                <span className="text-[#00E5B0]">Villámgyorsan.</span>
               </h1>
 
-              <p className="max-w-2xl text-lg font-normal leading-relaxed text-fg-muted">
-                A Propono vizuális ajánlatkészítő felület, amely a Penpot szabad formavilágát ötvözi az AI sebességével. Húzd, szerkeszd, promptolj, majd küldd tovább percek alatt – pixeltiszta, márkahű PDF-ben.
+              <p className="max-w-[48ch] text-base leading-[1.6] text-fg-muted md:text-lg">
+                A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen személyre szabva, hogy te a növekedésre koncentrálhass.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-4">
                 <Link
                   href="/new"
-                  className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-pop transition duration-200 ease-out hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#00E5B0] to-[#22FFC9] px-7 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 ease-out hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
                 >
-                  Kezdj el egy ajánlatot
+                  Próbáld ki ingyen!
                 </Link>
                 <Link
                   href="/demo"
-                  className="inline-flex items-center justify-center rounded-full border border-border/80 px-7 py-3 text-sm font-semibold text-fg transition duration-200 ease-out hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="inline-flex items-center justify-center rounded-full border border-white/60 px-7 py-3 text-sm font-semibold text-white transition duration-200 ease-out hover:border-[#00E5B0] hover:text-[#00E5B0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]/40"
                 >
-                  Nézd meg a demót
+                  Nézd meg a bemutatót
                 </Link>
-              </div>
-
-              <div className="flex flex-wrap gap-3 text-[0.75rem] uppercase tracking-[0.32em] text-fg-muted">
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Stripe védelem
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Ingyenes próba 3 ajánlattal
-                </span>
               </div>
             </div>
 
             {/* Jobb oldali „app preview” kártya */}
-            <div className="relative">
+            <div className="relative flex-1">
+              <div className="pointer-events-none absolute -inset-10 -z-10 rounded-[36px] bg-[radial-gradient(circle,_rgba(34,255,201,0.6)_1px,transparent_1px)] opacity-20 mix-blend-overlay [background-size:22px_22px]" />
               <div className="absolute inset-0 -translate-y-8 translate-x-6 rounded-[32px] bg-gradient-to-br from-primary/10 via-transparent to-accent/10 blur-2xl" />
               <div className="relative overflow-hidden rounded-[24px] border border-border/60 bg-[rgb(var(--color-bg-muted-rgb)/0.96)] shadow-pop">
                 <div className="flex items-center justify-between border-b border-border/60 px-6 py-5 text-xs font-semibold uppercase tracking-[0.32em] text-fg-muted">
@@ -151,7 +142,7 @@ export default function Home() {
           </section>
 
           {/* BENEFITS */}
-          <section className="grid gap-8 lg:grid-cols-3">
+          <section className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-3">
             {features.map((feature) => (
               <Card
                 key={feature.title}
@@ -165,36 +156,38 @@ export default function Home() {
           </section>
 
           {/* HOW IT WORKS */}
-          <Card as="section" className="grid gap-12 p-12 md:gap-14 lg:grid-cols-[0.55fr_1fr]">
-            <div className="space-y-7">
-              <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                Folyamat vizuálisan
-              </span>
-              <h2 className="text-3xl font-semibold text-fg">Három lépés, ahol a csapatod együtt dolgozik</h2>
-              <p className="text-base leading-relaxed text-fg-muted">
-                A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.
-              </p>
-            </div>
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <Card as="section" className="grid gap-12 p-12 md:gap-14 lg:grid-cols-[0.55fr_1fr]">
+              <div className="space-y-7">
+                <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+                  Folyamat vizuálisan
+                </span>
+                <h2 className="text-3xl font-semibold text-fg">Három lépés, ahol a csapatod együtt dolgozik</h2>
+                <p className="text-base leading-relaxed text-fg-muted">
+                  A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.
+                </p>
+              </div>
 
-            <ol className="relative space-y-5 border-l border-border/60 pl-6">
-              {steps.map((step, index) => (
-                <Card
-                  as="li"
-                  key={step.title}
-                  className="relative space-y-2 bg-bg p-5"
-                >
-                  <span className="absolute -left-[38px] grid h-8 w-8 place-items-center rounded-full bg-primary/10 font-mono text-xs text-primary">
-                    {index + 1}
-                  </span>
-                  <p className="text-base font-semibold">{step.title}</p>
-                  <p className="text-base leading-relaxed text-fg-muted">{step.description}</p>
-                </Card>
-              ))}
-            </ol>
-          </Card>
+              <ol className="relative space-y-5 border-l border-border/60 pl-6">
+                {steps.map((step, index) => (
+                  <Card
+                    as="li"
+                    key={step.title}
+                    className="relative space-y-2 bg-bg p-5"
+                  >
+                    <span className="absolute -left-[38px] grid h-8 w-8 place-items-center rounded-full bg-primary/10 font-mono text-xs text-primary">
+                      {index + 1}
+                    </span>
+                    <p className="text-base font-semibold">{step.title}</p>
+                    <p className="text-base leading-relaxed text-fg-muted">{step.description}</p>
+                  </Card>
+                ))}
+              </ol>
+            </Card>
+          </div>
 
           {/* QUOTE + FEATURE GRID */}
-          <section className="grid gap-12 lg:grid-cols-[1fr_0.55fr]">
+          <section className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-[1fr_0.55fr]">
             <Card className="p-10">
               <h3 className="text-2xl font-semibold text-fg">
                 Márkázott PDF, ami úgy néz ki, mintha egy design stúdió készítette volna
@@ -227,39 +220,41 @@ export default function Home() {
           </section>
 
           {/* CTA STRIP */}
-          <Card
-            as="section"
-            className="overflow-hidden border border-primary/40 bg-gradient-to-r from-primary/12 via-transparent to-accent/12 p-12 shadow-pop"
-          >
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl space-y-4">
-                <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                  Ajánlatkészítés újrafogalmazva
-                </span>
-                <h2 className="text-3xl font-semibold text-fg">
-                  Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
-                </h2>
-                <p className="text-base leading-relaxed text-fg-muted">
-                  Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi ajánlataidból tanul,
-                  hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
-                </p>
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <Card
+              as="section"
+              className="overflow-hidden border border-primary/40 bg-gradient-to-r from-primary/12 via-transparent to-accent/12 p-12 shadow-pop"
+            >
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-2xl space-y-4">
+                  <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+                    Ajánlatkészítés újrafogalmazva
+                  </span>
+                  <h2 className="text-3xl font-semibold text-fg">
+                    Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
+                  </h2>
+                  <p className="text-base leading-relaxed text-fg-muted">
+                    Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi ajánlataidból tanul,
+                    hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/new"
+                    className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-primary-ink transition duration-200 ease-out hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Indítsd el ingyen
+                  </Link>
+                  <Link
+                    href="/billing"
+                    className="inline-flex items-center justify-center rounded-full border border-primary/60 px-7 py-3 text-sm font-semibold text-primary transition duration-200 ease-out hover:border-primary hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Csomagok
+                  </Link>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/new"
-                  className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-primary-ink transition duration-200 ease-out hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  Indítsd el ingyen
-                </Link>
-                <Link
-                  href="/billing"
-                  className="inline-flex items-center justify-center rounded-full border border-primary/60 px-7 py-3 text-sm font-semibold text-primary transition duration-200 ease-out hover:border-primary hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  Csomagok
-                </Link>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </main>
         <footer aria-label="Oldal lábléc" className="sr-only" />
       </div>
