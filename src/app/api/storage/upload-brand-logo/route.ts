@@ -1,10 +1,10 @@
 import { Buffer } from 'node:buffer';
 
 import { NextResponse } from 'next/server';
-import sanitizeHtml from 'sanitize-html';
 import sharp from 'sharp';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
+import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 
 const BUCKET_ID = 'brand-assets';
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -98,53 +98,7 @@ async function normalizeJpeg(buffer: Buffer): Promise<NormalizedImage | null> {
 }
 
 function sanitizeSvg(svg: string): string {
-  return sanitizeHtml(svg, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-      'svg',
-      'path',
-      'g',
-      'defs',
-      'clipPath',
-      'title',
-      'desc',
-      'circle',
-      'ellipse',
-      'line',
-      'polyline',
-      'polygon',
-      'rect',
-      'use',
-      'symbol',
-      'linearGradient',
-      'radialGradient',
-      'stop',
-      'pattern',
-      'mask',
-    ]),
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      svg: ['width', 'height', 'viewBox', 'xmlns', 'fill', 'stroke', 'stroke-width'],
-      '*': [
-        'fill',
-        'stroke',
-        'stroke-width',
-        'stroke-linecap',
-        'stroke-linejoin',
-        'stroke-dasharray',
-        'stroke-dashoffset',
-        'fill-rule',
-        'opacity',
-        'transform',
-        'clip-path',
-        'id',
-        'class',
-        'href',
-        'xlink:href',
-      ],
-    },
-    allowedSchemes: ['http', 'https'],
-    allowProtocolRelative: false,
-  });
+  return sanitizeSvgMarkup(svg);
 }
 
 function normalizeSvg(buffer: Buffer): NormalizedImage | null {
