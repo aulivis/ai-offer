@@ -10,6 +10,17 @@
   --radius-lg: 8px;
   --radius-2xl: 16px;
   --radius-3xl: 24px;
+  --color-primary: #00E5B0;
+  --color-primary-ink: #04251A;
+  --color-accent: #C3B3FF;
+  --color-bg: #F7F9FB;
+  --color-bg-muted: #FFFFFF;
+  --color-fg: #0F172A;
+  --color-fg-muted: #4B5563;
+  --color-border: #E5E7EB;
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger: #DC2626;
 }
 
 :root {
