@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
 
 type Offer = {
   id: string;
@@ -194,57 +195,53 @@ function DeleteConfirmationDialog({
   onConfirm: () => void;
   isDeleting: boolean;
 }) {
-  if (!offer) return null;
+  const open = Boolean(offer);
+  const labelId = open ? `delete-offer-title-${offer!.id}` : undefined;
+  const descriptionId = open ? `delete-offer-description-${offer!.id}` : undefined;
 
-  const labelId = `delete-offer-title-${offer.id}`;
-  const descriptionId = `delete-offer-description-${offer.id}`;
+  const handleClose = () => {
+    if (!isDeleting) {
+      onCancel();
+    }
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-fg/20 px-4 py-6"
-      onClick={() => { if (!isDeleting) onCancel(); }}
-    >
-      <Card
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={labelId}
-        aria-describedby={descriptionId}
-        as="div"
-        className="w-full max-w-md bg-bg p-6 shadow-pop backdrop-blur"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="space-y-3">
-          <div className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger">
-            Figyelmeztetés
+    <Modal open={open} onClose={handleClose} labelledBy={labelId} describedBy={descriptionId}>
+      {open && (
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger">
+              Figyelmeztetés
+            </div>
+            <h2 id={labelId} className="text-lg font-semibold text-fg">
+              Ajánlat törlése
+            </h2>
+            <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
+              Biztosan törlöd a(z) „{offer!.title || '(névtelen)'}” ajánlatot? Ez a művelet nem visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
+            </p>
           </div>
-          <h2 id={labelId} className="text-lg font-semibold text-fg">
-            Ajánlat törlése
-          </h2>
-          <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
-            Biztosan törlöd a(z) „{offer.title || '(névtelen)'}” ajánlatot? Ez a művelet nem visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
-          </p>
-        </div>
 
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            onClick={() => { if (!isDeleting) onCancel(); }}
-            disabled={isDeleting}
-            className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Mégse
-          </Button>
-          <Button
-            type="button"
-            onClick={onConfirm}
-            disabled={isDeleting}
-            className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
-          >
-            {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              onClick={handleClose}
+              disabled={isDeleting}
+              className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Mégse
+            </Button>
+            <Button
+              type="button"
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
+            >
+              {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
+            </Button>
+          </div>
         </div>
-      </Card>
-    </div>
+      )}
+    </Modal>
   );
 }
 
@@ -607,9 +604,11 @@ export default function DashboardPage() {
   const paginationSummary = totalCount !== null
     ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat`
     : null;
+  const currentPage = pageIndex + 1;
+  const totalPages = totalCount !== null ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : null;
   const noOffersLoaded = !loading && offers.length === 0;
   const emptyMessage = noOffersLoaded
-    ? 'Még nem hoztál létre ajánlatokat. Kezdd egy újjal a „+ Új ajánlat” gombbal.'
+    ? 'Még nem hoztál létre ajánlatokat.'
     : 'Nincs találat. Próbálj másik keresést vagy szűrőt.';
 
   return (
@@ -723,11 +722,14 @@ export default function DashboardPage() {
 
         {/* Üres / nincs találat */}
         {!loading && filtered.length === 0 && (
-          <Card className="space-y-4 border-dashed bg-bg/70 p-12 text-center text-fg-muted shadow-none">
-            <p>{emptyMessage}</p>
-            {hasMore ? (
-              <LoadMoreButton appearance="outline" onClick={handleLoadMore} isLoading={isLoadingMore} />
-            ) : null}
+          <Card className="flex flex-col items-center justify-center gap-4 p-12 text-center">
+            <p className="text-sm text-fg-muted">{emptyMessage}</p>
+            <Link
+              href="/new"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              + Új ajánlat
+            </Link>
           </Card>
         )}
 
@@ -805,7 +807,8 @@ export default function DashboardPage() {
                             <Button
                               onClick={() => markSent(o)}
                               disabled={isBusy}
-                              className="inline-flex items-center rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-ink shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              variant="secondary"
+                              size="sm"
                             >
                               Jelölés (ma)
                             </Button>
@@ -860,14 +863,18 @@ export default function DashboardPage() {
                             <Button
                               onClick={() => markDecision(o, 'accepted')}
                               disabled={isBusy}
-                              className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-3 py-1.5 font-semibold text-success transition hover:border-success/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                              variant="secondary"
+                              size="sm"
+                              className="text-success"
                             >
                               Megjelölés: Elfogadva
                             </Button>
                             <Button
                               onClick={() => markDecision(o, 'lost')}
                               disabled={isBusy}
-                              className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                              variant="secondary"
+                              size="sm"
+                              className="text-danger"
                             >
                               Megjelölés: Elutasítva
                             </Button>
@@ -881,7 +888,8 @@ export default function DashboardPage() {
                         <Button
                           onClick={() => revertToDraft(o)}
                           disabled={isBusy}
-                          className="inline-flex items-center rounded-full border border-border px-3 py-1.5 font-semibold text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                          variant="secondary"
+                          size="sm"
                         >
                           Vissza vázlatba
                         </Button>
@@ -890,7 +898,8 @@ export default function DashboardPage() {
                         <Button
                           onClick={() => revertToSent(o)}
                           disabled={isBusy}
-                          className="inline-flex items-center rounded-full border border-border px-3 py-1.5 font-semibold text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                          variant="secondary"
+                          size="sm"
                         >
                           Döntés törlése
                         </Button>
@@ -898,7 +907,9 @@ export default function DashboardPage() {
                       <Button
                         onClick={() => setOfferToDelete(o)}
                         disabled={isBusy}
-                        className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                        variant="secondary"
+                        size="sm"
+                        className="text-danger"
                       >
                         {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
                       </Button>
@@ -912,11 +923,16 @@ export default function DashboardPage() {
               {paginationSummary ? (
                 <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">{paginationSummary}</p>
               ) : null}
-              {hasMore ? (
-                <LoadMoreButton onClick={handleLoadMore} isLoading={isLoadingMore} />
-              ) : (
+              <LoadMoreButton
+                currentPage={currentPage}
+                totalPages={totalPages ?? undefined}
+                hasNext={hasMore}
+                onClick={handleLoadMore}
+                isLoading={isLoadingMore}
+              />
+              {!hasMore ? (
                 <p className="text-xs text-fg-muted">Az összes ajánlat megjelenítve.</p>
-              )}
+              ) : null}
             </div>
           </>
         )}
