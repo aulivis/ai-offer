@@ -173,7 +173,12 @@ a {
 
 .focus-ring,
 :where(a, button, input, textarea, select, summary, [role='button']) {
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+  @apply outline-none;
+}
+
+.focus-ring:focus-visible,
+:where(a, button, input, textarea, select, summary, [role='button']):focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-bg;
 }
 
 .tabular {
