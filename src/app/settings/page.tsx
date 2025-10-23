@@ -56,11 +56,29 @@ function validateAddress(v: string) {
   return (v?.trim()?.length || 0) >= 8;
 }
 
+type SupabaseErrorLike = {
+  message?: string | null;
+  details?: string | null;
+  hint?: string | null;
+};
+
 function normalizeColorHex(value: string | null | undefined): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
   return `#${trimmed.slice(1).toLowerCase()}`;
+}
+
+function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error {
+  if (error) {
+    const parts = [error.message, error.details, error.hint]
+      .map((part) => (typeof part === 'string' ? part.trim() : ''))
+      .filter((part) => part.length > 0);
+    if (parts.length > 0) {
+      return new Error(parts.join(' '));
+    }
+  }
+  return new Error('Ismeretlen hiba történt a mentés közben.');
 }
 
 const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
@@ -269,7 +287,7 @@ export default function SettingsPage() {
             .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
             .maybeSingle();
           if (response.error) {
-            throw response.error;
+            throw createSupabaseError(response.error);
           }
           brandingData = response.data;
         } else {
@@ -295,7 +313,7 @@ export default function SettingsPage() {
             .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
             .maybeSingle();
           if (response.error) {
-            throw response.error;
+            throw createSupabaseError(response.error);
           }
           brandingData = response.data;
         }
@@ -347,7 +365,7 @@ export default function SettingsPage() {
           .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
         if (response.error) {
-          throw response.error;
+          throw createSupabaseError(response.error);
         }
         profileData = response.data;
       } else {
@@ -373,7 +391,7 @@ export default function SettingsPage() {
           .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
         if (response.error) {
-          throw response.error;
+          throw createSupabaseError(response.error);
         }
         profileData = response.data;
       }
