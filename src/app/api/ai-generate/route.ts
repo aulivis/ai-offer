@@ -21,6 +21,7 @@ import {
   getUsageSnapshot,
 } from '@/lib/services/usage';
 import { countPendingPdfJobs, dispatchPdfJob, enqueuePdfJob } from '@/lib/queue/pdf';
+import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
 
 export const runtime = 'nodejs';
@@ -616,27 +617,69 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       }, { status: 500 });
     }
 
+    const pdfJobInput = {
+      jobId: downloadToken,
+      offerId,
+      userId: user.id,
+      storagePath,
+      html,
+      callbackUrl: typeof pdfWebhookUrl === 'string' ? pdfWebhookUrl : undefined,
+      usagePeriodStart,
+      userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
+      deviceId: deviceLimit !== null ? deviceId : null,
+      deviceLimit,
+    } as const;
+
     try {
-      await enqueuePdfJob(sb, {
-        jobId: downloadToken,
-        offerId,
-        userId: user.id,
-        storagePath,
-        html,
-        callbackUrl: typeof pdfWebhookUrl === 'string' ? pdfWebhookUrl : undefined,
-        usagePeriodStart,
-        userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
-        deviceId: deviceLimit !== null ? deviceId : null,
-        deviceLimit,
-      });
-      await dispatchPdfJob(sb, downloadToken);
+      await enqueuePdfJob(sb, pdfJobInput);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('PDF queue error:', message);
-      return NextResponse.json({
-        error: 'Nem sikerült elindítani a PDF generálását.',
-        offerId,
-      }, { status: 502 });
+      console.error('PDF queue error (enqueue):', message);
+      return NextResponse.json(
+        {
+          error: 'Nem sikerült elindítani a PDF generálását.',
+          offerId,
+        },
+        { status: 502 },
+      );
+    }
+
+    let immediatePdfUrl: string | null = null;
+    let responseStatus: 'pending' | 'completed' = 'pending';
+    let responseNote = 'A PDF generálása folyamatban van. Frissíts később.';
+
+    try {
+      await dispatchPdfJob(sb, downloadToken);
+    } catch (dispatchError) {
+      const message = dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
+      console.error('PDF queue error (dispatch):', message);
+
+      try {
+        immediatePdfUrl = await processPdfJobInline(sb, {
+          jobId: pdfJobInput.jobId,
+          offerId: pdfJobInput.offerId,
+          userId: pdfJobInput.userId,
+          storagePath: pdfJobInput.storagePath,
+          html: pdfJobInput.html,
+          callbackUrl: pdfJobInput.callbackUrl,
+          usagePeriodStart: pdfJobInput.usagePeriodStart,
+          userLimit: pdfJobInput.userLimit,
+          deviceId: pdfJobInput.deviceId,
+          deviceLimit: pdfJobInput.deviceLimit,
+        });
+        responseStatus = 'completed';
+        responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
+      } catch (inlineError) {
+        const inlineMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
+        console.error('Inline PDF fallback error:', inlineMessage);
+        return NextResponse.json(
+          {
+            error: 'Nem sikerült elindítani a PDF generálását.',
+            offerId,
+          },
+          { status: 502 },
+        );
+      }
     }
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
@@ -644,10 +687,10 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     return NextResponse.json({
       ok: true,
       id: offerId,
-      pdfUrl: null,
+      pdfUrl: immediatePdfUrl,
       downloadToken,
-      status: 'pending',
-      note: 'A PDF generálása folyamatban van. Frissíts később.',
+      status: responseStatus,
+      note: responseNote,
       sections: sectionsPayload,
     });
   } catch (error) {

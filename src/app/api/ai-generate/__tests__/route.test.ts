@@ -16,6 +16,7 @@ const {
   uuidMock,
   cookiesGetMock,
   cookiesSetMock,
+  processPdfJobInlineMock,
 } = vi.hoisted(() => ({
   insertOfferMock: vi.fn(),
   enqueuePdfJobMock: vi.fn(),
@@ -29,6 +30,7 @@ const {
   uuidMock: vi.fn(),
   cookiesGetMock: vi.fn(),
   cookiesSetMock: vi.fn(),
+  processPdfJobInlineMock: vi.fn(),
 }));
 
 vi.mock('@/app/lib/supabaseServer', () => ({
@@ -90,6 +92,10 @@ vi.mock('@/lib/queue/pdf', () => ({
   countPendingPdfJobs: countPendingPdfJobsMock,
 }));
 
+vi.mock('@/lib/pdfInlineWorker', () => ({
+  processPdfJobInline: processPdfJobInlineMock,
+}));
+
 vi.mock('@/lib/sanitize', () => ({
   sanitizeInput: (value: unknown) => (typeof value === 'string' ? value : ''),
   sanitizeHTML: (value: unknown) => (typeof value === 'string' ? value : ''),
@@ -128,6 +134,7 @@ describe('POST /api/ai-generate', () => {
     uuidMock.mockReset();
     cookiesGetMock.mockReset();
     cookiesSetMock.mockReset();
+    processPdfJobInlineMock.mockReset();
 
     insertOfferMock.mockResolvedValue({ error: null });
     enqueuePdfJobMock.mockRejectedValue(new Error('queue failed'));
@@ -142,6 +149,7 @@ describe('POST /api/ai-generate', () => {
       .mockReturnValueOnce('offer-uuid')
       .mockReturnValueOnce('job-token');
     cookiesGetMock.mockReturnValue(undefined);
+    processPdfJobInlineMock.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -204,11 +212,61 @@ describe('POST /api/ai-generate', () => {
     expect(dispatchPdfJobMock).not.toHaveBeenCalled();
   });
 
+  it('falls back to inline PDF generation when dispatch fails', async () => {
+    enqueuePdfJobMock.mockResolvedValueOnce(undefined);
+    dispatchPdfJobMock.mockRejectedValueOnce(new Error('Edge Function returned a non-2xx status code'));
+    processPdfJobInlineMock.mockResolvedValueOnce('https://cdn.example.com/offers/offer-uuid.pdf');
+
+    const { POST } = await import('../route');
+
+    const request = createRequest(
+      {
+        title: 'Ajánlat címe',
+        industry: 'Marketing',
+        description: 'Részletes leírás',
+        deadline: '',
+        language: 'hu',
+        brandVoice: 'friendly',
+        style: 'detailed',
+        prices: [
+          { name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 },
+        ],
+        aiOverrideHtml: '<p>Előnézet</p>',
+        clientId: null,
+        pdfWebhookUrl: null,
+        imageAssets: [],
+      },
+      { authorization: 'Bearer test-token' },
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      status: 'completed',
+      pdfUrl: 'https://cdn.example.com/offers/offer-uuid.pdf',
+      note: 'A PDF generálása helyben készült el, azonnal letölthető.',
+    });
+
+    expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
+    expect(dispatchPdfJobMock).toHaveBeenCalledTimes(1);
+    expect(processPdfJobInlineMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        jobId: 'job-token',
+        offerId: 'offer-uuid',
+        storagePath: expect.stringContaining('offer-uuid.pdf'),
+      }),
+    );
+  });
+
   it('fails when the PDF worker dispatch cannot be invoked', async () => {
     const { POST } = await import('../route');
 
     enqueuePdfJobMock.mockResolvedValue(undefined);
     dispatchPdfJobMock.mockRejectedValue(new Error('invoke failed'));
+    processPdfJobInlineMock.mockRejectedValue(new Error('inline failed'));
 
     const request = createRequest(
       {
@@ -239,6 +297,7 @@ describe('POST /api/ai-generate', () => {
     });
 
     expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
-    expect(dispatchPdfJobMock).toHaveBeenCalledWith(expect.any(Object), 'job-token');
+    expect(dispatchPdfJobMock).toHaveBeenCalledWith(expect.anything(), 'job-token');
+    expect(processPdfJobInlineMock).toHaveBeenCalledTimes(1);
   });
 });
