@@ -25,30 +25,41 @@ describe('mergeOfferPages', () => {
 });
 
 describe('LoadMoreButton', () => {
-  it('renders default label and triggers handler', () => {
+  it('renders numbered pagination and triggers handler for next page', () => {
     const onClick = vi.fn();
-    render(<LoadMoreButton onClick={onClick} />);
+    render(
+      <LoadMoreButton
+        currentPage={1}
+        hasNext
+        onClick={onClick}
+      />,
+    );
 
-    const button = screen.getByRole('button', { name: 'További ajánlatok betöltése' });
-    expect(button).toBeInTheDocument();
+    const currentPageButton = screen.getByRole('button', { name: '1' });
+    expect(currentPageButton).toBeDisabled();
+    expect(currentPageButton).toHaveAttribute('aria-current', 'page');
 
-    button.click();
+    const nextPageButton = screen.getByRole('button', { name: '2' });
+    expect(nextPageButton).not.toBeDisabled();
+
+    nextPageButton.click();
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it('shows loading state', () => {
-    render(<LoadMoreButton onClick={() => {}} isLoading />);
+  it('shows loading state on next button', () => {
+    render(
+      <LoadMoreButton
+        currentPage={2}
+        hasNext
+        isLoading
+        onClick={() => {}}
+      />,
+    );
 
-    const button = screen.getByRole('button');
-    expect(button).toBeDisabled();
-    expect(button).toHaveAttribute('aria-busy', 'true');
-    expect(button).toHaveTextContent('Betöltés…');
-  });
-
-  it('applies outline styles when requested', () => {
-    render(<LoadMoreButton onClick={() => {}} appearance="outline" />);
-
-    const button = screen.getByRole('button');
-    expect(button.className).toContain('border-border');
+    const buttons = screen.getAllByRole('button');
+    const nextPageButton = buttons[buttons.length - 1];
+    expect(nextPageButton).toBeDisabled();
+    expect(nextPageButton).toHaveAttribute('aria-busy', 'true');
+    expect(nextPageButton).toHaveTextContent('…');
   });
 });
