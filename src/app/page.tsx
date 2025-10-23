@@ -68,7 +68,7 @@ export default function Home() {
         {/* Sticky átlátszó fejléc Penpot-hangulattal */}
         <LandingHeader className="bg-bg/60 backdrop-blur supports-[backdrop-filter]:bg-bg/40 border-b border-border" />
 
-        <main className="mx-auto flex max-w-6xl flex-col gap-24 px-6 pb-24 pt-6">
+        <main id="main" className="mx-auto flex max-w-6xl flex-col gap-24 px-6 pb-24 pt-6">
           {/* HERO */}
           <section className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div className="space-y-8">
@@ -278,6 +278,7 @@ export default function Home() {
             </div>
           </Card>
         </main>
+        <footer aria-label="Oldal lábléc" className="sr-only" />
       </div>
     </div>
   );

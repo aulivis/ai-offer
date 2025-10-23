@@ -126,7 +126,7 @@ export default function AppFrame({ title, description, actions, children, sideba
             </aside>
           ) : null}
 
-          <main className="flex-1 space-y-8">
+          <main id="main" className="flex-1 space-y-8">
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h1 className="font-display text-3xl text-slate-900">{title}</h1>
@@ -138,6 +138,7 @@ export default function AppFrame({ title, description, actions, children, sideba
             {children}
           </main>
         </div>
+        <footer aria-label="Oldal lábléc" className="sr-only" />
       </div>
     </div>
   );
