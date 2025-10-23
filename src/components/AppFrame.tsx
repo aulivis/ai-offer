@@ -129,7 +129,7 @@ export default function AppFrame({ title, description, actions, children, sideba
           <main id="main" className="flex-1 space-y-8">
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="font-display text-3xl text-fg">{title}</h1>
+                <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#151035]">{title}</h1>
                 {description ? <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p> : null}
               </div>
               {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}

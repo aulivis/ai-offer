@@ -12,7 +12,9 @@ export default function DemoPlaceholderPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
               Demó
             </span>
-            <h1 className="text-4xl font-semibold">Interaktív demó hamarosan</h1>
+            <h1 className="text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
+              Interaktív demó hamarosan
+            </h1>
             <p className="text-sm text-slate-500">
               Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Propono ajánlatkészítő folyamatát. Addig is
               regisztrálj és kezdd el ingyen az Ingyenes csomaggal, vagy lépj tovább a Propono Standard 10 ajánlatos keretével.

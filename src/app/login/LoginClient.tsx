@@ -71,7 +71,7 @@ export default function LoginClient() {
               <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-white text-base font-semibold text-slate-700">
                 P
               </span>
-              <h1 className="font-display text-4xl font-semibold tracking-tight text-slate-900">
+              <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
                 Bejelentkezés
               </h1>
               <p className="text-base text-slate-600">Írd be az e-mail címed, és küldünk egy magic linket.</p>

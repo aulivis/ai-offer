@@ -1,7 +1,7 @@
 import localFont from 'next/font/local';
-import { Inter, Space_Mono } from 'next/font/google';
+import { Space_Mono, Work_Sans } from 'next/font/google';
 
-export const inter = Inter({
+export const workSans = Work_Sans({
   subsets: ['latin', 'latin-ext'],
   display: 'swap',
   preload: true,
