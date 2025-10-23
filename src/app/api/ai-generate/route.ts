@@ -632,12 +632,9 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('PDF queue error:', message);
-      const { error: cleanupError } = await sb.from('offers').delete().eq('id', offerId);
-      if (cleanupError) {
-        console.error('Offer cleanup error:', cleanupError.message);
-      }
       return NextResponse.json({
         error: 'Nem sikerült sorba állítani a PDF generálási feladatot.',
+        offerId,
       }, { status: 502 });
     }
 
