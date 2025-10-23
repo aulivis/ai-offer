@@ -1,5 +1,6 @@
 import type { ChangeEventHandler } from 'react';
 import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
 
 type OfferProjectDetailsSectionProps = {
   title: string;
@@ -15,7 +16,7 @@ export function OfferProjectDetailsSection({
   onDescriptionChange,
 }: OfferProjectDetailsSectionProps) {
   return (
-    <section className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
+    <Card as="section">
       <div className="grid gap-5">
         <Input
           label="Ajánlat címe"
@@ -34,6 +35,6 @@ export function OfferProjectDetailsSection({
           />
         </label>
       </div>
-    </section>
+    </Card>
   );
 }

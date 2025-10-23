@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
 
 export type PriceRow = { name: string; qty: number; unit: string; unitPrice: number; vat: number; };
 
@@ -33,7 +34,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
   const removeRow = (idx: number) => onChange(rows.filter((_, i) => i !== idx));
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-border bg-white/80 shadow-sm">
+    <Card className="overflow-hidden p-0">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-500">
@@ -125,6 +126,6 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
           <span><strong className="text-slate-700">Bruttó:</strong> {totals.gross.toLocaleString('hu-HU')} Ft</span>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
