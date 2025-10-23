@@ -87,9 +87,9 @@ a {
 }
 
 .card {
-  @apply rounded-3xl bg-night-800/60 shadow-card border border-white/5 backdrop-blur;
+  @apply rounded-3xl bg-bg-muted/60 shadow-card border border-border backdrop-blur;
 }
 
 .sticky-cta {
-  @apply fixed bottom-0 inset-x-0 bg-night-800/90 backdrop-blur border-t border-white/10 py-3 px-4;
+  @apply fixed bottom-0 inset-x-0 bg-bg-muted/90 backdrop-blur border-t border-border py-3 px-4;
 }

@@ -32,7 +32,7 @@ export function LoadMoreButton({
 }: LoadMoreButtonProps) {
   const baseClasses = 'inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold transition';
   const variant = appearance === 'outline'
-    ? 'border border-slate-300 bg-white text-slate-700 shadow-sm hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60'
+    ? 'border border-border bg-white text-slate-700 shadow-sm hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60'
     : 'bg-slate-900 text-white shadow-sm hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400';
   return (
     <button

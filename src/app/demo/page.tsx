@@ -9,7 +9,7 @@ export default function DemoPlaceholderPage() {
         <LandingHeader />
         <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-6 pb-16 text-center">
           <div className="max-w-xl space-y-6">
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
               Demó
             </span>
             <h1 className="text-4xl font-semibold">Interaktív demó hamarosan</h1>
@@ -26,7 +26,7 @@ export default function DemoPlaceholderPage() {
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                className="inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
               >
                 Vissza a főoldalra
               </Link>

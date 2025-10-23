@@ -60,9 +60,9 @@ export default function LoginClient() {
       <div className="relative flex min-h-screen flex-col">
         <LandingHeader />
         <main className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 pb-16 pt-8">
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white/85 p-8 shadow-lg backdrop-blur">
+          <div className="w-full max-w-md rounded-3xl border border-border bg-white/85 p-8 shadow-lg backdrop-blur">
             <div className="mb-6 space-y-2 text-center">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm font-semibold text-slate-700">P</span>
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-white text-sm font-semibold text-slate-700">P</span>
               <h1 className="text-2xl font-semibold text-slate-900">Bejelentkezés</h1>
               <p className="text-sm text-slate-500">Írd be az e-mail címed, és küldünk egy egyszer használatos belépési linket.</p>
             </div>
@@ -71,7 +71,7 @@ export default function LoginClient() {
             <label className="flex flex-col gap-1 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
               E-mail cím
               <input
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                 type="email"
                 placeholder="email@cimed.hu"
                 value={email}
@@ -94,7 +94,7 @@ export default function LoginClient() {
 
             <button
               onClick={signInWithGoogle}
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100"
               disabled={isGoogleLoading}
               aria-busy={isGoogleLoading}
             >

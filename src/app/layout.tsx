@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="bg-night-900 font-sans text-graphite-100 antialiased">
+      <body className="bg-bg font-sans text-fg antialiased">
         <SupabaseProvider>
           <ToastProvider>{children}</ToastProvider>
         </SupabaseProvider>

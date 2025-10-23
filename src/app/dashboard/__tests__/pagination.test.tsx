@@ -49,6 +49,6 @@ describe('LoadMoreButton', () => {
     render(<LoadMoreButton onClick={() => {}} appearance="outline" />);
 
     const button = screen.getByRole('button');
-    expect(button.className).toContain('border-slate-300');
+    expect(button.className).toContain('border-border');
   });
 });

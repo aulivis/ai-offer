@@ -92,9 +92,9 @@ function isOfferSections(value: unknown): value is OfferSections {
   );
 }
 
-const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
-const textareaClass = 'w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
-const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
+const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const textareaClass = 'w-full rounded-2xl border border-border bg-white px-3 py-3 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
@@ -916,7 +916,7 @@ export default function NewOfferWizard() {
                         key={option.value}
                         type="button"
                         onClick={() => setForm(f => ({ ...f, style: option.value }))}
-                        className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${active ? 'border-slate-900 bg-slate-900 text-white shadow-sm' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+                        className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${active ? 'border-border bg-slate-900 text-white shadow-sm' : 'border-border text-slate-600 hover:border-border'}`}
                       >
                         <span className="font-semibold">{option.label}</span>
                         <span className="mt-1 block text-xs text-inherit opacity-80">{option.description}</span>
@@ -926,7 +926,7 @@ export default function NewOfferWizard() {
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
+              <div className="space-y-4 rounded-2xl border border-dashed border-border bg-slate-50/70 p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-700">Címzett (opcionális)</p>
@@ -942,7 +942,7 @@ export default function NewOfferWizard() {
                     onFocus={() => setShowClientDrop(true)}
                   />
                   {showClientDrop && filteredClients.length > 0 && (
-                    <div className="absolute z-10 mt-2 max-h-48 w-full overflow-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                    <div className="absolute z-10 mt-2 max-h-48 w-full overflow-auto rounded-2xl border border-border bg-white shadow-lg">
                       {filteredClients.map(c => (
                         <button
                           key={c.id}
@@ -996,7 +996,7 @@ export default function NewOfferWizard() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-                  <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
+                  <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {previewLocked ? (
@@ -1018,11 +1018,11 @@ export default function NewOfferWizard() {
                   {previewError}
                 </div>
               ) : null}
-              <div className="min-h-[260px] rounded-2xl border border-slate-200 bg-white/90 p-4 overflow-auto">
+              <div className="min-h-[260px] rounded-2xl border border-border bg-white/90 p-4 overflow-auto">
                 {previewLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
                     <div className="flex items-center gap-3">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-slate-500" />
                       <div className="flex flex-col">
                         <span>Az AI most készíti az előnézetet…</span>
                         <span className="text-xs text-slate-400">Kb. {previewCountdown} mp van hátra…</span>
@@ -1058,7 +1058,7 @@ export default function NewOfferWizard() {
                       key={a.id}
                       type="button"
                       onClick={() => setRows(r => [{ name: a.name, qty: 1, unit: a.unit || 'db', unitPrice: Number(a.default_unit_price || 0), vat: Number(a.default_vat || 27) }, ...r])}
-                      className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
                     >
                       + {a.name}
                     </button>
@@ -1087,7 +1087,7 @@ export default function NewOfferWizard() {
               />
               <p className="text-xs text-slate-500">Tartsd meg a címsorokat és listákat a jobb olvashatóságért.</p>
               {isProPlan ? (
-                <div className="space-y-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-4">
+                <div className="space-y-3 rounded-2xl border border-dashed border-border bg-slate-50/70 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-700">Képek a PDF-hez</p>
@@ -1099,7 +1099,7 @@ export default function NewOfferWizard() {
                       type="button"
                       onClick={handlePickImage}
                       disabled={imageLimitReached || !previewLocked || previewLoading}
-                      className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                     >
                       Kép beszúrása
                     </button>
@@ -1122,7 +1122,7 @@ export default function NewOfferWizard() {
                         return (
                           <li
                             key={asset.key}
-                            className="flex gap-3 rounded-2xl border border-slate-200 bg-white/90 p-3"
+                            className="flex gap-3 rounded-2xl border border-border bg-white/90 p-3"
                           >
                             <img
                               src={asset.dataUrl}
@@ -1151,7 +1151,7 @@ export default function NewOfferWizard() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-xs text-slate-500">
+                <div className="rounded-2xl border border-dashed border-border bg-slate-50/60 p-4 text-xs text-slate-500">
                   Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag a generált dokumentumban kerülnek felhasználásra.
                 </div>
               )}
@@ -1179,7 +1179,7 @@ export default function NewOfferWizard() {
                   <dt className="text-slate-400">Stílus</dt>
                   <dd className="font-medium text-slate-700">{form.style === 'compact' ? 'Kompakt' : 'Részletes'}</dd>
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+                <div className="mt-2 flex items-center justify-between gap-4 rounded-2xl border border-border bg-slate-50/80 px-4 py-3">
                   <dt className="text-slate-500">Bruttó összesen</dt>
                   <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
                 </div>
@@ -1199,7 +1199,7 @@ export default function NewOfferWizard() {
           <button
             onClick={() => setStep(s => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:border-slate-200 disabled:text-slate-300 disabled:hover:border-slate-200 disabled:hover:text-slate-300"
+            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
           >
             Vissza
           </button>

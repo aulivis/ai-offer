@@ -81,8 +81,8 @@ export default function StepIndicator({ steps }: Props) {
             : step.status === 'completed'
               ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
               : step.status === 'current'
-                ? 'border-slate-900 bg-white text-slate-900 shadow-sm'
-                : 'border-slate-200 bg-white text-slate-400',
+                ? 'border-border bg-white text-slate-900 shadow-sm'
+                : 'border-border bg-white text-slate-400',
         );
 
         const labelClasses = classNames(

@@ -51,13 +51,13 @@ const toolbarButtons: ToolbarButton[] = [
 ];
 
 const buttonBaseClasses =
-  'inline-flex items-center justify-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-900/20 aria-pressed:border-slate-900 aria-pressed:text-slate-900';
+  'inline-flex items-center justify-center gap-1 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-900/20 aria-pressed:border-border aria-pressed:text-slate-900';
 
 const toolbarWrapperClasses =
   'sticky top-0 z-10 -mx-1 -mt-1 bg-slate-50/95 px-1 pt-2 pb-3 backdrop-blur';
 
 const toolbarContainerClasses =
-  'flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/70 p-2 shadow-sm';
+  'flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-white/70 p-2 shadow-sm';
 
 function escapeAttribute(value: string): string {
   return value.replace(/[&"'<>]/g, (ch) => {
@@ -306,7 +306,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
         <div className="relative">
           <div
             ref={editorRef}
-            className={`min-h-[300px] rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm text-slate-700 offer-doc__content overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/10 ${className ?? ''}`.trim()}
+            className={`min-h-[300px] rounded-2xl border border-border bg-white/90 p-4 text-sm text-slate-700 offer-doc__content overflow-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/10 ${className ?? ''}`.trim()}
             contentEditable
             suppressContentEditableWarning
             role="textbox"
