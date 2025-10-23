@@ -10,21 +10,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: { 900: '#0B1220', 800: '#111827' },
-        brand: {
-          blue: { 500: '#3B82F6', 600: '#2563EB' },
-          emerald: { 500: '#22C55E', 600: '#16A34A' },
+        night: {
+          900: '#080B12',
+          800: '#0F1720',
+          700: '#162231',
+        },
+        mint: {
+          300: '#6BF5D0',
+          400: '#49F0C0',
+          500: '#31EFB8',
+          600: '#1CD39F',
+        },
+        graphite: {
+          100: '#E5E7EB',
+          200: '#CBD5E1',
+          400: '#94A3B8',
+          500: '#64748B',
+          700: '#334155',
         },
       },
       fontFamily: {
-        display: ['Plus Jakarta Sans', 'Inter', 'system-ui'],
-        sans: ['Inter', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial'],
+        display: ['"Gota"', '"Work Sans"', 'system-ui'],
+        sans: ['"Work Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"Space Mono"', 'monospace'],
       },
       boxShadow: {
-        card: '0 1px 3px rgba(2,6,23,0.08), 0 10px 24px rgba(2,6,23,0.06)',
-        pop: '0 10px 40px rgba(2,6,23,0.22)',
+        card: '0 16px 40px rgba(12, 20, 32, 0.35)',
+        pop: '0 32px 64px rgba(12, 20, 32, 0.45)',
       },
-      borderRadius: { lg: '16px', '2xl': '24px' },
+      borderRadius: { lg: '16px', '2xl': '24px', '3xl': '32px' },
     },
   },
   plugins: [],
