@@ -299,16 +299,22 @@ async function incrementUsage(
   periodStart: string
 ) {
   const config = COUNTER_CONFIG[kind];
+  const normalizedLimit = Number.isFinite(limit ?? NaN) ? Number(limit) : null;
+
+  if (normalizedLimit === null) {
+    return fallbackIncrement(supabase, kind, targetId, null, periodStart);
+  }
+
   const rpcPayload =
     kind === 'user'
       ? {
           p_user_id: targetId,
-          p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+          p_limit: normalizedLimit,
           p_period_start: periodStart,
         }
       : {
           p_device_id: targetId,
-          p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+          p_limit: normalizedLimit,
           p_period_start: periodStart,
         };
 
@@ -316,7 +322,7 @@ async function incrementUsage(
   if (error) {
     const message = error.message ?? '';
     if (message.toLowerCase().includes(config.rpc)) {
-      return fallbackIncrement(supabase, kind, targetId, Number.isFinite(limit ?? NaN) ? limit : null, periodStart);
+      return fallbackIncrement(supabase, kind, targetId, normalizedLimit, periodStart);
     }
     throw new Error(`Failed to update usage counter: ${message}`);
   }
