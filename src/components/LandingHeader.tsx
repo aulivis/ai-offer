@@ -47,7 +47,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   const headerClass = useMemo(
     () =>
       [
-        'sticky top-0 z-50 w-full border-b border-border/60 bg-bg/80 text-fg backdrop-blur supports-[backdrop-filter]:bg-bg/60',
+        'sticky top-0 z-50 w-full bg-bg/80 text-fg backdrop-blur supports-[backdrop-filter]:bg-bg/60',
         className,
       ]
         .filter(Boolean)
