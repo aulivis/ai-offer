@@ -451,15 +451,22 @@ export default function SettingsPage() {
       }
 
       const payload: unknown = await response.json();
-      const publicUrl = payload && typeof payload === 'object' && 'publicUrl' in payload
-        ? (payload as { publicUrl: unknown }).publicUrl
-        : null;
+      let logoUrl: unknown = null;
 
-      if (typeof publicUrl !== 'string' || !publicUrl) {
-        throw new Error('A Supabase nem adott vissza publikus URL-t a logóhoz.');
+      if (payload && typeof payload === 'object') {
+        if ('signedUrl' in payload) {
+          logoUrl = (payload as { signedUrl?: unknown }).signedUrl ?? null;
+        }
+        if (!logoUrl && 'publicUrl' in payload) {
+          logoUrl = (payload as { publicUrl?: unknown }).publicUrl ?? null;
+        }
       }
 
-      setProfile((prev) => ({ ...prev, brand_logo_url: publicUrl }));
+      if (typeof logoUrl !== 'string' || !logoUrl) {
+        throw new Error('A Supabase nem adott vissza használható URL-t a logóhoz.');
+      }
+
+      setProfile((prev) => ({ ...prev, brand_logo_url: logoUrl }));
       showToast({
         title: 'Logó feltöltve',
         description: 'Ne felejtsd el a mentést.',
