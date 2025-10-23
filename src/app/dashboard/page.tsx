@@ -277,7 +277,7 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>('all');
   const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortByOption>('created');
-  const [sortDir, setSortDir] = useState<SortDirectionOption>('desc']);
+  const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
 
   const fetchPage = useCallback(async (
     user: string,
