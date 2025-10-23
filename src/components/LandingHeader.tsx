@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 type LandingHeaderProps = {
   className?: string;
@@ -15,9 +16,36 @@ const NAV_ITEMS = [
 
 export default function LandingHeader({ className }: LandingHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hash, setHash] = useState('');
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const updateHash = () => {
+      if (typeof window !== 'undefined') {
+        setHash(window.location.hash);
+      }
+    };
+
+    updateHash();
+    window.addEventListener('hashchange', updateHash);
+    return () => window.removeEventListener('hashchange', updateHash);
+  }, []);
+
+  const isNavItemActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+
+    if (href.includes('#')) {
+      const [, targetHash] = href.split('#');
+      return pathname === '/' && hash === `#${targetHash}`;
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   const headerClass = [
-    'sticky top-0 z-50 w-full border-b border-black/5 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60',
+    'sticky top-0 z-50 w-full border-b border-border/60 bg-bg/80 text-fg backdrop-blur supports-[backdrop-filter]:bg-bg/60',
     className,
   ]
     .filter(Boolean)
@@ -28,20 +56,17 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   return (
     <header className={headerClass}>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-6">
-        <Link
-          href="/"
-          className="text-lg font-bold text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
-          onClick={closeMenu}
-        >
+        <Link href="/" className="text-lg font-bold text-fg" onClick={closeMenu}>
           Propono
         </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-gray-700 md:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-fg-muted md:flex">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="transition-colors duration-200 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
+              className="rounded-full px-3 py-1 transition-colors duration-200 hover:text-fg"
+              aria-current={isNavItemActive(item.href) ? 'page' : undefined}
             >
               {item.label}
             </Link>
@@ -51,13 +76,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         <div className="hidden items-center gap-4 md:flex">
           <Link
             href="/login"
-            className="text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
+            className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
           >
             Bejelentkezés
           </Link>
           <Link
             href="/demo"
-            className="rounded-full bg-[#00E5B0] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2"
+            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
           >
             Ingyenes Próba
           </Link>
@@ -65,9 +90,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition duration-200 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-fg transition duration-200 hover:bg-bg-muted md:hidden"
           aria-label="Navigáció megnyitása"
           aria-expanded={isMenuOpen}
+          aria-controls="landing-navigation"
           onClick={() => setIsMenuOpen((prev) => !prev)}
         >
           <svg
@@ -90,13 +116,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
       </div>
 
       {isMenuOpen ? (
-        <div className="border-t border-black/5 px-6 pb-6 pt-4 md:hidden">
-          <nav className="flex flex-col gap-4 text-base font-medium text-gray-700">
+        <div className="border-t border-border/60 bg-bg px-6 pb-6 pt-4 text-fg md:hidden">
+          <nav id="landing-navigation" className="flex flex-col gap-4 text-base font-medium text-fg">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="transition-colors duration-200 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
+                className="rounded-full px-3 py-1 transition-colors duration-200 text-fg-muted hover:text-fg"
+                aria-current={isNavItemActive(item.href) ? 'page' : undefined}
                 onClick={closeMenu}
               >
                 {item.label}
@@ -104,14 +131,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             ))}
             <Link
               href="/login"
-              className="text-base font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
+              className="text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
               onClick={closeMenu}
             >
               Bejelentkezés
             </Link>
             <Link
               href="/demo"
-              className="rounded-full bg-[#00E5B0] px-5 py-2 text-center text-base font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2"
+              className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
               onClick={closeMenu}
             >
               Ingyenes Próba
