@@ -11,7 +11,6 @@ const withOpacityValue = (variable) => {
 
 const config = {
   content: ['./src/**/*.{ts,tsx,md,mdx}'],
-  darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
