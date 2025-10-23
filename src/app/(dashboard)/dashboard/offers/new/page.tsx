@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
@@ -37,6 +38,7 @@ export default function NewOfferPage() {
   } = useOfferWizard();
   const supabase = useSupabase();
   const { showToast } = useToast();
+  const router = useRouter();
 
   const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_HTML);
   const [previewStatus, setPreviewStatus] = useState<OfferPreviewStatus>('idle');
@@ -44,6 +46,7 @@ export default function NewOfferPage() {
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
   const previewDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { totals, pricePreviewHtml } = usePricingRows(pricingRows);
   const previewMarkup = useMemo(() => {
@@ -58,6 +61,16 @@ export default function NewOfferPage() {
     });
   }, [pricePreviewHtml, previewHtml, title]);
   const isStreaming = previewStatus === 'loading' || previewStatus === 'streaming';
+  const hasPricingRows = useMemo(
+    () => pricingRows.some((row) => row.name.trim().length > 0),
+    [pricingRows],
+  );
+  const hasPreviewHtml = useMemo(() => {
+    const trimmed = previewHtml.trim();
+    return trimmed.length > 0 && trimmed !== DEFAULT_PREVIEW_HTML;
+  }, [previewHtml]);
+  const isSubmitDisabled =
+    isSubmitting || isStreaming || !hasPreviewHtml || !hasPricingRows || title.trim().length === 0 || description.trim().length === 0;
   const statusDescriptor = useMemo<
     | {
         tone: 'info' | 'success' | 'error' | 'warning';
@@ -376,6 +389,115 @@ export default function NewOfferPage() {
     });
   }, [attemptedSteps, goToStep, isStepValid, step, validation]);
 
+  const handleSubmit = useCallback(async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    const trimmedPreview = previewHtml.trim();
+
+    if (!trimmedTitle || !trimmedDescription) {
+      showToast({
+        title: 'Hiányzó adatok',
+        description: 'Add meg az ajánlat címét és rövid leírását a mentéshez.',
+        variant: 'error',
+      });
+      return;
+    }
+
+    if (!hasPricingRows) {
+      showToast({
+        title: 'Hiányzó tételek',
+        description: 'Adj hozzá legalább egy tételt az árlistához.',
+        variant: 'error',
+      });
+      return;
+    }
+
+    if (!hasPreviewHtml) {
+      showToast({
+        title: 'Hiányzó előnézet',
+        description: 'Generáld le az AI előnézetet, mielőtt elmented az ajánlatot.',
+        variant: 'error',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetchWithSupabaseAuth('/api/ai-generate', {
+        supabase,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: trimmedTitle,
+          industry: 'Egyedi projekt',
+          description: trimmedDescription,
+          deadline: '',
+          language: 'hu',
+          brandVoice: 'professional',
+          style: 'detailed',
+          prices: pricingRows,
+          aiOverrideHtml: trimmedPreview,
+          clientId: null,
+          imageAssets: [],
+        }),
+        authErrorMessage: 'Nem sikerült hitelesíteni az ajánlat mentését.',
+        errorMessageBuilder: (status) => `Hiba az ajánlat mentésekor (${status})`,
+        defaultErrorMessage: 'Ismeretlen hiba történt az ajánlat mentése közben.',
+      });
+
+      type GenerateResponse = { ok?: boolean; error?: string | null } | null;
+      const payload: GenerateResponse = await response
+        .json()
+        .then((value) => (value && typeof value === 'object' ? (value as GenerateResponse) : null))
+        .catch(() => null);
+
+      if (!payload?.ok) {
+        const message =
+          typeof payload?.error === 'string' && payload.error
+            ? payload.error
+            : 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.';
+        throw new ApiError(message);
+      }
+
+      showToast({
+        title: 'Ajánlat mentve',
+        description: 'A PDF generálása folyamatban van, hamarosan elérhető lesz.',
+        variant: 'success',
+      });
+      router.replace('/dashboard');
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : 'Ismeretlen hiba történt az ajánlat mentése közben.';
+      showToast({
+        title: 'Ajánlat mentése sikertelen',
+        description: message,
+        variant: 'error',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+    hasPreviewHtml,
+    hasPricingRows,
+    isSubmitting,
+    previewHtml,
+    pricingRows,
+    router,
+    showToast,
+    supabase,
+    title,
+    description,
+  ]);
+
   return (
     <AppFrame
       title="Új ajánlat"
@@ -433,13 +555,21 @@ export default function NewOfferPage() {
             Vissza
           </button>
 
-          {step < 3 && (
+          {step < 3 ? (
             <button
               onClick={goNext}
               disabled={isNextDisabled}
               className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               Tovább
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitDisabled}
+              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
             </button>
           )}
         </div>
