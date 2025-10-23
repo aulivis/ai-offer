@@ -60,7 +60,7 @@ function normalizeColorHex(value: string | null | undefined): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
-  return `#${trimmed.slice(1).toUpperCase()}`;
+  return `#${trimmed.slice(1).toLowerCase()}`;
 }
 
 const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
@@ -116,8 +116,8 @@ export default function SettingsPage() {
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
   const hasErrors = hasGeneralErrors || hasBrandingErrors;
 
-  const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0F172A';
-  const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#F3F4F6';
+  const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0f172a';
+  const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#f3f4f6';
   const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
   const canUseProTemplates = plan === 'pro';
 
@@ -203,8 +203,8 @@ export default function SettingsPage() {
         company_email: prof?.company_email ?? (user.email ?? ''),
         industries,
         brand_logo_url: prof?.brand_logo_url ?? null,
-        brand_color_primary: prof?.brand_color_primary ?? '#0F172A',
-        brand_color_secondary: prof?.brand_color_secondary ?? '#F3F4F6',
+        brand_color_primary: prof?.brand_color_primary ?? '#0f172a',
+        brand_color_secondary: prof?.brand_color_secondary ?? '#f3f4f6',
         offer_template: templateId,
       });
       setNewAct((prev) => ({ ...prev, industries }));
@@ -721,7 +721,7 @@ export default function SettingsPage() {
                   className={`${inputFieldClass} font-mono`}
                   value={profile.brand_color_primary || ''}
                   onChange={(e) => setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))}
-                  placeholder="#0F172A"
+                  placeholder="#0f172a"
                 />
               </div>
               {errors.branding.brandPrimary && <span className="text-xs text-rose-500">{errors.branding.brandPrimary}</span>}
@@ -740,7 +740,7 @@ export default function SettingsPage() {
                   className={`${inputFieldClass} font-mono`}
                   value={profile.brand_color_secondary || ''}
                   onChange={(e) => setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))}
-                  placeholder="#F3F4F6"
+                  placeholder="#f3f4f6"
                 />
               </div>
               {errors.branding.brandSecondary && <span className="text-xs text-rose-500">{errors.branding.brandSecondary}</span>}
