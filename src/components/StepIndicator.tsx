@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode, SVGProps } from 'react';
+import { Button } from '@/components/ui/Button';
 
 export type StepIndicatorStatus = 'completed' | 'current' | 'upcoming';
 export type StepIndicatorTone = 'default' | 'error';
@@ -110,7 +111,7 @@ export default function StepIndicator({ steps }: Props) {
 
         return (
           <li key={index} className="flex items-center gap-3">
-            <button
+            <Button
               type="button"
               onClick={clickable ? step.onSelect : undefined}
               disabled={!clickable}
@@ -125,7 +126,7 @@ export default function StepIndicator({ steps }: Props) {
                 <span className={labelClasses}>{step.label}</span>
                 {renderBadge(step)}
               </span>
-            </button>
+            </Button>
             {index < steps.length - 1 && <span className="h-px w-10 rounded bg-slate-200" aria-hidden="true" />}
           </li>
         );

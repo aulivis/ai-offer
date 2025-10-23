@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type RichTextEditorProps = {
   value: string;
@@ -285,7 +286,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
             {toolbarButtons.map((button) => {
               const isActive = activeStates[button.command];
               return (
-                <button
+                <Button
                   key={button.command}
                   type="button"
                   onClick={() => applyCommand(button.command)}
@@ -298,7 +299,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
                   ) : (
                     <span className="text-sm leading-none">{button.label}</span>
                   )}
-                </button>
+                </Button>
               );
             })}
           </div>

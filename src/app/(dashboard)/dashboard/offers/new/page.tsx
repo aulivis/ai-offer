@@ -14,6 +14,7 @@ import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
+import { Button } from '@/components/ui/Button';
 
 const DEFAULT_PREVIEW_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
@@ -547,30 +548,30 @@ export default function NewOfferPage() {
         )}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
+          <Button
             onClick={goPrev}
             disabled={step === 1}
             className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
           >
             Vissza
-          </button>
+          </Button>
 
           {step < 3 ? (
-            <button
+            <Button
               onClick={goNext}
               disabled={isNextDisabled}
               className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               Tovább
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               onClick={handleSubmit}
               disabled={isSubmitDisabled}
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
-            </button>
+            </Button>
           )}
         </div>
       </div>

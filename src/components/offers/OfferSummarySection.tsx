@@ -1,4 +1,5 @@
 import { OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
+import { Button } from '@/components/ui/Button';
 
 type OfferSummarySectionProps = {
   title: string;
@@ -69,21 +70,21 @@ export function OfferSummarySection({
             </div>
             <div className="flex items-center gap-2">
               {isStreaming ? (
-                <button
+                <Button
                   type="button"
                   onClick={onAbortPreview}
                   className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Megszakítás
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
                   onClick={onManualRefresh}
                   className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Újra generálás
-                </button>
+                </Button>
               )}
             </div>
           </div>

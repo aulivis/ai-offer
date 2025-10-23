@@ -15,6 +15,7 @@ import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
+import { Button } from '@/components/ui/Button';
 
 type Step1Form = {
   industry: string;
@@ -912,7 +913,7 @@ export default function NewOfferWizard() {
                   ].map(option => {
                     const active = form.style === option.value;
                     return (
-                      <button
+                      <Button
                         key={option.value}
                         type="button"
                         onClick={() => setForm(f => ({ ...f, style: option.value }))}
@@ -920,7 +921,7 @@ export default function NewOfferWizard() {
                       >
                         <span className="font-semibold">{option.label}</span>
                         <span className="mt-1 block text-xs text-inherit opacity-80">{option.description}</span>
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -944,7 +945,7 @@ export default function NewOfferWizard() {
                   {showClientDrop && filteredClients.length > 0 && (
                     <div className="absolute z-10 mt-2 max-h-48 w-full overflow-auto rounded-2xl border border-border bg-white shadow-lg">
                       {filteredClients.map(c => (
-                        <button
+                        <Button
                           key={c.id}
                           type="button"
                           className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -952,7 +953,7 @@ export default function NewOfferWizard() {
                         >
                           <span className="font-medium text-slate-700">{c.company_name}</span>
                           {c.email ? <span className="text-xs text-slate-400">{c.email}</span> : null}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -1002,7 +1003,7 @@ export default function NewOfferWizard() {
                   {previewLocked ? (
                     <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">Előnézet kész</span>
                   ) : null}
-                  <button
+                  <Button
                     type="button"
                     onClick={handleGeneratePreview}
                     disabled={previewButtonDisabled}
@@ -1010,7 +1011,7 @@ export default function NewOfferWizard() {
                     title={hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'}
                   >
                     {previewButtonLabel}
-                  </button>
+                  </Button>
                 </div>
               </div>
               {previewError ? (
@@ -1054,14 +1055,14 @@ export default function NewOfferWizard() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {filteredActivities.map(a => (
-                    <button
+                    <Button
                       key={a.id}
                       type="button"
                       onClick={() => setRows(r => [{ name: a.name, qty: 1, unit: a.unit || 'db', unitPrice: Number(a.default_unit_price || 0), vat: Number(a.default_vat || 27) }, ...r])}
                       className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       + {a.name}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -1095,14 +1096,14 @@ export default function NewOfferWizard() {
                         Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB fájlméretig. A képeket csak a PDF generálásához használjuk fel.
                       </p>
                     </div>
-                    <button
+                    <Button
                       type="button"
                       onClick={handlePickImage}
                       disabled={imageLimitReached || !previewLocked || previewLoading}
                       className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                     >
                       Kép beszúrása
-                    </button>
+                    </Button>
                   </div>
                   <input
                     ref={fileInputRef}
@@ -1134,13 +1135,13 @@ export default function NewOfferWizard() {
                                 <p className="font-semibold text-slate-700">{asset.name}</p>
                                 <p className="mt-0.5">{sizeKb} KB • alt: {asset.alt}</p>
                               </div>
-                              <button
+                              <Button
                                 type="button"
                                 onClick={() => handleRemoveImage(asset.key)}
                                 className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               >
                                 Eltávolítás
-                              </button>
+                              </Button>
                             </div>
                           </li>
                         );
@@ -1184,33 +1185,33 @@ export default function NewOfferWizard() {
                   <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
                 </div>
               </dl>
-              <button
+              <Button
                 onClick={generate}
                 disabled={loading}
                 className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {loading ? 'Generálás…' : 'PDF generálása és mentés'}
-              </button>
+              </Button>
             </div>
           </section>
         )}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
+          <Button
             onClick={() => setStep(s => Math.max(1, s - 1))}
             disabled={step === 1}
             className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
           >
             Vissza
-          </button>
+          </Button>
           {step < 3 && (
-            <button
+            <Button
               onClick={() => goToStep(step + 1)}
               disabled={step === 1 && !previewLocked}
               className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
             >
               Tovább
-            </button>
+            </Button>
           )}
         </div>
         {step === 1 && !previewLocked ? (
