@@ -1,5 +1,6 @@
 import { OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 import { Button } from '@/components/ui/Button';
+import { Card, CardHeader } from '@/components/ui/Card';
 
 type OfferSummarySectionProps = {
   title: string;
@@ -46,9 +47,14 @@ export function OfferSummarySection({
   return (
     <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="space-y-6">
-        <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-700">Projekt összegzés</h2>
-          <dl className="mt-4 space-y-3 text-sm text-slate-600">
+        <Card
+          header={
+            <CardHeader>
+              <h2 className="text-sm font-semibold text-slate-700">Projekt összegzés</h2>
+            </CardHeader>
+          }
+        >
+          <dl className="space-y-3 text-sm text-slate-600">
             <div className="flex items-center justify-between gap-3">
               <dt className="text-slate-400">Cím</dt>
               <dd className="font-medium text-slate-700">{title || '—'}</dd>
@@ -58,37 +64,40 @@ export function OfferSummarySection({
               <dd className="max-w-xl text-right text-slate-700">{description || '—'}</dd>
             </div>
           </dl>
-        </div>
+        </Card>
 
-        <div className="space-y-5 rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-              <p className="mt-1 text-xs text-slate-500">
-                Az előnézet automatikusan frissül, amikor a fenti mezőket módosítod.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {isStreaming ? (
-                <Button
-                  type="button"
-                  onClick={onAbortPreview}
-                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  Megszakítás
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={onManualRefresh}
-                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  Újra generálás
-                </Button>
-              )}
-            </div>
-          </div>
-
+        <Card
+          className="space-y-5"
+          header={
+            <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Az előnézet automatikusan frissül, amikor a fenti mezőket módosítod.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {isStreaming ? (
+                  <Button
+                    type="button"
+                    onClick={onAbortPreview}
+                    className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Megszakítás
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={onManualRefresh}
+                    className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Újra generálás
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+          }
+        >
           {statusDescriptor ? (
             <div className={`rounded-2xl border px-4 py-3 text-sm ${STATUS_TONE_CLASSES[statusDescriptor.tone]}`}>
               <div className="flex items-start gap-3">
@@ -114,12 +123,17 @@ export function OfferSummarySection({
               <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-700">Díjazás összesítése</h2>
-        <dl className="mt-4 space-y-2 text-sm text-slate-600">
+      <Card
+        header={
+          <CardHeader>
+            <h2 className="text-sm font-semibold text-slate-700">Díjazás összesítése</h2>
+          </CardHeader>
+        }
+      >
+        <dl className="space-y-2 text-sm text-slate-600">
           <div className="flex items-center justify-between gap-3">
             <dt className="text-slate-400">Nettó összesen</dt>
             <dd className="font-medium text-slate-700">{totals.net.toLocaleString('hu-HU')} Ft</dd>
@@ -133,7 +147,7 @@ export function OfferSummarySection({
             <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
           </div>
         </dl>
-      </div>
+      </Card>
     </section>
   );
 }

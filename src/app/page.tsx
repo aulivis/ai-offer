@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import LandingHeader from '@/components/LandingHeader';
+import { Card } from '@/components/ui/Card';
 
 export default function Home() {
   const features = [
@@ -123,7 +124,7 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4 p-6 text-sm">
-                  <div className="flex items-center justify-between rounded-3xl border border-border bg-bg px-5 py-4">
+                  <Card className="p-0 flex items-center justify-between bg-bg px-5 py-4 shadow-none">
                     <div>
                       <p className="font-semibold">Webfejlesztési ajánlat</p>
                       <p className="text-xs text-fg-muted">AI draft • frissítve 18 mp ezelőtt</p>
@@ -131,20 +132,20 @@ export default function Home() {
                     <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary">
                       <span className="h-2 w-2 rounded-full bg-primary" /> Live sync
                     </span>
-                  </div>
+                  </Card>
 
                   <div className="grid gap-3 md:grid-cols-2">
                     {spotlight.map((item) => (
-                      <div
+                      <Card
                         key={item}
-                        className="rounded-3xl border border-border bg-bg/80 p-4 text-xs text-fg-muted"
+                        className="p-4 text-xs text-fg-muted bg-bg/80 shadow-none"
                       >
                         <p className="font-medium text-fg">{item}</p>
-                      </div>
+                      </Card>
                     ))}
                   </div>
 
-                  <div className="rounded-3xl border border-primary/25 bg-gradient-to-r from-bg via-bg-muted to-bg p-5">
+                  <Card className="p-5 border-primary/25 bg-gradient-to-r from-bg via-bg-muted to-bg shadow-none">
                     <p className="text-xs uppercase tracking-[0.4em] text-primary">AI kalkuláció</p>
                     <div className="mt-3 space-y-2 text-sm">
                       <div className="flex items-center justify-between text-fg-muted">
@@ -160,7 +161,7 @@ export default function Home() {
                         <span className="text-lg font-semibold text-primary">880 000 Ft</span>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               </div>
             </div>
@@ -169,19 +170,19 @@ export default function Home() {
           {/* BENEFITS */}
           <section className="grid gap-6 lg:grid-cols-3">
             {features.map((feature) => (
-              <div
+              <Card
                 key={feature.title}
-                className="group relative overflow-hidden rounded-3xl border border-border bg-bg-muted/70 p-6 shadow-card transition duration-300 hover:border-primary/40 hover:shadow-pop"
+                className="group relative overflow-hidden p-6 transition duration-300 hover:border-primary/40 hover:shadow-pop"
               >
                 <div className="absolute -top-24 right-0 h-40 w-40 rounded-full bg-primary/10 blur-3xl transition duration-300 group-hover:scale-125" />
                 <h3 className="text-lg font-semibold">{feature.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-fg-muted">{feature.description}</p>
-              </div>
+              </Card>
             ))}
           </section>
 
           {/* HOW IT WORKS */}
-          <section className="grid gap-12 rounded-3xl border border-border bg-bg-muted/70 p-10 shadow-card lg:grid-cols-[0.55fr_1fr]">
+          <Card as="section" className="grid gap-12 p-10 lg:grid-cols-[0.55fr_1fr]">
             <div className="space-y-6">
               <span className="text-xs font-semibold uppercase tracking-[0.4em] text-primary">
                 Folyamat vizuálisan
@@ -194,23 +195,24 @@ export default function Home() {
 
             <ol className="relative space-y-5 border-l border-border pl-6">
               {steps.map((step, index) => (
-                <li
+                <Card
+                  as="li"
                   key={step.title}
-                  className="relative space-y-2 rounded-3xl border border-border bg-bg p-5"
+                  className="relative space-y-2 bg-bg p-5"
                 >
                   <span className="absolute -left-[38px] grid h-8 w-8 place-items-center rounded-full bg-primary/10 font-mono text-xs text-primary">
                     {index + 1}
                   </span>
                   <p className="text-base font-semibold">{step.title}</p>
                   <p className="text-sm leading-relaxed text-fg-muted">{step.description}</p>
-                </li>
+                </Card>
               ))}
             </ol>
-          </section>
+          </Card>
 
           {/* QUOTE + FEATURE GRID */}
           <section className="grid gap-10 lg:grid-cols-[1fr_0.55fr]">
-            <div className="rounded-3xl border border-border bg-bg-muted/70 p-9 shadow-card">
+            <Card className="p-9">
               <h3 className="text-2xl font-semibold">
                 Márkázott PDF, ami úgy néz ki, mintha egy design stúdió készítette volna
               </h3>
@@ -219,18 +221,18 @@ export default function Home() {
                 Az AI segít az összegzésekben, de a vizuális layout a te irányításod alatt marad.
               </p>
               <div className="mt-7 grid gap-4 text-sm md:grid-cols-2">
-                <div className="rounded-3xl border border-border bg-bg p-4">
+                <Card className="p-4 bg-bg shadow-none">
                   <p className="font-semibold">Dinamikus komponensek</p>
                   <p className="mt-1 text-fg-muted">Drag & drop blokkok, reszponzív rács a Penpot logikájával.</p>
-                </div>
-                <div className="rounded-3xl border border-border bg-bg p-4">
+                </Card>
+                <Card className="p-4 bg-bg shadow-none">
                   <p className="font-semibold">Átlátható státuszok</p>
                   <p className="mt-1 text-fg-muted">Megnyitási, elfogadási és komment történet – mind visszamérhető.</p>
-                </div>
+                </Card>
               </div>
-            </div>
+            </Card>
 
-            <div className="flex flex-col justify-between gap-6 rounded-3xl border border-border bg-gradient-to-br from-bg-muted via-bg to-bg-muted p-8 text-sm shadow-pop">
+            <Card className="flex flex-col justify-between gap-6 bg-gradient-to-br from-bg-muted via-bg to-bg-muted p-8 text-sm shadow-pop">
               <p className="text-lg font-semibold">
                 „A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.”
               </p>
@@ -238,11 +240,14 @@ export default function Home() {
                 <p>Kiss Júlia</p>
                 <p>Ügynökségvezető • Studio Fluo</p>
               </div>
-            </div>
+            </Card>
           </section>
 
           {/* CTA STRIP */}
-          <section className="overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-r from-bg via-bg-muted to-bg p-12 shadow-pop">
+          <Card
+            as="section"
+            className="overflow-hidden border-primary/25 bg-gradient-to-r from-bg via-bg-muted to-bg p-12 shadow-pop"
+          >
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl space-y-4">
                 <span className="text-xs font-semibold uppercase tracking-[0.4em] text-primary">
@@ -271,7 +276,7 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-          </section>
+          </Card>
         </main>
       </div>
     </div>

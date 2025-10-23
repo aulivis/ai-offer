@@ -15,6 +15,7 @@ import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 const DEFAULT_PREVIEW_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
@@ -505,9 +506,9 @@ export default function NewOfferPage() {
       description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
     >
       <div className="space-y-8">
-        <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
+        <Card>
           <StepIndicator steps={wizardSteps} />
-        </div>
+        </Card>
 
         {step === 1 && (
           <OfferProjectDetailsSection

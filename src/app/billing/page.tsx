@@ -9,6 +9,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { hasUnlimitedAccess, resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
+import { Card, CardHeader } from '@/components/ui/Card';
 
 type CardBrand = {
   name: string;
@@ -224,17 +225,21 @@ export default function BillingPage() {
       description="Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést."
     >
       <div className="space-y-8">
-        <section className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-700">Aktuális csomag</h2>
-              <p className="text-xs text-slate-500">Állapotod és kvótáid havi bontásban.</p>
-            </div>
-            <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-slate-600">
-              {plan ? planLabels[plan] : '—'}
-            </span>
-          </div>
-          <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Card
+          as="section"
+          header={
+            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-700">Aktuális csomag</h2>
+                <p className="text-xs text-slate-500">Állapotod és kvótáid havi bontásban.</p>
+              </div>
+              <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-slate-600">
+                {plan ? planLabels[plan] : '—'}
+              </span>
+            </CardHeader>
+          }
+        >
+          <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Havi keret</dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">
@@ -258,21 +263,21 @@ export default function BillingPage() {
               <p className="mt-1 text-xs text-slate-500">A számláló minden hónap első napján nullázódik.</p>
             </div>
           </dl>
-        </section>
+        </Card>
 
         {status === 'success' && (
-          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 px-5 py-4 text-sm font-medium text-emerald-700">
+          <Card className="p-0 border-emerald-200 bg-emerald-50/80 px-5 py-4 text-sm font-medium text-emerald-700">
             Sikeres fizetés! A csomagod néhány percen belül frissül.
-          </div>
+          </Card>
         )}
         {status === 'cancel' && (
-          <div className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
+          <Card className="p-0 border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
             A fizetés megszakadt. Próbáld újra, amikor készen állsz a váltásra.
-          </div>
+          </Card>
         )}
 
         <section className="grid gap-6 md:grid-cols-2">
-          <article className="flex h-full flex-col rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
+          <Card as="article" className="flex h-full flex-col">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Belépő csomag</div>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Standard</h2>
             <p className="mt-3 text-sm text-slate-500">
@@ -294,9 +299,9 @@ export default function BillingPage() {
             >
               {loading === STANDARD_PRICE ? 'Átirányítás…' : 'Propono Standard megrendelése'}
             </Button>
-          </article>
+          </Card>
 
-          <article className="flex h-full flex-col rounded-3xl border border-border bg-white p-6 shadow-lg ring-1 ring-slate-900/5">
+          <Card as="article" className="flex h-full flex-col bg-white shadow-lg ring-1 ring-slate-900/5">
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
               Népszerű választás
             </div>
@@ -320,13 +325,19 @@ export default function BillingPage() {
             >
               {loading === PRO_PRICE ? 'Átirányítás…' : 'Propono Pro megrendelése'}
             </Button>
-          </article>
+          </Card>
         </section>
 
-        <section className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
+        <Card
+          as="section"
+          header={
+            <CardHeader>
+              <h2 className="text-sm font-semibold text-slate-700">Biztonságos Stripe fizetés</h2>
+            </CardHeader>
+          }
+        >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl space-y-2">
-              <h2 className="text-sm font-semibold text-slate-700">Biztonságos Stripe fizetés</h2>
               <p className="text-sm text-slate-500">
                 A Stripe banki szintű titkosítással védi az ügyfeleid adatait, és támogatja a vezető kártyatársaságokat,
                 így Visa, Mastercard, American Express, Discover, Diners Club, JCB és UnionPay kártyákkal is gond nélkül
@@ -341,7 +352,7 @@ export default function BillingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </Card>
 
         <p className="text-sm text-slate-500">
           Bejelentkezett e-mail: <span className="font-medium text-slate-700">{email ?? '—'}</span>

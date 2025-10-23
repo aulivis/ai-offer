@@ -18,6 +18,7 @@ import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Card } from '@/components/ui/Card';
 
 type Step1Form = {
   industry: string;
@@ -97,7 +98,6 @@ function isOfferSections(value: unknown): value is OfferSections {
 
 const textareaClass =
   'w-full rounded-2xl border border-border bg-bg px-4 py-3 text-base text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
@@ -825,7 +825,7 @@ export default function NewOfferWizard() {
       description="Kövesd a háromlépéses varázslót: add meg a projekt részleteit, igazítsd a tételeket, majd generáld le a PDF-et."
     >
       <div className="space-y-8">
-        <div className={`${cardClass} space-y-4`}>
+        <Card className="space-y-4">
           <StepIndicator steps={wizardSteps} />
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -834,11 +834,11 @@ export default function NewOfferWizard() {
             </span>
             <span>Az AI előnézetet a gomb megnyomásával kérheted le, és ajánlatonként egyszer futtatható.</span>
           </div>
-        </div>
+        </Card>
 
         {step === 1 && (
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className={`${cardClass} space-y-6`}>
+            <Card className="space-y-6">
               <div className="grid gap-4">
                 <Select
                   label="Iparág"
@@ -984,9 +984,9 @@ export default function NewOfferWizard() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className={`${cardClass} space-y-4`}>
+            <Card className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
@@ -1032,14 +1032,14 @@ export default function NewOfferWizard() {
                 )}
               </div>
               <p className="text-xs text-slate-500">Az AI előnézet egyszer kérhető le. A végső módosításokat a PDF szerkesztő lépésében végezheted el.</p>
-            </div>
+            </Card>
           </section>
         )}
 
         {step === 2 && (
           <section className="space-y-6">
             {filteredActivities.length > 0 && (
-              <div className={`${cardClass} space-y-3`}>
+              <Card className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-semibold text-slate-700">Gyors tétel beszúrása</h2>
@@ -1058,7 +1058,7 @@ export default function NewOfferWizard() {
                     </Button>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
 
             <EditablePriceTable rows={rows} onChange={setRows} />
@@ -1067,7 +1067,7 @@ export default function NewOfferWizard() {
 
         {step === 3 && (
           <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className={`${cardClass} space-y-4`}>
+            <Card className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-700">AI-szöveg szerkesztése</h2>
                 <span className="text-xs font-medium text-slate-400">Ez kerül a PDF-be</span>
@@ -1149,9 +1149,9 @@ export default function NewOfferWizard() {
                   Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag a generált dokumentumban kerülnek felhasználásra.
                 </div>
               )}
-            </div>
+            </Card>
 
-            <div className={`${cardClass} space-y-4`}>
+            <Card className="space-y-4">
               <div>
                 <h2 className="text-sm font-semibold text-slate-700">Összegzés</h2>
                 <p className="mt-1 text-xs text-slate-500">A PDF generálása után az ajánlat megjelenik a listádban.</p>
@@ -1185,7 +1185,7 @@ export default function NewOfferWizard() {
               >
                 {loading ? 'Generálás…' : 'PDF generálása és mentés'}
               </Button>
-            </div>
+            </Card>
           </section>
         )}
 

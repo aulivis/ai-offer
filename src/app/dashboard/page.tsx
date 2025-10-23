@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Card } from '@/components/ui/Card';
 
 type Offer = {
   id: string;
@@ -140,11 +141,11 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
 /** Egyszerű metrika kártya semantic tokenekkel */
 function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
   return (
-    <div className="rounded-3xl border border-border bg-bg-muted/70 p-5 shadow-card">
+    <Card className="p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-fg">{value}</p>
       {helper ? <p className="mt-2 text-xs text-fg-muted">{helper}</p> : null}
-    </div>
+    </Card>
   );
 }
 
@@ -163,9 +164,9 @@ function StatusStep({
   children?: ReactNode;
 }) {
   return (
-    <div
-      className={`flex gap-3 rounded-3xl border px-4 py-3 ${
-        highlight ? 'border-border bg-bg shadow-card' : 'border-border bg-bg/70'
+    <Card
+      className={`flex gap-3 px-4 py-3 ${
+        highlight ? 'bg-bg' : 'bg-bg/70 shadow-none'
       }`}
     >
       <span className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-primary' : 'bg-fg-muted/40'}`} />
@@ -177,7 +178,7 @@ function StatusStep({
         <p className="text-xs text-fg-muted">{description}</p>
         {children}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -203,12 +204,13 @@ function DeleteConfirmationDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-fg/20 px-4 py-6"
       onClick={() => { if (!isDeleting) onCancel(); }}
     >
-      <div
+      <Card
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelId}
         aria-describedby={descriptionId}
-        className="w-full max-w-md rounded-3xl border border-border bg-bg p-6 shadow-pop backdrop-blur"
+        as="div"
+        className="w-full max-w-md bg-bg p-6 shadow-pop backdrop-blur"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="space-y-3">
@@ -241,7 +243,7 @@ function DeleteConfirmationDialog({
             {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
           </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -633,7 +635,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Szűrők */}
-        <section className="rounded-3xl border border-border bg-bg-muted/70 p-6 shadow-card">
+        <Card as="section">
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
             <div className="flex-1">
               <Input
@@ -703,30 +705,30 @@ export default function DashboardPage() {
                 <option value="asc">Növekvő</option>
               </Select>
             </div>
-          </div>
-        </section>
+            </div>
+        </Card>
 
         {/* Skeletonok */}
         {loading && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-3xl border border-border bg-bg-muted/70 p-5 shadow-card">
+              <Card key={i} className="animate-pulse p-5">
                 <div className="mb-4 h-4 w-3/5 rounded-full bg-bg" />
                 <div className="mb-6 h-3 w-2/5 rounded-full bg-bg" />
                 <div className="h-10 rounded-2xl bg-bg" />
-              </div>
+              </Card>
             ))}
           </div>
         )}
 
         {/* Üres / nincs találat */}
         {!loading && filtered.length === 0 && (
-          <div className="space-y-4 rounded-3xl border border-dashed border-border bg-bg/70 p-12 text-center text-fg-muted">
+          <Card className="space-y-4 border-dashed bg-bg/70 p-12 text-center text-fg-muted shadow-none">
             <p>{emptyMessage}</p>
             {hasMore ? (
               <LoadMoreButton appearance="outline" onClick={handleLoadMore} isLoading={isLoadingMore} />
             ) : null}
-          </div>
+          </Card>
         )}
 
         {/* Lista */}
@@ -740,9 +742,9 @@ export default function DashboardPage() {
                 const isDecided = o.status === 'accepted' || o.status === 'lost';
 
                 return (
-                  <div
+                  <Card
                     key={o.id}
-                    className="group flex h-full flex-col rounded-3xl border border-border bg-bg/80 p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-pop"
+                    className="group flex h-full flex-col bg-bg/80 p-5 transition hover:-translate-y-0.5 hover:shadow-pop"
                   >
                     <div className="mb-4 flex items-start justify-between gap-4">
                       <div className="min-w-0 space-y-1">
@@ -901,7 +903,7 @@ export default function DashboardPage() {
                         {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
                       </Button>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>

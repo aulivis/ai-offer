@@ -18,6 +18,7 @@ import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Card, CardHeader } from '@/components/ui/Card';
 
 type Profile = {
   company_name?: string;
@@ -82,8 +83,6 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
   }
   return new Error('Ismeretlen hiba történt a mentés közben.');
 }
-
-const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 
 export default function SettingsPage() {
   const supabase = useSupabase();
@@ -589,7 +588,7 @@ export default function SettingsPage() {
         title="Beállítások"
         description="Add meg a cégadatokat és hozd létre a gyakran használt tételek sablonjait."
       >
-        <div className={`${cardClass} text-sm text-slate-500`}>Betöltés…</div>
+        <Card className="text-sm text-slate-500">Betöltés…</Card>
       </AppFrame>
     );
   }
@@ -601,12 +600,16 @@ export default function SettingsPage() {
       actions={email ? <span className="text-sm text-slate-400">Belépve: <span className="font-medium text-slate-600">{email}</span></span> : null}
     >
       <div className="space-y-8">
-        <section className={`${cardClass} space-y-6`}>
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">Cégadatok</h2>
-            <p className="mt-1 text-sm text-slate-500">Töltsd ki a számlázási és kapcsolatfelvételi adatokat.</p>
-          </div>
-
+        <Card
+          as="section"
+          className="space-y-6"
+          header={
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-slate-900">Cégadatok</h2>
+              <p className="text-sm text-slate-500">Töltsd ki a számlázási és kapcsolatfelvételi adatokat.</p>
+            </CardHeader>
+          }
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <Input
               label="Cégnév"
@@ -707,14 +710,18 @@ export default function SettingsPage() {
           >
             {saving ? 'Mentés…' : 'Mentés'}
           </Button>
-        </section>
+        </Card>
 
-        <section className={`${cardClass} space-y-6`}>
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">Márka megjelenés</h2>
-            <p className="mt-1 text-sm text-slate-500">Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.</p>
-          </div>
-
+        <Card
+          as="section"
+          className="space-y-6"
+          header={
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-slate-900">Márka megjelenés</h2>
+              <p className="text-sm text-slate-500">Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.</p>
+            </CardHeader>
+          }
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <span className="text-sm font-medium text-fg">Elsődleges szín</span>
@@ -836,17 +843,21 @@ export default function SettingsPage() {
               {saving ? 'Mentés…' : 'Márka mentése'}
             </Button>
           </div>
-        </section>
+        </Card>
 
-        <section className={`${cardClass} space-y-6`}>
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">Ajánlat sablonok</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket
-              használják.
-            </p>
-          </div>
-
+        <Card
+          as="section"
+          className="space-y-6"
+          header={
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-slate-900">Ajánlat sablonok</h2>
+              <p className="text-sm text-slate-500">
+                Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket
+                használják.
+              </p>
+            </CardHeader>
+          }
+        >
           <div className="grid gap-4 md:grid-cols-2">
             {OFFER_TEMPLATES.map((template) => {
               const isSelected = selectedTemplateId === template.id;
@@ -898,14 +909,18 @@ export default function SettingsPage() {
               A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.
             </p>
           )}
-        </section>
+        </Card>
 
-        <section className={`${cardClass} space-y-6`}>
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">Tevékenység-sablonok</h2>
-            <p className="mt-1 text-sm text-slate-500">Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.</p>
-          </div>
-
+        <Card
+          as="section"
+          className="space-y-6"
+          header={
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-slate-900">Tevékenység-sablonok</h2>
+              <p className="text-sm text-slate-500">Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.</p>
+            </CardHeader>
+          }
+        >
           <div className="grid items-end gap-4 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <Input
@@ -987,7 +1002,7 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-        </section>
+        </Card>
       </div>
     </AppFrame>
   );
