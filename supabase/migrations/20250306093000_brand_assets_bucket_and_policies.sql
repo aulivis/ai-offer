@@ -48,7 +48,7 @@ BEGIN
       USING (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()
+        AND split_part(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END
@@ -70,7 +70,7 @@ BEGIN
       WITH CHECK (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()
+        AND split_part(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END
@@ -92,12 +92,12 @@ BEGIN
       USING (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()
+        AND split_part(name, '/', 1) = auth.uid()::text
       )
       WITH CHECK (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()
+        AND split_part(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END
@@ -119,7 +119,7 @@ BEGIN
       USING (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()
+        AND split_part(name, '/', 1) = auth.uid()::text
       );
   END IF;
 END
