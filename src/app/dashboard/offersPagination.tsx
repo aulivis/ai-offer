@@ -1,5 +1,4 @@
 import React, { type ComponentPropsWithoutRef } from 'react';
-import { Button } from '@/components/ui/Button';
 
 export const PAGE_SIZE = 12;
 
@@ -21,29 +20,69 @@ export function mergeOfferPages<T extends OfferWithId>(previous: T[], incoming: 
 }
 
 type LoadMoreButtonProps = {
-  appearance?: 'primary' | 'outline';
+  currentPage: number;
+  totalPages?: number | null;
+  hasNext?: boolean;
   isLoading?: boolean;
 } & Pick<ComponentPropsWithoutRef<'button'>, 'onClick' | 'disabled'>;
 
 export function LoadMoreButton({
-  appearance = 'primary',
+  currentPage,
+  totalPages = null,
+  hasNext = false,
   isLoading = false,
   disabled = false,
   onClick,
 }: LoadMoreButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-  const variant = appearance === 'outline'
-    ? 'border border-border bg-white text-slate-700 shadow-sm hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60'
-    : 'bg-slate-900 text-white shadow-sm hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400';
+  const renderedCount = typeof totalPages === 'number' && totalPages > 0
+    ? Math.max(totalPages, currentPage)
+    : currentPage;
+  const pagesToRender = Array.from({ length: Math.max(1, renderedCount) }, (_, index) => index + 1);
+  const nextPageLabel = currentPage + 1;
+  const showNextButton = hasNext;
+
   return (
-    <Button
-      type="button"
-      onClick={onClick}
-      disabled={disabled || isLoading}
-      aria-busy={isLoading}
-      className={`${baseClasses} ${variant}`}
-    >
-      {isLoading ? 'Betöltés…' : 'További ajánlatok betöltése'}
-    </Button>
+    <nav aria-label="Lapozás" className="flex items-center justify-center gap-2">
+      {pagesToRender.map((page) => {
+        const isCurrent = page === currentPage;
+        const isFuture = page > currentPage;
+        const cls = [
+          'h-9 w-9 rounded-full text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+          isCurrent
+            ? 'bg-primary text-primary-ink'
+            : 'border border-border',
+          isFuture
+            ? 'text-fg-muted'
+            : 'text-fg hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)]',
+        ]
+          .filter(Boolean)
+          .join(' ');
+
+        return (
+          <button
+            key={page}
+            type="button"
+            className={cls}
+            aria-current={isCurrent ? 'page' : undefined}
+            disabled
+            aria-disabled
+          >
+            {page.toLocaleString('hu-HU')}
+          </button>
+        );
+      })}
+
+      {showNextButton ? (
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={disabled || isLoading}
+          aria-busy={isLoading || undefined}
+          className="h-9 w-9 rounded-full border border-border text-sm font-semibold text-fg transition hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isLoading ? '…' : nextPageLabel.toLocaleString('hu-HU')}
+        </button>
+      ) : null}
+    </nav>
   );
 }
