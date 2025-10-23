@@ -16,6 +16,8 @@ import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 
 type Step1Form = {
   industry: string;
@@ -93,8 +95,8 @@ function isOfferSections(value: unknown): value is OfferSections {
   );
 }
 
-const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-const textareaClass = 'w-full rounded-2xl border border-border bg-white px-3 py-3 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+const textareaClass =
+  'w-full rounded-2xl border border-border bg-bg px-4 py-3 text-base text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_IMAGE_COUNT = 3;
@@ -838,31 +840,25 @@ export default function NewOfferWizard() {
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <div className={`${cardClass} space-y-6`}>
               <div className="grid gap-4">
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Iparág</span>
-                  <select
-                    className={inputFieldClass}
-                    value={form.industry}
-                    onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}
-                  >
-                    {availableIndustries.map(ind => (
-                      <option key={ind} value={ind}>{ind}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Iparág"
+                  value={form.industry}
+                  onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}
+                >
+                  {availableIndustries.map(ind => (
+                    <option key={ind} value={ind}>{ind}</option>
+                  ))}
+                </Select>
 
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Ajánlat címe</span>
-                  <input
-                    className={inputFieldClass}
-                    placeholder="Pl. Weboldal fejlesztés"
-                    value={form.title}
-                    onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  />
-                </label>
+                <Input
+                  label="Ajánlat címe"
+                  placeholder="Pl. Weboldal fejlesztés"
+                  value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                />
 
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Rövid projektleírás</span>
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-fg">Rövid projektleírás</span>
                   <textarea
                     className={`${textareaClass} h-32`}
                     value={form.description}
@@ -872,36 +868,27 @@ export default function NewOfferWizard() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Határidő</span>
-                  <input
-                    className={inputFieldClass}
-                    value={form.deadline}
-                    onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
-                  />
-                </label>
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Nyelv</span>
-                  <select
-                    className={inputFieldClass}
-                    value={form.language}
-                    onChange={e => setForm(f => ({ ...f, language: e.target.value as Step1Form['language'] }))}
-                  >
-                    <option value="hu">Magyar</option>
-                    <option value="en">English</option>
-                  </select>
-                </label>
-                <label className="grid gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Hangnem</span>
-                  <select
-                    className={inputFieldClass}
-                    value={form.brandVoice}
-                    onChange={e => setForm(f => ({ ...f, brandVoice: e.target.value as Step1Form['brandVoice'] }))}
-                  >
-                    <option value="friendly">Barátságos</option>
-                    <option value="formal">Formális</option>
-                  </select>
-                </label>
+                <Input
+                  label="Határidő"
+                  value={form.deadline}
+                  onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
+                />
+                <Select
+                  label="Nyelv"
+                  value={form.language}
+                  onChange={e => setForm(f => ({ ...f, language: e.target.value as Step1Form['language'] }))}
+                >
+                  <option value="hu">Magyar</option>
+                  <option value="en">English</option>
+                </Select>
+                <Select
+                  label="Hangnem"
+                  value={form.brandVoice}
+                  onChange={e => setForm(f => ({ ...f, brandVoice: e.target.value as Step1Form['brandVoice'] }))}
+                >
+                  <option value="friendly">Barátságos</option>
+                  <option value="formal">Formális</option>
+                </Select>
               </div>
 
               <div className="space-y-3">
@@ -935,11 +922,15 @@ export default function NewOfferWizard() {
                   </div>
                 </div>
                 <div className="relative">
-                  <input
-                    className={inputFieldClass}
+                  <Input
+                    label="Cégnév"
                     placeholder="Cégnév"
                     value={client.company_name}
-                    onChange={(e) => { setClientId(undefined); setClient(c => ({ ...c, company_name: e.target.value })); setShowClientDrop(true); }}
+                    onChange={e => {
+                      setClientId(undefined);
+                      setClient(c => ({ ...c, company_name: e.target.value }));
+                      setShowClientDrop(true);
+                    }}
                     onFocus={() => setShowClientDrop(true)}
                   />
                   {showClientDrop && filteredClients.length > 0 && (
@@ -959,36 +950,38 @@ export default function NewOfferWizard() {
                   )}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    className={inputFieldClass}
+                  <Input
+                    label="Cím"
                     placeholder="Cím"
                     value={client.address || ''}
                     onChange={e => setClient(c => ({ ...c, address: e.target.value }))}
                   />
-                  <input
-                    className={inputFieldClass}
+                  <Input
+                    label="Adószám"
                     placeholder="Adószám"
                     value={client.tax_id || ''}
                     onChange={e => setClient(c => ({ ...c, tax_id: e.target.value }))}
                   />
-                  <input
-                    className={inputFieldClass}
+                  <Input
+                    label="Képviselő neve"
                     placeholder="Képviselő neve"
                     value={client.representative || ''}
                     onChange={e => setClient(c => ({ ...c, representative: e.target.value }))}
                   />
-                  <input
-                    className={inputFieldClass}
+                  <Input
+                    label="Telefon"
                     placeholder="Telefon"
                     value={client.phone || ''}
                     onChange={e => setClient(c => ({ ...c, phone: e.target.value }))}
                   />
-                  <input
-                    className={`${inputFieldClass} sm:col-span-2`}
-                    placeholder="E-mail"
-                    value={client.email || ''}
-                    onChange={e => setClient(c => ({ ...c, email: e.target.value }))}
-                  />
+                  <div className="sm:col-span-2">
+                    <Input
+                      label="E-mail"
+                      placeholder="E-mail"
+                      value={client.email || ''}
+                      onChange={e => setClient(c => ({ ...c, email: e.target.value }))}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -17,6 +17,7 @@ import {
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 type Profile = {
   company_name?: string;
@@ -82,7 +83,6 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
   return new Error('Ismeretlen hiba történt a mentés közben.');
 }
 
-const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 
 export default function SettingsPage() {
@@ -608,52 +608,39 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Cégnév</span>
-              <input
-                className={inputFieldClass}
-                value={profile.company_name || ''}
-                onChange={e => setProfile(p => ({ ...p, company_name: e.target.value }))}
-              />
-            </label>
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Adószám</span>
-              <input
-                className={`${inputFieldClass} ${profile.company_tax_id && !validateTaxHU(profile.company_tax_id) ? 'border-rose-300 focus:border-rose-300 focus-visible:ring-rose-100' : ''}`}
-                placeholder="12345678-1-12"
-                value={profile.company_tax_id || ''}
-                onChange={e => setProfile(p => ({ ...p, company_tax_id: e.target.value }))}
-              />
-              {errors.general.tax && <span className="text-xs text-rose-500">{errors.general.tax}</span>}
-            </label>
-            <label className="grid gap-2 md:col-span-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Cím</span>
-              <input
-                className={`${inputFieldClass} ${profile.company_address && !validateAddress(profile.company_address) ? 'border-rose-300 focus:border-rose-300 focus-visible:ring-rose-100' : ''}`}
+            <Input
+              label="Cégnév"
+              value={profile.company_name || ''}
+              onChange={e => setProfile(p => ({ ...p, company_name: e.target.value }))}
+            />
+            <Input
+              label="Adószám"
+              placeholder="12345678-1-12"
+              value={profile.company_tax_id || ''}
+              onChange={e => setProfile(p => ({ ...p, company_tax_id: e.target.value }))}
+              error={errors.general.tax}
+            />
+            <div className="md:col-span-2">
+              <Input
+                label="Cím"
                 placeholder="Irányítószám, település, utca, házszám"
                 value={profile.company_address || ''}
                 onChange={e => setProfile(p => ({ ...p, company_address: e.target.value }))}
+                error={errors.general.address}
               />
-              {errors.general.address && <span className="text-xs text-rose-500">{errors.general.address}</span>}
-            </label>
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Telefon</span>
-              <input
-                className={`${inputFieldClass} ${profile.company_phone && !validatePhoneHU(profile.company_phone) ? 'border-rose-300 focus:border-rose-300 focus-visible:ring-rose-100' : ''}`}
-                placeholder="+36301234567"
-                value={profile.company_phone || ''}
-                onChange={e => setProfile(p => ({ ...p, company_phone: e.target.value }))}
-              />
-              {errors.general.phone && <span className="text-xs text-rose-500">{errors.general.phone}</span>}
-            </label>
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">E-mail</span>
-              <input
-                className={inputFieldClass}
-                value={profile.company_email || ''}
-                onChange={e => setProfile(p => ({ ...p, company_email: e.target.value }))}
-              />
-            </label>
+            </div>
+            <Input
+              label="Telefon"
+              placeholder="+36301234567"
+              value={profile.company_phone || ''}
+              onChange={e => setProfile(p => ({ ...p, company_phone: e.target.value }))}
+              error={errors.general.phone}
+            />
+            <Input
+              label="E-mail"
+              value={profile.company_email || ''}
+              onChange={e => setProfile(p => ({ ...p, company_email: e.target.value }))}
+            />
           </div>
 
           <div className="space-y-4">
@@ -678,18 +665,20 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                placeholder="Új iparág hozzáadása (pl. Nonprofit)"
-                className={inputFieldClass}
-                value={newIndustry}
-                onChange={(e) => setNewIndustry(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleManualIndustry(newIndustry);
-                  }
-                }}
-              />
+              <div className="sm:flex-1">
+                <Input
+                  label="Új iparág hozzáadása"
+                  placeholder="Pl. Nonprofit"
+                  value={newIndustry}
+                  onChange={e => setNewIndustry(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleManualIndustry(newIndustry);
+                    }
+                  }}
+                />
+              </div>
               <Button
                 className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => handleManualIndustry(newIndustry)}
@@ -727,43 +716,47 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Elsődleges szín</span>
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-fg">Elsődleges szín</span>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
                   value={primaryPreview}
-                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))}
+                  onChange={e => setProfile(p => ({ ...p, brand_color_primary: e.target.value }))}
                   className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
                 />
-                <input
-                  className={`${inputFieldClass} font-mono`}
-                  value={profile.brand_color_primary || ''}
-                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))}
-                  placeholder="#0f172a"
-                />
+                <div className="flex-1">
+                  <Input
+                    value={profile.brand_color_primary || ''}
+                    onChange={e => setProfile(p => ({ ...p, brand_color_primary: e.target.value }))}
+                    placeholder="#0f172a"
+                    className="py-2 text-sm font-mono"
+                    error={errors.branding.brandPrimary}
+                  />
+                </div>
               </div>
-              {errors.branding.brandPrimary && <span className="text-xs text-rose-500">{errors.branding.brandPrimary}</span>}
-            </label>
+            </div>
 
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Másodlagos szín</span>
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-fg">Másodlagos szín</span>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
                   value={secondaryPreview}
-                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))}
+                  onChange={e => setProfile(p => ({ ...p, brand_color_secondary: e.target.value }))}
                   className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
                 />
-                <input
-                  className={`${inputFieldClass} font-mono`}
-                  value={profile.brand_color_secondary || ''}
-                  onChange={(e) => setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))}
-                  placeholder="#f3f4f6"
-                />
+                <div className="flex-1">
+                  <Input
+                    value={profile.brand_color_secondary || ''}
+                    onChange={e => setProfile(p => ({ ...p, brand_color_secondary: e.target.value }))}
+                    placeholder="#f3f4f6"
+                    className="py-2 text-sm font-mono"
+                    error={errors.branding.brandSecondary}
+                  />
+                </div>
               </div>
-              {errors.branding.brandSecondary && <span className="text-xs text-rose-500">{errors.branding.brandSecondary}</span>}
-            </label>
+            </div>
           </div>
 
           <div className="flex flex-col gap-4 lg:flex-row">
@@ -914,44 +907,34 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid items-end gap-4 lg:grid-cols-5">
-            <label className="grid gap-2 lg:col-span-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Megnevezés</span>
-              <input
-                className={inputFieldClass}
+            <div className="lg:col-span-2">
+              <Input
+                label="Megnevezés"
                 placeholder="Pl. Webfejlesztés"
                 value={newAct.name}
                 onChange={e => setNewAct(a => ({ ...a, name: e.target.value }))}
               />
-            </label>
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Mértékegység</span>
-              <input
-                className={inputFieldClass}
-                placeholder="db / óra / m²"
-                value={newAct.unit}
-                onChange={e => setNewAct(a => ({ ...a, unit: e.target.value }))}
-              />
-            </label>
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Alap díj (nettó, Ft)</span>
-              <input
-                type="number"
-                className={inputFieldClass}
-                min={0}
-                value={newAct.price}
-                onChange={e => setNewAct(a => ({ ...a, price: Number(e.target.value) }))}
-              />
-            </label>
-            <label className="grid gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">ÁFA %</span>
-              <input
-                type="number"
-                className={inputFieldClass}
-                min={0}
-                value={newAct.vat}
-                onChange={e => setNewAct(a => ({ ...a, vat: Number(e.target.value) }))}
-              />
-            </label>
+            </div>
+            <Input
+              label="Mértékegység"
+              placeholder="db / óra / m²"
+              value={newAct.unit}
+              onChange={e => setNewAct(a => ({ ...a, unit: e.target.value }))}
+            />
+            <Input
+              label="Alap díj (nettó, Ft)"
+              type="number"
+              min={0}
+              value={newAct.price}
+              onChange={e => setNewAct(a => ({ ...a, price: Number(e.target.value) }))}
+            />
+            <Input
+              label="ÁFA %"
+              type="number"
+              min={0}
+              value={newAct.vat}
+              onChange={e => setNewAct(a => ({ ...a, vat: Number(e.target.value) }))}
+            />
             <div className="lg:col-span-5">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Iparágak ehhez a tételhez</span>
               <div className="mt-2 flex flex-wrap gap-2">

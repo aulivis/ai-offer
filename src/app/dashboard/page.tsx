@@ -8,6 +8,8 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 
 type Offer = {
   id: string;
@@ -633,72 +635,73 @@ export default function DashboardPage() {
         {/* Szűrők */}
         <section className="rounded-3xl border border-border bg-bg-muted/70 p-6 shadow-card">
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
-            <div className="flex-1 space-y-1">
-              <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Keresés</label>
-              <input
+            <div className="flex-1">
+              <Input
+                label="Keresés"
                 placeholder="Ajánlat cím vagy cég…"
-                className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg placeholder:text-fg-muted shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={e => setQ(e.target.value)}
+                className="shadow-sm text-sm"
               />
             </div>
 
             <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
-              <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Állapot</label>
-                <select
-                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  value={statusFilter}
-                  onChange={(e) => { const value = e.target.value; if (isStatusFilterValue(value)) setStatusFilter(value); }}
-                >
-                  <option value="all">Mind</option>
-                  <option value="draft">Vázlat</option>
-                  <option value="sent">Kiküldve</option>
-                  <option value="accepted">Elfogadva</option>
-                  <option value="lost">Elutasítva</option>
-                </select>
-              </div>
+              <Select
+                label="Állapot"
+                value={statusFilter}
+                onChange={e => {
+                  const value = e.target.value;
+                  if (isStatusFilterValue(value)) setStatusFilter(value);
+                }}
+                className="shadow-sm text-sm"
+              >
+                <option value="all">Mind</option>
+                <option value="draft">Vázlat</option>
+                <option value="sent">Kiküldve</option>
+                <option value="accepted">Elfogadva</option>
+                <option value="lost">Elutasítva</option>
+              </Select>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Iparág</label>
-                <select
-                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  value={industryFilter}
-                  onChange={(e) => setIndustryFilter(e.target.value)}
-                >
-                  <option value="all">Mind</option>
-                  {industries.map((ind) => (
-                    <option key={ind} value={ind}>{ind}</option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Iparág"
+                value={industryFilter}
+                onChange={e => setIndustryFilter(e.target.value)}
+                className="shadow-sm text-sm"
+              >
+                <option value="all">Mind</option>
+                {industries.map(ind => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </Select>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Rendezés</label>
-                <select
-                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  value={sortBy}
-                  onChange={(e) => { const value = e.target.value; if (isSortByValue(value)) setSortBy(value); }}
-                >
-                  <option value="created">Dátum</option>
-                  <option value="status">Állapot</option>
-                  <option value="title">Ajánlat neve</option>
-                  <option value="recipient">Címzett</option>
-                  <option value="industry">Iparág</option>
-                </select>
-              </div>
+              <Select
+                label="Rendezés"
+                value={sortBy}
+                onChange={e => {
+                  const value = e.target.value;
+                  if (isSortByValue(value)) setSortBy(value);
+                }}
+                className="shadow-sm text-sm"
+              >
+                <option value="created">Dátum</option>
+                <option value="status">Állapot</option>
+                <option value="title">Ajánlat neve</option>
+                <option value="recipient">Címzett</option>
+                <option value="industry">Iparág</option>
+              </Select>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">Irány</label>
-                <select
-                  className="w-full rounded-2xl border border-border bg-bg px-4 py-2.5 text-sm text-fg shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  value={sortDir}
-                  onChange={(e) => { const value = e.target.value; if (isSortDirectionValue(value)) setSortDir(value); }}
-                >
-                  <option value="desc">Csökkenő</option>
-                  <option value="asc">Növekvő</option>
-                </select>
-              </div>
+              <Select
+                label="Irány"
+                value={sortDir}
+                onChange={e => {
+                  const value = e.target.value;
+                  if (isSortDirectionValue(value)) setSortDir(value);
+                }}
+                className="shadow-sm text-sm"
+              >
+                <option value="desc">Csökkenő</option>
+                <option value="asc">Növekvő</option>
+              </Select>
             </div>
           </div>
         </section>
@@ -783,16 +786,17 @@ export default function DashboardPage() {
                       >
                         {o.sent_at ? (
                           <div className="flex flex-wrap items-center gap-2 text-xs text-fg">
-                            <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
+                            <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
                               <span>Dátum módosítása</span>
-                              <input
+                              <Input
                                 type="date"
-                                className="rounded-lg border border-border px-2 py-1 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={isoDateInput(o.sent_at)}
-                                onChange={(e) => markSent(o, e.target.value)}
+                                onChange={e => markSent(o, e.target.value)}
                                 disabled={isBusy}
+                                wrapperClassName="flex items-center gap-2"
+                                className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
                               />
-                            </label>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2 text-xs text-fg">
@@ -803,15 +807,19 @@ export default function DashboardPage() {
                             >
                               Jelölés (ma)
                             </Button>
-                            <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
+                            <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
                               <span>Dátum választása</span>
-                              <input
+                              <Input
                                 type="date"
-                                className="rounded-lg border border-border px-2 py-1 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                onChange={(e) => { if (!e.target.value) return; markSent(o, e.target.value); }}
+                                onChange={e => {
+                                  if (!e.target.value) return;
+                                  markSent(o, e.target.value);
+                                }}
                                 disabled={isBusy}
+                                wrapperClassName="flex items-center gap-2"
+                                className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
                               />
-                            </label>
+                            </div>
                           </div>
                         )}
                       </StatusStep>
@@ -833,16 +841,17 @@ export default function DashboardPage() {
                             >
                               {DECISION_LABELS[o.status]}
                             </span>
-                            <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
+                            <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
                               <span>Döntés dátuma</span>
-                              <input
+                              <Input
                                 type="date"
-                                className="rounded-lg border border-border px-2 py-1 text-xs text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 value={isoDateInput(o.decided_at)}
-                                onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
+                                onChange={e => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
                                 disabled={isBusy}
+                                wrapperClassName="flex items-center gap-2"
+                                className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
                               />
-                            </label>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2 text-xs text-fg">
