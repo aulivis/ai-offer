@@ -111,6 +111,80 @@ function StatusStep({
   );
 }
 
+function DeleteConfirmationDialog({
+  offer,
+  onCancel,
+  onConfirm,
+  isDeleting,
+}: {
+  offer: Offer | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+  isDeleting: boolean;
+}) {
+  if (!offer) {
+    return null;
+  }
+
+  const labelId = `delete-offer-title-${offer.id}`;
+  const descriptionId = `delete-offer-description-${offer.id}`;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6"
+      onClick={() => {
+        if (!isDeleting) {
+          onCancel();
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={labelId}
+        aria-describedby={descriptionId}
+        className="w-full max-w-md rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-2xl backdrop-blur"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="space-y-3">
+          <div className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+            Figyelmeztetés
+          </div>
+          <h2 id={labelId} className="text-lg font-semibold text-slate-900">
+            Ajánlat törlése
+          </h2>
+          <p id={descriptionId} className="text-sm leading-6 text-slate-600">
+            Biztosan törlöd a(z) „{offer.title || '(névtelen)'}” ajánlatot? Ez a művelet nem visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              if (!isDeleting) {
+                onCancel();
+              }
+            }}
+            disabled={isDeleting}
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Mégse
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="inline-flex items-center justify-center rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-rose-400"
+          >
+            {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function isoDateInput(value: string | null): string {
   if (!value) return '';
   const date = new Date(value);
@@ -132,10 +206,12 @@ export default function DashboardPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [offerToDelete, setOfferToDelete] = useState<Offer | null>(null);
 
   // keresés/szűrés/rendezés
   const [q, setQ] = useState('');
@@ -323,6 +399,72 @@ export default function DashboardPage() {
     await applyPatch(offer, patch);
   }
 
+  const confirmDeleteOffer = useCallback(async () => {
+    if (!offerToDelete) {
+      return;
+    }
+
+    setDeletingId(offerToDelete.id);
+    try {
+      const { error } = await sb.from('offers').delete().eq('id', offerToDelete.id);
+      if (error) {
+        throw error;
+      }
+      setOffers((prev) => prev.filter((item) => item.id !== offerToDelete.id));
+      setTotalCount((prev) => (typeof prev === 'number' ? Math.max(prev - 1, 0) : prev));
+      showToast({
+        title: 'Ajánlat törölve',
+        description: 'Az ajánlat véglegesen eltávolításra került.',
+        variant: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to delete offer', error);
+      const message = error instanceof Error
+        ? error.message
+        : 'Nem sikerült törölni az ajánlatot. Próbáld újra.';
+      showToast({
+        title: 'Törlés sikertelen',
+        description: message,
+        variant: 'error',
+      });
+    } finally {
+      setDeletingId(null);
+      setOfferToDelete(null);
+    }
+  }, [offerToDelete, sb, showToast]);
+
+  const handleCancelDelete = useCallback(() => {
+    if (deletingId) {
+      return;
+    }
+    setOfferToDelete(null);
+  }, [deletingId]);
+
+  useEffect(() => {
+    if (!offerToDelete) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (!deletingId) {
+          setOfferToDelete(null);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [offerToDelete, deletingId]);
+
   const filtered = useMemo(() => {
     let list = offers.slice();
 
@@ -433,6 +575,24 @@ export default function DashboardPage() {
           });
         },
       )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'offers', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const removed = payload.old as { id?: string } | null;
+          if (!removed || typeof removed.id !== 'string') {
+            return;
+          }
+
+          setOffers((prev) => {
+            const next = prev.filter((item) => item.id !== removed.id);
+            if (next.length !== prev.length) {
+              setTotalCount((prevCount) => (typeof prevCount === 'number' ? Math.max(prevCount - 1, 0) : prevCount));
+            }
+            return next;
+          });
+        },
+      )
       .subscribe();
 
     return () => {
@@ -463,7 +623,8 @@ export default function DashboardPage() {
     : 'Nincs találat. Próbálj másik keresést vagy szűrőt.';
 
   return (
-    <AppFrame
+    <>
+      <AppFrame
       title="Ajánlatok"
       description="Keresés, szűrés és státuszkezelés átlátható kártyákon."
       actions={(
@@ -610,13 +771,15 @@ export default function DashboardPage() {
         <>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((o) => {
-            const isUpdating = updatingId === o.id;
-            const isDecided = o.status === 'accepted' || o.status === 'lost';
-            return (
-              <div
-                key={o.id}
-                className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
-              >
+              const isUpdating = updatingId === o.id;
+              const isDeleting = deletingId === o.id;
+              const isBusy = isUpdating || isDeleting;
+              const isDecided = o.status === 'accepted' || o.status === 'lost';
+              return (
+                <div
+                  key={o.id}
+                  className="group flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
+                >
                 <div className="mb-4 flex items-start justify-between gap-4">
                   <div className="min-w-0 space-y-1">
                     <p className="truncate text-base font-semibold text-slate-900">{o.title || '(névtelen)'}</p>
@@ -666,7 +829,7 @@ export default function DashboardPage() {
                             className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
                             value={isoDateInput(o.sent_at)}
                             onChange={(e) => markSent(o, e.target.value)}
-                            disabled={isUpdating}
+                            disabled={isBusy}
                           />
                         </label>
                       </div>
@@ -674,7 +837,7 @@ export default function DashboardPage() {
                       <div className="flex flex-wrap gap-2 text-xs text-slate-600">
                         <button
                           onClick={() => markSent(o)}
-                          disabled={isUpdating}
+                          disabled={isBusy}
                           className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                         >
                           Jelölés (ma)
@@ -688,7 +851,7 @@ export default function DashboardPage() {
                               if (!e.target.value) return;
                               markSent(o, e.target.value);
                             }}
-                            disabled={isUpdating}
+                            disabled={isBusy}
                           />
                         </label>
                       </div>
@@ -719,7 +882,7 @@ export default function DashboardPage() {
                             className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 focus:border-slate-300 focus:outline-none"
                             value={isoDateInput(o.decided_at)}
                             onChange={(e) => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
-                            disabled={isUpdating}
+                            disabled={isBusy}
                           />
                         </label>
                       </div>
@@ -727,14 +890,14 @@ export default function DashboardPage() {
                       <div className="flex flex-wrap gap-2 text-xs text-slate-600">
                         <button
                           onClick={() => markDecision(o, 'accepted')}
-                          disabled={isUpdating}
+                          disabled={isBusy}
                           className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Megjelölés: Elfogadva
                         </button>
                         <button
                           onClick={() => markDecision(o, 'lost')}
-                          disabled={isUpdating}
+                          disabled={isBusy}
                           className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Megjelölés: Elutasítva
@@ -748,7 +911,7 @@ export default function DashboardPage() {
                   {o.status !== 'draft' && (
                     <button
                       onClick={() => revertToDraft(o)}
-                      disabled={isUpdating}
+                      disabled={isBusy}
                       className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Vissza vázlatba
@@ -757,12 +920,19 @@ export default function DashboardPage() {
                   {isDecided && (
                     <button
                       onClick={() => revertToSent(o)}
-                      disabled={isUpdating}
+                      disabled={isBusy}
                       className="inline-flex items-center rounded-full border border-slate-300 px-3 py-1.5 font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Döntés törlése
                     </button>
                   )}
+                  <button
+                    onClick={() => setOfferToDelete(o)}
+                    disabled={isBusy}
+                    className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
+                  </button>
                 </div>
               </div>
             );
@@ -784,6 +954,13 @@ export default function DashboardPage() {
           </div>
         </>
       )}
-    </AppFrame>
+      </AppFrame>
+      <DeleteConfirmationDialog
+        offer={offerToDelete}
+        onCancel={handleCancelDelete}
+        onConfirm={confirmDeleteOffer}
+        isDeleting={Boolean(deletingId)}
+      />
+    </>
   );
 }
