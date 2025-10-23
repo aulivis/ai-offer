@@ -21,6 +21,28 @@ type Offer = {
   recipient?: { company_name: string | null } | null;
 };
 
+function extractOfferStoragePath(pdfUrl: string): string | null {
+  try {
+    const marker = '/object/public/offers/';
+    const url = new URL(pdfUrl);
+    const { pathname } = url;
+    const markerIndex = pathname.indexOf(marker);
+    if (markerIndex !== -1) {
+      return decodeURIComponent(pathname.slice(markerIndex + marker.length));
+    }
+
+    const segments = pathname.split('/');
+    const offersIndex = segments.indexOf('offers');
+    if (offersIndex !== -1 && offersIndex < segments.length - 1) {
+      return decodeURIComponent(segments.slice(offersIndex + 1).join('/'));
+    }
+  } catch (error) {
+    console.warn('Failed to parse offer PDF storage path', error);
+  }
+
+  return null;
+}
+
 
 const STATUS_LABELS: Record<Offer['status'], string> = {
   draft: 'Vázlat',
@@ -406,9 +428,25 @@ export default function DashboardPage() {
 
     setDeletingId(offerToDelete.id);
     try {
+      const storagePathFromUrl = offerToDelete.pdf_url ? extractOfferStoragePath(offerToDelete.pdf_url) : null;
+      const fallbackStoragePath = !storagePathFromUrl && userId ? `${userId}/${offerToDelete.id}.pdf` : null;
+
+      const storagePaths = storagePathFromUrl
+        ? [storagePathFromUrl]
+        : fallbackStoragePath
+          ? [fallbackStoragePath]
+          : [];
+
       const { error } = await sb.from('offers').delete().eq('id', offerToDelete.id);
       if (error) {
         throw error;
+      }
+
+      if (storagePaths.length > 0) {
+        const { error: storageError } = await sb.storage.from('offers').remove(storagePaths);
+        if (storageError) {
+          console.error('Failed to delete offer PDF from storage', storageError);
+        }
       }
       setOffers((prev) => prev.filter((item) => item.id !== offerToDelete.id));
       setTotalCount((prev) => (typeof prev === 'number' ? Math.max(prev - 1, 0) : prev));
@@ -431,7 +469,7 @@ export default function DashboardPage() {
       setDeletingId(null);
       setOfferToDelete(null);
     }
-  }, [offerToDelete, sb, showToast]);
+  }, [offerToDelete, sb, showToast, userId]);
 
   const handleCancelDelete = useCallback(() => {
     if (deletingId) {
