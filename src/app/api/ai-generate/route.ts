@@ -595,6 +595,27 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     const downloadToken = uuid();
 
+    // ---- Ajánlat mentése ----
+    const { error: offerInsertError } = await sb.from('offers').insert({
+      id: offerId,
+      user_id: user.id,
+      title: safeTitle,
+      industry: sanitizeInput(industry),
+      recipient_id: clientId || null,
+      inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },
+      ai_text: aiHtmlForStorage,
+      price_json: rows,
+      pdf_url: null,
+      status: 'draft',
+    });
+
+    if (offerInsertError) {
+      console.error('Offer insert error:', offerInsertError.message);
+      return NextResponse.json({
+        error: 'Nem sikerült elmenteni az ajánlatot.',
+      }, { status: 500 });
+    }
+
     try {
       await enqueuePdfJob(sb, {
         jobId: downloadToken,
@@ -611,24 +632,14 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('PDF queue error:', message);
+      const { error: cleanupError } = await sb.from('offers').delete().eq('id', offerId);
+      if (cleanupError) {
+        console.error('Offer cleanup error:', cleanupError.message);
+      }
       return NextResponse.json({
         error: 'Nem sikerült sorba állítani a PDF generálási feladatot.',
       }, { status: 502 });
     }
-
-    // ---- Ajánlat mentése ----
-    await sb.from('offers').insert({
-      id: offerId,
-      user_id: user.id,
-      title: safeTitle,
-      industry: sanitizeInput(industry),
-      recipient_id: clientId || null,
-      inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },
-      ai_text: aiHtmlForStorage,
-      price_json: rows,
-      pdf_url: null,
-      status: 'draft',
-    });
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
 

@@ -25,7 +25,7 @@ export interface PdfJobInput {
 // Fragments used to detect specific error messages from Supabase/PostgREST.
 const SCHEMA_CACHE_ERROR_FRAGMENT = "could not find the table 'public.pdf_jobs' in the schema cache";
 const SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT = 'could not find the function';
-const PGREST_SCHEMA_CACHE_RPC = 'pgrest.schema_cache_reload';
+const PGREST_SCHEMA_CACHE_RPC = 'pgrest_schema_cache_reload';
 const PGREST_SCHEMA_CACHE_RPC_FRAGMENT = 'pgrest.schema_cache_reload';
 
 function isRefreshFunctionMissing(message: string): boolean {
