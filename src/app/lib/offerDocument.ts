@@ -310,7 +310,7 @@ function normalizeColor(value: string | null | undefined): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
-  return `#${trimmed.slice(1).toUpperCase()}`;
+  return `#${trimmed.slice(1).toLowerCase()}`;
 }
 
 function contrastColor(hex: string): string {
@@ -352,8 +352,8 @@ export function offerBodyMarkup({
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
-  const primaryColor = normalizeColor(branding?.primaryColor) ?? '#0F172A';
-  const secondaryColor = normalizeColor(branding?.secondaryColor) ?? '#F3F4F6';
+  const primaryColor = normalizeColor(branding?.primaryColor) ?? '#0f172a';
+  const secondaryColor = normalizeColor(branding?.secondaryColor) ?? '#f3f4f6';
   const secondaryBorder = '#D1D5DB';
   const primaryContrast = contrastColor(primaryColor);
   const logoUrl = sanitizeLogoUrl(branding?.logoUrl);
