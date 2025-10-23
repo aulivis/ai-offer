@@ -4,6 +4,7 @@ import { useState } from 'react';
 import LandingHeader from '@/components/LandingHeader';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function LoginClient() {
   const supabase = useSupabase();
@@ -69,16 +70,13 @@ export default function LoginClient() {
             </div>
 
           <div className="space-y-3">
-            <label className="flex flex-col gap-1 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-              E-mail cím
-              <input
-                className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                type="email"
-                placeholder="email@cimed.hu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
+            <Input
+              label="E-mail cím"
+              type="email"
+              placeholder="email@cimed.hu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <Button
               onClick={sendMagic}

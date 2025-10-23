@@ -2,24 +2,24 @@ import * as React from 'react';
 
 type FieldMessage = React.ReactNode;
 
-type Props = React.InputHTMLAttributes<HTMLInputElement> & {
+type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
   error?: FieldMessage;
-  label?: React.ReactNode;
   help?: FieldMessage;
+  label?: React.ReactNode;
   id?: string;
   wrapperClassName?: string;
 };
 
-export function Input({ error, label, help, id, className, wrapperClassName, ...props }: Props) {
-  const inputId = id || props.name || 'input-' + Math.random().toString(36).slice(2);
+export function Select({ error, help, label, id, className, children, wrapperClassName, ...props }: Props) {
+  const selectId = id || props.name || 'select-' + Math.random().toString(36).slice(2);
   const describedByIds: string[] = [];
 
   if (help) {
-    describedByIds.push(`${inputId}-help`);
+    describedByIds.push(`${selectId}-help`);
   }
 
   if (error) {
-    describedByIds.push(`${inputId}-error`);
+    describedByIds.push(`${selectId}-error`);
   }
 
   const describedBy = describedByIds.length > 0 ? describedByIds.join(' ') : undefined;
@@ -27,10 +27,10 @@ export function Input({ error, label, help, id, className, wrapperClassName, ...
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
 
   return (
-    <label htmlFor={inputId} className={wrapperClasses}>
+    <label htmlFor={selectId} className={wrapperClasses}>
       {label && <span className="text-sm font-medium text-fg">{label}</span>}
-      <input
-        id={inputId}
+      <select
+        id={selectId}
         aria-invalid={!!error}
         aria-describedby={describedBy}
         className={[
@@ -43,14 +43,16 @@ export function Input({ error, label, help, id, className, wrapperClassName, ...
           .filter(Boolean)
           .join(' ')}
         {...props}
-      />
+      >
+        {children}
+      </select>
       {help && (
-        <span id={`${inputId}-help`} className="block text-xs text-fg-muted">
+        <span id={`${selectId}-help`} className="block text-xs text-fg-muted">
           {help}
         </span>
       )}
       {error && (
-        <span id={`${inputId}-error`} className="block text-xs text-danger">
+        <span id={`${selectId}-error`} className="block text-xs text-danger">
           {error}
         </span>
       )}
