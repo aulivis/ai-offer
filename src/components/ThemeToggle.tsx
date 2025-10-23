@@ -43,7 +43,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={handleToggle}
       className={[
-        'group inline-flex items-center gap-2 rounded-full border border-border bg-[rgb(var(--color-bg-muted-rgb)/0.6)] px-3.5 py-2 text-sm font-medium text-fg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-[rgb(var(--color-bg-muted-rgb)/0.8)]',
+        'group inline-flex items-center gap-2 rounded-full border border-border/80 bg-[rgb(var(--color-bg-muted-rgb)/0.92)] px-4 py-2 text-sm font-medium normal-case tracking-normal text-fg transition duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-[rgb(var(--color-bg-muted-rgb)/1)]',
         className,
       ]
         .filter(Boolean)

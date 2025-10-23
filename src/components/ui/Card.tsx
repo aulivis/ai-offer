@@ -7,7 +7,7 @@ interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
 
 export function Card({ header, className, children, as: Component = 'div', ...props }: CardProps) {
   const cls = [
-    'rounded-3xl border border-border bg-[rgb(var(--color-bg-muted-rgb)/0.7)] p-6 shadow-card backdrop-blur',
+    'rounded-[16px] border border-border/80 bg-[rgb(var(--color-bg-muted-rgb)/0.96)] p-6 shadow-card transition duration-200 ease-out',
     className,
   ]
     .filter(Boolean)
