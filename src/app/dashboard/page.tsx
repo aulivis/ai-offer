@@ -22,25 +22,75 @@ type Offer = {
 };
 
 function extractOfferStoragePath(pdfUrl: string): string | null {
-  try {
-    const marker = '/object/public/offers/';
-    const url = new URL(pdfUrl);
-    const { pathname } = url;
-    const markerIndex = pathname.indexOf(marker);
-    if (markerIndex !== -1) {
-      return decodeURIComponent(pathname.slice(markerIndex + marker.length));
-    }
-
-    const segments = pathname.split('/');
-    const offersIndex = segments.indexOf('offers');
-    if (offersIndex !== -1 && offersIndex < segments.length - 1) {
-      return decodeURIComponent(segments.slice(offersIndex + 1).join('/'));
-    }
-  } catch (error) {
-    console.warn('Failed to parse offer PDF storage path', error);
+  const normalized = pdfUrl.trim();
+  if (!normalized) {
+    return null;
   }
 
-  return null;
+  const removeLeadingSlash = (value: string) => value.replace(/^\/+/, '');
+
+  const decodeAndNormalize = (value: string): string | null => {
+    if (!value) return null;
+    try {
+      return removeLeadingSlash(decodeURIComponent(value));
+    } catch (error) {
+      console.warn('Failed to decode offer PDF storage path', error);
+      return removeLeadingSlash(value);
+    }
+  };
+
+  const tryFromUrl = (): string | null => {
+    try {
+      const url = new URL(normalized);
+      const markerVariants = [
+        '/object/public/offers/',
+        '/object/sign/offers/',
+        '/object/offers/',
+      ];
+
+      for (const marker of markerVariants) {
+        const markerIndex = url.pathname.indexOf(marker);
+        if (markerIndex !== -1) {
+          const extracted = url.pathname.slice(markerIndex + marker.length);
+          if (extracted) {
+            return decodeAndNormalize(extracted);
+          }
+        }
+      }
+
+      const segments = url.pathname.split('/');
+      const offersIndex = segments.indexOf('offers');
+      if (offersIndex !== -1 && offersIndex < segments.length - 1) {
+        return decodeAndNormalize(segments.slice(offersIndex + 1).join('/'));
+      }
+    } catch (error) {
+      // Fall back to other strategies below.
+      if (normalized.includes('://')) {
+        console.warn('Failed to parse offer PDF storage path', error);
+      }
+    }
+
+    return null;
+  };
+
+  const tryFromEncodedMarker = (): string | null => {
+    const encodedMarker = 'offers%2F';
+    const markerIndex = normalized.indexOf(encodedMarker);
+    if (markerIndex !== -1) {
+      return decodeAndNormalize(normalized.slice(markerIndex + encodedMarker.length));
+    }
+    return null;
+  };
+
+  const tryFromPlainPath = (): string | null => {
+    if (!normalized.includes('://')) {
+      const cleaned = normalized.replace(/^public\/?offers\/?/, '');
+      return removeLeadingSlash(cleaned);
+    }
+    return null;
+  };
+
+  return tryFromUrl() ?? tryFromEncodedMarker() ?? tryFromPlainPath();
 }
 
 
@@ -428,22 +478,27 @@ export default function DashboardPage() {
 
     setDeletingId(offerToDelete.id);
     try {
-      const storagePathFromUrl = offerToDelete.pdf_url ? extractOfferStoragePath(offerToDelete.pdf_url) : null;
-      const fallbackStoragePath = !storagePathFromUrl && userId ? `${userId}/${offerToDelete.id}.pdf` : null;
+      const storagePaths = new Set<string>();
+      if (offerToDelete.pdf_url) {
+        const storagePathFromUrl = extractOfferStoragePath(offerToDelete.pdf_url);
+        if (storagePathFromUrl) {
+          storagePaths.add(storagePathFromUrl);
+        }
+      }
 
-      const storagePaths = storagePathFromUrl
-        ? [storagePathFromUrl]
-        : fallbackStoragePath
-          ? [fallbackStoragePath]
-          : [];
+      if (userId) {
+        storagePaths.add(`${userId}/${offerToDelete.id}.pdf`);
+      }
 
       const { error } = await sb.from('offers').delete().eq('id', offerToDelete.id);
       if (error) {
         throw error;
       }
 
-      if (storagePaths.length > 0) {
-        const { error: storageError } = await sb.storage.from('offers').remove(storagePaths);
+      const storagePathList = Array.from(storagePaths).filter(Boolean);
+
+      if (storagePathList.length > 0) {
+        const { error: storageError } = await sb.storage.from('offers').remove(storagePathList);
         if (storageError) {
           console.error('Failed to delete offer PDF from storage', storageError);
         }
