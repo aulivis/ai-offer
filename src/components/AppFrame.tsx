@@ -51,7 +51,7 @@ export default function AppFrame({ title, description, actions, children }: AppF
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]" />
       <div className="relative">
         <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
-          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900">
+          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-white font-display text-base">
               P
             </span>
@@ -64,7 +64,7 @@ export default function AppFrame({ title, description, actions, children }: AppF
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-full px-3.5 py-1.5 transition ${
+                  className={`rounded-full px-3.5 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     active
                       ? 'bg-slate-900 text-white shadow-sm'
                       : 'hover:bg-slate-200/60 hover:text-slate-900'

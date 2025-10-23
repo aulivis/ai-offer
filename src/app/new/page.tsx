@@ -92,8 +92,8 @@ function isOfferSections(value: unknown): value is OfferSections {
   );
 }
 
-const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10';
-const textareaClass = 'w-full rounded-2xl border border-border bg-white px-3 py-3 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+const textareaClass = 'w-full rounded-2xl border border-border bg-white px-3 py-3 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_IMAGE_COUNT = 3;
@@ -916,7 +916,7 @@ export default function NewOfferWizard() {
                         key={option.value}
                         type="button"
                         onClick={() => setForm(f => ({ ...f, style: option.value }))}
-                        className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${active ? 'border-border bg-slate-900 text-white shadow-sm' : 'border-border text-slate-600 hover:border-border'}`}
+                        className={`rounded-2xl border px-4 py-3 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white shadow-sm' : 'border-border text-slate-600 hover:border-border'}`}
                       >
                         <span className="font-semibold">{option.label}</span>
                         <span className="mt-1 block text-xs text-inherit opacity-80">{option.description}</span>
@@ -947,7 +947,7 @@ export default function NewOfferWizard() {
                         <button
                           key={c.id}
                           type="button"
-                          className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-slate-50"
+                          className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           onMouseDown={() => pickClient(c)}
                         >
                           <span className="font-medium text-slate-700">{c.company_name}</span>
@@ -1006,7 +1006,7 @@ export default function NewOfferWizard() {
                     type="button"
                     onClick={handleGeneratePreview}
                     disabled={previewButtonDisabled}
-                    className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+                    className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
                     title={hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'}
                   >
                     {previewButtonLabel}
@@ -1058,7 +1058,7 @@ export default function NewOfferWizard() {
                       key={a.id}
                       type="button"
                       onClick={() => setRows(r => [{ name: a.name, qty: 1, unit: a.unit || 'db', unitPrice: Number(a.default_unit_price || 0), vat: Number(a.default_vat || 27) }, ...r])}
-                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
+                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       + {a.name}
                     </button>
@@ -1099,7 +1099,7 @@ export default function NewOfferWizard() {
                       type="button"
                       onClick={handlePickImage}
                       disabled={imageLimitReached || !previewLocked || previewLoading}
-                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                     >
                       Kép beszúrása
                     </button>
@@ -1137,7 +1137,7 @@ export default function NewOfferWizard() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveImage(asset.key)}
-                                className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700"
+                                className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               >
                                 Eltávolítás
                               </button>
@@ -1187,7 +1187,7 @@ export default function NewOfferWizard() {
               <button
                 onClick={generate}
                 disabled={loading}
-                className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
               >
                 {loading ? 'Generálás…' : 'PDF generálása és mentés'}
               </button>
@@ -1199,7 +1199,7 @@ export default function NewOfferWizard() {
           <button
             onClick={() => setStep(s => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
+            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
           >
             Vissza
           </button>
@@ -1207,7 +1207,7 @@ export default function NewOfferWizard() {
             <button
               onClick={() => goToStep(step + 1)}
               disabled={step === 1 && !previewLocked}
-              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
+              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
             >
               Tovább
             </button>

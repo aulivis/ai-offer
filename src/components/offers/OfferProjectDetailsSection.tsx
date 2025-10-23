@@ -22,7 +22,7 @@ export function OfferProjectDetailsSection({
             value={title}
             onChange={onTitleChange}
             placeholder="Pl. Weboldal fejlesztés"
-            className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+            className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </label>
 
@@ -32,7 +32,7 @@ export function OfferProjectDetailsSection({
             value={description}
             onChange={onDescriptionChange}
             placeholder="Fogalmazd meg röviden az ügyfél problémáját és a megoldást."
-            className="h-32 w-full rounded-2xl border border-border bg-white px-3 py-3 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+            className="h-32 w-full rounded-2xl border border-border bg-white px-3 py-3 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
         </label>
       </div>

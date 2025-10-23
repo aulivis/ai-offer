@@ -71,7 +71,7 @@ export default function LoginClient() {
             <label className="flex flex-col gap-1 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
               E-mail cím
               <input
-                className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                className="w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 type="email"
                 placeholder="email@cimed.hu"
                 value={email}
@@ -81,7 +81,7 @@ export default function LoginClient() {
 
             <button
               onClick={sendMagic}
-              className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
               disabled={!email || sent || isMagicLoading}
               aria-busy={isMagicLoading}
             >
@@ -94,7 +94,7 @@ export default function LoginClient() {
 
             <button
               onClick={signInWithGoogle}
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-border bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-100"
               disabled={isGoogleLoading}
               aria-busy={isGoogleLoading}
             >

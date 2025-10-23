@@ -233,7 +233,7 @@ function DeleteConfirmationDialog({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/60 disabled:cursor-not-allowed disabled:brightness-95"
+            className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
           >
             {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
           </button>
@@ -848,14 +848,14 @@ export default function DashboardPage() {
                             <button
                               onClick={() => markDecision(o, 'accepted')}
                               disabled={isBusy}
-                              className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-3 py-1.5 font-semibold text-success transition hover:border-success/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-success/50 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-3 py-1.5 font-semibold text-success transition hover:border-success/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Megjelölés: Elfogadva
                             </button>
                             <button
                               onClick={() => markDecision(o, 'lost')}
                               disabled={isBusy}
-                              className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/50 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Megjelölés: Elutasítva
                             </button>
@@ -886,7 +886,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => setOfferToDelete(o)}
                         disabled={isBusy}
-                        className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger/50 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
                       </button>

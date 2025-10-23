@@ -50,7 +50,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
               <tr key={idx} className="border-t border-border">
                 <td className="px-4 py-3">
                   <input
-                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     placeholder="Megnevezés"
                     value={r.name}
                     onChange={(e) => update(idx, 'name', e.target.value)}
@@ -60,14 +60,14 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   <input
                     type="number"
                     min={0}
-                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     value={r.qty}
                     onChange={(e) => update(idx, 'qty', e.target.value)}
                   />
                 </td>
                 <td className="px-4 py-3">
                   <input
-                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     placeholder="db / óra / m²"
                     value={r.unit}
                     onChange={(e) => update(idx, 'unit', e.target.value)}
@@ -77,7 +77,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   <input
                     type="number"
                     min={0}
-                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     value={r.unitPrice}
                     onChange={(e) => update(idx, 'unitPrice', e.target.value)}
                   />
@@ -86,7 +86,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   <input
                     type="number"
                     min={0}
-                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     value={r.vat}
                     onChange={(e) => update(idx, 'vat', e.target.value)}
                   />
@@ -98,7 +98,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   <button
                     type="button"
                     onClick={() => removeRow(idx)}
-                    className="text-xs font-medium text-rose-500 transition hover:text-rose-600"
+                    className="text-xs font-medium text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Törlés
                   </button>
@@ -113,7 +113,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
         <button
           type="button"
           onClick={addRow}
-          className="w-full rounded-full border border-border px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 sm:w-auto"
+          className="w-full rounded-full border border-border px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
         >
           + Új tétel
         </button>
