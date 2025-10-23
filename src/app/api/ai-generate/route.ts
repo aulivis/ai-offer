@@ -20,7 +20,7 @@ import {
   getDeviceUsageSnapshot,
   getUsageSnapshot,
 } from '@/lib/services/usage';
-import { countPendingPdfJobs, enqueuePdfJob } from '@/lib/queue/pdf';
+import { countPendingPdfJobs, dispatchPdfJob, enqueuePdfJob } from '@/lib/queue/pdf';
 import { resolveEffectivePlan } from '@/lib/subscription';
 
 export const runtime = 'nodejs';
@@ -629,11 +629,12 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         deviceId: deviceLimit !== null ? deviceId : null,
         deviceLimit,
       });
+      await dispatchPdfJob(sb, downloadToken);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error('PDF queue error:', message);
       return NextResponse.json({
-        error: 'Nem sikerült sorba állítani a PDF generálási feladatot.',
+        error: 'Nem sikerült elindítani a PDF generálását.',
         offerId,
       }, { status: 502 });
     }

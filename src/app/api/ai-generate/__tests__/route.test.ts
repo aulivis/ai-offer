@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const {
   insertOfferMock,
   enqueuePdfJobMock,
+  dispatchPdfJobMock,
   countPendingPdfJobsMock,
   getUsageSnapshotMock,
   getDeviceUsageSnapshotMock,
@@ -18,6 +19,7 @@ const {
 } = vi.hoisted(() => ({
   insertOfferMock: vi.fn(),
   enqueuePdfJobMock: vi.fn(),
+  dispatchPdfJobMock: vi.fn(),
   countPendingPdfJobsMock: vi.fn(),
   getUsageSnapshotMock: vi.fn(),
   getDeviceUsageSnapshotMock: vi.fn(),
@@ -84,6 +86,7 @@ vi.mock('@/app/lib/htmlTemplate', () => ({
 
 vi.mock('@/lib/queue/pdf', () => ({
   enqueuePdfJob: enqueuePdfJobMock,
+  dispatchPdfJob: dispatchPdfJobMock,
   countPendingPdfJobs: countPendingPdfJobsMock,
 }));
 
@@ -115,6 +118,7 @@ describe('POST /api/ai-generate', () => {
   beforeEach(() => {
     insertOfferMock.mockReset();
     enqueuePdfJobMock.mockReset();
+    dispatchPdfJobMock.mockReset();
     countPendingPdfJobsMock.mockReset();
     getUsageSnapshotMock.mockReset();
     getDeviceUsageSnapshotMock.mockReset();
@@ -127,6 +131,7 @@ describe('POST /api/ai-generate', () => {
 
     insertOfferMock.mockResolvedValue({ error: null });
     enqueuePdfJobMock.mockRejectedValue(new Error('queue failed'));
+    dispatchPdfJobMock.mockResolvedValue(undefined);
     countPendingPdfJobsMock.mockResolvedValue(0);
     getUsageSnapshotMock.mockResolvedValue({ periodStart: '2025-05-01', offersGenerated: 0 });
     getDeviceUsageSnapshotMock.mockResolvedValue({ periodStart: '2025-05-01', offersGenerated: 0 });
@@ -170,7 +175,7 @@ describe('POST /api/ai-generate', () => {
 
     expect(response.status).toBe(502);
     await expect(response.json()).resolves.toMatchObject({
-      error: expect.stringContaining('Nem sikerült sorba állítani'),
+      error: expect.stringContaining('Nem sikerült elindítani a PDF generálását.'),
       offerId: 'offer-uuid',
     });
 
@@ -195,5 +200,45 @@ describe('POST /api/ai-generate', () => {
       pdf_url: null,
       status: 'draft',
     });
+
+    expect(dispatchPdfJobMock).not.toHaveBeenCalled();
+  });
+
+  it('fails when the PDF worker dispatch cannot be invoked', async () => {
+    const { POST } = await import('../route');
+
+    enqueuePdfJobMock.mockResolvedValue(undefined);
+    dispatchPdfJobMock.mockRejectedValue(new Error('invoke failed'));
+
+    const request = createRequest(
+      {
+        title: 'Ajánlat címe',
+        industry: 'Marketing',
+        description: 'Részletes leírás',
+        deadline: '',
+        language: 'hu',
+        brandVoice: 'friendly',
+        style: 'detailed',
+        prices: [
+          { name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 },
+        ],
+        aiOverrideHtml: '<p>Előnézet</p>',
+        clientId: null,
+        pdfWebhookUrl: null,
+        imageAssets: [],
+      },
+      { authorization: 'Bearer test-token' },
+    );
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(502);
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining('Nem sikerült elindítani a PDF generálását.'),
+      offerId: 'offer-uuid',
+    });
+
+    expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
+    expect(dispatchPdfJobMock).toHaveBeenCalledWith(expect.any(Object), 'job-token');
   });
 });

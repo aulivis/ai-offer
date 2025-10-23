@@ -156,6 +156,33 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
   }
 }
 
+export async function dispatchPdfJob(sb: SupabaseClient, jobId: string): Promise<void> {
+  try {
+    const { error } = await sb.functions.invoke('pdf-worker', {
+      body: { jobId },
+    });
+
+    if (error) {
+      const message = error.message || 'Failed to dispatch PDF job';
+      throw new Error(message);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('PDF worker dispatch was cancelled before it could be completed.');
+      }
+
+      if (error.message.toLowerCase().includes('abort')) {
+        throw new Error('PDF worker dispatch was aborted. Please try again.');
+      }
+
+      throw error;
+    }
+
+    throw new Error('An unknown error occurred while dispatching the PDF job.');
+  }
+}
+
 const PENDING_STATUSES = ['pending', 'processing'] as const;
 
 type PendingJobFilters = {
