@@ -1,16 +1,5 @@
-/* Tailwind + reset */
-@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap");
-
 @import "tailwindcss";
 @reference "tailwindcss/utilities";
-
-@font-face {
-  font-family: 'Gota';
-  src: url('https://penpot.app/fonts/Gota-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 
 @theme {
   --color-night-900: #080B12;
@@ -25,8 +14,8 @@
   --color-graphite-400: #94A3B8;
   --color-graphite-500: #64748B;
   --color-graphite-700: #334155;
-  --font-display: 'Gota', 'Work Sans', system-ui;
-  --font-sans: 'Work Sans', system-ui, sans-serif;
+  --font-display: 'Gota', 'Inter', system-ui;
+  --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --shadow-card: 0 16px 40px rgba(12, 20, 32, 0.35);
   --shadow-pop: 0 32px 64px rgba(12, 20, 32, 0.45);

@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-page-custom-font */
-// src/app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
 
 import { ToastProvider } from '@/components/ToastProvider';
 import { SupabaseProvider } from '@/components/SupabaseProvider';
+
+import { gota, inter, spaceMono } from './fonts';
 
 export const metadata: Metadata = {
   title: 'Propono — AI offers',
@@ -13,15 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="hu">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com"/>
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"/>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="hu" className={`${inter.variable} ${gota.variable} ${spaceMono.variable}`}>
       <body className="bg-bg font-sans text-fg antialiased">
         <SupabaseProvider>
           <ToastProvider>{children}</ToastProvider>

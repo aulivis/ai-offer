@@ -10,10 +10,7 @@ const withOpacityValue = (variable) => {
 };
 
 const config = {
-  content: [
-    './src/app/**/*.{ts,tsx}',
-    './src/components/**/*.{ts,tsx}',
-  ],
+  content: ['./src/**/*.{ts,tsx,md,mdx}'],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
@@ -52,9 +49,19 @@ const config = {
         'gradient-primary': 'var(--gradient-primary)',
       },
       fontFamily: {
-        display: ['"Gota"', '"Work Sans"', 'system-ui'],
-        sans: ['"Work Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"Space Mono"', 'monospace'],
+display: ['var(--font-display)', 'system-ui'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: [
+          'var(--font-mono)',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          '"Liberation Mono"',
+          '"Courier New"',
+          'monospace',
+        ],
       },
       boxShadow: {
         card: '0 16px 40px rgba(12, 20, 32, 0.35)',
