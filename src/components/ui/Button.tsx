@@ -7,13 +7,39 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
 };
 
-const base =
-  'inline-flex items-center justify-center font-semibold transition rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60 disabled:cursor-not-allowed';
+type CSSVarStyle = React.CSSProperties & Record<string, string | undefined>;
 
-const variants = {
-  primary: 'bg-primary text-primary-ink hover:brightness-110',
-  secondary: 'border border-border text-fg hover:border-fg',
-  ghost: 'text-fg hover:bg-bg-muted/60',
+const base = [
+  'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
+  'transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+  'disabled:cursor-not-allowed disabled:opacity-60',
+].join(' ');
+
+const variantClasses: Record<'primary' | 'secondary' | 'ghost', string> = {
+  primary: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110',
+  secondary: [
+    'border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]',
+    'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)]',
+  ].join(' '),
+  ghost: 'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)]',
+};
+
+const variantStyles: Record<'primary' | 'secondary' | 'ghost', CSSVarStyle> = {
+  primary: {
+    '--btn-bg': tokens.colors.primary,
+    '--btn-fg': tokens.colors.primaryInk,
+  },
+  secondary: {
+    '--btn-bg': tokens.colors.bg,
+    '--btn-fg': tokens.colors.fg,
+    '--btn-border': tokens.colors.border,
+    '--btn-hover-border': tokens.colors.fg,
+    '--btn-hover-bg': tokens.colors.bgMuted,
+  },
+  ghost: {
+    '--btn-fg': tokens.colors.fg,
+    '--btn-hover-bg': tokens.colors.bgMuted,
+  },
 };
 
 const sizes = {
@@ -22,10 +48,25 @@ const sizes = {
   lg: 'px-7 py-3 text-base',
 };
 
-export function Button({ className, variant = 'primary', size = 'md', loading, children, ...props }: Props) {
-  const cls = [base, variants[variant], sizes[size], className].filter(Boolean).join(' ');
+export function Button({
+  className,
+  variant = 'primary',
+  size = 'md',
+  loading,
+  children,
+  style,
+  ...props
+}: Props) {
+  const cls = [base, variantClasses[variant], sizes[size], className]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <button className={cls} {...props}>
+    <button
+      className={cls}
+      style={{ ...variantStyles[variant], ...style }}
+      {...props}
+    >
       {loading ? '…' : children}
     </button>
   );
