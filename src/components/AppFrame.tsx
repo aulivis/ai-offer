@@ -46,28 +46,28 @@ export default function AppFrame({ title, description, actions, children, sideba
 
   if (status !== 'authenticated') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-bg text-fg-muted">
         <span className="text-sm font-medium">Betöltés…</span>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-bg text-fg">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgb(var(--color-primary-rgb)/0.12),_transparent_60%)]" />
       <div className="relative flex min-h-screen flex-col">
-        <header className="sticky top-0 z-40 border-b border-border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <header className="sticky top-0 z-40 border-b border-border bg-[rgb(var(--color-bg-rgb)/0.85)] backdrop-blur supports-[backdrop-filter]:bg-[rgb(var(--color-bg-rgb)/0.7)]">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <Link
               href="/"
-              className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex items-center gap-3 text-sm font-semibold tracking-wide text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-white font-display text-base">
+              <span className="grid h-10 w-10 place-items-center rounded-3xl border border-border bg-bg font-display text-base">
                 P
               </span>
               Propono
             </Link>
-            <nav className="flex items-center gap-2 text-sm text-slate-500">
+            <nav className="flex items-center gap-2 text-sm text-fg-muted">
               {navLinks.map((link) => {
                 const active = pathname.startsWith(link.href);
                 return (
@@ -76,8 +76,8 @@ export default function AppFrame({ title, description, actions, children, sideba
                     href={link.href}
                     className={`rounded-full px-3.5 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       active
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'hover:bg-slate-200/60 hover:text-slate-900'
+                        ? 'bg-primary text-primary-ink shadow-card'
+                        : 'hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)] hover:text-fg'
                     }`}
                   >
                     {link.label}
@@ -94,7 +94,7 @@ export default function AppFrame({ title, description, actions, children, sideba
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen((prev) => !prev)}
-                className="flex w-full items-center justify-between rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
+                className="flex w-full items-center justify-between rounded-full border border-border bg-[rgb(var(--color-bg-rgb)/0.85)] px-3 py-2 text-sm font-medium text-fg-muted shadow-card transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
                 aria-expanded={isSidebarOpen}
                 aria-controls="appframe-sidebar"
               >
@@ -117,7 +117,7 @@ export default function AppFrame({ title, description, actions, children, sideba
               </button>
               <div
                 id="appframe-sidebar"
-                className={`mt-4 space-y-4 rounded-2xl border border-border bg-white/70 p-4 shadow-sm backdrop-blur md:mt-0 md:block ${
+                className={`mt-4 space-y-4 rounded-3xl border border-border bg-[rgb(var(--color-bg-muted-rgb)/0.7)] p-4 shadow-card backdrop-blur md:mt-0 md:block ${
                   isSidebarOpen ? 'block' : 'hidden'
                 }`}
               >
@@ -129,8 +129,8 @@ export default function AppFrame({ title, description, actions, children, sideba
           <main id="main" className="flex-1 space-y-8">
             <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="font-display text-3xl text-slate-900">{title}</h1>
-                {description ? <p className="mt-1 max-w-2xl text-sm text-slate-500">{description}</p> : null}
+                <h1 className="font-display text-3xl text-fg">{title}</h1>
+                {description ? <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p> : null}
               </div>
               {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
             </header>
