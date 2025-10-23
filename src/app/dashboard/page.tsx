@@ -7,6 +7,7 @@ import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
 
 type Offer = {
   id: string;
@@ -221,22 +222,22 @@ function DeleteConfirmationDialog({
         </div>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <button
+          <Button
             type="button"
             onClick={() => { if (!isDeleting) onCancel(); }}
             disabled={isDeleting}
             className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
             Mégse
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
             className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
           >
             {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -795,13 +796,13 @@ export default function DashboardPage() {
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2 text-xs text-fg">
-                            <button
+                            <Button
                               onClick={() => markSent(o)}
                               disabled={isBusy}
                               className="inline-flex items-center rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-ink shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                               Jelölés (ma)
-                            </button>
+                            </Button>
                             <label className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
                               <span>Dátum választása</span>
                               <input
@@ -845,20 +846,20 @@ export default function DashboardPage() {
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-2 text-xs text-fg">
-                            <button
+                            <Button
                               onClick={() => markDecision(o, 'accepted')}
                               disabled={isBusy}
                               className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-3 py-1.5 font-semibold text-success transition hover:border-success/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Megjelölés: Elfogadva
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               onClick={() => markDecision(o, 'lost')}
                               disabled={isBusy}
                               className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Megjelölés: Elutasítva
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </StatusStep>
@@ -866,30 +867,30 @@ export default function DashboardPage() {
 
                     <div className="mt-5 flex flex-wrap gap-2 text-xs text-fg">
                       {o.status !== 'draft' && (
-                        <button
+                        <Button
                           onClick={() => revertToDraft(o)}
                           disabled={isBusy}
                           className="inline-flex items-center rounded-full border border-border px-3 py-1.5 font-semibold text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Vissza vázlatba
-                        </button>
+                        </Button>
                       )}
                       {isDecided && (
-                        <button
+                        <Button
                           onClick={() => revertToSent(o)}
                           disabled={isBusy}
                           className="inline-flex items-center rounded-full border border-border px-3 py-1.5 font-semibold text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Döntés törlése
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
                         onClick={() => setOfferToDelete(o)}
                         disabled={isBusy}
                         className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 font-semibold text-danger transition hover:border-danger/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 );

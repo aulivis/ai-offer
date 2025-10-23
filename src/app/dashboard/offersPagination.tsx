@@ -1,4 +1,5 @@
 import React, { type ComponentPropsWithoutRef } from 'react';
+import { Button } from '@/components/ui/Button';
 
 export const PAGE_SIZE = 12;
 
@@ -35,7 +36,7 @@ export function LoadMoreButton({
     ? 'border border-border bg-white text-slate-700 shadow-sm hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60'
     : 'bg-slate-900 text-white shadow-sm hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400';
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       disabled={disabled || isLoading}
@@ -43,6 +44,6 @@ export function LoadMoreButton({
       className={`${baseClasses} ${variant}`}
     >
       {isLoading ? 'Betöltés…' : 'További ajánlatok betöltése'}
-    </button>
+    </Button>
   );
 }

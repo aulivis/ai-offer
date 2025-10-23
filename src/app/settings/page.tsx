@@ -16,6 +16,7 @@ import {
 } from '@/app/lib/offerTemplates';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
+import { Button } from '@/components/ui/Button';
 
 type Profile = {
   company_name?: string;
@@ -664,14 +665,14 @@ export default function SettingsPage() {
               {ALL_INDUSTRIES_HU.map(ind => {
                 const active = profile.industries?.includes(ind);
                 return (
-                  <button
+                  <Button
                     key={ind}
                     type="button"
                     onClick={() => toggleIndustry(ind)}
                     className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
                   >
                     {ind}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -689,12 +690,12 @@ export default function SettingsPage() {
                   }
                 }}
               />
-              <button
+              <Button
                 className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => handleManualIndustry(newIndustry)}
               >
                 Hozzáadás
-              </button>
+              </Button>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -709,14 +710,14 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={() => saveProfile('all')}
             disabled={saving || hasErrors}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {saving ? 'Mentés…' : 'Mentés'}
-          </button>
+          </Button>
         </section>
 
         <section className={`${cardClass} space-y-6`}>
@@ -784,14 +785,14 @@ export default function SettingsPage() {
                 <p className="font-semibold text-slate-700">Logó feltöltése</p>
                 <p className="text-xs text-slate-400">PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={triggerLogoUpload}
                     disabled={logoUploading}
                   className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
                   {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
-                </button>
+                </Button>
                   {profile.brand_logo_url && (
                     <a
                       href={profile.brand_logo_url}
@@ -833,14 +834,14 @@ export default function SettingsPage() {
           />
 
           <div className="flex items-center justify-end pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => saveProfile('branding')}
               disabled={saving || hasBrandingErrors}
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {saving ? 'Mentés…' : 'Márka mentése'}
-            </button>
+            </Button>
           </div>
         </section>
 
@@ -866,7 +867,7 @@ export default function SettingsPage() {
                 disabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-sm',
               ].join(' ');
               return (
-                <button
+                <Button
                   key={template.id}
                   type="button"
                   className={cardClassNames}
@@ -894,7 +895,7 @@ export default function SettingsPage() {
                   {disabled && (
                     <p className="text-xs font-medium text-amber-600">Pro előfizetéssel érhető el.</p>
                   )}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -957,27 +958,27 @@ export default function SettingsPage() {
                 {ALL_INDUSTRIES_HU.map(ind => {
                   const active = newAct.industries.includes(ind);
                   return (
-                    <button
+                    <Button
                       key={ind}
                       type="button"
                       onClick={() => toggleNewActIndustry(ind)}
                       className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
                     >
                       {ind}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
             </div>
           </div>
 
-          <button
+          <Button
             onClick={addActivity}
             disabled={actSaving}
             className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
             {actSaving ? 'Hozzáadás…' : 'Tevékenység hozzáadása'}
-          </button>
+          </Button>
 
           <div className="grid gap-3 md:grid-cols-2">
             {acts.map(a => (
@@ -987,12 +988,12 @@ export default function SettingsPage() {
                     <h3 className="text-sm font-semibold text-slate-800">{a.name}</h3>
                     <p className="text-xs text-slate-500">Egység: {a.unit} • Díj: {Number(a.default_unit_price || 0).toLocaleString('hu-HU')} Ft • ÁFA: {a.default_vat}%</p>
                   </div>
-                  <button
+                  <Button
                     onClick={() => deleteActivity(a.id)}
                     className="text-xs font-semibold text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Törlés
-                  </button>
+                  </Button>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">Iparágak: {(a.industries || []).join(', ') || '—'}</p>
               </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type ToastVariant = 'default' | 'error' | 'success';
 
@@ -67,13 +68,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 {toast.title ? <p className="text-sm font-semibold">{toast.title}</p> : null}
                 <p className="text-sm leading-5">{toast.description}</p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => removeToast(toast.id)}
                 className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold text-slate-500 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 ×
-              </button>
+              </Button>
             </div>
           </div>
         ))}

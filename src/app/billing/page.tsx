@@ -8,6 +8,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { hasUnlimitedAccess, resolveEffectivePlan } from '@/lib/subscription';
+import { Button } from '@/components/ui/Button';
 
 type CardBrand = {
   name: string;
@@ -286,13 +287,13 @@ export default function BillingPage() {
               <li>• PDF export</li>
               <li>• Alap sablonok és logófeltöltés</li>
             </ul>
-            <button
+            <Button
               onClick={() => startCheckout(STANDARD_PRICE)}
               disabled={loading === STANDARD_PRICE}
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading === STANDARD_PRICE ? 'Átirányítás…' : 'Propono Standard megrendelése'}
-            </button>
+            </Button>
           </article>
 
           <article className="flex h-full flex-col rounded-3xl border border-border bg-white p-6 shadow-lg ring-1 ring-slate-900/5">
@@ -312,13 +313,13 @@ export default function BillingPage() {
               <li>• Márkázott PDF & sablonkönyvtár</li>
               <li>• Prioritásos AI-szöveg finomhangolás</li>
             </ul>
-            <button
+            <Button
               onClick={() => startCheckout(PRO_PRICE)}
               disabled={loading === PRO_PRICE}
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading === PRO_PRICE ? 'Átirányítás…' : 'Propono Pro megrendelése'}
-            </button>
+            </Button>
           </article>
         </section>
 

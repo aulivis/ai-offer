@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Button } from '@/components/ui/Button';
 
 export type PriceRow = { name: string; qty: number; unit: string; unitPrice: number; vat: number; };
 
@@ -95,13 +96,13 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   {((r.qty || 0) * (r.unitPrice || 0)).toLocaleString('hu-HU')}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeRow(idx)}
                     className="text-xs font-medium text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Törlés
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -110,13 +111,13 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
       </div>
 
       <div className="flex flex-col gap-4 border-t border-border bg-white/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <button
+        <Button
           type="button"
           onClick={addRow}
           className="w-full rounded-full border border-border px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
         >
           + Új tétel
-        </button>
+        </Button>
         <div className="grid gap-1 text-right text-sm text-slate-500">
           <span><strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')} Ft</span>
           <span>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</span>
