@@ -51,7 +51,7 @@ const CARD_BRANDS: CardBrand[] = [
     name: 'Diners Club',
     render: () => (
       <div className="flex items-center gap-1.5">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 bg-slate-50">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-slate-50">
           <span aria-hidden className="h-3 w-3 rounded-full bg-[#0a3a66]" />
         </span>
         <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DINERS</span>
@@ -223,35 +223,35 @@ export default function BillingPage() {
       description="Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést."
     >
       <div className="space-y-8">
-        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+        <section className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-sm font-semibold text-slate-700">Aktuális csomag</h2>
               <p className="text-xs text-slate-500">Állapotod és kvótáid havi bontásban.</p>
             </div>
-            <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-slate-600">
               {plan ? planLabels[plan] : '—'}
             </span>
           </div>
           <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+            <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Havi keret</dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">
                 {effectiveLimit === null ? 'Korlátlan' : `${effectiveLimit.toLocaleString('hu-HU')} ajánlat`}
               </dd>
               <p className="mt-1 text-xs text-slate-500">Automatikus újraindulás minden hónapban.</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+            <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">E hónapban létrehozva</dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{offersThisMonth.toLocaleString('hu-HU')} ajánlat</dd>
               <p className="mt-1 text-xs text-slate-500">Az AI generált PDF-ek számát mutatja.</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+            <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Felhasználható keret</dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuota}{effectiveLimit === null ? '' : ' ajánlat'}</dd>
               <p className="mt-1 text-xs text-slate-500">Generálások, amelyek még rendelkezésre állnak.</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/70 p-4">
+            <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Keret visszaállása</dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{resetLabel}</dd>
               <p className="mt-1 text-xs text-slate-500">A számláló minden hónap első napján nullázódik.</p>
@@ -271,7 +271,7 @@ export default function BillingPage() {
         )}
 
         <section className="grid gap-6 md:grid-cols-2">
-          <article className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+          <article className="flex h-full flex-col rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Belépő csomag</div>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Standard</h2>
             <p className="mt-3 text-sm text-slate-500">
@@ -295,7 +295,7 @@ export default function BillingPage() {
             </button>
           </article>
 
-          <article className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-lg ring-1 ring-slate-900/5">
+          <article className="flex h-full flex-col rounded-3xl border border-border bg-white p-6 shadow-lg ring-1 ring-slate-900/5">
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
               Népszerű választás
             </div>
@@ -322,7 +322,7 @@ export default function BillingPage() {
           </article>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+        <section className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl space-y-2">
               <h2 className="text-sm font-semibold text-slate-700">Biztonságos Stripe fizetés</h2>

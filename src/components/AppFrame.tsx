@@ -52,7 +52,7 @@ export default function AppFrame({ title, description, actions, children }: AppF
       <div className="relative">
         <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
           <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 bg-white font-display text-base">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-white font-display text-base">
               P
             </span>
             Propono

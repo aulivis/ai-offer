@@ -81,8 +81,8 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
   return new Error('Ismeretlen hiba történt a mentés közben.');
 }
 
-const inputFieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10';
-const cardClass = 'rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm';
+const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 
 export default function SettingsPage() {
   const supabase = useSupabase();
@@ -142,32 +142,32 @@ export default function SettingsPage() {
   function renderTemplatePreview(variant: 'modern' | 'premium') {
     if (variant === 'premium') {
       return (
-        <div className="flex h-28 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="flex h-28 flex-col overflow-hidden rounded-2xl border border-border bg-white">
           <div
             className="h-16 w-full"
             style={{ background: `linear-gradient(135deg, ${primaryPreview}, ${secondaryPreview})` }}
           />
           <div className="flex flex-1 items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
-            <div className="h-9 w-9 rounded-2xl border border-slate-200 bg-white/80 shadow-sm" />
-            <div className="flex-1 rounded-lg border border-slate-200/70 bg-white px-2 py-1">Ártáblázat</div>
+            <div className="h-9 w-9 rounded-2xl border border-border bg-white/80 shadow-sm" />
+            <div className="flex-1 rounded-lg border border-border/70 bg-white px-2 py-1">Ártáblázat</div>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="flex h-28 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="flex h-28 flex-col justify-between overflow-hidden rounded-2xl border border-border bg-white">
         <div className="h-1.5 w-full" style={{ backgroundColor: primaryPreview }} />
         <div className="px-3 py-2 text-[10px] text-slate-500">
           <div className="h-3 w-2/5 rounded-full" style={{ backgroundColor: primaryPreview }} />
           <div className="mt-3 grid grid-cols-4 gap-1">
             <div
-              className="col-span-3 rounded-md border border-slate-200/80 bg-white px-2 py-1 shadow-sm"
+              className="col-span-3 rounded-md border border-border/80 bg-white px-2 py-1 shadow-sm"
               style={{ borderTopColor: primaryPreview }}
             >
               Projekt részletek
             </div>
-            <div className="col-span-1 rounded-md border border-slate-200 bg-slate-50" />
+            <div className="col-span-1 rounded-md border border-border bg-slate-50" />
           </div>
         </div>
       </div>
@@ -668,7 +668,7 @@ export default function SettingsPage() {
                     key={ind}
                     type="button"
                     onClick={() => toggleIndustry(ind)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'}`}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
                   >
                     {ind}
                   </button>
@@ -690,7 +690,7 @@ export default function SettingsPage() {
                 }}
               />
               <button
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
                 onClick={() => handleManualIndustry(newIndustry)}
               >
                 Hozzáadás
@@ -699,7 +699,7 @@ export default function SettingsPage() {
 
             <div className="flex flex-wrap gap-2">
               {(profile.industries || []).map(ind => (
-                <span key={ind} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                <span key={ind} className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-slate-600">
                   {ind}
                 </span>
               ))}
@@ -733,7 +733,7 @@ export default function SettingsPage() {
                   type="color"
                   value={primaryPreview}
                   onChange={(e) => setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))}
-                  className="h-11 w-16 cursor-pointer rounded-md border border-slate-200 bg-white"
+                  className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
                 />
                 <input
                   className={`${inputFieldClass} font-mono`}
@@ -752,7 +752,7 @@ export default function SettingsPage() {
                   type="color"
                   value={secondaryPreview}
                   onChange={(e) => setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))}
-                  className="h-11 w-16 cursor-pointer rounded-md border border-slate-200 bg-white"
+                  className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
                 />
                 <input
                   className={`${inputFieldClass} font-mono`}
@@ -766,17 +766,17 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex flex-col gap-4 lg:flex-row">
-            <div className="flex flex-1 items-start gap-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+            <div className="flex flex-1 items-start gap-4 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
               {profile.brand_logo_url ? (
                 // A kis méretű előnézethez nem szükséges képtömörítés, ezért marad a sima <img> elem.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.brand_logo_url}
                   alt="Feltöltött logó"
-                  className="h-16 w-16 flex-none rounded-lg border border-slate-200 bg-white object-contain p-1"
+                  className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
                 />
               ) : (
-                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg border border-slate-200 bg-white text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg border border-border bg-white text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                   Nincs logó
                 </div>
               )}
@@ -797,7 +797,7 @@ export default function SettingsPage() {
                       href={profile.brand_logo_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                      className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
                     >
                       Megnyitás új lapon
                     </a>
@@ -806,10 +806,10 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+            <div className="flex flex-1 flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Minta előnézet</span>
               <div
-                className="rounded-2xl border border-slate-200 p-4 shadow-inner"
+                className="rounded-2xl border border-border p-4 shadow-inner"
                 style={{ background: secondaryPreview }}
               >
                 <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: primaryPreview }}>
@@ -861,8 +861,8 @@ export default function SettingsPage() {
               const cardClassNames = [
                 'flex h-full w-full flex-col gap-3 rounded-2xl border p-4 text-left transition',
                 isSelected
-                  ? 'border-slate-900 shadow-lg ring-2 ring-slate-900/10'
-                  : 'border-slate-200 hover:border-slate-300',
+                  ? 'border-border shadow-lg ring-2 ring-slate-900/10'
+                  : 'border-border hover:border-border',
                 disabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-sm',
               ].join(' ');
               return (
@@ -961,7 +961,7 @@ export default function SettingsPage() {
                       key={ind}
                       type="button"
                       onClick={() => toggleNewActIndustry(ind)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900'}`}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
                     >
                       {ind}
                     </button>
@@ -974,14 +974,14 @@ export default function SettingsPage() {
           <button
             onClick={addActivity}
             disabled={actSaving}
-            className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {actSaving ? 'Hozzáadás…' : 'Tevékenység hozzáadása'}
           </button>
 
           <div className="grid gap-3 md:grid-cols-2">
             {acts.map(a => (
-              <div key={a.id} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+              <div key={a.id} className="rounded-2xl border border-border bg-slate-50/80 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800">{a.name}</h3>
@@ -998,7 +998,7 @@ export default function SettingsPage() {
               </div>
             ))}
             {acts.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 p-6 text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-border bg-white/70 p-6 text-sm text-slate-500">
                 Még nincs sablon. Adj hozzá legalább egy gyakran használt tételt.
               </div>
             )}

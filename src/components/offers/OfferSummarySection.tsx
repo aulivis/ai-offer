@@ -24,7 +24,7 @@ type OfferSummarySectionProps = {
 export type OfferPreviewStatus = 'idle' | 'loading' | 'streaming' | 'success' | 'error' | 'aborted';
 
 const STATUS_TONE_CLASSES: Record<'info' | 'success' | 'error' | 'warning', string> = {
-  info: 'border-slate-200 bg-slate-50/80 text-slate-600',
+  info: 'border-border bg-slate-50/80 text-slate-600',
   success: 'border-emerald-200 bg-emerald-50/80 text-emerald-700',
   error: 'border-rose-200 bg-rose-50/80 text-rose-700',
   warning: 'border-amber-200 bg-amber-50/80 text-amber-700',
@@ -45,7 +45,7 @@ export function OfferSummarySection({
   return (
     <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="space-y-6">
-        <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+        <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-slate-700">Projekt összegzés</h2>
           <dl className="mt-4 space-y-3 text-sm text-slate-600">
             <div className="flex items-center justify-between gap-3">
@@ -59,7 +59,7 @@ export function OfferSummarySection({
           </dl>
         </div>
 
-        <div className="space-y-5 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+        <div className="space-y-5 rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
@@ -72,7 +72,7 @@ export function OfferSummarySection({
                 <button
                   type="button"
                   onClick={onAbortPreview}
-                  className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
                 >
                   Megszakítás
                 </button>
@@ -80,7 +80,7 @@ export function OfferSummarySection({
                 <button
                   type="button"
                   onClick={onManualRefresh}
-                  className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900"
+                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
                 >
                   Újra generálás
                 </button>
@@ -107,7 +107,7 @@ export function OfferSummarySection({
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-slate-200 bg-white/90">
+          <div className="rounded-2xl border border-border bg-white/90">
             <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
             <div className="max-h-[460px] overflow-auto p-4">
               <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
@@ -116,7 +116,7 @@ export function OfferSummarySection({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+      <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-700">Díjazás összesítése</h2>
         <dl className="mt-4 space-y-2 text-sm text-slate-600">
           <div className="flex items-center justify-between gap-3">
@@ -127,7 +127,7 @@ export function OfferSummarySection({
             <dt className="text-slate-400">ÁFA</dt>
             <dd className="font-medium text-slate-700">{totals.vat.toLocaleString('hu-HU')} Ft</dd>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-slate-50/80 px-4 py-3">
             <dt className="text-slate-500">Bruttó végösszeg</dt>
             <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
           </div>

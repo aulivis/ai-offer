@@ -504,7 +504,7 @@ export default function NewOfferPage() {
       description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
     >
       <div className="space-y-8">
-        <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+        <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-sm">
           <StepIndicator steps={wizardSteps} />
         </div>
 
@@ -550,7 +550,7 @@ export default function NewOfferPage() {
           <button
             onClick={goPrev}
             disabled={step === 1}
-            className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
           >
             Vissza
           </button>
