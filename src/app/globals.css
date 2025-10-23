@@ -2,8 +2,8 @@
 @reference "tailwindcss/utilities";
 
 @theme {
-  --font-display: 'Inter', system-ui, sans-serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Work Sans', system-ui, sans-serif;
+  --font-sans: 'Work Sans', system-ui, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --shadow-card: 0 2px 6px rgba(15, 23, 42, 0.08);
   --shadow-pop: 0 12px 32px rgba(15, 23, 42, 0.18);

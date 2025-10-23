@@ -8,14 +8,14 @@ import { sanitizeInput } from '@/lib/sanitize';
  */
 export const OFFER_DOCUMENT_STYLES = `
   .offer-doc {
-    --brand-primary: #0f172a;
+    --brand-primary: #151035;
     --brand-primary-contrast: #ffffff;
     --brand-secondary: #f3f4f6;
     --brand-secondary-border: #d1d5db;
     --brand-secondary-text: #1f2937;
     background: #ffffff;
     color: #1f2937;
-    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.65;
     margin: 0 auto;
     max-width: 760px;
@@ -52,7 +52,7 @@ export const OFFER_DOCUMENT_STYLES = `
     color: var(--brand-primary);
     font-size: 1.9rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.125rem;
     margin: 0;
   }
   .offer-doc__content {
@@ -63,9 +63,18 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content h3,
   .offer-doc__content h4 {
     color: var(--brand-primary);
+    margin: 2.2rem 0 0.9rem;
+  }
+  .offer-doc__content h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.125rem;
+  }
+  .offer-doc__content h2,
+  .offer-doc__content h3,
+  .offer-doc__content h4 {
     font-size: 1.15rem;
     font-weight: 600;
-    margin: 2.2rem 0 0.9rem;
   }
   .offer-doc__content h1:first-child,
   .offer-doc__content h2:first-child,
@@ -241,7 +250,7 @@ export const OFFER_DOCUMENT_STYLES = `
     color: #ffffff;
     font-size: 2.15rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.125rem;
     margin: 0;
   }
   .offer-doc__premium-body {
@@ -287,7 +296,7 @@ export const OFFER_DOCUMENT_PDF_STYLES = `
     padding: 56px 0;
   }
   body, p, table, th, td {
-    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   }
 `;
 

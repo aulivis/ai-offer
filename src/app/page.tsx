@@ -65,7 +65,7 @@ export default function Home() {
                 Ajánlatkészítés újragondolva
               </span>
 
-              <h1 className="group max-w-[14ch] text-5xl font-extrabold leading-[1.1] tracking-tight text-fg md:text-6xl">
+              <h1 className="group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#151035] md:text-6xl">
                 Készíts lenyűgöző{' '}
                 <HighlightUnderline>ajánlatokat</HighlightUnderline>.
                 <br />
