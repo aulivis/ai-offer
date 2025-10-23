@@ -59,7 +59,7 @@ export default function Home() {
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg width='320' height='320' viewBox='0 0 320 320' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath opacity='0.16' d='M0 80H320M0 160H320M0 240H320M80 0V320M160 0V320M240 0V320' stroke='%23777' stroke-width='1'/%3E%3C/svg%3E\")",
-          mixBlendMode: 'overlay' as any
+          mixBlendMode: 'overlay'
         }}
       />
 

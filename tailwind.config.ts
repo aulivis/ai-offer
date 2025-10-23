@@ -1,6 +1,8 @@
 // tailwind.config.ts
 import type { Config } from 'tailwindcss';
 
+const withOpacityValue = (variable: string) => `rgb(var(${variable}) / <alpha-value>)`;
+
 export default {
   content: [
     './src/app/**/*.{ts,tsx}',
@@ -28,23 +30,21 @@ export default {
           500: '#64748B',
           700: '#334155',
         },
-         bg: 'var(--color-bg)',
-  'bg-muted': 'var(--color-bg-muted)',
-  fg: 'var(--color-fg)',
-  'fg-muted': 'var(--color-fg-muted)',
-  border: 'var(--color-border)',
-
-  primary: 'var(--color-primary)',
-  'primary-ink': 'var(--color-primary-ink)',
-  accent: 'var(--color-accent)',
-
-  success: 'var(--color-success)',
-  warning: 'var(--color-warning)',
-  danger:  'var(--color-danger)',
-},
-backgroundImage: {
-  'gradient-primary': 'var(--gradient-primary)',
-},
+        bg: withOpacityValue('--color-bg-rgb'),
+        'bg-muted': withOpacityValue('--color-bg-muted-rgb'),
+        fg: withOpacityValue('--color-fg-rgb'),
+        'fg-muted': withOpacityValue('--color-fg-muted-rgb'),
+        border: withOpacityValue('--color-border-rgb'),
+        primary: withOpacityValue('--color-primary-rgb'),
+        'primary-ink': withOpacityValue('--color-primary-ink-rgb'),
+        accent: withOpacityValue('--color-accent-rgb'),
+        success: withOpacityValue('--color-success-rgb'),
+        warning: withOpacityValue('--color-warning-rgb'),
+        danger: withOpacityValue('--color-danger-rgb'),
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+      },
       fontFamily: {
         display: ['"Gota"', '"Work Sans"', 'system-ui'],
         sans: ['"Work Sans"', 'system-ui', 'sans-serif'],
