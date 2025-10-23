@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AnnouncementBar from '@/components/AnnouncementBar';
+import HighlightUnderline from '@/components/HighlightUnderline';
 import LandingHeader from '@/components/LandingHeader';
 import { Card } from '@/components/ui/Card';
 
@@ -64,8 +65,9 @@ export default function Home() {
                 Ajánlatkészítés újragondolva
               </span>
 
-              <h1 className="max-w-[14ch] text-5xl font-extrabold leading-[1.1] tracking-tight text-fg md:text-6xl">
-                Készíts lenyűgöző ajánlatokat.
+              <h1 className="group max-w-[14ch] text-5xl font-extrabold leading-[1.1] tracking-tight text-fg md:text-6xl">
+                Készíts lenyűgöző{' '}
+                <HighlightUnderline>ajánlatokat</HighlightUnderline>.
                 <br />
                 <span className="text-primary">Villámgyorsan.</span>
               </h1>
