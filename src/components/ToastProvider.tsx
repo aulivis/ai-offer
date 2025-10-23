@@ -72,7 +72,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 type="button"
                 variant="ghost"
                 onClick={() => removeToast(toast.id)}
-                className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold text-fg transition hover:bg-bg-muted"
+                className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-semibold text-fg transition hover:bg-[rgb(var(--color-bg-muted-rgb)/1)]"
               >
                 ×
               </Button>
