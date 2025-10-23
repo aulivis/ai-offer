@@ -400,6 +400,46 @@ export default function DashboardPage() {
     };
   }, [offers]);
 
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      return;
+    }
+
+    const channel = sb
+      .channel(`offers-updates-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'offers', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const updated = payload.new as Partial<Offer> & { id?: string };
+          if (!updated || typeof updated.id !== 'string') {
+            return;
+          }
+
+          setOffers((prev) => {
+            let didChange = false;
+            const next = prev.map((item) => {
+              if (item.id !== updated.id) {
+                return item;
+              }
+              didChange = true;
+              return {
+                ...item,
+                ...updated,
+                recipient: updated.recipient !== undefined ? updated.recipient : item.recipient,
+              };
+            });
+            return didChange ? next : prev;
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      sb.removeChannel(channel);
+    };
+  }, [authStatus, sb, user]);
+
   const acceptanceLabel = stats.acceptanceRate !== null
     ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
     : '—';
