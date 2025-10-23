@@ -47,7 +47,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-bg text-fg">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top,_rgba(0,229,176,0.18),_transparent_65%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top,_rgba(var(--color-primary-rgb),0.18),_transparent_65%)]" />
       <div className="pointer-events-none absolute -left-32 top-72 h-80 w-80 rounded-full bg-accent/16 blur-3xl" />
       <div className="pointer-events-none absolute -right-28 bottom-40 h-72 w-72 rounded-full bg-primary/14 blur-3xl" />
 
@@ -56,91 +56,53 @@ export default function Home() {
 
         <main id="main" className="flex flex-col gap-28 md:gap-32">
           {/* HERO */}
-          <section className="mx-auto flex max-w-6xl flex-col gap-16 px-6 py-32 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex max-w-xl flex-1 flex-col gap-8">
-              <span className="inline-flex w-fit items-center rounded-full border border-[#00E5B0] bg-[#00E5B0]/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#00E5B0]">
+          <section className="mx-auto grid max-w-6xl gap-16 px-6 py-24 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center">
+            <div className="flex flex-col gap-8 lg:max-w-none">
+              <span className="inline-flex w-fit items-center rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
                 Ajánlatkészítés újragondolva
               </span>
 
               <h1 className="max-w-[14ch] text-5xl font-extrabold leading-[1.1] tracking-tight text-fg md:text-6xl">
                 Készíts lenyűgöző ajánlatokat.
                 <br />
-                <span className="text-[#00E5B0]">Villámgyorsan.</span>
+                <span className="text-primary">Villámgyorsan.</span>
               </h1>
 
-              <p className="max-w-[48ch] text-base leading-[1.6] text-fg-muted md:text-lg">
+              <p className="max-w-[52ch] text-base leading-[1.6] text-fg-muted md:text-lg">
                 A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen személyre szabva, hogy te a növekedésre koncentrálhass.
               </p>
 
               <div className="flex flex-wrap items-center gap-4">
                 <Link
                   href="/new"
-                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#00E5B0] to-[#22FFC9] px-7 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 ease-out hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]"
+                  className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-lg transition duration-200 ease-out hover:shadow-pop"
                 >
                   Próbáld ki ingyen!
                 </Link>
                 <Link
                   href="/demo"
-                  className="inline-flex items-center justify-center rounded-full border border-white/60 px-7 py-3 text-sm font-semibold text-white transition duration-200 ease-out hover:border-[#00E5B0] hover:text-[#00E5B0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]/40"
+                  className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3 text-sm font-semibold text-fg transition duration-200 ease-out hover:border-primary hover:text-primary"
                 >
                   Nézd meg a bemutatót
                 </Link>
               </div>
             </div>
 
-            {/* Jobb oldali „app preview” kártya */}
-            <div className="relative flex-1">
-              <div className="pointer-events-none absolute -inset-10 -z-10 rounded-[36px] bg-[radial-gradient(circle,_rgba(34,255,201,0.6)_1px,transparent_1px)] opacity-20 mix-blend-overlay [background-size:22px_22px]" />
-              <div className="absolute inset-0 -translate-y-8 translate-x-6 rounded-[32px] bg-gradient-to-br from-primary/10 via-transparent to-accent/10 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[24px] border border-border/60 bg-[rgb(var(--color-bg-muted-rgb)/0.96)] shadow-pop">
-                <div className="flex items-center justify-between border-b border-border/60 px-6 py-5 text-xs font-semibold uppercase tracking-[0.32em] text-fg-muted">
-                  <span>Propono canvas</span>
-                  <span className="rounded-full bg-bg px-4 py-1 text-[10px] font-semibold text-primary">
-                    Real-time preview
-                  </span>
-                </div>
-
-                <div className="space-y-4 p-6 text-sm">
-                  <Card className="flex items-center justify-between bg-bg px-5 py-4 shadow-none">
-                    <div>
-                      <p className="font-semibold">Webfejlesztési ajánlat</p>
-                      <p className="text-xs text-fg-muted">AI draft • frissítve 18 mp ezelőtt</p>
-                    </div>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary">
-                      <span className="h-2 w-2 rounded-full bg-primary" /> Live sync
-                    </span>
-                  </Card>
-
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {spotlight.map((item) => (
-                      <Card key={item} className="p-4 text-sm text-fg-muted bg-bg shadow-none">
-                        <p className="font-medium text-fg">{item}</p>
-                      </Card>
-                    ))}
-                  </div>
-
-                  <Card className="p-5 border-primary/30 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 shadow-none">
-                    <p className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">AI kalkuláció</p>
-                    <div className="mt-3 space-y-2 text-sm">
-                      <div className="flex items-center justify-between text-fg-muted">
-                        <span>UI tervezés (20 óra)</span>
-                        <span className="font-semibold text-fg">220 000 Ft</span>
-                      </div>
-                      <div className="flex items-center justify-between text-fg-muted">
-                        <span>Fejlesztés (60 óra)</span>
-                        <span className="font-semibold text-fg">660 000 Ft</span>
-                      </div>
-                      <div className="flex items-center justify-between text-primary">
-                        <span>Összesen</span>
-                        <span className="text-lg font-semibold text-primary">880 000 Ft</span>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </div>
+            <div className="flex flex-col gap-6 rounded-3xl border border-border/70 bg-bg/90 p-8 shadow-card lg:ml-auto">
+              <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">Mit kapsz azonnal?</span>
+              <p className="text-base leading-relaxed text-fg-muted">
+                A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól kezdve prémium élményt kap.
+              </p>
+              <ul className="space-y-4 text-base text-fg">
+                {spotlight.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary" aria-hidden="true" />
+                    <span className="text-fg-muted">{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
-
           {/* BENEFITS */}
           <section className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-3">
             {features.map((feature) => (
@@ -241,13 +203,13 @@ export default function Home() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href="/new"
-                    className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-primary-ink transition duration-200 ease-out hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-primary-ink transition duration-200 ease-out hover:brightness-110"
                   >
                     Indítsd el ingyen
                   </Link>
                   <Link
                     href="/billing"
-                    className="inline-flex items-center justify-center rounded-full border border-primary/60 px-7 py-3 text-sm font-semibold text-primary transition duration-200 ease-out hover:border-primary hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="inline-flex items-center justify-center rounded-full border border-primary/60 px-7 py-3 text-sm font-semibold text-primary transition duration-200 ease-out hover:border-primary hover:bg-primary/10"
                   >
                     Csomagok
                   </Link>
