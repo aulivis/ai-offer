@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import { useToast } from './ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -19,12 +19,14 @@ export type AppFrameProps = {
   description?: string;
   actions?: ReactNode;
   children: ReactNode;
+  sidebar?: ReactNode;
 };
 
-export default function AppFrame({ title, description, actions, children }: AppFrameProps) {
+export default function AppFrame({ title, description, actions, children, sidebar }: AppFrameProps) {
   const pathname = usePathname();
   const { showToast } = useToast();
   const { error, status } = useRequireAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!error) {
@@ -38,6 +40,10 @@ export default function AppFrame({ title, description, actions, children }: AppF
     });
   }, [error, showToast]);
 
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
+
   if (status !== 'authenticated') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
@@ -49,45 +55,89 @@ export default function AppFrame({ title, description, actions, children }: AppF
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_60%)]" />
-      <div className="relative">
-        <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8">
-          <Link href="/" className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-white font-display text-base">
-              P
-            </span>
-            Propono
-          </Link>
-          <nav className="flex items-center gap-2 text-sm text-slate-500">
-            {navLinks.map((link) => {
-              const active = pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`rounded-full px-3.5 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    active
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'hover:bg-slate-200/60 hover:text-slate-900'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
+      <div className="relative flex min-h-screen flex-col">
+        <header className="sticky top-0 z-40 border-b border-border bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <Link
+              href="/"
+              className="flex items-center gap-3 text-sm font-semibold tracking-wide text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <span className="grid h-10 w-10 place-items-center rounded-2xl border border-border bg-white font-display text-base">
+                P
+              </span>
+              Propono
+            </Link>
+            <nav className="flex items-center gap-2 text-sm text-slate-500">
+              {navLinks.map((link) => {
+                const active = pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`rounded-full px-3.5 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      active
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'hover:bg-slate-200/60 hover:text-slate-900'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
         </header>
 
-        <main className="mx-auto flex max-w-6xl flex-col gap-10 px-6 pb-16 pt-4">
-          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="font-display text-3xl text-slate-900">{title}</h1>
-              {description ? <p className="mt-1 max-w-2xl text-sm text-slate-500">{description}</p> : null}
-            </div>
-            {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
-          </header>
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 pb-16 pt-8 md:flex-row md:gap-10">
+          {sidebar ? (
+            <aside className="md:sticky md:top-28 md:w-64 md:flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen((prev) => !prev)}
+                className="flex w-full items-center justify-between rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
+                aria-expanded={isSidebarOpen}
+                aria-controls="appframe-sidebar"
+              >
+                <span>{isSidebarOpen ? 'Oldalsáv elrejtése' : 'Oldalsáv megnyitása'}</span>
+                <svg
+                  aria-hidden="true"
+                  className={`h-4 w-4 transition-transform ${isSidebarOpen ? 'rotate-180' : ''}`}
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5 7.5L10 12.5L15 7.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <div
+                id="appframe-sidebar"
+                className={`mt-4 space-y-4 rounded-2xl border border-border bg-white/70 p-4 shadow-sm backdrop-blur md:mt-0 md:block ${
+                  isSidebarOpen ? 'block' : 'hidden'
+                }`}
+              >
+                {sidebar}
+              </div>
+            </aside>
+          ) : null}
 
-          {children}
-        </main>
+          <main className="flex-1 space-y-8">
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h1 className="font-display text-3xl text-slate-900">{title}</h1>
+                {description ? <p className="mt-1 max-w-2xl text-sm text-slate-500">{description}</p> : null}
+              </div>
+              {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+            </header>
+
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
