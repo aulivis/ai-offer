@@ -550,7 +550,7 @@ export default function NewOfferPage() {
           <button
             onClick={goPrev}
             disabled={step === 1}
-            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
           >
             Vissza
           </button>
@@ -559,7 +559,7 @@ export default function NewOfferPage() {
             <button
               onClick={goNext}
               disabled={isNextDisabled}
-              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               Tovább
             </button>
@@ -567,7 +567,7 @@ export default function NewOfferPage() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitDisabled}
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
             </button>

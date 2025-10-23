@@ -13,7 +13,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
     <header className={headerClass}>
       <Link
         href="/"
-        className="flex items-center gap-3 font-display text-lg tracking-[0.2em] uppercase text-fg"
+        className="flex items-center gap-3 font-display text-lg tracking-[0.2em] uppercase text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-mint-500 to-mint-300 text-night-900 shadow-pop">
           P
@@ -21,14 +21,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         Propono
       </Link>
       <nav className="flex items-center gap-2 text-sm font-medium text-fg-muted">
-        <Link className="rounded-full px-3.5 py-2 transition hover:text-fg" href="/demo">
+        <Link className="rounded-full px-3.5 py-2 transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" href="/demo">
           Termék
         </Link>
-        <Link className="rounded-full px-3.5 py-2 transition hover:text-fg" href="/billing">
+        <Link className="rounded-full px-3.5 py-2 transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" href="/billing">
           Csomagok
         </Link>
         <Link
-          className="rounded-full border border-primary/60 px-4 py-2 text-fg transition hover:border-primary hover:bg-primary hover:text-primary-ink"
+          className="rounded-full border border-primary/60 px-4 py-2 text-fg transition hover:border-primary hover:bg-primary hover:text-primary-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           href="/login"
         >
           Bejelentkezés

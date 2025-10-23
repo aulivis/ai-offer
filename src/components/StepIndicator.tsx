@@ -116,7 +116,7 @@ export default function StepIndicator({ steps }: Props) {
               disabled={!clickable}
               aria-current={step.status === 'current' ? 'step' : undefined}
               className={classNames(
-                'flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/40',
+                'flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 clickable ? 'cursor-pointer' : 'cursor-default',
               )}
             >

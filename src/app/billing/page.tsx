@@ -289,7 +289,7 @@ export default function BillingPage() {
             <button
               onClick={() => startCheckout(STANDARD_PRICE)}
               disabled={loading === STANDARD_PRICE}
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading === STANDARD_PRICE ? 'Átirányítás…' : 'Propono Standard megrendelése'}
             </button>
@@ -315,7 +315,7 @@ export default function BillingPage() {
             <button
               onClick={() => startCheckout(PRO_PRICE)}
               disabled={loading === PRO_PRICE}
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading === PRO_PRICE ? 'Átirányítás…' : 'Propono Pro megrendelése'}
             </button>

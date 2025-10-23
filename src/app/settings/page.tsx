@@ -81,7 +81,7 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
   return new Error('Ismeretlen hiba történt a mentés közben.');
 }
 
-const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-900/10';
+const inputFieldClass = 'w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm text-slate-700 focus:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 const cardClass = 'rounded-3xl border border-border bg-white/80 p-6 shadow-sm';
 
 export default function SettingsPage() {
@@ -618,7 +618,7 @@ export default function SettingsPage() {
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Adószám</span>
               <input
-                className={`${inputFieldClass} ${profile.company_tax_id && !validateTaxHU(profile.company_tax_id) ? 'border-rose-300 focus:border-rose-300 focus:ring-rose-100' : ''}`}
+                className={`${inputFieldClass} ${profile.company_tax_id && !validateTaxHU(profile.company_tax_id) ? 'border-rose-300 focus:border-rose-300 focus-visible:ring-rose-100' : ''}`}
                 placeholder="12345678-1-12"
                 value={profile.company_tax_id || ''}
                 onChange={e => setProfile(p => ({ ...p, company_tax_id: e.target.value }))}
@@ -628,7 +628,7 @@ export default function SettingsPage() {
             <label className="grid gap-2 md:col-span-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Cím</span>
               <input
-                className={`${inputFieldClass} ${profile.company_address && !validateAddress(profile.company_address) ? 'border-rose-300 focus:border-rose-300 focus:ring-rose-100' : ''}`}
+                className={`${inputFieldClass} ${profile.company_address && !validateAddress(profile.company_address) ? 'border-rose-300 focus:border-rose-300 focus-visible:ring-rose-100' : ''}`}
                 placeholder="Irányítószám, település, utca, házszám"
                 value={profile.company_address || ''}
                 onChange={e => setProfile(p => ({ ...p, company_address: e.target.value }))}
@@ -638,7 +638,7 @@ export default function SettingsPage() {
             <label className="grid gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Telefon</span>
               <input
-                className={`${inputFieldClass} ${profile.company_phone && !validatePhoneHU(profile.company_phone) ? 'border-rose-300 focus:border-rose-300 focus:ring-rose-100' : ''}`}
+                className={`${inputFieldClass} ${profile.company_phone && !validatePhoneHU(profile.company_phone) ? 'border-rose-300 focus:border-rose-300 focus-visible:ring-rose-100' : ''}`}
                 placeholder="+36301234567"
                 value={profile.company_phone || ''}
                 onChange={e => setProfile(p => ({ ...p, company_phone: e.target.value }))}
@@ -668,7 +668,7 @@ export default function SettingsPage() {
                     key={ind}
                     type="button"
                     onClick={() => toggleIndustry(ind)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
                   >
                     {ind}
                   </button>
@@ -690,7 +690,7 @@ export default function SettingsPage() {
                 }}
               />
               <button
-                className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
+                className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => handleManualIndustry(newIndustry)}
               >
                 Hozzáadás
@@ -713,7 +713,7 @@ export default function SettingsPage() {
             type="button"
             onClick={() => saveProfile('all')}
             disabled={saving || hasErrors}
-            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
           >
             {saving ? 'Mentés…' : 'Mentés'}
           </button>
@@ -788,16 +788,16 @@ export default function SettingsPage() {
                     type="button"
                     onClick={triggerLogoUpload}
                     disabled={logoUploading}
-                    className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-                  >
-                    {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
-                  </button>
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
+                </button>
                   {profile.brand_logo_url && (
                     <a
                       href={profile.brand_logo_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
+                      className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       Megnyitás új lapon
                     </a>
@@ -837,7 +837,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => saveProfile('branding')}
               disabled={saving || hasBrandingErrors}
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {saving ? 'Mentés…' : 'Márka mentése'}
             </button>
@@ -859,7 +859,7 @@ export default function SettingsPage() {
               const requiresPro = offerTemplateRequiresPro(template.id);
               const disabled = requiresPro && !canUseProTemplates;
               const cardClassNames = [
-                'flex h-full w-full flex-col gap-3 rounded-2xl border p-4 text-left transition',
+                'flex h-full w-full flex-col gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 isSelected
                   ? 'border-border shadow-lg ring-2 ring-slate-900/10'
                   : 'border-border hover:border-border',
@@ -961,7 +961,7 @@ export default function SettingsPage() {
                       key={ind}
                       type="button"
                       onClick={() => toggleNewActIndustry(ind)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
                     >
                       {ind}
                     </button>
@@ -974,7 +974,7 @@ export default function SettingsPage() {
           <button
             onClick={addActivity}
             disabled={actSaving}
-            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
             {actSaving ? 'Hozzáadás…' : 'Tevékenység hozzáadása'}
           </button>
@@ -989,7 +989,7 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => deleteActivity(a.id)}
-                    className="text-xs font-semibold text-rose-500 transition hover:text-rose-600"
+                    className="text-xs font-semibold text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     Törlés
                   </button>

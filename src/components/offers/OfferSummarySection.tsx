@@ -72,7 +72,7 @@ export function OfferSummarySection({
                 <button
                   type="button"
                   onClick={onAbortPreview}
-                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
+                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Megszakítás
                 </button>
@@ -80,7 +80,7 @@ export function OfferSummarySection({
                 <button
                   type="button"
                   onClick={onManualRefresh}
-                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900"
+                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Újra generálás
                 </button>
