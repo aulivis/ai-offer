@@ -106,6 +106,26 @@ html, body {
   min-height: 100%;
 }
 
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  transform: translateY(-150%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background-color: rgba(8, 11, 18, 0.95);
+  color: rgb(248, 250, 252);
+  font-weight: 600;
+  box-shadow: 0 16px 32px rgba(8, 11, 18, 0.3);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  box-shadow: 0 24px 48px rgba(8, 11, 18, 0.35);
+}
+
 a {
   @apply text-inherit no-underline;
 }
