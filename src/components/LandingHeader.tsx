@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -44,17 +44,26 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  const headerClass = [
-    'sticky top-0 z-50 w-full border-b border-border/60 bg-bg/80 text-fg backdrop-blur supports-[backdrop-filter]:bg-bg/60',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const headerClass = useMemo(
+    () =>
+      [
+        'sticky top-0 z-50 w-full border-b border-border/60 bg-bg/80 text-fg backdrop-blur supports-[backdrop-filter]:bg-bg/60',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    [className],
+  );
+
+  const headerStyle = useMemo<CSSProperties>(
+    () => ({ position: 'sticky', top: 0, insetInlineStart: 0, insetInlineEnd: 0 }),
+    [],
+  );
 
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className={headerClass}>
+    <header className={headerClass} style={headerStyle}>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-6">
         <Link href="/" className="text-lg font-bold text-fg" onClick={closeMenu}>
           Propono
