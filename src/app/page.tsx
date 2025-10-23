@@ -55,7 +55,7 @@ export default function Home() {
 
       <div className="relative">
         <AnnouncementBar />
-        <LandingHeader className="border-b border-border/60 bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
+        <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
 
         <main id="main" className="flex flex-col gap-28 md:gap-32">
           {/* HERO */}
@@ -65,7 +65,7 @@ export default function Home() {
                 Ajánlatkészítés újragondolva
               </span>
 
-              <h1 className="group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#151035] md:text-6xl">
+              <h1 className="relative isolate group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#151035] md:text-6xl">
                 Készíts lenyűgöző{' '}
                 <HighlightUnderline>ajánlatokat</HighlightUnderline>.
                 <br />

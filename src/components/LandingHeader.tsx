@@ -125,7 +125,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
       </div>
 
       {isMenuOpen ? (
-        <div className="border-t border-border/60 bg-bg px-6 pb-6 pt-4 text-fg md:hidden">
+        <div className="bg-bg px-6 pb-6 pt-4 text-fg md:hidden">
           <nav id="landing-navigation" className="flex flex-col gap-4 text-base font-medium text-fg">
             {NAV_ITEMS.map((item) => (
               <Link
