@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import AnnouncementBar from '@/components/AnnouncementBar';
 import LandingHeader from '@/components/LandingHeader';
 import { Card } from '@/components/ui/Card';
 
@@ -52,6 +53,7 @@ export default function Home() {
       <div className="pointer-events-none absolute -right-28 bottom-40 h-72 w-72 rounded-full bg-primary/14 blur-3xl" />
 
       <div className="relative">
+        <AnnouncementBar />
         <LandingHeader className="border-b border-border/60 bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
 
         <main id="main" className="flex flex-col gap-28 md:gap-32">

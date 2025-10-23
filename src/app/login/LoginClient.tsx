@@ -58,7 +58,7 @@ export default function LoginClient() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900">
+    <div className="relative min-h-screen overflow-x-hidden bg-slate-50 text-slate-900">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
       <div className="relative flex min-h-screen flex-col">
         <LandingHeader />
