@@ -3,22 +3,15 @@
 import { EventEmitter } from 'node:events';
 import { TextDecoder } from 'node:util';
 
-import type { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { streamMock, getUserMock } = vi.hoisted(() => ({
-  streamMock: vi.fn(),
-  getUserMock: vi.fn(),
-}));
-
+import { createCsrfToken } from '../../../../../lib/auth/csrf';
+import type { AuthenticatedNextRequest } from '../../../../../middleware/auth';
 import { POST } from '../route';
 
-vi.mock('@/app/lib/supabaseServer', () => ({
-  supabaseServer: () => ({
-    auth: {
-      getUser: getUserMock,
-    },
-  }),
+const { streamMock, anonGetUserMock } = vi.hoisted(() => ({
+  streamMock: vi.fn(),
+  anonGetUserMock: vi.fn(),
 }));
 
 vi.mock('@/env.server', () => ({
@@ -29,6 +22,23 @@ vi.mock('@/env.server', () => ({
     STRIPE_SECRET_KEY: 'stripe-key',
     APP_URL: 'http://localhost',
     STRIPE_PRICE_ALLOWLIST: ['price_123'],
+  },
+}));
+
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    auth: {
+      getUser: anonGetUserMock,
+    },
+  }),
+}));
+
+vi.mock('@/env.client', () => ({
+  envClient: {
+    NEXT_PUBLIC_SUPABASE_URL: 'http://localhost',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    NEXT_PUBLIC_STRIPE_PRICE_STARTER: undefined,
+    NEXT_PUBLIC_STRIPE_PRICE_PRO: undefined,
   },
 }));
 
@@ -58,8 +68,13 @@ class FakeStream extends EventEmitter {
   }
 }
 
-function createRequest(overrides: Record<string, unknown> = {}): NextRequest {
-  const headers = new Headers({ authorization: 'Bearer test-token' });
+function createRequest(overrides: Record<string, unknown> = {}): AuthenticatedNextRequest {
+  const { token: csrfToken, value: csrfCookie } = createCsrfToken();
+  const cookies = {
+    propono_at: 'test-token',
+    'XSRF-TOKEN': csrfCookie,
+  } satisfies Record<string, string>;
+
   const payload = {
     industry: 'Tech',
     title: 'Sample',
@@ -72,9 +87,18 @@ function createRequest(overrides: Record<string, unknown> = {}): NextRequest {
   };
 
   return {
-    headers,
+    method: 'POST',
+    headers: new Headers({ 'x-csrf-token': csrfToken }),
     json: vi.fn().mockResolvedValue(payload),
-  } as unknown as NextRequest;
+    cookies: {
+      get: (name: string) =>
+        cookies[name as keyof typeof cookies]
+          ? { name, value: cookies[name as keyof typeof cookies] }
+          : undefined,
+      getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value })),
+      has: (name: string) => Boolean(cookies[name as keyof typeof cookies]),
+    },
+  } as unknown as AuthenticatedNextRequest;
 }
 
 function parseSse(raw: string) {
@@ -92,9 +116,12 @@ let consoleErrorSpy: ReturnType<typeof vi.spyOn> | null = null;
 
 beforeEach(() => {
   streamMock.mockReset();
-  getUserMock.mockReset();
+  anonGetUserMock.mockReset();
   consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-  getUserMock.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
+  anonGetUserMock.mockResolvedValue({
+    data: { user: { id: 'user-1', email: 'user@example.com' } },
+    error: null,
+  });
 });
 
 afterEach(() => {
@@ -144,7 +171,7 @@ describe('ai-preview route streaming', () => {
       expect(fakeStream.listenerCount('end')).toBe(0);
       expect(fakeStream.listenerCount('abort')).toBe(0);
       expect(fakeStream.listenerCount('error')).toBe(0);
-      expect(getUserMock).toHaveBeenCalledWith('test-token');
+      expect(anonGetUserMock).toHaveBeenCalledWith('test-token');
     } finally {
       setTimeoutSpy.mockRestore();
       clearTimeoutSpy.mockRestore();

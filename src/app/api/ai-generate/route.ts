@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
@@ -14,7 +14,7 @@ import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/respon
 import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
-import { getCurrentUser, getUserProfile } from '@/lib/services/user';
+import { getUserProfile } from '@/lib/services/user';
 import {
   currentMonthStart,
   getDeviceUsageSnapshot,
@@ -23,6 +23,7 @@ import {
 import { countPendingPdfJobs, dispatchPdfJob, enqueuePdfJob } from '@/lib/queue/pdf';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
+import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 
 export const runtime = 'nodejs';
 
@@ -363,7 +364,7 @@ function applyImageAssetsToHtml(html: string, images: SanitizedImageAsset[]): {
   return { pdfHtml, storedHtml };
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   try {
     // Parse and sanitize the incoming JSON body.  Sanitizing early
     // prevents any malicious scripts or HTML fragments from reaching
@@ -397,25 +398,8 @@ export async function POST(req: NextRequest) {
       imageAssets?: { key: string; dataUrl: string; alt?: string | null }[];
     };
 
-    // ---- Auth ----
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Auth required: hiányzik az Authorization: Bearer <token> fejléc' },
-        { status: 401 }
-      );
-    }
-    const access_token = authHeader.split(' ')[1];
-
     const sb = supabaseServer();
-    // Use service helper to fetch current user or throw
-    let user;
-    try {
-      user = await getCurrentUser(sb, access_token);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Invalid user';
-      return NextResponse.json({ error: message }, { status: 401 });
-    }
+    const user = req.user;
 
     // ---- Limit (havi) ----
 
@@ -698,4 +682,4 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     console.error('Server error:', message);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
-}
+});

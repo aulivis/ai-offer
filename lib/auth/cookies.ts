@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 
+import { CSRF_COOKIE_NAME, createCsrfToken } from './csrf';
+
 const baseCookieOptions = {
   httpOnly: true,
   sameSite: 'strict' as const,
@@ -42,7 +44,7 @@ export async function clearAuthCookies() {
   });
 
   cookieStore.set({
-    name: 'XSRF-TOKEN',
+    name: CSRF_COOKIE_NAME,
     value: '',
     ...baseCookieOptions,
     maxAge: 0,
@@ -51,11 +53,13 @@ export async function clearAuthCookies() {
 
 export async function setCSRFCookie() {
   const cookieStore = await cookies();
+  const { value } = createCsrfToken();
 
   cookieStore.set({
-    name: 'XSRF-TOKEN',
-    value: 'placeholder',
+    name: CSRF_COOKIE_NAME,
+    value,
     ...baseCookieOptions,
+    httpOnly: false,
   });
 }
 
