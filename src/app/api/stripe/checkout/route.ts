@@ -133,8 +133,15 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       cancel_url: `${envServer.APP_URL}/billing?status=cancel`,
     });
 
-    console.info('Checkout session created', { requestId, clientId, sessionUrl: session.url, userId });
-    return NextResponse.json({ url: session.url });
+    const sessionUrl = session.url;
+    console.info('Checkout session created', {
+      requestId,
+      clientId,
+      userId,
+      sessionId: session.id ?? 'unknown',
+      sessionUrlPresent: Boolean(sessionUrl),
+    });
+    return NextResponse.json({ url: sessionUrl });
   } catch (error) {
     console.error('Stripe checkout session creation failed', { requestId, clientId, error, userId });
     return buildErrorResponse('Nem sikerült elindítani a Stripe fizetést.', 500);

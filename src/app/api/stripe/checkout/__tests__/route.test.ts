@@ -98,6 +98,7 @@ describe('Stripe checkout route', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('rejects unauthenticated requests', async () => {
@@ -116,7 +117,9 @@ describe('Stripe checkout route', () => {
       data: { user: { id: 'user-1', email: 'user@example.com' } },
       error: null,
     });
-    createSessionMock.mockResolvedValue({ url: 'https://checkout.stripe.com/test-session' });
+    createSessionMock.mockResolvedValue({ id: 'cs_test_123', url: 'https://checkout.stripe.com/test-session' });
+
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
     const request = createRequest(
       { priceId: 'price_123', email: 'user@example.com' },
@@ -135,5 +138,16 @@ describe('Stripe checkout route', () => {
       success_url: 'http://localhost:3000/billing?status=success',
       cancel_url: 'http://localhost:3000/billing?status=cancel',
     });
+
+    const checkoutLog = consoleInfoSpy.mock.calls.find(([message]) => message === 'Checkout session created');
+    expect(checkoutLog).toBeDefined();
+    expect(checkoutLog?.[1]).toMatchObject({
+      clientId: '127.0.0.1',
+      requestId: expect.any(String),
+      sessionId: 'cs_test_123',
+      sessionUrlPresent: true,
+      userId: 'user-1',
+    });
+    expect(checkoutLog?.[1]).not.toHaveProperty('sessionUrl');
   });
 });
