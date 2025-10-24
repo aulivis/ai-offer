@@ -1,8 +1,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
-import { argon2dAsync, argon2iAsync, argon2idAsync } from '@noble/hashes/argon2';
-
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
+const NOBLE_ARGON_MODULE_ID = ['@noble', 'hashes', 'argon2'].join('/');
 
 export enum Argon2Algorithm {
   Argon2d = 0,
@@ -46,11 +45,26 @@ const ARGON2_NAMES: Record<Argon2Algorithm, 'argon2d' | 'argon2i' | 'argon2id'> 
   [Argon2Algorithm.Argon2id]: 'argon2id',
 };
 
-const FALLBACK_FUNCS = {
-  argon2d: argon2dAsync,
-  argon2i: argon2iAsync,
-  argon2id: argon2idAsync,
-} as const;
+type NobleArgon2Module = typeof import('@noble/hashes/argon2');
+type FallbackVariant = (typeof ARGON2_NAMES)[Argon2Algorithm];
+type FallbackCompute = (
+  password: string | Uint8Array,
+  salt: Uint8Array,
+  options: { m: number; t: number; p: number; dkLen: number; version: number },
+) => Promise<Uint8Array>;
+
+const FALLBACK_FUNC_NAMES: Record<FallbackVariant, `argon2${'d' | 'i' | 'id'}Async`> = {
+  argon2d: 'argon2dAsync',
+  argon2i: 'argon2iAsync',
+  argon2id: 'argon2idAsync',
+};
+
+let nobleModulePromise: Promise<NobleArgon2Module | null> | null = null;
+const fallbackComputeCache: Partial<Record<FallbackVariant, FallbackCompute>> = {};
+
+function isFallbackVariant(value: string): value is FallbackVariant {
+  return value in FALLBACK_FUNC_NAMES;
+}
 
 let nativeModulePromise: Promise<Argon2Module | null> | null = null;
 
@@ -63,6 +77,41 @@ async function loadNativeModule(): Promise<Argon2Module | null> {
   }
 
   return nativeModulePromise;
+}
+
+async function loadNobleModule(): Promise<NobleArgon2Module | null> {
+  if (!nobleModulePromise) {
+    const dynamicImport = new Function('specifier', 'return import(specifier);') as (
+      specifier: string,
+    ) => Promise<NobleArgon2Module>;
+    nobleModulePromise = dynamicImport(NOBLE_ARGON_MODULE_ID).catch(() => null);
+  }
+
+  return nobleModulePromise;
+}
+
+async function getFallbackCompute(variant: FallbackVariant): Promise<FallbackCompute> {
+  const cached = fallbackComputeCache[variant];
+  if (cached) {
+    return cached;
+  }
+
+  const noble = await loadNobleModule();
+  if (!noble) {
+    throw new Error(
+      "Missing optional dependency '@noble/hashes'. Install it to enable the Argon2 fallback implementation.",
+    );
+  }
+
+  const funcName = FALLBACK_FUNC_NAMES[variant];
+  const compute = noble[funcName as keyof NobleArgon2Module];
+  if (typeof compute !== 'function') {
+    throw new Error(`Argon2 fallback function '${funcName}' is not available.`);
+  }
+
+  const callable = compute as FallbackCompute;
+  fallbackComputeCache[variant] = callable;
+  return callable;
 }
 
 function toBase64(data: Uint8Array): string {
@@ -82,7 +131,7 @@ function resolveVersion(option?: Argon2Version): number {
 }
 
 type ParsedPhc = {
-  algorithm: keyof typeof FALLBACK_FUNCS;
+  algorithm: FallbackVariant;
   version: number;
   memoryCost: number;
   timeCost: number;
@@ -103,8 +152,8 @@ function parsePhcString(value: string | Uint8Array): ParsedPhc {
     throw new Error('Invalid Argon2 hash format.');
   }
 
-  const algorithm = parts[1] as ParsedPhc['algorithm'];
-  if (!(algorithm in FALLBACK_FUNCS)) {
+  const algorithm = parts[1];
+  if (!algorithm || !isFallbackVariant(algorithm)) {
     throw new Error(`Unsupported Argon2 algorithm: ${algorithm}`);
   }
 
@@ -172,7 +221,7 @@ function getFallbackOptions(options?: Argon2Options) {
 async function fallbackHash(password: string | Uint8Array, options?: Argon2Options): Promise<string> {
   const fallback = getFallbackOptions(options);
   const variant = ARGON2_NAMES[fallback.algorithm];
-  const compute = FALLBACK_FUNCS[variant];
+  const compute = await getFallbackCompute(variant);
 
   const digest = await compute(password, fallback.salt, {
     m: fallback.memoryCost,
@@ -192,7 +241,7 @@ async function fallbackVerify(
   password: string | Uint8Array,
 ): Promise<boolean> {
   const parsed = parsePhcString(hashed);
-  const compute = FALLBACK_FUNCS[parsed.algorithm];
+  const compute = await getFallbackCompute(parsed.algorithm);
 
   const digest = await compute(password, parsed.salt, {
     m: parsed.memoryCost,
