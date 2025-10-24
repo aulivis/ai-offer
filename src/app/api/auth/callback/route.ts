@@ -156,9 +156,17 @@ function validateStatePayload(
     return null;
   }
 
-  if (nonceParam && payload.nonce && nonceParam !== payload.nonce) {
-    console.error('OAuth nonce mismatch detected.');
-    return null;
+  const expectedNonce = typeof payload.nonce === 'string' ? payload.nonce : null;
+  if (expectedNonce) {
+    if (!nonceParam) {
+      console.error('OAuth nonce parameter missing during callback handling.');
+      return null;
+    }
+
+    if (nonceParam !== expectedNonce) {
+      console.error('OAuth nonce mismatch detected.');
+      return null;
+    }
   }
 
   return {
