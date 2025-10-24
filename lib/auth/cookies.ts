@@ -3,12 +3,15 @@ import type { NextRequest } from 'next/server';
 
 import { CSRF_COOKIE_NAME, createCsrfToken } from './csrf';
 
+const isProduction = process.env.NODE_ENV === 'production';
+const sameSite = (isProduction ? 'strict' : 'lax') as 'strict' | 'lax';
+
 const baseCookieOptions = {
   httpOnly: true,
-  sameSite: 'strict' as const,
-  secure: true,
+  sameSite,
+  secure: isProduction,
   path: '/',
-} as const;
+};
 
 export async function setAuthCookies(accessToken: string, refreshToken: string) {
   const cookieStore = await cookies();
