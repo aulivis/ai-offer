@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
@@ -19,9 +19,7 @@ type CardBrand = {
 const CARD_BRANDS: CardBrand[] = [
   {
     name: 'Visa',
-    render: () => (
-      <span className="text-lg font-black tracking-[0.35em] text-[#1a1f71]">VISA</span>
-    ),
+    render: () => <span className="text-lg font-black tracking-[0.35em] text-[#1a1f71]">VISA</span>,
   },
   {
     name: 'Mastercard',
@@ -45,7 +43,10 @@ const CARD_BRANDS: CardBrand[] = [
     render: () => (
       <div className="flex items-center gap-1.5">
         <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DISCOVER</span>
-        <span aria-hidden className="h-5 w-5 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]" />
+        <span
+          aria-hidden
+          className="h-5 w-5 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]"
+        />
       </div>
     ),
   },
@@ -118,7 +119,10 @@ export default function BillingPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [plan, setPlan] = useState<'free' | 'standard' | 'pro' | null>(null);
-  const [usage, setUsage] = useState<{ offersGenerated: number; periodStart: string | null } | null>(null);
+  const [usage, setUsage] = useState<{
+    offersGenerated: number;
+    periodStart: string | null;
+  } | null>(null);
 
   useEffect(() => {
     setStatus(searchParams?.get('status') || null);
@@ -134,7 +138,11 @@ export default function BillingPage() {
     (async () => {
       const [{ data: profile }, { data: usageRow }] = await Promise.all([
         supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
-        supabase.from('usage_counters').select('offers_generated, period_start').eq('user_id', user.id).maybeSingle(),
+        supabase
+          .from('usage_counters')
+          .select('offers_generated, period_start')
+          .eq('user_id', user.id)
+          .maybeSingle(),
       ]);
 
       if (!active) {
@@ -186,14 +194,16 @@ export default function BillingPage() {
   }, [plan]);
 
   const offersThisMonth = usage?.offersGenerated ?? 0;
-  const remainingQuota = planLimit === null
-    ? 'Korlátlan'
-    : Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU');
+  const remainingQuota: string =
+    planLimit === null
+      ? 'Korlátlan'
+      : Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU');
   const planLabels: Record<'free' | 'standard' | 'pro', string> = {
     free: 'Ingyenes csomag',
     standard: 'Propono Standard',
     pro: 'Propono Pro',
   };
+  const hasUnlimitedEmail = planLimit === null;
 
   const periodStartDate = useMemo(() => parsePeriodStart(usage?.periodStart), [usage?.periodStart]);
   const resetDate = useMemo(() => {
@@ -212,7 +222,7 @@ export default function BillingPage() {
   }, [periodStartDate]);
   const resetLabel = useMemo(
     () => resetDate.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric' }),
-    [resetDate]
+    [resetDate],
   );
 
   return (
@@ -237,26 +247,45 @@ export default function BillingPage() {
         >
           <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-border bg-white/70 p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Havi keret</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Havi keret
+              </dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">
-                {effectiveLimit === null ? 'Korlátlan' : `${effectiveLimit.toLocaleString('hu-HU')} ajánlat`}
+                {planLimit === null ? 'Korlátlan' : `${planLimit.toLocaleString('hu-HU')} ajánlat`}
               </dd>
-              <p className="mt-1 text-xs text-slate-500">Automatikus újraindulás minden hónapban.</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Automatikus újraindulás minden hónapban.
+              </p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">E hónapban létrehozva</dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">{offersThisMonth.toLocaleString('hu-HU')} ajánlat</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                E hónapban létrehozva
+              </dt>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">
+                {offersThisMonth.toLocaleString('hu-HU')} ajánlat
+              </dd>
               <p className="mt-1 text-xs text-slate-500">Az AI generált PDF-ek számát mutatja.</p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Felhasználható keret</dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuota}{effectiveLimit === null ? '' : ' ajánlat'}</dd>
-              <p className="mt-1 text-xs text-slate-500">Generálások, amelyek még rendelkezésre állnak.</p>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Felhasználható keret
+              </dt>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">
+                {remainingQuota}
+                {planLimit === null ? '' : ' ajánlat'}
+              </dd>
+              <p className="mt-1 text-xs text-slate-500">
+                Generálások, amelyek még rendelkezésre állnak.
+              </p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Keret visszaállása</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Keret visszaállása
+              </dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{resetLabel}</dd>
-              <p className="mt-1 text-xs text-slate-500">A számláló minden hónap első napján nullázódik.</p>
+              <p className="mt-1 text-xs text-slate-500">
+                A számláló minden hónap első napján nullázódik.
+              </p>
             </div>
           </dl>
         </Card>
@@ -274,10 +303,13 @@ export default function BillingPage() {
 
         <section className="grid gap-6 md:grid-cols-2">
           <Card as="article" className="flex h-full flex-col">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Belépő csomag</div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Belépő csomag
+            </div>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Standard</h2>
             <p className="mt-3 text-sm text-slate-500">
-              10 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és tételes árkalkuláció kis csapatoknak.
+              10 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és
+              tételes árkalkuláció kis csapatoknak.
             </p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">1 490</span>
@@ -297,13 +329,17 @@ export default function BillingPage() {
             </Button>
           </Card>
 
-          <Card as="article" className="flex h-full flex-col bg-white shadow-lg ring-1 ring-slate-900/5">
+          <Card
+            as="article"
+            className="flex h-full flex-col bg-white shadow-lg ring-1 ring-slate-900/5"
+          >
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
               Népszerű választás
             </div>
             <h2 className="mt-3 text-2xl font-semibold text-slate-900">Propono Pro</h2>
             <p className="mt-3 text-sm text-slate-500">
-              Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonkönyvtár és prioritásos támogatás növekvő csapatoknak.
+              Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonkönyvtár és prioritásos
+              támogatás növekvő csapatoknak.
             </p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">6 990</span>
@@ -335,14 +371,21 @@ export default function BillingPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl space-y-2">
               <p className="text-sm text-slate-500">
-                A Stripe banki szintű titkosítással védi az ügyfeleid adatait, és támogatja a vezető kártyatársaságokat,
-                így Visa, Mastercard, American Express, Discover, Diners Club, JCB és UnionPay kártyákkal is gond nélkül
-                fizethetnek.
+                A Stripe banki szintű titkosítással védi az ügyfeleid adatait, és támogatja a vezető
+                kártyatársaságokat, így Visa, Mastercard, American Express, Discover, Diners Club,
+                JCB és UnionPay kártyákkal is gond nélkül fizethetnek.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-4" aria-label="Támogatott kártyatársaságok">
+            <div
+              className="flex flex-wrap items-center gap-4"
+              aria-label="Támogatott kártyatársaságok"
+            >
               {CARD_BRANDS.map((brand) => (
-                <div key={brand.name} className="flex items-center justify-center" aria-label={brand.name}>
+                <div
+                  key={brand.name}
+                  className="flex items-center justify-center"
+                  aria-label={brand.name}
+                >
                   {brand.render()}
                 </div>
               ))}
@@ -352,7 +395,11 @@ export default function BillingPage() {
 
         <p className="text-sm text-slate-500">
           Bejelentkezett e-mail: <span className="font-medium text-slate-700">{email ?? '—'}</span>
-          {hasUnlimitedEmail && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Korlátlan jogosultság</span>}
+          {hasUnlimitedEmail && (
+            <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+              Korlátlan jogosultság
+            </span>
+          )}
         </p>
       </div>
     </AppFrame>

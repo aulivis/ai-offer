@@ -10,7 +10,7 @@ import {
 } from '../../../../../lib/auth/argon2';
 import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
 import { CSRF_COOKIE_NAME, verifyCsrfToken } from '../../../../../lib/auth/csrf';
-import { decodeRefreshToken, type DecodedRefreshToken } from '../token';
+import { decodeRefreshToken } from '../token';
 
 const REFRESH_COOKIE = 'propono_rt';
 
@@ -84,10 +84,7 @@ async function revokeAllSessions(
   client: ReturnType<typeof supabaseServer> = supabaseServer(),
 ) {
   const now = new Date().toISOString();
-  const { error } = await client
-    .from('sessions')
-    .update({ revoked_at: now })
-    .eq('user_id', userId);
+  const { error } = await client.from('sessions').update({ revoked_at: now }).eq('user_id', userId);
 
   if (error) {
     console.error('Failed to revoke user sessions.', error);
@@ -129,9 +126,9 @@ export async function POST(request: Request) {
   }
 
   const supabase = supabaseServer();
-  const { data: sessions, error: sessionsError } = await supabase
+  const { data, error: sessionsError } = await supabase
     .from('sessions')
-    .select<SessionRow>('id, user_id, rt_hash, issued_at, expires_at, rotated_from, revoked_at, ip, ua')
+    .select('id, user_id, rt_hash, issued_at, expires_at, rotated_from, revoked_at, ip, ua')
     .eq('user_id', userId);
 
   if (sessionsError) {
@@ -139,9 +136,11 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
 
+  const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
+
   let activeSession: SessionRow | null = null;
-  if (sessions) {
-    for (const session of sessions) {
+  if (sessionList.length > 0) {
+    for (const session of sessionList) {
       if (await argon2Verify(session.rt_hash, refreshToken)) {
         activeSession = session;
         break;
@@ -205,10 +204,7 @@ export async function POST(request: Request) {
 
   const nowIso = new Date().toISOString();
   const [{ error: revokeError }, { error: insertError }] = await Promise.all([
-    supabase
-      .from('sessions')
-      .update({ revoked_at: nowIso })
-      .eq('id', activeSession.id),
+    supabase.from('sessions').update({ revoked_at: nowIso }).eq('id', activeSession.id),
     supabase.from('sessions').insert({
       user_id: userId,
       rt_hash: hashedRefresh,

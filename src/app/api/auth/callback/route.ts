@@ -34,9 +34,7 @@ type ExchangeResult = {
 
 function decryptStateCookie(value: string, logger: RequestLogger): AuthStatePayload | null {
   try {
-    const secret = createHash('sha256')
-      .update(envServer.AUTH_COOKIE_SECRET)
-      .digest();
+    const secret = createHash('sha256').update(envServer.AUTH_COOKIE_SECRET).digest();
 
     const buffer = Buffer.from(value, 'base64url');
     const iv = buffer.subarray(0, 12);
@@ -46,10 +44,7 @@ function decryptStateCookie(value: string, logger: RequestLogger): AuthStatePayl
     const decipher = createDecipheriv('aes-256-gcm', secret, iv);
     decipher.setAuthTag(authTag);
 
-    const decrypted = Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]);
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
 
     return JSON.parse(decrypted.toString('utf8')) as AuthStatePayload;
   } catch (error) {
@@ -100,16 +95,17 @@ function sanitizeValue(value: unknown): unknown {
   }
 
   if (value && typeof value === 'object') {
-    return Object.entries(value as Record<string, unknown>).reduce<
-      Record<string, unknown>
-    >((acc, [key, entry]) => {
-      if (SENSITIVE_RESPONSE_KEYS.has(key) || /token/i.test(key)) {
-        acc[key] = '[REDACTED]';
-      } else {
-        acc[key] = sanitizeValue(entry);
-      }
-      return acc;
-    }, {});
+    return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>(
+      (acc, [key, entry]) => {
+        if (SENSITIVE_RESPONSE_KEYS.has(key) || /token/i.test(key)) {
+          acc[key] = '[REDACTED]';
+        } else {
+          acc[key] = sanitizeValue(entry);
+        }
+        return acc;
+      },
+      {},
+    );
   }
 
   if (typeof value === 'string' && /token/i.test(value)) {
@@ -135,9 +131,7 @@ async function exchangeCode(
       Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify(
-      codeVerifier
-        ? { auth_code: code, code_verifier: codeVerifier }
-        : { auth_code: code },
+      codeVerifier ? { auth_code: code, code_verifier: codeVerifier } : { auth_code: code },
     ),
   });
 
@@ -237,9 +231,12 @@ function validateStatePayload(
     }
   }
 
+  const redirectTo = sanitizeRedirect(payload.redirectTo ?? null);
+  const codeVerifier = typeof payload.codeVerifier === 'string' ? payload.codeVerifier : null;
+
   return {
-    redirectTo: sanitizeRedirect(payload.redirectTo ?? null),
-    codeVerifier: typeof payload.codeVerifier === 'string' ? payload.codeVerifier : undefined,
+    redirectTo,
+    ...(codeVerifier ? { codeVerifier } : {}),
   };
 }
 
@@ -302,10 +299,12 @@ export async function GET(request: Request) {
   const finalRedirect = redirectTarget ?? '/dashboard';
 
   try {
-    const { accessToken, refreshToken } = await exchangeCode({
-      code,
-      codeVerifier,
-    }, logger);
+    const exchangeParams: ExchangeParams = { code };
+    if (codeVerifier) {
+      exchangeParams.codeVerifier = codeVerifier;
+    }
+
+    const { accessToken, refreshToken } = await exchangeCode(exchangeParams, logger);
 
     await setAuthCookies(accessToken, refreshToken);
     await setCSRFCookie();

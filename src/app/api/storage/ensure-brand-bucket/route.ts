@@ -45,7 +45,8 @@ export async function POST() {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Ismeretlen hiba a tárhely előkészítésekor.';
+    const message =
+      error instanceof Error ? error.message : 'Ismeretlen hiba a tárhely előkészítésekor.';
     if (error instanceof Error) {
       console.error('Bucket ensure failed:', error);
     }

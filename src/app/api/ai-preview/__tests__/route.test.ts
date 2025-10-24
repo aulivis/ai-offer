@@ -136,26 +136,28 @@ afterEach(() => {
 
 describe('ai-preview route streaming', () => {
   it('returns validation errors for malformed input', async () => {
-    const response = await POST(
-      createRequest({ title: '   ', industry: '', description: '' }),
-    );
+    const response = await POST(createRequest({ title: '   ', industry: '', description: '' }));
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
       error: 'Érvénytelen kérés.',
-      issues: expect.objectContaining({ fieldErrors: expect.objectContaining({ title: expect.any(Array) }) }),
+      issues: expect.objectContaining({
+        fieldErrors: expect.objectContaining({ title: expect.any(Array) }),
+      }),
     });
 
     expect(streamMock).not.toHaveBeenCalled();
   });
 
   it('aborts hung streams after the configured timeout', async () => {
-    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementation((callback: TimerHandler) => {
-      if (typeof callback === 'function') {
-        (callback as (...args: unknown[]) => void)();
-      }
-      return 0 as unknown as ReturnType<typeof setTimeout>;
-    });
+    const setTimeoutSpy = vi
+      .spyOn(globalThis, 'setTimeout')
+      .mockImplementation((callback: TimerHandler) => {
+        if (typeof callback === 'function') {
+          (callback as (...args: unknown[]) => void)();
+        }
+        return 0 as unknown as ReturnType<typeof setTimeout>;
+      });
     const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout').mockImplementation(() => {});
 
     try {

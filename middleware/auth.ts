@@ -24,9 +24,7 @@ type Handler<Args extends unknown[], Result> = (
   ...args: Args
 ) => Result | Promise<Result>;
 
-async function authenticateRequest(
-  req: NextRequest,
-): Promise<AuthenticatedUser | NextResponse> {
+async function authenticateRequest(req: NextRequest): Promise<AuthenticatedUser | NextResponse> {
   const token = req.cookies.get('propono_at')?.value;
   if (!token) {
     return NextResponse.json(
@@ -39,10 +37,7 @@ async function authenticateRequest(
     const csrfHeader = req.headers.get('x-csrf-token');
     const csrfCookie = req.cookies.get(CSRF_COOKIE_NAME)?.value;
     if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
-      return NextResponse.json(
-        { error: 'Érvénytelen vagy hiányzó CSRF token.' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
     }
   }
 
@@ -68,13 +63,8 @@ async function authenticateRequest(
   }
 }
 
-export function withAuth<Args extends unknown[], Result>(
-  handler: Handler<Args, Result>,
-) {
-  return async (
-    req: NextRequest,
-    ...args: Args
-  ): Promise<Result> => {
+export function withAuth<Args extends unknown[], Result>(handler: Handler<Args, Result>) {
+  return async (req: NextRequest, ...args: Args): Promise<Result> => {
     const authResult = await authenticateRequest(req);
     if (authResult instanceof NextResponse) {
       return authResult as unknown as Result;

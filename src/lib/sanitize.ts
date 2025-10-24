@@ -124,7 +124,9 @@ function sanitiseAttribute(tagName: string, attrName: string, value: string): st
     case 'title':
       return escapeAttribute(trimmed);
     case 'target': {
-      const normalised = trimmed.startsWith('_') ? trimmed.toLowerCase() : `_${trimmed.toLowerCase()}`;
+      const normalised = trimmed.startsWith('_')
+        ? trimmed.toLowerCase()
+        : `_${trimmed.toLowerCase()}`;
       return ALLOWED_TARGETS.has(normalised) ? normalised : null;
     }
     case 'rel': {
@@ -153,16 +155,19 @@ function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: bool
   }
 
   const sanitisedAttributes: string[] = [];
-  rawAttributes.replace(ATTRIBUTE_PATTERN, (_match, name, _valueWithQuotes, valueDouble, valueSingle, valueUnquoted) => {
-    const attrName = String(name).toLowerCase();
-    if (!allowedAttributes.has(attrName)) return '';
-    const rawValue = valueDouble ?? valueSingle ?? valueUnquoted ?? '';
-    const sanitisedValue = sanitiseAttribute(tagName, attrName, rawValue);
-    if (sanitisedValue !== null) {
-      sanitisedAttributes.push(`${attrName}="${sanitisedValue}"`);
-    }
-    return '';
-  });
+  rawAttributes.replace(
+    ATTRIBUTE_PATTERN,
+    (_match, name, _valueWithQuotes, valueDouble, valueSingle, valueUnquoted) => {
+      const attrName = String(name).toLowerCase();
+      if (!allowedAttributes.has(attrName)) return '';
+      const rawValue = valueDouble ?? valueSingle ?? valueUnquoted ?? '';
+      const sanitisedValue = sanitiseAttribute(tagName, attrName, rawValue);
+      if (sanitisedValue !== null) {
+        sanitisedAttributes.push(`${attrName}="${sanitisedValue}"`);
+      }
+      return '';
+    },
+  );
 
   const attributeString = sanitisedAttributes.length ? ` ${sanitisedAttributes.join(' ')}` : '';
   return `<${tagName}${attributeString}${isSelfClosing ? ' /' : ''}>`;
@@ -201,45 +206,48 @@ export function sanitizeHTML(html: string | undefined | null): string {
 
   TAG_PATTERN.lastIndex = 0;
 
-  source.replace(TAG_PATTERN, (match, tagNameRaw: string, rawAttributes: string, offset: number) => {
-    if (dropStack.length === 0) {
-      result += escapeHtml(source.slice(lastIndex, offset));
-    }
-    lastIndex = offset + match.length;
-
-    const tagName = tagNameRaw.toLowerCase();
-
-    const isClosing = match.startsWith('</');
-    const isExplicitSelfClosing = /\/\s*>$/.test(match);
-    const isSelfClosing = isExplicitSelfClosing || SELF_CLOSING_TAGS.has(tagName);
-
-    if (DROP_CONTENT_TAGS.has(tagName)) {
-      if (!isClosing && !isSelfClosing) {
-        dropStack.push(tagName);
-      } else if (isClosing && dropStack[dropStack.length - 1] === tagName) {
-        dropStack.pop();
+  source.replace(
+    TAG_PATTERN,
+    (match, tagNameRaw: string, rawAttributes: string, offset: number) => {
+      if (dropStack.length === 0) {
+        result += escapeHtml(source.slice(lastIndex, offset));
       }
-      return '';
-    }
+      lastIndex = offset + match.length;
 
-    if (!ALLOWED_TAGS.has(tagName) || dropStack.length > 0) {
-      return '';
-    }
+      const tagName = tagNameRaw.toLowerCase();
 
-    if (isClosing) {
-      if (SELF_CLOSING_TAGS.has(tagName)) {
+      const isClosing = match.startsWith('</');
+      const isExplicitSelfClosing = /\/\s*>$/.test(match);
+      const isSelfClosing = isExplicitSelfClosing || SELF_CLOSING_TAGS.has(tagName);
+
+      if (DROP_CONTENT_TAGS.has(tagName)) {
+        if (!isClosing && !isSelfClosing) {
+          dropStack.push(tagName);
+        } else if (isClosing && dropStack[dropStack.length - 1] === tagName) {
+          dropStack.pop();
+        }
         return '';
       }
-      result += `</${tagName}>`;
+
+      if (!ALLOWED_TAGS.has(tagName) || dropStack.length > 0) {
+        return '';
+      }
+
+      if (isClosing) {
+        if (SELF_CLOSING_TAGS.has(tagName)) {
+          return '';
+        }
+        result += `</${tagName}>`;
+        return '';
+      }
+
+      const attributesSection = rawAttributes ?? '';
+      const attributeContent = attributesSection.replace(/\/\s*$/, '');
+
+      result += sanitiseTag(tagName, attributeContent, isSelfClosing);
       return '';
-    }
-
-    const attributesSection = rawAttributes ?? '';
-    const attributeContent = attributesSection.replace(/\/\s*$/, '');
-
-    result += sanitiseTag(tagName, attributeContent, isSelfClosing);
-    return '';
-  });
+    },
+  );
 
   if (dropStack.length === 0) {
     result += escapeHtml(source.slice(lastIndex));

@@ -22,9 +22,7 @@ export function Card({ header, className, children, as: Component = 'div', ...pr
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  const cls = ['mb-4 flex flex-col gap-1', className]
-    .filter(Boolean)
-    .join(' ');
+  const cls = ['mb-4 flex flex-col gap-1', className].filter(Boolean).join(' ');
 
   return <div className={cls} {...props} />;
 }

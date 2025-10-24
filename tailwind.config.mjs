@@ -48,7 +48,7 @@ const config = {
         'gradient-primary': 'var(--gradient-primary)',
       },
       fontFamily: {
-display: ['var(--font-display)', 'system-ui'],
+        display: ['var(--font-display)', 'system-ui'],
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
         mono: [
           'var(--font-mono)',

@@ -8,11 +8,11 @@ import { sanitizeInput } from '@/lib/sanitize';
  * for 27%).
  */
 export interface PriceRow {
-  name?: string;
-  qty?: number;
-  unit?: string;
-  unitPrice?: number;
-  vat?: number;
+  name?: string | undefined;
+  qty?: number | undefined;
+  unit?: string | undefined;
+  unitPrice?: number | undefined;
+  vat?: number | undefined;
 }
 
 /**

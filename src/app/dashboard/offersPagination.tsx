@@ -34,9 +34,10 @@ export function LoadMoreButton({
   disabled = false,
   onClick,
 }: LoadMoreButtonProps) {
-  const renderedCount = typeof totalPages === 'number' && totalPages > 0
-    ? Math.max(totalPages, currentPage)
-    : currentPage;
+  const renderedCount =
+    typeof totalPages === 'number' && totalPages > 0
+      ? Math.max(totalPages, currentPage)
+      : currentPage;
   const pagesToRender = Array.from({ length: Math.max(1, renderedCount) }, (_, index) => index + 1);
   const nextPageLabel = currentPage + 1;
   const showNextButton = hasNext;
@@ -48,12 +49,8 @@ export function LoadMoreButton({
         const isFuture = page > currentPage;
         const cls = [
           'h-9 w-9 rounded-full text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-          isCurrent
-            ? 'bg-primary text-primary-ink'
-            : 'border border-border',
-          isFuture
-            ? 'text-fg-muted'
-            : 'text-fg hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)]',
+          isCurrent ? 'bg-primary text-primary-ink' : 'border border-border',
+          isFuture ? 'text-fg-muted' : 'text-fg hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)]',
         ]
           .filter(Boolean)
           .join(' ');

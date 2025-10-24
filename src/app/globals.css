@@ -1,42 +1,44 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @reference "tailwindcss/utilities";
 
 @theme {
   --font-display: 'Work Sans', system-ui, sans-serif;
   --font-sans: 'Work Sans', system-ui, sans-serif;
-  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-mono:
+    'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
   --shadow-card: 0 2px 6px rgba(15, 23, 42, 0.08);
   --shadow-pop: 0 12px 32px rgba(15, 23, 42, 0.18);
   --radius-lg: 8px;
   --radius-2xl: 16px;
   --radius-3xl: 24px;
-  --color-primary: #00E5B0;
-  --color-primary-ink: #04251A;
-  --color-accent: #C3B3FF;
-  --color-bg: #F7F9FB;
-  --color-bg-muted: #FFFFFF;
-  --color-fg: #0F172A;
-  --color-fg-muted: #4B5563;
-  --color-border: #E5E7EB;
-  --color-success: #16A34A;
-  --color-warning: #F59E0B;
-  --color-danger: #DC2626;
+  --color-primary: #00e5b0;
+  --color-primary-ink: #04251a;
+  --color-accent: #c3b3ff;
+  --color-bg: #f7f9fb;
+  --color-bg-muted: #ffffff;
+  --color-fg: #0f172a;
+  --color-fg-muted: #4b5563;
+  --color-border: #e5e7eb;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
 }
 
 :root {
   color-scheme: light;
 
-  --color-primary: #00E5B0;
-  --color-accent: #C3B3FF;
-  --color-bg: #F7F9FB;
-  --color-bg-muted: #FFFFFF;
-  --color-fg: #0F172A;
-  --color-fg-muted: #4B5563;
-  --color-border: #E5E7EB;
-  --color-primary-ink: #04251A;
-  --color-success: #16A34A;
-  --color-warning: #F59E0B;
-  --color-danger: #DC2626;
+  --color-primary: #00e5b0;
+  --color-accent: #c3b3ff;
+  --color-bg: #f7f9fb;
+  --color-bg-muted: #ffffff;
+  --color-fg: #0f172a;
+  --color-fg-muted: #4b5563;
+  --color-border: #e5e7eb;
+  --color-primary-ink: #04251a;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
 
   --color-primary-rgb: 0 229 176;
   --color-accent-rgb: 195 179 255;
@@ -65,7 +67,8 @@
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 }
 
-html, body {
+html,
+body {
   @apply font-sans antialiased;
   background-color: var(--color-bg);
   color: var(--color-fg);
@@ -83,7 +86,9 @@ html, body {
   color: rgb(var(--color-fg-rgb) / 1);
   font-weight: 600;
   box-shadow: var(--shadow-card);
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
   z-index: 1000;
 }
 

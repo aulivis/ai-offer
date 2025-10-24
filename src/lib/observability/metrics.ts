@@ -12,7 +12,10 @@ const magicLinkCallbackCounter = meter.createCounter('auth.magic_link.callback_t
   description: 'Counts Supabase magic link callback handling outcomes.',
 });
 
-function mergeAttributes(outcome: 'success' | 'failure', attributes?: MetricAttributes): MetricAttributes {
+function mergeAttributes(
+  outcome: 'success' | 'failure',
+  attributes?: MetricAttributes,
+): MetricAttributes {
   return { outcome, ...(attributes ?? {}) };
 }
 
@@ -20,6 +23,9 @@ export function recordMagicLinkSend(outcome: 'success' | 'failure', attributes?:
   magicLinkSendCounter.add(1, mergeAttributes(outcome, attributes));
 }
 
-export function recordMagicLinkCallback(outcome: 'success' | 'failure', attributes?: MetricAttributes) {
+export function recordMagicLinkCallback(
+  outcome: 'success' | 'failure',
+  attributes?: MetricAttributes,
+) {
   magicLinkCallbackCounter.add(1, mergeAttributes(outcome, attributes));
 }

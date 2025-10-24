@@ -1,4 +1,8 @@
-import { DEFAULT_OFFER_TEMPLATE_ID, isOfferTemplateId, type OfferTemplateId } from './offerTemplates';
+import {
+  DEFAULT_OFFER_TEMPLATE_ID,
+  isOfferTemplateId,
+  type OfferTemplateId,
+} from './offerTemplates';
 import { sanitizeInput } from '@/lib/sanitize';
 
 /**

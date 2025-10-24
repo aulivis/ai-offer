@@ -1,6 +1,6 @@
 /* @vitest-environment node */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf';
 
@@ -66,9 +66,7 @@ beforeEach(() => {
 
   cookiesMock.mockResolvedValue({
     get: (name: string) =>
-      cookieStore.has(name)
-        ? { name, value: cookieStore.get(name)! }
-        : undefined,
+      cookieStore.has(name) ? { name, value: cookieStore.get(name)! } : undefined,
     set: ({ name, value }: { name: string; value: string }) => {
       cookieStore.set(name, value);
     },
@@ -129,10 +127,10 @@ describe('POST /api/auth/refresh', () => {
 
     const newRefreshToken = createRefreshToken('user-1', 7200);
     (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
-      new Response(
-        JSON.stringify({ access_token: 'new-access', refresh_token: newRefreshToken }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
+      new Response(JSON.stringify({ access_token: 'new-access', refresh_token: newRefreshToken }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
     );
 
     const { POST } = await import('../refresh/route');
@@ -159,7 +157,9 @@ describe('POST /api/auth/refresh', () => {
       rotated_from: 'session-1',
       rt_hash: 'hashed-new',
     });
-    expect(updateCalls.some((call) => call.column === 'id' && call.value === 'session-1')).toBe(true);
+    expect(updateCalls.some((call) => call.column === 'id' && call.value === 'session-1')).toBe(
+      true,
+    );
   });
 
   it('detects refresh token reuse and revokes all sessions', async () => {
@@ -186,7 +186,9 @@ describe('POST /api/auth/refresh', () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: 'Refresh token reuse detected' });
-    expect(updateCalls.some((call) => call.column === 'user_id' && call.value === 'user-2')).toBe(true);
+    expect(updateCalls.some((call) => call.column === 'user_id' && call.value === 'user-2')).toBe(
+      true,
+    );
     expect(cookieStore.get('propono_rt')).toBe('');
     expect(cookieStore.get('propono_at')).toBe('');
     expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
@@ -234,7 +236,9 @@ describe('POST /api/auth/logout', () => {
   it('returns 403 when CSRF validation fails', async () => {
     const { POST } = await import('../logout/route');
 
-    const response = await POST(new Request('http://localhost/api/auth/logout', { method: 'POST' }));
+    const response = await POST(
+      new Request('http://localhost/api/auth/logout', { method: 'POST' }),
+    );
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Érvénytelen vagy hiányzó CSRF token.' });

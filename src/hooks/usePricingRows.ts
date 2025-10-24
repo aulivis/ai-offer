@@ -13,9 +13,14 @@ export function usePricingRows(pricingRows: PriceRow[]): {
   pricePreviewHtml: string;
 } {
   const totals = useMemo(() => {
-    const net = pricingRows.reduce((sum, row) => sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0), 0);
+    const net = pricingRows.reduce(
+      (sum, row) => sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0),
+      0,
+    );
     const vat = pricingRows.reduce(
-      (sum, row) => sum + (Number(row.qty) || 0) * (Number(row.unitPrice) || 0) * ((Number(row.vat) || 0) / 100),
+      (sum, row) =>
+        sum +
+        (Number(row.qty) || 0) * (Number(row.unitPrice) || 0) * ((Number(row.vat) || 0) / 100),
       0,
     );
     return { net, vat, gross: net + vat };

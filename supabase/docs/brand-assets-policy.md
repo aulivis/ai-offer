@@ -8,9 +8,11 @@ which meant any tenant could fetch another tenant's logos.
 ## Deployment checklist
 
 1. **Run the latest Supabase migrations**
+
    ```sh
    supabase db push
    ```
+
    or apply the migrations with your existing release tooling. The migration
    `20250601120000_restrict_brand_assets_access.sql` drops the legacy policies,
    recreates owner-scoped rules, and ensures the bucket is private.
@@ -18,9 +20,11 @@ which meant any tenant could fetch another tenant's logos.
 2. **Optional: verify the policies locally**
    Execute the regression script against a staging database to confirm cross
    tenant reads are blocked:
+
    ```sh
    psql "$SUPABASE_DB_URL" -f supabase/tests/brand_assets_policy_test.sql
    ```
+
    The script inserts sample rows inside a transaction and raises an error if a
    tenant can view another tenant's files.
 

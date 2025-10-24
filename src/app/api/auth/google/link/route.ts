@@ -1,8 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { envServer } from '@/env.server';
-
 import { createSupabaseOAuthClient } from '../createSupabaseOAuthClient';
 import { sanitizeOAuthRedirect } from '../redirectUtils';
 
@@ -16,7 +14,10 @@ export async function GET(request: Request) {
   const refreshToken = cookieStore.get('propono_rt')?.value ?? null;
 
   if (!accessToken || !refreshToken) {
-    return NextResponse.json({ error: 'Aktív bejelentkezés szükséges a fiók összekapcsolásához.' }, { status: 401 });
+    return NextResponse.json(
+      { error: 'Aktív bejelentkezés szükséges a fiók összekapcsolásához.' },
+      { status: 401 },
+    );
   }
 
   const successRedirect = sanitizeOAuthRedirect(

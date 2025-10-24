@@ -80,7 +80,7 @@ describe('checkAndIncrementUsage', () => {
     });
 
     await expect(() => checkAndIncrementUsage(mockClient, 'user-3', 10)).rejects.toThrow(
-      'Failed to update usage counter: boom'
+      'Failed to update usage counter: boom',
     );
   });
 
@@ -88,7 +88,8 @@ describe('checkAndIncrementUsage', () => {
     rpc.mockResolvedValue({
       data: null,
       error: {
-        message: 'Could not find the function public.check_and_increment_usage(p_limit, p_period_start, p_user_id) in the schema cache',
+        message:
+          'Could not find the function public.check_and_increment_usage(p_limit, p_period_start, p_user_id) in the schema cache',
       },
     });
 
@@ -173,7 +174,10 @@ describe('checkAndIncrementDeviceUsage', () => {
   });
 
   it('invokes the device RPC with normalized payload', async () => {
-    rpc.mockResolvedValue({ data: { allowed: true, offers_generated: 2, period_start: '2024-07-01' }, error: null });
+    rpc.mockResolvedValue({
+      data: { allowed: true, offers_generated: 2, period_start: '2024-07-01' },
+      error: null,
+    });
 
     const result = await checkAndIncrementDeviceUsage(mockClient, 'user-123', 'device-123', 3);
 
@@ -189,7 +193,10 @@ describe('checkAndIncrementDeviceUsage', () => {
   it('falls back to manual updates when the RPC is missing', async () => {
     rpc.mockResolvedValue({
       data: null,
-      error: { message: 'Could not find the function public.check_and_increment_device_usage(p_limit, p_period_start, p_device_id) in the schema cache' },
+      error: {
+        message:
+          'Could not find the function public.check_and_increment_device_usage(p_limit, p_period_start, p_device_id) in the schema cache',
+      },
     });
 
     const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
@@ -306,15 +313,16 @@ describe('rollbackUsageIncrement', () => {
     const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
     selectBuilder.select.mockReturnValue(selectBuilder);
     selectBuilder.eq.mockReturnValue(selectBuilder);
-    selectBuilder.maybeSingle.mockResolvedValue({ data: { offers_generated: 2, period_start: '2024-07-01' }, error: null });
+    selectBuilder.maybeSingle.mockResolvedValue({
+      data: { offers_generated: 2, period_start: '2024-07-01' },
+      error: null,
+    });
 
     const updateBuilder = { update: vi.fn(), eq: vi.fn() };
     updateBuilder.update.mockReturnValue(updateBuilder);
     updateBuilder.eq.mockResolvedValue({ error: null });
 
-    from
-      .mockReturnValueOnce(selectBuilder as never)
-      .mockReturnValueOnce(updateBuilder as never);
+    from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(updateBuilder as never);
 
     await rollbackUsageIncrement(mockClient, 'user-1', '2024-07-01');
 

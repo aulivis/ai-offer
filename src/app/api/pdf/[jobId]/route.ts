@@ -44,7 +44,10 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
   }
 
   if (!job.callback_url) {
-    return NextResponse.json({ error: 'Ehhez a feladathoz nincs webhook konfigurálva.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Ehhez a feladathoz nincs webhook konfigurálva.' },
+      { status: 400 },
+    );
   }
 
   if (!isPdfWebhookUrlAllowed(job.callback_url)) {

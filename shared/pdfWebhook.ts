@@ -128,16 +128,11 @@ export function isPdfWebhookUrlAllowed(
 
   return allowlist.some(
     (entry) =>
-      entry.protocol === parsed.protocol &&
-      entry.port === port &&
-      hostMatches(entry, hostname),
+      entry.protocol === parsed.protocol && entry.port === port && hostMatches(entry, hostname),
   );
 }
 
-export function validatePdfWebhookUrl(
-  raw: string,
-  allowlist: PdfWebhookAllowlistEntry[],
-): string {
+export function validatePdfWebhookUrl(raw: string, allowlist: PdfWebhookAllowlistEntry[]): string {
   const value = raw.trim();
   if (!value) {
     throw new PdfWebhookValidationError('Webhook URL must not be empty.', 'invalid_url');
@@ -155,11 +150,17 @@ export function validatePdfWebhookUrl(
   }
 
   if (!SUPPORTED_PROTOCOLS.has(parsed.protocol)) {
-    throw new PdfWebhookValidationError('Webhook URL must use HTTP or HTTPS.', 'protocol_not_allowed');
+    throw new PdfWebhookValidationError(
+      'Webhook URL must use HTTP or HTTPS.',
+      'protocol_not_allowed',
+    );
   }
 
   if (parsed.username || parsed.password) {
-    throw new PdfWebhookValidationError('Webhook URL must not include credentials.', 'credentials_not_allowed');
+    throw new PdfWebhookValidationError(
+      'Webhook URL must not include credentials.',
+      'credentials_not_allowed',
+    );
   }
 
   parsed.hash = '';
@@ -169,13 +170,14 @@ export function validatePdfWebhookUrl(
 
   const allowed = allowlist.some(
     (entry) =>
-      entry.protocol === parsed.protocol &&
-      entry.port === port &&
-      hostMatches(entry, hostname),
+      entry.protocol === parsed.protocol && entry.port === port && hostMatches(entry, hostname),
   );
 
   if (!allowed) {
-    throw new PdfWebhookValidationError('Webhook URL is not on the allow-list.', 'host_not_allowlisted');
+    throw new PdfWebhookValidationError(
+      'Webhook URL is not on the allow-list.',
+      'host_not_allowlisted',
+    );
   }
 
   return parsed.toString();

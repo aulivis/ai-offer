@@ -6,16 +6,12 @@ import { envServer } from '../../env.server';
 // never be exposed on the client.  We validate and load these values via
 // the env helper to ensure early failure if configuration is missing.
 export const supabaseServer = () =>
-  createClient(
-    envServer.NEXT_PUBLIC_SUPABASE_URL,
-    envServer.SUPABASE_SERVICE_ROLE_KEY,
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: {
-        headers: {
-          apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
-        },
+  createClient(envServer.NEXT_PUBLIC_SUPABASE_URL, envServer.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: {
+        apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
       },
-    }
-  );
+    },
+  });

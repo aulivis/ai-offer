@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import { createAuthRequestLogger, normalizeEmail, type RequestLogger } from '@/lib/observability/authLogging';
+import {
+  createAuthRequestLogger,
+  normalizeEmail,
+  type RequestLogger,
+} from '@/lib/observability/authLogging';
 import { recordMagicLinkSend } from '@/lib/observability/metrics';
 
 import { envServer } from '@/env.server';

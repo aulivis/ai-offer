@@ -10,7 +10,16 @@ type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
   wrapperClassName?: string;
 };
 
-export function Select({ error, help, label, id, className, children, wrapperClassName, ...props }: Props) {
+export function Select({
+  error,
+  help,
+  label,
+  id,
+  className,
+  children,
+  wrapperClassName,
+  ...props
+}: Props) {
   const selectId = id || props.name || 'select-' + Math.random().toString(36).slice(2);
   const describedByIds: string[] = [];
 

@@ -52,9 +52,11 @@ async function ensureUsageCounter<K extends CounterKind>(
 ): Promise<{ periodStart: string; offersGenerated: number }> {
   const config = COUNTER_CONFIG[kind];
   let selectBuilder = supabase.from(config.table).select('period_start, offers_generated');
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-    selectBuilder = selectBuilder.eq(column, target[key]);
-  });
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      selectBuilder = selectBuilder.eq(column, target[key]);
+    },
+  );
   const { data: existing, error: selectError } = await selectBuilder.maybeSingle();
 
   if (selectError && selectError.code !== 'PGRST116') {
@@ -67,9 +69,11 @@ async function ensureUsageCounter<K extends CounterKind>(
       period_start: periodStart,
       offers_generated: 0,
     };
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      insertPayload[column] = target[key];
-    });
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        insertPayload[column] = target[key];
+      },
+    );
     const { data: inserted, error: insertError } = await supabase
       .from(config.table)
       .insert(insertPayload)
@@ -88,10 +92,14 @@ async function ensureUsageCounter<K extends CounterKind>(
     let updateBuilder = supabase
       .from(config.table)
       .update({ period_start: periodStart, offers_generated: 0 });
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      updateBuilder = updateBuilder.eq(column, target[key]);
-    });
-    const { data: resetRow, error: resetError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        updateBuilder = updateBuilder.eq(column, target[key]);
+      },
+    );
+    const { data: resetRow, error: resetError } = await updateBuilder
+      .select('period_start, offers_generated')
+      .maybeSingle();
     if (resetError) {
       throw new Error(`Failed to reset usage counter: ${resetError.message}`);
     }
@@ -113,16 +121,24 @@ async function fallbackIncrement<K extends CounterKind>(
   const state = await ensureUsageCounter(supabase, kind, target, periodStart);
 
   if (typeof limit === 'number' && Number.isFinite(limit) && state.offersGenerated >= limit) {
-    return { allowed: false, offersGenerated: state.offersGenerated, periodStart: state.periodStart };
+    return {
+      allowed: false,
+      offersGenerated: state.offersGenerated,
+      periodStart: state.periodStart,
+    };
   }
 
   let updateBuilder = supabase
     .from(config.table)
     .update({ offers_generated: state.offersGenerated + 1, period_start: state.periodStart });
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-    updateBuilder = updateBuilder.eq(column, target[key]);
-  });
-  const { data: updatedRow, error: updateError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      updateBuilder = updateBuilder.eq(column, target[key]);
+    },
+  );
+  const { data: updatedRow, error: updateError } = await updateBuilder
+    .select('period_start, offers_generated')
+    .maybeSingle();
 
   if (updateError) {
     throw new Error(`Failed to bump usage counter: ${updateError.message}`);
@@ -147,31 +163,28 @@ async function incrementUsage<K extends CounterKind>(
     return fallbackIncrement(supabase, kind, target, null, periodStart);
   }
 
-  const rpcPayload =
-    kind === 'user'
-      ? {
-          p_user_id: target.userId,
-          p_limit: normalizedLimit,
-          p_period_start: periodStart,
-        }
-      : {
-          p_user_id: target.userId,
-          p_device_id: target.deviceId,
-          p_limit: normalizedLimit,
-          p_period_start: periodStart,
-        };
+  let rpcPayload: Record<string, unknown>;
+  if (kind === 'user') {
+    rpcPayload = {
+      p_user_id: target.userId,
+      p_limit: normalizedLimit,
+      p_period_start: periodStart,
+    };
+  } else {
+    const deviceTarget = target as CounterTargets['device'];
+    rpcPayload = {
+      p_user_id: deviceTarget.userId,
+      p_device_id: deviceTarget.deviceId,
+      p_limit: normalizedLimit,
+      p_period_start: periodStart,
+    };
+  }
 
-  const { data, error } = await supabase.rpc(config.rpc, rpcPayload as Record<string, unknown>);
+  const { data, error } = await supabase.rpc(config.rpc, rpcPayload);
   if (error) {
     const message = error.message ?? '';
     if (message.toLowerCase().includes(config.rpc)) {
-      return fallbackIncrement(
-        supabase,
-        kind,
-        target,
-        normalizedLimit,
-        periodStart,
-      );
+      return fallbackIncrement(supabase, kind, target, normalizedLimit, periodStart);
     }
     throw new Error(`Failed to update usage counter: ${message}`);
   }
@@ -211,7 +224,8 @@ export async function processPdfJobInline(
     await browser.close();
 
     const pdfUint8 = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
-    const pdfArrayBuffer = pdfUint8.buffer.slice(pdfUint8.byteOffset, pdfUint8.byteOffset + pdfUint8.byteLength);
+    const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
+    new Uint8Array(pdfArrayBuffer).set(pdfUint8);
 
     const upload = await supabase.storage.from('offers').upload(job.storagePath, pdfArrayBuffer, {
       contentType: 'application/pdf',
@@ -238,12 +252,12 @@ export async function processPdfJobInline(
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
 
-    if (job.deviceId && job.deviceLimit !== null) {
+    if (job.deviceId && job.deviceLimit != null) {
       const deviceResult = await incrementUsage(
         supabase,
         'device',
         { userId: job.userId, deviceId: job.deviceId },
-        job.deviceLimit,
+        job.deviceLimit ?? null,
         job.usagePeriodStart,
       );
       if (!deviceResult.allowed) {
@@ -283,7 +297,10 @@ export async function processPdfJobInline(
           console.error('Webhook error (inline worker):', callbackError);
         }
       } else {
-        console.warn('Skipping webhook dispatch for disallowed URL (inline worker):', job.callbackUrl);
+        console.warn(
+          'Skipping webhook dispatch for disallowed URL (inline worker):',
+          job.callbackUrl,
+        );
       }
     }
 

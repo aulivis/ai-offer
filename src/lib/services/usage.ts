@@ -63,12 +63,10 @@ async function ensureUsageCounter<K extends CounterKind>(
   sb: SupabaseClient,
   kind: K,
   target: CounterTargets[K],
-  periodStart: string
+  periodStart: string,
 ): Promise<UsageState> {
   const { table, columnMap } = COUNTER_CONFIG[kind];
-  let selectBuilder = sb
-    .from(table)
-    .select('period_start, offers_generated');
+  let selectBuilder = sb.from(table).select('period_start, offers_generated');
 
   (Object.entries(columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
     selectBuilder = selectBuilder.eq(column, target[key]);
@@ -104,13 +102,13 @@ async function ensureUsageCounter<K extends CounterKind>(
   let generated = Number(usageRow?.offers_generated ?? 0);
 
   if (currentPeriod !== periodStart) {
-    let updateBuilder = sb
-      .from(table)
-      .update({ period_start: periodStart, offers_generated: 0 });
+    let updateBuilder = sb.from(table).update({ period_start: periodStart, offers_generated: 0 });
     (Object.entries(columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
       updateBuilder = updateBuilder.eq(column, target[key]);
     });
-    const { data: resetRow, error: resetError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
+    const { data: resetRow, error: resetError } = await updateBuilder
+      .select('period_start, offers_generated')
+      .maybeSingle();
     if (resetError) {
       throw new Error(`Failed to reset usage counter: ${resetError.message}`);
     }
@@ -126,7 +124,7 @@ async function fallbackUsageUpdate<K extends CounterKind>(
   kind: K,
   target: CounterTargets[K],
   limit: number | null,
-  periodStart: string
+  periodStart: string,
 ): Promise<QuotaCheckResult> {
   const { table, columnMap } = COUNTER_CONFIG[kind];
   const state = await ensureUsageCounter(sb, kind, target, periodStart);
@@ -142,7 +140,9 @@ async function fallbackUsageUpdate<K extends CounterKind>(
   (Object.entries(columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
     updateBuilder = updateBuilder.eq(column, target[key]);
   });
-  const { data: updatedRow, error: updateError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
+  const { data: updatedRow, error: updateError } = await updateBuilder
+    .select('period_start, offers_generated')
+    .maybeSingle();
   if (updateError) {
     throw new Error(`Failed to bump usage counter: ${updateError.message}`);
   }
@@ -156,11 +156,12 @@ async function fallbackUsageUpdate<K extends CounterKind>(
 export async function getUsageSnapshot(
   sb: SupabaseClient,
   userId: string,
-  periodStartOverride?: string
+  periodStartOverride?: string,
 ): Promise<UsageState> {
-  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
-    ? normalizeDate(periodStartOverride, currentMonthStart().iso)
-    : currentMonthStart().iso;
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+      : currentMonthStart().iso;
   return ensureUsageCounter(sb, 'user', { userId }, periodStart);
 }
 
@@ -168,11 +169,12 @@ export async function getDeviceUsageSnapshot(
   sb: SupabaseClient,
   userId: string,
   deviceId: string,
-  periodStartOverride?: string
+  periodStartOverride?: string,
 ): Promise<UsageState> {
-  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
-    ? normalizeDate(periodStartOverride, currentMonthStart().iso)
-    : currentMonthStart().iso;
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+      : currentMonthStart().iso;
   return ensureUsageCounter(sb, 'device', { userId, deviceId }, periodStart);
 }
 
@@ -186,12 +188,13 @@ export async function checkAndIncrementUsage(
   sb: SupabaseClient,
   userId: string,
   limit: number | null,
-  periodStartOverride?: string
+  periodStartOverride?: string,
 ): Promise<QuotaCheckResult> {
   const { iso: defaultPeriod } = currentMonthStart();
-  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
-    ? normalizeDate(periodStartOverride, defaultPeriod)
-    : defaultPeriod;
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, defaultPeriod)
+      : defaultPeriod;
   const rpcPayload = {
     p_user_id: userId,
     p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
@@ -226,12 +229,13 @@ export async function checkAndIncrementDeviceUsage(
   userId: string,
   deviceId: string,
   limit: number | null,
-  periodStartOverride?: string
+  periodStartOverride?: string,
 ): Promise<QuotaCheckResult> {
   const { iso: defaultPeriod } = currentMonthStart();
-  const periodStart = typeof periodStartOverride === 'string' && periodStartOverride
-    ? normalizeDate(periodStartOverride, defaultPeriod)
-    : defaultPeriod;
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, defaultPeriod)
+      : defaultPeriod;
   const rpcPayload = {
     p_user_id: userId,
     p_device_id: deviceId,
@@ -262,7 +266,11 @@ export async function checkAndIncrementDeviceUsage(
   };
 }
 
-export async function rollbackUsageIncrement(sb: SupabaseClient, userId: string, expectedPeriod: string) {
+export async function rollbackUsageIncrement(
+  sb: SupabaseClient,
+  userId: string,
+  expectedPeriod: string,
+) {
   const { data: existing, error } = await sb
     .from('usage_counters')
     .select('offers_generated, period_start')
@@ -297,4 +305,3 @@ export async function rollbackUsageIncrement(sb: SupabaseClient, userId: string,
     console.warn('Failed to rollback usage counter increment', updateError);
   }
 }
-

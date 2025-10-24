@@ -36,14 +36,12 @@ describe('fetchWithSupabaseAuth', () => {
   });
 
   it('parses error message from JSON response', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ error: 'Detailed error' }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: 'Detailed error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(
@@ -56,7 +54,9 @@ describe('fetchWithSupabaseAuth', () => {
   it('uses fallback message for non-JSON errors', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValue(new Response('nope', { status: 502, headers: { 'Content-Type': 'text/plain' } }));
+      .mockResolvedValue(
+        new Response('nope', { status: 502, headers: { 'Content-Type': 'text/plain' } }),
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(
@@ -78,7 +78,10 @@ describe('fetchWithSupabaseAuth', () => {
   });
 
   it('attempts silent refresh on 401 responses', async () => {
-    const successResponse = new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    const successResponse = new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
     const unauthorizedResponse = new Response(null, { status: 401 });
     const fetchMock = vi
       .fn()

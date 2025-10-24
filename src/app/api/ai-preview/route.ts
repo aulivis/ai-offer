@@ -35,7 +35,10 @@ function isAbortLikeError(error: unknown): boolean {
 
   if (typeof error === 'object' && error !== null && 'message' in error) {
     const rawMessage = (error as { message?: unknown }).message;
-    if (typeof rawMessage === 'string' && rawMessage.toLowerCase().includes('request was aborted')) {
+    if (
+      typeof rawMessage === 'string' &&
+      rawMessage.toLowerCase().includes('request was aborted')
+    ) {
       return true;
     }
   }
@@ -146,7 +149,9 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           lastError = error;
           const isModelMissing =
             error instanceof APIError &&
-            (error.status === 404 || error.code === 'model_not_found' || error.code === 'model_not_found_error');
+            (error.status === 404 ||
+              error.code === 'model_not_found' ||
+              error.code === 'model_not_found_error');
 
           if (isAbortLikeError(error) && attempt < PREVIEW_ABORT_RETRY_ATTEMPTS - 1) {
             await wait(PREVIEW_ABORT_RETRY_DELAY_MS);
@@ -246,7 +251,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
         const handleError = (error: unknown) => {
           console.error('Preview stream error:', error);
-          const message = 'Váratlan hiba történt az előnézet készítése közben. Kérjük, próbáld meg újra.';
+          const message =
+            'Váratlan hiba történt az előnézet készítése közben. Kérjük, próbáld meg újra.';
           push({ type: 'error', message });
           closeStream();
         };
@@ -258,7 +264,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           } finally {
             closeStream();
             try {
-              stream.abort(new Error('Preview stream timed out'));
+              stream.abort();
             } catch (abortError) {
               if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
                 console.error('Failed to abort preview stream after timeout:', abortError);
@@ -309,7 +315,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       console.error('ai-preview aborted before streaming could start:', message);
       return NextResponse.json(
         { error: 'Az OpenAI kapcsolat megszakadt. Próbáld újra néhány másodperc múlva.' },
-        { status: 503 }
+        { status: 503 },
       );
     }
     if (error instanceof APIError) {

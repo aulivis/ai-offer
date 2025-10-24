@@ -7,7 +7,12 @@ import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
-import { DEFAULT_OFFER_TEMPLATE_ID, enforceTemplateForPlan, type OfferTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
+import {
+  DEFAULT_OFFER_TEMPLATE_ID,
+  enforceTemplateForPlan,
+  type OfferTemplateId,
+  type SubscriptionPlan,
+} from '@/app/lib/offerTemplates';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -25,9 +30,9 @@ type Step1Form = {
   title: string;
   description: string;
   deadline: string;
-  language: 'hu'|'en';
-  brandVoice: 'friendly'|'formal';
-  style: 'compact'|'detailed';
+  language: 'hu' | 'en';
+  brandVoice: 'friendly' | 'formal';
+  style: 'compact' | 'detailed';
 };
 
 type ClientForm = {
@@ -39,8 +44,23 @@ type ClientForm = {
   email?: string;
 };
 
-type Activity = { id:string; name:string; unit:string; default_unit_price:number; default_vat:number; industries:string[] };
-type Client = { id:string; company_name:string; address?:string; tax_id?:string; representative?:string; phone?:string; email?:string };
+type Activity = {
+  id: string;
+  name: string;
+  unit: string;
+  default_unit_price: number;
+  default_vat: number;
+  industries: string[];
+};
+type Client = {
+  id: string;
+  company_name: string;
+  address?: string;
+  tax_id?: string;
+  representative?: string;
+  phone?: string;
+  email?: string;
+};
 
 type BrandingState = {
   primaryColor?: string | null;
@@ -91,7 +111,7 @@ function isOfferSections(value: unknown): value is OfferSections {
     isNonEmptyString('project_summary') &&
     isNonEmptyString('closing') &&
     ['scope', 'deliverables', 'schedule', 'assumptions', 'next_steps'].every((key) =>
-      isStringArray(key as keyof OfferSections)
+      isStringArray(key as keyof OfferSections),
     )
   );
 }
@@ -105,7 +125,10 @@ const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10
 
 type PreparedImagePayload = { key: string; dataUrl: string; alt: string };
 
-function prepareImagesForSubmission(html: string, assets: OfferImageAsset[]): {
+function prepareImagesForSubmission(
+  html: string,
+  assets: OfferImageAsset[],
+): {
   html: string;
   images: PreparedImagePayload[];
 } {
@@ -158,7 +181,13 @@ export default function NewOfferWizard() {
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
   const [offerTemplate, setOfferTemplate] = useState<OfferTemplateId>(DEFAULT_OFFER_TEMPLATE_ID);
 
-  const [availableIndustries, setAvailableIndustries] = useState<string[]>(['Marketing','Informatika','Építőipar','Tanácsadás','Szolgáltatás']);
+  const [availableIndustries, setAvailableIndustries] = useState<string[]>([
+    'Marketing',
+    'Informatika',
+    'Építőipar',
+    'Tanácsadás',
+    'Szolgáltatás',
+  ]);
 
   // 1) alapok
   const [form, setForm] = useState<Step1Form>({
@@ -174,23 +203,25 @@ export default function NewOfferWizard() {
   // 1/b) címzett (opcionális) + autocomplete
   const [client, setClient] = useState<ClientForm>({ company_name: '' });
   const [clientList, setClientList] = useState<Client[]>([]);
-  const [clientId, setClientId] = useState<string|undefined>(undefined);
+  const [clientId, setClientId] = useState<string | undefined>(undefined);
   const [showClientDrop, setShowClientDrop] = useState(false);
 
   // 2) tevékenységek / árlista
   const [activities, setActivities] = useState<Activity[]>([]);
   const [rows, setRows] = useState<PriceRow[]>([
-    { name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }
+    { name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 },
   ]);
 
   // preview
-  const [previewHtml, setPreviewHtml] = useState<string>('<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>');
+  const [previewHtml, setPreviewHtml] = useState<string>(
+    '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>',
+  );
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewCountdown, setPreviewCountdown] = useState(PREVIEW_TIMEOUT_SECONDS);
   const [previewCountdownToken, setPreviewCountdownToken] = useState(0);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLocked, setPreviewLocked] = useState(false);
-  const previewAbortRef = useRef<AbortController|null>(null);
+  const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
   const previewCountdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [branding, setBranding] = useState<BrandingState>({});
@@ -214,7 +245,9 @@ export default function NewOfferWizard() {
     (async () => {
       const { data: prof } = await sb
         .from('profiles')
-        .select('industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url, plan, offer_template')
+        .select(
+          'industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url, plan, offer_template',
+        )
         .eq('id', user.id)
         .maybeSingle();
       if (!active) {
@@ -235,8 +268,8 @@ export default function NewOfferWizard() {
       setOfferTemplate(
         enforceTemplateForPlan(
           typeof prof?.offer_template === 'string' ? prof.offer_template : null,
-          normalizedPlan
-        )
+          normalizedPlan,
+        ),
       );
 
       const { data: acts } = await sb
@@ -279,7 +312,7 @@ export default function NewOfferWizard() {
       const keys = new Set(
         Array.from(template.content.querySelectorAll('img[data-offer-image-key]'))
           .map((node) => node.getAttribute('data-offer-image-key'))
-          .filter((value): value is string => typeof value === 'string' && value.length > 0)
+          .filter((value): value is string => typeof value === 'string' && value.length > 0),
       );
       const filtered = prev.filter((asset) => keys.has(asset.key));
       return filtered.length === prev.length ? prev : filtered;
@@ -324,21 +357,24 @@ export default function NewOfferWizard() {
   }, [previewLoading, previewCountdownToken]);
 
   const filteredActivities = useMemo(() => {
-    return activities.filter(a =>
-      (a.industries||[]).length === 0 ||
-      a.industries.includes(form.industry)
+    return activities.filter(
+      (a) => (a.industries || []).length === 0 || a.industries.includes(form.industry),
     );
   }, [activities, form.industry]);
   const hasPreviewInputs = form.title.trim().length > 0 && form.description.trim().length > 0;
   const imageLimitReached = imageAssets.length >= MAX_IMAGE_COUNT;
-  const previewButtonLabel = previewLocked ? 'Előnézet kész' : previewLoading ? 'Generálás…' : 'AI előnézet generálása';
+  const previewButtonLabel = previewLocked
+    ? 'Előnézet kész'
+    : previewLoading
+      ? 'Generálás…'
+      : 'AI előnézet generálása';
   const previewButtonDisabled = previewLocked || previewLoading || !hasPreviewInputs;
 
   // === Autocomplete (cég) ===
   const filteredClients = useMemo(() => {
     const q = (client.company_name || '').toLowerCase();
-    if (!q) return clientList.slice(0,8);
-    return clientList.filter(c => c.company_name.toLowerCase().includes(q)).slice(0,8);
+    if (!q) return clientList.slice(0, 8);
+    return clientList.filter((c) => c.company_name.toLowerCase().includes(q)).slice(0, 8);
   }, [client.company_name, clientList]);
 
   function pickClient(c: Client) {
@@ -397,7 +433,7 @@ export default function NewOfferWizard() {
         }),
         signal: controller.signal,
         authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
-        errorMessageBuilder: status => `Hiba az előnézet betöltésekor (${status})`,
+        errorMessageBuilder: (status) => `Hiba az előnézet betöltésekor (${status})`,
         defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
       });
 
@@ -428,14 +464,18 @@ export default function NewOfferWizard() {
           if (!jsonPart) continue;
 
           try {
-            const payload = JSON.parse(jsonPart) as { type?: string; html?: string; message?: string };
+            const payload = JSON.parse(jsonPart) as {
+              type?: string;
+              html?: string;
+              message?: string;
+            };
             if (payload.type === 'delta' || payload.type === 'done') {
               if (typeof payload.html === 'string') {
                 latestHtml = payload.html;
                 if (previewRequestIdRef.current === nextRequestId) {
                   setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
                   if (payload.type === 'done') {
-                    setEditedHtml((prev) => prev || (payload.html || ''));
+                    setEditedHtml((prev) => prev || payload.html || '');
                     setPreviewLocked(true);
                   }
                 }
@@ -505,7 +545,6 @@ export default function NewOfferWizard() {
     form.title,
     previewLocked,
     showToast,
-    sb,
   ]);
 
   const handleGeneratePreview = useCallback(() => {
@@ -626,13 +665,17 @@ export default function NewOfferWizard() {
       if (newAssets.length) {
         setImageAssets((prev) => [...prev, ...newAssets]);
         newAssets.forEach((asset) => {
-          richTextEditorRef.current?.insertImage({ src: asset.dataUrl, alt: asset.alt, dataKey: asset.key });
+          richTextEditorRef.current?.insertImage({
+            src: asset.dataUrl,
+            alt: asset.alt,
+            dataKey: asset.key,
+          });
         });
       }
 
       event.target.value = '';
     },
-    [imageAssets.length, isProPlan, previewLocked, richTextEditorRef, showToast]
+    [imageAssets.length, isProPlan, previewLocked, richTextEditorRef, showToast],
   );
 
   const handleRemoveImage = useCallback((key: string) => {
@@ -646,7 +689,7 @@ export default function NewOfferWizard() {
   const previewMarkup = useMemo(() => {
     const headerCompany = profileCompanyName.trim() || 'Vállalkozásod neve';
     const title = form.title.trim() || 'Árajánlat';
-    const body = (editedHtml || previewHtml) || '<p>(nincs előnézet)</p>';
+    const body = editedHtml || previewHtml || '<p>(nincs előnézet)</p>';
     return offerBodyMarkup({
       title,
       companyName: headerCompany,
@@ -655,9 +698,17 @@ export default function NewOfferWizard() {
       branding,
       templateId: offerTemplate,
     });
-  }, [branding, editedHtml, form.title, offerTemplate, previewHtml, pricePreviewHtml, profileCompanyName]);
+  }, [
+    branding,
+    editedHtml,
+    form.title,
+    offerTemplate,
+    previewHtml,
+    pricePreviewHtml,
+    profileCompanyName,
+  ]);
 
-  async function ensureClient(): Promise<string|undefined> {
+  async function ensureClient(): Promise<string | undefined> {
     const name = (client.company_name || '').trim();
     if (!name) return undefined;
     // meglévő?
@@ -730,7 +781,7 @@ export default function NewOfferWizard() {
             imageAssets: imagePayload,
           }),
           authErrorMessage: 'Nem vagy bejelentkezve.',
-          errorMessageBuilder: status => `Hiba a generálásnál (${status})`,
+          errorMessageBuilder: (status) => `Hiba a generálásnál (${status})`,
           defaultErrorMessage: 'Ismeretlen hiba történt az ajánlat generálása közben.',
         });
       } catch (error) {
@@ -760,9 +811,14 @@ export default function NewOfferWizard() {
         }
       }
 
-      const payloadObj = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
-      const okFlag = payloadObj && typeof payloadObj.ok === 'boolean' ? (payloadObj.ok as boolean) : undefined;
-      const errorMessage = payloadObj && typeof payloadObj.error === 'string' ? (payloadObj.error as string) : undefined;
+      const payloadObj =
+        payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
+      const okFlag =
+        payloadObj && typeof payloadObj.ok === 'boolean' ? (payloadObj.ok as boolean) : undefined;
+      const errorMessage =
+        payloadObj && typeof payloadObj.error === 'string'
+          ? (payloadObj.error as string)
+          : undefined;
       const sectionsData = payloadObj ? (payloadObj.sections as unknown) : null;
 
       if (okFlag === false) {
@@ -779,7 +835,9 @@ export default function NewOfferWizard() {
       }
 
       router.replace('/dashboard');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
   const goToStep = useCallback(
@@ -830,7 +888,10 @@ export default function NewOfferWizard() {
               <span className="h-2 w-2 rounded-full bg-slate-400" />
               AI asszisztens
             </span>
-            <span>Az AI előnézetet a gomb megnyomásával kérheted le, és ajánlatonként egyszer futtatható.</span>
+            <span>
+              Az AI előnézetet a gomb megnyomásával kérheted le, és ajánlatonként egyszer
+              futtatható.
+            </span>
           </div>
         </Card>
 
@@ -841,10 +902,12 @@ export default function NewOfferWizard() {
                 <Select
                   label="Iparág"
                   value={form.industry}
-                  onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
                 >
-                  {availableIndustries.map(ind => (
-                    <option key={ind} value={ind}>{ind}</option>
+                  {availableIndustries.map((ind) => (
+                    <option key={ind} value={ind}>
+                      {ind}
+                    </option>
                   ))}
                 </Select>
 
@@ -852,7 +915,7 @@ export default function NewOfferWizard() {
                   label="Ajánlat címe"
                   placeholder="Pl. Weboldal fejlesztés"
                   value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 />
 
                 <label className="block space-y-2">
@@ -860,7 +923,7 @@ export default function NewOfferWizard() {
                   <textarea
                     className={`${textareaClass} h-32`}
                     value={form.description}
-                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   />
                 </label>
               </div>
@@ -869,12 +932,14 @@ export default function NewOfferWizard() {
                 <Input
                   label="Határidő"
                   value={form.deadline}
-                  onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
                 />
                 <Select
                   label="Nyelv"
                   value={form.language}
-                  onChange={e => setForm(f => ({ ...f, language: e.target.value as Step1Form['language'] }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, language: e.target.value as Step1Form['language'] }))
+                  }
                 >
                   <option value="hu">Magyar</option>
                   <option value="en">English</option>
@@ -882,7 +947,12 @@ export default function NewOfferWizard() {
                 <Select
                   label="Hangnem"
                   value={form.brandVoice}
-                  onChange={e => setForm(f => ({ ...f, brandVoice: e.target.value as Step1Form['brandVoice'] }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      brandVoice: e.target.value as Step1Form['brandVoice'],
+                    }))
+                  }
                 >
                   <option value="friendly">Barátságos</option>
                   <option value="formal">Formális</option>
@@ -890,22 +960,34 @@ export default function NewOfferWizard() {
               </div>
 
               <div className="space-y-3">
-                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Ajánlat stílusa</span>
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Ajánlat stílusa
+                </span>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { value: 'compact' as const, label: 'Kompakt', description: 'Tömör, lényegre törő ajánlat' },
-                    { value: 'detailed' as const, label: 'Részletes', description: 'Kibontott háttérrel és indoklással' },
-                  ].map(option => {
+                    {
+                      value: 'compact' as const,
+                      label: 'Kompakt',
+                      description: 'Tömör, lényegre törő ajánlat',
+                    },
+                    {
+                      value: 'detailed' as const,
+                      label: 'Részletes',
+                      description: 'Kibontott háttérrel és indoklással',
+                    },
+                  ].map((option) => {
                     const active = form.style === option.value;
                     return (
                       <Button
                         key={option.value}
                         type="button"
-                        onClick={() => setForm(f => ({ ...f, style: option.value }))}
+                        onClick={() => setForm((f) => ({ ...f, style: option.value }))}
                         className={`rounded-2xl border px-4 py-3 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white shadow-sm' : 'border-border text-slate-600 hover:border-border'}`}
                       >
                         <span className="font-semibold">{option.label}</span>
-                        <span className="mt-1 block text-xs text-inherit opacity-80">{option.description}</span>
+                        <span className="mt-1 block text-xs text-inherit opacity-80">
+                          {option.description}
+                        </span>
                       </Button>
                     );
                   })}
@@ -916,7 +998,9 @@ export default function NewOfferWizard() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-700">Címzett (opcionális)</p>
-                    <p className="text-xs text-slate-500">Elmentjük az ügyfelet, így később gyorsabban kitölthető.</p>
+                    <p className="text-xs text-slate-500">
+                      Elmentjük az ügyfelet, így később gyorsabban kitölthető.
+                    </p>
                   </div>
                 </div>
                 <div className="relative">
@@ -924,16 +1008,16 @@ export default function NewOfferWizard() {
                     label="Cégnév"
                     placeholder="Cégnév"
                     value={client.company_name}
-                    onChange={e => {
+                    onChange={(e) => {
                       setClientId(undefined);
-                      setClient(c => ({ ...c, company_name: e.target.value }));
+                      setClient((c) => ({ ...c, company_name: e.target.value }));
                       setShowClientDrop(true);
                     }}
                     onFocus={() => setShowClientDrop(true)}
                   />
                   {showClientDrop && filteredClients.length > 0 && (
                     <div className="absolute z-10 mt-2 max-h-48 w-full overflow-auto rounded-2xl border border-border bg-white shadow-lg">
-                      {filteredClients.map(c => (
+                      {filteredClients.map((c) => (
                         <Button
                           key={c.id}
                           type="button"
@@ -941,7 +1025,9 @@ export default function NewOfferWizard() {
                           onMouseDown={() => pickClient(c)}
                         >
                           <span className="font-medium text-slate-700">{c.company_name}</span>
-                          {c.email ? <span className="text-xs text-slate-400">{c.email}</span> : null}
+                          {c.email ? (
+                            <span className="text-xs text-slate-400">{c.email}</span>
+                          ) : null}
                         </Button>
                       ))}
                     </div>
@@ -952,32 +1038,32 @@ export default function NewOfferWizard() {
                     label="Cím"
                     placeholder="Cím"
                     value={client.address || ''}
-                    onChange={e => setClient(c => ({ ...c, address: e.target.value }))}
+                    onChange={(e) => setClient((c) => ({ ...c, address: e.target.value }))}
                   />
                   <Input
                     label="Adószám"
                     placeholder="Adószám"
                     value={client.tax_id || ''}
-                    onChange={e => setClient(c => ({ ...c, tax_id: e.target.value }))}
+                    onChange={(e) => setClient((c) => ({ ...c, tax_id: e.target.value }))}
                   />
                   <Input
                     label="Képviselő neve"
                     placeholder="Képviselő neve"
                     value={client.representative || ''}
-                    onChange={e => setClient(c => ({ ...c, representative: e.target.value }))}
+                    onChange={(e) => setClient((c) => ({ ...c, representative: e.target.value }))}
                   />
                   <Input
                     label="Telefon"
                     placeholder="Telefon"
                     value={client.phone || ''}
-                    onChange={e => setClient(c => ({ ...c, phone: e.target.value }))}
+                    onChange={(e) => setClient((c) => ({ ...c, phone: e.target.value }))}
                   />
                   <div className="sm:col-span-2">
                     <Input
                       label="E-mail"
                       placeholder="E-mail"
                       value={client.email || ''}
-                      onChange={e => setClient(c => ({ ...c, email: e.target.value }))}
+                      onChange={(e) => setClient((c) => ({ ...c, email: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -988,18 +1074,24 @@ export default function NewOfferWizard() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-                  <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-slate-500">PDF nézet</span>
+                  <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-slate-500">
+                    PDF nézet
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   {previewLocked ? (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">Előnézet kész</span>
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+                      Előnézet kész
+                    </span>
                   ) : null}
                   <Button
                     type="button"
                     onClick={handleGeneratePreview}
                     disabled={previewButtonDisabled}
                     className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
-                    title={hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'}
+                    title={
+                      hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'
+                    }
                   >
                     {previewButtonLabel}
                   </Button>
@@ -1017,10 +1109,14 @@ export default function NewOfferWizard() {
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-slate-500" />
                       <div className="flex flex-col">
                         <span>Az AI most készíti az előnézetet…</span>
-                        <span className="text-xs text-slate-400">Kb. {previewCountdown} mp van hátra…</span>
+                        <span className="text-xs text-slate-400">
+                          Kb. {previewCountdown} mp van hátra…
+                        </span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400">Ez néhány másodpercet is igénybe vehet.</p>
+                    <p className="text-xs text-slate-400">
+                      Ez néhány másodpercet is igénybe vehet.
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -1029,7 +1125,10 @@ export default function NewOfferWizard() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-slate-500">Az AI előnézet egyszer kérhető le. A végső módosításokat a PDF szerkesztő lépésében végezheted el.</p>
+              <p className="text-xs text-slate-500">
+                Az AI előnézet egyszer kérhető le. A végső módosításokat a PDF szerkesztő lépésében
+                végezheted el.
+              </p>
             </Card>
           </section>
         )}
@@ -1045,11 +1144,22 @@ export default function NewOfferWizard() {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {filteredActivities.map(a => (
+                  {filteredActivities.map((a) => (
                     <Button
                       key={a.id}
                       type="button"
-                      onClick={() => setRows(r => [{ name: a.name, qty: 1, unit: a.unit || 'db', unitPrice: Number(a.default_unit_price || 0), vat: Number(a.default_vat || 27) }, ...r])}
+                      onClick={() =>
+                        setRows((r) => [
+                          {
+                            name: a.name,
+                            qty: 1,
+                            unit: a.unit || 'db',
+                            unitPrice: Number(a.default_unit_price || 0),
+                            vat: Number(a.default_vat || 27),
+                          },
+                          ...r,
+                        ])
+                      }
                       className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       + {a.name}
@@ -1077,14 +1187,17 @@ export default function NewOfferWizard() {
                 onChange={(html) => setEditedHtml(html)}
                 placeholder="Formázd át a generált szöveget..."
               />
-              <p className="text-xs text-slate-500">Tartsd meg a címsorokat és listákat a jobb olvashatóságért.</p>
+              <p className="text-xs text-slate-500">
+                Tartsd meg a címsorokat és listákat a jobb olvashatóságért.
+              </p>
               {isProPlan ? (
                 <div className="space-y-3 rounded-2xl border border-dashed border-border bg-slate-50/70 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-700">Képek a PDF-hez</p>
                       <p className="text-xs text-slate-500">
-                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB fájlméretig. A képeket csak a PDF generálásához használjuk fel.
+                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB
+                        fájlméretig. A képeket csak a PDF generálásához használjuk fel.
                       </p>
                     </div>
                     <Button
@@ -1105,7 +1218,9 @@ export default function NewOfferWizard() {
                     onChange={handleImageInputChange}
                   />
                   {!previewLocked ? (
-                    <p className="text-xs text-slate-500">Előbb generáld le az AI előnézetet, utána adhatod hozzá a képeket.</p>
+                    <p className="text-xs text-slate-500">
+                      Előbb generáld le az AI előnézetet, utána adhatod hozzá a képeket.
+                    </p>
                   ) : null}
                   {imageAssets.length > 0 ? (
                     <ul className="grid gap-3 sm:grid-cols-2">
@@ -1116,6 +1231,7 @@ export default function NewOfferWizard() {
                             key={asset.key}
                             className="flex gap-3 rounded-2xl border border-border bg-white/90 p-3"
                           >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={asset.dataUrl}
                               alt={asset.alt}
@@ -1124,7 +1240,9 @@ export default function NewOfferWizard() {
                             <div className="flex flex-1 flex-col justify-between text-xs text-slate-500">
                               <div>
                                 <p className="font-semibold text-slate-700">{asset.name}</p>
-                                <p className="mt-0.5">{sizeKb} KB • alt: {asset.alt}</p>
+                                <p className="mt-0.5">
+                                  {sizeKb} KB • alt: {asset.alt}
+                                </p>
                               </div>
                               <Button
                                 type="button"
@@ -1139,12 +1257,15 @@ export default function NewOfferWizard() {
                       })}
                     </ul>
                   ) : (
-                    <p className="text-xs text-slate-500">Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek meg.</p>
+                    <p className="text-xs text-slate-500">
+                      Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek meg.
+                    </p>
                   )}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-slate-50/60 p-4 text-xs text-slate-500">
-                  Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag a generált dokumentumban kerülnek felhasználásra.
+                  Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag
+                  a generált dokumentumban kerülnek felhasználásra.
                 </div>
               )}
             </Card>
@@ -1152,7 +1273,9 @@ export default function NewOfferWizard() {
             <Card className="space-y-4">
               <div>
                 <h2 className="text-sm font-semibold text-slate-700">Összegzés</h2>
-                <p className="mt-1 text-xs text-slate-500">A PDF generálása után az ajánlat megjelenik a listádban.</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  A PDF generálása után az ajánlat megjelenik a listádban.
+                </p>
               </div>
               <dl className="grid gap-2 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-4">
@@ -1169,11 +1292,15 @@ export default function NewOfferWizard() {
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-slate-400">Stílus</dt>
-                  <dd className="font-medium text-slate-700">{form.style === 'compact' ? 'Kompakt' : 'Részletes'}</dd>
+                  <dd className="font-medium text-slate-700">
+                    {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
+                  </dd>
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-4 rounded-2xl border border-border bg-slate-50/80 px-4 py-3">
                   <dt className="text-slate-500">Bruttó összesen</dt>
-                  <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
+                  <dd className="text-base font-semibold text-slate-900">
+                    {totals.gross.toLocaleString('hu-HU')} Ft
+                  </dd>
                 </div>
               </dl>
               <Button
@@ -1189,7 +1316,7 @@ export default function NewOfferWizard() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Button
-            onClick={() => setStep(s => Math.max(1, s - 1))}
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1}
             className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
           >

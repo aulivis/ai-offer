@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 
-type ToastVariant = 'default' | 'error' | 'success';
+type ToastVariant = 'default' | 'error' | 'success' | 'info' | 'warning';
 
 export type ToastOptions = {
   title?: string;
@@ -12,7 +12,12 @@ export type ToastOptions = {
   duration?: number;
 };
 
-type ToastRecord = ToastOptions & { id: number; variant: ToastVariant };
+type ToastRecord = {
+  id: number;
+  description: string;
+  variant: ToastVariant;
+  title?: string;
+};
 
 type ToastContextValue = {
   showToast: (options: ToastOptions) => void;
@@ -26,6 +31,8 @@ const VARIANT_STYLES: Record<ToastVariant, string> = {
   default: 'border-border bg-bg text-fg shadow-card',
   success: 'border-success/30 bg-success/10 text-success shadow-card',
   error: 'border-danger/30 bg-danger/10 text-danger shadow-card',
+  info: 'border-accent/30 bg-accent/10 text-accent shadow-card',
+  warning: 'border-warning/30 bg-warning/10 text-warning shadow-card',
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -39,7 +46,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     ({ title, description, variant = 'default', duration = 6000 }: ToastOptions) => {
       toastIdCounter += 1;
       const id = toastIdCounter;
-      setToasts((prev) => [...prev, { id, title, description, variant }]);
+      const toast: ToastRecord = {
+        id,
+        description,
+        variant,
+        ...(title ? { title } : {}),
+      };
+      setToasts((prev) => [...prev, toast]);
 
       if (duration > 0) {
         window.setTimeout(() => {
@@ -60,8 +73,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             className={`pointer-events-auto w-full max-w-sm rounded-2xl border px-4 py-3 ${VARIANT_STYLES[toast.variant]}`}
-            role={toast.variant === 'error' ? 'alert' : 'status'}
-            aria-live={toast.variant === 'error' ? 'assertive' : 'polite'}
+            role={toast.variant === 'error' || toast.variant === 'warning' ? 'alert' : 'status'}
+            aria-live={
+              toast.variant === 'error' || toast.variant === 'warning' ? 'assertive' : 'polite'
+            }
           >
             <div className="flex items-start gap-3">
               <div className="flex-1 space-y-1">

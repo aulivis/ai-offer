@@ -23,7 +23,14 @@ function classNames(...values: Array<string | false | null | undefined>) {
 
 function CheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" strokeWidth={1.5} stroke="currentColor" aria-hidden="true" {...props}>
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      aria-hidden="true"
+      {...props}
+    >
       <path d="M5 10.5 8.5 14 15 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -31,7 +38,14 @@ function CheckIcon(props: SVGProps<SVGSVGElement>) {
 
 function ExclamationIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" strokeWidth={1.5} stroke="currentColor" aria-hidden="true" {...props}>
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      aria-hidden="true"
+      {...props}
+    >
       <path d="M10 5v6" strokeLinecap="round" />
       <path d="M10 14.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" fill="currentColor" stroke="none" />
     </svg>
@@ -127,7 +141,9 @@ export default function StepIndicator({ steps }: Props) {
                 {renderBadge(step)}
               </span>
             </Button>
-            {index < steps.length - 1 && <span className="h-px w-10 rounded bg-slate-200" aria-hidden="true" />}
+            {index < steps.length - 1 && (
+              <span className="h-px w-10 rounded bg-slate-200" aria-hidden="true" />
+            )}
           </li>
         );
       })}

@@ -15,12 +15,13 @@ import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getUserProfile } from '@/lib/services/user';
+import { currentMonthStart, getDeviceUsageSnapshot, getUsageSnapshot } from '@/lib/services/usage';
 import {
-  currentMonthStart,
-  getDeviceUsageSnapshot,
-  getUsageSnapshot,
-} from '@/lib/services/usage';
-import { countPendingPdfJobs, dispatchPdfJob, enqueuePdfJob } from '@/lib/queue/pdf';
+  countPendingPdfJobs,
+  dispatchPdfJob,
+  enqueuePdfJob,
+  type PdfJobInput,
+} from '@/lib/queue/pdf';
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
@@ -134,7 +135,9 @@ function safeParagraph(value: string | undefined): string {
 }
 
 function safeList(items: string[] | undefined): string {
-  const normalized = (items || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean);
+  const normalized = (items || [])
+    .map((item) => sanitizeInput((item || '').trim()))
+    .filter(Boolean);
   if (!normalized.length) return '<p>-</p>';
   return `<ul>${normalized.map((item) => `<li>${item}</li>`).join('')}</ul>`;
 }
@@ -223,9 +226,15 @@ function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
     deliverables: (sections.deliverables || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
-    schedule: (sections.schedule || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
-    assumptions: (sections.assumptions || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
-    next_steps: (sections.next_steps || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
+    schedule: (sections.schedule || [])
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean),
+    assumptions: (sections.assumptions || [])
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean),
+    next_steps: (sections.next_steps || [])
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean),
     closing: sanitizeInput((sections.closing || '').trim()),
   };
 }
@@ -250,7 +259,7 @@ type SanitizedImageAsset = {
 
 function normalizeImageAssets(
   input: unknown,
-  plan: 'free' | 'standard' | 'pro'
+  plan: 'free' | 'standard' | 'pro',
 ): SanitizedImageAsset[] {
   if (!input) {
     return [];
@@ -280,7 +289,8 @@ function normalizeImageAssets(
       throw new ImageAssetError('Hiányos képadatok érkeztek.');
     }
 
-    const key = typeof (raw as { key?: unknown }).key === 'string' ? (raw as { key: string }).key.trim() : '';
+    const key =
+      typeof (raw as { key?: unknown }).key === 'string' ? (raw as { key: string }).key.trim() : '';
     if (!key || key.length > 80) {
       throw new ImageAssetError('Érvénytelen képazonosító érkezett.');
     }
@@ -288,7 +298,10 @@ function normalizeImageAssets(
       continue;
     }
 
-    const dataUrl = typeof (raw as { dataUrl?: unknown }).dataUrl === 'string' ? (raw as { dataUrl: string }).dataUrl.trim() : '';
+    const dataUrl =
+      typeof (raw as { dataUrl?: unknown }).dataUrl === 'string'
+        ? (raw as { dataUrl: string }).dataUrl.trim()
+        : '';
     if (!dataUrl) {
       throw new ImageAssetError('Hiányzik a kép tartalma.');
     }
@@ -315,7 +328,8 @@ function normalizeImageAssets(
       throw new ImageAssetError('A kép mérete meghaladja a 2 MB-ot.');
     }
 
-    const altRaw = typeof (raw as { alt?: unknown }).alt === 'string' ? (raw as { alt: string }).alt : '';
+    const altRaw =
+      typeof (raw as { alt?: unknown }).alt === 'string' ? (raw as { alt: string }).alt : '';
     const alt = sanitizeInput(altRaw).slice(0, 160);
 
     sanitized.push({ key, dataUrl: `data:${mime};base64,${base64}`, alt });
@@ -332,14 +346,10 @@ const optionalTrimmedString = z.preprocess(
 
 const optionalNonNegativeNumber = z.preprocess(
   (value) => (value === null || value === undefined ? undefined : value),
-  z
-    .number({ invalid_type_error: 'A mezőnek számnak kell lennie.' })
-    .finite()
-    .min(0)
-    .optional(),
+  z.number({ error: 'A mezőnek számnak kell lennie.' }).finite().min(0).optional(),
 );
 
-const priceRowSchema: z.ZodType<PriceRow> = z
+const priceRowSchema = z
   .object({
     name: optionalTrimmedString,
     qty: optionalNonNegativeNumber,
@@ -349,15 +359,13 @@ const priceRowSchema: z.ZodType<PriceRow> = z
   })
   .strict();
 
-type ImageAssetInput = { key: string; dataUrl: string; alt?: string | null };
-
-const imageAssetSchema: z.ZodType<ImageAssetInput> = z
+const imageAssetSchema = z
   .object({
     key: z.string().trim().min(1, 'A kép azonosítója kötelező.').max(80),
     dataUrl: z.string().trim().min(1, 'A kép adatának megadása kötelező.'),
     alt: z.preprocess(
-      (value) => (value === null || value === undefined ? undefined : value),
-      z.string().trim().max(160).optional(),
+      (value) => (value === null || value === undefined ? null : value),
+      z.string().trim().max(160).nullable().optional(),
     ),
   })
   .strict();
@@ -422,7 +430,10 @@ function mapPdfWebhookError(error: PdfWebhookValidationError): string {
 
 const IMG_TAG_REGEX = /<img\b[^>]*>/gi;
 
-function applyImageAssetsToHtml(html: string, images: SanitizedImageAsset[]): {
+function applyImageAssetsToHtml(
+  html: string,
+  images: SanitizedImageAsset[],
+): {
   pdfHtml: string;
   storedHtml: string;
 } {
@@ -442,7 +453,8 @@ function applyImageAssetsToHtml(html: string, images: SanitizedImageAsset[]): {
     storedHtml += html.slice(lastIndex, match.index);
 
     const keyMatch =
-      tag.match(/data-offer-image-key\s*=\s*"([^"]+)"/i) || tag.match(/data-offer-image-key\s*=\s*'([^']+)'/i);
+      tag.match(/data-offer-image-key\s*=\s*"([^"]+)"/i) ||
+      tag.match(/data-offer-image-key\s*=\s*'([^']+)'/i);
     if (keyMatch) {
       const key = keyMatch[1] ?? keyMatch[2];
       const asset = key ? imageMap.get(key) : undefined;
@@ -505,7 +517,8 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
     } catch (error) {
       const status = error instanceof ImageAssetError ? error.status : 400;
-      const message = error instanceof ImageAssetError ? error.message : 'Érvénytelen képfeltöltés.';
+      const message =
+        error instanceof ImageAssetError ? error.message : 'Érvénytelen képfeltöltés.';
       return NextResponse.json({ error: message }, { status });
     }
 
@@ -549,12 +562,15 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     let pendingCount = 0;
     if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
-      pendingCount = await countPendingPdfJobs(sb, { userId: user.id, periodStart: usagePeriodStart });
+      pendingCount = await countPendingPdfJobs(sb, {
+        userId: user.id,
+        periodStart: usagePeriodStart,
+      });
       const projectedUsage = usageSnapshot.offersGenerated + pendingCount;
       if (projectedUsage >= planLimit) {
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
-          { status: 402 }
+          { status: 402 },
         );
       }
     }
@@ -571,7 +587,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       if (projectedDeviceUsage >= deviceLimit) {
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást ezen az eszközön.' },
-          { status: 402 }
+          { status: 402 },
         );
       }
     }
@@ -597,7 +613,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       if (!envServer.OPENAI_API_KEY) {
         return NextResponse.json(
           { error: 'OPENAI_API_KEY hiányzik az .env.local fájlból.' },
-          { status: 500 }
+          { status: 500 },
         );
       }
       const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
@@ -626,7 +642,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 `;
 
       try {
-        const response = await openai.responses.parse<OfferSections>({
+        const response = await openai.responses.parse({
           model: 'gpt-4o-mini',
           temperature: 0.4,
           input: [
@@ -647,7 +663,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         console.error('OpenAI structured output error:', message);
         return NextResponse.json(
           { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
-          { status: 502 }
+          { status: 502 },
         );
       }
     }
@@ -658,20 +674,25 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // `<table>` element including header, body and footer with totals.
     const priceTable = priceTableHtml(rows);
 
-    const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(aiHtml, sanitizedImageAssets);
+    const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(
+      aiHtml,
+      sanitizedImageAssets,
+    );
 
     // ---- PDF queueing ----
     const offerId = uuid();
     const storagePath = `${user.id}/${offerId}.pdf`;
     const brandingOptions = {
-      primaryColor: typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
-      secondaryColor: typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
+      primaryColor:
+        typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
+      secondaryColor:
+        typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
       logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
     };
 
     const templateId = enforceTemplateForPlan(
       typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-      plan
+      plan,
     );
 
     const html = offerHtml({
@@ -701,23 +722,26 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     if (offerInsertError) {
       console.error('Offer insert error:', offerInsertError.message);
-      return NextResponse.json({
-        error: 'Nem sikerült elmenteni az ajánlatot.',
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: 'Nem sikerült elmenteni az ajánlatot.',
+        },
+        { status: 500 },
+      );
     }
 
-    const pdfJobInput = {
+    const pdfJobInput: PdfJobInput = {
       jobId: downloadToken,
       offerId,
       userId: user.id,
       storagePath,
       html,
-      callbackUrl: normalizedWebhookUrl ?? undefined,
+      callbackUrl: normalizedWebhookUrl ?? null,
       usagePeriodStart,
       userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
       deviceId: deviceLimit !== null ? deviceId : null,
       deviceLimit,
-    } as const;
+    };
 
     try {
       await enqueuePdfJob(sb, pdfJobInput);
@@ -740,26 +764,34 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     try {
       await dispatchPdfJob(sb, downloadToken);
     } catch (dispatchError) {
-      const message = dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
+      const message =
+        dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
       console.error('PDF queue error (dispatch):', message);
 
       try {
-        immediatePdfUrl = await processPdfJobInline(sb, {
+        const inlineJob: PdfJobInput = {
           jobId: pdfJobInput.jobId,
           offerId: pdfJobInput.offerId,
           userId: pdfJobInput.userId,
           storagePath: pdfJobInput.storagePath,
           html: pdfJobInput.html,
-          callbackUrl: pdfJobInput.callbackUrl,
           usagePeriodStart: pdfJobInput.usagePeriodStart,
           userLimit: pdfJobInput.userLimit,
-          deviceId: pdfJobInput.deviceId,
-          deviceLimit: pdfJobInput.deviceLimit,
-        });
+          ...(pdfJobInput.callbackUrl !== undefined
+            ? { callbackUrl: pdfJobInput.callbackUrl }
+            : {}),
+          ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
+          ...(pdfJobInput.deviceLimit !== undefined
+            ? { deviceLimit: pdfJobInput.deviceLimit }
+            : {}),
+        };
+
+        immediatePdfUrl = await processPdfJobInline(sb, inlineJob);
         responseStatus = 'completed';
         responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
       } catch (inlineError) {
-        const inlineMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
+        const inlineMessage =
+          inlineError instanceof Error ? inlineError.message : String(inlineError);
         console.error('Inline PDF fallback error:', inlineMessage);
         return NextResponse.json(
           {

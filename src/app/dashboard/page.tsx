@@ -24,7 +24,7 @@ type Offer = {
   decision: 'accepted' | 'lost' | null;
   pdf_url: string | null;
   recipient_id: string | null;
-  recipient?: { company_name: string | null } | null;
+  recipient?: { company_name: string | null } | null | undefined;
 };
 
 /** PDF storage path extractor (változatlan logika) */
@@ -47,11 +47,7 @@ function extractOfferStoragePath(pdfUrl: string): string | null {
   const tryFromUrl = (): string | null => {
     try {
       const url = new URL(normalized);
-      const markerVariants = [
-        '/object/public/offers/',
-        '/object/sign/offers/',
-        '/object/offers/',
-      ];
+      const markerVariants = ['/object/public/offers/', '/object/sign/offers/', '/object/offers/'];
 
       for (const marker of markerVariants) {
         const markerIndex = url.pathname.indexOf(marker);
@@ -106,11 +102,11 @@ const DECISION_LABELS: Record<'accepted' | 'lost', string> = {
 };
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
-type StatusFilterOption = typeof STATUS_FILTER_OPTIONS[number];
+type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
 const SORT_BY_OPTIONS = ['created', 'status', 'title', 'recipient', 'industry'] as const;
-type SortByOption = typeof SORT_BY_OPTIONS[number];
+type SortByOption = (typeof SORT_BY_OPTIONS)[number];
 const SORT_DIRECTION_OPTIONS = ['desc', 'asc'] as const;
-type SortDirectionOption = typeof SORT_DIRECTION_OPTIONS[number];
+type SortDirectionOption = (typeof SORT_DIRECTION_OPTIONS)[number];
 
 function isStatusFilterValue(value: string): value is StatusFilterOption {
   return (STATUS_FILTER_OPTIONS as readonly string[]).includes(value);
@@ -165,16 +161,16 @@ function StatusStep({
   children?: ReactNode;
 }) {
   return (
-    <Card
-      className={`flex gap-3 px-4 py-3 ${
-        highlight ? 'bg-bg' : 'bg-bg/70 shadow-none'
-      }`}
-    >
-      <span className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-primary' : 'bg-fg-muted/40'}`} />
+    <Card className={`flex gap-3 px-4 py-3 ${highlight ? 'bg-bg' : 'bg-bg/70 shadow-none'}`}>
+      <span
+        className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-primary' : 'bg-fg-muted/40'}`}
+      />
       <div className="flex-1 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm font-semibold text-fg">{title}</p>
-          <span className="text-xs uppercase tracking-[0.25em] text-fg-muted">{dateLabel || '—'}</span>
+          <span className="text-xs uppercase tracking-[0.25em] text-fg-muted">
+            {dateLabel || '—'}
+          </span>
         </div>
         <p className="text-xs text-fg-muted">{description}</p>
         {children}
@@ -206,7 +202,12 @@ function DeleteConfirmationDialog({
   };
 
   return (
-    <Modal open={open} onClose={handleClose} labelledBy={labelId} describedBy={descriptionId}>
+    <Modal
+      open={open}
+      onClose={handleClose}
+      {...(labelId ? { labelledBy: labelId } : {})}
+      {...(descriptionId ? { describedBy: descriptionId } : {})}
+    >
       {open && (
         <div className="space-y-6">
           <div className="space-y-3">
@@ -217,7 +218,8 @@ function DeleteConfirmationDialog({
               Ajánlat törlése
             </h2>
             <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
-              Biztosan törlöd a(z) „{offer!.title || '(névtelen)'}” ajánlatot? Ez a művelet nem visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
+              Biztosan törlöd a(z) „{offer!.title || '(névtelen)'}” ajánlatot? Ez a művelet nem
+              visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
             </p>
           </div>
 
@@ -281,34 +283,57 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
 
-  const fetchPage = useCallback(async (
-    user: string,
-    pageNumber: number,
-  ): Promise<{ items: Offer[]; count: number | null }> => {
-    const from = pageNumber * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const { data, error, count } = await sb
-      .from('offers')
-      .select(
-        'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )',
-        { count: 'exact' },
-      )
-      .eq('user_id', user)
-      .order('created_at', { ascending: false })
-      .range(from, to);
+  const fetchPage = useCallback(
+    async (user: string, pageNumber: number): Promise<{ items: Offer[]; count: number | null }> => {
+      const from = pageNumber * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error, count } = await sb
+        .from('offers')
+        .select(
+          'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )',
+          { count: 'exact' },
+        )
+        .eq('user_id', user)
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-    if (error) throw error;
+      if (error) throw error;
 
-    return {
-      items: Array.isArray(data) ? (data as Offer[]) : [],
-      count: typeof count === 'number' ? count : null,
-    };
-  }, [sb]);
+      const rawItems = Array.isArray(data) ? data : [];
+      const items: Offer[] = rawItems.map((entry) => {
+        const recipientValue = Array.isArray(entry.recipient)
+          ? (entry.recipient[0] ?? null)
+          : (entry.recipient ?? null);
+
+        return {
+          id: String(entry.id),
+          title: typeof entry.title === 'string' ? entry.title : '',
+          industry: typeof entry.industry === 'string' ? entry.industry : '',
+          status: (entry.status ?? 'draft') as Offer['status'],
+          created_at: entry.created_at ?? null,
+          sent_at: entry.sent_at ?? null,
+          decided_at: entry.decided_at ?? null,
+          decision: (entry.decision ?? null) as Offer['decision'],
+          pdf_url: entry.pdf_url ?? null,
+          recipient_id: entry.recipient_id ?? null,
+          recipient: recipientValue,
+        };
+      });
+
+      return {
+        items,
+        count: typeof count === 'number' ? count : null,
+      };
+    },
+    [sb],
+  );
 
   useEffect(() => {
     let active = true;
     if (authStatus !== 'authenticated' || !user) {
-      return () => { active = false; };
+      return () => {
+        active = false;
+      };
     }
 
     const loadInitialPage = async () => {
@@ -322,15 +347,24 @@ export default function DashboardPage() {
         setTotalCount(count);
       } catch (error) {
         console.error('Failed to load offers', error);
-        const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
-        showToast({ title: 'Ajánlatok betöltése sikertelen', description: message, variant: 'error' });
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+        showToast({
+          title: 'Ajánlatok betöltése sikertelen',
+          description: message,
+          variant: 'error',
+        });
       } finally {
         if (active) setLoading(false);
       }
     };
 
     loadInitialPage();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [authStatus, fetchPage, showToast, sb, user]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
@@ -346,8 +380,15 @@ export default function DashboardPage() {
       setPageIndex(nextPage);
     } catch (error) {
       console.error('Failed to load offers', error);
-      const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
-      showToast({ title: 'További ajánlatok betöltése sikertelen', description: message, variant: 'error' });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+      showToast({
+        title: 'További ajánlatok betöltése sikertelen',
+        description: message,
+        variant: 'error',
+      });
     } finally {
       setIsLoadingMore(false);
     }
@@ -355,7 +396,9 @@ export default function DashboardPage() {
 
   const industries = useMemo(() => {
     const s = new Set<string>();
-    offers.forEach(o => { if (o.industry) s.add(o.industry); });
+    offers.forEach((o) => {
+      if (o.industry) s.add(o.industry);
+    });
     return Array.from(s).sort();
   }, [offers]);
 
@@ -364,10 +407,15 @@ export default function DashboardPage() {
     try {
       const { error } = await sb.from('offers').update(patch).eq('id', offer.id);
       if (error) throw error;
-      setOffers((prev) => prev.map((item) => (item.id === offer.id ? { ...item, ...patch } : item)));
+      setOffers((prev) =>
+        prev.map((item) => (item.id === offer.id ? { ...item, ...patch } : item)),
+      );
     } catch (error) {
       console.error('Offer status update failed', error);
-      const message = error instanceof Error ? error.message : 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.';
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.';
       showToast({ title: 'Állapot frissítése sikertelen', description: message, variant: 'error' });
     } finally {
       setUpdatingId(null);
@@ -407,7 +455,12 @@ export default function DashboardPage() {
   }
 
   async function revertToDraft(offer: Offer) {
-    const patch: Partial<Offer> = { status: 'draft', sent_at: null, decided_at: null, decision: null };
+    const patch: Partial<Offer> = {
+      status: 'draft',
+      sent_at: null,
+      decided_at: null,
+      decision: null,
+    };
     await applyPatch(offer, patch);
   }
 
@@ -434,10 +487,15 @@ export default function DashboardPage() {
 
       setOffers((prev) => prev.filter((item) => item.id !== offerToDelete.id));
       setTotalCount((prev) => (typeof prev === 'number' ? Math.max(prev - 1, 0) : prev));
-      showToast({ title: 'Ajánlat törölve', description: 'Az ajánlat véglegesen eltávolításra került.', variant: 'success' });
+      showToast({
+        title: 'Ajánlat törölve',
+        description: 'Az ajánlat véglegesen eltávolításra került.',
+        variant: 'success',
+      });
     } catch (error) {
       console.error('Failed to delete offer', error);
-      const message = error instanceof Error ? error.message : 'Nem sikerült törölni az ajánlatot. Próbáld újra.';
+      const message =
+        error instanceof Error ? error.message : 'Nem sikerült törölni az ajánlatot. Próbáld újra.';
       showToast({ title: 'Törlés sikertelen', description: message, variant: 'error' });
     } finally {
       setDeletingId(null);
@@ -476,25 +534,34 @@ export default function DashboardPage() {
 
     if (q.trim()) {
       const t = q.toLowerCase();
-      list = list.filter(o =>
-        o.title?.toLowerCase().includes(t) ||
-        (o.recipient?.company_name || '').toLowerCase().includes(t)
+      list = list.filter(
+        (o) =>
+          o.title?.toLowerCase().includes(t) ||
+          (o.recipient?.company_name || '').toLowerCase().includes(t),
       );
     }
 
-    if (statusFilter !== 'all') list = list.filter(o => o.status === statusFilter);
-    if (industryFilter !== 'all') list = list.filter(o => o.industry === industryFilter);
+    if (statusFilter !== 'all') list = list.filter((o) => o.status === statusFilter);
+    if (industryFilter !== 'all') list = list.filter((o) => o.industry === industryFilter);
 
     list.sort((a, b) => {
       const dir = sortDir === 'asc' ? 1 : -1;
       switch (sortBy) {
-        case 'status': return dir * a.status.localeCompare(b.status);
-        case 'title': return dir * (a.title || '').localeCompare(b.title || '');
-        case 'recipient': return dir * ((a.recipient?.company_name || '').localeCompare(b.recipient?.company_name || ''));
-        case 'industry': return dir * (a.industry || '').localeCompare(b.industry || '');
+        case 'status':
+          return dir * a.status.localeCompare(b.status);
+        case 'title':
+          return dir * (a.title || '').localeCompare(b.title || '');
+        case 'recipient':
+          return (
+            dir * (a.recipient?.company_name || '').localeCompare(b.recipient?.company_name || '')
+          );
+        case 'industry':
+          return dir * (a.industry || '').localeCompare(b.industry || '');
         case 'created':
         default:
-          return dir * ((new Date(a.created_at || 0)).getTime() - (new Date(b.created_at || 0)).getTime());
+          return (
+            dir * (new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime())
+          );
       }
     });
 
@@ -524,7 +591,11 @@ export default function DashboardPage() {
     offers.forEach((offer) => {
       if (offer.status !== 'accepted' || !offer.decided_at) return;
       const decided = new Date(offer.decided_at).getTime();
-      const sentAt = offer.sent_at ? new Date(offer.sent_at).getTime() : (offer.created_at ? new Date(offer.created_at).getTime() : NaN);
+      const sentAt = offer.sent_at
+        ? new Date(offer.sent_at).getTime()
+        : offer.created_at
+          ? new Date(offer.created_at).getTime()
+          : NaN;
       if (!Number.isFinite(decided) || !Number.isFinite(sentAt)) return;
       const diffDays = (decided - sentAt) / (1000 * 60 * 60 * 24);
       if (diffDays >= 0) decisionDurations.push(diffDays);
@@ -562,7 +633,14 @@ export default function DashboardPage() {
             const next = prev.map((item) => {
               if (item.id !== updated.id) return item;
               didChange = true;
-              return { ...item, ...updated, recipient: updated.recipient !== undefined ? updated.recipient : item.recipient };
+              const recipientValue =
+                updated.recipient !== undefined
+                  ? Array.isArray(updated.recipient)
+                    ? (updated.recipient[0] ?? null)
+                    : (updated.recipient ?? null)
+                  : (item.recipient ?? null);
+
+              return { ...item, ...updated, recipient: recipientValue };
             });
             return didChange ? next : prev;
           });
@@ -577,7 +655,9 @@ export default function DashboardPage() {
           setOffers((prev) => {
             const next = prev.filter((item) => item.id !== removed.id);
             if (next.length !== prev.length) {
-              setTotalCount((prevCount) => (typeof prevCount === 'number' ? Math.max(prevCount - 1, 0) : prevCount));
+              setTotalCount((prevCount) =>
+                typeof prevCount === 'number' ? Math.max(prevCount - 1, 0) : prevCount,
+              );
             }
             return next;
           });
@@ -585,25 +665,31 @@ export default function DashboardPage() {
       )
       .subscribe();
 
-    return () => { sb.removeChannel(channel); };
+    return () => {
+      sb.removeChannel(channel);
+    };
   }, [authStatus, sb, user]);
 
   /** Derived UI szövegek */
-  const acceptanceLabel = stats.acceptanceRate !== null
-    ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
-    : '—';
-  const avgDecisionLabel = stats.avgDecisionDays !== null
-    ? `${stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} nap`
-    : '—';
+  const acceptanceLabel =
+    stats.acceptanceRate !== null
+      ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
+      : '—';
+  const avgDecisionLabel =
+    stats.avgDecisionDays !== null
+      ? `${stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} nap`
+      : '—';
   const totalOffersCount = totalCount ?? stats.total;
   const displayedCount = totalCount !== null ? Math.min(offers.length, totalCount) : offers.length;
   const monthlyHelper = `Ebben a hónapban ${stats.createdThisMonth.toLocaleString('hu-HU')} új ajánlat`;
-  const totalHelper = totalCount !== null
-    ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat • ${monthlyHelper}`
-    : monthlyHelper;
-  const paginationSummary = totalCount !== null
-    ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat`
-    : null;
+  const totalHelper =
+    totalCount !== null
+      ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat • ${monthlyHelper}`
+      : monthlyHelper;
+  const paginationSummary =
+    totalCount !== null
+      ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat`
+      : null;
   const currentPage = pageIndex + 1;
   const totalPages = totalCount !== null ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : null;
   const noOffersLoaded = !loading && offers.length === 0;
@@ -616,21 +702,37 @@ export default function DashboardPage() {
       <AppFrame
         title="Ajánlatok"
         description="Keresés, szűrés és státuszkezelés egy helyen — átlátható kártyákkal."
-        actions={(
+        actions={
           <Link
             href="/new"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             + Új ajánlat
           </Link>
-        )}
+        }
       >
         {/* Metrikák */}
         <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Létrehozott ajánlatok" value={totalOffersCount.toLocaleString('hu-HU')} helper={totalHelper} />
-          <MetricCard label="Kiküldött ajánlatok" value={stats.sent.toLocaleString('hu-HU')} helper={`${stats.inReview.toLocaleString('hu-HU')} ajánlat döntésre vár`} />
-          <MetricCard label="Elfogadott ajánlatok" value={stats.accepted.toLocaleString('hu-HU')} helper={`Elfogadási arány: ${acceptanceLabel}`} />
-          <MetricCard label="Átlagos döntési idő" value={avgDecisionLabel} helper={`${stats.drafts.toLocaleString('hu-HU')} vázlat készül`} />
+          <MetricCard
+            label="Létrehozott ajánlatok"
+            value={totalOffersCount.toLocaleString('hu-HU')}
+            helper={totalHelper}
+          />
+          <MetricCard
+            label="Kiküldött ajánlatok"
+            value={stats.sent.toLocaleString('hu-HU')}
+            helper={`${stats.inReview.toLocaleString('hu-HU')} ajánlat döntésre vár`}
+          />
+          <MetricCard
+            label="Elfogadott ajánlatok"
+            value={stats.accepted.toLocaleString('hu-HU')}
+            helper={`Elfogadási arány: ${acceptanceLabel}`}
+          />
+          <MetricCard
+            label="Átlagos döntési idő"
+            value={avgDecisionLabel}
+            helper={`${stats.drafts.toLocaleString('hu-HU')} vázlat készül`}
+          />
         </section>
 
         {/* Szűrők */}
@@ -641,7 +743,7 @@ export default function DashboardPage() {
                 label="Keresés"
                 placeholder="Ajánlat cím vagy cég…"
                 value={q}
-                onChange={e => setQ(e.target.value)}
+                onChange={(e) => setQ(e.target.value)}
                 className="shadow-sm text-sm"
               />
             </div>
@@ -650,7 +752,7 @@ export default function DashboardPage() {
               <Select
                 label="Állapot"
                 value={statusFilter}
-                onChange={e => {
+                onChange={(e) => {
                   const value = e.target.value;
                   if (isStatusFilterValue(value)) setStatusFilter(value);
                 }}
@@ -666,19 +768,21 @@ export default function DashboardPage() {
               <Select
                 label="Iparág"
                 value={industryFilter}
-                onChange={e => setIndustryFilter(e.target.value)}
+                onChange={(e) => setIndustryFilter(e.target.value)}
                 className="shadow-sm text-sm"
               >
                 <option value="all">Mind</option>
-                {industries.map(ind => (
-                  <option key={ind} value={ind}>{ind}</option>
+                {industries.map((ind) => (
+                  <option key={ind} value={ind}>
+                    {ind}
+                  </option>
                 ))}
               </Select>
 
               <Select
                 label="Rendezés"
                 value={sortBy}
-                onChange={e => {
+                onChange={(e) => {
                   const value = e.target.value;
                   if (isSortByValue(value)) setSortBy(value);
                 }}
@@ -694,7 +798,7 @@ export default function DashboardPage() {
               <Select
                 label="Irány"
                 value={sortDir}
-                onChange={e => {
+                onChange={(e) => {
                   const value = e.target.value;
                   if (isSortDirectionValue(value)) setSortDir(value);
                 }}
@@ -704,7 +808,7 @@ export default function DashboardPage() {
                 <option value="asc">Növekvő</option>
               </Select>
             </div>
-            </div>
+          </div>
         </Card>
 
         {/* Skeletonok */}
@@ -750,8 +854,12 @@ export default function DashboardPage() {
                   >
                     <div className="mb-4 flex items-start justify-between gap-4">
                       <div className="min-w-0 space-y-1">
-                        <p className="truncate text-base font-semibold text-fg">{o.title || '(névtelen)'}</p>
-                        <p className="truncate text-sm text-fg-muted">{(o.recipient?.company_name || '').trim() || '—'}</p>
+                        <p className="truncate text-base font-semibold text-fg">
+                          {o.title || '(névtelen)'}
+                        </p>
+                        <p className="truncate text-sm text-fg-muted">
+                          {(o.recipient?.company_name || '').trim() || '—'}
+                        </p>
                       </div>
                       <StatusBadge status={o.status} />
                     </div>
@@ -795,7 +903,7 @@ export default function DashboardPage() {
                               <Input
                                 type="date"
                                 value={isoDateInput(o.sent_at)}
-                                onChange={e => markSent(o, e.target.value)}
+                                onChange={(e) => markSent(o, e.target.value)}
                                 disabled={isBusy}
                                 wrapperClassName="flex items-center gap-2"
                                 className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
@@ -816,7 +924,7 @@ export default function DashboardPage() {
                               <span>Dátum választása</span>
                               <Input
                                 type="date"
-                                onChange={e => {
+                                onChange={(e) => {
                                   if (!e.target.value) return;
                                   markSent(o, e.target.value);
                                 }}
@@ -844,14 +952,18 @@ export default function DashboardPage() {
                                   : 'bg-danger/10 text-danger'
                               }`}
                             >
-                              {DECISION_LABELS[o.status]}
+                              {o.status === 'accepted'
+                                ? DECISION_LABELS.accepted
+                                : DECISION_LABELS.lost}
                             </span>
                             <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
                               <span>Döntés dátuma</span>
                               <Input
                                 type="date"
                                 value={isoDateInput(o.decided_at)}
-                                onChange={e => markDecision(o, o.status as 'accepted' | 'lost', e.target.value)}
+                                onChange={(e) =>
+                                  markDecision(o, o.status as 'accepted' | 'lost', e.target.value)
+                                }
                                 disabled={isBusy}
                                 wrapperClassName="flex items-center gap-2"
                                 className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
@@ -921,11 +1033,13 @@ export default function DashboardPage() {
 
             <div className="mt-6 flex flex-col items-center gap-3 text-center">
               {paginationSummary ? (
-                <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">{paginationSummary}</p>
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">
+                  {paginationSummary}
+                </p>
               ) : null}
               <LoadMoreButton
                 currentPage={currentPage}
-                totalPages={totalPages ?? undefined}
+                totalPages={totalPages ?? null}
                 hasNext={hasMore}
                 onClick={handleLoadMore}
                 isLoading={isLoadingMore}

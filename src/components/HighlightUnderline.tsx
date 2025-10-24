@@ -5,7 +5,7 @@ export default function HighlightUnderline({ children }: PropsWithChildren) {
     <span className="relative inline-block leading-tight align-baseline">
       <span className="relative z-20">{children}</span>
 
-     <svg
+      <svg
         aria-hidden="true"
         className="pointer-events-none absolute left-[0.2em] right-0 bottom-[-0.1em] h-[0.8em] w-full z-0"
         viewBox="0 0 300 80"

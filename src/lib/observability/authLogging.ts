@@ -21,7 +21,12 @@ function sanitizeError(error: unknown): unknown {
   return error;
 }
 
-function emit(level: LogLevel, message: string, context: RequestLogContext, attributes?: LogAttributes) {
+function emit(
+  level: LogLevel,
+  message: string,
+  context: RequestLogContext,
+  attributes?: LogAttributes,
+) {
   const payload = { ...context, ...(attributes ?? {}) };
 
   if (level === 'info') {
@@ -47,7 +52,9 @@ export type RequestLogger = {
   error(message: string, error?: unknown, attributes?: LogAttributes): void;
 };
 
-export function createAuthRequestLogger(initialContext?: Partial<RequestLogContext>): RequestLogger {
+export function createAuthRequestLogger(
+  initialContext?: Partial<RequestLogContext>,
+): RequestLogger {
   const context: RequestLogContext = {
     requestId: initialContext?.requestId ?? randomUUID(),
   };
@@ -70,7 +77,10 @@ export function createAuthRequestLogger(initialContext?: Partial<RequestLogConte
       emit('warn', message, context, attributes);
     },
     error(message: string, error?: unknown, attributes?: LogAttributes) {
-      const payload = { ...context, ...(attributes ?? {}) };
+      const payload: RequestLogContext & LogAttributes & { error?: unknown } = {
+        ...context,
+        ...(attributes ?? {}),
+      };
       if (error !== undefined) {
         payload.error = sanitizeError(error);
       }

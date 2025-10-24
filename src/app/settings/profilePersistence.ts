@@ -5,6 +5,8 @@ export type ProfilePersistenceState = {
 
 export type ProfileMutationAction = 'insert' | 'update';
 
-export function resolveProfileMutationAction(state: ProfilePersistenceState): ProfileMutationAction {
+export function resolveProfileMutationAction(
+  state: ProfilePersistenceState,
+): ProfileMutationAction {
   return state.hasProfile || state.loadError ? 'update' : 'insert';
 }

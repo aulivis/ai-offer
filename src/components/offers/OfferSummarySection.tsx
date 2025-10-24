@@ -99,7 +99,9 @@ export function OfferSummarySection({
           }
         >
           {statusDescriptor ? (
-            <div className={`rounded-2xl border px-4 py-3 text-sm ${STATUS_TONE_CLASSES[statusDescriptor.tone]}`}>
+            <div
+              className={`rounded-2xl border px-4 py-3 text-sm ${STATUS_TONE_CLASSES[statusDescriptor.tone]}`}
+            >
               <div className="flex items-start gap-3">
                 {isStreaming ? (
                   <span className="mt-0.5 h-4 w-4 flex-none animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -144,7 +146,9 @@ export function OfferSummarySection({
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-slate-50/80 px-4 py-3">
             <dt className="text-slate-500">Bruttó végösszeg</dt>
-            <dd className="text-base font-semibold text-slate-900">{totals.gross.toLocaleString('hu-HU')} Ft</dd>
+            <dd className="text-base font-semibold text-slate-900">
+              {totals.gross.toLocaleString('hu-HU')} Ft
+            </dd>
           </div>
         </dl>
       </Card>

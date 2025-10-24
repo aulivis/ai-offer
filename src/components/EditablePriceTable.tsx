@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
-export type PriceRow = { name: string; qty: number; unit: string; unitPrice: number; vat: number; };
+export type PriceRow = { name: string; qty: number; unit: string; unitPrice: number; vat: number };
 
 type Props = {
   rows: PriceRow[];
@@ -14,8 +14,12 @@ type Props = {
 
 export default function EditablePriceTable({ rows, onChange }: Props) {
   const totals = useMemo(() => {
-    const net = rows.reduce((s, r) => s + (Number(r.qty)||0) * (Number(r.unitPrice)||0), 0);
-    const vat = rows.reduce((s, r) => s + (Number(r.qty)||0) * (Number(r.unitPrice)||0) * ((Number(r.vat)||0)/100), 0);
+    const net = rows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0);
+    const vat = rows.reduce(
+      (s, r) =>
+        s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0) * ((Number(r.vat) || 0) / 100),
+      0,
+    );
     const gross = net + vat;
     return { net, vat, gross };
   }, [rows]);
@@ -55,7 +59,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   <Input
                     placeholder="Megnevezés"
                     value={r.name}
-                    onChange={e => update(idx, 'name', e.target.value)}
+                    onChange={(e) => update(idx, 'name', e.target.value)}
                     className="py-2 text-sm"
                   />
                 </td>
@@ -64,7 +68,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                     type="number"
                     min={0}
                     value={r.qty}
-                    onChange={e => update(idx, 'qty', e.target.value)}
+                    onChange={(e) => update(idx, 'qty', e.target.value)}
                     className="py-2 text-sm"
                   />
                 </td>
@@ -72,7 +76,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                   <Input
                     placeholder="db / óra / m²"
                     value={r.unit}
-                    onChange={e => update(idx, 'unit', e.target.value)}
+                    onChange={(e) => update(idx, 'unit', e.target.value)}
                     className="py-2 text-sm"
                   />
                 </td>
@@ -81,7 +85,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                     type="number"
                     min={0}
                     value={r.unitPrice}
-                    onChange={e => update(idx, 'unitPrice', e.target.value)}
+                    onChange={(e) => update(idx, 'unitPrice', e.target.value)}
                     className="py-2 text-sm"
                   />
                 </td>
@@ -90,7 +94,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                     type="number"
                     min={0}
                     value={r.vat}
-                    onChange={e => update(idx, 'vat', e.target.value)}
+                    onChange={(e) => update(idx, 'vat', e.target.value)}
                     className="py-2 text-sm"
                   />
                 </td>
@@ -121,9 +125,15 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
           + Új tétel
         </Button>
         <div className="grid gap-1 text-right text-sm text-slate-500">
-          <span><strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')} Ft</span>
+          <span>
+            <strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')}{' '}
+            Ft
+          </span>
           <span>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</span>
-          <span><strong className="text-slate-700">Bruttó:</strong> {totals.gross.toLocaleString('hu-HU')} Ft</span>
+          <span>
+            <strong className="text-slate-700">Bruttó:</strong>{' '}
+            {totals.gross.toLocaleString('hu-HU')} Ft
+          </span>
         </div>
       </div>
     </Card>
