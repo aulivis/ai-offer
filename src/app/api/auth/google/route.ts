@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { envServer } from '@/env.server';
 
 import { createSupabaseOAuthClient } from './createSupabaseOAuthClient';
+import { getGoogleProviderStatus } from './providerStatus';
 import { sanitizeOAuthRedirect } from './redirectUtils';
 
 const AUTH_STATE_COOKIE = 'auth_state';
@@ -28,6 +29,19 @@ export async function GET(request: Request) {
     new URL(request.url).searchParams.get('redirect_to'),
     '/dashboard',
   );
+
+  const providerStatus = await getGoogleProviderStatus();
+  if (!providerStatus.enabled) {
+    console.warn('Blocked Google OAuth initiation because the provider is disabled.');
+    return NextResponse.json(
+      {
+        error:
+          providerStatus.message ??
+          'A Google bejelentkezés jelenleg nem érhető el. Kérjük, próbáld újra később.',
+      },
+      { status: 503 },
+    );
+  }
 
   const { client: supabase, consumeCodeVerifier } = createSupabaseOAuthClient();
 

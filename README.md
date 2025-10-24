@@ -33,10 +33,25 @@ Configure the following secrets before running the application:
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` | Google OAuth 2.0 client secret paired with the configured client ID. |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI` | Redirect URI registered for the Google OAuth client. Use `http://127.0.0.1:54321/auth/v1/callback` when running the Supabase CLI locally, and `https://<project-ref>.supabase.co/auth/v1/callback` for hosted projects. |
 
-- **Google sign-in** – The Supabase Auth provider configuration is sourced from environment variables through
-  `supabase/config.toml`. Ensure that the client ID, client secret, and redirect URI values above are populated in every
-  environment before attempting to log in with Google. Missing credentials will prevent Supabase from enabling the
-  provider and result in `Unsupported provider` errors when initiating OAuth flows.
+### Google sign-in configuration checklist
+
+Supabase disables OAuth providers by default. Complete the steps below before testing Google login:
+
+1. **Create OAuth credentials in Google Cloud Console.** Choose the "Web application" type and register the
+   Supabase callback URL listed above.
+2. **Expose the secrets to Supabase.** Set `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`,
+   `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET`, and `SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI` in your environment. The
+   Supabase CLI reads these values from `.env`/`supabase/.env`, while hosted projects should define matching secrets in the
+   dashboard (`Project Settings → Configuration → Auth → External OAuth Providers`).
+3. **Apply the configuration.** Run `supabase db reset` (locally) or toggle the provider in the dashboard to apply the
+   credentials defined in `supabase/config.toml`. The CLI command updates the local project's auth settings; the hosted
+   project uses the dashboard values.
+4. **Validate availability.** Visit `/api/auth/google/status` or load the login page. The UI queries this endpoint and
+   disables the Google button until the provider is active, avoiding `Unsupported provider` errors when the configuration
+   is incomplete.
+
+If any step is missing, Supabase returns `{"error_code":"validation_failed","msg":"Unsupported provider: provider is not enabled"}`
+when initiating the OAuth flow. The application now surfaces this condition directly in the UI.
 
 ### PDF webhook allow-list maintenance
 
