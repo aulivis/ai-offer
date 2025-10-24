@@ -1,0 +1,12 @@
+[project]
+api_version = "2024-06-14"
+
+[auth.external.google]
+# Google OAuth credentials are sourced from environment variables so they can be
+# rotated without modifying the repository. The Supabase CLI reads values from
+# `.env` (or `supabase/.env`) before applying this configuration locally, while
+# hosted projects should set matching secrets via the Supabase dashboard.
+enabled = true
+client_id = env("SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID")
+secret = env("SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET")
+redirect_uri = env("SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI")

@@ -24,11 +24,19 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Configure the following secrets before running the application:
 
-| Variable                | Description                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `AUTH_COOKIE_SECRET`    | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations.                              |
-| `CSRF_SECRET`           | 32+ character secret used to sign CSRF tokens for authenticated requests.                                                       |
+| Variable | Description |
+| --- | --- |
+| `AUTH_COOKIE_SECRET` | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations. |
+| `CSRF_SECRET` | 32+ character secret used to sign CSRF tokens for authenticated requests. |
 | `PDF_WEBHOOK_ALLOWLIST` | Comma-separated list of allowed domains/origins for PDF webhook callbacks (supports optional protocol and wildcard subdomains). |
+| `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` | Google OAuth 2.0 client ID provisioned for the project (Web application type). |
+| `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` | Google OAuth 2.0 client secret paired with the configured client ID. |
+| `SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI` | Redirect URI registered for the Google OAuth client. Use `http://127.0.0.1:54321/auth/v1/callback` when running the Supabase CLI locally, and `https://<project-ref>.supabase.co/auth/v1/callback` for hosted projects. |
+
+- **Google sign-in** – The Supabase Auth provider configuration is sourced from environment variables through
+  `supabase/config.toml`. Ensure that the client ID, client secret, and redirect URI values above are populated in every
+  environment before attempting to log in with Google. Missing credentials will prevent Supabase from enabling the
+  provider and result in `Unsupported provider` errors when initiating OAuth flows.
 
 ### PDF webhook allow-list maintenance
 
