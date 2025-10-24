@@ -230,7 +230,7 @@ export default function NewOfferWizard() {
         secondaryColor: prof?.brand_color_secondary ?? null,
         logoUrl: prof?.brand_logo_url ?? null,
       });
-      const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null, user.email ?? null);
+      const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setPlan(normalizedPlan);
       setOfferTemplate(
         enforceTemplateForPlan(

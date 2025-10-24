@@ -40,6 +40,10 @@ When adding or rotating webhook integrations, update `PDF_WEBHOOK_ALLOWLIST` to 
 
 Changes to the allow-list take effect across the API handlers, inline worker, and Supabase Edge Function, preventing jobs from being queued or dispatched to unapproved destinations.
 
+## Subscription handling
+
+- Subscription plans are now resolved strictly from the billing record stored for the user. Hard-coded overrides (for example, automatic `pro` access granted to specific email addresses) have been removed to keep entitlements aligned with Stripe data.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
