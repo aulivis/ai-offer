@@ -84,6 +84,38 @@ function buildRedirect(target: string) {
   return NextResponse.redirect(new URL(target, envServer.APP_URL));
 }
 
+const SENSITIVE_RESPONSE_KEYS = new Set([
+  'access_token',
+  'refresh_token',
+  'provider_token',
+  'token',
+]);
+
+function sanitizeValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeValue(item));
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>).reduce<
+      Record<string, unknown>
+    >((acc, [key, entry]) => {
+      if (SENSITIVE_RESPONSE_KEYS.has(key) || /token/i.test(key)) {
+        acc[key] = '[REDACTED]';
+      } else {
+        acc[key] = sanitizeValue(entry);
+      }
+      return acc;
+    }, {});
+  }
+
+  if (typeof value === 'string' && /token/i.test(value)) {
+    return '[REDACTED SENSITIVE CONTENT]';
+  }
+
+  return value;
+}
+
 async function exchangeCode({ code, codeVerifier }: ExchangeParams): Promise<ExchangeResult> {
   const grantType = codeVerifier ? 'pkce' : 'authorization_code';
   const endpoint = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
@@ -104,6 +136,32 @@ async function exchangeCode({ code, codeVerifier }: ExchangeParams): Promise<Exc
   });
 
   if (!response.ok) {
+    const logDetails: Record<string, unknown> = {
+      status: response.status,
+      statusText: response.statusText,
+    };
+
+    try {
+      const rawBody = await response.text();
+      if (rawBody) {
+        const contentType = response.headers.get('content-type') ?? '';
+        if (contentType.includes('application/json')) {
+          try {
+            const parsed = JSON.parse(rawBody) as unknown;
+            logDetails.body = sanitizeValue(parsed);
+          } catch {
+            logDetails.body = sanitizeValue(rawBody);
+          }
+        } else {
+          logDetails.body = sanitizeValue(rawBody);
+        }
+      }
+    } catch (bodyReadError) {
+      logDetails.bodyReadError =
+        bodyReadError instanceof Error ? bodyReadError.message : bodyReadError;
+    }
+
+    console.error('Supabase token exchange failed.', logDetails);
     throw new Error(`Supabase token exchange failed with status ${response.status}`);
   }
 
@@ -235,3 +293,5 @@ export async function GET(request: Request) {
 
   return buildRedirect(finalRedirect);
 }
+
+export const __test = { exchangeCode, sanitizeValue };
