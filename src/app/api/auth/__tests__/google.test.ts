@@ -131,35 +131,41 @@ describe('GET /api/auth/google', () => {
     expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
   });
 
-  it('returns an error when Supabase omits the state parameter', async () => {
+  it('generates a state parameter when Supabase omits it', async () => {
     signInWithOAuthMock.mockResolvedValue({
       data: { url: 'https://accounts.google.com/o/oauth2/v2/auth?nonce=nonce-only' },
       error: null,
     });
+    consumeCodeVerifierMock.mockReturnValue('code-321');
 
     const { GET } = await import('../google/route');
     const response = await GET(
       new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
     );
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
-    expect(consumeCodeVerifierMock).not.toHaveBeenCalled();
+    expect(response.status).toBe(302);
+    const location = response.headers.get('location');
+    expect(location).toContain('state=');
+    expect(location).toContain('nonce=nonce-only');
+    expect(consumeCodeVerifierMock).toHaveBeenCalled();
   });
 
-  it('returns an error when Supabase omits the nonce parameter', async () => {
+  it('generates a nonce parameter when Supabase omits it', async () => {
     signInWithOAuthMock.mockResolvedValue({
       data: { url: 'https://accounts.google.com/o/oauth2/v2/auth?state=state-only' },
       error: null,
     });
+    consumeCodeVerifierMock.mockReturnValue('code-654');
 
     const { GET } = await import('../google/route');
     const response = await GET(
       new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
     );
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
-    expect(consumeCodeVerifierMock).not.toHaveBeenCalled();
+    expect(response.status).toBe(302);
+    const location = response.headers.get('location');
+    expect(location).toContain('state=state-only');
+    expect(location).toContain('nonce=');
+    expect(consumeCodeVerifierMock).toHaveBeenCalled();
   });
 });

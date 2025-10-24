@@ -45,17 +45,17 @@ export async function GET(request: Request) {
   }
 
   const authorizeUrl = new URL(data.url);
-  const state = authorizeUrl.searchParams.get('state');
-  const nonce = authorizeUrl.searchParams.get('nonce');
 
+  let state = authorizeUrl.searchParams.get('state');
   if (!state) {
-    console.error('Supabase OAuth response missing required state parameter.');
-    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+    state = randomBytes(32).toString('base64url');
+    authorizeUrl.searchParams.set('state', state);
   }
 
+  let nonce = authorizeUrl.searchParams.get('nonce');
   if (!nonce) {
-    console.error('Supabase OAuth response missing required nonce parameter.');
-    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+    nonce = randomBytes(32).toString('base64url');
+    authorizeUrl.searchParams.set('nonce', nonce);
   }
 
   const codeVerifier = consumeCodeVerifier();
