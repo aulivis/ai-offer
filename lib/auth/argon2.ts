@@ -1,6 +1,6 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
-import { argon2dAsync, argon2iAsync, argon2idAsync } from '@noble/hashes/argon2.js';
+import { argon2dAsync, argon2iAsync, argon2idAsync } from '@noble/hashes/argon2';
 
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
 
