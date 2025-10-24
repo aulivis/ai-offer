@@ -8,6 +8,7 @@ import {
   RATE_LIMIT_MAX_ATTEMPTS,
   RATE_LIMIT_WINDOW_MS,
   consumeMagicLinkRateLimit,
+  hashMagicLinkEmailKey,
 } from '../rateLimiter';
 
 type RateLimitRow = {
@@ -32,7 +33,7 @@ class FakeQueryBuilder {
     } as const;
   }
 
-  upsert(record: RateLimitRow) {
+  upsert(record: RateLimitRow, _options?: { onConflict?: string }) {
     this.records.set(record.key, { ...record });
     return {
       select: () => ({
@@ -66,6 +67,15 @@ class FakeQueryBuilder {
       },
     } as const;
   }
+
+  delete() {
+    return {
+      eq: (_column: string, key: string) => {
+        this.records.delete(key);
+        return Promise.resolve({ data: null, error: null });
+      },
+    } as const;
+  }
 }
 
 class FakeSupabaseClient {
@@ -75,6 +85,10 @@ class FakeSupabaseClient {
     return new FakeQueryBuilder(this.records);
   }
 }
+
+const EMAIL = 'user@example.com';
+const LEGACY_KEY = `email:${EMAIL}`;
+const HASHED_KEY = hashMagicLinkEmailKey(EMAIL);
 
 function createClientWithErrors(options: {
   selectError?: string;
@@ -101,7 +115,7 @@ function createClientWithErrors(options: {
               : {
                   data:
                     existing ?? {
-                      key: 'email:user@example.com',
+                      key: HASHED_KEY,
                       count: 1,
                       expires_at: new Date(Date.now() + RATE_LIMIT_WINDOW_MS).toISOString(),
                     },
@@ -118,7 +132,7 @@ function createClientWithErrors(options: {
                 : {
                     data: {
                       ...(existing ?? {
-                        key: 'email:user@example.com',
+                        key: HASHED_KEY,
                         count: 0,
                         expires_at: new Date(Date.now() + RATE_LIMIT_WINDOW_MS).toISOString(),
                       }),
@@ -128,6 +142,9 @@ function createClientWithErrors(options: {
                   },
           }),
         }),
+      }),
+      delete: () => ({
+        eq: () => Promise.resolve({ data: null, error: null }),
       }),
     }),
   } satisfies RateLimitClient;
@@ -140,21 +157,23 @@ describe('consumeMagicLinkRateLimit', () => {
 
     const result = await consumeMagicLinkRateLimit(
       client as unknown as RateLimitClient,
-      'email:user@example.com',
+      HASHED_KEY,
       now,
+      [LEGACY_KEY],
     );
 
     expect(result).toEqual({ allowed: true, retryAfterMs: RATE_LIMIT_WINDOW_MS });
-    const stored = client.records.get('email:user@example.com');
+    const stored = client.records.get(HASHED_KEY);
     expect(stored).toMatchObject({ count: 1 });
+    expect(client.records.has(LEGACY_KEY)).toBe(false);
   });
 
   it('increments an existing record and blocks once the limit is exceeded', async () => {
     const now = Date.UTC(2024, 0, 1);
     const expiresAt = new Date(now + RATE_LIMIT_WINDOW_MS).toISOString();
     const records = new Map<string, RateLimitRow>();
-    records.set('email:user@example.com', {
-      key: 'email:user@example.com',
+    records.set(HASHED_KEY, {
+      key: HASHED_KEY,
       count: RATE_LIMIT_MAX_ATTEMPTS,
       expires_at: expiresAt,
     });
@@ -162,13 +181,13 @@ describe('consumeMagicLinkRateLimit', () => {
 
     const result = await consumeMagicLinkRateLimit(
       client as unknown as RateLimitClient,
-      'email:user@example.com',
+      HASHED_KEY,
       now,
     );
 
     expect(result.allowed).toBe(false);
     expect(result.retryAfterMs).toBeLessThanOrEqual(RATE_LIMIT_WINDOW_MS);
-    expect(client.records.get('email:user@example.com')?.count).toBe(
+    expect(client.records.get(HASHED_KEY)?.count).toBe(
       RATE_LIMIT_MAX_ATTEMPTS + 1,
     );
   });
@@ -176,8 +195,8 @@ describe('consumeMagicLinkRateLimit', () => {
   it('resets an expired record', async () => {
     const now = Date.UTC(2024, 0, 1);
     const records = new Map<string, RateLimitRow>();
-    records.set('email:user@example.com', {
-      key: 'email:user@example.com',
+    records.set(HASHED_KEY, {
+      key: HASHED_KEY,
       count: 3,
       expires_at: new Date(now - 1_000).toISOString(),
     });
@@ -185,19 +204,46 @@ describe('consumeMagicLinkRateLimit', () => {
 
     const result = await consumeMagicLinkRateLimit(
       client as unknown as RateLimitClient,
-      'email:user@example.com',
+      HASHED_KEY,
       now,
     );
 
     expect(result.allowed).toBe(true);
-    expect(client.records.get('email:user@example.com')?.count).toBe(1);
+    expect(client.records.get(HASHED_KEY)?.count).toBe(1);
+  });
+
+  it('migrates a legacy email key to the hashed format', async () => {
+    const now = Date.UTC(2024, 0, 1);
+    const expiresAt = new Date(now + RATE_LIMIT_WINDOW_MS).toISOString();
+    const records = new Map<string, RateLimitRow>();
+    records.set(LEGACY_KEY, {
+      key: LEGACY_KEY,
+      count: RATE_LIMIT_MAX_ATTEMPTS - 1,
+      expires_at: expiresAt,
+    });
+    const client = new FakeSupabaseClient(records);
+
+    const result = await consumeMagicLinkRateLimit(
+      client as unknown as RateLimitClient,
+      HASHED_KEY,
+      now,
+      [LEGACY_KEY],
+    );
+
+    expect(result.allowed).toBe(true);
+    expect(client.records.get(HASHED_KEY)).toMatchObject({
+      key: HASHED_KEY,
+      count: RATE_LIMIT_MAX_ATTEMPTS,
+      expires_at: expiresAt,
+    });
+    expect(client.records.has(LEGACY_KEY)).toBe(false);
   });
 
   it('propagates select errors', async () => {
     const client = createClientWithErrors({ selectError: 'select failed' });
 
     await expect(
-      consumeMagicLinkRateLimit(client, 'email:user@example.com', Date.now()),
+      consumeMagicLinkRateLimit(client, HASHED_KEY, Date.now()),
     ).rejects.toMatchObject({ message: 'select failed' });
   });
 
@@ -205,7 +251,7 @@ describe('consumeMagicLinkRateLimit', () => {
     const client = createClientWithErrors({ upsertError: 'upsert failed' });
 
     await expect(
-      consumeMagicLinkRateLimit(client, 'email:user@example.com', Date.now()),
+      consumeMagicLinkRateLimit(client, HASHED_KEY, Date.now()),
     ).rejects.toMatchObject({ message: 'upsert failed' });
   });
 
@@ -213,12 +259,12 @@ describe('consumeMagicLinkRateLimit', () => {
     const now = Date.now();
     const expiresAt = new Date(now + RATE_LIMIT_WINDOW_MS).toISOString();
     const client = createClientWithErrors({
-      existing: { key: 'email:user@example.com', count: 1, expires_at: expiresAt },
+      existing: { key: HASHED_KEY, count: 1, expires_at: expiresAt },
       updateError: 'update failed',
     });
 
     await expect(
-      consumeMagicLinkRateLimit(client, 'email:user@example.com', now),
+      consumeMagicLinkRateLimit(client, HASHED_KEY, now),
     ).rejects.toMatchObject({ message: 'update failed' });
   });
 });
