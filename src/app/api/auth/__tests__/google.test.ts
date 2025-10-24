@@ -45,7 +45,9 @@ describe('GET /api/auth/google', () => {
 
   it('redirects to the provider and stores the OAuth state cookie', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
+      data: {
+        url: 'https://accounts.google.com/o/oauth2/v2/auth?state=state-123&nonce=nonce-123',
+      },
       error: null,
     });
     consumeCodeVerifierMock.mockReturnValue('code-123');
@@ -63,7 +65,9 @@ describe('GET /api/auth/google', () => {
 
   it('falls back to the default redirect when the requested target is not allowed', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
+      data: {
+        url: 'https://accounts.google.com/o/oauth2/v2/auth?state=state-456&nonce=nonce-456',
+      },
       error: null,
     });
     consumeCodeVerifierMock.mockReturnValue('code-456');
@@ -82,7 +86,9 @@ describe('GET /api/auth/google', () => {
 
   it('allows redirects on the same origin when no allowlist is configured', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
+      data: {
+        url: 'https://accounts.google.com/o/oauth2/v2/auth?state=state-789&nonce=nonce-789',
+      },
       error: null,
     });
     consumeCodeVerifierMock.mockReturnValue('code-789');
@@ -101,7 +107,9 @@ describe('GET /api/auth/google', () => {
 
   it('returns an error when the PKCE code verifier is unavailable', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
+      data: {
+        url: 'https://accounts.google.com/o/oauth2/v2/auth?state=state-000&nonce=nonce-000',
+      },
       error: null,
     });
     consumeCodeVerifierMock.mockReturnValue(null);
@@ -111,5 +119,33 @@ describe('GET /api/auth/google', () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
+  });
+
+  it('returns an error when Supabase omits the state parameter', async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth?nonce=nonce-only' },
+      error: null,
+    });
+
+    const { GET } = await import('../google/route');
+    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
+    expect(consumeCodeVerifierMock).not.toHaveBeenCalled();
+  });
+
+  it('returns an error when Supabase omits the nonce parameter', async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth?state=state-only' },
+      error: null,
+    });
+
+    const { GET } = await import('../google/route');
+    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
+    expect(consumeCodeVerifierMock).not.toHaveBeenCalled();
   });
 });

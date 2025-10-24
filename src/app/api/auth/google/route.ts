@@ -32,8 +32,6 @@ export async function GET(request: Request) {
   );
 
   const { client: supabase, consumeCodeVerifier } = createSupabaseOAuthClient();
-  const state = randomBytes(16).toString('hex');
-  const nonce = randomBytes(16).toString('hex');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -43,16 +41,31 @@ export async function GET(request: Request) {
     },
   });
 
-  const codeVerifier = consumeCodeVerifier();
-
-  if (error || !data?.url || !codeVerifier) {
+  if (error || !data?.url) {
     console.error('Failed to initiate Supabase Google OAuth flow.', error ?? null);
     return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
   }
 
   const authorizeUrl = new URL(data.url);
-  authorizeUrl.searchParams.set('state', state);
-  authorizeUrl.searchParams.set('nonce', nonce);
+  const state = authorizeUrl.searchParams.get('state');
+  const nonce = authorizeUrl.searchParams.get('nonce');
+
+  if (!state) {
+    console.error('Supabase OAuth response missing required state parameter.');
+    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+  }
+
+  if (!nonce) {
+    console.error('Supabase OAuth response missing required nonce parameter.');
+    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+  }
+
+  const codeVerifier = consumeCodeVerifier();
+
+  if (!codeVerifier) {
+    console.error('Failed to initiate Supabase Google OAuth flow. Missing PKCE verifier.');
+    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+  }
 
   const cookieStore = await cookies();
   cookieStore.set({

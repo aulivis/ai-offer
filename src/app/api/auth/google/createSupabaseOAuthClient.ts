@@ -3,16 +3,19 @@ import type { SupportedStorage } from '@supabase/auth-js';
 
 import { envServer } from '@/env.server';
 
+const SUPABASE_AUTH_STORAGE_KEY = 'supabase.auth.token';
+
 export type SupabaseOAuthClient = {
   client: ReturnType<typeof createClient>;
   consumeCodeVerifier: () => string | null;
 };
 
-function createPkceStorage(): {
+function createPkceStorage(storageKey: string): {
   storage: SupportedStorage;
   consumeCodeVerifier: () => string | null;
 } {
   const store = new Map<string, string>();
+  const codeVerifierKey = `${storageKey}-code-verifier`;
   let codeVerifier: string | null = null;
 
   const storage: SupportedStorage = {
@@ -23,7 +26,7 @@ function createPkceStorage(): {
     async setItem(key, value) {
       store.set(key, value);
 
-      if (key.endsWith('-code-verifier')) {
+      if (key === codeVerifierKey) {
         const [verifier] = value.split('/');
         codeVerifier = verifier ?? null;
       }
@@ -31,7 +34,7 @@ function createPkceStorage(): {
     async removeItem(key) {
       store.delete(key);
 
-      if (key.endsWith('-code-verifier')) {
+      if (key === codeVerifierKey) {
         codeVerifier = null;
       }
     },
@@ -48,7 +51,7 @@ function createPkceStorage(): {
 }
 
 export function createSupabaseOAuthClient(): SupabaseOAuthClient {
-  const pkce = createPkceStorage();
+  const pkce = createPkceStorage(SUPABASE_AUTH_STORAGE_KEY);
 
   const client = createClient(
     envServer.NEXT_PUBLIC_SUPABASE_URL,
@@ -58,6 +61,7 @@ export function createSupabaseOAuthClient(): SupabaseOAuthClient {
         persistSession: false,
         autoRefreshToken: false,
         flowType: 'pkce',
+        storageKey: SUPABASE_AUTH_STORAGE_KEY,
         storage: pkce.storage,
       },
       global: {
