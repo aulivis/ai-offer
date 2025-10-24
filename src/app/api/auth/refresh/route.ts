@@ -1,13 +1,13 @@
-import {
-  Algorithm as Argon2Algorithm,
-  hash as argon2Hash,
-  verify as argon2Verify,
-  type Options as Argon2Options,
-} from '@node-rs/argon2';
 import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
 import { supabaseServer } from '@/app/lib/supabaseServer';
+import {
+  Argon2Algorithm,
+  argon2Hash,
+  argon2Verify,
+  type Argon2Options,
+} from '../../../../../lib/auth/argon2';
 import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
 import { decodeRefreshToken, type DecodedRefreshToken } from '../token';
 

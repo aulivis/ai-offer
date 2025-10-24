@@ -1,10 +1,10 @@
-import { verify as argon2Verify } from '@node-rs/argon2';
 import { cookies } from 'next/headers';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { clearAuthCookies } from '../../../../../lib/auth/cookies';
 import { verifyCsrfToken } from '../../../../../lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
+import { argon2Verify } from '../../../../../lib/auth/argon2';
 
 type SessionRow = {
   id: string;
