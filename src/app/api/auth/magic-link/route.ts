@@ -7,7 +7,7 @@ import { envServer } from '@/env.server';
 
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServer } from '../../../lib/supabaseServer';
-import { consumeMagicLinkRateLimit } from './rateLimiter';
+import { consumeMagicLinkRateLimit, hashMagicLinkEmailKey } from './rateLimiter';
 import type { RateLimitResult } from './rateLimiter';
 
 const GENERIC_RESPONSE = {
@@ -91,9 +91,10 @@ async function enforceRateLimit(
   supabase: ReturnType<typeof supabaseServer>,
   key: string,
   logger: RequestLogger,
+  legacyKeys: string[] = [],
 ): Promise<RateLimitResult> {
   try {
-    return await consumeMagicLinkRateLimit(supabase, key);
+    return await consumeMagicLinkRateLimit(supabase, key, Date.now(), legacyKeys);
   } catch (error) {
     logger.error('Failed to enforce magic link rate limit.', error, { key });
     return { allowed: true, retryAfterMs: 0 };
@@ -127,9 +128,12 @@ export async function POST(request: Request) {
 
   const supabase = supabaseServer();
 
+  const hashedEmailKey = hashMagicLinkEmailKey(email);
+  const legacyEmailKey = `email:${email}`;
+
   const [ipResult, emailResult] = await Promise.all([
     enforceRateLimit(supabase, `ip:${clientIp}`, logger),
-    enforceRateLimit(supabase, `email:${email}`, logger),
+    enforceRateLimit(supabase, hashedEmailKey, logger, [legacyEmailKey]),
   ]);
 
   const rateLimited = !ipResult.allowed || !emailResult.allowed;

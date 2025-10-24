@@ -10,6 +10,8 @@ process.env.AUTH_COOKIE_SECRET =
   process.env.AUTH_COOKIE_SECRET ?? 'auth-cookie-secret-value-auth-cookie-secret-value';
 process.env.CSRF_SECRET =
   process.env.CSRF_SECRET ?? 'csrf-secret-value-csrf-secret-value-1234';
+process.env.MAGIC_LINK_RATE_LIMIT_SALT =
+  process.env.MAGIC_LINK_RATE_LIMIT_SALT ?? 'magic-link-rate-limit-salt';
 process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? 'test-openai-key';
 process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? 'stripe-secret-key';
 process.env.APP_URL = process.env.APP_URL ?? 'http://localhost:3000';

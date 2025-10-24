@@ -14,6 +14,9 @@ const ServerEnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string(),
   AUTH_COOKIE_SECRET: z.string().min(32, 'AUTH_COOKIE_SECRET must be at least 32 characters long.'),
   CSRF_SECRET: z.string().min(32, 'CSRF_SECRET must be at least 32 characters long.'),
+  MAGIC_LINK_RATE_LIMIT_SALT: z
+    .string()
+    .min(16, 'MAGIC_LINK_RATE_LIMIT_SALT must be at least 16 characters long.'),
   OPENAI_API_KEY: z.string(),
   STRIPE_SECRET_KEY: z.string(),
   APP_URL: z.string().url(),

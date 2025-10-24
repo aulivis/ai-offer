@@ -41,6 +41,7 @@ vi.mock('@/app/lib/supabaseAnonServer', () => ({
 
 vi.mock('../magic-link/rateLimiter', () => ({
   consumeMagicLinkRateLimit: consumeRateLimitMock,
+  hashMagicLinkEmailKey: (email: string) => `hashed:${email}`,
 }));
 
 describe('POST /api/auth/magic-link', () => {
