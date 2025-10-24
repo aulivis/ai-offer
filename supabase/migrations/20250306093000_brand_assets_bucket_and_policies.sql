@@ -1,4 +1,4 @@
--- Ensure the brand-assets bucket exists and enforce per-user access based on the first path segment.
+-- Ensure the brand-assets bucket exists and enforce per-user access using object ownership.
 DO $$
 BEGIN
   INSERT INTO storage.buckets (id, name, public)
@@ -48,13 +48,13 @@ BEGIN
       USING (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()::text
+        AND auth.uid() = owner
       );
   END IF;
 END
 $$;
 
--- Allow authenticated users to insert objects prefixed with their user id.
+-- Allow authenticated users to insert objects into the brand-assets bucket when they own them.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -70,13 +70,13 @@ BEGIN
       WITH CHECK (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()::text
+        AND auth.uid() = owner
       );
   END IF;
 END
 $$;
 
--- Allow authenticated users to update objects they own and keep them under their own prefix.
+-- Allow authenticated users to update objects they own within the brand-assets bucket.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -92,18 +92,18 @@ BEGIN
       USING (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()::text
+        AND auth.uid() = owner
       )
       WITH CHECK (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()::text
+        AND auth.uid() = owner
       );
   END IF;
 END
 $$;
 
--- Allow authenticated users to delete objects they own.
+-- Allow authenticated users to delete objects they own from the brand-assets bucket.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -119,7 +119,7 @@ BEGIN
       USING (
         bucket_id = 'brand-assets'
         AND auth.uid() IS NOT NULL
-        AND split_part(name, '/', 1) = auth.uid()::text
+        AND auth.uid() = owner
       );
   END IF;
 END

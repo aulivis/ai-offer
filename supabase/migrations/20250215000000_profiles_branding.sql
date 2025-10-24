@@ -5,5 +5,5 @@ alter table profiles
   add column if not exists brand_color_secondary text;
 
 insert into storage.buckets (id, name, public)
-select 'brand-assets', 'brand-assets', true
+select 'brand-assets', 'brand-assets', false
 where not exists (select 1 from storage.buckets where id = 'brand-assets');
