@@ -57,7 +57,9 @@ describe('GET /api/auth/google', () => {
     consumeCodeVerifierMock.mockReturnValue('code-123');
 
     const { GET } = await import('../google/route');
-    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+    const response = await GET(
+      new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
+    );
 
     expect(response.status).toBe(302);
     const location = response.headers.get('location');
@@ -100,7 +102,9 @@ describe('GET /api/auth/google', () => {
     envServer.OAUTH_REDIRECT_ALLOWLIST = [];
 
     const { GET } = await import('../google/route');
-    await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/settings'));
+    await GET(
+      new Request('http://localhost/api/auth/google?redirect_to=http://localhost/settings'),
+    );
 
     expect(signInWithOAuthMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -119,7 +123,9 @@ describe('GET /api/auth/google', () => {
     consumeCodeVerifierMock.mockReturnValue(null);
 
     const { GET } = await import('../google/route');
-    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+    const response = await GET(
+      new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
+    );
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
@@ -132,7 +138,9 @@ describe('GET /api/auth/google', () => {
     });
 
     const { GET } = await import('../google/route');
-    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+    const response = await GET(
+      new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
+    );
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
@@ -146,7 +154,9 @@ describe('GET /api/auth/google', () => {
     });
 
     const { GET } = await import('../google/route');
-    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+    const response = await GET(
+      new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
+    );
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });

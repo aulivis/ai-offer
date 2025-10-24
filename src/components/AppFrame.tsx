@@ -24,7 +24,13 @@ export type AppFrameProps = {
   sidebar?: ReactNode;
 };
 
-export default function AppFrame({ title, description, actions, children, sidebar }: AppFrameProps) {
+export default function AppFrame({
+  title,
+  description,
+  actions,
+  children,
+  sidebar,
+}: AppFrameProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { showToast } = useToast();
@@ -49,7 +55,10 @@ export default function AppFrame({ title, description, actions, children, sideba
       if (!response.ok) {
         const payload: unknown = await response.json().catch(() => null);
         const message =
-          payload && typeof payload === 'object' && 'error' in payload && typeof (payload as { error?: unknown }).error === 'string'
+          payload &&
+          typeof payload === 'object' &&
+          'error' in payload &&
+          typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error?: string }).error as string)
             : 'Nem sikerült kijelentkezni.';
         throw new Error(message);
@@ -159,8 +168,12 @@ export default function AppFrame({ title, description, actions, children, sideba
 
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#151035]">{title}</h1>
-            {description ? <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p> : null}
+            <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#151035]">
+              {title}
+            </h1>
+            {description ? (
+              <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p>
+            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {actions ? <div className="flex items-center gap-2">{actions}</div> : null}

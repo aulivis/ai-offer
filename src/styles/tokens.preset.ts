@@ -13,7 +13,7 @@ export const tokens = {
 
     success: 'var(--color-success)',
     warning: 'var(--color-warning)',
-    danger:  'var(--color-danger)',
+    danger: 'var(--color-danger)',
   },
   radius: { lg: '16px', '2xl': '24px', '3xl': '32px' },
   shadow: { card: 'var(--shadow-card)', pop: 'var(--shadow-pop)' },

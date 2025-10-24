@@ -15,7 +15,7 @@ export interface PdfJobInput {
   userId: string;
   storagePath: string;
   html: string;
-  callbackUrl?: string;
+  callbackUrl?: string | null;
   usagePeriodStart: string;
   userLimit: number | null;
   deviceId?: string | null;
@@ -23,7 +23,8 @@ export interface PdfJobInput {
 }
 
 // Fragments used to detect specific error messages from Supabase/PostgREST.
-const SCHEMA_CACHE_ERROR_FRAGMENT = "could not find the table 'public.pdf_jobs' in the schema cache";
+const SCHEMA_CACHE_ERROR_FRAGMENT =
+  "could not find the table 'public.pdf_jobs' in the schema cache";
 const SCHEMA_CACHE_FUNCTION_MISSING_FRAGMENT = 'could not find the function';
 const PGREST_SCHEMA_CACHE_RPC = 'pgrest_schema_cache_reload';
 const PGREST_SCHEMA_CACHE_RPC_FRAGMENT = 'pgrest.schema_cache_reload';
@@ -78,13 +79,18 @@ async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
   if (error) {
     const message = error.message || '';
     if (isRefreshFunctionMissing(message)) {
-      console.warn('refresh_pdf_jobs_schema_cache RPC is missing; attempting PostgREST schema cache reload.');
+      console.warn(
+        'refresh_pdf_jobs_schema_cache RPC is missing; attempting PostgREST schema cache reload.',
+      );
       try {
         await refreshSchemaCacheViaPostgrest(sb);
       } catch (fallbackError) {
-        const fallbackMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        const fallbackMessage =
+          fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
         if (fallbackMessage.toLowerCase().includes(PGREST_SCHEMA_CACHE_RPC_FRAGMENT)) {
-          console.warn('pgrest.schema_cache_reload RPC is missing; attempting direct HTTP refresh.');
+          console.warn(
+            'pgrest.schema_cache_reload RPC is missing; attempting direct HTTP refresh.',
+          );
           await refreshSchemaCacheViaHttp();
           return;
         }
@@ -191,7 +197,10 @@ type PendingJobFilters = {
   deviceId?: string | null;
 };
 
-export async function countPendingPdfJobs(sb: SupabaseClient, filters: PendingJobFilters): Promise<number> {
+export async function countPendingPdfJobs(
+  sb: SupabaseClient,
+  filters: PendingJobFilters,
+): Promise<number> {
   let lastError: Error | undefined;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {

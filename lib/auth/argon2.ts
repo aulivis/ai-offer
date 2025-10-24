@@ -218,7 +218,10 @@ function getFallbackOptions(options?: Argon2Options) {
   };
 }
 
-async function fallbackHash(password: string | Uint8Array, options?: Argon2Options): Promise<string> {
+async function fallbackHash(
+  password: string | Uint8Array,
+  options?: Argon2Options,
+): Promise<string> {
   const fallback = getFallbackOptions(options);
   const variant = ARGON2_NAMES[fallback.algorithm];
   const compute = await getFallbackCompute(variant);

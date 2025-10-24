@@ -74,7 +74,9 @@ async function normalizePng(buffer: Buffer): Promise<NormalizedImage | null> {
   const detected = detectPng(buffer);
   if (!detected) return null;
 
-  const normalizedBuffer = await sharp(buffer, { failOn: 'truncated' }).png({ compressionLevel: 9 }).toBuffer();
+  const normalizedBuffer = await sharp(buffer, { failOn: 'truncated' })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
   return { ...detected, buffer: normalizedBuffer };
 }
 
@@ -94,7 +96,9 @@ async function normalizeJpeg(buffer: Buffer): Promise<NormalizedImage | null> {
   const detected = detectJpeg(buffer);
   if (!detected) return null;
 
-  const normalizedBuffer = await sharp(buffer, { failOn: 'truncated' }).jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+  const normalizedBuffer = await sharp(buffer, { failOn: 'truncated' })
+    .jpeg({ quality: 90, mozjpeg: true })
+    .toBuffer();
   return { ...detected, buffer: normalizedBuffer };
 }
 
@@ -127,11 +131,9 @@ function normalizeSvg(buffer: Buffer): NormalizedImage | null {
 }
 
 async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImage | null> {
-  const normalizers: Array<(input: Buffer) => Promise<NormalizedImage | null> | NormalizedImage | null> = [
-    normalizePng,
-    normalizeJpeg,
-    (input) => normalizeSvg(input),
-  ];
+  const normalizers: Array<
+    (input: Buffer) => Promise<NormalizedImage | null> | NormalizedImage | null
+  > = [normalizePng, normalizeJpeg, (input) => normalizeSvg(input)];
 
   for (const normalize of normalizers) {
     const result = await normalize(buffer);
@@ -164,15 +166,20 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const buffer = Buffer.from(arrayBuffer);
     const normalizedImage = await validateAndNormalizeImage(buffer);
     if (!normalizedImage) {
-      return NextResponse.json({ error: 'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.' }, { status: 415 });
+      return NextResponse.json(
+        { error: 'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.' },
+        { status: 415 },
+      );
     }
 
     const path = `${userId}/brand-logo.${normalizedImage.extension}`;
 
-    const { error: uploadError } = await sb.storage.from(BUCKET_ID).upload(path, normalizedImage.buffer, {
-      upsert: true,
-      contentType: normalizedImage.contentType,
-    });
+    const { error: uploadError } = await sb.storage
+      .from(BUCKET_ID)
+      .upload(path, normalizedImage.buffer, {
+        upsert: true,
+        contentType: normalizedImage.contentType,
+      });
     if (uploadError) {
       throw new Error('Nem sikerült feltölteni a logót.');
     }
@@ -181,12 +188,16 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       .from(BUCKET_ID)
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
     if (signedError || !signedData?.signedUrl) {
-      return NextResponse.json({ error: 'Nem sikerült létrehozni a letöltési URL-t.' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Nem sikerült létrehozni a letöltési URL-t.' },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ signedUrl: signedData.signedUrl });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
+    const message =
+      error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
     if (error instanceof Error) {
       console.error('Brand logo upload failed:', error);
     }

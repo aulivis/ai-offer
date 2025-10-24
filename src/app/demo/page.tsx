@@ -14,11 +14,15 @@ export default function DemoPlaceholderPage() {
           Interaktív demó hamarosan
         </h1>
         <p className="text-base leading-relaxed text-fg-muted">
-          Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Propono ajánlatkészítő folyamatát. Addig is
-          regisztrálj és kezdd el ingyen az Ingyenes csomaggal, vagy lépj tovább a Propono Standard 10 ajánlatos keretével.
+          Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Propono
+          ajánlatkészítő folyamatát. Addig is regisztrálj és kezdd el ingyen az Ingyenes csomaggal,
+          vagy lépj tovább a Propono Standard 10 ajánlatos keretével.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link href="/login" className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-lg transition duration-200 ease-out hover:shadow-pop">
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-lg transition duration-200 ease-out hover:shadow-pop"
+          >
             Bejelentkezés
           </Link>
           <Link

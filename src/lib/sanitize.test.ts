@@ -14,7 +14,8 @@ describe('sanitizeInput', () => {
 
 describe('sanitizeHTML', () => {
   it('preserves allowed tags and attributes', () => {
-    const html = '<p>Example <strong>text</strong> with <a href="https://example.com" target="_blank" rel="noopener noreferrer">link</a>.</p>';
+    const html =
+      '<p>Example <strong>text</strong> with <a href="https://example.com" target="_blank" rel="noopener noreferrer">link</a>.</p>';
     expect(sanitizeHTML(html)).toBe(
       '<p>Example <strong>text</strong> with <a href="https://example.com" target="_blank" rel="noopener noreferrer">link</a>.</p>',
     );
@@ -44,7 +45,7 @@ describe('sanitizeHTML', () => {
     const html =
       '<p>Előnézet</p><img src="data:image/png;base64,AAAA" alt="logo" data-offer-image-key="img-1" width="200" onclick="evil()" />';
     expect(sanitizeHTML(html)).toBe(
-      '<p>Előnézet</p><img src="data:image/png;base64,AAAA" alt="logo" data-offer-image-key="img-1" />'
+      '<p>Előnézet</p><img src="data:image/png;base64,AAAA" alt="logo" data-offer-image-key="img-1" />',
     );
   });
 });

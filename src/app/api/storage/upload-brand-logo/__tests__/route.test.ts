@@ -79,7 +79,10 @@ describe('upload brand logo route', () => {
     uploadMock.mockReset();
     createSignedUrlMock.mockReset();
 
-    anonGetUserMock.mockResolvedValue({ data: { user: { id: 'user-1', email: 'user@example.com' } }, error: null });
+    anonGetUserMock.mockResolvedValue({
+      data: { user: { id: 'user-1', email: 'user@example.com' } },
+      error: null,
+    });
     getBucketMock.mockResolvedValue({
       data: {
         public: false,
@@ -116,7 +119,10 @@ describe('upload brand logo route', () => {
 
   it('rejects non-image uploads', async () => {
     const formData = new FormData();
-    formData.set('file', new File([Buffer.from('hello world', 'utf-8')], 'payload.txt', { type: 'text/plain' }));
+    formData.set(
+      'file',
+      new File([Buffer.from('hello world', 'utf-8')], 'payload.txt', { type: 'text/plain' }),
+    );
 
     const request = buildRequest(formData);
 

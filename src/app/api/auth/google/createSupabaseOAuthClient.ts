@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { SupportedStorage } from '@supabase/auth-js';
 
 import { envServer } from '@/env.server';
@@ -6,7 +6,7 @@ import { envServer } from '@/env.server';
 const SUPABASE_AUTH_STORAGE_KEY = 'supabase.auth.token';
 
 export type SupabaseOAuthClient = {
-  client: ReturnType<typeof createClient>;
+  client: SupabaseClient;
   consumeCodeVerifier: () => string | null;
 };
 

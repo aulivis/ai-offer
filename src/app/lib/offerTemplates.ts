@@ -33,7 +33,7 @@ export function offerTemplateRequiresPro(id: OfferTemplateId): boolean {
 
 export function enforceTemplateForPlan(
   requested: string | null | undefined,
-  plan: SubscriptionPlan
+  plan: SubscriptionPlan,
 ): OfferTemplateId {
   if (!isOfferTemplateId(requested)) {
     return DEFAULT_OFFER_TEMPLATE_ID;

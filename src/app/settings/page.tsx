@@ -15,7 +15,7 @@ import {
   type OfferTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
-import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
+import { fetchWithSupabaseAuth } from '@/lib/api';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
@@ -45,8 +45,17 @@ type ActivityRow = {
 };
 
 const ALL_INDUSTRIES_HU = [
-  'Marketing', 'Informatika', 'Építőipar', 'Tanácsadás', 'Szolgáltatás',
-  'Gyártás', 'Oktatás', 'Egészségügy', 'Pénzügy', 'E-kereskedelem', 'Ingatlan'
+  'Marketing',
+  'Informatika',
+  'Építőipar',
+  'Tanácsadás',
+  'Szolgáltatás',
+  'Gyártás',
+  'Oktatás',
+  'Egészségügy',
+  'Pénzügy',
+  'E-kereskedelem',
+  'Ingatlan',
 ];
 
 function validatePhoneHU(v: string) {
@@ -95,20 +104,30 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
-  const [profile, setProfile] = useState<Profile>({ industries: [], offer_template: DEFAULT_OFFER_TEMPLATE_ID });
+  const [profile, setProfile] = useState<Profile>({
+    industries: [],
+    offer_template: DEFAULT_OFFER_TEMPLATE_ID,
+  });
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
   const [hasProfile, setHasProfile] = useState(false);
   const [profileLoadError, setProfileLoadError] = useState<Error | null>(null);
 
   const [acts, setActs] = useState<ActivityRow[]>([]);
-  const [newAct, setNewAct] = useState({ name: '', unit: 'db', price: 0, vat: 27, industries: [] as string[] });
+  const [newAct, setNewAct] = useState({
+    name: '',
+    unit: 'db',
+    price: 0,
+    vat: 27,
+    industries: [] as string[],
+  });
   const [actSaving, setActSaving] = useState(false);
   const [newIndustry, setNewIndustry] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
   const [linkingGoogle, setLinkingGoogle] = useState(false);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
-  const googleLinked = user?.identities?.some((identity) => identity.provider === 'google') ?? false;
+  const googleLinked =
+    user?.identities?.some((identity) => identity.provider === 'google') ?? false;
 
   const errors = useMemo(() => {
     const general: Record<string, string> = {};
@@ -124,12 +143,14 @@ export default function SettingsPage() {
       general.address = 'A cím legyen legalább 8 karakter.';
     }
 
-    const brandPrimary = typeof profile.brand_color_primary === 'string' ? profile.brand_color_primary.trim() : '';
+    const brandPrimary =
+      typeof profile.brand_color_primary === 'string' ? profile.brand_color_primary.trim() : '';
     if (brandPrimary && !normalizeColorHex(brandPrimary)) {
       branding.brandPrimary = 'Adj meg egy #RRGGBB formátumú hex színt.';
     }
 
-    const brandSecondary = typeof profile.brand_color_secondary === 'string' ? profile.brand_color_secondary.trim() : '';
+    const brandSecondary =
+      typeof profile.brand_color_secondary === 'string' ? profile.brand_color_secondary.trim() : '';
     if (brandSecondary && !normalizeColorHex(brandSecondary)) {
       branding.brandSecondary = 'Adj meg egy #RRGGBB formátumú hex színt.';
     }
@@ -179,11 +200,15 @@ export default function SettingsPage() {
         <div className="flex h-28 flex-col overflow-hidden rounded-2xl border border-border bg-white">
           <div
             className="h-16 w-full"
-            style={{ background: `linear-gradient(135deg, ${primaryPreview}, ${secondaryPreview})` }}
+            style={{
+              background: `linear-gradient(135deg, ${primaryPreview}, ${secondaryPreview})`,
+            }}
           />
           <div className="flex flex-1 items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
             <div className="h-9 w-9 rounded-2xl border border-border bg-white/80 shadow-sm" />
-            <div className="flex-1 rounded-lg border border-border/70 bg-white px-2 py-1">Ártáblázat</div>
+            <div className="flex-1 rounded-lg border border-border/70 bg-white px-2 py-1">
+              Ártáblázat
+            </div>
           </div>
         </div>
       );
@@ -237,22 +262,22 @@ export default function SettingsPage() {
       setProfileLoadError(null);
       const industries = Array.isArray(prof?.industries)
         ? (prof.industries as string[])
-          .map((industry) => (typeof industry === 'string' ? industry.trim() : ''))
-          .filter((industry) => industry.length > 0)
+            .map((industry) => (typeof industry === 'string' ? industry.trim() : ''))
+            .filter((industry) => industry.length > 0)
         : [];
       const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setHasProfile(Boolean(prof));
       setPlan(normalizedPlan);
       const templateId = enforceTemplateForPlan(
         typeof prof?.offer_template === 'string' ? prof.offer_template : null,
-        normalizedPlan
+        normalizedPlan,
       );
       setProfile({
         company_name: prof?.company_name ?? '',
         company_address: prof?.company_address ?? '',
         company_tax_id: prof?.company_tax_id ?? '',
         company_phone: prof?.company_phone ?? '',
-        company_email: prof?.company_email ?? (user.email ?? ''),
+        company_email: prof?.company_email ?? user.email ?? '',
         industries,
         brand_logo_url: prof?.brand_logo_url ?? null,
         brand_color_primary: prof?.brand_color_primary ?? '#0f172a',
@@ -277,22 +302,28 @@ export default function SettingsPage() {
     return () => {
       active = false;
     };
-  }, [authStatus, supabase, user]);
+  }, [authStatus, showToast, supabase, user]);
 
   async function saveProfile(scope: 'all' | 'branding') {
     try {
       setSaving(true);
       if (!user) return;
       if (scope === 'branding') {
-        if (hasBrandingErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
-      } else if (hasErrors) { alert('Kérjük, javítsd a piros mezőket.'); return; }
+        if (hasBrandingErrors) {
+          alert('Kérjük, javítsd a piros mezőket.');
+          return;
+        }
+      } else if (hasErrors) {
+        alert('Kérjük, javítsd a piros mezőket.');
+        return;
+      }
       const primary = normalizeColorHex(profile.brand_color_primary);
       const secondary = normalizeColorHex(profile.brand_color_secondary);
       const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
       const sanitizedIndustries = Array.isArray(profile.industries)
         ? profile.industries
-          .map((industry) => industry.trim())
-          .filter((industry) => industry.length > 0)
+            .map((industry) => industry.trim())
+            .filter((industry) => industry.length > 0)
         : [];
       if (scope === 'branding') {
         const mutationAction = resolveProfileMutationAction({
@@ -342,7 +373,7 @@ export default function SettingsPage() {
                 brand_color_secondary: secondary,
                 offer_template: templateId,
               },
-              { onConflict: 'id' }
+              { onConflict: 'id' },
             )
             .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
             .maybeSingle();
@@ -359,8 +390,10 @@ export default function SettingsPage() {
           brand_color_primary: brandingData?.brand_color_primary ?? primary ?? null,
           brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
           offer_template: enforceTemplateForPlan(
-            typeof brandingData?.offer_template === 'string' ? brandingData.offer_template : templateId,
-            plan
+            typeof brandingData?.offer_template === 'string'
+              ? brandingData.offer_template
+              : templateId,
+            plan,
           ),
         }));
         alert('Mentve!');
@@ -420,7 +453,7 @@ export default function SettingsPage() {
               brand_color_secondary: secondary,
               offer_template: templateId,
             },
-            { onConflict: 'id' }
+            { onConflict: 'id' },
           )
           .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
@@ -439,14 +472,17 @@ export default function SettingsPage() {
         industries: sanitizedIndustries,
         offer_template: enforceTemplateForPlan(
           typeof profileData?.offer_template === 'string' ? profileData.offer_template : templateId,
-          plan
+          plan,
         ),
       }));
       alert('Mentve!');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Ismeretlen hiba történt a mentés közben.';
+      const message =
+        error instanceof Error ? error.message : 'Ismeretlen hiba történt a mentés közben.';
       alert(`Nem sikerült menteni: ${message}`);
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   }
 
   function startGoogleLink() {
@@ -513,9 +549,8 @@ export default function SettingsPage() {
       });
     } catch (error) {
       console.error('Logo upload error', error);
-      const message = error instanceof Error
-        ? error.message
-        : 'Nem sikerült feltölteni a logót. Próbáld újra.';
+      const message =
+        error instanceof Error ? error.message : 'Nem sikerült feltölteni a logót. Próbáld újra.';
       showToast({
         title: 'Logó feltöltése sikertelen',
         description: message,
@@ -536,27 +571,38 @@ export default function SettingsPage() {
   }
 
   async function addActivity() {
-    if (!newAct.name.trim()) { alert('Add meg a tevékenység nevét.'); return; }
+    if (!newAct.name.trim()) {
+      alert('Add meg a tevékenység nevét.');
+      return;
+    }
     try {
       setActSaving(true);
       if (!user) return;
-      const ins = await supabase.from('activities').insert({
-        user_id: user.id,
-        name: newAct.name.trim(),
-        unit: newAct.unit || 'db',
-        default_unit_price: Number(newAct.price) || 0,
-        default_vat: Number(newAct.vat) || 27,
-        industries: newAct.industries || [],
-      }).select();
-      setActs(prev => [...prev, ...(ins.data as ActivityRow[] || [])]
-        .sort((a, b) => a.name.localeCompare(b.name)));
+      const ins = await supabase
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          name: newAct.name.trim(),
+          unit: newAct.unit || 'db',
+          default_unit_price: Number(newAct.price) || 0,
+          default_vat: Number(newAct.vat) || 27,
+          industries: newAct.industries || [],
+        })
+        .select();
+      setActs((prev) =>
+        [...prev, ...((ins.data as ActivityRow[]) || [])].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      );
       setNewAct({ name: '', unit: 'db', price: 0, vat: 27, industries: profile.industries || [] });
-    } finally { setActSaving(false); }
+    } finally {
+      setActSaving(false);
+    }
   }
 
   async function deleteActivity(id: string) {
     await supabase.from('activities').delete().eq('id', id);
-    setActs(prev => prev.filter(a => a.id !== id));
+    setActs((prev) => prev.filter((a) => a.id !== id));
   }
 
   function toggleIndustry(rawTarget: string) {
@@ -564,9 +610,7 @@ export default function SettingsPage() {
     if (!target) return;
 
     setProfile((p) => {
-      const sanitized = (p.industries || [])
-        .map((industry) => industry.trim())
-        .filter(Boolean);
+      const sanitized = (p.industries || []).map((industry) => industry.trim()).filter(Boolean);
       const set = new Set(sanitized);
       if (set.has(target)) {
         set.delete(target);
@@ -578,7 +622,7 @@ export default function SettingsPage() {
   }
 
   function toggleNewActIndustry(target: string) {
-    setNewAct(a => {
+    setNewAct((a) => {
       const set = new Set(a.industries);
       if (set.has(target)) {
         set.delete(target);
@@ -593,9 +637,7 @@ export default function SettingsPage() {
     const val = value.trim();
     if (!val) return;
     setProfile((p) => {
-      const sanitized = (p.industries || [])
-        .map((industry) => industry.trim())
-        .filter(Boolean);
+      const sanitized = (p.industries || []).map((industry) => industry.trim()).filter(Boolean);
       const set = new Set(sanitized);
       set.add(val);
       return { ...p, industries: Array.from(set) };
@@ -618,7 +660,13 @@ export default function SettingsPage() {
     <AppFrame
       title="Beállítások"
       description="Az itt megadott információk automatikusan megjelennek az ajánlatokban és a generált PDF-ekben."
-      actions={email ? <span className="text-sm text-slate-400">Belépve: <span className="font-medium text-slate-600">{email}</span></span> : null}
+      actions={
+        email ? (
+          <span className="text-sm text-slate-400">
+            Belépve: <span className="font-medium text-slate-600">{email}</span>
+          </span>
+        ) : null
+      }
     >
       <div className="space-y-8">
         <Card
@@ -627,14 +675,18 @@ export default function SettingsPage() {
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">Bejelentkezési módok</h2>
-              <p className="text-sm text-slate-500">Kapcsold össze a Google fiókodat a gyorsabb belépéshez.</p>
+              <p className="text-sm text-slate-500">
+                Kapcsold össze a Google fiókodat a gyorsabb belépéshez.
+              </p>
             </CardHeader>
           }
         >
           <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-white p-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium text-slate-800">
-                {googleLinked ? 'A Google fiókod már össze van kapcsolva.' : 'Kapcsold össze a Google fiókodat.'}
+                {googleLinked
+                  ? 'A Google fiókod már össze van kapcsolva.'
+                  : 'Kapcsold össze a Google fiókodat.'}
               </p>
               <p className="text-xs text-slate-500">
                 {googleLinked
@@ -648,7 +700,11 @@ export default function SettingsPage() {
               disabled={googleLinked || linkingGoogle}
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {googleLinked ? 'Google fiók csatlakoztatva' : linkingGoogle ? 'Átirányítás…' : 'Google összekapcsolása'}
+              {googleLinked
+                ? 'Google fiók csatlakoztatva'
+                : linkingGoogle
+                  ? 'Átirányítás…'
+                  : 'Google összekapcsolása'}
             </Button>
           </div>
         </Card>
@@ -659,7 +715,9 @@ export default function SettingsPage() {
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">Cégadatok</h2>
-              <p className="text-sm text-slate-500">Töltsd ki a számlázási és kapcsolatfelvételi adatokat.</p>
+              <p className="text-sm text-slate-500">
+                Töltsd ki a számlázási és kapcsolatfelvételi adatokat.
+              </p>
             </CardHeader>
           }
         >
@@ -667,13 +725,13 @@ export default function SettingsPage() {
             <Input
               label="Cégnév"
               value={profile.company_name || ''}
-              onChange={e => setProfile(p => ({ ...p, company_name: e.target.value }))}
+              onChange={(e) => setProfile((p) => ({ ...p, company_name: e.target.value }))}
             />
             <Input
               label="Adószám"
               placeholder="12345678-1-12"
               value={profile.company_tax_id || ''}
-              onChange={e => setProfile(p => ({ ...p, company_tax_id: e.target.value }))}
+              onChange={(e) => setProfile((p) => ({ ...p, company_tax_id: e.target.value }))}
               error={errors.general.tax}
             />
             <div className="md:col-span-2">
@@ -681,7 +739,7 @@ export default function SettingsPage() {
                 label="Cím"
                 placeholder="Irányítószám, település, utca, házszám"
                 value={profile.company_address || ''}
-                onChange={e => setProfile(p => ({ ...p, company_address: e.target.value }))}
+                onChange={(e) => setProfile((p) => ({ ...p, company_address: e.target.value }))}
                 error={errors.general.address}
               />
             </div>
@@ -689,23 +747,27 @@ export default function SettingsPage() {
               label="Telefon"
               placeholder="+36301234567"
               value={profile.company_phone || ''}
-              onChange={e => setProfile(p => ({ ...p, company_phone: e.target.value }))}
+              onChange={(e) => setProfile((p) => ({ ...p, company_phone: e.target.value }))}
               error={errors.general.phone}
             />
             <Input
               label="E-mail"
               value={profile.company_email || ''}
-              onChange={e => setProfile(p => ({ ...p, company_email: e.target.value }))}
+              onChange={(e) => setProfile((p) => ({ ...p, company_email: e.target.value }))}
             />
           </div>
 
           <div className="space-y-4">
             <div>
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Iparágak (több is választható)</span>
-              <p className="text-xs text-slate-400">Az itt megadott iparágak az ajánlatvarázslóban is megjelennek.</p>
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Iparágak (több is választható)
+              </span>
+              <p className="text-xs text-slate-400">
+                Az itt megadott iparágak az ajánlatvarázslóban is megjelennek.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {ALL_INDUSTRIES_HU.map(ind => {
+              {ALL_INDUSTRIES_HU.map((ind) => {
                 const active = profile.industries?.includes(ind);
                 return (
                   <Button
@@ -726,8 +788,8 @@ export default function SettingsPage() {
                   label="Új iparág hozzáadása"
                   placeholder="Pl. Nonprofit"
                   value={newIndustry}
-                  onChange={e => setNewIndustry(e.target.value)}
-                  onKeyDown={e => {
+                  onChange={(e) => setNewIndustry(e.target.value)}
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       handleManualIndustry(newIndustry);
@@ -744,8 +806,11 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {(profile.industries || []).map(ind => (
-                <span key={ind} className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-slate-600">
+              {(profile.industries || []).map((ind) => (
+                <span
+                  key={ind}
+                  className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-slate-600"
+                >
                   {ind}
                 </span>
               ))}
@@ -771,7 +836,9 @@ export default function SettingsPage() {
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">Márka megjelenés</h2>
-              <p className="text-sm text-slate-500">Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.</p>
+              <p className="text-sm text-slate-500">
+                Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.
+              </p>
             </CardHeader>
           }
         >
@@ -782,13 +849,17 @@ export default function SettingsPage() {
                 <input
                   type="color"
                   value={primaryPreview}
-                  onChange={e => setProfile(p => ({ ...p, brand_color_primary: e.target.value }))}
+                  onChange={(e) =>
+                    setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
+                  }
                   className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
                 />
                 <div className="flex-1">
                   <Input
                     value={profile.brand_color_primary || ''}
-                    onChange={e => setProfile(p => ({ ...p, brand_color_primary: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
+                    }
                     placeholder="#0f172a"
                     className="py-2 text-sm font-mono"
                     error={errors.branding.brandPrimary}
@@ -803,13 +874,17 @@ export default function SettingsPage() {
                 <input
                   type="color"
                   value={secondaryPreview}
-                  onChange={e => setProfile(p => ({ ...p, brand_color_secondary: e.target.value }))}
+                  onChange={(e) =>
+                    setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
+                  }
                   className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
                 />
                 <div className="flex-1">
                   <Input
                     value={profile.brand_color_secondary || ''}
-                    onChange={e => setProfile(p => ({ ...p, brand_color_secondary: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
+                    }
                     placeholder="#f3f4f6"
                     className="py-2 text-sm font-mono"
                     error={errors.branding.brandSecondary}
@@ -836,16 +911,18 @@ export default function SettingsPage() {
               )}
               <div className="flex-1 text-sm text-slate-500">
                 <p className="font-semibold text-slate-700">Logó feltöltése</p>
-                <p className="text-xs text-slate-400">PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.</p>
+                <p className="text-xs text-slate-400">
+                  PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.
+                </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
                     onClick={triggerLogoUpload}
                     disabled={logoUploading}
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
-                </Button>
+                    className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
+                  </Button>
                   {profile.brand_logo_url && (
                     <a
                       href={profile.brand_logo_url}
@@ -861,19 +938,29 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex flex-1 flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Minta előnézet</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Minta előnézet
+              </span>
               <div
                 className="rounded-2xl border border-border p-4 shadow-inner"
                 style={{ background: secondaryPreview }}
               >
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: primaryPreview }}>
+                <p
+                  className="text-xs font-semibold uppercase tracking-wide"
+                  style={{ color: primaryPreview }}
+                >
                   Céged neve
                 </p>
                 <p className="mt-2 text-base font-semibold" style={{ color: primaryPreview }}>
                   Ajánlat címe
                 </p>
-                <p className="text-xs text-slate-600">Így jelenik meg a fejléced a generált dokumentumokban.</p>
-                <div className="mt-4 h-1.5 w-24 rounded-full" style={{ background: primaryPreview }} />
+                <p className="text-xs text-slate-600">
+                  Így jelenik meg a fejléced a generált dokumentumokban.
+                </p>
+                <div
+                  className="mt-4 h-1.5 w-24 rounded-full"
+                  style={{ background: primaryPreview }}
+                />
               </div>
             </div>
           </div>
@@ -905,8 +992,8 @@ export default function SettingsPage() {
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">Ajánlat sablonok</h2>
               <p className="text-sm text-slate-500">
-                Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket
-                használják.
+                Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a
+                megadott márkaszíneket használják.
               </p>
             </CardHeader>
           }
@@ -950,7 +1037,9 @@ export default function SettingsPage() {
                   <p className="text-xs text-slate-500">{template.description}</p>
                   {renderTemplatePreview(template.previewVariant)}
                   {disabled && (
-                    <p className="text-xs font-medium text-amber-600">Pro előfizetéssel érhető el.</p>
+                    <p className="text-xs font-medium text-amber-600">
+                      Pro előfizetéssel érhető el.
+                    </p>
                   )}
                 </Button>
               );
@@ -959,7 +1048,8 @@ export default function SettingsPage() {
 
           {!canUseProTemplates && (
             <p className="text-xs text-slate-500">
-              A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.
+              A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha
+              szükséged van rá.
             </p>
           )}
         </Card>
@@ -970,7 +1060,9 @@ export default function SettingsPage() {
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">Tevékenység-sablonok</h2>
-              <p className="text-sm text-slate-500">Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.</p>
+              <p className="text-sm text-slate-500">
+                Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.
+              </p>
             </CardHeader>
           }
         >
@@ -980,33 +1072,35 @@ export default function SettingsPage() {
                 label="Megnevezés"
                 placeholder="Pl. Webfejlesztés"
                 value={newAct.name}
-                onChange={e => setNewAct(a => ({ ...a, name: e.target.value }))}
+                onChange={(e) => setNewAct((a) => ({ ...a, name: e.target.value }))}
               />
             </div>
             <Input
               label="Mértékegység"
               placeholder="db / óra / m²"
               value={newAct.unit}
-              onChange={e => setNewAct(a => ({ ...a, unit: e.target.value }))}
+              onChange={(e) => setNewAct((a) => ({ ...a, unit: e.target.value }))}
             />
             <Input
               label="Alap díj (nettó, Ft)"
               type="number"
               min={0}
               value={newAct.price}
-              onChange={e => setNewAct(a => ({ ...a, price: Number(e.target.value) }))}
+              onChange={(e) => setNewAct((a) => ({ ...a, price: Number(e.target.value) }))}
             />
             <Input
               label="ÁFA %"
               type="number"
               min={0}
               value={newAct.vat}
-              onChange={e => setNewAct(a => ({ ...a, vat: Number(e.target.value) }))}
+              onChange={(e) => setNewAct((a) => ({ ...a, vat: Number(e.target.value) }))}
             />
             <div className="lg:col-span-5">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">Iparágak ehhez a tételhez</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Iparágak ehhez a tételhez
+              </span>
               <div className="mt-2 flex flex-wrap gap-2">
-                {ALL_INDUSTRIES_HU.map(ind => {
+                {ALL_INDUSTRIES_HU.map((ind) => {
                   const active = newAct.industries.includes(ind);
                   return (
                     <Button
@@ -1032,12 +1126,16 @@ export default function SettingsPage() {
           </Button>
 
           <div className="grid gap-3 md:grid-cols-2">
-            {acts.map(a => (
+            {acts.map((a) => (
               <div key={a.id} className="rounded-2xl border border-border bg-slate-50/80 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800">{a.name}</h3>
-                    <p className="text-xs text-slate-500">Egység: {a.unit} • Díj: {Number(a.default_unit_price || 0).toLocaleString('hu-HU')} Ft • ÁFA: {a.default_vat}%</p>
+                    <p className="text-xs text-slate-500">
+                      Egység: {a.unit} • Díj:{' '}
+                      {Number(a.default_unit_price || 0).toLocaleString('hu-HU')} Ft • ÁFA:{' '}
+                      {a.default_vat}%
+                    </p>
                   </div>
                   <Button
                     onClick={() => deleteActivity(a.id)}
@@ -1046,7 +1144,9 @@ export default function SettingsPage() {
                     Törlés
                   </Button>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">Iparágak: {(a.industries || []).join(', ') || '—'}</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Iparágak: {(a.industries || []).join(', ') || '—'}
+                </p>
               </div>
             ))}
             {acts.length === 0 && (

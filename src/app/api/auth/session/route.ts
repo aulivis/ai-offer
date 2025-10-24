@@ -26,9 +26,6 @@ export async function GET() {
     return Response.json({ user: data.user });
   } catch (error) {
     console.error('Failed to load Supabase user.', error);
-    return Response.json(
-      { error: 'Nem sikerült ellenőrizni a bejelentkezést.' },
-      { status: 500 },
-    );
+    return Response.json({ error: 'Nem sikerült ellenőrizni a bejelentkezést.' }, { status: 500 });
   }
 }

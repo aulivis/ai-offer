@@ -27,13 +27,7 @@ describe('mergeOfferPages', () => {
 describe('LoadMoreButton', () => {
   it('renders numbered pagination and triggers handler for next page', () => {
     const onClick = vi.fn();
-    render(
-      <LoadMoreButton
-        currentPage={1}
-        hasNext
-        onClick={onClick}
-      />,
-    );
+    render(<LoadMoreButton currentPage={1} hasNext onClick={onClick} />);
 
     const currentPageButton = screen.getByRole('button', { name: '1' });
     expect(currentPageButton).toBeDisabled();
@@ -47,14 +41,7 @@ describe('LoadMoreButton', () => {
   });
 
   it('shows loading state on next button', () => {
-    render(
-      <LoadMoreButton
-        currentPage={2}
-        hasNext
-        isLoading
-        onClick={() => {}}
-      />,
-    );
+    render(<LoadMoreButton currentPage={2} hasNext isLoading onClick={() => {}} />);
 
     const buttons = screen.getAllByRole('button');
     const nextPageButton = buttons[buttons.length - 1];

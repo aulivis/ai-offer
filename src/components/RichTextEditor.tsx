@@ -137,15 +137,22 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
         redo: false,
       };
 
-      (['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'] as Command[]).forEach(
-        (command) => {
-          try {
-            nextState[command] = document.queryCommandState(command) ?? false;
-          } catch {
-            nextState[command] = false;
-          }
+      (
+        [
+          'bold',
+          'italic',
+          'underline',
+          'strikeThrough',
+          'insertUnorderedList',
+          'insertOrderedList',
+        ] as Command[]
+      ).forEach((command) => {
+        try {
+          nextState[command] = document.queryCommandState(command) ?? false;
+        } catch {
+          nextState[command] = false;
         }
-      );
+      });
 
       try {
         const formatBlockValue = document.queryCommandValue('formatBlock');
@@ -209,7 +216,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
           setTimeout(() => emitChange(), 0);
         }
       },
-      [emitChange]
+      [emitChange],
     );
 
     useEffect(() => {
@@ -274,7 +281,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
           emitChange();
         },
       }),
-      [emitChange]
+      [emitChange],
     );
 
     const showPlaceholder = !sanitizedValue && !hasFocus;
@@ -320,12 +327,14 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
             }}
           />
           {showPlaceholder && placeholder ? (
-            <span className="pointer-events-none absolute left-4 top-4 text-sm text-slate-400">{placeholder}</span>
+            <span className="pointer-events-none absolute left-4 top-4 text-sm text-slate-400">
+              {placeholder}
+            </span>
           ) : null}
         </div>
       </div>
     );
-  }
+  },
 );
 
 RichTextEditor.displayName = 'RichTextEditor';

@@ -39,9 +39,9 @@ export async function POST(request: Request) {
 
   const supabase = supabaseServer();
 
-  const { data: sessions, error } = await supabase
+  const { data, error } = await supabase
     .from('sessions')
-    .select<SessionRow>('id, user_id, rt_hash, revoked_at')
+    .select('id, user_id, rt_hash, revoked_at')
     .eq('user_id', userId);
 
   if (error) {
@@ -50,9 +50,11 @@ export async function POST(request: Request) {
     return Response.json({ success: true });
   }
 
-  if (sessions && sessions.length > 0) {
+  const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
+
+  if (sessionList.length > 0) {
     const nowIso = new Date().toISOString();
-    for (const session of sessions) {
+    for (const session of sessionList) {
       try {
         const matches = await argon2Verify(session.rt_hash, refreshToken);
         if (matches) {

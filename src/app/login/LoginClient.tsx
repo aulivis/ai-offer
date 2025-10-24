@@ -33,7 +33,10 @@ export default function LoginClient() {
           .json()
           .catch(() => ({ error: 'Nem sikerült elküldeni a magic linket.' }));
         const message =
-          payload && typeof payload === 'object' && 'error' in payload && typeof (payload as { error?: unknown }).error === 'string'
+          payload &&
+          typeof payload === 'object' &&
+          'error' in payload &&
+          typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error?: string }).error as string)
             : 'Nem sikerült elküldeni a magic linket.';
         throw new Error(message);
@@ -76,7 +79,9 @@ export default function LoginClient() {
           <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
             Bejelentkezés
           </h1>
-          <p className="text-base text-fg-muted">Írd be az e-mail címed, és küldünk egy magic linket.</p>
+          <p className="text-base text-fg-muted">
+            Írd be az e-mail címed, és küldünk egy magic linket.
+          </p>
         </div>
 
         <div className="space-y-4">

@@ -24,10 +24,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Configure the following secrets before running the application:
 
-| Variable | Description |
-| --- | --- |
-| `AUTH_COOKIE_SECRET` | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations. |
-| `CSRF_SECRET` | 32+ character secret used to sign CSRF tokens for authenticated requests. |
+| Variable                | Description                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `AUTH_COOKIE_SECRET`    | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations.                              |
+| `CSRF_SECRET`           | 32+ character secret used to sign CSRF tokens for authenticated requests.                                                       |
 | `PDF_WEBHOOK_ALLOWLIST` | Comma-separated list of allowed domains/origins for PDF webhook callbacks (supports optional protocol and wildcard subdomains). |
 
 ### PDF webhook allow-list maintenance

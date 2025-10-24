@@ -57,16 +57,10 @@ export function Button({
   style,
   ...props
 }: Props) {
-  const cls = [base, variantClasses[variant], sizes[size], className]
-    .filter(Boolean)
-    .join(' ');
+  const cls = [base, variantClasses[variant], sizes[size], className].filter(Boolean).join(' ');
 
   return (
-    <button
-      className={cls}
-      style={{ ...variantStyles[variant], ...style }}
-      {...props}
-    >
+    <button className={cls} style={{ ...variantStyles[variant], ...style }} {...props}>
       {loading ? '…' : children}
     </button>
   );

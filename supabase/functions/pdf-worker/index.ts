@@ -14,7 +14,9 @@ function assertEnv(value: string | undefined, name: string): string {
   return value;
 }
 
-const pdfWebhookAllowlist = createPdfWebhookAllowlist(splitAllowlist(Deno.env.get('PDF_WEBHOOK_ALLOWLIST')));
+const pdfWebhookAllowlist = createPdfWebhookAllowlist(
+  splitAllowlist(Deno.env.get('PDF_WEBHOOK_ALLOWLIST')),
+);
 
 serve(async (request) => {
   if (request.method !== 'POST') {
@@ -22,7 +24,10 @@ serve(async (request) => {
   }
 
   const supabaseUrl = assertEnv(Deno.env.get('SUPABASE_URL'), 'SUPABASE_URL');
-  const supabaseKey = assertEnv(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), 'SUPABASE_SERVICE_ROLE_KEY');
+  const supabaseKey = assertEnv(
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+    'SUPABASE_SERVICE_ROLE_KEY',
+  );
 
   let body: { jobId?: string };
   try {
@@ -46,7 +51,11 @@ serve(async (request) => {
     auth: { persistSession: false },
   });
 
-  const { data: job, error: jobError } = await supabase.from('pdf_jobs').select('*').eq('id', jobId).single();
+  const { data: job, error: jobError } = await supabase
+    .from('pdf_jobs')
+    .select('*')
+    .eq('id', jobId)
+    .single();
   if (jobError || !job) {
     return new Response(JSON.stringify({ error: 'Job not found' }), {
       headers: { 'Content-Type': 'application/json' },
@@ -80,8 +89,11 @@ serve(async (request) => {
     new Date(job.created_at ?? new Date()).toISOString().slice(0, 10),
   );
   const userLimit = Number.isFinite(payload.userLimit ?? NaN) ? Number(payload.userLimit) : null;
-  const deviceId = typeof payload.deviceId === 'string' && payload.deviceId ? payload.deviceId : null;
-  const deviceLimit = Number.isFinite(payload.deviceLimit ?? NaN) ? Number(payload.deviceLimit) : null;
+  const deviceId =
+    typeof payload.deviceId === 'string' && payload.deviceId ? payload.deviceId : null;
+  const deviceLimit = Number.isFinite(payload.deviceLimit ?? NaN)
+    ? Number(payload.deviceLimit)
+    : null;
 
   let uploadedToStorage = false;
 
@@ -174,7 +186,13 @@ serve(async (request) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, jobId, offerId: job.offer_id, pdfUrl, downloadToken: job.download_token }),
+      JSON.stringify({
+        ok: true,
+        jobId,
+        offerId: job.offer_id,
+        pdfUrl,
+        downloadToken: job.download_token,
+      }),
       { headers: { 'Content-Type': 'application/json' } },
     );
   } catch (error) {
@@ -246,13 +264,15 @@ async function ensureUsageCounter<K extends CounterKind>(
   supabase: SupabaseClient,
   kind: K,
   target: CounterTargets[K],
-  periodStart: string
+  periodStart: string,
 ): Promise<{ periodStart: string; offersGenerated: number }> {
   const config = COUNTER_CONFIG[kind];
   let selectBuilder = supabase.from(config.table).select('period_start, offers_generated');
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-    selectBuilder = selectBuilder.eq(column, target[key]);
-  });
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      selectBuilder = selectBuilder.eq(column, target[key]);
+    },
+  );
   const { data: existing, error: selectError } = await selectBuilder.maybeSingle();
 
   if (selectError && selectError.code !== 'PGRST116') {
@@ -265,9 +285,11 @@ async function ensureUsageCounter<K extends CounterKind>(
       period_start: periodStart,
       offers_generated: 0,
     };
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      insertPayload[column] = target[key];
-    });
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        insertPayload[column] = target[key];
+      },
+    );
     const { data: inserted, error: insertError } = await supabase
       .from(config.table)
       .insert(insertPayload)
@@ -286,10 +308,14 @@ async function ensureUsageCounter<K extends CounterKind>(
     let updateBuilder = supabase
       .from(config.table)
       .update({ period_start: periodStart, offers_generated: 0 });
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      updateBuilder = updateBuilder.eq(column, target[key]);
-    });
-    const { data: resetRow, error: resetError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        updateBuilder = updateBuilder.eq(column, target[key]);
+      },
+    );
+    const { data: resetRow, error: resetError } = await updateBuilder
+      .select('period_start, offers_generated')
+      .maybeSingle();
     if (resetError) {
       throw new Error(`Failed to reset usage counter: ${resetError.message}`);
     }
@@ -305,22 +331,30 @@ async function fallbackIncrement<K extends CounterKind>(
   kind: K,
   target: CounterTargets[K],
   limit: number | null,
-  periodStart: string
+  periodStart: string,
 ) {
   const config = COUNTER_CONFIG[kind];
   const state = await ensureUsageCounter(supabase, kind, target, periodStart);
 
   if (typeof limit === 'number' && Number.isFinite(limit) && state.offersGenerated >= limit) {
-    return { allowed: false, offersGenerated: state.offersGenerated, periodStart: state.periodStart };
+    return {
+      allowed: false,
+      offersGenerated: state.offersGenerated,
+      periodStart: state.periodStart,
+    };
   }
 
   let updateBuilder = supabase
     .from(config.table)
     .update({ offers_generated: state.offersGenerated + 1, period_start: state.periodStart });
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-    updateBuilder = updateBuilder.eq(column, target[key]);
-  });
-  const { data: updatedRow, error: updateError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      updateBuilder = updateBuilder.eq(column, target[key]);
+    },
+  );
+  const { data: updatedRow, error: updateError } = await updateBuilder
+    .select('period_start, offers_generated')
+    .maybeSingle();
 
   if (updateError) {
     throw new Error(`Failed to bump usage counter: ${updateError.message}`);
@@ -336,7 +370,7 @@ async function incrementUsage<K extends CounterKind>(
   kind: K,
   target: CounterTargets[K],
   limit: number | null,
-  periodStart: string
+  periodStart: string,
 ) {
   const config = COUNTER_CONFIG[kind];
   const normalizedLimit = Number.isFinite(limit ?? NaN) ? Number(limit) : null;

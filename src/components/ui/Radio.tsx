@@ -29,7 +29,6 @@ export function Radio({ error, help, label, id, className, ...props }: Props) {
         <input
           id={radioId}
           type="radio"
-          aria-invalid={!!error}
           aria-describedby={describedBy}
           className={[
             'h-5 w-5 rounded-full border border-border bg-bg text-primary',

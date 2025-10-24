@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
@@ -115,18 +115,17 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            {isMenuOpen ? (
-              <path d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            )}
+            {isMenuOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
           </svg>
         </button>
       </div>
 
       {isMenuOpen ? (
         <div className="bg-bg px-6 pb-6 pt-4 text-fg md:hidden">
-          <nav id="landing-navigation" className="flex flex-col gap-4 text-base font-medium text-fg">
+          <nav
+            id="landing-navigation"
+            className="flex flex-col gap-4 text-base font-medium text-fg"
+          >
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}

@@ -33,7 +33,7 @@ class FakeQueryBuilder {
     } as const;
   }
 
-  upsert(record: RateLimitRow, _options?: { onConflict?: string }) {
+  upsert(record: RateLimitRow) {
     this.records.set(record.key, { ...record });
     return {
       select: () => ({
@@ -113,12 +113,11 @@ function createClientWithErrors(options: {
             options.upsertError
               ? { data: null, error: { message: options.upsertError } as PostgrestError }
               : {
-                  data:
-                    existing ?? {
-                      key: HASHED_KEY,
-                      count: 1,
-                      expires_at: new Date(Date.now() + RATE_LIMIT_WINDOW_MS).toISOString(),
-                    },
+                  data: existing ?? {
+                    key: HASHED_KEY,
+                    count: 1,
+                    expires_at: new Date(Date.now() + RATE_LIMIT_WINDOW_MS).toISOString(),
+                  },
                   error: null,
                 },
         }),
@@ -147,7 +146,7 @@ function createClientWithErrors(options: {
         eq: () => Promise.resolve({ data: null, error: null }),
       }),
     }),
-  } satisfies RateLimitClient;
+  } as unknown as RateLimitClient;
 }
 
 describe('consumeMagicLinkRateLimit', () => {
@@ -187,9 +186,7 @@ describe('consumeMagicLinkRateLimit', () => {
 
     expect(result.allowed).toBe(false);
     expect(result.retryAfterMs).toBeLessThanOrEqual(RATE_LIMIT_WINDOW_MS);
-    expect(client.records.get(HASHED_KEY)?.count).toBe(
-      RATE_LIMIT_MAX_ATTEMPTS + 1,
-    );
+    expect(client.records.get(HASHED_KEY)?.count).toBe(RATE_LIMIT_MAX_ATTEMPTS + 1);
   });
 
   it('resets an expired record', async () => {
@@ -242,17 +239,17 @@ describe('consumeMagicLinkRateLimit', () => {
   it('propagates select errors', async () => {
     const client = createClientWithErrors({ selectError: 'select failed' });
 
-    await expect(
-      consumeMagicLinkRateLimit(client, HASHED_KEY, Date.now()),
-    ).rejects.toMatchObject({ message: 'select failed' });
+    await expect(consumeMagicLinkRateLimit(client, HASHED_KEY, Date.now())).rejects.toMatchObject({
+      message: 'select failed',
+    });
   });
 
   it('propagates upsert errors', async () => {
     const client = createClientWithErrors({ upsertError: 'upsert failed' });
 
-    await expect(
-      consumeMagicLinkRateLimit(client, HASHED_KEY, Date.now()),
-    ).rejects.toMatchObject({ message: 'upsert failed' });
+    await expect(consumeMagicLinkRateLimit(client, HASHED_KEY, Date.now())).rejects.toMatchObject({
+      message: 'upsert failed',
+    });
   });
 
   it('propagates update errors', async () => {
@@ -263,8 +260,8 @@ describe('consumeMagicLinkRateLimit', () => {
       updateError: 'update failed',
     });
 
-    await expect(
-      consumeMagicLinkRateLimit(client, HASHED_KEY, now),
-    ).rejects.toMatchObject({ message: 'update failed' });
+    await expect(consumeMagicLinkRateLimit(client, HASHED_KEY, now)).rejects.toMatchObject({
+      message: 'update failed',
+    });
   });
 });

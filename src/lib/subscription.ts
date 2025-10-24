@@ -11,8 +11,6 @@ export function normalizePlan(rawPlan: string | null | undefined): SubscriptionP
   return 'free';
 }
 
-export function resolveEffectivePlan(
-  rawPlan: string | null | undefined
-): SubscriptionPlan {
+export function resolveEffectivePlan(rawPlan: string | null | undefined): SubscriptionPlan {
   return normalizePlan(rawPlan);
 }

@@ -7,42 +7,42 @@ export default function Home() {
     {
       title: 'Egyetlen esztétikus felület',
       description:
-        'A Propono sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.'
+        'A Propono sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
     },
     {
       title: 'AI, ami érti a briefet',
       description:
-        'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, árkalkulációt és moduláris blokkokat.'
+        'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, árkalkulációt és moduláris blokkokat.',
     },
     {
       title: 'Ügyfélközpontú megosztás',
       description:
-        'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.'
-    }
+        'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+    },
   ];
 
   const steps = [
     {
       title: 'Brief & mood',
       description:
-        'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.'
+        'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
     },
     {
       title: 'Moduláris blokkok',
       description:
-        'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.'
+        'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
     },
     {
       title: 'Megosztás & mérés',
       description:
-        'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.'
-    }
+        'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.',
+    },
   ];
 
   const spotlight = [
     'Szabadszavas promptok iparági sablonokkal',
     'Rugalmas rács, ahol minden komponens mozgatható',
-    'Automatikus költség-blokkok és összegek'
+    'Automatikus költség-blokkok és összegek',
   ];
 
   return (
@@ -55,14 +55,14 @@ export default function Home() {
           </span>
 
           <h1 className="relative isolate group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#151035] md:text-6xl">
-            Készíts lenyűgöző{' '}
-            <HighlightUnderline>ajánlatokat</HighlightUnderline>.
+            Készíts lenyűgöző <HighlightUnderline>ajánlatokat</HighlightUnderline>.
             <br />
             <span className="text-primary">Villámgyorsan.</span>
           </h1>
 
           <p className="max-w-[52ch] text-base leading-[1.6] text-fg-muted md:text-lg">
-            A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen személyre szabva, hogy te a növekedésre koncentrálhass.
+            A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen
+            személyre szabva, hogy te a növekedésre koncentrálhass.
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
@@ -82,14 +82,20 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col gap-6 rounded-3xl border border-border/70 bg-bg/90 p-8 shadow-card lg:ml-auto">
-          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">Mit kapsz azonnal?</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Mit kapsz azonnal?
+          </span>
           <p className="text-base leading-relaxed text-fg-muted">
-            A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól kezdve prémium élményt kap.
+            A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól
+            kezdve prémium élményt kap.
           </p>
           <ul className="space-y-4 text-base text-fg">
             {spotlight.map((item) => (
               <li key={item} className="flex items-start gap-3">
-                <span className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary" aria-hidden="true" />
+                <span
+                  className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary"
+                  aria-hidden="true"
+                />
                 <span className="text-fg-muted">{item}</span>
               </li>
             ))}
@@ -117,9 +123,12 @@ export default function Home() {
             <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
               Folyamat vizuálisan
             </span>
-            <h2 className="text-3xl font-semibold text-fg">Három lépés, ahol a csapatod együtt dolgozik</h2>
+            <h2 className="text-3xl font-semibold text-fg">
+              Három lépés, ahol a csapatod együtt dolgozik
+            </h2>
             <p className="text-base leading-relaxed text-fg-muted">
-              A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.
+              A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz,
+              és a háttérben az AI mindig egységes arculatot tart.
             </p>
           </div>
 
@@ -144,24 +153,29 @@ export default function Home() {
             Márkázott PDF, ami úgy néz ki, mintha egy design stúdió készítette volna
           </h3>
           <p className="mt-5 text-base leading-relaxed text-fg-muted">
-            Feltöltött logó, betűtípus és színkód – mind bekerül az ajánlat minden oldalára.
-            Az AI segít az összegzésekben, de a vizuális layout a te irányításod alatt marad.
+            Feltöltött logó, betűtípus és színkód – mind bekerül az ajánlat minden oldalára. Az AI
+            segít az összegzésekben, de a vizuális layout a te irányításod alatt marad.
           </p>
           <div className="mt-8 grid gap-4 text-base md:grid-cols-2">
             <Card className="p-5 bg-bg shadow-none">
               <p className="font-semibold">Dinamikus komponensek</p>
-              <p className="mt-1 text-fg-muted">Drag & drop blokkok, reszponzív rács a Penpot logikájával.</p>
+              <p className="mt-1 text-fg-muted">
+                Drag & drop blokkok, reszponzív rács a Penpot logikájával.
+              </p>
             </Card>
             <Card className="p-5 bg-bg shadow-none">
               <p className="font-semibold">Átlátható státuszok</p>
-              <p className="mt-1 text-fg-muted">Megnyitási, elfogadási és komment történet – mind visszamérhető.</p>
+              <p className="mt-1 text-fg-muted">
+                Megnyitási, elfogadási és komment történet – mind visszamérhető.
+              </p>
             </Card>
           </div>
         </Card>
 
         <Card className="flex flex-col justify-between gap-8 border border-border/60 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 p-8 text-base shadow-pop">
           <p className="text-lg font-semibold text-fg">
-            „A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.”
+            „A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a
+            térben dolgozik designer, sales és vezető.”
           </p>
           <div className="space-y-1 text-xs font-semibold uppercase tracking-[0.32em] text-fg-muted">
             <p>Kiss Júlia</p>
@@ -185,8 +199,8 @@ export default function Home() {
                 Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
               </h2>
               <p className="text-base leading-relaxed text-fg-muted">
-                Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi ajánlataidból tanul,
-                hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
+                Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi
+                ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

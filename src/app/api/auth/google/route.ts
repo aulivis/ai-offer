@@ -12,9 +12,7 @@ const AUTH_STATE_COOKIE = 'auth_state';
 const AUTH_STATE_MAX_AGE = 10 * 60; // 10 minutes
 
 function encryptState(payload: Record<string, unknown>): string {
-  const secret = createHash('sha256')
-    .update(envServer.AUTH_COOKIE_SECRET)
-    .digest();
+  const secret = createHash('sha256').update(envServer.AUTH_COOKIE_SECRET).digest();
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', secret, iv);
 

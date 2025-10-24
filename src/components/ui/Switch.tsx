@@ -39,19 +39,17 @@ export function Switch({ error, help, label, description, id, className, ...prop
             </span>
           )}
         </div>
-        <label htmlFor={switchId} className="relative inline-flex h-7 w-12 cursor-pointer items-center">
+        <label
+          htmlFor={switchId}
+          className="relative inline-flex h-7 w-12 cursor-pointer items-center"
+        >
           <input
             id={switchId}
             type="checkbox"
             role="switch"
             aria-invalid={!!error}
             aria-describedby={describedBy}
-            className={[
-              'peer sr-only',
-              className,
-            ]
-              .filter(Boolean)
-              .join(' ')}
+            className={['peer sr-only', className].filter(Boolean).join(' ')}
             {...props}
           />
           <span

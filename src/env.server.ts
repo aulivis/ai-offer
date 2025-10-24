@@ -20,36 +20,30 @@ const ServerEnvSchema = z.object({
   OPENAI_API_KEY: z.string(),
   STRIPE_SECRET_KEY: z.string(),
   APP_URL: z.string().url(),
-  STRIPE_PRICE_ALLOWLIST: z
-    .union([z.string(), z.undefined()])
-    .transform((value) =>
-      typeof value === 'string'
-        ? value
-            .split(',')
-            .map((item) => item.trim())
-            .filter((item) => item.length > 0)
-        : [],
-    ),
-  OAUTH_REDIRECT_ALLOWLIST: z
-    .union([z.string(), z.undefined()])
-    .transform((value) =>
-      typeof value === 'string'
-        ? value
-            .split(',')
-            .map((item) => item.trim())
-            .filter((item) => item.length > 0)
-        : [],
-    ),
-  PDF_WEBHOOK_ALLOWLIST: z
-    .union([z.string(), z.undefined()])
-    .transform((value) =>
-      typeof value === 'string'
-        ? value
-            .split(',')
-            .map((item) => item.trim())
-            .filter((item) => item.length > 0)
-        : [],
-    ),
+  STRIPE_PRICE_ALLOWLIST: z.union([z.string(), z.undefined()]).transform((value) =>
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [],
+  ),
+  OAUTH_REDIRECT_ALLOWLIST: z.union([z.string(), z.undefined()]).transform((value) =>
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [],
+  ),
+  PDF_WEBHOOK_ALLOWLIST: z.union([z.string(), z.undefined()]).transform((value) =>
+    typeof value === 'string'
+      ? value
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [],
+  ),
 });
 
 type ServerEnv = Omit<

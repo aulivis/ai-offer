@@ -104,7 +104,11 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     envServer.STRIPE_PRICE_ALLOWLIST.length > 0 &&
     !envServer.STRIPE_PRICE_ALLOWLIST.includes(priceId)
   ) {
-    console.warn('Checkout request rejected due to disallowed price', { requestId, clientId, priceId });
+    console.warn('Checkout request rejected due to disallowed price', {
+      requestId,
+      clientId,
+      priceId,
+    });
     return buildErrorResponse('A választott előfizetés nem érhető el.', 400);
   }
 
@@ -143,7 +147,12 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     });
     return NextResponse.json({ url: sessionUrl });
   } catch (error) {
-    console.error('Stripe checkout session creation failed', { requestId, clientId, error, userId });
+    console.error('Stripe checkout session creation failed', {
+      requestId,
+      clientId,
+      error,
+      userId,
+    });
     return buildErrorResponse('Nem sikerült elindítani a Stripe fizetést.', 500);
   }
 });

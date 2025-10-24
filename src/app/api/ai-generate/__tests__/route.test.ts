@@ -192,9 +192,7 @@ describe('POST /api/ai-generate', () => {
     });
     getUserProfileMock.mockResolvedValue({ plan: 'free' });
     resolveEffectivePlanMock.mockReturnValue('free');
-    uuidMock
-      .mockReturnValueOnce('offer-uuid')
-      .mockReturnValueOnce('job-token');
+    uuidMock.mockReturnValueOnce('offer-uuid').mockReturnValueOnce('job-token');
     cookiesGetMock.mockReturnValue(undefined);
     processPdfJobInlineMock.mockResolvedValue(null);
   });
@@ -211,7 +209,9 @@ describe('POST /api/ai-generate', () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({
       error: 'Érvénytelen kérés.',
-      issues: expect.objectContaining({ fieldErrors: expect.objectContaining({ title: expect.any(Array) }) }),
+      issues: expect.objectContaining({
+        fieldErrors: expect.objectContaining({ title: expect.any(Array) }),
+      }),
     });
 
     expect(insertOfferMock).not.toHaveBeenCalled();
@@ -221,24 +221,20 @@ describe('POST /api/ai-generate', () => {
   it('keeps the saved offer when PDF queueing fails', async () => {
     const { POST } = await import('../route');
 
-    const request = createRequest(
-      {
-        title: 'Ajánlat címe',
-        industry: 'Marketing',
-        description: 'Részletes leírás',
-        deadline: '',
-        language: 'hu',
-        brandVoice: 'friendly',
-        style: 'detailed',
-        prices: [
-          { name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 },
-        ],
-        aiOverrideHtml: '<p>Előnézet</p>',
-        clientId: null,
-        pdfWebhookUrl: null,
-        imageAssets: [],
-      },
-    );
+    const request = createRequest({
+      title: 'Ajánlat címe',
+      industry: 'Marketing',
+      description: 'Részletes leírás',
+      deadline: '',
+      language: 'hu',
+      brandVoice: 'friendly',
+      style: 'detailed',
+      prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+      aiOverrideHtml: '<p>Előnézet</p>',
+      clientId: null,
+      pdfWebhookUrl: null,
+      imageAssets: [],
+    });
 
     const response = await POST(request);
 
@@ -263,9 +259,7 @@ describe('POST /api/ai-generate', () => {
         style: 'detailed',
       },
       ai_text: '<p>Előnézet</p>',
-      price_json: [
-        { name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 },
-      ],
+      price_json: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
       pdf_url: null,
       status: 'draft',
     });
@@ -275,29 +269,27 @@ describe('POST /api/ai-generate', () => {
 
   it('falls back to inline PDF generation when dispatch fails', async () => {
     enqueuePdfJobMock.mockResolvedValueOnce(undefined);
-    dispatchPdfJobMock.mockRejectedValueOnce(new Error('Edge Function returned a non-2xx status code'));
+    dispatchPdfJobMock.mockRejectedValueOnce(
+      new Error('Edge Function returned a non-2xx status code'),
+    );
     processPdfJobInlineMock.mockResolvedValueOnce('https://cdn.example.com/offers/offer-uuid.pdf');
 
     const { POST } = await import('../route');
 
-    const request = createRequest(
-      {
-        title: 'Ajánlat címe',
-        industry: 'Marketing',
-        description: 'Részletes leírás',
-        deadline: '',
-        language: 'hu',
-        brandVoice: 'friendly',
-        style: 'detailed',
-        prices: [
-          { name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 },
-        ],
-        aiOverrideHtml: '<p>Előnézet</p>',
-        clientId: null,
-        pdfWebhookUrl: null,
-        imageAssets: [],
-      },
-    );
+    const request = createRequest({
+      title: 'Ajánlat címe',
+      industry: 'Marketing',
+      description: 'Részletes leírás',
+      deadline: '',
+      language: 'hu',
+      brandVoice: 'friendly',
+      style: 'detailed',
+      prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+      aiOverrideHtml: '<p>Előnézet</p>',
+      clientId: null,
+      pdfWebhookUrl: null,
+      imageAssets: [],
+    });
 
     const response = await POST(request);
 
@@ -328,24 +320,20 @@ describe('POST /api/ai-generate', () => {
     dispatchPdfJobMock.mockRejectedValue(new Error('invoke failed'));
     processPdfJobInlineMock.mockRejectedValue(new Error('inline failed'));
 
-    const request = createRequest(
-      {
-        title: 'Ajánlat címe',
-        industry: 'Marketing',
-        description: 'Részletes leírás',
-        deadline: '',
-        language: 'hu',
-        brandVoice: 'friendly',
-        style: 'detailed',
-        prices: [
-          { name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 },
-        ],
-        aiOverrideHtml: '<p>Előnézet</p>',
-        clientId: null,
-        pdfWebhookUrl: null,
-        imageAssets: [],
-      },
-    );
+    const request = createRequest({
+      title: 'Ajánlat címe',
+      industry: 'Marketing',
+      description: 'Részletes leírás',
+      deadline: '',
+      language: 'hu',
+      brandVoice: 'friendly',
+      style: 'detailed',
+      prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+      aiOverrideHtml: '<p>Előnézet</p>',
+      clientId: null,
+      pdfWebhookUrl: null,
+      imageAssets: [],
+    });
 
     const response = await POST(request);
 

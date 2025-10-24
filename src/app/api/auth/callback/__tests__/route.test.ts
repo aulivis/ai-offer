@@ -33,15 +33,18 @@ describe('Supabase token exchange logging', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({
-        error: 'invalid_grant',
-        access_token: 'super-secret',
-        nested: { refresh_token: 'also-secret' },
-      }), {
-        status: 400,
-        statusText: 'Bad Request',
-        headers: { 'content-type': 'application/json' },
-      }),
+      new Response(
+        JSON.stringify({
+          error: 'invalid_grant',
+          access_token: 'super-secret',
+          nested: { refresh_token: 'also-secret' },
+        }),
+        {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
     );
 
     try {

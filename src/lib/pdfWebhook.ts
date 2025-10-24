@@ -8,7 +8,9 @@ import {
   validatePdfWebhookUrl as baseValidatePdfWebhookUrl,
 } from '../../shared/pdfWebhook';
 
-const allowlist: PdfWebhookAllowlistEntry[] = createPdfWebhookAllowlist(envServer.PDF_WEBHOOK_ALLOWLIST);
+const allowlist: PdfWebhookAllowlistEntry[] = createPdfWebhookAllowlist(
+  envServer.PDF_WEBHOOK_ALLOWLIST,
+);
 
 export { PdfWebhookValidationError } from '../../shared/pdfWebhook';
 

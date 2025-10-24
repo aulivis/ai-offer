@@ -46,7 +46,7 @@ function parseExpiresAt(value: string | null | undefined) {
 
 async function selectExisting(
   table: RateLimitTable,
-  key: string
+  key: string,
 ): Promise<{ data: RateLimitRow | null; error: PostgrestError | null }> {
   return table.select('key, count, expires_at').eq('key', key).maybeSingle();
 }
@@ -54,7 +54,7 @@ async function selectExisting(
 async function upsertFresh(
   table: RateLimitTable,
   key: string,
-  expiresAt: string
+  expiresAt: string,
 ): Promise<{ data: RateLimitRow | null; error: PostgrestError | null }> {
   return table
     .upsert({ key, count: 1, expires_at: expiresAt }, { onConflict: 'key' })
@@ -65,13 +65,9 @@ async function upsertFresh(
 async function updateExisting(
   table: RateLimitTable,
   key: string,
-  count: number
+  count: number,
 ): Promise<{ data: RateLimitRow | null; error: PostgrestError | null }> {
-  return table
-    .update({ count })
-    .eq('key', key)
-    .select('key, count, expires_at')
-    .single();
+  return table.update({ count }).eq('key', key).select('key, count, expires_at').single();
 }
 
 type ExistingLookupResult = {
@@ -134,13 +130,13 @@ export async function consumeMagicLinkRateLimit(
   now = Date.now(),
   legacyKeys: string[] = [],
 ): Promise<RateLimitResult> {
-  const table = client.from<RateLimitRow>('magic_link_rate_limits') as RateLimitTable;
+  const table = client.from('magic_link_rate_limits') as RateLimitTable;
 
-  const { data: existing, error: selectError, key: existingKey } = await findExisting(
-    table,
-    key,
-    legacyKeys,
-  );
+  const {
+    data: existing,
+    error: selectError,
+    key: existingKey,
+  } = await findExisting(table, key, legacyKeys);
   if (selectError) {
     throw selectError;
   }

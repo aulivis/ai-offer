@@ -51,8 +51,10 @@ describe('enqueuePdfJob schema cache recovery', () => {
     ]);
 
     const rpcMock = vi
-      .fn<[], Promise<RpcResponse>>()
-      .mockResolvedValueOnce({ error: { message: 'function refresh_pdf_jobs_schema_cache does not exist' } })
+      .fn<() => Promise<RpcResponse>>()
+      .mockResolvedValueOnce({
+        error: { message: 'function refresh_pdf_jobs_schema_cache does not exist' },
+      })
       .mockResolvedValueOnce({ error: null });
 
     const fromMock = vi.fn().mockReturnValue({ insert: insertMock });
@@ -86,9 +88,13 @@ describe('enqueuePdfJob schema cache recovery', () => {
     ]);
 
     const rpcMock = vi
-      .fn<[], Promise<RpcResponse>>()
-      .mockResolvedValueOnce({ error: { message: 'function refresh_pdf_jobs_schema_cache does not exist' } })
-      .mockResolvedValueOnce({ error: { message: 'function pgrest.schema_cache_reload does not exist' } });
+      .fn<() => Promise<RpcResponse>>()
+      .mockResolvedValueOnce({
+        error: { message: 'function refresh_pdf_jobs_schema_cache does not exist' },
+      })
+      .mockResolvedValueOnce({
+        error: { message: 'function pgrest.schema_cache_reload does not exist' },
+      });
 
     const fromMock = vi.fn().mockReturnValue({ insert: insertMock });
     const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;

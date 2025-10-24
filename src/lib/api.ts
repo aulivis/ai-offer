@@ -4,7 +4,9 @@ export class ApiError extends Error {
   constructor(message: string, options?: { status?: number; cause?: unknown }) {
     super(message);
     this.name = 'ApiError';
-    this.status = options?.status;
+    if (options?.status !== undefined) {
+      this.status = options.status;
+    }
     if (options && 'cause' in options) {
       (this as { cause?: unknown }).cause = options.cause;
     }
@@ -45,12 +47,16 @@ async function refreshSession(signal?: AbortSignal): Promise<boolean> {
       const headers = new Headers({ 'x-csrf-token': csrfToken ?? '' });
 
       try {
-        const response = await fetch(REFRESH_ENDPOINT, {
+        const requestInit: RequestInit = {
           method: 'POST',
           credentials: 'include',
           headers,
-          signal,
-        });
+        };
+        if (signal) {
+          requestInit.signal = signal;
+        }
+
+        const response = await fetch(REFRESH_ENDPOINT, requestInit);
 
         if (response.ok) {
           return true;
@@ -113,11 +119,17 @@ export async function fetchWithSupabaseAuth(
 
   async function attemptFetch(): Promise<Response> {
     try {
-      return await fetch(input, {
-        ...init,
-        credentials: init.credentials ?? 'include',
+      const { signal: initSignal, ...restInit } = init;
+      const requestInit: RequestInit = {
+        ...restInit,
+        credentials: restInit.credentials ?? 'include',
         headers: finalHeaders,
-      });
+      };
+      if (initSignal) {
+        requestInit.signal = initSignal;
+      }
+
+      return await fetch(input, requestInit);
     } catch (error: unknown) {
       if (isAbortError(error)) {
         throw error;
@@ -136,7 +148,7 @@ export async function fetchWithSupabaseAuth(
   response = await attemptFetch();
 
   if (response.status === 401) {
-    const refreshed = await refreshSession(init.signal);
+    const refreshed = await refreshSession(init.signal ?? undefined);
     if (refreshed) {
       response = await attemptFetch();
     }
@@ -147,10 +159,7 @@ export async function fetchWithSupabaseAuth(
   }
 
   if (response.status === 401) {
-    const message =
-      authErrorMessage ??
-      defaultErrorMessage ??
-      DEFAULT_AUTH_ERROR;
+    const message = authErrorMessage ?? defaultErrorMessage ?? DEFAULT_AUTH_ERROR;
     throw new ApiError(message, { status: 401 });
   }
 
@@ -173,7 +182,9 @@ export async function fetchWithSupabaseAuth(
   }
 
   if (!message) {
-    message = errorMessageBuilder ? errorMessageBuilder(response.status) : `Hiba a kérés során (${response.status})`;
+    message = errorMessageBuilder
+      ? errorMessageBuilder(response.status)
+      : `Hiba a kérés során (${response.status})`;
   }
 
   throw new ApiError(message, { status: response.status });

@@ -102,7 +102,10 @@ describe('Stripe checkout route', () => {
   });
 
   it('rejects unauthenticated requests', async () => {
-    const request = createRequest({ priceId: 'price_123', email: 'user@example.com' }, { authenticated: false });
+    const request = createRequest(
+      { priceId: 'price_123', email: 'user@example.com' },
+      { authenticated: false },
+    );
 
     const response = await POST(request);
     expect(response.status).toBe(401);
@@ -117,7 +120,10 @@ describe('Stripe checkout route', () => {
       data: { user: { id: 'user-1', email: 'user@example.com' } },
       error: null,
     });
-    createSessionMock.mockResolvedValue({ id: 'cs_test_123', url: 'https://checkout.stripe.com/test-session' });
+    createSessionMock.mockResolvedValue({
+      id: 'cs_test_123',
+      url: 'https://checkout.stripe.com/test-session',
+    });
 
     const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
@@ -128,7 +134,9 @@ describe('Stripe checkout route', () => {
 
     const response = await POST(request);
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ url: 'https://checkout.stripe.com/test-session' });
+    await expect(response.json()).resolves.toEqual({
+      url: 'https://checkout.stripe.com/test-session',
+    });
     expect(anonGetUserMock).toHaveBeenCalledWith('test-token');
     expect(createSessionMock).toHaveBeenCalledWith({
       mode: 'subscription',
@@ -139,7 +147,9 @@ describe('Stripe checkout route', () => {
       cancel_url: 'http://localhost:3000/billing?status=cancel',
     });
 
-    const checkoutLog = consoleInfoSpy.mock.calls.find(([message]) => message === 'Checkout session created');
+    const checkoutLog = consoleInfoSpy.mock.calls.find(
+      ([message]) => message === 'Checkout session created',
+    );
     expect(checkoutLog).toBeDefined();
     expect(checkoutLog?.[1]).toMatchObject({
       clientId: '127.0.0.1',

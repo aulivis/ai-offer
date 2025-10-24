@@ -7,7 +7,11 @@ type Step = 1 | 2 | 3;
 
 type ValidationResult = Partial<Record<Step, string[]>>;
 
-function buildValidation({ title, description, pricingRows }: {
+function buildValidation({
+  title,
+  description,
+  pricingRows,
+}: {
   title: string;
   description: string;
   pricingRows: PriceRow[];
@@ -34,9 +38,9 @@ function buildValidation({ title, description, pricingRows }: {
   return result;
 }
 
-export function useOfferWizard(initialRows: PriceRow[] = [
-  { name: '', qty: 1, unit: 'db', unitPrice: 0, vat: 27 },
-]) {
+export function useOfferWizard(
+  initialRows: PriceRow[] = [{ name: '', qty: 1, unit: 'db', unitPrice: 0, vat: 27 }],
+) {
   const [step, setStep] = useState<Step>(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -89,7 +93,7 @@ export function useOfferWizard(initialRows: PriceRow[] = [
     [isStepValid, step],
   );
 
-  const inlineErrors = attemptedSteps[step] ? validation[step] ?? [] : [];
+  const inlineErrors = attemptedSteps[step] ? (validation[step] ?? []) : [];
   const isNextDisabled = attemptedSteps[step] && !isStepValid(step);
 
   const updatePricingRows = useCallback((rows: PriceRow[]) => {

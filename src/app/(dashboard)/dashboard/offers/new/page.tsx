@@ -6,10 +6,12 @@ import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
 import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
-import { OfferSummarySection, type OfferPreviewStatus } from '@/components/offers/OfferSummarySection';
+import {
+  OfferSummarySection,
+  type OfferPreviewStatus,
+} from '@/components/offers/OfferSummarySection';
 import { offerBodyMarkup } from '@/app/lib/offerDocument';
 import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
-import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
@@ -17,8 +19,7 @@ import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
-const DEFAULT_PREVIEW_HTML =
-  '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
+const DEFAULT_PREVIEW_HTML = '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
 
 export default function NewOfferPage() {
   const {
@@ -38,7 +39,6 @@ export default function NewOfferPage() {
     validation,
     isStepValid,
   } = useOfferWizard();
-  const supabase = useSupabase();
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -47,7 +47,7 @@ export default function NewOfferPage() {
   const [previewError, setPreviewError] = useState<string | null>(null);
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
-  const previewDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewDebounceRef = useRef<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { totals, pricePreviewHtml } = usePricingRows(pricingRows);
@@ -72,15 +72,17 @@ export default function NewOfferPage() {
     return trimmed.length > 0 && trimmed !== DEFAULT_PREVIEW_HTML;
   }, [previewHtml]);
   const isSubmitDisabled =
-    isSubmitting || isStreaming || !hasPreviewHtml || !hasPricingRows || title.trim().length === 0 || description.trim().length === 0;
-  const statusDescriptor = useMemo<
-    | {
-        tone: 'info' | 'success' | 'error' | 'warning';
-        title: string;
-        description?: string;
-      }
-    | null
-  >(() => {
+    isSubmitting ||
+    isStreaming ||
+    !hasPreviewHtml ||
+    !hasPricingRows ||
+    title.trim().length === 0 ||
+    description.trim().length === 0;
+  const statusDescriptor = useMemo<{
+    tone: 'info' | 'success' | 'error' | 'warning';
+    title: string;
+    description?: string;
+  } | null>(() => {
     switch (previewStatus) {
       case 'loading':
         return {
@@ -204,13 +206,20 @@ export default function NewOfferPage() {
           if (!jsonPart) continue;
 
           try {
-            const payload = JSON.parse(jsonPart) as { type?: string; html?: string; message?: string };
+            const payload = JSON.parse(jsonPart) as {
+              type?: string;
+              html?: string;
+              message?: string;
+            };
             if (payload.type === 'delta' || payload.type === 'done') {
               if (!hasDelta && previewRequestIdRef.current === nextRequestId) {
                 setPreviewStatus('streaming');
               }
               hasDelta = true;
-              if (typeof payload.html === 'string' && previewRequestIdRef.current === nextRequestId) {
+              if (
+                typeof payload.html === 'string' &&
+                previewRequestIdRef.current === nextRequestId
+              ) {
                 latestHtml = payload.html;
                 setPreviewHtml(payload.html || DEFAULT_PREVIEW_HTML);
               }
@@ -281,11 +290,11 @@ export default function NewOfferPage() {
         previewAbortRef.current = null;
       }
     }
-  }, [description, showToast, step, supabase, title]);
+  }, [description, showToast, step, title]);
 
   const handleManualRefresh = useCallback(() => {
     if (previewDebounceRef.current) {
-      clearTimeout(previewDebounceRef.current);
+      window.clearTimeout(previewDebounceRef.current);
       previewDebounceRef.current = null;
     }
     void callPreview();
@@ -306,7 +315,7 @@ export default function NewOfferPage() {
 
   useEffect(() => {
     if (previewDebounceRef.current) {
-      clearTimeout(previewDebounceRef.current);
+      window.clearTimeout(previewDebounceRef.current);
       previewDebounceRef.current = null;
     }
 
@@ -320,7 +329,7 @@ export default function NewOfferPage() {
 
     return () => {
       if (previewDebounceRef.current) {
-        clearTimeout(previewDebounceRef.current);
+        window.clearTimeout(previewDebounceRef.current);
         previewDebounceRef.current = null;
       }
     };
@@ -332,7 +341,7 @@ export default function NewOfferPage() {
     }
 
     if (previewDebounceRef.current) {
-      clearTimeout(previewDebounceRef.current);
+      window.clearTimeout(previewDebounceRef.current);
       previewDebounceRef.current = null;
     }
     if (previewAbortRef.current) {
@@ -352,20 +361,23 @@ export default function NewOfferPage() {
       setPreviewStatus('idle');
     }, 4000);
     return () => {
-      clearTimeout(timeout);
+      window.clearTimeout(timeout);
     };
   }, [previewStatus]);
 
-  useEffect(() => () => {
-    if (previewDebounceRef.current) {
-      clearTimeout(previewDebounceRef.current);
-      previewDebounceRef.current = null;
-    }
-    if (previewAbortRef.current) {
-      previewAbortRef.current.abort();
-      previewAbortRef.current = null;
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (previewDebounceRef.current) {
+        window.clearTimeout(previewDebounceRef.current);
+        previewDebounceRef.current = null;
+      }
+      if (previewAbortRef.current) {
+        previewAbortRef.current.abort();
+        previewAbortRef.current = null;
+      }
+    },
+    [],
+  );
 
   const wizardSteps = useMemo(() => {
     const definitions: Array<{ label: string; id: 1 | 2 | 3 }> = [
@@ -493,7 +505,6 @@ export default function NewOfferPage() {
     pricingRows,
     router,
     showToast,
-    supabase,
     title,
     description,
   ]);
@@ -517,9 +528,7 @@ export default function NewOfferPage() {
           />
         )}
 
-        {step === 2 && (
-          <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />
-        )}
+        {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
 
         {step === 3 && (
           <OfferSummarySection

@@ -22,7 +22,9 @@ describe('sanitizeHTML', () => {
     const clean = sanitizeHTML(html);
 
     expect(clean).toContain('<p>Lásd a részleteket:</p>');
-    expect(clean).toContain('<a href="https://example.com" rel="noopener" target="_blank">link</a>');
+    expect(clean).toContain(
+      '<a href="https://example.com" rel="noopener" target="_blank">link</a>',
+    );
     expect(clean).toContain('<th colspan="2">Fejléc</th>');
     expect(clean).toContain('<td colspan="2">Tartalom</td>');
   });
@@ -35,7 +37,9 @@ describe('sanitizeHTML', () => {
 
     const clean = sanitizeHTML(html);
 
-    expect(clean).toContain('<img src="http://example.com/logo.png" alt="Logo" data-offer-image-key="hero" />');
+    expect(clean).toContain(
+      '<img src="http://example.com/logo.png" alt="Logo" data-offer-image-key="hero" />',
+    );
     expect(clean).not.toContain('javascript:');
   });
 });

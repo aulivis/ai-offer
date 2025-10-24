@@ -204,19 +204,22 @@ function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: bool
   const allowedAttributes = getAllowedAttributes(tagName);
   const sanitisedAttributes: string[] = [];
 
-  rawAttributes.replace(ATTRIBUTE_PATTERN, (_match, name, _valueWithQuotes, valueDouble, valueSingle, valueUnquoted) => {
-    const attrName = String(name).toLowerCase();
-    if (!allowedAttributes.has(attrName)) {
-      return '';
-    }
+  rawAttributes.replace(
+    ATTRIBUTE_PATTERN,
+    (_match, name, _valueWithQuotes, valueDouble, valueSingle, valueUnquoted) => {
+      const attrName = String(name).toLowerCase();
+      if (!allowedAttributes.has(attrName)) {
+        return '';
+      }
 
-    const rawValue = valueDouble ?? valueSingle ?? valueUnquoted ?? '';
-    const sanitisedValue = sanitiseAttribute(tagName, attrName, rawValue);
-    if (sanitisedValue !== null) {
-      sanitisedAttributes.push(`${attrName}="${sanitisedValue}"`);
-    }
-    return '';
-  });
+      const rawValue = valueDouble ?? valueSingle ?? valueUnquoted ?? '';
+      const sanitisedValue = sanitiseAttribute(tagName, attrName, rawValue);
+      if (sanitisedValue !== null) {
+        sanitisedAttributes.push(`${attrName}="${sanitisedValue}"`);
+      }
+      return '';
+    },
+  );
 
   const attributeString = sanitisedAttributes.length ? ` ${sanitisedAttributes.join(' ')}` : '';
   return `<${tagName}${attributeString}${isSelfClosing ? ' /' : ''}>`;
@@ -245,54 +248,57 @@ export function sanitizeSvgMarkup(svg: string | undefined | null): string {
 
   TAG_PATTERN.lastIndex = 0;
 
-  source.replace(TAG_PATTERN, (match, tagNameRaw: string, rawAttributes: string, offset: number) => {
-    if (dropStack.length === 0) {
-      result += escapeText(source.slice(lastIndex, offset));
-    }
-    lastIndex = offset + match.length;
-
-    const normalisedName = normaliseTagName(tagNameRaw);
-    const isClosing = match.startsWith('</');
-    const isExplicitSelfClosing = /\/\s*>$/.test(match);
-    const selfClosing = isSelfClosingTag(normalisedName, isExplicitSelfClosing);
-
-    if (SVG_DROP_CONTENT_TAGS.has(normalisedName)) {
-      if (!isClosing && !selfClosing) {
-        dropStack.push(normalisedName);
-      } else if (isClosing && dropStack[dropStack.length - 1] === normalisedName) {
-        dropStack.pop();
+  source.replace(
+    TAG_PATTERN,
+    (match, tagNameRaw: string, rawAttributes: string, offset: number) => {
+      if (dropStack.length === 0) {
+        result += escapeText(source.slice(lastIndex, offset));
       }
-      return '';
-    }
+      lastIndex = offset + match.length;
 
-    if (!isTagAllowed(normalisedName) || dropStack.length > 0) {
-      if (!isClosing && !selfClosing) {
-        dropStack.push(normalisedName);
-      }
-      return '';
-    }
+      const normalisedName = normaliseTagName(tagNameRaw);
+      const isClosing = match.startsWith('</');
+      const isExplicitSelfClosing = /\/\s*>$/.test(match);
+      const selfClosing = isSelfClosingTag(normalisedName, isExplicitSelfClosing);
 
-    if (isClosing) {
-      while (openTags.length > 0) {
-        const top = openTags.pop();
-        if (top === normalisedName) {
-          result += `</${normalisedName}>`;
-          break;
+      if (SVG_DROP_CONTENT_TAGS.has(normalisedName)) {
+        if (!isClosing && !selfClosing) {
+          dropStack.push(normalisedName);
+        } else if (isClosing && dropStack[dropStack.length - 1] === normalisedName) {
+          dropStack.pop();
         }
+        return '';
       }
+
+      if (!isTagAllowed(normalisedName) || dropStack.length > 0) {
+        if (!isClosing && !selfClosing) {
+          dropStack.push(normalisedName);
+        }
+        return '';
+      }
+
+      if (isClosing) {
+        while (openTags.length > 0) {
+          const top = openTags.pop();
+          if (top === normalisedName) {
+            result += `</${normalisedName}>`;
+            break;
+          }
+        }
+        return '';
+      }
+
+      if (!selfClosing) {
+        openTags.push(normalisedName);
+      }
+
+      const attributesSection = rawAttributes ?? '';
+      const attributeContent = attributesSection.replace(/\/\s*$/, '');
+
+      result += sanitiseTag(normalisedName, attributeContent, selfClosing);
       return '';
-    }
-
-    if (!selfClosing) {
-      openTags.push(normalisedName);
-    }
-
-    const attributesSection = rawAttributes ?? '';
-    const attributeContent = attributesSection.replace(/\/\s*$/, '');
-
-    result += sanitiseTag(normalisedName, attributeContent, selfClosing);
-    return '';
-  });
+    },
+  );
 
   if (dropStack.length === 0) {
     result += escapeText(source.slice(lastIndex));

@@ -83,7 +83,9 @@ describe('GET /api/auth/google/link', () => {
     });
     expect(linkIdentityMock).toHaveBeenCalledWith({
       provider: 'google',
-      options: expect.objectContaining({ redirectTo: 'http://localhost/settings?link=google_success' }),
+      options: expect.objectContaining({
+        redirectTo: 'http://localhost/settings?link=google_success',
+      }),
     });
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe('https://accounts.google.com/o/oauth2/v2/auth');
