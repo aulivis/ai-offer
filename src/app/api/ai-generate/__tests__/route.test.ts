@@ -203,6 +203,21 @@ describe('POST /api/ai-generate', () => {
     vi.clearAllMocks();
   });
 
+  it('returns a validation error for malformed payloads', async () => {
+    const { POST } = await import('../route');
+
+    const response = await POST(createRequest({}));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Érvénytelen kérés.',
+      issues: expect.objectContaining({ fieldErrors: expect.objectContaining({ title: expect.any(Array) }) }),
+    });
+
+    expect(insertOfferMock).not.toHaveBeenCalled();
+    expect(enqueuePdfJobMock).not.toHaveBeenCalled();
+  });
+
   it('keeps the saved offer when PDF queueing fails', async () => {
     const { POST } = await import('../route');
 
