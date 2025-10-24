@@ -4,12 +4,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const signInWithOAuthMock = vi.hoisted(() => vi.fn());
 const cookiesSetMock = vi.hoisted(() => vi.fn());
+const consumeCodeVerifierMock = vi.hoisted(() => vi.fn());
 
-vi.mock('@/app/lib/supabaseServer', () => ({
-  supabaseServer: () => ({
-    auth: {
-      signInWithOAuth: signInWithOAuthMock,
+vi.mock('../google/createSupabaseOAuthClient', () => ({
+  createSupabaseOAuthClient: () => ({
+    client: {
+      auth: {
+        signInWithOAuth: signInWithOAuthMock,
+      },
     },
+    consumeCodeVerifier: consumeCodeVerifierMock,
   }),
 }));
 
@@ -35,14 +39,16 @@ describe('GET /api/auth/google', () => {
     vi.resetModules();
     signInWithOAuthMock.mockReset();
     cookiesSetMock.mockReset();
+    consumeCodeVerifierMock.mockReset();
     envServer.OAUTH_REDIRECT_ALLOWLIST = ['http://localhost/dashboard'];
   });
 
   it('redirects to the provider and stores the OAuth state cookie', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth', codeVerifier: 'code-123' },
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
       error: null,
     });
+    consumeCodeVerifierMock.mockReturnValue('code-123');
 
     const { GET } = await import('../google/route');
     const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
@@ -57,9 +63,10 @@ describe('GET /api/auth/google', () => {
 
   it('falls back to the default redirect when the requested target is not allowed', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth', codeVerifier: 'code-456' },
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
       error: null,
     });
+    consumeCodeVerifierMock.mockReturnValue('code-456');
 
     envServer.OAUTH_REDIRECT_ALLOWLIST = ['http://localhost/dashboard'];
 
@@ -75,9 +82,10 @@ describe('GET /api/auth/google', () => {
 
   it('allows redirects on the same origin when no allowlist is configured', async () => {
     signInWithOAuthMock.mockResolvedValue({
-      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth', codeVerifier: 'code-789' },
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
       error: null,
     });
+    consumeCodeVerifierMock.mockReturnValue('code-789');
 
     envServer.OAUTH_REDIRECT_ALLOWLIST = [];
 
@@ -89,5 +97,19 @@ describe('GET /api/auth/google', () => {
         options: expect.objectContaining({ redirectTo: 'http://localhost/settings' }),
       }),
     );
+  });
+
+  it('returns an error when the PKCE code verifier is unavailable', async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth' },
+      error: null,
+    });
+    consumeCodeVerifierMock.mockReturnValue(null);
+
+    const { GET } = await import('../google/route');
+    const response = await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
   });
 });

@@ -3,8 +3,9 @@ import { createCipheriv, createHash, randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { supabaseServer } from '@/app/lib/supabaseServer';
 import { envServer } from '@/env.server';
+
+import { createSupabaseOAuthClient } from './createSupabaseOAuthClient';
 
 const AUTH_STATE_COOKIE = 'auth_state';
 const AUTH_STATE_MAX_AGE = 10 * 60; // 10 minutes
@@ -78,20 +79,21 @@ function pickRedirectTarget(requested: string | null): string {
 export async function GET(request: Request) {
   const redirectTo = pickRedirectTarget(new URL(request.url).searchParams.get('redirect_to'));
 
-  const supabase = supabaseServer();
+  const { client: supabase, consumeCodeVerifier } = createSupabaseOAuthClient();
   const state = randomBytes(16).toString('hex');
   const nonce = randomBytes(16).toString('hex');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      flowType: 'pkce',
       skipBrowserRedirect: true,
       redirectTo,
     },
   });
 
-  if (error || !data?.url || !data.codeVerifier) {
+  const codeVerifier = consumeCodeVerifier();
+
+  if (error || !data?.url || !codeVerifier) {
     console.error('Failed to initiate Supabase Google OAuth flow.', error ?? null);
     return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
   }
@@ -106,7 +108,7 @@ export async function GET(request: Request) {
     value: encryptState({
       state,
       nonce,
-      codeVerifier: data.codeVerifier,
+      codeVerifier,
       redirectTo,
       createdAt: Date.now(),
     }),
