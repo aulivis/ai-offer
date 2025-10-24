@@ -4,6 +4,7 @@ import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import { z } from 'zod';
 const STREAM_TIMEOUT_MESSAGE = 'Az előnézet kérése időtúllépés miatt megszakadt.';
 
 export const runtime = 'nodejs';
@@ -46,9 +47,46 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const optionalTrimmedString = z.preprocess(
+  (value) => (value === null || value === undefined ? undefined : value),
+  z.string().trim().optional(),
+);
+
+const previewRequestSchema = z
+  .object({
+    industry: z.string().trim().min(1, 'Az iparág megadása kötelező.'),
+    title: z.string().trim().min(1, 'A cím megadása kötelező.'),
+    description: z.string().trim().min(1, 'A leírás megadása kötelező.'),
+    deadline: optionalTrimmedString,
+    language: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['hu', 'en']).default('hu'),
+    ),
+    brandVoice: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['friendly', 'formal']).default('friendly'),
+    ),
+    style: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['compact', 'detailed']).default('detailed'),
+    ),
+  })
+  .strict();
+
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   try {
-    const { industry, title, description, deadline, language = 'hu', brandVoice = 'friendly', style = 'detailed' } = await req.json();
+    const parsed = previewRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Érvénytelen kérés.',
+          issues: parsed.error.flatten(),
+        },
+        { status: 400 },
+      );
+    }
+
+    const { industry, title, description, deadline, language, brandVoice, style } = parsed.data;
 
     if (!envServer.OPENAI_API_KEY) {
       return NextResponse.json({ error: 'OPENAI_API_KEY missing' }, { status: 500 });

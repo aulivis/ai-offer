@@ -25,6 +25,7 @@ import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebho
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import { z } from 'zod';
 
 export const runtime = 'nodejs';
 
@@ -324,6 +325,84 @@ function normalizeImageAssets(
   return sanitized;
 }
 
+const optionalTrimmedString = z.preprocess(
+  (value) => (value === null || value === undefined ? undefined : value),
+  z.string().trim().optional(),
+);
+
+const optionalNonNegativeNumber = z.preprocess(
+  (value) => (value === null || value === undefined ? undefined : value),
+  z
+    .number({ invalid_type_error: 'A mezőnek számnak kell lennie.' })
+    .finite()
+    .min(0)
+    .optional(),
+);
+
+const priceRowSchema: z.ZodType<PriceRow> = z
+  .object({
+    name: optionalTrimmedString,
+    qty: optionalNonNegativeNumber,
+    unit: optionalTrimmedString,
+    unitPrice: optionalNonNegativeNumber,
+    vat: optionalNonNegativeNumber,
+  })
+  .strict();
+
+type ImageAssetInput = { key: string; dataUrl: string; alt?: string | null };
+
+const imageAssetSchema: z.ZodType<ImageAssetInput> = z
+  .object({
+    key: z.string().trim().min(1, 'A kép azonosítója kötelező.').max(80),
+    dataUrl: z.string().trim().min(1, 'A kép adatának megadása kötelező.'),
+    alt: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.string().trim().max(160).optional(),
+    ),
+  })
+  .strict();
+
+const aiGenerateRequestSchema = z
+  .object({
+    title: z.string().trim().min(1, 'A cím megadása kötelező.'),
+    industry: z.string().trim().min(1, 'Az iparág megadása kötelező.'),
+    description: z.string().trim().min(1, 'A leírás megadása kötelező.'),
+    deadline: optionalTrimmedString,
+    language: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['hu', 'en']).default('hu'),
+    ),
+    brandVoice: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['friendly', 'formal']).default('friendly'),
+    ),
+    style: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['compact', 'detailed']).default('detailed'),
+    ),
+    prices: z.preprocess(
+      (value) => (value === null || value === undefined ? [] : value),
+      z.array(priceRowSchema).default([]),
+    ),
+    aiOverrideHtml: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.string().optional(),
+    ),
+    clientId: z.preprocess(
+      (value) => (value === null || value === undefined || value === '' ? undefined : value),
+      z.string().trim().optional(),
+    ),
+    pdfWebhookUrl: z.preprocess(
+      (value) => (value === null || value === undefined || value === '' ? undefined : value),
+      z.string().url('Érvénytelen webhook URL formátum.').optional(),
+    ),
+    imageAssets: z.preprocess(
+      (value) => (value === null || value === undefined ? [] : value),
+      z.array(imageAssetSchema).default([]),
+    ),
+  })
+  .strict();
+
 function mapPdfWebhookError(error: PdfWebhookValidationError): string {
   switch (error.reason) {
     case 'invalid_url':
@@ -387,34 +466,31 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     // Parse and sanitize the incoming JSON body.  Sanitizing early
     // prevents any malicious scripts or HTML fragments from reaching
     // our AI prompts or being persisted in the database.
-    const body = await req.json();
+    const parsed = aiGenerateRequestSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Érvénytelen kérés.',
+          issues: parsed.error.flatten(),
+        },
+        { status: 400 },
+      );
+    }
+
     const {
       title,
       industry,
       description,
       deadline,
-      language = 'hu',
-      brandVoice = 'friendly',
-      style = 'detailed',
-      prices = [],
+      language,
+      brandVoice,
+      style,
+      prices,
       aiOverrideHtml,
       clientId,
       pdfWebhookUrl,
       imageAssets,
-    } = body as {
-      title: string;
-      industry: string;
-      description: string;
-      deadline?: string;
-      language?: 'hu' | 'en';
-      brandVoice?: 'friendly' | 'formal';
-      style?: 'compact' | 'detailed';
-      prices: PriceRow[];
-      aiOverrideHtml?: string;
-      clientId?: string;
-      pdfWebhookUrl?: string;
-      imageAssets?: { key: string; dataUrl: string; alt?: string | null }[];
-    };
+    } = parsed.data;
 
     const sb = supabaseServer();
     const user = req.user;
@@ -577,7 +653,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     }
 
     // ---- Ár tábla HTML ----
-    const rows: PriceRow[] = prices || [];
+    const rows: PriceRow[] = prices;
     // Use shared price table HTML builder.  This returns a complete
     // `<table>` element including header, body and footer with totals.
     const priceTable = priceTableHtml(rows);
