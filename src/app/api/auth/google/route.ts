@@ -9,6 +9,26 @@ import { envServer } from '@/env.server';
 const AUTH_STATE_COOKIE = 'auth_state';
 const AUTH_STATE_MAX_AGE = 10 * 60; // 10 minutes
 
+function normalizeUrl(target: string): string | null {
+  try {
+    return new URL(target).toString();
+  } catch {
+    return null;
+  }
+}
+
+function getFallbackRedirect(): string {
+  const [firstAllowlisted] = envServer.OAUTH_REDIRECT_ALLOWLIST;
+  if (firstAllowlisted) {
+    const normalized = normalizeUrl(firstAllowlisted);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return new URL('/dashboard', envServer.APP_URL).toString();
+}
+
 function encryptState(payload: Record<string, unknown>): string {
   const secret = createHash('sha256')
     .update(envServer.SUPABASE_SERVICE_ROLE_KEY)
@@ -23,25 +43,40 @@ function encryptState(payload: Record<string, unknown>): string {
   return Buffer.concat([iv, authTag, encrypted]).toString('base64url');
 }
 
-function pickRedirectTarget(requested: string | null): string | null {
+function pickRedirectTarget(requested: string | null): string {
   const allowlist = envServer.OAUTH_REDIRECT_ALLOWLIST;
-  if (allowlist.length === 0) {
-    return null;
-  }
+  const fallback = getFallbackRedirect();
 
   if (!requested) {
-    return allowlist[0] ?? null;
+    return fallback;
   }
 
-  return allowlist.includes(requested) ? requested : null;
+  const normalizedRequested = normalizeUrl(requested);
+  if (!normalizedRequested) {
+    return fallback;
+  }
+
+  if (allowlist.length === 0) {
+    try {
+      const allowedOrigin = new URL(envServer.APP_URL).origin;
+      const requestedOrigin = new URL(normalizedRequested).origin;
+      return allowedOrigin === requestedOrigin ? normalizedRequested : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  const normalizedAllowlist = new Set(
+    allowlist
+      .map((target) => normalizeUrl(target))
+      .filter((target): target is string => Boolean(target)),
+  );
+
+  return normalizedAllowlist.has(normalizedRequested) ? normalizedRequested : fallback;
 }
 
 export async function GET(request: Request) {
   const redirectTo = pickRedirectTarget(new URL(request.url).searchParams.get('redirect_to'));
-
-  if (!redirectTo) {
-    return NextResponse.json({ error: 'Invalid OAuth redirect target.' }, { status: 400 });
-  }
 
   const supabase = supabaseServer();
   const state = randomBytes(16).toString('hex');

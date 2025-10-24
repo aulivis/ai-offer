@@ -22,6 +22,8 @@ vi.mock('@/env.server', () => ({
   },
 }));
 
+import { envServer } from '@/env.server';
+
 vi.mock('next/headers', () => ({
   cookies: vi.fn(async () => ({
     set: cookiesSetMock,
@@ -33,6 +35,7 @@ describe('GET /api/auth/google', () => {
     vi.resetModules();
     signInWithOAuthMock.mockReset();
     cookiesSetMock.mockReset();
+    envServer.OAUTH_REDIRECT_ALLOWLIST = ['http://localhost/dashboard'];
   });
 
   it('redirects to the provider and stores the OAuth state cookie', async () => {
@@ -50,5 +53,41 @@ describe('GET /api/auth/google', () => {
     expect(location).toContain('state=');
     expect(location).toContain('nonce=');
     expect(cookiesSetMock).toHaveBeenCalledWith(expect.objectContaining({ name: 'auth_state' }));
+  });
+
+  it('falls back to the default redirect when the requested target is not allowed', async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth', codeVerifier: 'code-456' },
+      error: null,
+    });
+
+    envServer.OAUTH_REDIRECT_ALLOWLIST = ['http://localhost/dashboard'];
+
+    const { GET } = await import('../google/route');
+    await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/profile'));
+
+    expect(signInWithOAuthMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({ redirectTo: 'http://localhost/dashboard' }),
+      }),
+    );
+  });
+
+  it('allows redirects on the same origin when no allowlist is configured', async () => {
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://accounts.google.com/o/oauth2/v2/auth', codeVerifier: 'code-789' },
+      error: null,
+    });
+
+    envServer.OAUTH_REDIRECT_ALLOWLIST = [];
+
+    const { GET } = await import('../google/route');
+    await GET(new Request('http://localhost/api/auth/google?redirect_to=http://localhost/settings'));
+
+    expect(signInWithOAuthMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({ redirectTo: 'http://localhost/settings' }),
+      }),
+    );
   });
 });
