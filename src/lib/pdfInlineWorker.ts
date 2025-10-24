@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
+import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 
 type CounterKind = 'user' | 'device';
 
@@ -248,19 +249,23 @@ export async function processPdfJobInline(
       .eq('id', job.jobId);
 
     if (job.callbackUrl && pdfUrl) {
-      try {
-        await fetch(job.callbackUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jobId: job.jobId,
-            offerId: job.offerId,
-            pdfUrl,
-            downloadToken: job.jobId,
-          }),
-        });
-      } catch (callbackError) {
-        console.error('Webhook error (inline worker):', callbackError);
+      if (isPdfWebhookUrlAllowed(job.callbackUrl)) {
+        try {
+          await fetch(job.callbackUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jobId: job.jobId,
+              offerId: job.offerId,
+              pdfUrl,
+              downloadToken: job.jobId,
+            }),
+          });
+        } catch (callbackError) {
+          console.error('Webhook error (inline worker):', callbackError);
+        }
+      } else {
+        console.warn('Skipping webhook dispatch for disallowed URL (inline worker):', job.callbackUrl);
       }
     }
 

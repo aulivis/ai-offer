@@ -28,6 +28,17 @@ Configure the following secrets before running the application:
 | --- | --- |
 | `AUTH_COOKIE_SECRET` | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations. |
 | `CSRF_SECRET` | 32+ character secret used to sign CSRF tokens for authenticated requests. |
+| `PDF_WEBHOOK_ALLOWLIST` | Comma-separated list of allowed domains/origins for PDF webhook callbacks (supports optional protocol and wildcard subdomains). |
+
+### PDF webhook allow-list maintenance
+
+When adding or rotating webhook integrations, update `PDF_WEBHOOK_ALLOWLIST` to include the full domain or origin (for example, `https://hooks.example.com` or `*.trusted.example`). The value is evaluated in every environment:
+
+- Omit the protocol to default to HTTPS on the standard port.
+- Prefix with `*.`, or `.`, to allow subdomains of a domain.
+- Use an explicit protocol/port combination (e.g. `http://localhost:8787`) for local development callbacks.
+
+Changes to the allow-list take effect across the API handlers, inline worker, and Supabase Edge Function, preventing jobs from being queued or dispatched to unapproved destinations.
 
 ## Learn More
 

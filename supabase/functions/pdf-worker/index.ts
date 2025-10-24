@@ -1,6 +1,11 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.44.4';
 import puppeteer from 'https://deno.land/x/puppeteer@16.2.0/mod.ts';
+import {
+  createPdfWebhookAllowlist,
+  isPdfWebhookUrlAllowed,
+  splitAllowlist,
+} from '../../shared/pdfWebhook.ts';
 
 function assertEnv(value: string | undefined, name: string): string {
   if (!value) {
@@ -8,6 +13,8 @@ function assertEnv(value: string | undefined, name: string): string {
   }
   return value;
 }
+
+const pdfWebhookAllowlist = createPdfWebhookAllowlist(splitAllowlist(Deno.env.get('PDF_WEBHOOK_ALLOWLIST')));
 
 serve(async (request) => {
   if (request.method !== 'POST') {
@@ -134,19 +141,23 @@ serve(async (request) => {
       .eq('id', jobId);
 
     if (job.callback_url && pdfUrl) {
-      try {
-        await fetch(job.callback_url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jobId,
-            offerId: job.offer_id,
-            pdfUrl,
-            downloadToken: job.download_token,
-          }),
-        });
-      } catch (callbackError) {
-        console.error('Webhook error:', callbackError);
+      if (isPdfWebhookUrlAllowed(job.callback_url, pdfWebhookAllowlist)) {
+        try {
+          await fetch(job.callback_url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jobId,
+              offerId: job.offer_id,
+              pdfUrl,
+              downloadToken: job.download_token,
+            }),
+          });
+        } catch (callbackError) {
+          console.error('Webhook error:', callbackError);
+        }
+      } else {
+        console.warn('Skipping webhook dispatch for disallowed URL:', job.callback_url);
       }
     }
 
