@@ -26,6 +26,7 @@ vi.mock('@/env.server', () => ({
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
     OAUTH_REDIRECT_ALLOWLIST: ['http://localhost/dashboard'],
     APP_URL: 'http://localhost',
+    PDF_WEBHOOK_ALLOWLIST: [],
   },
 }));
 

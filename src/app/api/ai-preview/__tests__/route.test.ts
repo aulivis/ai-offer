@@ -25,6 +25,7 @@ vi.mock('@/env.server', () => ({
     STRIPE_SECRET_KEY: 'stripe-key',
     APP_URL: 'http://localhost',
     STRIPE_PRICE_ALLOWLIST: ['price_123'],
+    PDF_WEBHOOK_ALLOWLIST: [],
   },
 }));
 

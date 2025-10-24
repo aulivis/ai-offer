@@ -37,14 +37,25 @@ const ServerEnvSchema = z.object({
             .filter((item) => item.length > 0)
         : [],
     ),
+  PDF_WEBHOOK_ALLOWLIST: z
+    .union([z.string(), z.undefined()])
+    .transform((value) =>
+      typeof value === 'string'
+        ? value
+            .split(',')
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0)
+        : [],
+    ),
 });
 
 type ServerEnv = Omit<
   z.infer<typeof ServerEnvSchema>,
-  'STRIPE_PRICE_ALLOWLIST' | 'OAUTH_REDIRECT_ALLOWLIST'
+  'STRIPE_PRICE_ALLOWLIST' | 'OAUTH_REDIRECT_ALLOWLIST' | 'PDF_WEBHOOK_ALLOWLIST'
 > & {
   STRIPE_PRICE_ALLOWLIST: string[];
   OAUTH_REDIRECT_ALLOWLIST: string[];
+  PDF_WEBHOOK_ALLOWLIST: string[];
 };
 
 export const envServer: ServerEnv = ServerEnvSchema.parse(process.env);

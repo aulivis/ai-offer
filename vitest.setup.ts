@@ -13,3 +13,5 @@ process.env.CSRF_SECRET =
 process.env.OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? 'test-openai-key';
 process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? 'stripe-secret-key';
 process.env.APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
+process.env.PDF_WEBHOOK_ALLOWLIST =
+  process.env.PDF_WEBHOOK_ALLOWLIST ?? 'https://hooks.example.com';

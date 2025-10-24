@@ -22,6 +22,7 @@ vi.mock('@/env.server', () => ({
   envServer: {
     APP_URL: 'https://app.example.com',
     NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    PDF_WEBHOOK_ALLOWLIST: [],
   },
 }));
 

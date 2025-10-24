@@ -21,6 +21,7 @@ import {
   getUsageSnapshot,
 } from '@/lib/services/usage';
 import { countPendingPdfJobs, dispatchPdfJob, enqueuePdfJob } from '@/lib/queue/pdf';
+import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
@@ -323,6 +324,23 @@ function normalizeImageAssets(
   return sanitized;
 }
 
+function mapPdfWebhookError(error: PdfWebhookValidationError): string {
+  switch (error.reason) {
+    case 'invalid_url':
+      return 'A megadott webhook URL érvénytelen.';
+    case 'protocol_not_allowed':
+      return 'A webhook URL csak engedélyezett HTTP/S protokollt használhat.';
+    case 'credentials_not_allowed':
+      return 'A webhook URL nem tartalmazhat hitelesítési adatokat.';
+    case 'host_not_allowlisted':
+      return 'A webhook URL nincs az engedélyezett tartományok között.';
+    case 'allowlist_empty':
+      return 'A webhook visszahívások jelenleg nincsenek engedélyezve.';
+    default:
+      return 'A webhook URL érvénytelen.';
+  }
+}
+
 const IMG_TAG_REGEX = /<img\b[^>]*>/gi;
 
 function applyImageAssetsToHtml(html: string, images: SanitizedImageAsset[]): {
@@ -441,6 +459,17 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     const { iso: usagePeriodStart } = currentMonthStart();
     const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
+
+    let normalizedWebhookUrl: string | null = null;
+    try {
+      normalizedWebhookUrl = validatePdfWebhookUrl(pdfWebhookUrl);
+    } catch (error) {
+      if (error instanceof PdfWebhookValidationError) {
+        const message = mapPdfWebhookError(error);
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
+      throw error;
+    }
 
     let pendingCount = 0;
     if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
@@ -607,7 +636,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       userId: user.id,
       storagePath,
       html,
-      callbackUrl: typeof pdfWebhookUrl === 'string' ? pdfWebhookUrl : undefined,
+      callbackUrl: normalizedWebhookUrl ?? undefined,
       usagePeriodStart,
       userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
       deviceId: deviceLimit !== null ? deviceId : null,
