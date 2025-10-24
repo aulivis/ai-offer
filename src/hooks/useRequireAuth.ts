@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
-import { useSupabase } from '@/components/SupabaseProvider';
+import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
@@ -15,7 +15,6 @@ export type RequireAuthState = {
 };
 
 export function useRequireAuth(redirectOverride?: string): RequireAuthState {
-  const supabase = useSupabase();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,32 +41,36 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
 
     const verify = async () => {
       try {
-        const { data, error } = await supabase.auth.getUser();
+        const response = await fetchWithSupabaseAuth('/api/auth/session', {
+          authErrorMessage: 'A bejelentkezés lejárt vagy érvénytelen.',
+          defaultErrorMessage: 'Nem sikerült ellenőrizni a bejelentkezést.',
+        });
         if (!active) {
           return;
         }
-        if (error) {
-          throw error;
-        }
-        const user = data.user ?? null;
+
+        type SessionPayload = { user?: User | null } | null;
+        const payload = (await response.json().catch(() => null)) as SessionPayload;
+        const user = payload?.user ?? null;
+
         if (!user) {
-          setState({ status: 'unauthenticated', user: null, error: null });
-          const redirectQuery = redirectTarget
-            ? `?redirect=${encodeURIComponent(redirectTarget)}`
-            : '';
-          router.replace(`/login${redirectQuery}`);
-          return;
+          throw new ApiError('A bejelentkezés lejárt vagy érvénytelen.', { status: 401 });
         }
+
         setState({ status: 'authenticated', user, error: null });
       } catch (error) {
         if (!active) {
           return;
         }
-        const err = error instanceof Error
-          ? error
-          : new Error('Ismeretlen hiba történt a hitelesítés során.');
+        const err =
+          error instanceof Error
+            ? error
+            : new Error('Ismeretlen hiba történt a hitelesítés során.');
         setState({ status: 'unauthenticated', user: null, error: err });
-        router.replace('/login');
+        const redirectQuery = redirectTarget
+          ? `?redirect=${encodeURIComponent(redirectTarget)}`
+          : '';
+        router.replace(`/login${redirectQuery}`);
       }
     };
 
@@ -76,7 +79,7 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
     return () => {
       active = false;
     };
-  }, [redirectTarget, router, supabase]);
+  }, [redirectTarget, router]);
 
   return state;
 }

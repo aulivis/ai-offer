@@ -154,7 +154,6 @@ export default function NewOfferPage() {
 
     try {
       const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
-        supabase,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -431,7 +430,6 @@ export default function NewOfferPage() {
 
     try {
       const response = await fetchWithSupabaseAuth('/api/ai-generate', {
-        supabase,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

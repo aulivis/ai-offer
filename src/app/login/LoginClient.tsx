@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useSupabase } from '@/components/SupabaseProvider';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
+const MAGIC_LINK_MESSAGE =
+  'Ha létezik fiók ehhez az e-mail címhez, perceken belül elküldjük a belépési linket.';
+
 export default function LoginClient() {
-  const supabase = useSupabase();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,15 +17,29 @@ export default function LoginClient() {
 
   async function sendMagic() {
     setError(null);
+    setSent(false);
     if (!email) return;
     setIsMagicLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${location.origin}/dashboard` },
+      const response = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
       });
-      if (error) setError(error.message);
-      else setSent(true);
+
+      if (!response.ok && response.status !== 202) {
+        const payload: unknown = await response
+          .json()
+          .catch(() => ({ error: 'Nem sikerült elküldeni a magic linket.' }));
+        const message =
+          payload && typeof payload === 'object' && 'error' in payload && typeof (payload as { error?: unknown }).error === 'string'
+            ? ((payload as { error?: string }).error as string)
+            : 'Nem sikerült elküldeni a magic linket.';
+        throw new Error(message);
+      }
+
+      setSent(true);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
       setError(message);
@@ -37,21 +52,13 @@ export default function LoginClient() {
     setError(null);
     setIsGoogleLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${location.origin}/dashboard`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-      if (error) setError(error.message);
+      const redirectTo = `${location.origin}/dashboard`;
+      const url = new URL('/api/auth/google', location.origin);
+      url.searchParams.set('redirect_to', redirectTo);
+      window.location.assign(url.toString());
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
       setError(message);
-    } finally {
       setIsGoogleLoading(false);
     }
   }
@@ -87,6 +94,7 @@ export default function LoginClient() {
             size="lg"
             disabled={!email || sent || isMagicLoading}
             aria-busy={isMagicLoading}
+            aria-label="Magic link küldése a megadott e-mail címre"
           >
             {sent ? 'Link elküldve' : isMagicLoading ? 'Küldés…' : 'Magic link küldése'}
           </Button>
@@ -102,6 +110,7 @@ export default function LoginClient() {
             variant="secondary"
             disabled={isGoogleLoading}
             aria-busy={isGoogleLoading}
+            aria-label="Bejelentkezés Google-fiókkal"
           >
             {isGoogleLoading ? 'Csatlakozás…' : 'Bejelentkezés Google-lel'}
           </Button>
@@ -109,15 +118,18 @@ export default function LoginClient() {
           <div aria-live="polite" className="space-y-2">
             {error && (
               <div
-                role="status"
+                role="alert"
                 className="rounded-2xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-sm text-rose-600"
               >
                 {error}
               </div>
             )}
             {sent && (
-              <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700">
-                Elkészült! Nézd meg a postaládád, és kattints a belépési linkre.
+              <div
+                role="status"
+                className="rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700"
+              >
+                {MAGIC_LINK_MESSAGE}
               </div>
             )}
           </div>

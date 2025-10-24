@@ -1,5 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-
 export class ApiError extends Error {
   status?: number;
 
@@ -15,10 +13,66 @@ export class ApiError extends Error {
 }
 
 export interface AuthenticatedFetchOptions extends RequestInit {
-  supabase: SupabaseClient;
   errorMessageBuilder?: (status: number) => string;
   defaultErrorMessage?: string;
   authErrorMessage?: string;
+}
+
+const DEFAULT_AUTH_ERROR = 'Nem sikerült hitelesíteni a kérést.';
+
+function readCookie(name: string): string | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const pattern = new RegExp(`(?:^|; )${name}=([^;]*)`);
+  const match = pattern.exec(document.cookie);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export function getCsrfToken(): string | null {
+  return readCookie('XSRF-TOKEN');
+}
+
+const REFRESH_ENDPOINT = '/api/auth/refresh';
+
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshSession(signal?: AbortSignal): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const csrfToken = getCsrfToken();
+      const headers = new Headers({ 'x-csrf-token': csrfToken ?? '' });
+
+      try {
+        const response = await fetch(REFRESH_ENDPOINT, {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          signal,
+        });
+
+        if (response.ok) {
+          return true;
+        }
+
+        if (response.status === 401) {
+          return false;
+        }
+
+        return false;
+      } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+        return false;
+      }
+    })().finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
 }
 
 export function isAbortError(error: unknown): boolean {
@@ -46,41 +100,58 @@ export async function fetchWithSupabaseAuth(
   input: RequestInfo | URL,
   options: AuthenticatedFetchOptions,
 ): Promise<Response> {
-  const { supabase, errorMessageBuilder, defaultErrorMessage, authErrorMessage, headers, ...init } = options;
-
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  const token = sessionData.session?.access_token ?? null;
-
-  if (sessionError || !token) {
-    const message =
-      authErrorMessage ??
-      sessionError?.message ??
-      defaultErrorMessage ??
-      'Nem sikerült hitelesíteni a kérést.';
-    throw new ApiError(message, { status: 401, cause: sessionError ?? undefined });
-  }
+  const { errorMessageBuilder, defaultErrorMessage, authErrorMessage, headers, ...init } = options;
 
   const finalHeaders = new Headers(headers ?? undefined);
-  finalHeaders.set('Authorization', `Bearer ${token}`);
+  const method = (init.method ?? 'GET').toString().toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD' && !finalHeaders.has('x-csrf-token')) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      finalHeaders.set('x-csrf-token', csrfToken);
+    }
+  }
+
+  async function attemptFetch(): Promise<Response> {
+    try {
+      return await fetch(input, {
+        ...init,
+        credentials: init.credentials ?? 'include',
+        headers: finalHeaders,
+      });
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
+        throw error;
+      }
+
+      const message =
+        defaultErrorMessage ??
+        (error instanceof Error && error.message
+          ? error.message
+          : 'Ismeretlen hiba történt a kérés során.');
+      throw new ApiError(message, { cause: error ?? undefined });
+    }
+  }
 
   let response: Response;
-  try {
-    response = await fetch(input, { ...init, headers: finalHeaders });
-  } catch (error: unknown) {
-    if (isAbortError(error)) {
-      throw error;
-    }
+  response = await attemptFetch();
 
-    const message =
-      defaultErrorMessage ??
-      (error instanceof Error && error.message
-        ? error.message
-        : 'Ismeretlen hiba történt a kérés során.');
-    throw new ApiError(message, { cause: error ?? undefined });
+  if (response.status === 401) {
+    const refreshed = await refreshSession(init.signal);
+    if (refreshed) {
+      response = await attemptFetch();
+    }
   }
 
   if (response.ok) {
     return response;
+  }
+
+  if (response.status === 401) {
+    const message =
+      authErrorMessage ??
+      defaultErrorMessage ??
+      DEFAULT_AUTH_ERROR;
+    throw new ApiError(message, { status: 401 });
   }
 
   let message: string | undefined;

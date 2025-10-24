@@ -384,7 +384,6 @@ export default function NewOfferWizard() {
       previewAbortRef.current = controller;
 
       const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
-        supabase: sb,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -715,7 +714,6 @@ export default function NewOfferWizard() {
       }
       try {
         resp = await fetchWithSupabaseAuth('/api/ai-generate', {
-          supabase: sb,
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

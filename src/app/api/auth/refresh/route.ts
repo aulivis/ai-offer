@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { envServer } from '@/env.server';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
+import { decodeRefreshToken, type DecodedRefreshToken } from '../token';
 
 const REFRESH_COOKIE = 'propono_rt';
 
@@ -33,30 +34,6 @@ type RefreshResponse = {
   token_type?: string;
   user?: { id: string };
 };
-
-type DecodedRefreshToken = {
-  sub?: string;
-  iat?: number;
-  exp?: number;
-};
-
-function decodeRefreshToken(token: string): DecodedRefreshToken | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length < 2) {
-      return null;
-    }
-
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64url').toString('utf8'),
-    ) as DecodedRefreshToken;
-
-    return payload;
-  } catch (error) {
-    console.error('Failed to decode refresh token.', error);
-    return null;
-  }
-}
 
 function getRequestIp(request: Request): string | null {
   const xff = request.headers.get('x-forwarded-for');
