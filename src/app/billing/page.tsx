@@ -7,7 +7,7 @@ import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
-import { hasUnlimitedAccess, resolveEffectivePlan } from '@/lib/subscription';
+import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 
@@ -141,7 +141,7 @@ export default function BillingPage() {
         return;
       }
 
-      const effectivePlan = resolveEffectivePlan(profile?.plan ?? null, user.email ?? null);
+      const effectivePlan = resolveEffectivePlan(profile?.plan ?? null);
       setPlan(effectivePlan);
       setUsage({
         offersGenerated: Number(usageRow?.offers_generated ?? 0),
@@ -185,13 +185,10 @@ export default function BillingPage() {
     return 3;
   }, [plan]);
 
-  const hasUnlimitedEmail = hasUnlimitedAccess(email);
-  const effectiveLimit = hasUnlimitedEmail ? null : planLimit;
-
   const offersThisMonth = usage?.offersGenerated ?? 0;
-  const remainingQuota = effectiveLimit === null
+  const remainingQuota = planLimit === null
     ? 'Korlátlan'
-    : Math.max(effectiveLimit - offersThisMonth, 0).toLocaleString('hu-HU');
+    : Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU');
   const planLabels: Record<'free' | 'standard' | 'pro', string> = {
     free: 'Ingyenes csomag',
     standard: 'Propono Standard',

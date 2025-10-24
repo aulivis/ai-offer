@@ -422,7 +422,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     // ---- Limit (havi) ----
 
     const profile = await getUserProfile(sb, user.id);
-    const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null, user.email ?? null);
+    const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null);
 
     let sanitizedImageAssets: SanitizedImageAsset[] = [];
     try {
