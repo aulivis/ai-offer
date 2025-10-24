@@ -5,6 +5,12 @@ create table if not exists public.usage_counters (
   updated_at timestamp with time zone not null default timezone('utc', now())
 );
 
+alter table public.usage_counters
+  add column if not exists updated_at timestamp with time zone;
+
+alter table public.usage_counters
+  alter column updated_at set default timezone('utc', now());
+
 create or replace function public.set_usage_counters_updated_at()
 returns trigger
 language plpgsql
@@ -27,6 +33,9 @@ alter table public.usage_counters enable row level security;
 update public.usage_counters
    set updated_at = timezone('utc', now())
  where updated_at is null;
+
+alter table public.usage_counters
+  alter column updated_at set not null;
 
 -- Allow authenticated users to work with their own usage row.
 do $$
@@ -101,4 +110,4 @@ end
 $$;
 
 -- Refresh the schema cache so PostgREST exposes the table immediately.
-perform pgrest.schema_cache_reload();
+select pgrest.schema_cache_reload();
