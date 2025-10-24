@@ -1,4 +1,9 @@
-import argon2 from 'argon2';
+import {
+  Algorithm as Argon2Algorithm,
+  hash as argon2Hash,
+  verify as argon2Verify,
+  type Options as Argon2Options,
+} from '@node-rs/argon2';
 import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
@@ -8,8 +13,8 @@ import { decodeRefreshToken, type DecodedRefreshToken } from '../token';
 
 const REFRESH_COOKIE = 'propono_rt';
 
-const ARGON2_OPTIONS: argon2.Options & { type: argon2.Type } = {
-  type: argon2.argon2id,
+const ARGON2_OPTIONS: Argon2Options = {
+  algorithm: Argon2Algorithm.Argon2id,
   memoryCost: 19456,
   timeCost: 2,
   parallelism: 1,
@@ -129,7 +134,7 @@ export async function POST(request: Request) {
   let activeSession: SessionRow | null = null;
   if (sessions) {
     for (const session of sessions) {
-      if (await argon2.verify(session.rt_hash, refreshToken)) {
+      if (await argon2Verify(session.rt_hash, refreshToken)) {
         activeSession = session;
         break;
       }
@@ -188,7 +193,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
 
-  const hashedRefresh = await argon2.hash(newRefreshToken, ARGON2_OPTIONS);
+  const hashedRefresh = await argon2Hash(newRefreshToken, ARGON2_OPTIONS);
 
   const nowIso = new Date().toISOString();
   const [{ error: revokeError }, { error: insertError }] = await Promise.all([
