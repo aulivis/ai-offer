@@ -1,4 +1,4 @@
-import argon2 from 'argon2';
+import { verify as argon2Verify } from '@node-rs/argon2';
 import { cookies } from 'next/headers';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const nowIso = new Date().toISOString();
     for (const session of sessions) {
       try {
-        const matches = await argon2.verify(session.rt_hash, refreshToken);
+        const matches = await argon2Verify(session.rt_hash, refreshToken);
         if (matches) {
           const { error: revokeError } = await supabase
             .from('sessions')
