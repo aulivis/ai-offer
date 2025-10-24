@@ -14,6 +14,7 @@ import {
   type OfferTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
+import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
@@ -432,41 +433,14 @@ export default function SettingsPage() {
         return;
       }
       if (!user) return;
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-      if (!accessToken) {
-        showToast({
-          title: 'Hitelesítési hiba',
-          description: 'Nem sikerült azonosítani a felhasználót. Jelentkezz be újra, majd próbáld meg ismét.',
-          variant: 'error',
-        });
-        return;
-      }
-
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/storage/upload-brand-logo', {
+      const response = await fetchWithSupabaseAuth('/api/storage/upload-brand-logo', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,
+        defaultErrorMessage: 'Nem sikerült feltölteni a logót. Próbáld újra.',
       });
-
-      if (!response.ok) {
-        let message = 'Nem sikerült feltölteni a logót. Próbáld újra.';
-        try {
-          const payload: unknown = await response.json();
-          if (payload && typeof payload === 'object' && 'error' in payload) {
-            const errorValue = (payload as { error?: unknown }).error;
-            if (typeof errorValue === 'string' && errorValue.trim()) {
-              message = errorValue;
-            }
-          }
-        } catch {
-          // ignore JSON parse errors
-        }
-        throw new Error(message);
-      }
 
       const payload: unknown = await response.json();
       let logoUrl: unknown = null;

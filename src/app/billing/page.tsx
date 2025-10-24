@@ -159,7 +159,6 @@ export default function BillingPage() {
     try {
       setLoading(priceId);
       const resp = await fetchWithSupabaseAuth(CHECKOUT_API_PATH, {
-        supabase,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId, email }),

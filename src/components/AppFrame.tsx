@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 
 import { useToast } from './ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { Button } from '@/components/ui/Button';
+import { getCsrfToken } from '@/lib/api';
 
 const navLinks = [
   { href: '/dashboard', label: 'Ajánlatok' },
@@ -24,9 +26,50 @@ export type AppFrameProps = {
 
 export default function AppFrame({ title, description, actions, children, sidebar }: AppFrameProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { showToast } = useToast();
   const { error, status } = useRequireAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    try {
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        throw new Error('Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.');
+      }
+
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'x-csrf-token': csrfToken },
+      });
+
+      if (!response.ok) {
+        const payload: unknown = await response.json().catch(() => null);
+        const message =
+          payload && typeof payload === 'object' && 'error' in payload && typeof (payload as { error?: unknown }).error === 'string'
+            ? ((payload as { error?: string }).error as string)
+            : 'Nem sikerült kijelentkezni.';
+        throw new Error(message);
+      }
+
+      router.replace('/login');
+      router.refresh();
+    } catch (err) {
+      console.error('Logout failed', err);
+      const message =
+        err instanceof Error ? err.message : 'Ismeretlen hiba történt kijelentkezés közben.';
+      showToast({
+        title: 'Kijelentkezés sikertelen',
+        description: message,
+        variant: 'error',
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
 
   useEffect(() => {
     if (!error) {
@@ -119,7 +162,19 @@ export default function AppFrame({ title, description, actions, children, sideba
             <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#151035]">{title}</h1>
             {description ? <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p> : null}
           </div>
-          {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+          <div className="flex shrink-0 items-center gap-2">
+            {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              aria-busy={isLoggingOut}
+              aria-label="Kijelentkezés a fiókból"
+            >
+              {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
+            </Button>
+          </div>
         </header>
 
         {children}
