@@ -36,6 +36,22 @@ To learn more about Next.js, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
+## Observability
+
+### Magic link telemetry
+
+- **Structured logging** – `/api/auth/magic-link` (OTP dispatch) and `/api/auth/callback` (magic link completion) now emit structured log entries that always include a `requestId` and, once an email address is known, an `emailHash` (SHA-256 of the normalized email). These identifiers allow you to correlate logs across retries while keeping addresses private.
+- **Metrics** – Two OpenTelemetry counters are exposed via `@opentelemetry/api`:
+  - `auth.magic_link.send_total` increments for every OTP send attempt. The `outcome` attribute is `success` or `failure`, and failures include a `reason` attribute (`invalid_payload`, `rate_limit`, or `supabase_error`).
+  - `auth.magic_link.callback_total` tracks callback handling outcomes with the same `outcome` attribute and failure reasons (`missing_code`, `state_validation`, `exchange_error`).
+
+### Validation guidance
+
+1. Run the application with your OpenTelemetry meter provider configured (for example, attach an OTLP exporter or the console metric exporter).
+2. Trigger a POST to `/api/auth/magic-link` followed by the magic link callback flow.
+3. Confirm that server logs contain matching `requestId`/`emailHash` pairs for both the send and callback stages.
+4. Verify that `auth.magic_link.send_total` and `auth.magic_link.callback_total` appear in your metrics backend with the expected `outcome`/`reason` attributes.
+
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel

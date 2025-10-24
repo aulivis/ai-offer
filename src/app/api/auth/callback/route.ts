@@ -5,6 +5,9 @@ import { NextResponse } from 'next/server';
 
 import { envServer } from '@/env.server';
 
+import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
+import { recordMagicLinkCallback } from '@/lib/observability/metrics';
+
 import { setAuthCookies, setCSRFCookie } from '../../../../../lib/auth/cookies';
 
 const AUTH_STATE_COOKIE = 'auth_state';
@@ -29,7 +32,7 @@ type ExchangeResult = {
   refreshToken: string;
 };
 
-function decryptStateCookie(value: string): AuthStatePayload | null {
+function decryptStateCookie(value: string, logger: RequestLogger): AuthStatePayload | null {
   try {
     const secret = createHash('sha256')
       .update(envServer.AUTH_COOKIE_SECRET)
@@ -50,7 +53,7 @@ function decryptStateCookie(value: string): AuthStatePayload | null {
 
     return JSON.parse(decrypted.toString('utf8')) as AuthStatePayload;
   } catch (error) {
-    console.error('Failed to decrypt OAuth state cookie.', error);
+    logger.error('Failed to decrypt OAuth state cookie.', error);
     return null;
   }
 }
@@ -116,7 +119,10 @@ function sanitizeValue(value: unknown): unknown {
   return value;
 }
 
-async function exchangeCode({ code, codeVerifier }: ExchangeParams): Promise<ExchangeResult> {
+async function exchangeCode(
+  { code, codeVerifier }: ExchangeParams,
+  logger: RequestLogger,
+): Promise<ExchangeResult> {
   const grantType = codeVerifier ? 'pkce' : 'authorization_code';
   const endpoint = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
   endpoint.searchParams.set('grant_type', grantType);
@@ -161,7 +167,7 @@ async function exchangeCode({ code, codeVerifier }: ExchangeParams): Promise<Exc
         bodyReadError instanceof Error ? bodyReadError.message : bodyReadError;
     }
 
-    console.error('Supabase token exchange failed.', logDetails);
+    logger.error('Supabase token exchange failed.', undefined, logDetails);
     throw new Error(`Supabase token exchange failed with status ${response.status}`);
   }
 
@@ -174,55 +180,59 @@ async function exchangeCode({ code, codeVerifier }: ExchangeParams): Promise<Exc
     throw new Error('Supabase token exchange did not return required tokens.');
   }
 
-  return {
+  const result = {
     accessToken: payload.access_token,
     refreshToken: payload.refresh_token,
   };
+
+  logger.info('Supabase token exchange succeeded.');
+  return result;
 }
 
 function validateStatePayload(
   stateParam: string | null,
   nonceParam: string | null,
   cookieValue: string | undefined,
+  logger: RequestLogger,
 ): { redirectTo: string | null; codeVerifier?: string } | null {
   if (!stateParam) {
     return null;
   }
 
   if (!cookieValue) {
-    console.error('Missing OAuth state cookie during callback handling.');
+    logger.error('Missing OAuth state cookie during callback handling.');
     return null;
   }
 
-  const payload = decryptStateCookie(cookieValue);
+  const payload = decryptStateCookie(cookieValue, logger);
   if (!payload || typeof payload.state !== 'string') {
     return null;
   }
 
   if (payload.state !== stateParam) {
-    console.error('OAuth state mismatch detected.');
+    logger.error('OAuth state mismatch detected.');
     return null;
   }
 
   if (payload.createdAt === undefined || typeof payload.createdAt !== 'number') {
-    console.error('OAuth state payload missing creation timestamp.');
+    logger.error('OAuth state payload missing creation timestamp.');
     return null;
   }
 
   if (Date.now() - payload.createdAt > AUTH_STATE_MAX_AGE_MS) {
-    console.error('OAuth state cookie has expired.');
+    logger.error('OAuth state cookie has expired.');
     return null;
   }
 
   const expectedNonce = typeof payload.nonce === 'string' ? payload.nonce : null;
   if (expectedNonce) {
     if (!nonceParam) {
-      console.error('OAuth nonce parameter missing during callback handling.');
+      logger.error('OAuth nonce parameter missing during callback handling.');
       return null;
     }
 
     if (nonceParam !== expectedNonce) {
-      console.error('OAuth nonce mismatch detected.');
+      logger.error('OAuth nonce mismatch detected.');
       return null;
     }
   }
@@ -246,13 +256,24 @@ function clearAuthStateCookie(cookieStore: Awaited<ReturnType<typeof cookies>>) 
 }
 
 export async function GET(request: Request) {
+  const logger = createAuthRequestLogger();
+  logger.info('Magic link callback request received.');
+
   const url = new URL(request.url);
+  const emailParam = url.searchParams.get('email');
+  if (emailParam) {
+    logger.setEmail(emailParam);
+    logger.info('Magic link callback includes email identifier.');
+  }
+
   const code = url.searchParams.get('code');
 
   const cookieStore = await cookies();
 
   if (!code) {
+    logger.error('Magic link callback missing authorization code.');
     clearAuthStateCookie(cookieStore);
+    recordMagicLinkCallback('failure', { reason: 'missing_code' });
     return buildRedirect('/login?message=Unable%20to%20authenticate');
   }
 
@@ -260,9 +281,14 @@ export async function GET(request: Request) {
   const nonceParam = url.searchParams.get('nonce');
   const stateCookie = cookieStore.get(AUTH_STATE_COOKIE)?.value;
 
-  const stateValidation = validateStatePayload(stateParam, nonceParam, stateCookie);
+  const stateValidation = validateStatePayload(stateParam, nonceParam, stateCookie, logger);
   if (stateParam && !stateValidation) {
     clearAuthStateCookie(cookieStore);
+    logger.error('Magic link callback state validation failed.', {
+      hasNonce: Boolean(nonceParam),
+      hadCookie: Boolean(stateCookie),
+    });
+    recordMagicLinkCallback('failure', { reason: 'state_validation' });
     return buildRedirect('/login?message=Unable%20to%20authenticate');
   }
 
@@ -279,19 +305,28 @@ export async function GET(request: Request) {
     const { accessToken, refreshToken } = await exchangeCode({
       code,
       codeVerifier,
-    });
+    }, logger);
 
     await setAuthCookies(accessToken, refreshToken);
     await setCSRFCookie();
+    recordMagicLinkCallback('success');
   } catch (error) {
-    console.error('Failed to exchange Supabase auth code.', error);
+    logger.error('Failed to exchange Supabase auth code.', error);
     clearAuthStateCookie(cookieStore);
+    recordMagicLinkCallback('failure', { reason: 'exchange_error' });
     return buildRedirect('/login?message=Unable%20to%20authenticate');
   }
 
   clearAuthStateCookie(cookieStore);
 
+  logger.info('Magic link callback completed successfully.', {
+    redirect: finalRedirect,
+  });
+
   return buildRedirect(finalRedirect);
 }
 
-export const __test = { exchangeCode, sanitizeValue };
+export const __test = {
+  exchangeCode: (params: ExchangeParams) => exchangeCode(params, createAuthRequestLogger()),
+  sanitizeValue,
+};

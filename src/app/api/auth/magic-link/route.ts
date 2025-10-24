@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import { createAuthRequestLogger, normalizeEmail, type RequestLogger } from '@/lib/observability/authLogging';
+import { recordMagicLinkSend } from '@/lib/observability/metrics';
+
 import { envServer } from '@/env.server';
 
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
@@ -16,10 +19,6 @@ const requestSchema = z.object({
 });
 
 const json202 = () => Response.json(GENERIC_RESPONSE, { status: 202 });
-
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
-}
 
 function getClientIp(request: Request) {
   const forwardedFor = request.headers.get('x-forwarded-for');
@@ -51,7 +50,11 @@ type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
     }) => Promise<unknown>;
   }>;
 
-async function sendMagicLink(supabase: ReturnType<typeof supabaseServer>, email: string) {
+async function sendMagicLink(
+  supabase: ReturnType<typeof supabaseServer>,
+  email: string,
+  logger: RequestLogger,
+) {
   const admin = supabase.auth.admin as SupabaseAdminClient;
   const emailRedirectTo = new URL('/api/auth/callback', envServer.APP_URL).toString();
   const otpOptions = { emailRedirectTo, shouldCreateUser: true } as const;
@@ -66,7 +69,7 @@ async function sendMagicLink(supabase: ReturnType<typeof supabaseServer>, email:
     }
   } catch (error) {
     lastError = error;
-    console.error('Failed to send Supabase magic link via anon client.', error);
+    logger.error('Failed to send Supabase magic link via anon client.', error);
   }
 
   if (typeof admin.signInWithOtp === 'function') {
@@ -86,39 +89,47 @@ async function sendMagicLink(supabase: ReturnType<typeof supabaseServer>, email:
 
 async function enforceRateLimit(
   supabase: ReturnType<typeof supabaseServer>,
-  key: string
+  key: string,
+  logger: RequestLogger,
 ): Promise<RateLimitResult> {
   try {
     return await consumeMagicLinkRateLimit(supabase, key);
   } catch (error) {
-    console.error('Failed to enforce magic link rate limit.', { key }, error);
+    logger.error('Failed to enforce magic link rate limit.', error, { key });
     return { allowed: true, retryAfterMs: 0 };
   }
 }
 
 export async function POST(request: Request) {
+  const logger = createAuthRequestLogger();
+  logger.info('Magic link OTP request received.');
+
   let payload: unknown;
 
   try {
     payload = await request.json();
   } catch (error) {
-    console.error('Failed to parse request payload for magic link.', error);
+    logger.error('Failed to parse request payload for magic link.', error);
+    recordMagicLinkSend('failure', { reason: 'invalid_payload' });
     return json202();
   }
 
   const parseResult = requestSchema.safeParse(payload);
   if (!parseResult.success) {
+    logger.warn('Magic link OTP request failed schema validation.');
+    recordMagicLinkSend('failure', { reason: 'invalid_payload' });
     return json202();
   }
 
   const email = normalizeEmail(parseResult.data.email);
+  logger.setEmail(email);
   const clientIp = getClientIp(request);
 
   const supabase = supabaseServer();
 
   const [ipResult, emailResult] = await Promise.all([
-    enforceRateLimit(supabase, `ip:${clientIp}`),
-    enforceRateLimit(supabase, `email:${email}`),
+    enforceRateLimit(supabase, `ip:${clientIp}`, logger),
+    enforceRateLimit(supabase, `email:${email}`, logger),
   ]);
 
   const rateLimited = !ipResult.allowed || !emailResult.allowed;
@@ -126,7 +137,7 @@ export async function POST(request: Request) {
   if (rateLimited) {
     if (!ipResult.allowed) {
       const retrySeconds = Math.max(1, Math.ceil(ipResult.retryAfterMs / 1000));
-      console.warn('Magic link IP rate limit exceeded.', {
+      logger.warn('Magic link IP rate limit exceeded.', {
         clientIp,
         retrySeconds,
       });
@@ -134,18 +145,25 @@ export async function POST(request: Request) {
 
     if (!emailResult.allowed) {
       const retrySeconds = Math.max(1, Math.ceil(emailResult.retryAfterMs / 1000));
-      console.warn('Magic link email rate limit exceeded.', {
-        email,
+      logger.warn('Magic link email rate limit exceeded.', {
         retrySeconds,
       });
     }
+
+    recordMagicLinkSend('failure', { reason: 'rate_limit' });
   } else {
     try {
-      await sendMagicLink(supabase, email);
+      await sendMagicLink(supabase, email, logger);
+      logger.info('Magic link OTP email dispatched successfully.', {
+        clientIp,
+      });
+      recordMagicLinkSend('success');
     } catch (error) {
-      console.error('Failed to send Supabase magic link.', error);
+      logger.error('Failed to send Supabase magic link.', error);
+      recordMagicLinkSend('failure', { reason: 'supabase_error' });
     }
   }
 
+  logger.info('Magic link OTP request completed.');
   return json202();
 }
