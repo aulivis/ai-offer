@@ -12,6 +12,8 @@ const ServerEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
   SUPABASE_SERVICE_ROLE_KEY: z.string(),
+  AUTH_COOKIE_SECRET: z.string().min(32, 'AUTH_COOKIE_SECRET must be at least 32 characters long.'),
+  CSRF_SECRET: z.string().min(32, 'CSRF_SECRET must be at least 32 characters long.'),
   OPENAI_API_KEY: z.string(),
   STRIPE_SECRET_KEY: z.string(),
   APP_URL: z.string().url(),

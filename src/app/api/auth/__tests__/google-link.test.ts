@@ -20,6 +20,9 @@ vi.mock('../google/createSupabaseOAuthClient', () => ({
 vi.mock('@/env.server', () => ({
   envServer: {
     SUPABASE_SERVICE_ROLE_KEY: 'role-key',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    AUTH_COOKIE_SECRET: 'test-auth-secret-value-test-auth-secret-value',
+    CSRF_SECRET: 'test-csrf-secret-value-test-csrf-secret-value',
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
     OAUTH_REDIRECT_ALLOWLIST: ['http://localhost/dashboard'],
     APP_URL: 'http://localhost',
