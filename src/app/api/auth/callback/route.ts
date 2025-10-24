@@ -3,10 +3,14 @@ import { createDecipheriv, createHash } from 'crypto';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+import type { EmailOtpType } from '@supabase/supabase-js';
+
 import { envServer } from '@/env.server';
 
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback } from '@/lib/observability/metrics';
+
+import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 
 import { setAuthCookies, setCSRFCookie } from '../../../../../lib/auth/cookies';
 
@@ -30,6 +34,11 @@ type ExchangeParams = {
 type ExchangeResult = {
   accessToken: string;
   refreshToken: string;
+};
+
+type TokenHashExchangeParams = {
+  tokenHash: string;
+  type: EmailOtpType;
 };
 
 function decryptStateCookie(value: string, logger: RequestLogger): AuthStatePayload | null {
@@ -183,6 +192,31 @@ async function exchangeCode(
   return result;
 }
 
+async function exchangeTokenHash(
+  { tokenHash, type }: TokenHashExchangeParams,
+  logger: RequestLogger,
+): Promise<ExchangeResult> {
+  const supabase = supabaseAnonServer();
+  const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+
+  if (error) {
+    logger.error('Supabase magic link token hash verification failed.', error);
+    throw error;
+  }
+
+  const session = data.session;
+  if (!session?.access_token || !session?.refresh_token) {
+    throw new Error('Supabase magic link verification did not return required tokens.');
+  }
+
+  logger.info('Supabase magic link token hash verification succeeded.');
+
+  return {
+    accessToken: session.access_token,
+    refreshToken: session.refresh_token,
+  };
+}
+
 function validateStatePayload(
   stateParam: string | null,
   nonceParam: string | null,
@@ -263,16 +297,10 @@ export async function GET(request: Request) {
     logger.info('Magic link callback includes email identifier.');
   }
 
-  const code = url.searchParams.get('code');
-
   const cookieStore = await cookies();
-
-  if (!code) {
-    logger.error('Magic link callback missing authorization code.');
-    clearAuthStateCookie(cookieStore);
-    recordMagicLinkCallback('failure', { reason: 'missing_code' });
-    return buildRedirect('/login?message=Unable%20to%20authenticate');
-  }
+  const code = url.searchParams.get('code');
+  const tokenHash = url.searchParams.get('token_hash');
+  const typeParam = (url.searchParams.get('type') ?? 'magiclink') as EmailOtpType;
 
   const stateParam = url.searchParams.get('state');
   const nonceParam = url.searchParams.get('nonce');
@@ -299,14 +327,25 @@ export async function GET(request: Request) {
   const finalRedirect = redirectTarget ?? '/dashboard';
 
   try {
-    const exchangeParams: ExchangeParams = { code };
-    if (codeVerifier) {
-      exchangeParams.codeVerifier = codeVerifier;
+    let exchangeResult: ExchangeResult | null = null;
+
+    if (code) {
+      const exchangeParams: ExchangeParams = { code };
+      if (codeVerifier) {
+        exchangeParams.codeVerifier = codeVerifier;
+      }
+
+      exchangeResult = await exchangeCode(exchangeParams, logger);
+    } else if (tokenHash) {
+      exchangeResult = await exchangeTokenHash({ tokenHash, type: typeParam }, logger);
+    } else {
+      logger.error('Magic link callback missing authorization credentials.');
+      clearAuthStateCookie(cookieStore);
+      recordMagicLinkCallback('failure', { reason: 'missing_code' });
+      return buildRedirect('/login?message=Unable%20to%20authenticate');
     }
 
-    const { accessToken, refreshToken } = await exchangeCode(exchangeParams, logger);
-
-    await setAuthCookies(accessToken, refreshToken);
+    await setAuthCookies(exchangeResult.accessToken, exchangeResult.refreshToken);
     await setCSRFCookie();
     recordMagicLinkCallback('success');
   } catch (error) {
