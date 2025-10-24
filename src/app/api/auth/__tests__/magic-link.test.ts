@@ -4,14 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const signInWithOtpMock = vi.hoisted(() => vi.fn());
 const anonSignInWithOtpMock = vi.hoisted(() => vi.fn());
-const createUserMock = vi.hoisted(() => vi.fn());
 const generateLinkMock = vi.hoisted(() => vi.fn());
 const consumeRateLimitMock = vi.hoisted(() => vi.fn());
 
 const adminMock = vi.hoisted(() => ({
   signInWithOtp: signInWithOtpMock as undefined | typeof signInWithOtpMock,
   generateLink: generateLinkMock as undefined | typeof generateLinkMock,
-  createUser: createUserMock,
 }));
 
 const anonClientMock = vi.hoisted(() => ({
@@ -49,10 +47,8 @@ describe('POST /api/auth/magic-link', () => {
     vi.resetModules();
     signInWithOtpMock.mockReset();
     anonSignInWithOtpMock.mockReset();
-    createUserMock.mockReset();
     generateLinkMock.mockReset();
     consumeRateLimitMock.mockReset();
-    createUserMock.mockResolvedValue({ error: null });
     adminMock.signInWithOtp = signInWithOtpMock;
     adminMock.generateLink = generateLinkMock;
     anonClientMock.auth.signInWithOtp = anonSignInWithOtpMock;
@@ -77,37 +73,36 @@ describe('POST /api/auth/magic-link', () => {
     await expect(response.json()).resolves.toEqual({
       message: 'If an account exists for that email, a magic link will arrive shortly.',
     });
-    expect(createUserMock).toHaveBeenCalledWith({ email: 'user@example.com', email_confirm: false });
     expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
-      options: { emailRedirectTo: 'https://app.example.com/api/auth/callback' },
+      options: {
+        emailRedirectTo: 'https://app.example.com/api/auth/callback',
+        shouldCreateUser: true,
+      },
     });
     expect(signInWithOtpMock).not.toHaveBeenCalled();
   });
 
-  it('continues when the Supabase user already exists', async () => {
-    createUserMock.mockResolvedValue({
-      error: { message: 'User already registered' },
-    });
-    anonSignInWithOtpMock.mockResolvedValue(undefined);
+  it('falls back to the admin client when the anon client is unavailable', async () => {
+    anonClientMock.auth.signInWithOtp = undefined;
+    signInWithOtpMock.mockResolvedValue(undefined);
 
     const { POST } = await import('../magic-link/route');
     const response = await POST(
       new Request('http://localhost/api/auth/magic-link', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'exists@example.com' }),
+        body: JSON.stringify({ email: 'admin@example.com' }),
       }),
     );
 
     expect(response.status).toBe(202);
-    expect(createUserMock).toHaveBeenCalledWith({
-      email: 'exists@example.com',
-      email_confirm: false,
-    });
-    expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
-      email: 'exists@example.com',
-      options: { emailRedirectTo: 'https://app.example.com/api/auth/callback' },
+    expect(signInWithOtpMock).toHaveBeenCalledWith({
+      email: 'admin@example.com',
+      options: {
+        emailRedirectTo: 'https://app.example.com/api/auth/callback',
+        shouldCreateUser: true,
+      },
     });
   });
 
@@ -127,14 +122,13 @@ describe('POST /api/auth/magic-link', () => {
     );
 
     expect(response.status).toBe(202);
-    expect(createUserMock).toHaveBeenCalledWith({
-      email: 'fallback@example.com',
-      email_confirm: false,
-    });
     expect(generateLinkMock).toHaveBeenCalledWith({
       email: 'fallback@example.com',
       type: 'magiclink',
-      options: { emailRedirectTo: 'https://app.example.com/api/auth/callback' },
+      options: {
+        emailRedirectTo: 'https://app.example.com/api/auth/callback',
+        shouldCreateUser: true,
+      },
     });
   });
 
