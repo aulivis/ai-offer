@@ -9,10 +9,10 @@ const updateMock = vi.hoisted(() => vi.fn());
 const insertMock = vi.hoisted(() => vi.fn());
 const cookiesMock = vi.hoisted(() => vi.fn());
 
-vi.mock('@node-rs/argon2', () => ({
-  Algorithm: { Argon2id: 'argon2id' },
-  verify: verifyMock,
-  hash: hashMock,
+vi.mock('../../../../../lib/auth/argon2', () => ({
+  Argon2Algorithm: { Argon2id: 'argon2id' },
+  argon2Verify: verifyMock,
+  argon2Hash: hashMock,
 }));
 
 vi.mock('@/app/lib/supabaseServer', () => ({
