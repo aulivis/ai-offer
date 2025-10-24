@@ -5,15 +5,28 @@ import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 
 type CounterKind = 'user' | 'device';
 
-type UsageConfig = {
+type CounterTargets = {
+  user: { userId: string };
+  device: { userId: string; deviceId: string };
+};
+
+type UsageConfig<K extends CounterKind> = {
   table: string;
-  column: string;
+  columnMap: { [P in keyof CounterTargets[K]]: string };
   rpc: 'check_and_increment_usage' | 'check_and_increment_device_usage';
 };
 
-const COUNTER_CONFIG: Record<CounterKind, UsageConfig> = {
-  user: { table: 'usage_counters', column: 'user_id', rpc: 'check_and_increment_usage' },
-  device: { table: 'device_usage_counters', column: 'device_id', rpc: 'check_and_increment_device_usage' },
+const COUNTER_CONFIG: { [K in CounterKind]: UsageConfig<K> } = {
+  user: {
+    table: 'usage_counters',
+    columnMap: { userId: 'user_id' },
+    rpc: 'check_and_increment_usage',
+  },
+  device: {
+    table: 'device_usage_counters',
+    columnMap: { userId: 'user_id', deviceId: 'device_id' },
+    rpc: 'check_and_increment_device_usage',
+  },
 };
 
 function normalizeDate(value: unknown, fallback: string): string {
@@ -31,18 +44,18 @@ function normalizeDate(value: unknown, fallback: string): string {
   return fallback;
 }
 
-async function ensureUsageCounter(
+async function ensureUsageCounter<K extends CounterKind>(
   supabase: SupabaseClient,
-  kind: CounterKind,
-  targetId: string,
+  kind: K,
+  target: CounterTargets[K],
   periodStart: string,
 ): Promise<{ periodStart: string; offersGenerated: number }> {
   const config = COUNTER_CONFIG[kind];
-  const { data: existing, error: selectError } = await supabase
-    .from(config.table)
-    .select('period_start, offers_generated')
-    .eq(config.column, targetId)
-    .maybeSingle();
+  let selectBuilder = supabase.from(config.table).select('period_start, offers_generated');
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
+    selectBuilder = selectBuilder.eq(column, target[key]);
+  });
+  const { data: existing, error: selectError } = await selectBuilder.maybeSingle();
 
   if (selectError && selectError.code !== 'PGRST116') {
     throw new Error(`Failed to load usage counter: ${selectError.message}`);
@@ -50,11 +63,13 @@ async function ensureUsageCounter(
 
   let usageRow = existing;
   if (!usageRow) {
-    const insertPayload = {
-      [config.column]: targetId,
+    const insertPayload: Record<string, unknown> = {
       period_start: periodStart,
       offers_generated: 0,
-    } as Record<string, unknown>;
+    };
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
+      insertPayload[column] = target[key];
+    });
     const { data: inserted, error: insertError } = await supabase
       .from(config.table)
       .insert(insertPayload)
@@ -70,12 +85,13 @@ async function ensureUsageCounter(
   let generated = Number(usageRow?.offers_generated ?? 0);
 
   if (currentPeriod !== periodStart) {
-    const { data: resetRow, error: resetError } = await supabase
+    let updateBuilder = supabase
       .from(config.table)
-      .update({ period_start: periodStart, offers_generated: 0 })
-      .eq(config.column, targetId)
-      .select('period_start, offers_generated')
-      .maybeSingle();
+      .update({ period_start: periodStart, offers_generated: 0 });
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
+      updateBuilder = updateBuilder.eq(column, target[key]);
+    });
+    const { data: resetRow, error: resetError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
     if (resetError) {
       throw new Error(`Failed to reset usage counter: ${resetError.message}`);
     }
@@ -86,26 +102,27 @@ async function ensureUsageCounter(
   return { periodStart: currentPeriod, offersGenerated: generated };
 }
 
-async function fallbackIncrement(
+async function fallbackIncrement<K extends CounterKind>(
   supabase: SupabaseClient,
-  kind: CounterKind,
-  targetId: string,
+  kind: K,
+  target: CounterTargets[K],
   limit: number | null,
   periodStart: string,
 ) {
   const config = COUNTER_CONFIG[kind];
-  const state = await ensureUsageCounter(supabase, kind, targetId, periodStart);
+  const state = await ensureUsageCounter(supabase, kind, target, periodStart);
 
   if (typeof limit === 'number' && Number.isFinite(limit) && state.offersGenerated >= limit) {
     return { allowed: false, offersGenerated: state.offersGenerated, periodStart: state.periodStart };
   }
 
-  const { data: updatedRow, error: updateError } = await supabase
+  let updateBuilder = supabase
     .from(config.table)
-    .update({ offers_generated: state.offersGenerated + 1, period_start: state.periodStart })
-    .eq(config.column, targetId)
-    .select('period_start, offers_generated')
-    .maybeSingle();
+    .update({ offers_generated: state.offersGenerated + 1, period_start: state.periodStart });
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
+    updateBuilder = updateBuilder.eq(column, target[key]);
+  });
+  const { data: updatedRow, error: updateError } = await updateBuilder.select('period_start, offers_generated').maybeSingle();
 
   if (updateError) {
     throw new Error(`Failed to bump usage counter: ${updateError.message}`);
@@ -116,10 +133,10 @@ async function fallbackIncrement(
   return { allowed: true, offersGenerated, periodStart: period };
 }
 
-async function incrementUsage(
+async function incrementUsage<K extends CounterKind>(
   supabase: SupabaseClient,
-  kind: CounterKind,
-  targetId: string,
+  kind: K,
+  target: CounterTargets[K],
   limit: number | null,
   periodStart: string,
 ) {
@@ -127,18 +144,19 @@ async function incrementUsage(
   const normalizedLimit = Number.isFinite(limit ?? NaN) ? Number(limit) : null;
 
   if (normalizedLimit === null) {
-    return fallbackIncrement(supabase, kind, targetId, null, periodStart);
+    return fallbackIncrement(supabase, kind, target, null, periodStart);
   }
 
   const rpcPayload =
     kind === 'user'
       ? {
-          p_user_id: targetId,
+          p_user_id: target.userId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
         }
       : {
-          p_device_id: targetId,
+          p_user_id: target.userId,
+          p_device_id: target.deviceId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
         };
@@ -150,7 +168,7 @@ async function incrementUsage(
       return fallbackIncrement(
         supabase,
         kind,
-        targetId,
+        target,
         normalizedLimit,
         periodStart,
       );
@@ -212,7 +230,7 @@ export async function processPdfJobInline(
     const usageResult = await incrementUsage(
       supabase,
       'user',
-      job.userId,
+      { userId: job.userId },
       job.userLimit,
       job.usagePeriodStart,
     );
@@ -224,7 +242,7 @@ export async function processPdfJobInline(
       const deviceResult = await incrementUsage(
         supabase,
         'device',
-        job.deviceId,
+        { userId: job.userId, deviceId: job.deviceId },
         job.deviceLimit,
         job.usagePeriodStart,
       );

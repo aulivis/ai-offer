@@ -561,7 +561,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
     if (deviceLimit !== null) {
-      const deviceSnapshot = await getDeviceUsageSnapshot(sb, deviceId, usagePeriodStart);
+      const deviceSnapshot = await getDeviceUsageSnapshot(sb, user.id, deviceId, usagePeriodStart);
       const devicePending = await countPendingPdfJobs(sb, {
         userId: user.id,
         periodStart: usagePeriodStart,

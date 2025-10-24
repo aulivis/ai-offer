@@ -175,9 +175,10 @@ describe('checkAndIncrementDeviceUsage', () => {
   it('invokes the device RPC with normalized payload', async () => {
     rpc.mockResolvedValue({ data: { allowed: true, offers_generated: 2, period_start: '2024-07-01' }, error: null });
 
-    const result = await checkAndIncrementDeviceUsage(mockClient, 'device-123', 3);
+    const result = await checkAndIncrementDeviceUsage(mockClient, 'user-123', 'device-123', 3);
 
     expect(rpc).toHaveBeenCalledWith('check_and_increment_device_usage', {
+      p_user_id: 'user-123',
       p_device_id: 'device-123',
       p_limit: 3,
       p_period_start: '2024-07-01',
@@ -218,10 +219,14 @@ describe('checkAndIncrementDeviceUsage', () => {
       .mockReturnValueOnce(insertBuilder as never)
       .mockReturnValueOnce(updateBuilder as never);
 
-    const result = await checkAndIncrementDeviceUsage(mockClient, 'device-321', 3);
+    const result = await checkAndIncrementDeviceUsage(mockClient, 'user-222', 'device-321', 3);
 
     expect(result).toEqual({ allowed: true, offersGenerated: 1, periodStart: '2024-07-01' });
     expect(from).toHaveBeenCalledTimes(3);
+    expect(selectBuilder.eq).toHaveBeenNthCalledWith(1, 'user_id', 'user-222');
+    expect(selectBuilder.eq).toHaveBeenNthCalledWith(2, 'device_id', 'device-321');
+    expect(updateBuilder.eq).toHaveBeenNthCalledWith(1, 'user_id', 'user-222');
+    expect(updateBuilder.eq).toHaveBeenNthCalledWith(2, 'device_id', 'device-321');
   });
 });
 
