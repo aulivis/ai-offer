@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const signInWithOAuthMock = vi.hoisted(() => vi.fn());
 const cookiesSetMock = vi.hoisted(() => vi.fn());
 const consumeCodeVerifierMock = vi.hoisted(() => vi.fn());
+const getGoogleProviderStatusMock = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({ enabled: true }),
+);
 
 vi.mock('../google/createSupabaseOAuthClient', () => ({
   createSupabaseOAuthClient: () => ({
@@ -15,6 +18,10 @@ vi.mock('../google/createSupabaseOAuthClient', () => ({
     },
     consumeCodeVerifier: consumeCodeVerifierMock,
   }),
+}));
+
+vi.mock('../google/providerStatus', () => ({
+  getGoogleProviderStatus: getGoogleProviderStatusMock,
 }));
 
 vi.mock('@/env.server', () => ({
@@ -44,6 +51,8 @@ describe('GET /api/auth/google', () => {
     signInWithOAuthMock.mockReset();
     cookiesSetMock.mockReset();
     consumeCodeVerifierMock.mockReset();
+    getGoogleProviderStatusMock.mockReset();
+    getGoogleProviderStatusMock.mockResolvedValue({ enabled: true });
     envServer.OAUTH_REDIRECT_ALLOWLIST = ['http://localhost/dashboard'];
   });
 
@@ -129,6 +138,22 @@ describe('GET /api/auth/google', () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: 'Unable to start Google authentication.' });
+  });
+
+  it('blocks the flow when the Google provider is disabled', async () => {
+    getGoogleProviderStatusMock.mockResolvedValue({
+      enabled: false,
+      message: 'The provider is disabled.',
+    });
+
+    const { GET } = await import('../google/route');
+    const response = await GET(
+      new Request('http://localhost/api/auth/google?redirect_to=http://localhost/dashboard'),
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: 'The provider is disabled.' });
+    expect(signInWithOAuthMock).not.toHaveBeenCalled();
   });
 
   it('generates a state parameter when Supabase omits it', async () => {
