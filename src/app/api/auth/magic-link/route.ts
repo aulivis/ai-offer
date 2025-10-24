@@ -40,62 +40,28 @@ function getClientIp(request: Request) {
 
 type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
   Partial<{
-    createUser: (attributes: { email: string; email_confirm?: boolean }) =>
-      Promise<
-        ({ error: { message?: string | null } | null } & Record<string, unknown>)
-      >;
     signInWithOtp: (params: {
       email: string;
-      options?: { emailRedirectTo?: string };
+      options?: { emailRedirectTo?: string; shouldCreateUser?: boolean };
     }) => Promise<unknown>;
     generateLink: (params: {
       type: 'magiclink';
       email: string;
-      options?: { emailRedirectTo?: string };
+      options?: { emailRedirectTo?: string; shouldCreateUser?: boolean };
     }) => Promise<unknown>;
   }>;
-
-async function ensureSupabaseUser(admin: SupabaseAdminClient, email: string) {
-  if (typeof admin.createUser !== 'function') {
-    return;
-  }
-
-  try {
-    const { error } = await admin.createUser({ email, email_confirm: false });
-    if (!error) {
-      return;
-    }
-
-    const message = (error.message ?? '').toLowerCase();
-    if (message.includes('already registered')) {
-      return;
-    }
-
-    console.error('Failed to ensure Supabase user exists before magic link.', error);
-  } catch (error) {
-    const message =
-      error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-        ? error.message.toLowerCase()
-        : '';
-
-    if (!message.includes('already registered')) {
-      console.error('Failed to create Supabase user before magic link.', error);
-    }
-  }
-}
 
 async function sendMagicLink(supabase: ReturnType<typeof supabaseServer>, email: string) {
   const admin = supabase.auth.admin as SupabaseAdminClient;
   const emailRedirectTo = new URL('/api/auth/callback', envServer.APP_URL).toString();
-
-  await ensureSupabaseUser(admin, email);
+  const otpOptions = { emailRedirectTo, shouldCreateUser: true } as const;
 
   const anonClient = supabaseAnonServer();
   let lastError: unknown;
 
   try {
     if (typeof anonClient.auth.signInWithOtp === 'function') {
-      await anonClient.auth.signInWithOtp({ email, options: { emailRedirectTo } });
+      await anonClient.auth.signInWithOtp({ email, options: otpOptions });
       return;
     }
   } catch (error) {
@@ -104,12 +70,12 @@ async function sendMagicLink(supabase: ReturnType<typeof supabaseServer>, email:
   }
 
   if (typeof admin.signInWithOtp === 'function') {
-    await admin.signInWithOtp({ email, options: { emailRedirectTo } });
+    await admin.signInWithOtp({ email, options: otpOptions });
     return;
   }
 
   if (typeof admin.generateLink === 'function') {
-    await admin.generateLink({ type: 'magiclink', email, options: { emailRedirectTo } });
+    await admin.generateLink({ type: 'magiclink', email, options: otpOptions });
     return;
   }
 
