@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import type { NextRequest } from 'next/server';
 
 import { CSRF_COOKIE_NAME, createCsrfToken } from './csrf';
 
@@ -66,12 +65,3 @@ export async function setCSRFCookie() {
   });
 }
 
-export function getCookiesFromRequest(req: NextRequest) {
-  return req
-    .cookies
-    .getAll()
-    .reduce<Record<string, string>>((acc, { name, value }) => {
-      acc[name] = value;
-      return acc;
-    }, {});
-}
