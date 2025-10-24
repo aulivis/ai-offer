@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { envServer } from '@/env.server';
+
 import { supabaseServer } from '../../../lib/supabaseServer';
 
 const GENERIC_RESPONSE = {
@@ -64,8 +66,15 @@ type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
       Promise<
         ({ error: { message?: string | null } | null } & Record<string, unknown>)
       >;
-    signInWithOtp: (params: { email: string }) => Promise<unknown>;
-    generateLink: (params: { type: 'magiclink'; email: string }) => Promise<unknown>;
+    signInWithOtp: (params: {
+      email: string;
+      options?: { emailRedirectTo?: string };
+    }) => Promise<unknown>;
+    generateLink: (params: {
+      type: 'magiclink';
+      email: string;
+      options?: { emailRedirectTo?: string };
+    }) => Promise<unknown>;
   }>;
 
 async function ensureSupabaseUser(admin: SupabaseAdminClient, email: string) {
@@ -100,16 +109,17 @@ async function ensureSupabaseUser(admin: SupabaseAdminClient, email: string) {
 async function sendMagicLink(email: string) {
   const supabase = supabaseServer();
   const admin = supabase.auth.admin as SupabaseAdminClient;
+  const emailRedirectTo = new URL('/api/auth/callback', envServer.APP_URL).toString();
 
   await ensureSupabaseUser(admin, email);
 
   if (typeof admin.signInWithOtp === 'function') {
-    await admin.signInWithOtp({ email });
+    await admin.signInWithOtp({ email, options: { emailRedirectTo } });
     return;
   }
 
   if (typeof admin.generateLink === 'function') {
-    await admin.generateLink({ type: 'magiclink', email });
+    await admin.generateLink({ type: 'magiclink', email, options: { emailRedirectTo } });
   }
 }
 
