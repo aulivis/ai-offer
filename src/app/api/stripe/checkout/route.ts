@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabaseServer } from '@/app/lib/supabaseServer';
 import { envServer } from '@/env.server';
+import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
 
@@ -67,7 +67,7 @@ function parseRequestBody(payload: unknown) {
   return { priceId, email };
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
   const clientId = getClientIdentifier(req);
 
@@ -108,33 +108,8 @@ export async function POST(req: NextRequest) {
     return buildErrorResponse('A választott előfizetés nem érhető el.', 400);
   }
 
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    console.warn('Checkout request missing authorization header', { requestId, clientId });
-    return buildErrorResponse('A fizetéshez be kell jelentkezned.', 401);
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  const sb = supabaseServer();
-  let userEmail: string | null = null;
-  let userId: string | null = null;
-  try {
-    const {
-      data: { user },
-      error,
-    } = await sb.auth.getUser(token);
-    if (error || !user) {
-      console.warn('Checkout authorization failed', { requestId, clientId, reason: error?.message ?? 'no-user' });
-      return buildErrorResponse('A bejelentkezés lejárt vagy érvénytelen.', 401);
-    }
-
-    userEmail = user.email ?? null;
-    userId = user.id ?? null;
-  } catch (error) {
-    console.error('Checkout authorization threw an error', { requestId, clientId, error });
-    return buildErrorResponse('Nem sikerült ellenőrizni a bejelentkezést.', 401);
-  }
+  const userEmail = req.user.email;
+  const userId = req.user.id;
 
   if (!userEmail) {
     console.warn('Checkout user is missing email', { requestId, clientId, userId });
@@ -164,7 +139,7 @@ export async function POST(req: NextRequest) {
     console.error('Stripe checkout session creation failed', { requestId, clientId, error, userId });
     return buildErrorResponse('Nem sikerült elindítani a Stripe fizetést.', 500);
   }
-}
+});
 
 export const __test = {
   resetRateLimiter() {

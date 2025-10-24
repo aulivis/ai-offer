@@ -1,7 +1,9 @@
 /* @vitest-environment node */
 
-import type { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { createCsrfToken } from '../../../../../lib/auth/csrf';
+import type { AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const {
   insertOfferMock,
@@ -10,7 +12,7 @@ const {
   countPendingPdfJobsMock,
   getUsageSnapshotMock,
   getDeviceUsageSnapshotMock,
-  getCurrentUserMock,
+  anonGetUserMock,
   getUserProfileMock,
   resolveEffectivePlanMock,
   uuidMock,
@@ -24,7 +26,7 @@ const {
   countPendingPdfJobsMock: vi.fn(),
   getUsageSnapshotMock: vi.fn(),
   getDeviceUsageSnapshotMock: vi.fn(),
-  getCurrentUserMock: vi.fn(),
+  anonGetUserMock: vi.fn(),
   getUserProfileMock: vi.fn(),
   resolveEffectivePlanMock: vi.fn(),
   uuidMock: vi.fn(),
@@ -64,8 +66,24 @@ vi.mock('@/env.server', () => ({
 }));
 
 vi.mock('@/lib/services/user', () => ({
-  getCurrentUser: getCurrentUserMock,
   getUserProfile: getUserProfileMock,
+}));
+
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    auth: {
+      getUser: anonGetUserMock,
+    },
+  }),
+}));
+
+vi.mock('@/env.client', () => ({
+  envClient: {
+    NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    NEXT_PUBLIC_STRIPE_PRICE_STARTER: undefined,
+    NEXT_PUBLIC_STRIPE_PRICE_PRO: undefined,
+  },
 }));
 
 vi.mock('@/lib/services/usage', () => ({
@@ -112,12 +130,34 @@ vi.mock('next/headers', () => ({
   })),
 }));
 
-function createRequest(body: Record<string, unknown>, headers: Record<string, string> = {}): NextRequest {
-  const headerMap = new Headers({ 'content-type': 'application/json', ...headers });
+function createRequest(
+  body: Record<string, unknown>,
+  headers: Record<string, string> = {},
+): AuthenticatedNextRequest {
+  const { token: csrfToken, value: csrfCookie } = createCsrfToken();
+  const headerMap = new Headers({
+    'content-type': 'application/json',
+    'x-csrf-token': csrfToken,
+    ...headers,
+  });
+  const cookieJar = {
+    propono_at: 'test-token',
+    'XSRF-TOKEN': csrfCookie,
+  } satisfies Record<string, string>;
+
   return {
+    method: 'POST',
     headers: headerMap,
     json: vi.fn().mockResolvedValue(body),
-  } as unknown as NextRequest;
+    cookies: {
+      get: (name: string) =>
+        cookieJar[name as keyof typeof cookieJar]
+          ? { name, value: cookieJar[name as keyof typeof cookieJar] }
+          : undefined,
+      getAll: () => Object.entries(cookieJar).map(([name, value]) => ({ name, value })),
+      has: (name: string) => Boolean(cookieJar[name as keyof typeof cookieJar]),
+    },
+  } as unknown as AuthenticatedNextRequest;
 }
 
 describe('POST /api/ai-generate', () => {
@@ -128,7 +168,7 @@ describe('POST /api/ai-generate', () => {
     countPendingPdfJobsMock.mockReset();
     getUsageSnapshotMock.mockReset();
     getDeviceUsageSnapshotMock.mockReset();
-    getCurrentUserMock.mockReset();
+    anonGetUserMock.mockReset();
     getUserProfileMock.mockReset();
     resolveEffectivePlanMock.mockReset();
     uuidMock.mockReset();
@@ -142,7 +182,10 @@ describe('POST /api/ai-generate', () => {
     countPendingPdfJobsMock.mockResolvedValue(0);
     getUsageSnapshotMock.mockResolvedValue({ periodStart: '2025-05-01', offersGenerated: 0 });
     getDeviceUsageSnapshotMock.mockResolvedValue({ periodStart: '2025-05-01', offersGenerated: 0 });
-    getCurrentUserMock.mockResolvedValue({ id: 'user-123', email: 'user@example.com' });
+    anonGetUserMock.mockResolvedValue({
+      data: { user: { id: 'user-123', email: 'user@example.com' } },
+      error: null,
+    });
     getUserProfileMock.mockResolvedValue({ plan: 'free' });
     resolveEffectivePlanMock.mockReturnValue('free');
     uuidMock
@@ -176,7 +219,6 @@ describe('POST /api/ai-generate', () => {
         pdfWebhookUrl: null,
         imageAssets: [],
       },
-      { authorization: 'Bearer test-token' },
     );
 
     const response = await POST(request);
@@ -236,7 +278,6 @@ describe('POST /api/ai-generate', () => {
         pdfWebhookUrl: null,
         imageAssets: [],
       },
-      { authorization: 'Bearer test-token' },
     );
 
     const response = await POST(request);
@@ -285,7 +326,6 @@ describe('POST /api/ai-generate', () => {
         pdfWebhookUrl: null,
         imageAssets: [],
       },
-      { authorization: 'Bearer test-token' },
     );
 
     const response = await POST(request);

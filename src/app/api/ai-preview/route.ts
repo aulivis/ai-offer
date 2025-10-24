@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import OpenAI, { APIError } from 'openai';
-import { supabaseServer } from '@/app/lib/supabaseServer';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 const STREAM_TIMEOUT_MESSAGE = 'Az előnézet kérése időtúllépés miatt megszakadt.';
 
 export const runtime = 'nodejs';
@@ -46,16 +46,8 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   try {
-    const auth = req.headers.get('authorization');
-    if (!auth?.startsWith('Bearer ')) return NextResponse.json({ error: 'Auth required' }, { status: 401 });
-    const token = auth.split(' ')[1];
-
-    const sb = supabaseServer();
-    const { data: { user }, error } = await sb.auth.getUser(token);
-    if (error || !user) return NextResponse.json({ error: 'Invalid user' }, { status: 401 });
-
     const { industry, title, description, deadline, language = 'hu', brandVoice = 'friendly', style = 'detailed' } = await req.json();
 
     if (!envServer.OPENAI_API_KEY) {
@@ -297,4 +289,4 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     console.error('ai-preview error:', message);
     return NextResponse.json({ error: 'Preview failed' }, { status: 500 });
   }
-}
+});

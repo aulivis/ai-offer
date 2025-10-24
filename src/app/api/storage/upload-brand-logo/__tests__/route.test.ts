@@ -4,10 +4,19 @@ import { Buffer } from 'node:buffer';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createCsrfToken } from '../../../../../../lib/auth/csrf';
+import type { AuthenticatedNextRequest } from '../../../../../../middleware/auth';
 import { POST } from '../route';
 
-const { getUserMock, getBucketMock, createBucketMock, updateBucketMock, uploadMock, createSignedUrlMock } = vi.hoisted(() => ({
-  getUserMock: vi.fn(),
+const {
+  anonGetUserMock,
+  getBucketMock,
+  createBucketMock,
+  updateBucketMock,
+  uploadMock,
+  createSignedUrlMock,
+} = vi.hoisted(() => ({
+  anonGetUserMock: vi.fn(),
   getBucketMock: vi.fn(),
   createBucketMock: vi.fn(),
   updateBucketMock: vi.fn(),
@@ -17,9 +26,6 @@ const { getUserMock, getBucketMock, createBucketMock, updateBucketMock, uploadMo
 
 vi.mock('@/app/lib/supabaseServer', () => ({
   supabaseServer: () => ({
-    auth: {
-      getUser: getUserMock,
-    },
     storage: {
       getBucket: getBucketMock,
       createBucket: createBucketMock,
@@ -32,16 +38,44 @@ vi.mock('@/app/lib/supabaseServer', () => ({
   }),
 }));
 
+vi.mock('@/env.server', () => ({
+  envServer: {
+    NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+    SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+    OPENAI_API_KEY: 'test-openai',
+    STRIPE_SECRET_KEY: 'sk_test',
+    APP_URL: 'http://localhost:3000',
+    STRIPE_PRICE_ALLOWLIST: [],
+  },
+}));
+
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    auth: {
+      getUser: anonGetUserMock,
+    },
+  }),
+}));
+
+vi.mock('@/env.client', () => ({
+  envClient: {
+    NEXT_PUBLIC_SUPABASE_URL: 'http://localhost',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    NEXT_PUBLIC_STRIPE_PRICE_STARTER: undefined,
+    NEXT_PUBLIC_STRIPE_PRICE_PRO: undefined,
+  },
+}));
+
 describe('upload brand logo route', () => {
   beforeEach(() => {
-    getUserMock.mockReset();
+    anonGetUserMock.mockReset();
     getBucketMock.mockReset();
     createBucketMock.mockReset();
     updateBucketMock.mockReset();
     uploadMock.mockReset();
     createSignedUrlMock.mockReset();
 
-    getUserMock.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
+    anonGetUserMock.mockResolvedValue({ data: { user: { id: 'user-1', email: 'user@example.com' } }, error: null });
     getBucketMock.mockResolvedValue({
       data: {
         public: false,
@@ -54,14 +88,33 @@ describe('upload brand logo route', () => {
     updateBucketMock.mockResolvedValue({ error: null });
   });
 
+  function buildRequest(formData: FormData): AuthenticatedNextRequest {
+    const csrf = createCsrfToken();
+    const cookies = {
+      propono_at: 'test-token',
+      'XSRF-TOKEN': csrf.value,
+    } as Record<string, string>;
+
+    return {
+      method: 'POST',
+      headers: new Headers({ 'x-csrf-token': csrf.token }),
+      formData: vi.fn().mockResolvedValue(formData),
+      cookies: {
+        get: (name: string) =>
+          cookies[name as keyof typeof cookies]
+            ? { name, value: cookies[name as keyof typeof cookies] }
+            : undefined,
+        getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value })),
+        has: (name: string) => Boolean(cookies[name as keyof typeof cookies]),
+      },
+    } as unknown as AuthenticatedNextRequest;
+  }
+
   it('rejects non-image uploads', async () => {
     const formData = new FormData();
     formData.set('file', new File([Buffer.from('hello world', 'utf-8')], 'payload.txt', { type: 'text/plain' }));
 
-    const request = {
-      headers: new Headers({ authorization: 'Bearer token' }),
-      formData: vi.fn().mockResolvedValue(formData),
-    } as unknown as Request;
+    const request = buildRequest(formData);
 
     const response = await POST(request);
     expect(response.status).toBe(415);
@@ -73,15 +126,12 @@ describe('upload brand logo route', () => {
   it('accepts and signs valid PNG uploads', async () => {
     const pngBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/Pw5D0AAAAABJRU5ErkJggg==',
-      'base64'
+      'base64',
     );
     const formData = new FormData();
     formData.set('file', new File([pngBuffer], 'logo.png', { type: 'image/png' }));
 
-    const request = {
-      headers: new Headers({ authorization: 'Bearer token' }),
-      formData: vi.fn().mockResolvedValue(formData),
-    } as unknown as Request;
+    const request = buildRequest(formData);
 
     createSignedUrlMock.mockResolvedValue({
       data: { signedUrl: 'https://signed.example/logo.png' },

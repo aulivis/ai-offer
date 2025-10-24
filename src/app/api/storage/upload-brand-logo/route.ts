@@ -5,6 +5,7 @@ import sharp from 'sharp';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
+import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const BUCKET_ID = 'brand-assets';
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -142,23 +143,10 @@ async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImag
   return null;
 }
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   try {
-    const authorization = request.headers.get('authorization') ?? request.headers.get('Authorization');
-    if (!authorization?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Hiányzó hitelesítési token.' }, { status: 401 });
-    }
-
-    const token = authorization.slice('Bearer '.length).trim();
-    if (!token) {
-      return NextResponse.json({ error: 'Érvénytelen hitelesítési token.' }, { status: 401 });
-    }
-
     const sb = supabaseServer();
-    const { data: userResp, error: userError } = await sb.auth.getUser(token);
-    if (userError || !userResp?.user) {
-      return NextResponse.json({ error: 'A feltöltéshez be kell jelentkezni.' }, { status: 401 });
-    }
+    const userId = request.user.id;
 
     const formData = await request.formData();
     const fileEntry = formData.get('file');
@@ -179,7 +167,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.' }, { status: 415 });
     }
 
-    const path = `${userResp.user.id}/brand-logo.${normalizedImage.extension}`;
+    const path = `${userId}/brand-logo.${normalizedImage.extension}`;
 
     const { error: uploadError } = await sb.storage.from(BUCKET_ID).upload(path, normalizedImage.buffer, {
       upsert: true,
@@ -204,4 +192,4 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+});
