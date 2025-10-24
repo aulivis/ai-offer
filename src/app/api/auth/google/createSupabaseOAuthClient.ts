@@ -27,8 +27,20 @@ function createPkceStorage(storageKey: string): {
       store.set(key, value);
 
       if (key === codeVerifierKey) {
-        const [verifier] = value.split('/');
-        codeVerifier = verifier ?? null;
+        let storedValue: unknown = value;
+
+        try {
+          storedValue = JSON.parse(value);
+        } catch {
+          // Ignore JSON parse errors and fall back to the raw value.
+        }
+
+        if (typeof storedValue === 'string') {
+          const [verifier] = storedValue.split('/');
+          codeVerifier = verifier ?? null;
+        } else {
+          codeVerifier = null;
+        }
       }
     },
     async removeItem(key) {
@@ -58,7 +70,7 @@ export function createSupabaseOAuthClient(): SupabaseOAuthClient {
     envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
-        persistSession: false,
+        persistSession: true,
         autoRefreshToken: false,
         flowType: 'pkce',
         storageKey: SUPABASE_AUTH_STORAGE_KEY,
