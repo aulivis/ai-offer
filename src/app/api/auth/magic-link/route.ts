@@ -2,21 +2,14 @@ import { z } from 'zod';
 
 import { envServer } from '@/env.server';
 
+import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServer } from '../../../lib/supabaseServer';
+import { consumeMagicLinkRateLimit } from './rateLimiter';
+import type { RateLimitResult } from './rateLimiter';
 
 const GENERIC_RESPONSE = {
   message: 'If an account exists for that email, a magic link will arrive shortly.',
 };
-
-const RATE_LIMIT_MAX_ATTEMPTS = 5;
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-
-type RateLimitEntry = {
-  count: number;
-  expiresAt: number;
-};
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
 
 const requestSchema = z.object({
   email: z.string().email(),
@@ -43,21 +36,6 @@ function getClientIp(request: Request) {
   }
 
   return 'unknown';
-}
-
-function isRateLimited(key: string) {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-
-  if (!entry || entry.expiresAt <= now) {
-    rateLimitMap.set(key, { count: 1, expiresAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-
-  const updatedCount = entry.count + 1;
-  rateLimitMap.set(key, { count: updatedCount, expiresAt: entry.expiresAt });
-
-  return updatedCount > RATE_LIMIT_MAX_ATTEMPTS;
 }
 
 type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
@@ -106,12 +84,24 @@ async function ensureSupabaseUser(admin: SupabaseAdminClient, email: string) {
   }
 }
 
-async function sendMagicLink(email: string) {
-  const supabase = supabaseServer();
+async function sendMagicLink(supabase: ReturnType<typeof supabaseServer>, email: string) {
   const admin = supabase.auth.admin as SupabaseAdminClient;
   const emailRedirectTo = new URL('/api/auth/callback', envServer.APP_URL).toString();
 
   await ensureSupabaseUser(admin, email);
+
+  const anonClient = supabaseAnonServer();
+  let lastError: unknown;
+
+  try {
+    if (typeof anonClient.auth.signInWithOtp === 'function') {
+      await anonClient.auth.signInWithOtp({ email, options: { emailRedirectTo } });
+      return;
+    }
+  } catch (error) {
+    lastError = error;
+    console.error('Failed to send Supabase magic link via anon client.', error);
+  }
 
   if (typeof admin.signInWithOtp === 'function') {
     await admin.signInWithOtp({ email, options: { emailRedirectTo } });
@@ -120,6 +110,23 @@ async function sendMagicLink(email: string) {
 
   if (typeof admin.generateLink === 'function') {
     await admin.generateLink({ type: 'magiclink', email, options: { emailRedirectTo } });
+    return;
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+}
+
+async function enforceRateLimit(
+  supabase: ReturnType<typeof supabaseServer>,
+  key: string
+): Promise<RateLimitResult> {
+  try {
+    return await consumeMagicLinkRateLimit(supabase, key);
+  } catch (error) {
+    console.error('Failed to enforce magic link rate limit.', { key }, error);
+    return { allowed: true, retryAfterMs: 0 };
   }
 }
 
@@ -141,12 +148,34 @@ export async function POST(request: Request) {
   const email = normalizeEmail(parseResult.data.email);
   const clientIp = getClientIp(request);
 
-  const rateLimited =
-    isRateLimited(`ip:${clientIp}`) || isRateLimited(`email:${email}`);
+  const supabase = supabaseServer();
 
-  if (!rateLimited) {
+  const [ipResult, emailResult] = await Promise.all([
+    enforceRateLimit(supabase, `ip:${clientIp}`),
+    enforceRateLimit(supabase, `email:${email}`),
+  ]);
+
+  const rateLimited = !ipResult.allowed || !emailResult.allowed;
+
+  if (rateLimited) {
+    if (!ipResult.allowed) {
+      const retrySeconds = Math.max(1, Math.ceil(ipResult.retryAfterMs / 1000));
+      console.warn('Magic link IP rate limit exceeded.', {
+        clientIp,
+        retrySeconds,
+      });
+    }
+
+    if (!emailResult.allowed) {
+      const retrySeconds = Math.max(1, Math.ceil(emailResult.retryAfterMs / 1000));
+      console.warn('Magic link email rate limit exceeded.', {
+        email,
+        retrySeconds,
+      });
+    }
+  } else {
     try {
-      await sendMagicLink(email);
+      await sendMagicLink(supabase, email);
     } catch (error) {
       console.error('Failed to send Supabase magic link.', error);
     }

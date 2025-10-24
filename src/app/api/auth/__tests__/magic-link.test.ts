@@ -3,8 +3,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const signInWithOtpMock = vi.hoisted(() => vi.fn());
+const anonSignInWithOtpMock = vi.hoisted(() => vi.fn());
 const createUserMock = vi.hoisted(() => vi.fn());
 const generateLinkMock = vi.hoisted(() => vi.fn());
+const consumeRateLimitMock = vi.hoisted(() => vi.fn());
 
 const adminMock = vi.hoisted(() => ({
   signInWithOtp: signInWithOtpMock as undefined | typeof signInWithOtpMock,
@@ -12,9 +14,16 @@ const adminMock = vi.hoisted(() => ({
   createUser: createUserMock,
 }));
 
+const anonClientMock = vi.hoisted(() => ({
+  auth: {
+    signInWithOtp: anonSignInWithOtpMock as undefined | typeof anonSignInWithOtpMock,
+  },
+}));
+
 vi.mock('@/env.server', () => ({
   envServer: {
     APP_URL: 'https://app.example.com',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
   },
 }));
 
@@ -23,18 +32,31 @@ vi.mock('@/app/lib/supabaseServer', () => ({
     auth: {
       admin: adminMock,
     },
+    from: vi.fn(),
   }),
+}));
+
+vi.mock('@/app/lib/supabaseAnonServer', () => ({
+  supabaseAnonServer: () => anonClientMock,
+}));
+
+vi.mock('../magic-link/rateLimiter', () => ({
+  consumeMagicLinkRateLimit: consumeRateLimitMock,
 }));
 
 describe('POST /api/auth/magic-link', () => {
   beforeEach(() => {
     vi.resetModules();
     signInWithOtpMock.mockReset();
+    anonSignInWithOtpMock.mockReset();
     createUserMock.mockReset();
     generateLinkMock.mockReset();
+    consumeRateLimitMock.mockReset();
     createUserMock.mockResolvedValue({ error: null });
     adminMock.signInWithOtp = signInWithOtpMock;
     adminMock.generateLink = generateLinkMock;
+    anonClientMock.auth.signInWithOtp = anonSignInWithOtpMock;
+    consumeRateLimitMock.mockResolvedValue({ allowed: true, retryAfterMs: 0 });
   });
 
   afterEach(() => {
@@ -56,17 +78,18 @@ describe('POST /api/auth/magic-link', () => {
       message: 'If an account exists for that email, a magic link will arrive shortly.',
     });
     expect(createUserMock).toHaveBeenCalledWith({ email: 'user@example.com', email_confirm: false });
-    expect(signInWithOtpMock).toHaveBeenCalledWith({
+    expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
       options: { emailRedirectTo: 'https://app.example.com/api/auth/callback' },
     });
+    expect(signInWithOtpMock).not.toHaveBeenCalled();
   });
 
   it('continues when the Supabase user already exists', async () => {
     createUserMock.mockResolvedValue({
       error: { message: 'User already registered' },
     });
-    signInWithOtpMock.mockResolvedValue(undefined);
+    anonSignInWithOtpMock.mockResolvedValue(undefined);
 
     const { POST } = await import('../magic-link/route');
     const response = await POST(
@@ -82,13 +105,14 @@ describe('POST /api/auth/magic-link', () => {
       email: 'exists@example.com',
       email_confirm: false,
     });
-    expect(signInWithOtpMock).toHaveBeenCalledWith({
+    expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
       email: 'exists@example.com',
       options: { emailRedirectTo: 'https://app.example.com/api/auth/callback' },
     });
   });
 
   it('falls back to generateLink when signInWithOtp is unavailable', async () => {
+    anonClientMock.auth.signInWithOtp = undefined;
     adminMock.signInWithOtp = undefined;
     adminMock.generateLink = generateLinkMock;
     generateLinkMock.mockResolvedValue(undefined);
@@ -112,5 +136,25 @@ describe('POST /api/auth/magic-link', () => {
       type: 'magiclink',
       options: { emailRedirectTo: 'https://app.example.com/api/auth/callback' },
     });
+  });
+
+  it('does not send a link when the rate limit is exceeded', async () => {
+    consumeRateLimitMock
+      .mockResolvedValueOnce({ allowed: false, retryAfterMs: 5000 })
+      .mockResolvedValueOnce({ allowed: true, retryAfterMs: 0 });
+
+    const { POST } = await import('../magic-link/route');
+    const response = await POST(
+      new Request('http://localhost/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'limited@example.com' }),
+      }),
+    );
+
+    expect(response.status).toBe(202);
+    expect(anonSignInWithOtpMock).not.toHaveBeenCalled();
+    expect(signInWithOtpMock).not.toHaveBeenCalled();
+    expect(generateLinkMock).not.toHaveBeenCalled();
   });
 });
