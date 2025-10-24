@@ -6,7 +6,7 @@ export const CSRF_COOKIE_NAME = 'XSRF-TOKEN';
 const TOKEN_DELIMITER = '.';
 
 function getSecret(): string {
-  const secret = envServer.SUPABASE_SERVICE_ROLE_KEY;
+  const secret = envServer.CSRF_SECRET;
   if (!secret) {
     throw new Error('CSRF secret is not configured.');
   }

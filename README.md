@@ -20,6 +20,15 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+Configure the following secrets before running the application:
+
+| Variable | Description |
+| --- | --- |
+| `AUTH_COOKIE_SECRET` | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations. |
+| `CSRF_SECRET` | 32+ character secret used to sign CSRF tokens for authenticated requests. |
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

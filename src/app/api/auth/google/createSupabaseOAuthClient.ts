@@ -55,7 +55,7 @@ export function createSupabaseOAuthClient(): SupabaseOAuthClient {
 
   const client = createClient(
     envServer.NEXT_PUBLIC_SUPABASE_URL,
-    envServer.SUPABASE_SERVICE_ROLE_KEY,
+    envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
         persistSession: false,
@@ -66,8 +66,8 @@ export function createSupabaseOAuthClient(): SupabaseOAuthClient {
       },
       global: {
         headers: {
-          apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
+          apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
         },
       },
     },

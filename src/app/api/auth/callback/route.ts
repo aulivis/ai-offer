@@ -32,7 +32,7 @@ type ExchangeResult = {
 function decryptStateCookie(value: string): AuthStatePayload | null {
   try {
     const secret = createHash('sha256')
-      .update(envServer.SUPABASE_SERVICE_ROLE_KEY)
+      .update(envServer.AUTH_COOKIE_SECRET)
       .digest();
 
     const buffer = Buffer.from(value, 'base64url');
@@ -93,8 +93,8 @@ async function exchangeCode({ code, codeVerifier }: ExchangeParams): Promise<Exc
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
+      apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify(
       codeVerifier

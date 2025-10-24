@@ -23,6 +23,9 @@ vi.mock('@/env.server', () => ({
   envServer: {
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
     SUPABASE_SERVICE_ROLE_KEY: 'service-role',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+    AUTH_COOKIE_SECRET: 'test-auth-secret-value-test-auth-secret-value',
+    CSRF_SECRET: 'test-csrf-secret-value-test-csrf-secret-value',
   },
 }));
 

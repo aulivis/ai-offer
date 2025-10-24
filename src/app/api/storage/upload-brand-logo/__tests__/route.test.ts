@@ -41,7 +41,10 @@ vi.mock('@/app/lib/supabaseServer', () => ({
 vi.mock('@/env.server', () => ({
   envServer: {
     NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
     SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+    AUTH_COOKIE_SECRET: 'test-auth-secret-value-test-auth-secret-value',
+    CSRF_SECRET: 'test-csrf-secret-value-test-csrf-secret-value',
     OPENAI_API_KEY: 'test-openai',
     STRIPE_SECRET_KEY: 'sk_test',
     APP_URL: 'http://localhost:3000',
