@@ -9,6 +9,7 @@ import {
   type Argon2Options,
 } from '../../../../../lib/auth/argon2';
 import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
+import { CSRF_COOKIE_NAME, verifyCsrfToken } from '../../../../../lib/auth/csrf';
 import { decodeRefreshToken, type DecodedRefreshToken } from '../token';
 
 const REFRESH_COOKIE = 'propono_rt';
@@ -99,6 +100,13 @@ function isExpiredTimestamp(value: string) {
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
+  const csrfHeader = request.headers.get('x-csrf-token');
+  const csrfCookie = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+
+  if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
+    return Response.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
+  }
+
   const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value ?? null;
 
   if (!refreshToken) {

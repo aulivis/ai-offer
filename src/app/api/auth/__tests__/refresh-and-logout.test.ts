@@ -2,6 +2,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf';
+
 const verifyMock = vi.hoisted(() => vi.fn());
 const hashMock = vi.hoisted(() => vi.fn());
 const supabaseServerMock = vi.hoisted(() => vi.fn());
@@ -35,6 +37,12 @@ vi.mock('next/headers', () => ({
 }));
 
 const cookieStore = new Map<string, string>();
+
+function setValidCsrfToken(): string {
+  const { token, value } = createCsrfToken();
+  cookieStore.set(CSRF_COOKIE_NAME, value);
+  return token;
+}
 
 let selectEqMock: ReturnType<typeof vi.fn>;
 let updateCalls: Array<{ values: Record<string, unknown>; column: string; value: string }>;
@@ -105,6 +113,7 @@ describe('POST /api/auth/refresh', () => {
   it('rotates the refresh token and revokes the previous session', async () => {
     const oldToken = createRefreshToken('user-1', 3600);
     cookieStore.set('propono_rt', oldToken);
+    const csrfToken = setValidCsrfToken();
 
     verifyMock.mockResolvedValue(true);
     hashMock.mockResolvedValue('hashed-new');
@@ -127,10 +136,15 @@ describe('POST /api/auth/refresh', () => {
     );
 
     const { POST } = await import('../refresh/route');
-    const response = await POST(new Request('http://localhost/api/auth/refresh', {
-      method: 'POST',
-      headers: new Headers({ 'user-agent': 'vitest' }),
-    }));
+    const response = await POST(
+      new Request('http://localhost/api/auth/refresh', {
+        method: 'POST',
+        headers: new Headers({
+          'user-agent': 'vitest',
+          'x-csrf-token': csrfToken,
+        }),
+      }),
+    );
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ success: true });
@@ -151,6 +165,7 @@ describe('POST /api/auth/refresh', () => {
   it('detects refresh token reuse and revokes all sessions', async () => {
     const reusedToken = createRefreshToken('user-2', 3600);
     cookieStore.set('propono_rt', reusedToken);
+    const csrfToken = setValidCsrfToken();
 
     verifyMock.mockResolvedValue(false);
     selectEqMock.mockResolvedValue({
@@ -162,13 +177,55 @@ describe('POST /api/auth/refresh', () => {
     });
 
     const { POST } = await import('../refresh/route');
-    const response = await POST(new Request('http://localhost/api/auth/refresh', { method: 'POST' }));
+    const response = await POST(
+      new Request('http://localhost/api/auth/refresh', {
+        method: 'POST',
+        headers: new Headers({ 'x-csrf-token': csrfToken }),
+      }),
+    );
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ error: 'Refresh token reuse detected' });
     expect(updateCalls.some((call) => call.column === 'user_id' && call.value === 'user-2')).toBe(true);
     expect(cookieStore.get('propono_rt')).toBe('');
     expect(cookieStore.get('propono_at')).toBe('');
+    expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when CSRF token is missing', async () => {
+    const refreshToken = createRefreshToken('user-3', 3600);
+    cookieStore.set('propono_rt', refreshToken);
+    const { value } = createCsrfToken();
+    cookieStore.set(CSRF_COOKIE_NAME, value);
+
+    const { POST } = await import('../refresh/route');
+    const response = await POST(
+      new Request('http://localhost/api/auth/refresh', {
+        method: 'POST',
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Érvénytelen vagy hiányzó CSRF token.' });
+    expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when CSRF token is invalid', async () => {
+    const refreshToken = createRefreshToken('user-4', 3600);
+    cookieStore.set('propono_rt', refreshToken);
+    const { value } = createCsrfToken();
+    cookieStore.set(CSRF_COOKIE_NAME, value);
+
+    const { POST } = await import('../refresh/route');
+    const response = await POST(
+      new Request('http://localhost/api/auth/refresh', {
+        method: 'POST',
+        headers: new Headers({ 'x-csrf-token': 'invalid-token' }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: 'Érvénytelen vagy hiányzó CSRF token.' });
     expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 });
