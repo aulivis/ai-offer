@@ -58,12 +58,50 @@ function isRateLimited(key: string) {
   return updatedCount > RATE_LIMIT_MAX_ATTEMPTS;
 }
 
+type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
+  Partial<{
+    createUser: (attributes: { email: string; email_confirm?: boolean }) =>
+      Promise<
+        ({ error: { message?: string | null } | null } & Record<string, unknown>)
+      >;
+    signInWithOtp: (params: { email: string }) => Promise<unknown>;
+    generateLink: (params: { type: 'magiclink'; email: string }) => Promise<unknown>;
+  }>;
+
+async function ensureSupabaseUser(admin: SupabaseAdminClient, email: string) {
+  if (typeof admin.createUser !== 'function') {
+    return;
+  }
+
+  try {
+    const { error } = await admin.createUser({ email, email_confirm: false });
+    if (!error) {
+      return;
+    }
+
+    const message = (error.message ?? '').toLowerCase();
+    if (message.includes('already registered')) {
+      return;
+    }
+
+    console.error('Failed to ensure Supabase user exists before magic link.', error);
+  } catch (error) {
+    const message =
+      error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+        ? error.message.toLowerCase()
+        : '';
+
+    if (!message.includes('already registered')) {
+      console.error('Failed to create Supabase user before magic link.', error);
+    }
+  }
+}
+
 async function sendMagicLink(email: string) {
   const supabase = supabaseServer();
-  const admin = supabase.auth.admin as unknown as {
-    signInWithOtp?: (params: { email: string }) => Promise<unknown>;
-    generateLink?: (params: { type: 'magiclink'; email: string }) => Promise<unknown>;
-  };
+  const admin = supabase.auth.admin as SupabaseAdminClient;
+
+  await ensureSupabaseUser(admin, email);
 
   if (typeof admin.signInWithOtp === 'function') {
     await admin.signInWithOtp({ email });

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
@@ -89,6 +90,8 @@ export default function SettingsPage() {
   const supabase = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -102,7 +105,10 @@ export default function SettingsPage() {
   const [actSaving, setActSaving] = useState(false);
   const [newIndustry, setNewIndustry] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
+  const [linkingGoogle, setLinkingGoogle] = useState(false);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const googleLinked = user?.identities?.some((identity) => identity.provider === 'google') ?? false;
 
   const errors = useMemo(() => {
     const general: Record<string, string> = {};
@@ -130,6 +136,33 @@ export default function SettingsPage() {
 
     return { general, branding };
   }, [profile]);
+
+  useEffect(() => {
+    if (!searchParams) {
+      return;
+    }
+
+    const linkStatus = searchParams.get('link');
+    if (!linkStatus) {
+      return;
+    }
+
+    if (linkStatus === 'google_success') {
+      showToast({
+        title: 'Google fiók összekapcsolva',
+        description: 'Mostantól a Google fiókoddal is bejelentkezhetsz.',
+        variant: 'success',
+      });
+    } else if (linkStatus === 'google_error') {
+      showToast({
+        title: 'Nem sikerült összekapcsolni a Google fiókot',
+        description: 'Kérjük, próbáld újra egy kicsit később.',
+        variant: 'error',
+      });
+    }
+
+    router.replace('/settings', { scroll: false });
+  }, [router, searchParams, showToast]);
 
   const hasGeneralErrors = Object.keys(errors.general).length > 0;
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
@@ -416,6 +449,20 @@ export default function SettingsPage() {
     } finally { setSaving(false); }
   }
 
+  function startGoogleLink() {
+    if (linkingGoogle || typeof window === 'undefined') {
+      return;
+    }
+
+    setLinkingGoogle(true);
+    const target = new URL('/api/auth/google/link', window.location.origin);
+    target.searchParams.set(
+      'redirect_to',
+      new URL('/settings?link=google_success', window.location.origin).toString(),
+    );
+    window.location.href = target.toString();
+  }
+
   function triggerLogoUpload() {
     logoInputRef.current?.click();
   }
@@ -574,6 +621,38 @@ export default function SettingsPage() {
       actions={email ? <span className="text-sm text-slate-400">Belépve: <span className="font-medium text-slate-600">{email}</span></span> : null}
     >
       <div className="space-y-8">
+        <Card
+          as="section"
+          className="space-y-4"
+          header={
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-slate-900">Bejelentkezési módok</h2>
+              <p className="text-sm text-slate-500">Kapcsold össze a Google fiókodat a gyorsabb belépéshez.</p>
+            </CardHeader>
+          }
+        >
+          <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-white p-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-slate-800">
+                {googleLinked ? 'A Google fiókod már össze van kapcsolva.' : 'Kapcsold össze a Google fiókodat.'}
+              </p>
+              <p className="text-xs text-slate-500">
+                {googleLinked
+                  ? 'A következő bejelentkezéskor használhatod a Google fiókodat is.'
+                  : 'Az összekapcsolás után a Google fiókoddal is bejelentkezhetsz az alkalmazásba.'}
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={startGoogleLink}
+              disabled={googleLinked || linkingGoogle}
+              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {googleLinked ? 'Google fiók csatlakoztatva' : linkingGoogle ? 'Átirányítás…' : 'Google összekapcsolása'}
+            </Button>
+          </div>
+        </Card>
+
         <Card
           as="section"
           className="space-y-6"
