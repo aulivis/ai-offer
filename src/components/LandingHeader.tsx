@@ -87,25 +87,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           Propono
         </Link>
 
-        <nav
-          className={`hidden flex-1 items-center justify-center md:flex ${
-            isAuthenticated
-              ? 'flex-wrap gap-2 rounded-3xl border border-border/60 bg-bg/80 px-4 py-2 text-sm text-fg-muted shadow-card backdrop-blur'
-              : 'gap-8 text-sm font-medium text-fg-muted'
-          }`}
-        >
+        <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-fg-muted md:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                isAuthenticated
-                  ? `px-3.5 py-1.5 ${
-                      isNavItemActive(item.href)
-                        ? 'bg-primary text-primary-ink shadow-card'
-                        : 'text-fg-muted hover:bg-bg-muted/80 hover:text-fg'
-                    }`
-                  : 'px-3 py-1 text-fg-muted hover:text-fg'
+              className={`rounded-full px-3 py-1 text-fg-muted transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                isNavItemActive(item.href) ? 'text-fg' : ''
               }`}
               aria-current={isNavItemActive(item.href) ? 'page' : undefined}
               onClick={closeMenu}
@@ -120,24 +108,22 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             <>
               <Link
                 href="/settings"
-                className={`rounded-full px-3.5 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  isNavItemActive('/settings')
-                    ? 'bg-primary text-primary-ink shadow-card'
-                    : 'text-fg-muted hover:bg-bg-muted/80 hover:text-fg'
+                className={`text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg ${
+                  isNavItemActive('/settings') ? 'text-fg' : ''
                 }`}
               >
                 Beállítások
               </Link>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
                 onClick={logout}
                 disabled={isLoggingOut}
                 aria-busy={isLoggingOut}
                 aria-label="Kijelentkezés a fiókból"
+                className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
-              </Button>
+              </button>
             </>
           ) : (
             <>

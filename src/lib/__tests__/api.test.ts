@@ -13,7 +13,7 @@ describe('fetchWithSupabaseAuth', () => {
     vi.stubGlobal('fetch', vi.fn());
     Object.defineProperty(document, 'cookie', {
       configurable: true,
-      get: () => 'XSRF-TOKEN=test.csrf',
+      get: () => 'XSRF-TOKEN=testcsrf.signature',
       set: () => true,
     });
   });
@@ -32,7 +32,7 @@ describe('fetchWithSupabaseAuth', () => {
     const [, init] = fetchMock.mock.calls[0];
     expect(init?.credentials).toBe('include');
     const headers = init?.headers as Headers;
-    expect(headers.get('x-csrf-token')).toBe('test.csrf');
+    expect(headers.get('x-csrf-token')).toBe('testcsrf');
   });
 
   it('parses error message from JSON response', async () => {

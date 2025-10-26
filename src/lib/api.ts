@@ -33,7 +33,17 @@ function readCookie(name: string): string | null {
 }
 
 export function getCsrfToken(): string | null {
-  return readCookie('XSRF-TOKEN');
+  const cookieValue = readCookie('XSRF-TOKEN');
+  if (!cookieValue) {
+    return null;
+  }
+
+  const delimiterIndex = cookieValue.indexOf('.');
+  if (delimiterIndex <= 0) {
+    return null;
+  }
+
+  return cookieValue.slice(0, delimiterIndex);
 }
 
 const REFRESH_ENDPOINT = '/api/auth/refresh';
