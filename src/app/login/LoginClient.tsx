@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -14,6 +14,51 @@ export default function LoginClient() {
   const [error, setError] = useState<string | null>(null);
   const [isMagicLoading, setIsMagicLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isGoogleAvailable, setIsGoogleAvailable] = useState(true);
+  const [googleStatusMessage, setGoogleStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadGoogleStatus() {
+      try {
+        const response = await fetch('/api/auth/google/status');
+        const payload: unknown = await response.json().catch(() => null);
+
+        if (ignore) return;
+
+        const enabled =
+          payload &&
+          typeof payload === 'object' &&
+          'enabled' in payload &&
+          typeof (payload as { enabled?: unknown }).enabled === 'boolean'
+            ? (payload as { enabled: boolean }).enabled
+            : false;
+
+        const message =
+          payload &&
+          typeof payload === 'object' &&
+          'message' in payload &&
+          typeof (payload as { message?: unknown }).message === 'string'
+            ? ((payload as { message: string }).message as string)
+            : null;
+
+        setIsGoogleAvailable(enabled);
+        setGoogleStatusMessage(enabled ? null : message);
+      } catch (e) {
+        console.error('Failed to query Google sign-in availability.', e);
+        if (ignore) return;
+        setIsGoogleAvailable(false);
+        setGoogleStatusMessage('Nem sikerült ellenőrizni a Google bejelentkezés állapotát. Kérjük, próbáld újra később.');
+      }
+    }
+
+    loadGoogleStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   async function sendMagic() {
     setError(null);
@@ -55,6 +100,12 @@ export default function LoginClient() {
     setError(null);
     setIsGoogleLoading(true);
     try {
+      if (!isGoogleAvailable) {
+        throw new Error(
+          googleStatusMessage ??
+            'A Google bejelentkezés jelenleg nem érhető el. Kérjük, próbáld újra később.',
+        );
+      }
       const redirectTo = `${location.origin}/dashboard`;
       const url = new URL('/api/auth/google', location.origin);
       url.searchParams.set('redirect_to', redirectTo);
@@ -113,7 +164,7 @@ export default function LoginClient() {
             className="flex w-full items-center justify-center gap-2"
             size="lg"
             variant="secondary"
-            disabled={isGoogleLoading}
+            disabled={isGoogleLoading || !isGoogleAvailable}
             aria-busy={isGoogleLoading}
             aria-label="Bejelentkezés Google-fiókkal"
           >
@@ -121,6 +172,14 @@ export default function LoginClient() {
           </Button>
 
           <div aria-live="polite" className="space-y-2">
+            {googleStatusMessage && (
+              <div
+                role="alert"
+                className="rounded-2xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-700"
+              >
+                {googleStatusMessage}
+              </div>
+            )}
             {error && (
               <div
                 role="alert"
