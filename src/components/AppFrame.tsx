@@ -11,9 +11,7 @@ import { getCsrfToken } from '@/lib/api';
 
 const navLinks = [
   { href: '/dashboard', label: 'Ajánlatok' },
-  { href: '/new', label: 'Új ajánlat' },
   { href: '/billing', label: 'Előfizetés' },
-  { href: '/settings', label: 'Beállítások' },
 ];
 
 export type AppFrameProps = {
@@ -147,26 +145,7 @@ export default function AppFrame({
       ) : null}
 
       <main id="main" className="flex-1 space-y-8">
-        <nav className="flex flex-wrap gap-2 rounded-3xl border border-border/60 bg-bg/80 px-4 py-2 text-sm text-fg-muted shadow-card backdrop-blur">
-          {navLinks.map((link) => {
-            const active = pathname.startsWith(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`rounded-full px-3.5 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  active
-                    ? 'bg-primary text-primary-ink shadow-card'
-                    : 'hover:bg-bg-muted/80 hover:text-fg'
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-4 md:grid md:grid-cols-[1fr_auto_auto] md:items-center">
           <div>
             <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#151035]">
               {title}
@@ -175,8 +154,36 @@ export default function AppFrame({
               <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p>
             ) : null}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <nav className="flex flex-wrap items-center justify-center gap-2 rounded-3xl border border-border/60 bg-bg/80 px-4 py-2 text-sm text-fg-muted shadow-card backdrop-blur md:justify-self-center">
+            {navLinks.map((link) => {
+              const active = pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-full px-3.5 py-1.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    active
+                      ? 'bg-primary text-primary-ink shadow-card'
+                      : 'hover:bg-bg-muted/80 hover:text-fg'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="flex shrink-0 flex-col items-center gap-2 md:flex-row md:justify-end">
             {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+            <Link
+              href="/settings"
+              className={`rounded-full px-3.5 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                pathname.startsWith('/settings')
+                  ? 'bg-primary text-primary-ink shadow-card'
+                  : 'text-fg-muted hover:bg-bg-muted/80 hover:text-fg'
+              }`}
+            >
+              Beállítások
+            </Link>
             <Button
               type="button"
               variant="ghost"
