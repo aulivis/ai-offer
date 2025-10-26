@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { type CSSProperties, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
 const MAGIC_LINK_MESSAGE =
   'Ha létezik fiók ehhez az e-mail címhez, perceken belül elküldjük a belépési linket.';
+const GOOGLE_BUTTON_STYLES: CSSProperties = {
+  '--btn-bg': '#ffffff',
+  '--btn-fg': '#1f1f1f',
+  '--btn-border': '#d1d5db',
+  '--btn-hover-border': '#4285f4',
+  '--btn-hover-bg': '#f8fafc',
+};
 
 export default function LoginClient() {
   const [email, setEmail] = useState('');
@@ -49,7 +57,9 @@ export default function LoginClient() {
         console.error('Failed to query Google sign-in availability.', e);
         if (ignore) return;
         setIsGoogleAvailable(false);
-        setGoogleStatusMessage('Nem sikerült ellenőrizni a Google bejelentkezés állapotát. Kérjük, próbáld újra később.');
+        setGoogleStatusMessage(
+          'Nem sikerült ellenőrizni a Google bejelentkezés állapotát. Kérjük, próbáld újra később.',
+        );
       }
     }
 
@@ -161,14 +171,24 @@ export default function LoginClient() {
 
           <Button
             onClick={signInWithGoogle}
-            className="flex w-full items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-3 text-base font-semibold"
             size="lg"
             variant="secondary"
+            style={GOOGLE_BUTTON_STYLES}
             disabled={isGoogleLoading || !isGoogleAvailable}
             aria-busy={isGoogleLoading}
             aria-label="Bejelentkezés Google-fiókkal"
           >
-            {isGoogleLoading ? 'Csatlakozás…' : 'Bejelentkezés Google-lel'}
+            {isGoogleLoading ? (
+              'Csatlakozás…'
+            ) : (
+              <>
+                <span className="flex h-5 w-5 items-center justify-center">
+                  <Image src="/google-logo.svg" alt="" width={18} height={18} aria-hidden="true" />
+                </span>
+                <span className="leading-none">Bejelentkezés Google-lel</span>
+              </>
+            )}
           </Button>
 
           <div aria-live="polite" className="space-y-2">

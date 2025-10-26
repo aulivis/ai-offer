@@ -17,7 +17,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
@@ -119,6 +119,7 @@ function isOfferSections(value: unknown): value is OfferSections {
 const textareaClass =
   'w-full rounded-2xl border border-border bg-bg px-4 py-3 text-base text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
+const MAX_PREVIEW_TIMEOUT_RETRIES = 2;
 const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10) / 10;
@@ -395,13 +396,6 @@ export default function NewOfferWizard() {
     if (previewLocked) {
       return;
     }
-    const nextRequestId = previewRequestIdRef.current + 1;
-    previewRequestIdRef.current = nextRequestId;
-
-    if (previewAbortRef.current) {
-      previewAbortRef.current.abort();
-      previewAbortRef.current = null;
-    }
 
     const hasTitle = form.title.trim().length > 0;
     const hasDescription = form.description.trim().length > 0;
@@ -411,129 +405,190 @@ export default function NewOfferWizard() {
       return;
     }
 
-    let controller: AbortController | null = null;
-    try {
-      setPreviewLoading(true);
-      setPreviewCountdownToken((value) => value + 1);
-      setPreviewError(null);
-      controller = new AbortController();
-      previewAbortRef.current = controller;
+    type AttemptResult =
+      | { status: 'success' }
+      | { status: 'timeout'; message: string }
+      | { status: 'error'; message: string }
+      | { status: 'aborted' };
 
-      const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          industry: form.industry,
-          title: form.title,
-          description: form.description,
-          deadline: form.deadline,
-          language: form.language,
-          brandVoice: form.brandVoice,
-          style: form.style,
-        }),
-        signal: controller.signal,
-        authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
-        errorMessageBuilder: (status) => `Hiba az előnézet betöltésekor (${status})`,
-        defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
-      });
-
-      if (!resp.body) {
-        const message = 'Az AI nem küldött adatot az előnézethez.';
-        setPreviewHtml('<p>(nincs előnézet)</p>');
-        setPreviewError(message);
-        showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
-        return;
+    const runAttempt = async (): Promise<AttemptResult> => {
+      if (previewAbortRef.current) {
+        previewAbortRef.current.abort();
+        previewAbortRef.current = null;
       }
 
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let latestHtml = '';
-      let streamErrorMessage: string | null = null;
+      const nextRequestId = previewRequestIdRef.current + 1;
+      previewRequestIdRef.current = nextRequestId;
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let boundary: number;
-        while ((boundary = buffer.indexOf('\n\n')) >= 0) {
-          const rawEvent = buffer.slice(0, boundary).trim();
-          buffer = buffer.slice(boundary + 2);
-          if (!rawEvent || !rawEvent.startsWith('data:')) continue;
-          const jsonPart = rawEvent.replace(/^data:\s*/, '');
-          if (!jsonPart) continue;
+      setPreviewCountdownToken((value) => value + 1);
 
-          try {
-            const payload = JSON.parse(jsonPart) as {
-              type?: string;
-              html?: string;
-              message?: string;
-            };
-            if (payload.type === 'delta' || payload.type === 'done') {
-              if (typeof payload.html === 'string') {
-                latestHtml = payload.html;
-                if (previewRequestIdRef.current === nextRequestId) {
-                  setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
-                  if (payload.type === 'done') {
-                    setEditedHtml((prev) => prev || payload.html || '');
-                    setPreviewLocked(true);
+      const controller = new AbortController();
+      previewAbortRef.current = controller;
+
+      try {
+        const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            industry: form.industry,
+            title: form.title,
+            description: form.description,
+            deadline: form.deadline,
+            language: form.language,
+            brandVoice: form.brandVoice,
+            style: form.style,
+          }),
+          signal: controller.signal,
+          authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
+          errorMessageBuilder: (status) => `Hiba az előnézet betöltésekor (${status})`,
+          defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
+        });
+
+        if (!resp.body) {
+          const message = 'Az AI nem küldött adatot az előnézethez.';
+          if (previewRequestIdRef.current === nextRequestId) {
+            setPreviewHtml('<p>(nincs előnézet)</p>');
+            setPreviewLocked(false);
+          }
+          return { status: 'error', message };
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let latestHtml = '';
+        let streamErrorMessage: string | null = null;
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let boundary: number;
+          while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+            const rawEvent = buffer.slice(0, boundary).trim();
+            buffer = buffer.slice(boundary + 2);
+            if (!rawEvent || !rawEvent.startsWith('data:')) continue;
+            const jsonPart = rawEvent.replace(/^data:\s*/, '');
+            if (!jsonPart) continue;
+
+            try {
+              const payload = JSON.parse(jsonPart) as {
+                type?: string;
+                html?: string;
+                message?: string;
+              };
+              if (payload.type === 'delta' || payload.type === 'done') {
+                if (typeof payload.html === 'string') {
+                  latestHtml = payload.html;
+                  if (previewRequestIdRef.current === nextRequestId) {
+                    setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
+                    if (payload.type === 'done') {
+                      setEditedHtml((prev) => prev || payload.html || '');
+                      setPreviewLocked(true);
+                    }
                   }
                 }
+              } else if (payload.type === 'error') {
+                streamErrorMessage =
+                  typeof payload.message === 'string' && payload.message.trim().length > 0
+                    ? payload.message
+                    : 'Ismeretlen hiba történt az AI előnézet frissítése közben.';
+                break;
               }
-            } else if (payload.type === 'error') {
-              streamErrorMessage =
-                typeof payload.message === 'string' && payload.message.trim().length > 0
-                  ? payload.message
-                  : 'Ismeretlen hiba történt az AI előnézet frissítése közben.';
-              break;
+            } catch (err: unknown) {
+              console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
             }
-          } catch (err: unknown) {
-            console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
+          }
+
+          if (streamErrorMessage) {
+            try {
+              await reader.cancel();
+            } catch {
+              /* ignore reader cancel errors */
+            }
+            break;
           }
         }
 
         if (streamErrorMessage) {
-          try {
-            await reader.cancel();
-          } catch {
-            /* ignore reader cancel errors */
+          if (previewRequestIdRef.current === nextRequestId) {
+            setPreviewHtml('<p>(nincs előnézet)</p>');
+            setPreviewLocked(false);
           }
-          break;
+          if (streamErrorMessage === STREAM_TIMEOUT_MESSAGE) {
+            return { status: 'timeout', message: streamErrorMessage };
+          }
+          return { status: 'error', message: streamErrorMessage };
         }
-      }
 
-      if (streamErrorMessage) {
+        if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
+          setPreviewHtml('<p>(nincs előnézet)</p>');
+        }
+
+        return { status: 'success' };
+      } catch (error) {
+        if (isAbortError(error)) {
+          return { status: 'aborted' };
+        }
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : error instanceof Error
+              ? error.message
+              : 'Ismeretlen hiba történt az előnézet lekérése közben.';
+        console.error('Előnézet hiba:', message, error);
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewHtml('<p>(nincs előnézet)</p>');
-          setPreviewError(streamErrorMessage);
           setPreviewLocked(false);
         }
-        showToast({ title: 'Előnézet hiba', description: streamErrorMessage, variant: 'error' });
-        return;
+        return { status: 'error', message };
+      } finally {
+        if (previewAbortRef.current === controller) {
+          previewAbortRef.current = null;
+        }
       }
+    };
 
-      if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
-        setPreviewHtml('<p>(nincs előnézet)</p>');
+    setPreviewLoading(true);
+    setPreviewError(null);
+
+    try {
+      for (let attempt = 0; attempt <= MAX_PREVIEW_TIMEOUT_RETRIES; attempt += 1) {
+        const result = await runAttempt();
+        if (result.status === 'success') {
+          return;
+        }
+        if (result.status === 'aborted') {
+          return;
+        }
+        if (result.status === 'timeout') {
+          if (attempt < MAX_PREVIEW_TIMEOUT_RETRIES) {
+            const retryIndex = attempt + 1;
+            const totalAttempts = MAX_PREVIEW_TIMEOUT_RETRIES + 1;
+            showToast({
+              title: 'AI előnézet újrapróbálása',
+              description: `${result.message} Újrapróbálkozunk (${retryIndex}/${totalAttempts}).`,
+              variant: 'warning',
+            });
+            continue;
+          }
+          const finalMessage =
+            result.message +
+            ' Többszöri próbálkozás után sem sikerült befejezni az előnézetet. Próbáld meg később.';
+          setPreviewError(finalMessage);
+          showToast({ title: 'Előnézet hiba', description: finalMessage, variant: 'error' });
+          return;
+        }
+        if (result.status === 'error') {
+          if (result.message) {
+            setPreviewError(result.message);
+            showToast({ title: 'Előnézet hiba', description: result.message, variant: 'error' });
+          }
+          return;
+        }
       }
-    } catch (error) {
-      if (isAbortError(error)) return;
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : error instanceof Error
-            ? error.message
-            : 'Ismeretlen hiba történt az előnézet lekérése közben.';
-      console.error('Előnézet hiba:', message, error);
-      setPreviewError(message);
-      showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
     } finally {
-      const isLatest = previewRequestIdRef.current === nextRequestId;
-      if (previewAbortRef.current === controller) {
-        previewAbortRef.current = null;
-      }
-      if (isLatest) {
-        setPreviewLoading(false);
-      }
+      setPreviewLoading(false);
     }
   }, [
     form.brandVoice,
