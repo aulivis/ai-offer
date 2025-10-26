@@ -14,6 +14,7 @@ vi.mock('@/env.server', () => ({
     OPENAI_API_KEY: 'test-openai',
     STRIPE_SECRET_KEY: 'stripe-secret',
     APP_URL: 'http://localhost:3000',
+    PUBLIC_CONTACT_EMAIL: 'hello@example.com',
     STRIPE_PRICE_ALLOWLIST: [],
     OAUTH_REDIRECT_ALLOWLIST: [],
     PDF_WEBHOOK_ALLOWLIST: [],

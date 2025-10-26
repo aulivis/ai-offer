@@ -20,6 +20,7 @@ const ServerEnvSchema = z.object({
   OPENAI_API_KEY: z.string(),
   STRIPE_SECRET_KEY: z.string(),
   APP_URL: z.string().url(),
+  PUBLIC_CONTACT_EMAIL: z.string().email(),
   STRIPE_PRICE_ALLOWLIST: z.union([z.string(), z.undefined()]).transform((value) =>
     typeof value === 'string'
       ? value
@@ -44,7 +45,7 @@ const ServerEnvSchema = z.object({
           .filter((item) => item.length > 0)
       : [],
   ),
-    SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: z.string().url(),
+  SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: z.string().url(),
 });
 
 type ServerEnv = Omit<

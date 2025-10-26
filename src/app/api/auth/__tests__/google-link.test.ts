@@ -27,6 +27,7 @@ vi.mock('@/env.server', () => ({
     OAUTH_REDIRECT_ALLOWLIST: ['http://localhost/dashboard'],
     APP_URL: 'http://localhost',
     PDF_WEBHOOK_ALLOWLIST: [],
+    PUBLIC_CONTACT_EMAIL: 'hello@example.com',
   },
 }));
 

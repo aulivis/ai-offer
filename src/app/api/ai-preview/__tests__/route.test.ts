@@ -26,6 +26,7 @@ vi.mock('@/env.server', () => ({
     APP_URL: 'http://localhost',
     STRIPE_PRICE_ALLOWLIST: ['price_123'],
     PDF_WEBHOOK_ALLOWLIST: [],
+    PUBLIC_CONTACT_EMAIL: 'hello@example.com',
   },
 }));
 

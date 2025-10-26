@@ -8,6 +8,7 @@ vi.mock('@/env.server', () => ({
   envServer: {
     NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
     SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+    PUBLIC_CONTACT_EMAIL: 'hello@example.com',
   },
 }));
 

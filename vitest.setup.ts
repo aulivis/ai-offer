@@ -15,3 +15,4 @@ process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ?? 'stripe-secret-
 process.env.APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
 process.env.PDF_WEBHOOK_ALLOWLIST =
   process.env.PDF_WEBHOOK_ALLOWLIST ?? 'https://hooks.example.com';
+process.env.PUBLIC_CONTACT_EMAIL = process.env.PUBLIC_CONTACT_EMAIL ?? 'hello@example.com';
