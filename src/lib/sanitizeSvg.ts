@@ -304,5 +304,12 @@ export function sanitizeSvgMarkup(svg: string | undefined | null): string {
     result += escapeText(source.slice(lastIndex));
   }
 
+  while (openTags.length > 0) {
+    const tagName = openTags.pop();
+    if (tagName) {
+      result += `</${tagName}>`;
+    }
+  }
+
   return result.trim();
 }
