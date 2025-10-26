@@ -20,6 +20,7 @@ const {
   cookiesGetMock,
   cookiesSetMock,
   processPdfJobInlineMock,
+  supabaseServerMock,
 } = vi.hoisted(() => ({
   insertOfferMock: vi.fn(),
   enqueuePdfJobMock: vi.fn(),
@@ -34,25 +35,11 @@ const {
   cookiesGetMock: vi.fn(),
   cookiesSetMock: vi.fn(),
   processPdfJobInlineMock: vi.fn(),
+  supabaseServerMock: vi.fn(),
 }));
 
 vi.mock('@/app/lib/supabaseServer', () => ({
-  supabaseServer: () => ({
-    from(table: string) {
-      if (table === 'offers') {
-        return {
-          insert: insertOfferMock,
-        };
-      }
-      return {
-        select: vi.fn().mockResolvedValue({ data: null, error: null }),
-        insert: vi.fn().mockResolvedValue({ error: null }),
-        update: vi.fn().mockResolvedValue({ error: null }),
-        eq: vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      };
-    },
-  }),
+  supabaseServer: supabaseServerMock,
 }));
 
 vi.mock('@/env.server', () => ({
@@ -181,6 +168,7 @@ describe('POST /api/ai-generate', () => {
     cookiesGetMock.mockReset();
     cookiesSetMock.mockReset();
     processPdfJobInlineMock.mockReset();
+    supabaseServerMock.mockReset();
 
     insertOfferMock.mockResolvedValue({ error: null });
     enqueuePdfJobMock.mockRejectedValue(new Error('queue failed'));
@@ -197,6 +185,20 @@ describe('POST /api/ai-generate', () => {
     uuidMock.mockReturnValueOnce('offer-uuid').mockReturnValueOnce('job-token');
     cookiesGetMock.mockReturnValue(undefined);
     processPdfJobInlineMock.mockResolvedValue(null);
+    supabaseServerMock.mockResolvedValue({
+      from(table: string) {
+        if (table === 'offers') {
+          return { insert: insertOfferMock };
+        }
+        return {
+          select: vi.fn().mockResolvedValue({ data: null, error: null }),
+          insert: vi.fn().mockResolvedValue({ error: null }),
+          update: vi.fn().mockResolvedValue({ error: null }),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        };
+      },
+    });
   });
 
   afterEach(() => {

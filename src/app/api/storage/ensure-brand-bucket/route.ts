@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 
-import { supabaseServer } from '@/app/lib/supabaseServer';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
+import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const BUCKET_ID = 'brand-assets';
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml'];
 
-export async function POST() {
+export const POST = withAuth(async (_request: AuthenticatedNextRequest) => {
   try {
-    const sb = supabaseServer();
+    const sb = supabaseServiceRole();
     const { data: bucket, error: getError } = await sb.storage.getBucket(BUCKET_ID);
     if (getError && !getError.message?.toLowerCase().includes('not found')) {
       throw new Error('Nem sikerült lekérni a tárhely beállításait.');
@@ -52,4 +53,4 @@ export async function POST() {
     }
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
+});

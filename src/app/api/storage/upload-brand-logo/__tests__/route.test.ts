@@ -15,6 +15,8 @@ const {
   updateBucketMock,
   uploadMock,
   createSignedUrlMock,
+  supabaseServerMock,
+  supabaseServiceRoleMock,
 } = vi.hoisted(() => ({
   anonGetUserMock: vi.fn(),
   getBucketMock: vi.fn(),
@@ -22,20 +24,16 @@ const {
   updateBucketMock: vi.fn(),
   uploadMock: vi.fn(),
   createSignedUrlMock: vi.fn(),
+  supabaseServerMock: vi.fn(),
+  supabaseServiceRoleMock: vi.fn(),
 }));
 
 vi.mock('@/app/lib/supabaseServer', () => ({
-  supabaseServer: () => ({
-    storage: {
-      getBucket: getBucketMock,
-      createBucket: createBucketMock,
-      updateBucket: updateBucketMock,
-      from: () => ({
-        upload: uploadMock,
-        createSignedUrl: createSignedUrlMock,
-      }),
-    },
-  }),
+  supabaseServer: supabaseServerMock,
+}));
+
+vi.mock('@/app/lib/supabaseServiceRole', () => ({
+  supabaseServiceRole: supabaseServiceRoleMock,
 }));
 
 vi.mock('@/env.server', () => ({
@@ -79,10 +77,27 @@ describe('upload brand logo route', () => {
     updateBucketMock.mockReset();
     uploadMock.mockReset();
     createSignedUrlMock.mockReset();
+    supabaseServerMock.mockReset();
+    supabaseServiceRoleMock.mockReset();
 
     anonGetUserMock.mockResolvedValue({
       data: { user: { id: 'user-1', email: 'user@example.com' } },
       error: null,
+    });
+    supabaseServerMock.mockResolvedValue({
+      storage: {
+        from: () => ({
+          upload: uploadMock,
+          createSignedUrl: createSignedUrlMock,
+        }),
+      },
+    });
+    supabaseServiceRoleMock.mockReturnValue({
+      storage: {
+        getBucket: getBucketMock,
+        createBucket: createBucketMock,
+        updateBucket: updateBucketMock,
+      },
     });
     getBucketMock.mockResolvedValue({
       data: {

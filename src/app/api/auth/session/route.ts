@@ -14,7 +14,7 @@ export async function GET() {
     return Response.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
   }
 
-  const supabase = supabaseServer();
+  const supabase = await supabaseServer();
 
   try {
     const { data, error } = await supabase.auth.getUser(accessToken);

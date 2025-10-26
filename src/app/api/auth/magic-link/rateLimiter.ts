@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { PostgrestError } from '@supabase/supabase-js';
 
-import type { supabaseServer } from '@/app/lib/supabaseServer';
+import type { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { envServer } from '@/env.server';
 
 export const RATE_LIMIT_MAX_ATTEMPTS = 5;
@@ -14,7 +14,7 @@ type RateLimitRow = {
   expires_at: string;
 };
 
-type SupabaseServerClient = ReturnType<typeof supabaseServer>;
+type SupabaseServerClient = ReturnType<typeof supabaseServiceRole>;
 type RateLimitTable = ReturnType<SupabaseServerClient['from']>;
 
 type RateLimitClient = Pick<SupabaseServerClient, 'from'>;

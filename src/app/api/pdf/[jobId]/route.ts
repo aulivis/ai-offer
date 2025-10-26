@@ -23,7 +23,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
     return badRequest('Hiányzik a PDF feladat azonosítója.');
   }
 
-  const sb = supabaseServer();
+  const sb = await supabaseServer();
   const { data: job, error } = await sb
     .from('pdf_jobs')
     .select('id, user_id, offer_id, pdf_url, callback_url, download_token')
