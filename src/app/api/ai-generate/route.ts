@@ -25,6 +25,7 @@ import {
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
+import { allowCategory } from '../../../../lib/consent/server';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import { z } from 'zod';
 
@@ -534,16 +535,19 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     const cookieStore = await cookies();
     let deviceId = cookieStore.get('propono_device_id')?.value;
     if (!deviceId) {
+      const analyticsAllowed = allowCategory(req, 'analytics');
       deviceId = randomUUID();
-      cookieStore.set({
-        name: 'propono_device_id',
-        value: deviceId,
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 365,
-        path: '/',
-      });
+      if (analyticsAllowed) {
+        cookieStore.set({
+          name: 'propono_device_id',
+          value: deviceId,
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24 * 365,
+          path: '/',
+        });
+      }
     }
 
     const { iso: usagePeriodStart } = currentMonthStart();
