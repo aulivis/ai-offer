@@ -15,6 +15,7 @@ describe('PDF webhook URL validation', () => {
     vi.doMock('@/env.server', () => ({
       envServer: {
         PDF_WEBHOOK_ALLOWLIST: ['https://hooks.example.com'],
+        PUBLIC_CONTACT_EMAIL: 'hello@example.com',
       },
     }));
 
@@ -29,6 +30,7 @@ describe('PDF webhook URL validation', () => {
     vi.doMock('@/env.server', () => ({
       envServer: {
         PDF_WEBHOOK_ALLOWLIST: ['https://hooks.example.com'],
+        PUBLIC_CONTACT_EMAIL: 'hello@example.com',
       },
     }));
 
@@ -51,6 +53,7 @@ describe('PDF webhook URL validation', () => {
     vi.doMock('@/env.server', () => ({
       envServer: {
         PDF_WEBHOOK_ALLOWLIST: ['https://hooks.example.com'],
+        PUBLIC_CONTACT_EMAIL: 'hello@example.com',
       },
     }));
 
@@ -73,6 +76,7 @@ describe('PDF webhook URL validation', () => {
     vi.doMock('@/env.server', () => ({
       envServer: {
         PDF_WEBHOOK_ALLOWLIST: [],
+        PUBLIC_CONTACT_EMAIL: 'hello@example.com',
       },
     }));
 

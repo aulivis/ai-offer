@@ -5,6 +5,7 @@ import AnnouncementBar from '@/components/AnnouncementBar';
 import LandingHeader from '@/components/LandingHeader';
 import { ToastProvider } from '@/components/ToastProvider';
 import { SupabaseProvider } from '@/components/SupabaseProvider';
+import Footer from '@/components/layout/Footer';
 
 import { gota, spaceMono, workSans } from './fonts';
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <AnnouncementBar />
                 <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
                 <div className="flex-1">{children}</div>
+                <Footer />
               </div>
             </div>
           </ToastProvider>

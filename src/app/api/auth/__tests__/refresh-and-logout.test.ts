@@ -29,6 +29,7 @@ vi.mock('@/env.server', () => ({
     AUTH_COOKIE_SECRET: 'test-auth-secret-value-test-auth-secret-value',
     CSRF_SECRET: 'test-csrf-secret-value-test-csrf-secret-value',
     PDF_WEBHOOK_ALLOWLIST: [],
+    PUBLIC_CONTACT_EMAIL: 'hello@example.com',
   },
 }));
 
