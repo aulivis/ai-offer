@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 import AnnouncementBar from '@/components/AnnouncementBar';
+import CookieBar from '@/components/cookies/CookieBar';
+import { PreferencesModal } from '@/components/cookies/PreferencesModal';
 import LandingHeader from '@/components/LandingHeader';
 import { ToastProvider } from '@/components/ToastProvider';
 import { SupabaseProvider } from '@/components/SupabaseProvider';
@@ -34,6 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex-1">{children}</div>
                 <Footer />
               </div>
+
+              <CookieBar />
+              <PreferencesModal />
             </div>
           </ToastProvider>
         </SupabaseProvider>

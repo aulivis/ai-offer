@@ -3,101 +3,44 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
-
-const CONSENT_COOKIE_NAME = 'propono_cookie_consent';
-const CONSENT_VERSION = 1;
-const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
-
-type ConsentCategories = {
-  analytics: boolean;
-  marketing: boolean;
-};
-
-type ConsentCookieValue = {
-  version: number;
-  updatedAt: string;
-  categories: ConsentCategories;
-};
-
-function readConsentCookie(): ConsentCookieValue | null {
-  if (typeof document === 'undefined') {
-    return null;
-  }
-
-  const cookies = document.cookie ? document.cookie.split('; ') : [];
-  const consentCookie = cookies.find((item) => item.startsWith(`${CONSENT_COOKIE_NAME}=`));
-
-  if (!consentCookie) {
-    return null;
-  }
-
-  const value = consentCookie.substring(CONSENT_COOKIE_NAME.length + 1);
-
-  try {
-    return JSON.parse(decodeURIComponent(value)) as ConsentCookieValue;
-  } catch (error) {
-    console.warn('Failed to parse cookie consent value', error);
-    return null;
-  }
-}
-
-function saveConsentCookie(categories: ConsentCategories) {
-  if (typeof document === 'undefined') {
-    return;
-  }
-
-  const payload: ConsentCookieValue = {
-    version: CONSENT_VERSION,
-    updatedAt: new Date().toISOString(),
-    categories,
-  };
-
-  let cookieString = `${CONSENT_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(payload))}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax`;
-
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    cookieString += '; Secure';
-  }
-
-  document.cookie = cookieString;
-}
-
-function emitConsentUpdated(categories: ConsentCategories) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.dispatchEvent(
-    new CustomEvent('consent:updated', {
-      detail: {
-        categories,
-      },
-    }),
-  );
-}
+import { CONSENT_VERSION } from '@/lib/consent/constants';
+import { getConsent, updateConsent } from '@/lib/consent/client';
 
 export default function CookieBar() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = readConsentCookie();
+    const consent = getConsent();
 
     if (!consent || consent.version !== CONSENT_VERSION) {
       setIsVisible(true);
     }
   }, []);
 
-  const saveConsent = useCallback((categories: ConsentCategories) => {
-    saveConsentCookie(categories);
-    emitConsentUpdated(categories);
+  const saveConsent = useCallback(async (analytics: boolean, marketing: boolean) => {
+    const record = await updateConsent({
+      necessary: true,
+      analytics,
+      marketing,
+    });
+
+    window.dispatchEvent(
+      new CustomEvent('consent:updated', {
+        detail: {
+          categories: record.granted,
+        },
+      }),
+    );
+
     setIsVisible(false);
   }, []);
 
   const handleAcceptAll = useCallback(() => {
-    saveConsent({ analytics: true, marketing: true });
+    void saveConsent(true, true);
   }, [saveConsent]);
 
   const handleRejectNonEssential = useCallback(() => {
-    saveConsent({ analytics: false, marketing: false });
+    void saveConsent(false, false);
   }, [saveConsent]);
 
   const handleCustomize = useCallback(() => {
@@ -115,8 +58,8 @@ export default function CookieBar() {
       <div className="w-full max-w-4xl rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-700">
-            We use cookies to improve your experience. You can accept all cookies, reject the non-essential ones,
-            or customise your preferences.
+            We use cookies to improve your experience. You can accept all cookies, reject the
+            non-essential ones, or customise your preferences.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={handleCustomize}>
