@@ -92,6 +92,20 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content ol {
     margin: 0 0 1.2rem 1.4rem;
     padding: 0;
+    list-style-position: outside;
+  }
+  .offer-doc__content ul {
+    list-style-type: disc;
+  }
+  .offer-doc__content ol {
+    list-style-type: decimal;
+  }
+  .offer-doc__content ul ul {
+    list-style-type: circle;
+  }
+  .offer-doc__content ol ol,
+  .offer-doc__content ul ol {
+    list-style-type: lower-alpha;
   }
   .offer-doc__content li {
     margin-bottom: 0.45rem;

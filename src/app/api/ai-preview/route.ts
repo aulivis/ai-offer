@@ -2,11 +2,9 @@ import { NextResponse } from 'next/server';
 import OpenAI, { APIError } from 'openai';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
-import { STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import { z } from 'zod';
-const STREAM_TIMEOUT_MESSAGE = 'Az előnézet kérése időtúllépés miatt megszakadt.';
-
 export const runtime = 'nodejs';
 
 const BASE_SYSTEM_PROMPT = `
