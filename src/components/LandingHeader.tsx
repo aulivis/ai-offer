@@ -4,13 +4,22 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { Button } from '@/components/ui/Button';
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { useLogout } from '@/hooks/useLogout';
+
 type LandingHeaderProps = {
   className?: string;
 };
 
-const NAV_ITEMS = [
+const PUBLIC_NAV_ITEMS = [
   { href: '/demo', label: 'Bemutató' },
   { href: '/#case-studies', label: 'Esettanulmányok' },
+  { href: '/billing', label: 'Előfizetés' },
+];
+
+const AUTH_NAV_ITEMS = [
+  { href: '/dashboard', label: 'Ajánlatok' },
   { href: '/billing', label: 'Előfizetés' },
 ];
 
@@ -18,6 +27,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hash, setHash] = useState('');
   const pathname = usePathname();
+  const { status: authStatus } = useAuthSession();
+  const { logout, isLoggingOut } = useLogout();
+
+  const isAuthenticated = authStatus === 'authenticated';
+  const navItems = isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
   useEffect(() => {
     const updateHash = () => {
@@ -61,6 +75,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   );
 
   const closeMenu = () => setIsMenuOpen(false);
+  const handleLogout = () => {
+    closeMenu();
+    logout();
+  };
 
   return (
     <header className={headerClass} style={headerStyle}>
@@ -69,13 +87,28 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           Propono
         </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-fg-muted md:flex">
-          {NAV_ITEMS.map((item) => (
+        <nav
+          className={`hidden flex-1 items-center justify-center md:flex ${
+            isAuthenticated
+              ? 'flex-wrap gap-2 rounded-3xl border border-border/60 bg-bg/80 px-4 py-2 text-sm text-fg-muted shadow-card backdrop-blur'
+              : 'gap-8 text-sm font-medium text-fg-muted'
+          }`}
+        >
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-3 py-1 transition-colors duration-200 hover:text-fg"
+              className={`rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                isAuthenticated
+                  ? `px-3.5 py-1.5 ${
+                      isNavItemActive(item.href)
+                        ? 'bg-primary text-primary-ink shadow-card'
+                        : 'text-fg-muted hover:bg-bg-muted/80 hover:text-fg'
+                    }`
+                  : 'px-3 py-1 text-fg-muted hover:text-fg'
+              }`}
               aria-current={isNavItemActive(item.href) ? 'page' : undefined}
+              onClick={closeMenu}
             >
               {item.label}
             </Link>
@@ -83,18 +116,45 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
-          <Link
-            href="/login"
-            className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
-          >
-            Bejelentkezés
-          </Link>
-          <Link
-            href="/demo"
-            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
-          >
-            Ingyenes Próba
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                href="/settings"
+                className={`rounded-full px-3.5 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                  isNavItemActive('/settings')
+                    ? 'bg-primary text-primary-ink shadow-card'
+                    : 'text-fg-muted hover:bg-bg-muted/80 hover:text-fg'
+                }`}
+              >
+                Beállítások
+              </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={logout}
+                disabled={isLoggingOut}
+                aria-busy={isLoggingOut}
+                aria-label="Kijelentkezés a fiókból"
+              >
+                {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+              >
+                Bejelentkezés
+              </Link>
+              <Link
+                href="/demo"
+                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
+              >
+                Ingyenes Próba
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -126,7 +186,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             id="landing-navigation"
             className="flex flex-col gap-4 text-base font-medium text-fg"
           >
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -137,20 +197,44 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/login"
-              className="text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
-              onClick={closeMenu}
-            >
-              Bejelentkezés
-            </Link>
-            <Link
-              href="/demo"
-              className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
-              onClick={closeMenu}
-            >
-              Ingyenes Próba
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/settings"
+                  className="rounded-full px-3 py-1 text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+                  onClick={closeMenu}
+                >
+                  Beállítások
+                </Link>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  aria-busy={isLoggingOut}
+                  className="justify-center text-base"
+                >
+                  {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+                  onClick={closeMenu}
+                >
+                  Bejelentkezés
+                </Link>
+                <Link
+                  href="/demo"
+                  className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
+                  onClick={closeMenu}
+                >
+                  Ingyenes Próba
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       ) : null}
