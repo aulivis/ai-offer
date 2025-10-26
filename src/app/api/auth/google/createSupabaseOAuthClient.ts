@@ -1,92 +1,98 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { SupportedStorage } from '@supabase/auth-js';
-
+import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 import { envServer } from '@/env.server';
 
-const SUPABASE_AUTH_STORAGE_KEY = 'supabase.auth.token';
-
-export type SupabaseOAuthClient = {
-  client: SupabaseClient;
-  consumeCodeVerifier: () => string | null;
-};
-
-function createPkceStorage(storageKey: string): {
-  storage: SupportedStorage;
-  consumeCodeVerifier: () => string | null;
-} {
-  const store = new Map<string, string>();
-  const codeVerifierKey = `${storageKey}-code-verifier`;
-  let codeVerifier: string | null = null;
-
-  const storage: SupportedStorage = {
-    isServer: true,
-    async getItem(key) {
-      return store.get(key) ?? null;
-    },
-    async setItem(key, value) {
-      store.set(key, value);
-
-      if (key === codeVerifierKey) {
-        let storedValue: unknown = value;
-
-        try {
-          storedValue = JSON.parse(value);
-        } catch {
-          // Ignore JSON parse errors and fall back to the raw value.
-        }
-
-        if (typeof storedValue === 'string') {
-          const [verifier] = storedValue.split('/');
-          codeVerifier = verifier ?? null;
-        } else {
-          codeVerifier = null;
-        }
-      }
-    },
-    async removeItem(key) {
-      store.delete(key);
-
-      if (key === codeVerifierKey) {
-        codeVerifier = null;
-      }
-    },
-  };
-
-  return {
-    storage,
-    consumeCodeVerifier() {
-      const verifier = codeVerifier;
-      codeVerifier = null;
-      return verifier;
-    },
-  };
+function isSecure() {
+  return envServer.APP_URL.startsWith('https');
 }
 
-export function createSupabaseOAuthClient(): SupabaseOAuthClient {
-  const pkce = createPkceStorage(SUPABASE_AUTH_STORAGE_KEY);
+/**
+ * Cookie-backed storage a supabase-js v2 PKCE flow-hoz.
+ * Nem fix kulcsnévre támaszkodik: bármilyen key-t 'sb_<key>' néven sütiben tárol.
+ */
+const storage = {
+  async getItem(key: string) {
+    const jar = await cookies();
+    return jar.get(`sb_${key}`)?.value ?? null;
+  },
+  async setItem(key: string, value: string) {
+    const jar = await cookies();
+    jar.set(`sb_${key}`, value, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure(),
+      path: '/',
+      maxAge: 5 * 60, // 5 perc elég a redirecthez
+    });
+  },
+  async removeItem(key: string) {
+    const jar = await cookies();
+    jar.set(`sb_${key}`, '', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure(),
+      path: '/',
+      maxAge: 0,
+    });
+  },
+};
 
+export function createSupabaseOAuthClient() {
   const client = createClient(
     envServer.NEXT_PUBLIC_SUPABASE_URL,
     envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
-        persistSession: true,
-        autoRefreshToken: false,
         flowType: 'pkce',
-        storageKey: SUPABASE_AUTH_STORAGE_KEY,
-        storage: pkce.storage,
+        persistSession: false,
+        detectSessionInUrl: false,
+        storage,
       },
-      global: {
-        headers: {
-          apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-        },
-      },
-    },
+    }
   );
 
   return {
     client,
-    consumeCodeVerifier: pkce.consumeCodeVerifier,
+    /**
+     * A Supabase különböző kulcsneveket használhat a verifierhez.
+     * Itt több ismert variánst próbálunk egymás után,
+     * végül fallbackként megkeresünk MINDEN 'sb_*code*verifier*' sütit.
+     */
+    async consumeCodeVerifier(): Promise<string | null> {
+      const candidates = [
+        'pkce_code_verifier',
+        'code_verifier',
+        'pkce.code_verifier',
+        'oauth_pkce_code_verifier',
+      ];
+
+      for (const key of candidates) {
+        const val = await storage.getItem(key);
+        if (val) {
+          await storage.removeItem(key);
+          return val;
+        }
+      }
+
+      // Fallback: keressünk bármilyen sütit, aminek a neve tartalmazza a 'code' és 'verifier' szavakat
+      const jar = await cookies();
+      const all = ['pkce', 'code', 'verifier'];
+      const possible = (['pkce_code_verifier', 'code_verifier'] as string[]).concat(
+        (jar.getAll?.() ?? [])
+          .map((c: any) => c?.name as string)
+          .filter((n) => typeof n === 'string' && n.startsWith('sb_') && all.every(w => n.toLowerCase().includes(w)))
+      );
+
+      for (const cookieName of possible) {
+        const name = cookieName.startsWith('sb_') ? cookieName.slice(3) : cookieName;
+        const val = await storage.getItem(name);
+        if (val) {
+          await storage.removeItem(name);
+          return val;
+        }
+      }
+
+      return null;
+    },
   };
 }

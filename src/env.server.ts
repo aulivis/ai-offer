@@ -44,6 +44,7 @@ const ServerEnvSchema = z.object({
           .filter((item) => item.length > 0)
       : [],
   ),
+    SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: z.string().url(),
 });
 
 type ServerEnv = Omit<
