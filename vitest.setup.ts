@@ -16,3 +16,5 @@ process.env.APP_URL = process.env.APP_URL ?? 'http://localhost:3000';
 process.env.PDF_WEBHOOK_ALLOWLIST =
   process.env.PDF_WEBHOOK_ALLOWLIST ?? 'https://hooks.example.com';
 process.env.PUBLIC_CONTACT_EMAIL = process.env.PUBLIC_CONTACT_EMAIL ?? 'hello@example.com';
+process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-TEST';

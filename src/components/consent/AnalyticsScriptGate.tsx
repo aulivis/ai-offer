@@ -12,18 +12,17 @@ export default function AnalyticsScriptGate() {
   const [hasConsent, setHasConsent] = useState(() => canRun('analytics'));
 
   useEffect(() => {
-    if (hasConsent) {
-      return;
-    }
-
     const unsubscribe = onConsentChange((categories) => {
-      if (categories.analytics) {
-        setHasConsent(true);
+      if (typeof categories.analytics === 'boolean') {
+        setHasConsent(categories.analytics);
+        return;
       }
+
+      setHasConsent(canRun('analytics'));
     });
 
     return unsubscribe;
-  }, [hasConsent]);
+  }, []);
 
   if (!GA_MEASUREMENT_ID || !hasConsent) {
     return null;
