@@ -131,6 +131,11 @@ function createRequest(
   const headerMap = new Headers({
     'content-type': 'application/json',
     'x-csrf-token': csrfToken,
+    origin: 'http://localhost:3000',
+    referer: 'http://localhost:3000/generate',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-dest': 'empty',
     ...headers,
   });
   const cookieJar = {

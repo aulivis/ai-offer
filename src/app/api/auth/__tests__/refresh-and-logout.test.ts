@@ -28,6 +28,7 @@ vi.mock('@/env.server', () => ({
     NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
     AUTH_COOKIE_SECRET: 'test-auth-secret-value-test-auth-secret-value',
     CSRF_SECRET: 'test-csrf-secret-value-test-csrf-secret-value',
+    APP_URL: 'http://localhost:3000',
     PDF_WEBHOOK_ALLOWLIST: [],
     PUBLIC_CONTACT_EMAIL: 'hello@example.com',
   },

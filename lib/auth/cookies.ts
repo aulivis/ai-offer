@@ -58,6 +58,7 @@ export async function clearAuthCookies() {
     name: CSRF_COOKIE_NAME,
     value: '',
     ...baseCookieOptions,
+    httpOnly: false,
     maxAge: 0,
   });
 }
