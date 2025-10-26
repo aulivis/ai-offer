@@ -15,7 +15,7 @@ const sections = [
   {
     heading: '2. Milyen sütiket használunk?',
     content:
-      'A működéshez szükséges, analitikai és marketing sütiket alkalmazunk. Ezekről itt olvashat rövid összefoglalót.',
+      'A működéshez szükséges sütik közé tartoznak az azonosításhoz és munkamenethez használt auth- és session-sütik (például propono_at, propono_rt és XSRF-TOKEN). Emellett analitikai és marketing sütiket alkalmazunk. Ezekről itt olvashat rövid összefoglalót.',
   },
   {
     heading: '3. Hogyan kezelheti a sütiket?',

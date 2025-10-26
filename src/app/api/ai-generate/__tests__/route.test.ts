@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createCsrfToken } from '../../../../../lib/auth/csrf';
+import { CONSENT_COOKIE_NAME } from '../../../../../lib/consent/constants';
 import type { AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const {
@@ -347,5 +348,77 @@ describe('POST /api/ai-generate', () => {
     expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
     expect(dispatchPdfJobMock).toHaveBeenCalledWith(expect.anything(), 'job-token');
     expect(processPdfJobInlineMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not set the device cookie when analytics consent is denied', async () => {
+    const { POST } = await import('../route');
+
+    const request = createRequest(
+      {
+        title: 'Ajánlat címe',
+        industry: 'Marketing',
+        description: 'Részletes leírás',
+        deadline: '',
+        language: 'hu',
+        brandVoice: 'friendly',
+        style: 'detailed',
+        prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+        aiOverrideHtml: '<p>Előnézet</p>',
+        clientId: null,
+        pdfWebhookUrl: null,
+        imageAssets: [],
+      },
+      {
+        cookie: `${CONSENT_COOKIE_NAME}=${encodeURIComponent(
+          JSON.stringify({
+            granted: { necessary: true, analytics: false, marketing: false },
+            timestamp: '2025-01-01T00:00:00.000Z',
+            version: 'test',
+          }),
+        )}`,
+      },
+    );
+
+    await POST(request);
+
+    expect(cookiesSetMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'propono_device_id' }),
+    );
+  });
+
+  it('sets the device cookie when analytics consent is granted', async () => {
+    const { POST } = await import('../route');
+
+    const request = createRequest(
+      {
+        title: 'Ajánlat címe',
+        industry: 'Marketing',
+        description: 'Részletes leírás',
+        deadline: '',
+        language: 'hu',
+        brandVoice: 'friendly',
+        style: 'detailed',
+        prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+        aiOverrideHtml: '<p>Előnézet</p>',
+        clientId: null,
+        pdfWebhookUrl: null,
+        imageAssets: [],
+      },
+      {
+        cookie: `${CONSENT_COOKIE_NAME}=${encodeURIComponent(
+          JSON.stringify({
+            granted: { necessary: true, analytics: true, marketing: false },
+            timestamp: '2025-01-01T00:00:00.000Z',
+            version: 'test',
+          }),
+        )}`,
+      },
+    );
+
+    await POST(request);
+
+    expect(cookiesSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'propono_device_id', value: expect.any(String) }),
+    );
   });
 });
