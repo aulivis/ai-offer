@@ -56,10 +56,34 @@ type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
   }>;
 
 function sanitizeRedirect(to?: string | null): string {
-  if (typeof to !== 'string') return '/dashboard';
-  // csak belső, abszolút path engedélyezett
-  if (!to.startsWith('/')) return '/dashboard';
-  return to || '/dashboard';
+  const fallback = '/dashboard';
+  if (typeof to !== 'string') return fallback;
+
+  const trimmed = to.trim();
+  if (!trimmed) return fallback;
+  if (!trimmed.startsWith('/')) return fallback;
+
+  const hasUnsafePrefix = (value: string) =>
+    /^[\\/]{2}/.test(value) || /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(value);
+
+  if (hasUnsafePrefix(trimmed)) return fallback;
+
+  let decodedCandidate = trimmed;
+  for (let i = 0; i < 5; i += 1) {
+    try {
+      const decoded = decodeURIComponent(decodedCandidate);
+      if (decoded === decodedCandidate) break;
+      decodedCandidate = decoded;
+    } catch {
+      break;
+    }
+
+    if (hasUnsafePrefix(decodedCandidate)) {
+      return fallback;
+    }
+  }
+
+  return trimmed || fallback;
 }
 
 async function sendMagicLink(

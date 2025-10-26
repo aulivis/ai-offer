@@ -18,6 +18,12 @@ const anonClientMock = vi.hoisted(() => ({
   },
 }));
 
+const buildCallbackUrl = (redirect = '/dashboard') => {
+  const url = new URL('/auth/callback', 'https://app.example.com');
+  url.searchParams.set('redirect_to', redirect);
+  return url.toString();
+};
+
 vi.mock('@/env.server', () => ({
   envServer: {
     APP_URL: 'https://app.example.com',
@@ -78,7 +84,7 @@ describe('POST /api/auth/magic-link', () => {
     expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
       email: 'user@example.com',
       options: {
-        emailRedirectTo: 'https://app.example.com/api/auth/callback',
+        emailRedirectTo: buildCallbackUrl(),
         shouldCreateUser: true,
       },
     });
@@ -102,7 +108,7 @@ describe('POST /api/auth/magic-link', () => {
     expect(signInWithOtpMock).toHaveBeenCalledWith({
       email: 'admin@example.com',
       options: {
-        emailRedirectTo: 'https://app.example.com/api/auth/callback',
+        emailRedirectTo: buildCallbackUrl(),
         shouldCreateUser: true,
       },
     });
@@ -128,7 +134,7 @@ describe('POST /api/auth/magic-link', () => {
       email: 'fallback@example.com',
       type: 'magiclink',
       options: {
-        emailRedirectTo: 'https://app.example.com/api/auth/callback',
+        emailRedirectTo: buildCallbackUrl(),
         shouldCreateUser: true,
       },
     });
@@ -152,5 +158,54 @@ describe('POST /api/auth/magic-link', () => {
     expect(anonSignInWithOtpMock).not.toHaveBeenCalled();
     expect(signInWithOtpMock).not.toHaveBeenCalled();
     expect(generateLinkMock).not.toHaveBeenCalled();
+  });
+
+  it('allows safe absolute paths as redirect targets', async () => {
+    const { POST } = await import('../magic-link/route');
+    const response = await POST(
+      new Request('http://localhost/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'safe@example.com', redirect_to: '/profile' }),
+      }),
+    );
+
+    expect(response.status).toBe(202);
+    expect(anonSignInWithOtpMock).toHaveBeenCalledTimes(1);
+    expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
+      email: 'safe@example.com',
+      options: {
+        emailRedirectTo: buildCallbackUrl('/profile'),
+        shouldCreateUser: true,
+      },
+    });
+  });
+
+  it.each([
+    '//evil.com',
+    ' //another-evil.com',
+    '/%2F%2Fevil.com',
+    '/%2f%2Fexample.com',
+    '/%252F%252Fevil.com',
+    '/%5C%5Cevil.com',
+  ])('rejects unsafe redirect target %s', async (redirect) => {
+    const { POST } = await import('../magic-link/route');
+    const response = await POST(
+      new Request('http://localhost/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'danger@example.com', redirect_to: redirect }),
+      }),
+    );
+
+    expect(response.status).toBe(202);
+    expect(anonSignInWithOtpMock).toHaveBeenCalledTimes(1);
+    expect(anonSignInWithOtpMock).toHaveBeenCalledWith({
+      email: 'danger@example.com',
+      options: {
+        emailRedirectTo: buildCallbackUrl(),
+        shouldCreateUser: true,
+      },
+    });
   });
 });
