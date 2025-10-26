@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 import AnnouncementBar from '@/components/AnnouncementBar';
+import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '@/components/cookies/CookieBar';
 import { PreferencesModal } from '@/components/cookies/PreferencesModal';
 import LandingHeader from '@/components/LandingHeader';
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               <CookieBar />
               <PreferencesModal />
+              <AnalyticsScriptGate />
             </div>
           </ToastProvider>
         </SupabaseProvider>
