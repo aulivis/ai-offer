@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { envServer } from '@/env.server';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
+import { setCSRFCookie } from '../../../../../lib/auth/cookies';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -86,6 +87,8 @@ export async function GET(request: Request) {
         path: '/',
       });
     }
+
+    await setCSRFCookie();
 
     return NextResponse.redirect(new URL(finalRedirect, envServer.APP_URL));
   } catch (err) {

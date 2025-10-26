@@ -26,6 +26,15 @@ export async function setAuthCookies(accessToken: string, refreshToken: string) 
     value: refreshToken,
     ...baseCookieOptions,
   });
+
+  const { value: csrfValue } = createCsrfToken();
+
+  cookieStore.set({
+    name: CSRF_COOKIE_NAME,
+    value: csrfValue,
+    ...baseCookieOptions,
+    httpOnly: false,
+  });
 }
 
 export async function clearAuthCookies() {
