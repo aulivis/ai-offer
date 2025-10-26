@@ -114,16 +114,17 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               >
                 Beállítások
               </Link>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={logout}
                 disabled={isLoggingOut}
                 aria-busy={isLoggingOut}
                 aria-label="Kijelentkezés a fiókból"
-                className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
-              </button>
+              </Button>
             </>
           ) : (
             <>
@@ -194,7 +195,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 </Link>
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
                   aria-busy={isLoggingOut}
