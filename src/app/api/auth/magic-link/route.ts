@@ -20,6 +20,7 @@ const GENERIC_RESPONSE = {
 
 const requestSchema = z.object({
   email: z.string().email(),
+  redirect_to: z.string().optional(), // opcionális cél, pl. "/dashboard"
 });
 
 const json202 = () => Response.json(GENERIC_RESPONSE, { status: 202 });
@@ -54,13 +55,20 @@ type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
     }) => Promise<unknown>;
   }>;
 
+function sanitizeRedirect(to?: string | null): string {
+  if (typeof to !== 'string') return '/dashboard';
+  // csak belső, abszolút path engedélyezett
+  if (!to.startsWith('/')) return '/dashboard';
+  return to || '/dashboard';
+}
+
 async function sendMagicLink(
   supabase: ReturnType<typeof supabaseServer>,
   email: string,
+  emailRedirectTo: string,
   logger: RequestLogger,
 ) {
   const admin = supabase.auth.admin as SupabaseAdminClient;
-  const emailRedirectTo = new URL('/api/auth/callback', envServer.APP_URL).toString();
   const otpOptions = { emailRedirectTo, shouldCreateUser: true } as const;
 
   const anonClient = supabaseAnonServer();
@@ -127,6 +135,7 @@ export async function POST(request: Request) {
   }
 
   const email = normalizeEmail(parseResult.data.email);
+  const finalRedirect = sanitizeRedirect(parseResult.data.redirect_to);
   logger.setEmail(email);
   const clientIp = getClientIp(request);
 
@@ -161,7 +170,12 @@ export async function POST(request: Request) {
     recordMagicLinkSend('failure', { reason: 'rate_limit' });
   } else {
     try {
-      await sendMagicLink(supabase, email, logger);
+      // FONTOS: a magic link a kliens oldali /auth/callback oldalra érkezzen,
+      // hogy a hash-ben lévő tokeneket ki tudjuk olvasni, majd továbbküldeni az API callbackre.
+      const emailRedirectTo = new URL('/auth/callback', envServer.APP_URL);
+      emailRedirectTo.searchParams.set('redirect_to', finalRedirect);
+
+      await sendMagicLink(supabase, email, emailRedirectTo.toString(), logger);
       logger.info('Magic link OTP email dispatched successfully.', {
         clientIp,
       });

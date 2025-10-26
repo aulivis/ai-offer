@@ -6,11 +6,47 @@ import { setCSRFCookie } from '../../../../../lib/auth/cookies';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const code = url.searchParams.get('code');
   const finalRedirect = sanitizeOAuthRedirect(url.searchParams.get('redirect_to'), '/dashboard');
 
+  // --- Magic link flow (Supabase küldi vissza az access_token/refresh_token paramétereket) ---
+  const accessTokenFromLink =
+    url.searchParams.get('access_token') ?? url.searchParams.get('token') ?? null;
+  const refreshTokenFromLink = url.searchParams.get('refresh_token');
+  const expiresInFromLink = url.searchParams.get('expires_in');
+
+  if (accessTokenFromLink) {
+    const jar = await cookies();
+    const isSecure = envServer.APP_URL.startsWith('https');
+    const maxAge =
+      (expiresInFromLink ? Number.parseInt(expiresInFromLink, 10) : NaN) || 3600;
+
+    jar.set('propono_at', accessTokenFromLink, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
+      maxAge,
+    });
+
+    if (refreshTokenFromLink) {
+      jar.set('propono_rt', refreshTokenFromLink, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isSecure,
+        path: '/',
+      });
+    }
+
+    await setCSRFCookie();
+    return NextResponse.redirect(new URL(finalRedirect, envServer.APP_URL));
+  }
+
+  // --- OAuth PKCE flow (Google) ---
+  const code = url.searchParams.get('code');
   if (!code) {
-    return NextResponse.redirect(new URL('/login?message=Missing%20auth%20code', envServer.APP_URL));
+    return NextResponse.redirect(
+      new URL('/login?message=Missing%20auth%20code', envServer.APP_URL),
+    );
   }
 
   try {
@@ -18,11 +54,11 @@ export async function GET(request: Request) {
     const verifierCookie = jar.get('sb_pkce_code_verifier')?.value ?? null;
 
     if (!verifierCookie) {
-      console.error('Missing PKCE code_verifier in callback.');
-      return NextResponse.redirect(new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL));
+      return NextResponse.redirect(
+        new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL),
+      );
     }
 
-    // Hosted Supabase token exchange – JSON body
     const tokenUrl = `${envServer.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/token?grant_type=pkce`;
 
     const res = await fetch(tokenUrl, {
@@ -39,7 +75,7 @@ export async function GET(request: Request) {
       }),
     });
 
-    // töröljük a verifert, bármi is történik
+    // PKCE verifier törlése
     jar.set('sb_pkce_code_verifier', '', {
       httpOnly: true,
       sameSite: 'lax',
@@ -49,13 +85,9 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
-      const bodyText = await res.text().catch(() => '');
-      console.error('Supabase token exchange failed.', {
-        status: res.status,
-        statusText: res.statusText,
-        body: bodyText || '[no body]',
-      });
-      return NextResponse.redirect(new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL));
+      return NextResponse.redirect(
+        new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL),
+      );
     }
 
     const json = await res.json();
@@ -64,14 +96,14 @@ export async function GET(request: Request) {
     const expiresIn = (json?.expires_in as number | undefined) ?? 3600;
 
     if (!accessToken) {
-      console.error('Supabase token exchange response without access_token.', json);
-      return NextResponse.redirect(new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL));
+      return NextResponse.redirect(
+        new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL),
+      );
     }
 
     const isSecure = envServer.APP_URL.startsWith('https');
-    const c = await cookies();
 
-    c.set('propono_at', accessToken, {
+    jar.set('propono_at', accessToken, {
       httpOnly: true,
       sameSite: 'lax',
       secure: isSecure,
@@ -80,7 +112,7 @@ export async function GET(request: Request) {
     });
 
     if (refreshToken) {
-      c.set('propono_rt', refreshToken, {
+      jar.set('propono_rt', refreshToken, {
         httpOnly: true,
         sameSite: 'lax',
         secure: isSecure,
@@ -89,10 +121,10 @@ export async function GET(request: Request) {
     }
 
     await setCSRFCookie();
-
     return NextResponse.redirect(new URL(finalRedirect, envServer.APP_URL));
-  } catch (err) {
-    console.error('Failed to exchange Supabase auth code.', { error: err });
-    return NextResponse.redirect(new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL));
+  } catch {
+    return NextResponse.redirect(
+      new URL('/login?message=Unable%20to%20authenticate', envServer.APP_URL),
+    );
   }
 }
