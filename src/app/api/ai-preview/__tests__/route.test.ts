@@ -93,7 +93,14 @@ function createRequest(overrides: Record<string, unknown> = {}): AuthenticatedNe
 
   return {
     method: 'POST',
-    headers: new Headers({ 'x-csrf-token': csrfToken }),
+    headers: new Headers({
+      'x-csrf-token': csrfToken,
+      origin: 'http://localhost',
+      referer: 'http://localhost/preview',
+      'sec-fetch-site': 'same-origin',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-dest': 'empty',
+    }),
     json: vi.fn().mockResolvedValue(payload),
     cookies: {
       get: (name: string) =>

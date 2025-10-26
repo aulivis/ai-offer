@@ -120,7 +120,14 @@ describe('upload brand logo route', () => {
 
     return {
       method: 'POST',
-      headers: new Headers({ 'x-csrf-token': csrf.token }),
+      headers: new Headers({
+        'x-csrf-token': csrf.token,
+        origin: 'http://localhost:3000',
+        referer: 'http://localhost:3000/dashboard',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+      }),
       formData: vi.fn().mockResolvedValue(formData),
       cookies: {
         get: (name: string) =>

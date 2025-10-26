@@ -71,7 +71,15 @@ function createRequest(
 
   const request = {
     method: 'POST',
-    headers: new Headers({ 'content-type': 'application/json', 'x-csrf-token': csrf.token }),
+    headers: new Headers({
+      'content-type': 'application/json',
+      'x-csrf-token': csrf.token,
+      origin: 'http://localhost:3000',
+      referer: 'http://localhost:3000/billing',
+      'sec-fetch-site': 'same-origin',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-dest': 'empty',
+    }),
     json: vi.fn().mockResolvedValue(body),
     cookies: {
       get: (name: string) =>
