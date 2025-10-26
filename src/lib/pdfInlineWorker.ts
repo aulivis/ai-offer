@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Page } from 'puppeteer';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
@@ -217,94 +218,110 @@ export async function processPdfJobInline(
       headless: true,
     });
 
-    const page = await browser.newPage();
-    await page.setContent(job.html, { waitUntil: 'networkidle0' });
-    const pdfBinary = await page.pdf({ format: 'A4', printBackground: true });
-    await page.close();
-    await browser.close();
+    let page: Page | null = null;
 
-    const pdfUint8 = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
-    const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
-    new Uint8Array(pdfArrayBuffer).set(pdfUint8);
+    try {
+      page = await browser.newPage();
+      await page.setContent(job.html, { waitUntil: 'networkidle0' });
+      const pdfBinary = await page.pdf({ format: 'A4', printBackground: true });
 
-    const upload = await supabase.storage.from('offers').upload(job.storagePath, pdfArrayBuffer, {
-      contentType: 'application/pdf',
-      upsert: true,
-    });
+      const pdfUint8 = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
+      const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
+      new Uint8Array(pdfArrayBuffer).set(pdfUint8);
 
-    if (upload.error) {
-      throw new Error(upload.error.message);
-    }
+      const upload = await supabase.storage.from('offers').upload(job.storagePath, pdfArrayBuffer, {
+        contentType: 'application/pdf',
+        upsert: true,
+      });
 
-    uploadedToStorage = true;
+      if (upload.error) {
+        throw new Error(upload.error.message);
+      }
 
-    const { data: publicUrlData } = supabase.storage.from('offers').getPublicUrl(job.storagePath);
-    const pdfUrl = publicUrlData?.publicUrl ?? null;
+      uploadedToStorage = true;
 
-    const usageResult = await incrementUsage(
-      supabase,
-      'user',
-      { userId: job.userId },
-      job.userLimit,
-      job.usagePeriodStart,
-    );
-    if (!usageResult.allowed) {
-      throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
-    }
+      const { data: publicUrlData } = supabase.storage.from('offers').getPublicUrl(job.storagePath);
+      const pdfUrl = publicUrlData?.publicUrl ?? null;
 
-    if (job.deviceId && job.deviceLimit != null) {
-      const deviceResult = await incrementUsage(
+      const usageResult = await incrementUsage(
         supabase,
-        'device',
-        { userId: job.userId, deviceId: job.deviceId },
-        job.deviceLimit ?? null,
+        'user',
+        { userId: job.userId },
+        job.userLimit,
         job.usagePeriodStart,
       );
-      if (!deviceResult.allowed) {
-        throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
+      if (!usageResult.allowed) {
+        throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
       }
-    }
 
-    await supabase
-      .from('offers')
-      .update({ pdf_url: pdfUrl })
-      .eq('id', job.offerId)
-      .eq('user_id', job.userId);
-
-    await supabase
-      .from('pdf_jobs')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        pdf_url: pdfUrl,
-      })
-      .eq('id', job.jobId);
-
-    if (job.callbackUrl && pdfUrl) {
-      if (isPdfWebhookUrlAllowed(job.callbackUrl)) {
-        try {
-          await fetch(job.callbackUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              jobId: job.jobId,
-              offerId: job.offerId,
-              pdfUrl,
-              downloadToken: job.jobId,
-            }),
-          });
-        } catch (callbackError) {
-          console.error('Webhook error (inline worker):', callbackError);
-        }
-      } else {
-        console.warn(
-          'Skipping webhook dispatch for disallowed URL (inline worker):',
-          job.callbackUrl,
+      if (job.deviceId && job.deviceLimit != null) {
+        const deviceResult = await incrementUsage(
+          supabase,
+          'device',
+          { userId: job.userId, deviceId: job.deviceId },
+          job.deviceLimit ?? null,
+          job.usagePeriodStart,
         );
+        if (!deviceResult.allowed) {
+          throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
+        }
+      }
+
+      await supabase
+        .from('offers')
+        .update({ pdf_url: pdfUrl })
+        .eq('id', job.offerId)
+        .eq('user_id', job.userId);
+
+      await supabase
+        .from('pdf_jobs')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          pdf_url: pdfUrl,
+        })
+        .eq('id', job.jobId);
+
+      if (job.callbackUrl && pdfUrl) {
+        if (isPdfWebhookUrlAllowed(job.callbackUrl)) {
+          try {
+            await fetch(job.callbackUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jobId: job.jobId,
+                offerId: job.offerId,
+                pdfUrl,
+                downloadToken: job.jobId,
+              }),
+            });
+          } catch (callbackError) {
+            console.error('Webhook error (inline worker):', callbackError);
+          }
+        } else {
+          console.warn(
+            'Skipping webhook dispatch for disallowed URL (inline worker):',
+            job.callbackUrl,
+          );
+        }
+      }
+
+      return pdfUrl;
+    } finally {
+      if (page) {
+        try {
+          await page.close();
+        } catch (closeError) {
+          console.error('Failed to close Puppeteer page (inline worker):', closeError);
+        }
+      }
+
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error('Failed to close Puppeteer browser (inline worker):', closeError);
       }
     }
-
-    return pdfUrl;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
