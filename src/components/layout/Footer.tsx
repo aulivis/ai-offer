@@ -1,11 +1,11 @@
 import Link from 'next/link';
 
+import { ManageCookiesButton } from '@/components/cookies/ManageCookiesButton';
 import { envServer } from '@/env.server';
 
 const navigationLinks = [
   { href: '/privacy-policy', label: 'Adatvédelmi tájékoztató' },
   { href: '/cookie-policy', label: 'Sütikezelési tájékoztató' },
-  { href: '/cookie-policy#manage-cookies', label: 'Sütibeállítások kezelése' },
 ];
 
 export default function Footer() {
@@ -33,6 +33,9 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <ManageCookiesButton label="Sütibeállítások kezelése" />
+            </li>
           </ul>
         </nav>
 
