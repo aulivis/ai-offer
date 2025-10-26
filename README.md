@@ -90,6 +90,12 @@ To learn more about Next.js, take a look at the following resources:
 3. Confirm that server logs contain matching `requestId`/`emailHash` pairs for both the send and callback stages.
 4. Verify that `auth.magic_link.send_total` and `auth.magic_link.callback_total` appear in your metrics backend with the expected `outcome`/`reason` attributes.
 
+## GDPR & Cookies
+
+- **CONSENT_VERSION bump policy** – Update `lib/consent/constants.ts` whenever the copy, categories, or processing purposes change. Bumping the version forces the banner to reappear, ensuring returning visitors reconfirm the latest policy. Keep the value in `NEXT_PUBLIC_CONSENT_VERSION`/`CONSENT_VERSION` aligned across environments.
+- **Registering scripts behind consent** – Route any analytics or marketing pixel through a gate component under `src/components/consent`. Follow the pattern in `AnalyticsScriptGate.tsx`: check `gate.canRun()` before rendering the script and subscribe to `onConsentChange` so the embed reacts to live preference updates.
+- **Proving consent** – Capture both the client cookie and server acceptance trail. The browser writes a JSON payload to the `consent` cookie (see `lib/consent/client.ts` for structure); pair that with the server log entry (or reverse-proxy trace) that issued the `Set-Cookie` header so you can prove which endpoint recorded the visitor’s choice and when.
+
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
