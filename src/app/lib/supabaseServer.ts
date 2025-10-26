@@ -5,8 +5,10 @@ import { envServer } from '../../env.server';
 // provides elevated privileges (e.g. to insert or update rows) and must
 // never be exposed on the client.  We validate and load these values via
 // the env helper to ensure early failure if configuration is missing.
-export const supabaseServer = () =>
-  createClient(envServer.NEXT_PUBLIC_SUPABASE_URL, envServer.SUPABASE_SERVICE_ROLE_KEY, {
+const supabaseServerClient = createClient(
+  envServer.NEXT_PUBLIC_SUPABASE_URL,
+  envServer.SUPABASE_SERVICE_ROLE_KEY,
+  {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
       headers: {
@@ -14,4 +16,7 @@ export const supabaseServer = () =>
         Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
       },
     },
-  });
+  },
+);
+
+export const supabaseServer = () => supabaseServerClient;
