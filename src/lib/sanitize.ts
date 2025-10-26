@@ -47,6 +47,35 @@ const ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   img: new Set(['src', 'alt', 'data-offer-image-key']),
 };
 
+const GLOBAL_ALLOWED_ATTRIBUTES = new Set(['role']);
+
+const ALLOWED_ARIA_ATTRIBUTES = new Set([
+  'aria-label',
+  'aria-labelledby',
+  'aria-describedby',
+  'aria-hidden',
+  'aria-live',
+  'aria-expanded',
+  'aria-controls',
+  'aria-current',
+  'aria-pressed',
+  'aria-selected',
+  'aria-busy',
+  'aria-modal',
+  'aria-multiline',
+  'aria-invalid',
+]);
+
+const ALLOWED_DATA_ATTRIBUTES = new Set([
+  'data-testid',
+  'data-qa',
+  'data-state',
+  'data-theme',
+  'data-tooltip',
+  'data-tracking-id',
+  'data-offer-image-key',
+]);
+
 const DROP_CONTENT_TAGS = new Set(['script', 'style']);
 
 const URL_ALLOWED_SCHEMES = new Set(['http', 'https', 'mailto']);
@@ -94,6 +123,13 @@ function escapeAttribute(value: string): string {
         return ch;
     }
   });
+}
+
+function isGloballyAllowedAttribute(attrName: string): boolean {
+  if (GLOBAL_ALLOWED_ATTRIBUTES.has(attrName)) return true;
+  if (ALLOWED_ARIA_ATTRIBUTES.has(attrName)) return true;
+  if (ALLOWED_DATA_ATTRIBUTES.has(attrName)) return true;
+  return false;
 }
 
 function isUrlAllowed(url: string, tagName: string): boolean {
@@ -150,26 +186,43 @@ function sanitiseAttribute(tagName: string, attrName: string, value: string): st
 
 function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: boolean): string {
   const allowedAttributes = ALLOWED_ATTRIBUTES[tagName];
-  if (!allowedAttributes || allowedAttributes.size === 0) {
-    return `<${tagName}${isSelfClosing ? ' /' : ''}>`;
-  }
+  const sanitisedAttributes: { name: string; value: string }[] = [];
 
-  const sanitisedAttributes: string[] = [];
   rawAttributes.replace(
     ATTRIBUTE_PATTERN,
     (_match, name, _valueWithQuotes, valueDouble, valueSingle, valueUnquoted) => {
       const attrName = String(name).toLowerCase();
-      if (!allowedAttributes.has(attrName)) return '';
+      const isAllowed = (allowedAttributes && allowedAttributes.has(attrName)) || isGloballyAllowedAttribute(attrName);
+      if (!isAllowed) return '';
       const rawValue = valueDouble ?? valueSingle ?? valueUnquoted ?? '';
       const sanitisedValue = sanitiseAttribute(tagName, attrName, rawValue);
       if (sanitisedValue !== null) {
-        sanitisedAttributes.push(`${attrName}="${sanitisedValue}"`);
+        sanitisedAttributes.push({ name: attrName, value: sanitisedValue });
       }
       return '';
     },
   );
 
-  const attributeString = sanitisedAttributes.length ? ` ${sanitisedAttributes.join(' ')}` : '';
+  if (tagName === 'a') {
+    const targetAttr = sanitisedAttributes.find((attr) => attr.name === 'target');
+    if (targetAttr && targetAttr.value === '_blank') {
+      const requiredTokens = ['noopener', 'noreferrer'];
+      let relAttr = sanitisedAttributes.find((attr) => attr.name === 'rel');
+      if (!relAttr) {
+        sanitisedAttributes.push({ name: 'rel', value: 'noopener noreferrer' });
+      } else {
+        const existing = new Set(relAttr.value.split(/\s+/).filter(Boolean));
+        for (const token of requiredTokens) {
+          existing.add(token);
+        }
+        relAttr.value = Array.from(existing).join(' ');
+      }
+    }
+  }
+
+  const attributeString = sanitisedAttributes.length
+    ? ` ${sanitisedAttributes.map((attr) => `${attr.name}="${attr.value}"`).join(' ')}`
+    : '';
   return `<${tagName}${attributeString}${isSelfClosing ? ' /' : ''}>`;
 }
 

@@ -31,6 +31,16 @@ describe('sanitizeHTML', () => {
     expect(sanitizeHTML(html)).toBe('<a target="_self" rel="noreferrer">bad</a>');
   });
 
+  it('adds noopener noreferrer when keeping target="_blank"', () => {
+    const html = '<a href="/foo" target="_blank">safe</a>';
+    expect(sanitizeHTML(html)).toBe('<a href="/foo" target="_blank" rel="noopener noreferrer">safe</a>');
+  });
+
+  it('merges noopener noreferrer with existing rel values', () => {
+    const html = '<a href="/foo" target="_blank" rel="nofollow">safe</a>';
+    expect(sanitizeHTML(html)).toBe('<a href="/foo" target="_blank" rel="nofollow noopener noreferrer">safe</a>');
+  });
+
   it('normalises colspan and rowspan values', () => {
     const html = '<td colspan="02" rowspan="-1">cell</td>';
     expect(sanitizeHTML(html)).toBe('<td colspan="2">cell</td>');
@@ -47,5 +57,11 @@ describe('sanitizeHTML', () => {
     expect(sanitizeHTML(html)).toBe(
       '<p>Előnézet</p><img src="data:image/png;base64,AAAA" alt="logo" data-offer-image-key="img-1" />',
     );
+  });
+
+  it('keeps curated aria and data attributes while stripping unsafe ones', () => {
+    const html =
+      '<div aria-live="polite" aria-evil="nope" data-testid="hero" data-random="remove" onclick="alert(1)">Content</div>';
+    expect(sanitizeHTML(html)).toBe('<div aria-live="polite" data-testid="hero">Content</div>');
   });
 });

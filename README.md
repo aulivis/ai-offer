@@ -74,6 +74,24 @@ To learn more about Next.js, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
+## Rich text sanitization
+
+User provided HTML is sanitized before rendering. The allow-list keeps the markup expressive while blocking event handlers,
+scripts, and unsupported attributes.
+
+- **Supported tags:** paragraphs, headings (`h1`–`h6`), lists, tables, images, emphasis (`strong`, `em`, `u`, etc.), and links.
+- **Anchor attributes:** `href`, `title`, `target`, and `rel`. Links that open in a new tab automatically gain
+  `rel="noopener noreferrer"` to prevent tab-napping.
+- **Image attributes:** `src`, `alt`, and `data-offer-image-key` for referencing uploaded assets.
+- **Global attributes:** `role` and the accessibility-focused ARIA attributes `aria-label`, `aria-labelledby`,
+  `aria-describedby`, `aria-hidden`, `aria-live`, `aria-expanded`, `aria-controls`, `aria-current`, `aria-pressed`,
+  `aria-selected`, `aria-busy`, `aria-modal`, `aria-multiline`, and `aria-invalid`.
+- **Curated data attributes:** `data-testid`, `data-qa`, `data-state`, `data-theme`, `data-tooltip`, `data-tracking-id`, and
+  `data-offer-image-key`.
+
+All attribute values are escaped, and dangerous URL schemes such as `javascript:` are removed. Reach out to the engineering team
+if additional attributes need to be supported for future content.
+
 ## Observability
 
 ### Magic link telemetry
