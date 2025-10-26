@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useId } from 'react';
 
 type FieldMessage = React.ReactNode;
 
@@ -11,7 +12,7 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export function Input({ error, label, help, id, className, wrapperClassName, ...props }: Props) {
-  const inputId = id || props.name || 'input-' + Math.random().toString(36).slice(2);
+  const inputId = useId();
   const describedByIds: string[] = [];
 
   if (help) {

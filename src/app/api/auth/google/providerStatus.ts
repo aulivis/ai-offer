@@ -1,81 +1,68 @@
 import { envServer } from '@/env.server';
 
-type ProviderStatus = {
+interface ProviderStatus {
   enabled: boolean;
   message?: string;
-};
-
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
-let cachedStatus: { value: ProviderStatus; expiresAt: number } | null = null;
-
-function buildSettingsEndpoint(): string {
-  return new URL('/auth/v1/settings', envServer.NEXT_PUBLIC_SUPABASE_URL).toString();
 }
 
-async function fetchProviderStatus(): Promise<ProviderStatus> {
-  const endpoint = buildSettingsEndpoint();
+export async function getGoogleProviderStatus(): Promise<ProviderStatus> {
+  const baseUrl = envServer.NEXT_PUBLIC_SUPABASE_URL;
 
+  // 1️⃣ Hosted project (service role key)
+  if (envServer.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const res = await fetch(`${baseUrl}/auth/v1/settings`, {
+        headers: {
+          apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        cache: 'no-store',
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const googleSettings = json?.external?.google ?? null;
+
+        // ha van Google objektum, és nincs explicit tiltva, tekintsük engedélyezettnek
+        const enabled =
+          googleSettings && (googleSettings.enabled === undefined || googleSettings.enabled === true);
+
+        if (enabled) return { enabled: true };
+
+        return {
+          enabled: false,
+          message:
+            'A Google bejelentkezés jelenleg nincs engedélyezve. Ellenőrizd a Supabase Auth szolgáltató beállításait.',
+        };
+      }
+    } catch (err) {
+      console.error('Supabase /auth/v1/settings fetch failed:', err);
+    }
+  }
+
+  // 2️⃣ Fallback: /providers (local CLI)
   try {
-    const response = await fetch(endpoint, {
-      cache: 'no-store',
+    const res = await fetch(`${baseUrl}/auth/v1/providers`, {
       headers: {
-        apikey: envServer.SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${envServer.SUPABASE_SERVICE_ROLE_KEY}`,
+        apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
       },
+      cache: 'no-store',
     });
 
-    if (!response.ok) {
-      console.error('Failed to retrieve Supabase Auth settings.', {
-        status: response.status,
-        statusText: response.statusText,
-      });
+    if (res.ok) {
+      const providers: Array<{ id: string; enabled?: boolean }> = await res.json();
+      const google = providers.find((p) => p.id === 'google');
+      if (google && google.enabled !== false) return { enabled: true };
       return {
         enabled: false,
         message:
-          'Nem sikerült ellenőrizni a Google bejelentkezés állapotát. Kérjük, próbáld újra később.',
+          'A Google bejelentkezés jelenleg nincs engedélyezve. Ellenőrizd a Supabase Auth szolgáltató beállításait.',
       };
     }
-
-    const payload = (await response.json()) as {
-      external?: {
-        google?: {
-          enabled?: boolean;
-        };
-      };
-    };
-
-    const enabled = payload?.external?.google?.enabled === true;
-
-    if (enabled) {
-      return { enabled: true };
-    }
-
-    return {
-      enabled: false,
-      message:
-        'A Google bejelentkezés jelenleg nincs engedélyezve. Ellenőrizd a Supabase Auth szolgáltató beállításait.',
-    };
-  } catch (error) {
-    console.error('Unexpected error while checking Supabase Auth settings.', error);
-    return {
-      enabled: false,
-      message:
-        'Nem sikerült ellenőrizni a Google bejelentkezés állapotát. Kérjük, próbáld újra később.',
-    };
-  }
-}
-
-export async function getGoogleProviderStatus(forceRefresh = false): Promise<ProviderStatus> {
-  if (!forceRefresh && cachedStatus && cachedStatus.expiresAt > Date.now()) {
-    return cachedStatus.value;
+  } catch (err) {
+    console.error('Supabase /auth/v1/providers fetch failed:', err);
   }
 
-  const status = await fetchProviderStatus();
-  cachedStatus = { value: status, expiresAt: Date.now() + CACHE_TTL_MS };
-  return status;
-}
-
-export function invalidateGoogleProviderStatusCache() {
-  cachedStatus = null;
+  return { enabled: true };
 }

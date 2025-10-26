@@ -1,28 +1,52 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createHash, randomBytes } from 'crypto';
 import { envServer } from '@/env.server';
+import { sanitizeOAuthRedirect } from './redirectUtils';
 
-export async function GET() {
-  try {
-    const res = await fetch(`${envServer.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/providers`, {
-      headers: {
-        apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-      },
-      cache: 'no-store',
-    });
+function base64url(input: Buffer) {
+  return input
+    .toString('base64')
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
 
-    if (!res.ok) {
-      return NextResponse.json({ enabled: true }, { status: 200 });
-    }
+function generateCodeVerifier(): string {
+  return base64url(randomBytes(64));
+}
 
-    const providers: Array<{ id: string; enabled?: boolean }> = await res.json();
-    const google = providers.find((p) => p.id === 'google');
+function codeChallengeFromVerifier(verifier: string): string {
+  const digest = createHash('sha256').update(verifier).digest();
+  return base64url(digest);
+}
 
-    if (google && google.enabled !== false) {
-      return NextResponse.json({ enabled: true }, { status: 200 });
-    }
-    return NextResponse.json({ enabled: false }, { status: 503 });
-  } catch {
-    return NextResponse.json({ enabled: true }, { status: 200 });
-  }
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+
+  const requested = url.searchParams.get('redirect_to');
+  const finalRedirect = sanitizeOAuthRedirect(requested, '/dashboard');
+
+  const callbackUrl = new URL('/api/auth/callback', envServer.APP_URL);
+  callbackUrl.searchParams.set('redirect_to', finalRedirect);
+
+  const codeVerifier = generateCodeVerifier();
+  const codeChallenge = codeChallengeFromVerifier(codeVerifier);
+
+  const jar = await cookies();
+  jar.set('sb_pkce_code_verifier', codeVerifier, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: envServer.APP_URL.startsWith('https'),
+    path: '/',
+    maxAge: 5 * 60,
+  });
+
+  const authorizeUrl = new URL('/auth/v1/authorize', envServer.NEXT_PUBLIC_SUPABASE_URL);
+  authorizeUrl.searchParams.set('provider', 'google');
+  authorizeUrl.searchParams.set('redirect_to', callbackUrl.toString());
+  authorizeUrl.searchParams.set('code_challenge', codeChallenge);
+  authorizeUrl.searchParams.set('code_challenge_method', 's256');
+
+  return NextResponse.redirect(authorizeUrl.toString(), { status: 302 });
 }
