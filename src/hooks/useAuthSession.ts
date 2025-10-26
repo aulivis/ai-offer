@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
@@ -15,6 +16,7 @@ export function useAuthSession(): AuthSessionState {
     status: 'loading',
     user: null,
   });
+  const pathname = usePathname();
 
   useEffect(() => {
     let cancelled = false;
@@ -64,7 +66,7 @@ export function useAuthSession(): AuthSessionState {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname]);
 
   return state;
 }
