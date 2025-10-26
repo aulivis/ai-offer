@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 
+import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { useSupabase } from '@/components/SupabaseProvider';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
@@ -23,21 +24,23 @@ export function useOptionalAuth(): OptionalAuthState {
 
   useEffect(() => {
     let active = true;
+    const abortController = new AbortController();
 
     const syncSession = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const response = await fetchWithSupabaseAuth('/api/auth/session', {
+          signal: abortController.signal,
+          defaultErrorMessage: 'Nem sikerült ellenőrizni a bejelentkezést.',
+        });
 
         if (!active) {
           return;
         }
 
-        if (error) {
-          setState({ status: 'unauthenticated', user: null, error });
-          return;
-        }
+        type SessionPayload = { user?: User | null } | null;
+        const payload = (await response.json().catch(() => null)) as SessionPayload;
+        const user = payload?.user ?? null;
 
-        const user = data.session?.user ?? null;
         if (!user) {
           setState({ status: 'unauthenticated', user: null, error: null });
           return;
@@ -48,6 +51,11 @@ export function useOptionalAuth(): OptionalAuthState {
         if (!active) {
           return;
         }
+        if (err instanceof ApiError && err.status === 401) {
+          setState({ status: 'unauthenticated', user: null, error: null });
+          return;
+        }
+
         const fallback =
           err instanceof Error ? err : new Error('Ismeretlen hiba azonosítás közben.');
         setState({ status: 'unauthenticated', user: null, error: fallback });
@@ -70,6 +78,7 @@ export function useOptionalAuth(): OptionalAuthState {
 
     return () => {
       active = false;
+      abortController.abort();
       listener?.subscription.unsubscribe();
     };
   }, [supabase]);
