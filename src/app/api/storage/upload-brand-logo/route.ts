@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
@@ -23,14 +24,15 @@ type NormalizedImage = {
   contentType: AllowedMimeType;
 };
 
-async function ensureBucketExists(sb: ReturnType<typeof supabaseServer>) {
-  const { data: bucket, error } = await sb.storage.getBucket(BUCKET_ID);
+async function ensureBucketExists() {
+  const adminClient = supabaseServiceRole();
+  const { data: bucket, error } = await adminClient.storage.getBucket(BUCKET_ID);
   if (error && !error.message?.toLowerCase().includes('not found')) {
     throw new Error('Nem sikerült lekérni a tárhely beállításait.');
   }
 
   if (!bucket) {
-    const { error: createError } = await sb.storage.createBucket(BUCKET_ID, {
+    const { error: createError } = await adminClient.storage.createBucket(BUCKET_ID, {
       public: false,
       fileSizeLimit: String(MAX_FILE_SIZE),
       allowedMimeTypes: [...ALLOWED_MIME_TYPES],
@@ -48,7 +50,7 @@ async function ensureBucketExists(sb: ReturnType<typeof supabaseServer>) {
     ALLOWED_MIME_TYPES.some((type) => !allowedSet.has(type));
 
   if (needsUpdate) {
-    const { error: updateError } = await sb.storage.updateBucket(BUCKET_ID, {
+    const { error: updateError } = await adminClient.storage.updateBucket(BUCKET_ID, {
       public: false,
       fileSizeLimit: String(MAX_FILE_SIZE),
       allowedMimeTypes: [...ALLOWED_MIME_TYPES],
@@ -147,7 +149,7 @@ async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImag
 
 export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   try {
-    const sb = supabaseServer();
+    const sb = await supabaseServer();
     const userId = request.user.id;
 
     const formData = await request.formData();
@@ -160,7 +162,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       return NextResponse.json({ error: 'A fájl mérete legfeljebb 4 MB lehet.' }, { status: 413 });
     }
 
-    await ensureBucketExists(sb);
+    await ensureBucketExists();
 
     const arrayBuffer = await fileEntry.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
-import { supabaseServer } from '@/app/lib/supabaseServer';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import {
   Argon2Algorithm,
   argon2Hash,
@@ -81,7 +81,7 @@ async function refreshSupabaseTokens(refreshToken: string): Promise<RefreshRespo
 
 async function revokeAllSessions(
   userId: string,
-  client: ReturnType<typeof supabaseServer> = supabaseServer(),
+  client: ReturnType<typeof supabaseServiceRole> = supabaseServiceRole(),
 ) {
   const now = new Date().toISOString();
   const { error } = await client.from('sessions').update({ revoked_at: now }).eq('user_id', userId);
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Refresh token expired' }, { status: 401 });
   }
 
-  const supabase = supabaseServer();
+  const supabase = supabaseServiceRole();
   const { data, error: sessionsError } = await supabase
     .from('sessions')
     .select('id, user_id, rt_hash, issued_at, expires_at, rotated_from, revoked_at, ip, ua')

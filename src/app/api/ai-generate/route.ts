@@ -505,7 +505,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       imageAssets,
     } = parsed.data;
 
-    const sb = supabaseServer();
+    const sb = await supabaseServer();
     const user = req.user;
 
     // ---- Limit (havi) ----

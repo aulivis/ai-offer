@@ -6,7 +6,7 @@ import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf'
 
 const verifyMock = vi.hoisted(() => vi.fn());
 const hashMock = vi.hoisted(() => vi.fn());
-const supabaseServerMock = vi.hoisted(() => vi.fn());
+const supabaseServiceRoleMock = vi.hoisted(() => vi.fn());
 const updateMock = vi.hoisted(() => vi.fn());
 const insertMock = vi.hoisted(() => vi.fn());
 const cookiesMock = vi.hoisted(() => vi.fn());
@@ -17,8 +17,8 @@ vi.mock('../../../../../lib/auth/argon2', () => ({
   argon2Hash: hashMock,
 }));
 
-vi.mock('@/app/lib/supabaseServer', () => ({
-  supabaseServer: supabaseServerMock,
+vi.mock('@/app/lib/supabaseServiceRole', () => ({
+  supabaseServiceRole: supabaseServiceRoleMock,
 }));
 
 vi.mock('@/env.server', () => ({
@@ -86,7 +86,7 @@ beforeEach(() => {
     return Promise.resolve({ error: null });
   });
 
-  supabaseServerMock.mockReturnValue({
+  supabaseServiceRoleMock.mockReturnValue({
     from: () => ({
       select: () => ({ eq: selectEqMock }),
       update: updateMock,
@@ -98,7 +98,7 @@ beforeEach(() => {
   hashMock.mockReset();
   updateMock.mockClear();
   insertMock.mockClear();
-  supabaseServerMock.mockClear();
+  supabaseServiceRoleMock.mockClear();
   cookiesMock.mockClear();
 
   vi.stubGlobal('fetch', vi.fn());
@@ -243,7 +243,7 @@ describe('POST /api/auth/logout', () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Érvénytelen vagy hiányzó CSRF token.' });
-    expect(supabaseServerMock).not.toHaveBeenCalled();
+    expect(supabaseServiceRoleMock).not.toHaveBeenCalled();
   });
 });
 

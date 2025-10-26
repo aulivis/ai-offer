@@ -33,8 +33,8 @@ vi.mock('@/env.server', () => ({
   },
 }));
 
-vi.mock('@/app/lib/supabaseServer', () => ({
-  supabaseServer: () => ({
+vi.mock('@/app/lib/supabaseServiceRole', () => ({
+  supabaseServiceRole: () => ({
     auth: {
       admin: adminMock,
     },

@@ -10,7 +10,7 @@ import { recordMagicLinkSend } from '@/lib/observability/metrics';
 import { envServer } from '@/env.server';
 
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
-import { supabaseServer } from '../../../lib/supabaseServer';
+import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { consumeMagicLinkRateLimit, hashMagicLinkEmailKey } from './rateLimiter';
 import type { RateLimitResult } from './rateLimiter';
 
@@ -42,7 +42,7 @@ function getClientIp(request: Request) {
   return 'unknown';
 }
 
-type SupabaseAdminClient = ReturnType<typeof supabaseServer>['auth']['admin'] &
+type SupabaseAdminClient = ReturnType<typeof supabaseServiceRole>['auth']['admin'] &
   Partial<{
     signInWithOtp: (params: {
       email: string;
@@ -87,7 +87,7 @@ function sanitizeRedirect(to?: string | null): string {
 }
 
 async function sendMagicLink(
-  supabase: ReturnType<typeof supabaseServer>,
+  supabase: ReturnType<typeof supabaseServiceRole>,
   email: string,
   emailRedirectTo: string,
   logger: RequestLogger,
@@ -124,7 +124,7 @@ async function sendMagicLink(
 }
 
 async function enforceRateLimit(
-  supabase: ReturnType<typeof supabaseServer>,
+  supabase: ReturnType<typeof supabaseServiceRole>,
   key: string,
   logger: RequestLogger,
   legacyKeys: string[] = [],
@@ -163,7 +163,7 @@ export async function POST(request: Request) {
   logger.setEmail(email);
   const clientIp = getClientIp(request);
 
-  const supabase = supabaseServer();
+  const supabase = supabaseServiceRole();
 
   const hashedEmailKey = hashMagicLinkEmailKey(email);
   const legacyEmailKey = `email:${email}`;

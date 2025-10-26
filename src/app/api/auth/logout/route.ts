@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { supabaseServer } from '@/app/lib/supabaseServer';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { clearAuthCookies } from '../../../../../lib/auth/cookies';
 import { verifyCsrfToken } from '../../../../../lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return Response.json({ success: true });
   }
 
-  const supabase = supabaseServer();
+  const supabase = supabaseServiceRole();
 
   const { data, error } = await supabase
     .from('sessions')
