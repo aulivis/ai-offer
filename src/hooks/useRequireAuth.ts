@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 import { t } from '@/copy';
-import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
+import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
@@ -39,10 +39,12 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
 
   useEffect(() => {
     let active = true;
+    const abortController = new AbortController();
 
     const verify = async () => {
       try {
         const response = await fetchWithSupabaseAuth('/api/auth/session', {
+          signal: abortController.signal,
           authErrorMessage: t('errors.auth.sessionInvalid'),
           defaultErrorMessage: t('errors.auth.sessionCheckFailed'),
         });
@@ -60,7 +62,7 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
 
         setState({ status: 'authenticated', user, error: null });
       } catch (error) {
-        if (!active) {
+        if (!active || isAbortError(error)) {
           return;
         }
         const err =
@@ -77,6 +79,7 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
 
     return () => {
       active = false;
+      abortController.abort();
     };
   }, [redirectTarget, router]);
 
