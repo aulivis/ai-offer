@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: [
+      { find: '@/lib/consent', replacement: resolve(__dirname, './lib/consent') },
       { find: '@/lib', replacement: resolve(__dirname, './src/lib') },
       { find: '@', replacement: resolve(__dirname, './src') },
     ],
