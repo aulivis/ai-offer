@@ -855,7 +855,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
                     }
-                    placeholder="#0f172a"
+                    placeholder={t('settings.branding.placeholders.primary')}
                     className="py-2 text-sm font-mono"
                     error={errors.branding.brandPrimary}
                   />
@@ -880,7 +880,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
                     }
-                    placeholder="#f3f4f6"
+                    placeholder={t('settings.branding.placeholders.secondary')}
                     className="py-2 text-sm font-mono"
                     error={errors.branding.brandSecondary}
                   />
@@ -1017,7 +1017,7 @@ export default function SettingsPage() {
                     <span className="text-sm font-semibold text-slate-900">{template.label}</span>
                     {requiresPro && (
                       <span className="rounded-full bg-slate-900/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
-                        Pro
+                        {t('settings.templates.proBadge')}
                       </span>
                     )}
                     {isSelected && (
