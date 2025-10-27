@@ -2,6 +2,11 @@ import { getLanguage } from '@/state/lang';
 
 import { hu } from './hu';
 
+const dictionary = {
+  hu,
+  en: {} as Partial<typeof hu>,
+} as const;
+
 type Primitive = string | number | boolean | bigint | symbol | null | undefined;
 
 type DeepKeys<T> = T extends Primitive
@@ -15,8 +20,6 @@ type DeepKeys<T> = T extends Primitive
       }[keyof T & string];
 
 export type CopyKey = DeepKeys<typeof hu>;
-
-const dictionary = { hu } as const;
 
 export type LocaleKey = keyof typeof dictionary;
 
@@ -37,6 +40,19 @@ function format(value: string, params?: InterpolationValues): string {
   );
 }
 
+function resolveValue(locale: LocaleKey, keys: string[]): unknown {
+  let value: unknown = dictionary[locale];
+
+  for (const k of keys) {
+    if (typeof value !== 'object' || value === null) {
+      return undefined;
+    }
+    value = (value as Record<string, unknown>)[k];
+  }
+
+  return value;
+}
+
 export function t(key: CopyKey): string;
 export function t(key: CopyKey, lang: LocaleKey): string;
 export function t(key: CopyKey, params: InterpolationValues): string;
@@ -44,10 +60,10 @@ export function t(key: CopyKey, params: InterpolationValues, lang: LocaleKey): s
 export function t(
   key: CopyKey,
   paramsOrLang?: InterpolationValues | LocaleKey,
-  maybeLang?: LocaleKey,
+  lang: LocaleKey = getLanguage(),
 ): string {
   let params: InterpolationValues | undefined;
-  let locale: LocaleKey | undefined;
+  let locale: LocaleKey = lang;
 
   if (typeof paramsOrLang === 'string' && paramsOrLang in dictionary) {
     locale = paramsOrLang as LocaleKey;
@@ -55,21 +71,16 @@ export function t(
     params = paramsOrLang as InterpolationValues;
   }
 
-  if (maybeLang) {
-    locale = maybeLang;
-  }
-
-  const activeLocale = locale ?? getLanguage();
-
   const keys = key.split('.');
-  let value: unknown = dictionary[activeLocale];
+  const localizedValue = resolveValue(locale, keys);
+  const fallbackValue = locale === 'hu' ? undefined : resolveValue('hu', keys);
 
-  for (const k of keys) {
-    if (typeof value !== 'object' || value === null) {
-      return key;
-    }
-    value = (value as Record<string, unknown>)[k];
-  }
+  const value =
+    typeof localizedValue === 'string'
+      ? localizedValue
+      : typeof fallbackValue === 'string'
+        ? fallbackValue
+        : undefined;
 
   if (typeof value !== 'string') {
     return key;
