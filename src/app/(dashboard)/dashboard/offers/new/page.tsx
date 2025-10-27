@@ -18,7 +18,7 @@ import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
-const DEFAULT_PREVIEW_HTML = '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
+const DEFAULT_PREVIEW_HTML = `<p>${t('offers.wizard.preview.idle')}</p>`;
 
 export default function NewOfferPage() {
   const {
@@ -51,11 +51,11 @@ export default function NewOfferPage() {
 
   const { totals, pricePreviewHtml } = usePricingRows(pricingRows);
   const previewMarkup = useMemo(() => {
-    const safeTitle = title.trim() || 'Árajánlat';
+    const safeTitle = title.trim() || t('offers.wizard.defaults.fallbackTitle');
     const bodyHtml = previewHtml || DEFAULT_PREVIEW_HTML;
     return offerBodyMarkup({
       title: safeTitle,
-      companyName: 'Vállalkozásod neve',
+      companyName: t('offers.wizard.defaults.fallbackCompany'),
       aiBodyHtml: bodyHtml,
       priceTableHtml: pricePreviewHtml,
       templateId: DEFAULT_OFFER_TEMPLATE_ID,
@@ -86,29 +86,29 @@ export default function NewOfferPage() {
       case 'loading':
         return {
           tone: 'info' as const,
-          title: 'Kapcsolódás az AI szolgáltatáshoz…',
-          description: 'Ez néhány másodpercet is igénybe vehet.',
+          title: t('offers.wizard.preview.loading'),
+          description: t('offers.wizard.preview.loadingHint'),
         };
       case 'streaming':
         return {
           tone: 'info' as const,
-          title: 'Az AI most készíti az előnézetet…',
-          description: 'Ez néhány másodpercet is igénybe vehet.',
+          title: t('offers.wizard.preview.streaming'),
+          description: t('offers.wizard.preview.loadingHint'),
         };
       case 'success':
         return {
           tone: 'success' as const,
-          title: 'Előnézet frissítve.',
+          title: t('offers.wizard.preview.success'),
         };
       case 'error':
         return {
           tone: 'error' as const,
-          title: 'Nem sikerült frissíteni az előnézetet.',
+          title: t('offers.wizard.preview.error'),
         };
       case 'aborted':
         return {
           tone: 'warning' as const,
-          title: 'Az előnézet frissítése megszakadt.',
+          title: t('errors.preview.aborted'),
         };
       default:
         return null;
@@ -392,9 +392,9 @@ export default function NewOfferPage() {
 
   const wizardSteps = useMemo(() => {
     const definitions: Array<{ label: string; id: 1 | 2 | 3 }> = [
-      { label: 'Projekt részletek', id: 1 },
-      { label: 'Árazás', id: 2 },
-      { label: 'Összegzés', id: 3 },
+      { label: t('offers.wizard.steps.details'), id: 1 },
+      { label: t('offers.wizard.steps.pricing'), id: 2 },
+      { label: t('offers.wizard.steps.summary'), id: 3 },
     ];
 
     return definitions.map(({ label, id }) => {
@@ -521,12 +521,12 @@ export default function NewOfferPage() {
   ]);
 
   const columnWidthStyle: CSSProperties = { '--column-width': 'min(100%, 42rem)' };
+  const submitLabel = isSubmitting
+    ? t('offers.wizard.actions.previewInProgress')
+    : t('offers.wizard.actions.save');
 
   return (
-    <AppFrame
-      title="Új ajánlat"
-      description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
-    >
+    <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
       <div
         className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12"
         style={columnWidthStyle}
@@ -569,7 +569,7 @@ export default function NewOfferPage() {
                   disabled={step === 1}
                   className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                 >
-                  Vissza
+                  {t('offers.wizard.actions.back')}
                 </Button>
 
                 {step < 3 ? (
@@ -578,7 +578,7 @@ export default function NewOfferPage() {
                     disabled={isNextDisabled}
                     className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
                   >
-                    Tovább
+                    {t('offers.wizard.actions.next')}
                   </Button>
                 ) : (
                   <Button
@@ -586,7 +586,7 @@ export default function NewOfferPage() {
                     disabled={isSubmitDisabled}
                     className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
                   >
-                    {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
+                    {submitLabel}
                   </Button>
                 )}
               </div>

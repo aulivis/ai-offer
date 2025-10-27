@@ -44,7 +44,10 @@ export function LoadMoreButton({
   const showNextButton = hasNext;
 
   return (
-    <nav aria-label="Lapozás" className="flex items-center justify-center gap-2">
+    <nav
+      aria-label={t('offers.dashboard.loadMoreButton.navLabel')}
+      className="flex items-center justify-center gap-2"
+    >
       {pagesToRender.map((page) => {
         const isCurrent = page === currentPage;
         const isFuture = page > currentPage;
@@ -78,7 +81,9 @@ export function LoadMoreButton({
           aria-busy={isLoading || undefined}
           className="h-9 w-9 rounded-full border border-border text-sm font-semibold text-fg transition hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isLoading ? '…' : nextPageLabel.toLocaleString('hu-HU')}
+          {isLoading
+            ? t('offers.dashboard.loadMoreButton.loading')
+            : nextPageLabel.toLocaleString('hu-HU')}
         </button>
       ) : null}
     </nav>
