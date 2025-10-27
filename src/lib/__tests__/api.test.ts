@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { t } from '@/copy';
+
 import { fetchWithSupabaseAuth, isAbortError } from '../api';
 
 declare global {
@@ -72,9 +74,9 @@ describe('fetchWithSupabaseAuth', () => {
 
     await expect(
       fetchWithSupabaseAuth('/api/test', {
-        defaultErrorMessage: 'Nem sikerült elérni a szervert.',
+        defaultErrorMessage: t('errors.network'),
       }),
-    ).rejects.toMatchObject({ message: 'Nem sikerült elérni a szervert.' });
+    ).rejects.toMatchObject({ message: t('errors.network') });
   });
 
   it('attempts silent refresh on 401 responses', async () => {

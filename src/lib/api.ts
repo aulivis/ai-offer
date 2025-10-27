@@ -1,3 +1,5 @@
+import { t } from '@/copy';
+
 export class ApiError extends Error {
   status?: number;
 
@@ -20,7 +22,7 @@ export interface AuthenticatedFetchOptions extends RequestInit {
   authErrorMessage?: string;
 }
 
-const DEFAULT_AUTH_ERROR = 'Nem sikerült hitelesíteni a kérést.';
+const DEFAULT_AUTH_ERROR_KEY = 'errors.auth.requestFailed' as const;
 
 function readCookie(name: string): string | null {
   if (typeof document === 'undefined') {
@@ -149,7 +151,7 @@ export async function fetchWithSupabaseAuth(
         defaultErrorMessage ??
         (error instanceof Error && error.message
           ? error.message
-          : 'Ismeretlen hiba történt a kérés során.');
+          : t('errors.requestFailed'));
       throw new ApiError(message, { cause: error ?? undefined });
     }
   }
@@ -169,7 +171,7 @@ export async function fetchWithSupabaseAuth(
   }
 
   if (response.status === 401) {
-    const message = authErrorMessage ?? defaultErrorMessage ?? DEFAULT_AUTH_ERROR;
+    const message = authErrorMessage ?? defaultErrorMessage ?? t(DEFAULT_AUTH_ERROR_KEY);
     throw new ApiError(message, { status: 401 });
   }
 
@@ -194,7 +196,7 @@ export async function fetchWithSupabaseAuth(
   if (!message) {
     message = errorMessageBuilder
       ? errorMessageBuilder(response.status)
-      : `Hiba a kérés során (${response.status})`;
+      : t('errors.requestStatus', { status: response.status });
   }
 
   throw new ApiError(message, { status: response.status });
