@@ -1,6 +1,6 @@
 'use client';
 
-import { t } from '@/copy';
+import { t, type CopyKey } from '@/copy';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -88,46 +88,40 @@ const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
-const MARKETING_FEATURES = [
+const MARKETING_FEATURE_KEYS: Array<{ title: CopyKey; description: CopyKey }> = [
   {
-    title: 'Egyetlen esztétikus felület',
-    description:
-      'A Propono témái igazodnak a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+    title: 'billing.public.marketingFeatures.0.title',
+    description: 'billing.public.marketingFeatures.0.description',
   },
   {
-    title: 'AI, ami érti a briefet',
-    description:
-      'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, az árkalkulációt és a moduláris blokkokat.',
+    title: 'billing.public.marketingFeatures.1.title',
+    description: 'billing.public.marketingFeatures.1.description',
   },
   {
-    title: 'Ügyfélközpontú megosztás',
-    description:
-      'Élő link, interaktív visszajelzések és aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+    title: 'billing.public.marketingFeatures.2.title',
+    description: 'billing.public.marketingFeatures.2.description',
   },
 ];
 
-const MARKETING_STEPS = [
+const MARKETING_STEP_KEYS: Array<{ title: CopyKey; description: CopyKey }> = [
   {
-    title: 'Brief & mood',
-    description:
-      'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
+    title: 'billing.public.marketingSteps.0.title',
+    description: 'billing.public.marketingSteps.0.description',
   },
   {
-    title: 'Moduláris blokkok',
-    description:
-      'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
+    title: 'billing.public.marketingSteps.1.title',
+    description: 'billing.public.marketingSteps.1.description',
   },
   {
-    title: 'Megosztás & mérés',
-    description:
-      'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.',
+    title: 'billing.public.marketingSteps.2.title',
+    description: 'billing.public.marketingSteps.2.description',
   },
 ];
 
-const MARKETING_SPOTLIGHT = [
-  'Szabadszavas promptok iparági sablonokkal',
-  'Drag & drop blokkok, reszponzív layout',
-  'Automatikus PDF export és státuszjelentés',
+const MARKETING_SPOTLIGHT_KEYS: CopyKey[] = [
+  'billing.public.spotlight.0',
+  'billing.public.spotlight.1',
+  'billing.public.spotlight.2',
 ];
 
 function parsePeriodStart(value: string | null | undefined): Date {
@@ -230,8 +224,8 @@ export default function BillingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId, email }),
-        authErrorMessage: 'A fizetés indításához először jelentkezz be.',
-        defaultErrorMessage: 'Nem sikerült elindítani a fizetést.',
+        authErrorMessage: t('billing.checkout.authRequired'),
+        defaultErrorMessage: t('billing.checkout.error'),
       });
       const { url } = (await resp.json()) as { url?: string | null };
       if (url) router.push(url);
@@ -241,7 +235,7 @@ export default function BillingPage() {
       const message =
         e instanceof ApiError && typeof e.message === 'string' && e.message.trim()
           ? e.message
-          : 'Váratlan hiba a fizetés indításakor.';
+          : t('billing.checkout.unexpected');
       alert(message);
       setLoading(null);
     }
@@ -254,14 +248,25 @@ export default function BillingPage() {
   }, [plan]);
 
   const offersThisMonth = usage?.offersGenerated ?? 0;
-  const remainingQuota: string =
+  const planLimitLabel =
     planLimit === null
-      ? 'Korlátlan'
-      : Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU');
-  const planLabels: Record<'free' | 'standard' | 'pro', string> = {
-    free: 'Ingyenes csomag',
-    standard: 'Propono Standard',
-    pro: 'Propono Pro',
+      ? t('billing.currentPlan.limit.unlimited')
+      : t('billing.currentPlan.limit.limited', {
+          count: planLimit.toLocaleString('hu-HU'),
+        });
+  const offersThisMonthLabel = t('billing.currentPlan.offersThisMonth.value', {
+    count: offersThisMonth.toLocaleString('hu-HU'),
+  });
+  const remainingQuotaLabel =
+    planLimit === null
+      ? t('billing.currentPlan.remaining.unlimited')
+      : t('billing.currentPlan.remaining.limited', {
+          count: Math.max(planLimit - offersThisMonth, 0).toLocaleString('hu-HU'),
+        });
+  const planLabelKeys: Record<'free' | 'standard' | 'pro', CopyKey> = {
+    free: 'billing.currentPlan.planLabels.free',
+    standard: 'billing.currentPlan.planLabels.standard',
+    pro: 'billing.currentPlan.planLabels.pro',
   };
   const hasUnlimitedEmail = planLimit === null;
 
@@ -291,7 +296,7 @@ export default function BillingPage() {
         id="main"
         className="flex min-h-[60vh] items-center justify-center px-6 pb-20 pt-24 text-sm font-medium text-fg-muted"
       >
-        Betöltés…
+        {t('billing.loading')}
       </main>
     );
   }
@@ -302,8 +307,8 @@ export default function BillingPage() {
 
   return (
     <AppFrame
-      title="Előfizetés"
-      description="Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést."
+      title={t('billing.title')}
+      description={t('billing.description')}
     >
       <div className="space-y-8">
         <Card
@@ -311,11 +316,11 @@ export default function BillingPage() {
           header={
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-700">Aktuális csomag</h2>
-                <p className="text-xs text-slate-500">Állapotod és kvótáid havi bontásban.</p>
+                <h2 className="text-sm font-semibold text-slate-700">{t('billing.currentPlan.title')}</h2>
+                <p className="text-xs text-slate-500">{t('billing.currentPlan.subtitle')}</p>
               </div>
               <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-slate-600">
-                {plan ? planLabels[plan] : '—'}
+                {plan ? t(planLabelKeys[plan]) : '—'}
               </span>
             </CardHeader>
           }
@@ -323,84 +328,70 @@ export default function BillingPage() {
           <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Havi keret
+                {t('billing.currentPlan.limit.title')}
               </dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">
-                {planLimit === null ? 'Korlátlan' : `${planLimit.toLocaleString('hu-HU')} ajánlat`}
-              </dd>
-              <p className="mt-1 text-xs text-slate-500">
-                Automatikus újraindulás minden hónapban.
-              </p>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{planLimitLabel}</dd>
+              <p className="mt-1 text-xs text-slate-500">{t('billing.currentPlan.limit.helper')}</p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                E hónapban létrehozva
+                {t('billing.currentPlan.offersThisMonth.title')}
               </dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">
-                {offersThisMonth.toLocaleString('hu-HU')} ajánlat
-              </dd>
-              <p className="mt-1 text-xs text-slate-500">Az AI generált PDF-ek számát mutatja.</p>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{offersThisMonthLabel}</dd>
+              <p className="mt-1 text-xs text-slate-500">{t('billing.currentPlan.offersThisMonth.helper')}</p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Felhasználható keret
+                {t('billing.currentPlan.remaining.title')}
               </dt>
-              <dd className="mt-2 text-lg font-semibold text-slate-900">
-                {remainingQuota}
-                {planLimit === null ? '' : ' ajánlat'}
-              </dd>
-              <p className="mt-1 text-xs text-slate-500">
-                Generálások, amelyek még rendelkezésre állnak.
-              </p>
+              <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuotaLabel}</dd>
+              <p className="mt-1 text-xs text-slate-500">{t('billing.currentPlan.remaining.helper')}</p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Keret visszaállása
+                {t('billing.currentPlan.reset.title')}
               </dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{resetLabel}</dd>
-              <p className="mt-1 text-xs text-slate-500">
-                A számláló minden hónap első napján nullázódik.
-              </p>
+              <p className="mt-1 text-xs text-slate-500">{t('billing.currentPlan.reset.helper')}</p>
             </div>
           </dl>
         </Card>
 
         {status === 'success' && (
           <Card className="p-0 border-emerald-200 bg-emerald-50/80 px-5 py-4 text-sm font-medium text-emerald-700">
-            Sikeres fizetés! A csomagod néhány percen belül frissül.
+            {t('billing.status.success')}
           </Card>
         )}
         {status === 'cancel' && (
           <Card className="p-0 border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-700">
-            A fizetés megszakadt. Próbáld újra, amikor készen állsz a váltásra.
+            {t('billing.status.cancel')}
           </Card>
         )}
 
         <section className="grid gap-6 md:grid-cols-2">
           <Card as="article" className="flex h-full flex-col">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Belépő csomag
+              {t('billing.plans.standard.badge')}
             </div>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Standard</h2>
-            <p className="mt-3 text-sm text-slate-500">
-              10 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és
-              tételes árkalkuláció kis csapatoknak.
-            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">{t('billing.plans.standard.name')}</h2>
+            <p className="mt-3 text-sm text-slate-500">{t('billing.plans.standard.description')}</p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">1 490</span>
-              <span className="text-sm text-slate-500">Ft / hó</span>
+              <span className="text-sm text-slate-500">{t('billing.plans.priceMonthly')}</span>
             </div>
             <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
-              <li>• 10 ajánlat / hónap</li>
-              <li>• PDF export</li>
-              <li>• Alap sablonok és logófeltöltés</li>
+              <li>{t('billing.plans.standard.features.0')}</li>
+              <li>{t('billing.plans.standard.features.1')}</li>
+              <li>{t('billing.plans.standard.features.2')}</li>
             </ul>
             <Button
               onClick={() => startCheckout(STANDARD_PRICE)}
               disabled={loading === STANDARD_PRICE}
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {loading === STANDARD_PRICE ? 'Átirányítás…' : 'Propono Standard megrendelése'}
+              {loading === STANDARD_PRICE
+                ? t('billing.plans.loadingRedirect')
+                : t('billing.plans.standard.cta')}
             </Button>
           </Card>
 
@@ -409,28 +400,27 @@ export default function BillingPage() {
             className="flex h-full flex-col bg-white shadow-lg ring-1 ring-slate-900/5"
           >
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-              Népszerű választás
+              {t('billing.plans.popularBadge')}
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900">Propono Pro</h2>
-            <p className="mt-3 text-sm text-slate-500">
-              Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonkönyvtár és prioritásos
-              támogatás növekvő csapatoknak.
-            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t('billing.plans.pro.name')}</h2>
+            <p className="mt-3 text-sm text-slate-500">{t('billing.plans.pro.description')}</p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">6 990</span>
-              <span className="text-sm text-slate-500">Ft / hó</span>
+              <span className="text-sm text-slate-500">{t('billing.plans.priceMonthly')}</span>
             </div>
             <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
-              <li>• Korlátlan ajánlat & verziókövetés</li>
-              <li>• Márkázott PDF & sablonkönyvtár</li>
-              <li>• Prioritásos AI-szöveg finomhangolás</li>
+              <li>{t('billing.plans.pro.features.0')}</li>
+              <li>{t('billing.plans.pro.features.1')}</li>
+              <li>{t('billing.plans.pro.features.2')}</li>
             </ul>
             <Button
               onClick={() => startCheckout(PRO_PRICE)}
               disabled={loading === PRO_PRICE}
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {loading === PRO_PRICE ? 'Átirányítás…' : 'Propono Pro megrendelése'}
+              {loading === PRO_PRICE
+                ? t('billing.plans.loadingRedirect')
+                : t('billing.plans.pro.cta')}
             </Button>
           </Card>
         </section>
@@ -439,21 +429,17 @@ export default function BillingPage() {
           as="section"
           header={
             <CardHeader>
-              <h2 className="text-sm font-semibold text-slate-700">Biztonságos Stripe fizetés</h2>
+              <h2 className="text-sm font-semibold text-slate-700">{t('billing.stripeSecurity.title')}</h2>
             </CardHeader>
           }
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl space-y-2">
-              <p className="text-sm text-slate-500">
-                A Stripe banki szintű titkosítással védi az ügyfeleid adatait, és támogatja a vezető
-                kártyatársaságokat, így Visa, Mastercard, American Express, Discover, Diners Club,
-                JCB és UnionPay kártyákkal is gond nélkül fizethetnek.
-              </p>
+              <p className="text-sm text-slate-500">{t('billing.stripeSecurity.description')}</p>
             </div>
             <div
               className="flex flex-wrap items-center gap-4"
-              aria-label="Támogatott kártyatársaságok"
+              aria-label={t('billing.stripeSecurity.ariaLabel')}
             >
               {CARD_BRANDS.map((brand) => (
                 <div
@@ -469,10 +455,11 @@ export default function BillingPage() {
         </Card>
 
         <p className="text-sm text-slate-500">
-          Bejelentkezett e-mail: <span className="font-medium text-slate-700">{email ?? '—'}</span>
+          {t('billing.account.emailLabel')}{' '}
+          <span className="font-medium text-slate-700">{email ?? '—'}</span>
           {hasUnlimitedEmail && (
             <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-              Korlátlan jogosultság
+              {t('billing.account.unlimitedBadge')}
             </span>
           )}
         </p>
@@ -487,37 +474,36 @@ function PublicBillingLanding() {
       <section className="mx-auto grid w-full max-w-6xl gap-12 px-6 pt-24 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
         <div className="space-y-7">
           <span className="inline-flex w-fit items-center rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-            Előfizetés
+            {t('billing.public.badge')}
           </span>
           <h1 className="text-4xl font-bold leading-[1.15] tracking-[-0.1rem] text-[#151035] md:text-5xl">
-            Nyisd meg a Propono prémium élményét és zárj több projektet.
+            {t('billing.public.hero.title')}
           </h1>
           <p className="max-w-[60ch] text-base leading-[1.7] text-fg-muted md:text-lg">
-            Fedezd fel, hogyan készíthetsz AI által támogatott, márkázott ajánlatokat percek alatt.
-            Válaszd ki a csomagot, és lépj tovább az értékesítés következő szintjére.
+            {t('billing.public.hero.description')}
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/login?redirect=/billing"
               className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-lg transition duration-200 ease-out hover:shadow-pop"
             >
-              Lépj be és válassz csomagot
+              {t('billing.public.hero.ctaPrimary')}
             </Link>
             <Link
               href="/demo"
               className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3 text-sm font-semibold text-fg transition duration-200 ease-out hover:border-primary hover:text-primary"
             >
-              Nézd meg a bemutatót
+              {t('billing.public.hero.ctaSecondary')}
             </Link>
           </div>
           <ul className="space-y-4 text-base text-fg">
-            {MARKETING_SPOTLIGHT.map((item) => (
+            {MARKETING_SPOTLIGHT_KEYS.map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <span
                   className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary"
                   aria-hidden="true"
                 />
-                <span className="text-fg-muted">{item}</span>
+                <span className="text-fg-muted">{t(item)}</span>
               </li>
             ))}
           </ul>
@@ -529,27 +515,26 @@ function PublicBillingLanding() {
             className="flex h-full flex-col border border-border/70 bg-bg/80 p-6 shadow-card"
           >
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Belépő csomag
+              {t('billing.plans.standard.badge')}
             </div>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">Propono Standard</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">{t('billing.plans.standard.name')}</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
-              10 automatikus, professzionális ajánlat havonta PDF exporttal és tételes
-              árkalkulációval.
+              {t('billing.public.standard.description')}
             </p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">1 490</span>
-              <span className="text-sm text-slate-500">Ft / hó</span>
+              <span className="text-sm text-slate-500">{t('billing.plans.priceMonthly')}</span>
             </div>
             <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
-              <li>• 10 ajánlat / hónap</li>
-              <li>• PDF export</li>
-              <li>• Alap sablonok és logófeltöltés</li>
+              <li>{t('billing.plans.standard.features.0')}</li>
+              <li>{t('billing.plans.standard.features.1')}</li>
+              <li>{t('billing.plans.standard.features.2')}</li>
             </ul>
             <Link
               href="/login?redirect=/billing"
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
             >
-              Standard csomag aktiválása
+              {t('billing.public.standard.cta')}
             </Link>
           </Card>
 
@@ -558,41 +543,38 @@ function PublicBillingLanding() {
             className="flex h-full flex-col bg-white p-6 shadow-lg ring-1 ring-slate-900/5"
           >
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-              Népszerű választás
+              {t('billing.plans.popularBadge')}
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900">Propono Pro</h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-500">
-              Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonok és prioritásos
-              támogatás növekvő csapatoknak.
-            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t('billing.plans.pro.name')}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-500">{t('billing.public.pro.description')}</p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">6 990</span>
-              <span className="text-sm text-slate-500">Ft / hó</span>
+              <span className="text-sm text-slate-500">{t('billing.plans.priceMonthly')}</span>
             </div>
             <ul className="mt-6 flex flex-col gap-2 text-sm text-slate-600">
-              <li>• Korlátlan ajánlat & verziókövetés</li>
-              <li>• Márkázott PDF & sablonkönyvtár</li>
-              <li>• Prioritásos AI-szöveg finomhangolás</li>
+              <li>{t('billing.plans.pro.features.0')}</li>
+              <li>{t('billing.plans.pro.features.1')}</li>
+              <li>{t('billing.plans.pro.features.2')}</li>
             </ul>
             <Link
               href="/login?redirect=/billing"
               className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
             >
-              Pro csomag aktiválása
+              {t('billing.public.pro.cta')}
             </Link>
           </Card>
         </div>
       </section>
 
       <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 lg:grid-cols-3">
-        {MARKETING_FEATURES.map((feature) => (
+        {MARKETING_FEATURE_KEYS.map((feature) => (
           <Card
             key={feature.title}
             className="group relative overflow-hidden p-8 transition duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-pop"
           >
             <div className="absolute -top-24 right-0 h-40 w-40 rounded-full bg-accent/20 blur-3xl transition duration-200 ease-out group-hover:scale-125" />
-            <h3 className="text-xl font-semibold text-fg">{feature.title}</h3>
-            <p className="mt-4 text-base leading-relaxed text-fg-muted">{feature.description}</p>
+            <h3 className="text-xl font-semibold text-fg">{t(feature.title)}</h3>
+            <p className="mt-4 text-base leading-relaxed text-fg-muted">{t(feature.description)}</p>
           </Card>
         ))}
       </section>
@@ -601,25 +583,22 @@ function PublicBillingLanding() {
         <Card as="section" className="grid gap-12 p-12 md:gap-14 lg:grid-cols-[0.55fr_1fr]">
           <div className="space-y-7">
             <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-              Folyamat vizuálisan
+              {t('billing.public.steps.badge')}
             </span>
-            <h2 className="text-3xl font-semibold text-fg">
-              Három lépés, ahol a csapatod együtt dolgozik
-            </h2>
+            <h2 className="text-3xl font-semibold text-fg">{t('billing.public.steps.title')}</h2>
             <p className="text-base leading-relaxed text-fg-muted">
-              A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz,
-              és a háttérben az AI mindig egységes arculatot tart.
+              {t('billing.public.steps.description')}
             </p>
           </div>
 
           <ol className="relative space-y-5 border-l border-border/60 pl-6">
-            {MARKETING_STEPS.map((step, index) => (
+            {MARKETING_STEP_KEYS.map((step, index) => (
               <Card as="li" key={step.title} className="relative space-y-2 bg-bg p-5">
                 <span className="absolute -left-[38px] grid h-8 w-8 place-items-center rounded-full bg-primary/10 font-mono text-xs text-primary">
                   {index + 1}
                 </span>
-                <p className="text-base font-semibold">{step.title}</p>
-                <p className="text-base leading-relaxed text-fg-muted">{step.description}</p>
+                <p className="text-base font-semibold">{t(step.title)}</p>
+                <p className="text-base leading-relaxed text-fg-muted">{t(step.description)}</p>
               </Card>
             ))}
           </ol>
@@ -634,28 +613,23 @@ function PublicBillingLanding() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl space-y-4">
               <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                Ajánlatkészítés újrafogalmazva
+                {t('billing.public.cta.badge')}
               </span>
-              <h2 className="text-3xl font-semibold text-fg">
-                Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
-              </h2>
-              <p className="text-base leading-relaxed text-fg-muted">
-                Próbáld ki demóban, majd lépj be, hogy azonnal aktiválhasd a Standard vagy Pro
-                csomagot.
-              </p>
+              <h2 className="text-3xl font-semibold text-fg">{t('billing.public.cta.title')}</h2>
+              <p className="text-base leading-relaxed text-fg-muted">{t('billing.public.cta.description')}</p>
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/login?redirect=/billing"
                 className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-lg transition duration-200 ease-out hover:shadow-pop"
               >
-                Belépés és előfizetés
+                {t('billing.public.cta.primary')}
               </Link>
               <Link
                 href="/new"
                 className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3 text-sm font-semibold text-fg transition duration-200 ease-out hover:border-primary hover:text-primary"
               >
-                Ingyenes generálás indítása
+                {t('billing.public.cta.secondary')}
               </Link>
             </div>
           </div>

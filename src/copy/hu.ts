@@ -155,6 +155,385 @@ export const hu = {
   layout: {
     loading: 'Betöltés…',
   },
+  dashboard: {
+    title: 'Ajánlatok',
+    description: 'Keresés, szűrés és státuszkezelés egy helyen — átlátható kártyákkal.',
+    actions: {
+      newOffer: '+ Új ajánlat',
+      revertToDraft: 'Vissza vázlatba',
+      revertDecision: 'Döntés törlése',
+      deleting: 'Törlés…',
+      deleteOffer: 'Ajánlat törlése',
+    },
+    metrics: {
+      created: {
+        label: 'Létrehozott ajánlatok',
+        monthlyHelper: 'Ebben a hónapban {count} új ajánlat',
+        totalHelper: 'Megjelenítve {displayed} / {total} ajánlat • {monthly}',
+      },
+      sent: {
+        label: 'Kiküldött ajánlatok',
+        helper: '{pending} ajánlat döntésre vár',
+      },
+      accepted: {
+        label: 'Elfogadott ajánlatok',
+        helper: 'Elfogadási arány: {rate}',
+      },
+      avgDecision: {
+        label: 'Átlagos döntési idő',
+        helper: '{drafts} vázlat készül',
+      },
+    },
+    filters: {
+      search: {
+        label: 'Keresés',
+        placeholder: 'Ajánlat cím vagy cég…',
+      },
+      status: {
+        label: 'Állapot',
+        options: {
+          all: 'Mind',
+        },
+      },
+      industry: {
+        label: 'Iparág',
+        options: {
+          all: 'Mind',
+        },
+      },
+      sortBy: {
+        label: 'Rendezés',
+        options: {
+          created: 'Dátum',
+          status: 'Állapot',
+          title: 'Ajánlat neve',
+          recipient: 'Címzett',
+          industry: 'Iparág',
+        },
+      },
+      sortDir: {
+        label: 'Irány',
+        options: {
+          desc: 'Csökkenő',
+          asc: 'Növekvő',
+        },
+      },
+    },
+    pagination: {
+      summary: 'Megjelenítve {displayed} / {total} ajánlat',
+      allLoaded: 'Az összes ajánlat megjelenítve.',
+    },
+    emptyStates: {
+      noOffers: 'Még nem hoztál létre ajánlatokat.',
+      noResults: 'Nincs találat. Próbálj másik keresést vagy szűrőt.',
+    },
+    status: {
+      labels: {
+        draft: 'Vázlat',
+        sent: 'Kiküldve',
+        accepted: 'Elfogadva',
+        lost: 'Elutasítva',
+      },
+    },
+    offerCard: {
+      created: 'Létrehozva',
+      industry: 'Iparág',
+      industryUnknown: 'Ismeretlen',
+      export: 'Export',
+      openPdf: 'PDF megnyitása',
+    },
+    statusSteps: {
+      sent: {
+        title: 'Kiküldve az ügyfélnek',
+        description: 'Add meg, mikor küldted el az ajánlatot.',
+        editDate: 'Dátum módosítása',
+        markToday: 'Jelölés (ma)',
+        chooseDate: 'Dátum választása',
+      },
+      decision: {
+        title: 'Ügyfél döntése',
+        description: 'Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot.',
+        dateLabel: 'Döntés dátuma',
+        markAccepted: 'Megjelölés: Elfogadva',
+        markLost: 'Megjelölés: Elutasítva',
+      },
+    },
+    deleteModal: {
+      badge: 'Figyelmeztetés',
+      title: 'Ajánlat törlése',
+      description:
+        'Biztosan törlöd a(z) „{title}” ajánlatot? Ez a művelet nem visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.',
+      untitled: '(névtelen)',
+      cancel: 'Mégse',
+      deleting: 'Törlés…',
+      confirm: 'Ajánlat törlése',
+    },
+  },
+  billing: {
+    title: 'Előfizetés',
+    description: 'Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést.',
+    loading: 'Betöltés…',
+    currentPlan: {
+      title: 'Aktuális csomag',
+      subtitle: 'Állapotod és kvótáid havi bontásban.',
+      planLabels: {
+        free: 'Ingyenes csomag',
+        standard: 'Propono Standard',
+        pro: 'Propono Pro',
+      },
+      limit: {
+        title: 'Havi keret',
+        unlimited: 'Korlátlan',
+        limited: '{count} ajánlat',
+        helper: 'Automatikus újraindulás minden hónapban.',
+      },
+      offersThisMonth: {
+        title: 'E hónapban létrehozva',
+        value: '{count} ajánlat',
+        helper: 'Az AI generált PDF-ek számát mutatja.',
+      },
+      remaining: {
+        title: 'Felhasználható keret',
+        unlimited: 'Korlátlan',
+        limited: '{count} ajánlat',
+        helper: 'Generálások, amelyek még rendelkezésre állnak.',
+      },
+      reset: {
+        title: 'Keret visszaállása',
+        helper: 'A számláló minden hónap első napján nullázódik.',
+      },
+    },
+    status: {
+      success: 'Sikeres fizetés! A csomagod néhány percen belül frissül.',
+      cancel: 'A fizetés megszakadt. Próbáld újra, amikor készen állsz a váltásra.',
+    },
+    plans: {
+      standard: {
+        badge: 'Belépő csomag',
+        name: 'Propono Standard',
+        description:
+          '10 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és tételes árkalkuláció kis csapatoknak.',
+        features: {
+          0: '• 10 ajánlat / hónap',
+          1: '• PDF export',
+          2: '• Alap sablonok és logófeltöltés',
+        },
+        cta: 'Propono Standard megrendelése',
+      },
+      pro: {
+        name: 'Propono Pro',
+        description:
+          'Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonkönyvtár és prioritásos támogatás növekvő csapatoknak.',
+        features: {
+          0: '• Korlátlan ajánlat & verziókövetés',
+          1: '• Márkázott PDF & sablonkönyvtár',
+          2: '• Prioritásos AI-szöveg finomhangolás',
+        },
+        cta: 'Propono Pro megrendelése',
+      },
+      popularBadge: 'Népszerű választás',
+      priceMonthly: 'Ft / hó',
+      loadingRedirect: 'Átirányítás…',
+    },
+    stripeSecurity: {
+      title: 'Biztonságos Stripe fizetés',
+      description:
+        'A Stripe banki szintű titkosítással védi az ügyfeleid adatait, és támogatja a vezető kártyatársaságokat, így Visa, Mastercard, American Express, Discover, Diners Club, JCB és UnionPay kártyákkal is gond nélkül fizethetnek.',
+      ariaLabel: 'Támogatott kártyatársaságok',
+    },
+    account: {
+      emailLabel: 'Bejelentkezett e-mail:',
+      unlimitedBadge: 'Korlátlan jogosultság',
+    },
+    checkout: {
+      authRequired: 'A fizetés indításához először jelentkezz be.',
+      error: 'Nem sikerült elindítani a fizetést.',
+      unexpected: 'Váratlan hiba a fizetés indításakor.',
+    },
+    public: {
+      badge: 'Előfizetés',
+      hero: {
+        title: 'Nyisd meg a Propono prémium élményét és zárj több projektet.',
+        description:
+          'Fedezd fel, hogyan készíthetsz AI által támogatott, márkázott ajánlatokat percek alatt. Válaszd ki a csomagot, és lépj tovább az értékesítés következő szintjére.',
+        ctaPrimary: 'Lépj be és válassz csomagot',
+        ctaSecondary: 'Nézd meg a bemutatót',
+      },
+      spotlight: {
+        0: 'Szabadszavas promptok iparági sablonokkal',
+        1: 'Drag & drop blokkok, reszponzív layout',
+        2: 'Automatikus PDF export és státuszjelentés',
+      },
+      standard: {
+        description: '10 automatikus, professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval.',
+        cta: 'Standard csomag aktiválása',
+      },
+      pro: {
+        description:
+          'Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonok és prioritásos támogatás növekvő csapatoknak.',
+        cta: 'Pro csomag aktiválása',
+      },
+      marketingFeatures: {
+        0: {
+          title: 'Egyetlen esztétikus felület',
+          description:
+            'A Propono témái igazodnak a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+        },
+        1: {
+          title: 'AI, ami érti a briefet',
+          description:
+            'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, az árkalkulációt és a moduláris blokkokat.',
+        },
+        2: {
+          title: 'Ügyfélközpontú megosztás',
+          description:
+            'Élő link, interaktív visszajelzések és aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+        },
+      },
+      marketingSteps: {
+        0: {
+          title: 'Brief & mood',
+          description:
+            'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
+        },
+        1: {
+          title: 'Moduláris blokkok',
+          description:
+            'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
+        },
+        2: {
+          title: 'Megosztás & mérés',
+          description:
+            'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.',
+        },
+      },
+      steps: {
+        badge: 'Folyamat vizuálisan',
+        title: 'Három lépés, ahol a csapatod együtt dolgozik',
+        description:
+          'A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
+      },
+      cta: {
+        badge: 'Ajánlatkészítés újrafogalmazva',
+        title: 'Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton',
+        description: 'Próbáld ki demóban, majd lépj be, hogy azonnal aktiválhasd a Standard vagy Pro csomagot.',
+        primary: 'Belépés és előfizetés',
+        secondary: 'Ingyenes generálás indítása',
+      },
+    },
+  },
+  settings: {
+    title: 'Beállítások',
+    description: 'Az itt megadott információk automatikusan megjelennek az ajánlatokban és a generált PDF-ekben.',
+    loadingDescription: 'Add meg a cégadatokat és hozd létre a gyakran használt tételek sablonjait.',
+    loading: 'Betöltés…',
+    actions: {
+      loggedInAs: 'Belépve:',
+    },
+    authMethods: {
+      title: 'Bejelentkezési módok',
+      subtitle: 'Kapcsold össze a Google fiókodat a gyorsabb belépéshez.',
+      googleLinked: {
+        title: 'A Google fiókod már össze van kapcsolva.',
+        description: 'A következő bejelentkezéskor használhatod a Google fiókodat is.',
+        button: 'Google fiók csatlakoztatva',
+      },
+      googleNotLinked: {
+        title: 'Kapcsold össze a Google fiókodat.',
+        description: 'Az összekapcsolás után a Google fiókoddal is bejelentkezhetsz az alkalmazásba.',
+      },
+      googleLinking: 'Átirányítás…',
+      connectGoogle: 'Google összekapcsolása',
+    },
+    company: {
+      title: 'Cégadatok',
+      subtitle: 'Töltsd ki a számlázási és kapcsolatfelvételi adatokat.',
+      fields: {
+        name: 'Cégnév',
+        taxId: 'Adószám',
+        address: 'Cím',
+        phone: 'Telefon',
+        email: 'E-mail',
+      },
+      placeholders: {
+        taxId: '12345678-1-12',
+        address: 'Irányítószám, település, utca, házszám',
+        phone: '+36301234567',
+      },
+      industries: {
+        heading: 'Iparágak (több is választható)',
+        helper: 'Az itt megadott iparágak az ajánlatvarázslóban is megjelennek.',
+        addLabel: 'Új iparág hozzáadása',
+        addPlaceholder: 'Pl. Nonprofit',
+        addButton: 'Hozzáadás',
+        empty: 'Még nincs kiválasztott iparág.',
+      },
+      saving: 'Mentés…',
+      save: 'Mentés',
+    },
+    branding: {
+      title: 'Márka megjelenés',
+      subtitle: 'Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.',
+      primaryLabel: 'Elsődleges szín',
+      secondaryLabel: 'Másodlagos szín',
+      logoPreviewAlt: 'Feltöltött logó',
+      noLogo: 'Nincs logó',
+      logoUpload: {
+        title: 'Logó feltöltése',
+        helper: 'PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.',
+        button: 'Logó feltöltése',
+        uploading: 'Feltöltés…',
+        openInNewTab: 'Megnyitás új lapon',
+      },
+      preview: {
+        title: 'Minta előnézet',
+        company: 'Céged neve',
+        offer: 'Ajánlat címe',
+        helper: 'Így jelenik meg a fejléced a generált dokumentumokban.',
+        tableLabel: 'Ártáblázat',
+        detailsLabel: 'Projekt részletek',
+      },
+      saving: 'Mentés…',
+      save: 'Márka mentése',
+    },
+    templates: {
+      title: 'Ajánlat sablonok',
+      subtitle:
+        'Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket használják.',
+      activeBadge: 'Aktív',
+      proOnly: 'Pro előfizetéssel érhető el.',
+      upgradeHint: 'A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.',
+    },
+    activities: {
+      title: 'Tevékenység-sablonok',
+      subtitle: 'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
+      fields: {
+        name: 'Megnevezés',
+        unit: 'Mértékegység',
+        price: 'Alap díj (nettó, Ft)',
+        vat: 'ÁFA %',
+      },
+      placeholders: {
+        name: 'Pl. Webfejlesztés',
+        unit: 'db / óra / m²',
+      },
+      industries: {
+        heading: 'Iparágak ehhez a tételhez',
+      },
+      saving: 'Hozzáadás…',
+      add: 'Tevékenység hozzáadása',
+      summary: 'Egység: {unit} • Díj: {price} Ft • ÁFA: {vat}%',
+      delete: 'Törlés',
+      assignedIndustries: 'Iparágak: {list}',
+      empty: 'Még nincs sablon. Adj hozzá legalább egy gyakran használt tételt.',
+    },
+    validation: {
+      phone: 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).',
+      tax: 'Adószám formátum: 12345678-1-12',
+      address: 'A cím legyen legalább 8 karakter.',
+      hexColor: 'Adj meg egy #RRGGBB formátumú hex színt.',
+    },
+  },
   cookies: {
     bar: {
       message:

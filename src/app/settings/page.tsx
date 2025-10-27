@@ -135,25 +135,25 @@ export default function SettingsPage() {
     const branding: Record<string, string> = {};
 
     if (profile.company_phone && !validatePhoneHU(profile.company_phone)) {
-      general.phone = 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).';
+      general.phone = t('settings.validation.phone');
     }
     if (profile.company_tax_id && !validateTaxHU(profile.company_tax_id)) {
-      general.tax = 'Adószám formátum: 12345678-1-12';
+      general.tax = t('settings.validation.tax');
     }
     if (profile.company_address && !validateAddress(profile.company_address)) {
-      general.address = 'A cím legyen legalább 8 karakter.';
+      general.address = t('settings.validation.address');
     }
 
     const brandPrimary =
       typeof profile.brand_color_primary === 'string' ? profile.brand_color_primary.trim() : '';
     if (brandPrimary && !normalizeColorHex(brandPrimary)) {
-      branding.brandPrimary = 'Adj meg egy #RRGGBB formátumú hex színt.';
+      branding.brandPrimary = t('settings.validation.hexColor');
     }
 
     const brandSecondary =
       typeof profile.brand_color_secondary === 'string' ? profile.brand_color_secondary.trim() : '';
     if (brandSecondary && !normalizeColorHex(brandSecondary)) {
-      branding.brandSecondary = 'Adj meg egy #RRGGBB formátumú hex színt.';
+      branding.brandSecondary = t('settings.validation.hexColor');
     }
 
     return { general, branding };
@@ -208,7 +208,7 @@ export default function SettingsPage() {
           <div className="flex flex-1 items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
             <div className="h-9 w-9 rounded-2xl border border-border bg-white/80 shadow-sm" />
             <div className="flex-1 rounded-lg border border-border/70 bg-white px-2 py-1">
-              Ártáblázat
+              {t('settings.branding.preview.tableLabel')}
             </div>
           </div>
         </div>
@@ -225,7 +225,7 @@ export default function SettingsPage() {
               className="col-span-3 rounded-md border border-border/80 bg-white px-2 py-1 shadow-sm"
               style={{ borderTopColor: primaryPreview }}
             >
-              Projekt részletek
+              {t('settings.branding.preview.detailsLabel')}
             </div>
             <div className="col-span-1 rounded-md border border-border bg-slate-50" />
           </div>
@@ -648,22 +648,23 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <AppFrame
-        title="Beállítások"
-        description="Add meg a cégadatokat és hozd létre a gyakran használt tételek sablonjait."
+        title={t('settings.title')}
+        description={t('settings.loadingDescription')}
       >
-        <Card className="text-sm text-slate-500">Betöltés…</Card>
+        <Card className="text-sm text-slate-500">{t('settings.loading')}</Card>
       </AppFrame>
     );
   }
 
   return (
     <AppFrame
-      title="Beállítások"
-      description="Az itt megadott információk automatikusan megjelennek az ajánlatokban és a generált PDF-ekben."
+      title={t('settings.title')}
+      description={t('settings.description')}
       actions={
         email ? (
           <span className="text-sm text-slate-400">
-            Belépve: <span className="font-medium text-slate-600">{email}</span>
+            {t('settings.actions.loggedInAs')}{' '}
+            <span className="font-medium text-slate-600">{email}</span>
           </span>
         ) : null
       }
@@ -674,10 +675,8 @@ export default function SettingsPage() {
           className="space-y-4"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">Bejelentkezési módok</h2>
-              <p className="text-sm text-slate-500">
-                Kapcsold össze a Google fiókodat a gyorsabb belépéshez.
-              </p>
+              <h2 className="text-lg font-semibold text-slate-900">{t('settings.authMethods.title')}</h2>
+              <p className="text-sm text-slate-500">{t('settings.authMethods.subtitle')}</p>
             </CardHeader>
           }
         >
@@ -685,13 +684,13 @@ export default function SettingsPage() {
             <div className="space-y-1">
               <p className="text-sm font-medium text-slate-800">
                 {googleLinked
-                  ? 'A Google fiókod már össze van kapcsolva.'
-                  : 'Kapcsold össze a Google fiókodat.'}
+                  ? t('settings.authMethods.googleLinked.title')
+                  : t('settings.authMethods.googleNotLinked.title')}
               </p>
               <p className="text-xs text-slate-500">
                 {googleLinked
-                  ? 'A következő bejelentkezéskor használhatod a Google fiókodat is.'
-                  : 'Az összekapcsolás után a Google fiókoddal is bejelentkezhetsz az alkalmazásba.'}
+                  ? t('settings.authMethods.googleLinked.description')
+                  : t('settings.authMethods.googleNotLinked.description')}
               </p>
             </div>
             <Button
@@ -701,10 +700,10 @@ export default function SettingsPage() {
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {googleLinked
-                ? 'Google fiók csatlakoztatva'
+                ? t('settings.authMethods.googleLinked.button')
                 : linkingGoogle
-                  ? 'Átirányítás…'
-                  : 'Google összekapcsolása'}
+                  ? t('settings.authMethods.googleLinking')
+                  : t('settings.authMethods.connectGoogle')}
             </Button>
           </div>
         </Card>
@@ -714,44 +713,42 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">Cégadatok</h2>
-              <p className="text-sm text-slate-500">
-                Töltsd ki a számlázási és kapcsolatfelvételi adatokat.
-              </p>
+              <h2 className="text-lg font-semibold text-slate-900">{t('settings.company.title')}</h2>
+              <p className="text-sm text-slate-500">{t('settings.company.subtitle')}</p>
             </CardHeader>
           }
         >
           <div className="grid gap-4 md:grid-cols-2">
             <Input
-              label="Cégnév"
+              label={t('settings.company.fields.name')}
               value={profile.company_name || ''}
               onChange={(e) => setProfile((p) => ({ ...p, company_name: e.target.value }))}
             />
             <Input
-              label="Adószám"
-              placeholder="12345678-1-12"
+              label={t('settings.company.fields.taxId')}
+              placeholder={t('settings.company.placeholders.taxId')}
               value={profile.company_tax_id || ''}
               onChange={(e) => setProfile((p) => ({ ...p, company_tax_id: e.target.value }))}
               error={errors.general.tax}
             />
             <div className="md:col-span-2">
               <Input
-                label="Cím"
-                placeholder="Irányítószám, település, utca, házszám"
+                label={t('settings.company.fields.address')}
+                placeholder={t('settings.company.placeholders.address')}
                 value={profile.company_address || ''}
                 onChange={(e) => setProfile((p) => ({ ...p, company_address: e.target.value }))}
                 error={errors.general.address}
               />
             </div>
             <Input
-              label="Telefon"
-              placeholder="+36301234567"
+              label={t('settings.company.fields.phone')}
+              placeholder={t('settings.company.placeholders.phone')}
               value={profile.company_phone || ''}
               onChange={(e) => setProfile((p) => ({ ...p, company_phone: e.target.value }))}
               error={errors.general.phone}
             />
             <Input
-              label="E-mail"
+              label={t('settings.company.fields.email')}
               value={profile.company_email || ''}
               onChange={(e) => setProfile((p) => ({ ...p, company_email: e.target.value }))}
             />
@@ -760,10 +757,10 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div>
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Iparágak (több is választható)
+                {t('settings.company.industries.heading')}
               </span>
               <p className="text-xs text-slate-400">
-                Az itt megadott iparágak az ajánlatvarázslóban is megjelennek.
+                {t('settings.company.industries.helper')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -785,8 +782,8 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <div className="sm:flex-1">
                 <Input
-                  label="Új iparág hozzáadása"
-                  placeholder="Pl. Nonprofit"
+                  label={t('settings.company.industries.addLabel')}
+                  placeholder={t('settings.company.industries.addPlaceholder')}
                   value={newIndustry}
                   onChange={(e) => setNewIndustry(e.target.value)}
                   onKeyDown={(e) => {
@@ -801,7 +798,7 @@ export default function SettingsPage() {
                 className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 onClick={() => handleManualIndustry(newIndustry)}
               >
-                Hozzáadás
+                {t('settings.company.industries.addButton')}
               </Button>
             </div>
 
@@ -815,7 +812,7 @@ export default function SettingsPage() {
                 </span>
               ))}
               {(profile.industries || []).length === 0 && (
-                <span className="text-xs text-slate-400">Még nincs kiválasztott iparág.</span>
+                <span className="text-xs text-slate-400">{t('settings.company.industries.empty')}</span>
               )}
             </div>
           </div>
@@ -826,7 +823,7 @@ export default function SettingsPage() {
             disabled={saving || hasErrors}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
           >
-            {saving ? 'Mentés…' : 'Mentés'}
+            {saving ? t('settings.company.saving') : t('settings.company.save')}
           </Button>
         </Card>
 
@@ -835,16 +832,14 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">Márka megjelenés</h2>
-              <p className="text-sm text-slate-500">
-                Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.
-              </p>
+              <h2 className="text-lg font-semibold text-slate-900">{t('settings.branding.title')}</h2>
+              <p className="text-sm text-slate-500">{t('settings.branding.subtitle')}</p>
             </CardHeader>
           }
         >
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <span className="text-sm font-medium text-fg">Elsődleges szín</span>
+              <span className="text-sm font-medium text-fg">{t('settings.branding.primaryLabel')}</span>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -869,7 +864,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <span className="text-sm font-medium text-fg">Másodlagos szín</span>
+              <span className="text-sm font-medium text-fg">{t('settings.branding.secondaryLabel')}</span>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -901,19 +896,17 @@ export default function SettingsPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.brand_logo_url}
-                  alt="Feltöltött logó"
+                  alt={t('settings.branding.logoPreviewAlt')}
                   className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
                 />
               ) : (
                 <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg border border-border bg-white text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                  Nincs logó
+                  {t('settings.branding.noLogo')}
                 </div>
               )}
               <div className="flex-1 text-sm text-slate-500">
-                <p className="font-semibold text-slate-700">Logó feltöltése</p>
-                <p className="text-xs text-slate-400">
-                  PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.
-                </p>
+                <p className="font-semibold text-slate-700">{t('settings.branding.logoUpload.title')}</p>
+                <p className="text-xs text-slate-400">{t('settings.branding.logoUpload.helper')}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
@@ -921,7 +914,9 @@ export default function SettingsPage() {
                     disabled={logoUploading}
                     className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
                   >
-                    {logoUploading ? 'Feltöltés…' : 'Logó feltöltése'}
+                    {logoUploading
+                      ? t('settings.branding.logoUpload.uploading')
+                      : t('settings.branding.logoUpload.button')}
                   </Button>
                   {profile.brand_logo_url && (
                     <a
@@ -930,7 +925,7 @@ export default function SettingsPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                      Megnyitás új lapon
+                      {t('settings.branding.logoUpload.openInNewTab')}
                     </a>
                   )}
                 </div>
@@ -939,7 +934,7 @@ export default function SettingsPage() {
 
             <div className="flex flex-1 flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Minta előnézet
+                {t('settings.branding.preview.title')}
               </span>
               <div
                 className="rounded-2xl border border-border p-4 shadow-inner"
@@ -949,13 +944,13 @@ export default function SettingsPage() {
                   className="text-xs font-semibold uppercase tracking-wide"
                   style={{ color: primaryPreview }}
                 >
-                  Céged neve
+                  {t('settings.branding.preview.company')}
                 </p>
                 <p className="mt-2 text-base font-semibold" style={{ color: primaryPreview }}>
-                  Ajánlat címe
+                  {t('settings.branding.preview.offer')}
                 </p>
                 <p className="text-xs text-slate-600">
-                  Így jelenik meg a fejléced a generált dokumentumokban.
+                  {t('settings.branding.preview.helper')}
                 </p>
                 <div
                   className="mt-4 h-1.5 w-24 rounded-full"
@@ -980,7 +975,7 @@ export default function SettingsPage() {
               disabled={saving || hasBrandingErrors}
               className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {saving ? 'Mentés…' : 'Márka mentése'}
+              {saving ? t('settings.branding.saving') : t('settings.branding.save')}
             </Button>
           </div>
         </Card>
@@ -990,11 +985,8 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">Ajánlat sablonok</h2>
-              <p className="text-sm text-slate-500">
-                Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a
-                megadott márkaszíneket használják.
-              </p>
+              <h2 className="text-lg font-semibold text-slate-900">{t('settings.templates.title')}</h2>
+              <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
             </CardHeader>
           }
         >
@@ -1030,7 +1022,7 @@ export default function SettingsPage() {
                     )}
                     {isSelected && (
                       <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
-                        Aktív
+                        {t('settings.templates.activeBadge')}
                       </span>
                     )}
                   </div>
@@ -1038,7 +1030,7 @@ export default function SettingsPage() {
                   {renderTemplatePreview(template.previewVariant)}
                   {disabled && (
                     <p className="text-xs font-medium text-amber-600">
-                      Pro előfizetéssel érhető el.
+                      {t('settings.templates.proOnly')}
                     </p>
                   )}
                 </Button>
@@ -1048,8 +1040,7 @@ export default function SettingsPage() {
 
           {!canUseProTemplates && (
             <p className="text-xs text-slate-500">
-              A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha
-              szükséged van rá.
+              {t('settings.templates.upgradeHint')}
             </p>
           )}
         </Card>
@@ -1059,37 +1050,35 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">Tevékenység-sablonok</h2>
-              <p className="text-sm text-slate-500">
-                Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.
-              </p>
+              <h2 className="text-lg font-semibold text-slate-900">{t('settings.activities.title')}</h2>
+              <p className="text-sm text-slate-500">{t('settings.activities.subtitle')}</p>
             </CardHeader>
           }
         >
           <div className="grid items-end gap-4 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <Input
-                label="Megnevezés"
-                placeholder="Pl. Webfejlesztés"
+                label={t('settings.activities.fields.name')}
+                placeholder={t('settings.activities.placeholders.name')}
                 value={newAct.name}
                 onChange={(e) => setNewAct((a) => ({ ...a, name: e.target.value }))}
               />
             </div>
             <Input
-              label="Mértékegység"
-              placeholder="db / óra / m²"
+              label={t('settings.activities.fields.unit')}
+              placeholder={t('settings.activities.placeholders.unit')}
               value={newAct.unit}
               onChange={(e) => setNewAct((a) => ({ ...a, unit: e.target.value }))}
             />
             <Input
-              label="Alap díj (nettó, Ft)"
+              label={t('settings.activities.fields.price')}
               type="number"
               min={0}
               value={newAct.price}
               onChange={(e) => setNewAct((a) => ({ ...a, price: Number(e.target.value) }))}
             />
             <Input
-              label="ÁFA %"
+              label={t('settings.activities.fields.vat')}
               type="number"
               min={0}
               value={newAct.vat}
@@ -1097,7 +1086,7 @@ export default function SettingsPage() {
             />
             <div className="lg:col-span-5">
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Iparágak ehhez a tételhez
+                {t('settings.activities.industries.heading')}
               </span>
               <div className="mt-2 flex flex-wrap gap-2">
                 {ALL_INDUSTRIES_HU.map((ind) => {
@@ -1122,7 +1111,7 @@ export default function SettingsPage() {
             disabled={actSaving}
             className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {actSaving ? 'Hozzáadás…' : 'Tevékenység hozzáadása'}
+            {actSaving ? t('settings.activities.saving') : t('settings.activities.add')}
           </Button>
 
           <div className="grid gap-3 md:grid-cols-2">
@@ -1132,26 +1121,30 @@ export default function SettingsPage() {
                   <div>
                     <h3 className="text-sm font-semibold text-slate-800">{a.name}</h3>
                     <p className="text-xs text-slate-500">
-                      Egység: {a.unit} • Díj:{' '}
-                      {Number(a.default_unit_price || 0).toLocaleString('hu-HU')} Ft • ÁFA:{' '}
-                      {a.default_vat}%
+                      {t('settings.activities.summary', {
+                        unit: a.unit,
+                        price: Number(a.default_unit_price || 0).toLocaleString('hu-HU'),
+                        vat: a.default_vat,
+                      })}
                     </p>
                   </div>
                   <Button
                     onClick={() => deleteActivity(a.id)}
                     className="text-xs font-semibold text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    Törlés
+                    {t('settings.activities.delete')}
                   </Button>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">
-                  Iparágak: {(a.industries || []).join(', ') || '—'}
+                  {t('settings.activities.assignedIndustries', {
+                    list: (a.industries || []).join(', ') || '—',
+                  })}
                 </p>
               </div>
             ))}
             {acts.length === 0 && (
               <div className="rounded-2xl border border-dashed border-border bg-white/70 p-6 text-sm text-slate-500">
-                Még nincs sablon. Adj hozzá legalább egy gyakran használt tételt.
+                {t('settings.activities.empty')}
               </div>
             )}
           </div>
