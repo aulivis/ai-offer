@@ -440,13 +440,13 @@ export default function NewOfferWizard() {
             style: form.style,
           }),
           signal: controller.signal,
-          authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
-          errorMessageBuilder: (status) => `Hiba az előnézet betöltésekor (${status})`,
-          defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
+          authErrorMessage: t('errors.preview.authError'),
+          errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+          defaultErrorMessage: t('errors.preview.fetchUnknown'),
         });
 
         if (!resp.body) {
-          const message = 'Az AI nem küldött adatot az előnézethez.';
+          const message = t('errors.preview.noData');
           if (previewRequestIdRef.current === nextRequestId) {
             setPreviewHtml('<p>(nincs előnézet)</p>');
             setPreviewLocked(false);
@@ -493,7 +493,7 @@ export default function NewOfferWizard() {
                 streamErrorMessage =
                   typeof payload.message === 'string' && payload.message.trim().length > 0
                     ? payload.message
-                    : 'Ismeretlen hiba történt az AI előnézet frissítése közben.';
+                    : t('errors.preview.streamUnknown');
                 break;
               }
             } catch (err: unknown) {
@@ -536,7 +536,7 @@ export default function NewOfferWizard() {
             ? error.message
             : error instanceof Error
               ? error.message
-              : 'Ismeretlen hiba történt az előnézet lekérése közben.';
+              : t('errors.preview.fetchUnknown');
         console.error('Előnézet hiba:', message, error);
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewHtml('<p>(nincs előnézet)</p>');
@@ -567,23 +567,32 @@ export default function NewOfferWizard() {
             const retryIndex = attempt + 1;
             const totalAttempts = MAX_PREVIEW_TIMEOUT_RETRIES + 1;
             showToast({
-              title: 'AI előnézet újrapróbálása',
-              description: `${result.message} Újrapróbálkozunk (${retryIndex}/${totalAttempts}).`,
+              title: t('toasts.preview.retrying.title'),
+              description: `${result.message} ${t('toasts.preview.retrying.description', {
+                current: retryIndex,
+                total: totalAttempts,
+              })}`,
               variant: 'warning',
             });
             continue;
           }
-          const finalMessage =
-            result.message +
-            ' Többszöri próbálkozás után sem sikerült befejezni az előnézetet. Próbáld meg később.';
+          const finalMessage = `${result.message} ${t('toasts.preview.finalFailureSuffix')}`;
           setPreviewError(finalMessage);
-          showToast({ title: 'Előnézet hiba', description: finalMessage, variant: 'error' });
+          showToast({
+            title: t('toasts.preview.error.title'),
+            description: finalMessage,
+            variant: 'error',
+          });
           return;
         }
         if (result.status === 'error') {
           if (result.message) {
             setPreviewError(result.message);
-            showToast({ title: 'Előnézet hiba', description: result.message, variant: 'error' });
+            showToast({
+              title: t('toasts.preview.error.title'),
+              description: result.message,
+              variant: 'error',
+            });
           }
           return;
         }
@@ -609,8 +618,8 @@ export default function NewOfferWizard() {
     }
     if (!hasPreviewInputs) {
       showToast({
-        title: 'Hiányzó adatok',
-        description: 'Az előnézethez add meg az ajánlat címét és a rövid leírást.',
+        title: t('toasts.preview.missingData.title'),
+        description: t('toasts.preview.missingData.description'),
         variant: 'warning',
       });
       return;
@@ -631,16 +640,16 @@ export default function NewOfferWizard() {
   const handlePickImage = useCallback(() => {
     if (!isProPlan) {
       showToast({
-        title: 'Pro funkció',
-        description: 'Képek beszúrása csak Pro előfizetéssel érhető el.',
+        title: t('toasts.preview.proFeature.title'),
+        description: t('toasts.preview.proFeature.description'),
         variant: 'warning',
       });
       return;
     }
     if (!previewLocked) {
       showToast({
-        title: 'Generálj először AI előnézetet',
-        description: 'A képek beszúrása előtt kérd le az AI előnézetet az első lépésben.',
+        title: t('toasts.preview.requiresInitialPreview.title'),
+        description: t('toasts.preview.requiresInitialPreview.description'),
         variant: 'info',
       });
       return;
@@ -662,8 +671,8 @@ export default function NewOfferWizard() {
       const remainingSlots = MAX_IMAGE_COUNT - imageAssets.length;
       if (remainingSlots <= 0) {
         showToast({
-          title: 'Elérted a képlimitet',
-          description: `Legfeljebb ${MAX_IMAGE_COUNT} képet adhatsz hozzá a PDF-hez.`,
+          title: t('toasts.preview.limitReached.title'),
+          description: t('toasts.preview.limitReached.description', { count: MAX_IMAGE_COUNT }),
           variant: 'warning',
         });
         event.target.value = '';
@@ -676,16 +685,19 @@ export default function NewOfferWizard() {
       for (const file of selectedFiles) {
         if (!file.type.startsWith('image/')) {
           showToast({
-            title: 'Érvénytelen fájl',
-            description: `${file.name} nem képfájl, ezért kihagytuk.`,
+            title: t('toasts.preview.invalidImageType.title'),
+            description: t('toasts.preview.invalidImageType.description', { name: file.name }),
             variant: 'error',
           });
           continue;
         }
         if (file.size > MAX_IMAGE_SIZE_BYTES) {
           showToast({
-            title: 'Túl nagy kép',
-            description: `${file.name} mérete legfeljebb ${MAX_IMAGE_SIZE_MB} MB lehet.`,
+            title: t('toasts.preview.imageTooLarge.title'),
+            description: t('toasts.preview.imageTooLarge.description', {
+              name: file.name,
+              size: MAX_IMAGE_SIZE_MB,
+            }),
             variant: 'error',
           });
           continue;
@@ -711,8 +723,8 @@ export default function NewOfferWizard() {
         } catch (error) {
           console.error('Nem sikerült beolvasni a képet', error);
           showToast({
-            title: 'Kép feldolgozási hiba',
-            description: `${file.name} beolvasása nem sikerült.`,
+            title: t('toasts.preview.imageReadError.title'),
+            description: t('toasts.preview.imageReadError.description', { name: file.name }),
             variant: 'error',
           });
         }
@@ -803,8 +815,8 @@ export default function NewOfferWizard() {
     try {
       if (!previewLocked) {
         showToast({
-          title: 'Előnézet generálása háttérben',
-          description: 'A mentéshez az AI automatikusan elkészíti a hiányzó szöveges előnézetet.',
+          title: t('toasts.preview.backgroundGeneration.title'),
+          description: t('toasts.preview.backgroundGeneration.description'),
           variant: 'info',
         });
       }
@@ -836,13 +848,13 @@ export default function NewOfferWizard() {
             clientId: cid,
             imageAssets: imagePayload,
           }),
-          authErrorMessage: 'Nem vagy bejelentkezve.',
-          errorMessageBuilder: (status) => `Hiba a generálásnál (${status})`,
-          defaultErrorMessage: 'Ismeretlen hiba történt az ajánlat generálása közben.',
+          authErrorMessage: t('errors.auth.notLoggedIn'),
+          errorMessageBuilder: (status) => t('errors.offer.generateStatus', { status }),
+          defaultErrorMessage: t('errors.offer.generateUnknown'),
         });
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          alert('Nem vagy bejelentkezve.');
+          alert(t('errors.auth.notLoggedIn'));
           router.replace('/login');
           return;
         }
@@ -852,7 +864,7 @@ export default function NewOfferWizard() {
             ? error.message
             : error instanceof Error
               ? error.message
-              : 'Ismeretlen hiba történt az ajánlat generálása közben.';
+              : t('errors.offer.generateUnknown');
         alert(message);
         return;
       }
@@ -878,14 +890,14 @@ export default function NewOfferWizard() {
       const sectionsData = payloadObj ? (payloadObj.sections as unknown) : null;
 
       if (okFlag === false) {
-        const msg = errorMessage || `Hiba a generálásnál (${resp.status})`;
+        const msg = errorMessage || t('errors.offer.generateStatus', { status: resp.status });
         alert(msg);
         return;
       }
 
       if (sectionsData) {
         if (!isOfferSections(sectionsData)) {
-          alert('A struktúrált AI válasz hiányos, próbáld újra a generálást.');
+          alert(t('errors.offer.missingStructure'));
           return;
         }
       }
@@ -900,8 +912,8 @@ export default function NewOfferWizard() {
     (nextStep: number) => {
       if (step === 1 && nextStep > 1 && !previewLocked) {
         showToast({
-          title: 'Előnézet szükséges',
-          description: 'Generáld le az AI előnézetet a továbblépéshez.',
+          title: t('toasts.preview.requiredForNextStep.title'),
+          description: t('toasts.preview.requiredForNextStep.description'),
           variant: 'warning',
         });
         return;

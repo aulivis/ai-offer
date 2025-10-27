@@ -811,9 +811,173 @@ export const hu = {
   demoBanner: {
     title: 'Ajánlatkészítés újragondolva',
   },
+  toasts: {
+    auth: {
+      verificationFailed: {
+        title: 'Hitelesítés sikertelen',
+        description: 'Nem sikerült hitelesíteni a felhasználói állapotot.',
+      },
+    },
+    logout: {
+      failed: {
+        title: 'Kijelentkezés sikertelen',
+        description: 'Nem sikerült kijelentkezni. Próbáld újra.',
+      },
+    },
+    googleLink: {
+      success: {
+        title: 'Google fiók összekapcsolva',
+        description: 'Mostantól a Google fiókoddal is bejelentkezhetsz.',
+      },
+      error: {
+        title: 'Nem sikerült összekapcsolni a Google fiókot',
+        description: 'Kérjük, próbáld újra egy kicsit később.',
+      },
+    },
+    settings: {
+      profileLoadFailed: {
+        title: 'Nem sikerült betölteni a profilod',
+        description: 'Kérjük, próbáld újra egy kicsit később.',
+      },
+      logoTooLarge: {
+        title: 'Túl nagy fájl',
+        description: 'A logó mérete legfeljebb 4 MB lehet.',
+      },
+      logoUploaded: {
+        title: 'Logó feltöltve',
+        description: 'Ne felejtsd el a mentést.',
+      },
+      logoUploadFailed: {
+        title: 'Logó feltöltése sikertelen',
+        description: 'Nem sikerült feltölteni a logót. Próbáld újra.',
+      },
+      saveSuccess: 'Mentve!',
+    },
+    offers: {
+      loadFailed: {
+        title: 'Ajánlatok betöltése sikertelen',
+        description: 'Ismeretlen hiba történt az ajánlatok betöltésekor.',
+      },
+      loadMoreFailed: {
+        title: 'További ajánlatok betöltése sikertelen',
+        description: 'Ismeretlen hiba történt az ajánlatok betöltésekor.',
+      },
+      statusUpdateFailed: {
+        title: 'Állapot frissítése sikertelen',
+        description: 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.',
+      },
+      deleteSuccess: {
+        title: 'Ajánlat törölve',
+        description: 'Az ajánlat véglegesen eltávolításra került.',
+      },
+      deleteFailed: {
+        title: 'Törlés sikertelen',
+        description: 'Nem sikerült törölni az ajánlatot. Próbáld újra.',
+      },
+      saveSuccess: {
+        title: 'Ajánlat mentve',
+        description: 'A PDF generálása folyamatban van, hamarosan elérhető lesz.',
+      },
+      saveFailed: {
+        title: 'Ajánlat mentése sikertelen',
+        description: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.',
+      },
+      missingDetails: {
+        title: 'Hiányzó adatok',
+        description: 'Add meg az ajánlat címét és rövid leírását a mentéshez.',
+      },
+      missingItems: {
+        title: 'Hiányzó tételek',
+        description: 'Adj hozzá legalább egy tételt az árlistához.',
+      },
+      missingPreview: {
+        title: 'Hiányzó előnézet',
+        description: 'Generáld le az AI előnézetet, mielőtt elmented az ajánlatot.',
+      },
+    },
+    preview: {
+      retrying: {
+        title: 'AI előnézet újrapróbálása',
+        description: 'Újrapróbálkozunk ({current}/{total}).',
+      },
+      error: {
+        title: 'Előnézet hiba',
+      },
+      missingData: {
+        title: 'Hiányzó adatok',
+        description: 'Az előnézethez add meg az ajánlat címét és a rövid leírást.',
+      },
+      proFeature: {
+        title: 'Pro funkció',
+        description: 'Képek beszúrása csak Pro előfizetéssel érhető el.',
+      },
+      requiresInitialPreview: {
+        title: 'Generálj először AI előnézetet',
+        description: 'A képek beszúrása előtt kérd le az AI előnézetet az első lépésben.',
+      },
+      limitReached: {
+        title: 'Elérted a képlimitet',
+        description: 'Legfeljebb {count} képet adhatsz hozzá a PDF-hez.',
+      },
+      invalidImageType: {
+        title: 'Érvénytelen fájl',
+        description: '{name} nem képfájl, ezért kihagytuk.',
+      },
+      imageTooLarge: {
+        title: 'Túl nagy kép',
+        description: '{name} mérete legfeljebb {size} MB lehet.',
+      },
+      imageReadError: {
+        title: 'Kép feldolgozási hiba',
+        description: '{name} beolvasása nem sikerült.',
+      },
+      backgroundGeneration: {
+        title: 'Előnézet generálása háttérben',
+        description: 'A mentéshez az AI automatikusan elkészíti a hiányzó szöveges előnézetet.',
+      },
+      requiredForNextStep: {
+        title: 'Előnézet szükséges',
+        description: 'Generáld le az AI előnézetet a továbblépéshez.',
+      },
+      finalFailureSuffix:
+        'Többszöri próbálkozás után sem sikerült befejezni az előnézetet. Próbáld meg később.',
+    },
+  },
   errors: {
     unauthorized: 'Nincs jogosultságod ehhez a művelethez.',
     network: 'Hálózati hiba történt. Kérlek, próbáld újra.',
     unknown: 'Ismeretlen hiba történt.',
+    auth: {
+      notLoggedIn: 'Nem vagy bejelentkezve.',
+      logoutMissingCsrf: 'Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.',
+      logoutFailed: 'Nem sikerült kijelentkezni.',
+      logoutUnknown: 'Ismeretlen hiba történt kijelentkezés közben.',
+    },
+    settings: {
+      validationRequired: 'Kérjük, javítsd a piros mezőket.',
+      saveFailed: 'Nem sikerült menteni: {message}',
+      saveUnknown: 'Ismeretlen hiba történt a mentés közben.',
+      logoUploadFailed: 'Nem sikerült feltölteni a logót. Próbáld újra.',
+      logoUploadMissingUrl: 'A Supabase nem adott vissza használható URL-t a logóhoz.',
+      activityNameRequired: 'Add meg a tevékenység nevét.',
+    },
+    preview: {
+      authError: 'Nem sikerült hitelesíteni az előnézet lekérését.',
+      fetchStatus: 'Hiba az előnézet betöltésekor ({status})',
+      fetchUnknown: 'Ismeretlen hiba történt az előnézet lekérése közben.',
+      streamUnknown: 'Ismeretlen hiba történt az AI előnézet frissítése közben.',
+      noData: 'Az AI nem küldött adatot az előnézethez.',
+      aborted: 'Az előnézet frissítése megszakadt.',
+      timeout: 'Az előnézet kérése időtúllépés miatt megszakadt.',
+    },
+    offer: {
+      generateStatus: 'Hiba a generálásnál ({status})',
+      generateUnknown: 'Ismeretlen hiba történt az ajánlat generálása közben.',
+      saveStatus: 'Hiba az ajánlat mentésekor ({status})',
+      saveAuth: 'Nem sikerült hitelesíteni az ajánlat mentését.',
+      saveUnknown: 'Ismeretlen hiba történt az ajánlat mentése közben.',
+      saveFailed: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.',
+      missingStructure: 'A struktúrált AI válasz hiányos, próbáld újra a generálást.',
+    },
   },
 } as const;

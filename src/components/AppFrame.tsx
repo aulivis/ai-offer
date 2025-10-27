@@ -33,8 +33,8 @@ export default function AppFrame({
     }
     console.error('Failed to verify authentication status.', error);
     showToast({
-      title: t('app.authErrorTitle'),
-      description: error.message || t('app.authErrorFallback'),
+      title: t('toasts.auth.verificationFailed.title'),
+      description: error.message || t('toasts.auth.verificationFailed.description'),
       variant: 'error',
     });
   }, [error, showToast]);

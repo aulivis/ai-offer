@@ -18,7 +18,46 @@ const dictionary = { hu } as const;
 
 type LocaleKey = keyof typeof dictionary;
 
-export function t(key: CopyKey, locale: LocaleKey = 'hu'): string {
+type InterpolationValues = Record<string, string | number>;
+
+function format(value: string, params?: InterpolationValues): string {
+  if (!params) {
+    return value;
+  }
+
+  return Object.entries(params).reduce(
+    (acc, [paramKey, paramValue]) =>
+      acc.replaceAll(
+        `{${paramKey}}`,
+        typeof paramValue === 'number' ? String(paramValue) : paramValue,
+      ),
+    value,
+  );
+}
+
+export function t(key: CopyKey): string;
+export function t(key: CopyKey, locale: LocaleKey): string;
+export function t(key: CopyKey, params: InterpolationValues): string;
+export function t(key: CopyKey, params: InterpolationValues, locale: LocaleKey): string;
+export function t(
+  key: CopyKey,
+  paramsOrLocale?: InterpolationValues | LocaleKey,
+  maybeLocale?: LocaleKey,
+): string {
+  let params: InterpolationValues | undefined;
+  let locale: LocaleKey = 'hu';
+
+  if (typeof paramsOrLocale === 'string' && paramsOrLocale in dictionary) {
+    locale = paramsOrLocale as LocaleKey;
+  } else if (paramsOrLocale && typeof paramsOrLocale === 'object') {
+    params = paramsOrLocale as InterpolationValues;
+    if (maybeLocale) {
+      locale = maybeLocale;
+    }
+  } else if (maybeLocale) {
+    locale = maybeLocale;
+  }
+
   const keys = key.split('.');
   let value: unknown = dictionary[locale];
 
@@ -29,7 +68,11 @@ export function t(key: CopyKey, locale: LocaleKey = 'hu'): string {
     value = (value as Record<string, unknown>)[k];
   }
 
-  return typeof value === 'string' ? value : key;
+  if (typeof value !== 'string') {
+    return key;
+  }
+
+  return format(value, params);
 }
 
 export { hu };

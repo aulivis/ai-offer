@@ -349,12 +349,10 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('Failed to load offers', error);
         const message =
-          error instanceof Error
-            ? error.message
-            : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+          error instanceof Error ? error.message : t('toasts.offers.loadFailed.description');
         showToast({
-          title: 'Ajánlatok betöltése sikertelen',
-          description: message,
+          title: t('toasts.offers.loadFailed.title'),
+          description: message || t('toasts.offers.loadFailed.description'),
           variant: 'error',
         });
       } finally {
@@ -382,12 +380,10 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to load offers', error);
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Ismeretlen hiba történt az ajánlatok betöltésekor.';
+        error instanceof Error ? error.message : t('toasts.offers.loadMoreFailed.description');
       showToast({
-        title: 'További ajánlatok betöltése sikertelen',
-        description: message,
+        title: t('toasts.offers.loadMoreFailed.title'),
+        description: message || t('toasts.offers.loadMoreFailed.description'),
         variant: 'error',
       });
     } finally {
@@ -414,10 +410,12 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Offer status update failed', error);
       const message =
-        error instanceof Error
-          ? error.message
-          : 'Nem sikerült frissíteni az ajánlat állapotát. Próbáld újra.';
-      showToast({ title: 'Állapot frissítése sikertelen', description: message, variant: 'error' });
+        error instanceof Error ? error.message : t('toasts.offers.statusUpdateFailed.description');
+      showToast({
+        title: t('toasts.offers.statusUpdateFailed.title'),
+        description: message || t('toasts.offers.statusUpdateFailed.description'),
+        variant: 'error',
+      });
     } finally {
       setUpdatingId(null);
     }
@@ -489,15 +487,19 @@ export default function DashboardPage() {
       setOffers((prev) => prev.filter((item) => item.id !== offerToDelete.id));
       setTotalCount((prev) => (typeof prev === 'number' ? Math.max(prev - 1, 0) : prev));
       showToast({
-        title: 'Ajánlat törölve',
-        description: 'Az ajánlat véglegesen eltávolításra került.',
+        title: t('toasts.offers.deleteSuccess.title'),
+        description: t('toasts.offers.deleteSuccess.description'),
         variant: 'success',
       });
     } catch (error) {
       console.error('Failed to delete offer', error);
       const message =
-        error instanceof Error ? error.message : 'Nem sikerült törölni az ajánlatot. Próbáld újra.';
-      showToast({ title: 'Törlés sikertelen', description: message, variant: 'error' });
+        error instanceof Error ? error.message : t('toasts.offers.deleteFailed.description');
+      showToast({
+        title: t('toasts.offers.deleteFailed.title'),
+        description: message || t('toasts.offers.deleteFailed.description'),
+        variant: 'error',
+      });
     } finally {
       setDeletingId(null);
       setOfferToDelete(null);

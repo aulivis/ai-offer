@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { t } from '@/copy';
 import { useToast } from '@/components/ToastProvider';
 import { getCsrfToken } from '@/lib/api';
 
@@ -16,7 +17,7 @@ export function useLogout() {
     try {
       const csrfToken = getCsrfToken();
       if (!csrfToken) {
-        throw new Error('Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.');
+        throw new Error(t('errors.auth.logoutMissingCsrf'));
       }
 
       const response = await fetch('/api/auth/logout', {
@@ -33,7 +34,7 @@ export function useLogout() {
           'error' in payload &&
           typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error?: string }).error as string)
-            : 'Nem sikerült kijelentkezni.';
+            : t('errors.auth.logoutFailed');
         throw new Error(message);
       }
 
@@ -41,11 +42,10 @@ export function useLogout() {
       router.refresh();
     } catch (err) {
       console.error('Logout failed', err);
-      const message =
-        err instanceof Error ? err.message : 'Ismeretlen hiba történt kijelentkezés közben.';
+      const message = err instanceof Error ? err.message : t('errors.auth.logoutUnknown');
       showToast({
-        title: 'Kijelentkezés sikertelen',
-        description: message,
+        title: t('toasts.logout.failed.title'),
+        description: message || t('toasts.logout.failed.description'),
         variant: 'error',
       });
     } finally {

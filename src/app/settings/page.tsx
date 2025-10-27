@@ -93,7 +93,7 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
       return new Error(parts.join(' '));
     }
   }
-  return new Error('Ismeretlen hiba történt a mentés közben.');
+  return new Error(t('errors.settings.saveUnknown'));
 }
 
 export default function SettingsPage() {
@@ -171,14 +171,14 @@ export default function SettingsPage() {
 
     if (linkStatus === 'google_success') {
       showToast({
-        title: 'Google fiók összekapcsolva',
-        description: 'Mostantól a Google fiókoddal is bejelentkezhetsz.',
+        title: t('toasts.googleLink.success.title'),
+        description: t('toasts.googleLink.success.description'),
         variant: 'success',
       });
     } else if (linkStatus === 'google_error') {
       showToast({
-        title: 'Nem sikerült összekapcsolni a Google fiókot',
-        description: 'Kérjük, próbáld újra egy kicsit később.',
+        title: t('toasts.googleLink.error.title'),
+        description: t('toasts.googleLink.error.description'),
         variant: 'error',
       });
     }
@@ -253,8 +253,8 @@ export default function SettingsPage() {
       if (loadError) {
         setProfileLoadError(loadError);
         showToast({
-          title: 'Nem sikerült betölteni a profilod',
-          description: loadError.message || 'Kérjük, próbáld újra egy kicsit később.',
+          title: t('toasts.settings.profileLoadFailed.title'),
+          description: loadError.message || t('toasts.settings.profileLoadFailed.description'),
           variant: 'error',
         });
         setLoading(false);
@@ -311,11 +311,11 @@ export default function SettingsPage() {
       if (!user) return;
       if (scope === 'branding') {
         if (hasBrandingErrors) {
-          alert('Kérjük, javítsd a piros mezőket.');
+          alert(t('errors.settings.validationRequired'));
           return;
         }
       } else if (hasErrors) {
-        alert('Kérjük, javítsd a piros mezőket.');
+        alert(t('errors.settings.validationRequired'));
         return;
       }
       const primary = normalizeColorHex(profile.brand_color_primary);
@@ -397,7 +397,7 @@ export default function SettingsPage() {
             plan,
           ),
         }));
-        alert('Mentve!');
+        alert(t('toasts.settings.saveSuccess'));
         return;
       }
 
@@ -476,11 +476,10 @@ export default function SettingsPage() {
           plan,
         ),
       }));
-      alert('Mentve!');
+      alert(t('toasts.settings.saveSuccess'));
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Ismeretlen hiba történt a mentés közben.';
-      alert(`Nem sikerült menteni: ${message}`);
+      const message = error instanceof Error ? error.message : t('errors.settings.saveUnknown');
+      alert(t('errors.settings.saveFailed', { message }));
     } finally {
       setSaving(false);
     }
@@ -510,8 +509,8 @@ export default function SettingsPage() {
       const maxSize = 4 * 1024 * 1024;
       if (file.size > maxSize) {
         showToast({
-          title: 'Túl nagy fájl',
-          description: 'A logó mérete legfeljebb 4 MB lehet.',
+          title: t('toasts.settings.logoTooLarge.title'),
+          description: t('toasts.settings.logoTooLarge.description'),
           variant: 'error',
         });
         return;
@@ -523,7 +522,7 @@ export default function SettingsPage() {
       const response = await fetchWithSupabaseAuth('/api/storage/upload-brand-logo', {
         method: 'POST',
         body: formData,
-        defaultErrorMessage: 'Nem sikerült feltölteni a logót. Próbáld újra.',
+        defaultErrorMessage: t('errors.settings.logoUploadFailed'),
       });
 
       const payload: unknown = await response.json();
@@ -539,22 +538,22 @@ export default function SettingsPage() {
       }
 
       if (typeof logoUrl !== 'string' || !logoUrl) {
-        throw new Error('A Supabase nem adott vissza használható URL-t a logóhoz.');
+        throw new Error(t('errors.settings.logoUploadMissingUrl'));
       }
 
       setProfile((prev) => ({ ...prev, brand_logo_url: logoUrl }));
       showToast({
-        title: 'Logó feltöltve',
-        description: 'Ne felejtsd el a mentést.',
+        title: t('toasts.settings.logoUploaded.title'),
+        description: t('toasts.settings.logoUploaded.description'),
         variant: 'success',
       });
     } catch (error) {
       console.error('Logo upload error', error);
       const message =
-        error instanceof Error ? error.message : 'Nem sikerült feltölteni a logót. Próbáld újra.';
+        error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
       showToast({
-        title: 'Logó feltöltése sikertelen',
-        description: message,
+        title: t('toasts.settings.logoUploadFailed.title'),
+        description: message || t('toasts.settings.logoUploadFailed.description'),
         variant: 'error',
       });
     } finally {
@@ -573,7 +572,7 @@ export default function SettingsPage() {
 
   async function addActivity() {
     if (!newAct.name.trim()) {
-      alert('Add meg a tevékenység nevét.');
+      alert(t('errors.settings.activityNameRequired'));
       return;
     }
     try {
