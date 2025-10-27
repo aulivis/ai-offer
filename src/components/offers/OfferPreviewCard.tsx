@@ -40,7 +40,7 @@ export function OfferPreviewCard({
 }: OfferPreviewCardProps) {
   return (
     <Card
-      className="space-y-5"
+      className="flex h-full flex-col space-y-5 overflow-hidden"
       header={
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -96,15 +96,15 @@ export function OfferPreviewCard({
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-border bg-white/90">
+          <div className="flex-1 min-h-0 overflow-hidden rounded-2xl border border-border bg-white/90">
             <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
-            <div className="max-h-[460px] overflow-auto p-4">
+            <div className="h-full overflow-auto p-4 lg:max-h-[70vh]">
               <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
             </div>
           </div>
         </>
       ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-slate-50/60 px-4 py-8 text-center text-sm text-slate-500">
+        <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border bg-slate-50/60 px-4 py-8 text-center text-sm text-slate-500">
           <p className="mx-auto max-w-xs">
             Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges
             adatokat.
