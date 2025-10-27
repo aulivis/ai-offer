@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { t } from '@/copy';
-
 import { CONSENT_VERSION } from '@/lib/consent/constants';
 import { ManageCookiesButton } from '@/components/cookies/ManageCookiesButton';
 
@@ -187,7 +185,7 @@ export default function CookiePolicyPage() {
         className="rounded-lg bg-muted/30 p-6 text-center text-sm text-muted-foreground"
       >
         <p className="mb-3">Nyissa meg a sütikezelőt és állítsa be újra a preferenciáit:</p>
-        <ManageCookiesButton label="Sütibeállítások kezelése" />
+        <ManageCookiesButton />
       </footer>
     </main>
   );

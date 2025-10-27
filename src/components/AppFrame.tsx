@@ -33,8 +33,8 @@ export default function AppFrame({
     }
     console.error('Failed to verify authentication status.', error);
     showToast({
-      title: 'Hitelesítés sikertelen',
-      description: error.message,
+      title: t('app.authErrorTitle'),
+      description: error.message || t('app.authErrorFallback'),
       variant: 'error',
     });
   }, [error, showToast]);
@@ -49,7 +49,7 @@ export default function AppFrame({
         id="main"
         className="flex min-h-[60vh] items-center justify-center px-6 pb-20 pt-24 text-sm font-medium text-fg-muted"
       >
-        Betöltés…
+        {t('app.loading')}
       </main>
     );
   }
@@ -65,7 +65,7 @@ export default function AppFrame({
             aria-expanded={isSidebarOpen}
             aria-controls="appframe-sidebar"
           >
-            <span>{isSidebarOpen ? 'Oldalsáv elrejtése' : 'Oldalsáv megnyitása'}</span>
+            <span>{isSidebarOpen ? t('app.sidebar.close') : t('app.sidebar.open')}</span>
             <svg
               aria-hidden="true"
               className={`h-4 w-4 transition-transform ${isSidebarOpen ? 'rotate-180' : ''}`}

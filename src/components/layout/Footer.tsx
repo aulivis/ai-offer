@@ -1,12 +1,17 @@
 import Link from 'next/link';
-import { t } from '@/copy';
+import { t, type CopyKey } from '@/copy';
 
 import { ManageCookiesButton } from '@/components/cookies/ManageCookiesButton';
 import { envServer } from '@/env.server';
 
-const navigationLinks = [
-  { href: '/privacy-policy', label: 'Adatvédelmi tájékoztató' },
-  { href: '/cookie-policy', label: 'Sütikezelési tájékoztató' },
+type NavigationLink = {
+  href: string;
+  labelKey: CopyKey;
+};
+
+const navigationLinks: ReadonlyArray<NavigationLink> = [
+  { href: '/privacy-policy', labelKey: 'app.footer.legalLinks.privacy' },
+  { href: '/cookie-policy', labelKey: 'app.footer.legalLinks.cookies' },
 ];
 
 export default function Footer() {
@@ -16,13 +21,13 @@ export default function Footer() {
     <footer className="relative z-20 border-t border-border bg-bg/80 py-12">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <span className="text-base font-medium text-fg">© {currentYear} Propono</span>
-          <p className="max-w-xs">
-            AI által támogatott, professzionális ajánlatok kis- és középvállalkozások számára.
-          </p>
+          <span className="text-base font-medium text-fg">
+            {t('app.footer.copyrightPrefix')} {currentYear} {t('app.footer.brand')}
+          </span>
+          <p className="max-w-xs">{t('app.footer.description')}</p>
         </div>
 
-        <nav aria-label="Jogi információk">
+        <nav aria-label={t('app.footer.legalNavLabel')}>
           <ul className="flex flex-col gap-3 text-sm text-muted-foreground">
             {navigationLinks.map((link) => (
               <li key={link.href}>
@@ -30,18 +35,18 @@ export default function Footer() {
                   href={link.href}
                   className="font-medium text-muted-foreground underline-offset-4 transition hover:text-primary hover:underline"
                 >
-                  {link.label}
+                  {t(link.labelKey)}
                 </Link>
               </li>
             ))}
             <li>
-              <ManageCookiesButton label="Sütibeállítások kezelése" />
+              <ManageCookiesButton label={t('app.footer.manageCookies')} />
             </li>
           </ul>
         </nav>
 
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <span className="text-base font-medium text-fg">Kapcsolat</span>
+          <span className="text-base font-medium text-fg">{t('app.footer.contactHeading')}</span>
           <a
             href={`mailto:${envServer.PUBLIC_CONTACT_EMAIL}`}
             className="font-medium text-muted-foreground underline-offset-4 transition hover:text-primary hover:underline"
