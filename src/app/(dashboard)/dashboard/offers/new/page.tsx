@@ -6,10 +6,8 @@ import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
 import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
-import {
-  OfferSummarySection,
-  type OfferPreviewStatus,
-} from '@/components/offers/OfferSummarySection';
+import { OfferPreviewCard, type OfferPreviewStatus } from '@/components/offers/OfferPreviewCard';
+import { OfferSummarySection } from '@/components/offers/OfferSummarySection';
 import { offerBodyMarkup } from '@/app/lib/offerDocument';
 import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
 import { useToast } from '@/components/ToastProvider';
@@ -514,7 +512,7 @@ export default function NewOfferPage() {
       title="Új ajánlat"
       description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
     >
-      <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12">
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-start lg:gap-12">
         <div className="flex flex-col gap-8">
           <Card>
             <StepIndicator steps={wizardSteps} />
@@ -530,6 +528,10 @@ export default function NewOfferPage() {
           )}
 
           {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
+
+          {step === 3 && (
+            <OfferSummarySection title={title} description={description} totals={totals} />
+          )}
 
           {inlineErrors.length > 0 && (
             <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700">
@@ -570,27 +572,17 @@ export default function NewOfferPage() {
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-col gap-6">
-          {step === 3 ? (
-            <OfferSummarySection
-              title={title}
-              description={description}
-              previewMarkup={previewMarkup}
-              statusDescriptor={statusDescriptor}
-              isStreaming={isStreaming}
-              previewStatus={previewStatus}
-              previewError={previewError}
-              onAbortPreview={handleAbortPreview}
-              onManualRefresh={handleManualRefresh}
-              totals={totals}
-            />
-          ) : (
-            <Card className="hidden min-h-[320px] items-center justify-center text-center text-sm text-slate-500 md:flex">
-              <p className="max-w-xs">
-                Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.
-              </p>
-            </Card>
-          )}
+        <div className="flex min-h-0 flex-col gap-6 lg:sticky lg:top-24">
+          <OfferPreviewCard
+            isPreviewAvailable={step === 3}
+            previewMarkup={previewMarkup}
+            statusDescriptor={statusDescriptor}
+            isStreaming={isStreaming}
+            previewStatus={previewStatus}
+            previewError={previewError}
+            onAbortPreview={handleAbortPreview}
+            onManualRefresh={handleManualRefresh}
+          />
         </div>
       </div>
     </AppFrame>
