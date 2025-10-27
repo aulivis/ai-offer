@@ -1,6 +1,6 @@
 'use client';
 
-import { t } from '@/copy';
+import { t, type CopyKey } from '@/copy';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
@@ -90,16 +90,16 @@ function extractOfferStoragePath(pdfUrl: string): string | null {
 }
 
 /** Státusz labellek (HU) */
-const STATUS_LABELS: Record<Offer['status'], string> = {
-  draft: 'Vázlat',
-  sent: 'Kiküldve',
-  accepted: 'Elfogadva',
-  lost: 'Elutasítva',
+const STATUS_LABEL_KEYS: Record<Offer['status'], CopyKey> = {
+  draft: 'dashboard.status.labels.draft',
+  sent: 'dashboard.status.labels.sent',
+  accepted: 'dashboard.status.labels.accepted',
+  lost: 'dashboard.status.labels.lost',
 };
 
-const DECISION_LABELS: Record<'accepted' | 'lost', string> = {
-  accepted: 'Elfogadva',
-  lost: 'Elutasítva',
+const DECISION_LABEL_KEYS: Record<'accepted' | 'lost', CopyKey> = {
+  accepted: 'dashboard.status.labels.accepted',
+  lost: 'dashboard.status.labels.lost',
 };
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
@@ -131,7 +131,7 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
     <span
       className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium tabular ${map[status]}`}
     >
-      {STATUS_LABELS[status]}
+      {t(STATUS_LABEL_KEYS[status])}
     </span>
   );
 }
@@ -209,41 +209,42 @@ function DeleteConfirmationDialog({
       {...(labelId ? { labelledBy: labelId } : {})}
       {...(descriptionId ? { describedBy: descriptionId } : {})}
     >
-      {open && (
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <div className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger">
-              Figyelmeztetés
-            </div>
-            <h2 id={labelId} className="text-lg font-semibold text-fg">
-              Ajánlat törlése
-            </h2>
-            <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
-              Biztosan törlöd a(z) „{offer!.title || '(névtelen)'}” ajánlatot? Ez a művelet nem
-              visszavonható, és minden kapcsolódó adat véglegesen el fog veszni.
-            </p>
-          </div>
+          {open && (
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <div className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger">
+                  {t('dashboard.deleteModal.badge')}
+                </div>
+                <h2 id={labelId} className="text-lg font-semibold text-fg">
+                  {t('dashboard.deleteModal.title')}
+                </h2>
+                <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
+                  {t('dashboard.deleteModal.description', {
+                    title: offer!.title || t('dashboard.deleteModal.untitled'),
+                  })}
+                </p>
+              </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              onClick={handleClose}
-              disabled={isDeleting}
-              className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Mégse
-            </Button>
-            <Button
-              type="button"
-              onClick={onConfirm}
-              disabled={isDeleting}
-              className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
-            >
-              {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
-            </Button>
-          </div>
-        </div>
-      )}
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  onClick={handleClose}
+                  disabled={isDeleting}
+                  className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {t('dashboard.deleteModal.cancel')}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={onConfirm}
+                  disabled={isDeleting}
+                  className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
+                >
+                  {isDeleting ? t('dashboard.deleteModal.deleting') : t('dashboard.deleteModal.confirm')}
+                </Button>
+              </div>
+            </div>
+          )}
     </Modal>
   );
 }
@@ -684,57 +685,70 @@ export default function DashboardPage() {
       : '—';
   const totalOffersCount = totalCount ?? stats.total;
   const displayedCount = totalCount !== null ? Math.min(offers.length, totalCount) : offers.length;
-  const monthlyHelper = `Ebben a hónapban ${stats.createdThisMonth.toLocaleString('hu-HU')} új ajánlat`;
+  const monthlyHelper = t('dashboard.metrics.created.monthlyHelper', {
+    count: stats.createdThisMonth.toLocaleString('hu-HU'),
+  });
   const totalHelper =
     totalCount !== null
-      ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat • ${monthlyHelper}`
+      ? t('dashboard.metrics.created.totalHelper', {
+          displayed: displayedCount.toLocaleString('hu-HU'),
+          total: totalCount.toLocaleString('hu-HU'),
+          monthly: monthlyHelper,
+        })
       : monthlyHelper;
   const paginationSummary =
     totalCount !== null
-      ? `Megjelenítve ${displayedCount.toLocaleString('hu-HU')} / ${totalCount.toLocaleString('hu-HU')} ajánlat`
+      ? t('dashboard.pagination.summary', {
+          displayed: displayedCount.toLocaleString('hu-HU'),
+          total: totalCount.toLocaleString('hu-HU'),
+        })
       : null;
   const currentPage = pageIndex + 1;
   const totalPages = totalCount !== null ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE)) : null;
   const noOffersLoaded = !loading && offers.length === 0;
   const emptyMessage = noOffersLoaded
-    ? 'Még nem hoztál létre ajánlatokat.'
-    : 'Nincs találat. Próbálj másik keresést vagy szűrőt.';
+    ? t('dashboard.emptyStates.noOffers')
+    : t('dashboard.emptyStates.noResults');
 
   return (
     <>
       <AppFrame
-        title="Ajánlatok"
-        description="Keresés, szűrés és státuszkezelés egy helyen — átlátható kártyákkal."
+        title={t('dashboard.title')}
+        description={t('dashboard.description')}
         actions={
           <Link
             href="/new"
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            + Új ajánlat
+            {t('dashboard.actions.newOffer')}
           </Link>
         }
       >
         {/* Metrikák */}
         <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Létrehozott ajánlatok"
+            label={t('dashboard.metrics.created.label')}
             value={totalOffersCount.toLocaleString('hu-HU')}
             helper={totalHelper}
           />
           <MetricCard
-            label="Kiküldött ajánlatok"
+            label={t('dashboard.metrics.sent.label')}
             value={stats.sent.toLocaleString('hu-HU')}
-            helper={`${stats.inReview.toLocaleString('hu-HU')} ajánlat döntésre vár`}
+            helper={t('dashboard.metrics.sent.helper', {
+              pending: stats.inReview.toLocaleString('hu-HU'),
+            })}
           />
           <MetricCard
-            label="Elfogadott ajánlatok"
+            label={t('dashboard.metrics.accepted.label')}
             value={stats.accepted.toLocaleString('hu-HU')}
-            helper={`Elfogadási arány: ${acceptanceLabel}`}
+            helper={t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel })}
           />
           <MetricCard
-            label="Átlagos döntési idő"
+            label={t('dashboard.metrics.avgDecision.label')}
             value={avgDecisionLabel}
-            helper={`${stats.drafts.toLocaleString('hu-HU')} vázlat készül`}
+            helper={t('dashboard.metrics.avgDecision.helper', {
+              drafts: stats.drafts.toLocaleString('hu-HU'),
+            })}
           />
         </section>
 
@@ -743,8 +757,8 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
             <div className="flex-1">
               <Input
-                label="Keresés"
-                placeholder="Ajánlat cím vagy cég…"
+                label={t('dashboard.filters.search.label')}
+                placeholder={t('dashboard.filters.search.placeholder')}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 className="shadow-sm text-sm"
@@ -753,7 +767,7 @@ export default function DashboardPage() {
 
             <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
               <Select
-                label="Állapot"
+                label={t('dashboard.filters.status.label')}
                 value={statusFilter}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -761,20 +775,20 @@ export default function DashboardPage() {
                 }}
                 className="shadow-sm text-sm"
               >
-                <option value="all">Mind</option>
-                <option value="draft">Vázlat</option>
-                <option value="sent">Kiküldve</option>
-                <option value="accepted">Elfogadva</option>
-                <option value="lost">Elutasítva</option>
+                <option value="all">{t('dashboard.filters.status.options.all')}</option>
+                <option value="draft">{t(STATUS_LABEL_KEYS.draft)}</option>
+                <option value="sent">{t(STATUS_LABEL_KEYS.sent)}</option>
+                <option value="accepted">{t(STATUS_LABEL_KEYS.accepted)}</option>
+                <option value="lost">{t(STATUS_LABEL_KEYS.lost)}</option>
               </Select>
 
               <Select
-                label="Iparág"
+                label={t('dashboard.filters.industry.label')}
                 value={industryFilter}
                 onChange={(e) => setIndustryFilter(e.target.value)}
                 className="shadow-sm text-sm"
               >
-                <option value="all">Mind</option>
+                <option value="all">{t('dashboard.filters.industry.options.all')}</option>
                 {industries.map((ind) => (
                   <option key={ind} value={ind}>
                     {ind}
@@ -783,7 +797,7 @@ export default function DashboardPage() {
               </Select>
 
               <Select
-                label="Rendezés"
+                label={t('dashboard.filters.sortBy.label')}
                 value={sortBy}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -791,15 +805,15 @@ export default function DashboardPage() {
                 }}
                 className="shadow-sm text-sm"
               >
-                <option value="created">Dátum</option>
-                <option value="status">Állapot</option>
-                <option value="title">Ajánlat neve</option>
-                <option value="recipient">Címzett</option>
-                <option value="industry">Iparág</option>
+                <option value="created">{t('dashboard.filters.sortBy.options.created')}</option>
+                <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
+                <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
+                <option value="recipient">{t('dashboard.filters.sortBy.options.recipient')}</option>
+                <option value="industry">{t('dashboard.filters.sortBy.options.industry')}</option>
               </Select>
 
               <Select
-                label="Irány"
+                label={t('dashboard.filters.sortDir.label')}
                 value={sortDir}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -807,8 +821,8 @@ export default function DashboardPage() {
                 }}
                 className="shadow-sm text-sm"
               >
-                <option value="desc">Csökkenő</option>
-                <option value="asc">Növekvő</option>
+                <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
+                <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
               </Select>
             </div>
           </div>
@@ -835,7 +849,7 @@ export default function DashboardPage() {
               href="/new"
               className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              + Új ajánlat
+              {t('dashboard.actions.newOffer')}
             </Link>
           </Card>
         )}
@@ -869,23 +883,25 @@ export default function DashboardPage() {
 
                     <dl className="space-y-2 text-sm text-fg-muted">
                       <div className="flex items-center justify-between gap-4">
-                        <dt className="">Létrehozva</dt>
+                        <dt className="">{t('dashboard.offerCard.created')}</dt>
                         <dd className="font-medium text-fg">{formatDate(o.created_at)}</dd>
                       </div>
                       <div className="flex items-center justify-between gap-4">
-                        <dt className="">Iparág</dt>
-                        <dd className="font-medium text-fg">{o.industry || 'Ismeretlen'}</dd>
+                        <dt className="">{t('dashboard.offerCard.industry')}</dt>
+                        <dd className="font-medium text-fg">
+                          {o.industry || t('dashboard.offerCard.industryUnknown')}
+                        </dd>
                       </div>
                       {o.pdf_url ? (
                         <div className="flex items-center justify-between gap-4">
-                          <dt className="">Export</dt>
+                          <dt className="">{t('dashboard.offerCard.export')}</dt>
                           <dd>
                             <a
                               className="rounded-full border border-border px-3 py-1 text-xs font-medium text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               href={o.pdf_url}
                               target="_blank"
                             >
-                              PDF megnyitása
+                              {t('dashboard.offerCard.openPdf')}
                             </a>
                           </dd>
                         </div>
@@ -894,15 +910,15 @@ export default function DashboardPage() {
 
                     <div className="mt-6 space-y-3">
                       <StatusStep
-                        title="Kiküldve az ügyfélnek"
-                        description="Add meg, mikor küldted el az ajánlatot."
+                        title={t('dashboard.statusSteps.sent.title')}
+                        description={t('dashboard.statusSteps.sent.description')}
                         dateLabel={formatDate(o.sent_at)}
                         highlight={o.status !== 'draft'}
                       >
                         {o.sent_at ? (
                           <div className="flex flex-wrap items-center gap-2 text-xs text-fg">
                             <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
-                              <span>Dátum módosítása</span>
+                              <span>{t('dashboard.statusSteps.sent.editDate')}</span>
                               <Input
                                 type="date"
                                 value={isoDateInput(o.sent_at)}
@@ -921,10 +937,10 @@ export default function DashboardPage() {
                               variant="secondary"
                               size="sm"
                             >
-                              Jelölés (ma)
+                              {t('dashboard.statusSteps.sent.markToday')}
                             </Button>
                             <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
-                              <span>Dátum választása</span>
+                              <span>{t('dashboard.statusSteps.sent.chooseDate')}</span>
                               <Input
                                 type="date"
                                 onChange={(e) => {
@@ -941,8 +957,8 @@ export default function DashboardPage() {
                       </StatusStep>
 
                       <StatusStep
-                        title="Ügyfél döntése"
-                        description="Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot."
+                        title={t('dashboard.statusSteps.decision.title')}
+                        description={t('dashboard.statusSteps.decision.description')}
                         dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
                         highlight={isDecided}
                       >
@@ -956,11 +972,11 @@ export default function DashboardPage() {
                               }`}
                             >
                               {o.status === 'accepted'
-                                ? DECISION_LABELS.accepted
-                                : DECISION_LABELS.lost}
+                                ? t(DECISION_LABEL_KEYS.accepted)
+                                : t(DECISION_LABEL_KEYS.lost)}
                             </span>
                             <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
-                              <span>Döntés dátuma</span>
+                              <span>{t('dashboard.statusSteps.decision.dateLabel')}</span>
                               <Input
                                 type="date"
                                 value={isoDateInput(o.decided_at)}
@@ -982,7 +998,7 @@ export default function DashboardPage() {
                               size="sm"
                               className="text-success"
                             >
-                              Megjelölés: Elfogadva
+                              {t('dashboard.statusSteps.decision.markAccepted')}
                             </Button>
                             <Button
                               onClick={() => markDecision(o, 'lost')}
@@ -991,7 +1007,7 @@ export default function DashboardPage() {
                               size="sm"
                               className="text-danger"
                             >
-                              Megjelölés: Elutasítva
+                              {t('dashboard.statusSteps.decision.markLost')}
                             </Button>
                           </div>
                         )}
@@ -1006,7 +1022,7 @@ export default function DashboardPage() {
                           variant="secondary"
                           size="sm"
                         >
-                          Vissza vázlatba
+                          {t('dashboard.actions.revertToDraft')}
                         </Button>
                       )}
                       {isDecided && (
@@ -1016,7 +1032,7 @@ export default function DashboardPage() {
                           variant="secondary"
                           size="sm"
                         >
-                          Döntés törlése
+                          {t('dashboard.actions.revertDecision')}
                         </Button>
                       )}
                       <Button
@@ -1026,7 +1042,9 @@ export default function DashboardPage() {
                         size="sm"
                         className="text-danger"
                       >
-                        {isDeleting ? 'Törlés…' : 'Ajánlat törlése'}
+                        {isDeleting
+                          ? t('dashboard.actions.deleting')
+                          : t('dashboard.actions.deleteOffer')}
                       </Button>
                     </div>
                   </Card>
@@ -1048,7 +1066,7 @@ export default function DashboardPage() {
                 isLoading={isLoadingMore}
               />
               {!hasMore ? (
-                <p className="text-xs text-fg-muted">Az összes ajánlat megjelenítve.</p>
+                <p className="text-xs text-fg-muted">{t('dashboard.pagination.allLoaded')}</p>
               ) : null}
             </div>
           </>
