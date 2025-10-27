@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
+import { t } from '@/copy';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
@@ -42,8 +43,8 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
     const verify = async () => {
       try {
         const response = await fetchWithSupabaseAuth('/api/auth/session', {
-          authErrorMessage: 'A bejelentkezés lejárt vagy érvénytelen.',
-          defaultErrorMessage: 'Nem sikerült ellenőrizni a bejelentkezést.',
+          authErrorMessage: t('errors.auth.sessionInvalid'),
+          defaultErrorMessage: t('errors.auth.sessionCheckFailed'),
         });
         if (!active) {
           return;
@@ -54,7 +55,7 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
         const user = payload?.user ?? null;
 
         if (!user) {
-          throw new ApiError('A bejelentkezés lejárt vagy érvénytelen.', { status: 401 });
+          throw new ApiError(t('errors.auth.sessionInvalid'), { status: 401 });
         }
 
         setState({ status: 'authenticated', user, error: null });
@@ -63,9 +64,7 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
           return;
         }
         const err =
-          error instanceof Error
-            ? error
-            : new Error('Ismeretlen hiba történt a hitelesítés során.');
+          error instanceof Error ? error : new Error(t('errors.auth.verificationUnknown'));
         setState({ status: 'unauthenticated', user: null, error: err });
         const redirectQuery = redirectTarget
           ? `?redirect=${encodeURIComponent(redirectTarget)}`

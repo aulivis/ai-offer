@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 
+import { t } from '@/copy';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { useSupabase } from '@/components/SupabaseProvider';
 
@@ -30,7 +31,7 @@ export function useOptionalAuth(): OptionalAuthState {
       try {
         const response = await fetchWithSupabaseAuth('/api/auth/session', {
           signal: abortController.signal,
-          defaultErrorMessage: 'Nem sikerült ellenőrizni a bejelentkezést.',
+          defaultErrorMessage: t('errors.auth.sessionCheckFailed'),
         });
 
         if (!active) {
@@ -57,7 +58,7 @@ export function useOptionalAuth(): OptionalAuthState {
         }
 
         const fallback =
-          err instanceof Error ? err : new Error('Ismeretlen hiba azonosítás közben.');
+          err instanceof Error ? err : new Error(t('errors.auth.verificationUnknown'));
         setState({ status: 'unauthenticated', user: null, error: fallback });
       }
     };

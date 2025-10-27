@@ -1399,7 +1399,13 @@ export const hu = {
     unauthorized: 'Nincs jogosultságod ehhez a művelethez.',
     network: 'Hálózati hiba történt. Kérlek, próbáld újra.',
     unknown: 'Ismeretlen hiba történt.',
+    requestFailed: 'Ismeretlen hiba történt a kérés során.',
+    requestStatus: 'Hiba a kérés során ({status})',
     auth: {
+      requestFailed: 'Nem sikerült hitelesíteni a kérést.',
+      sessionInvalid: 'A bejelentkezés lejárt vagy érvénytelen.',
+      sessionCheckFailed: 'Nem sikerült ellenőrizni a bejelentkezést.',
+      verificationUnknown: 'Ismeretlen hiba történt a hitelesítés során.',
       notLoggedIn: 'Nem vagy bejelentkezve.',
       logoutMissingCsrf: 'Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.',
       logoutFailed: 'Nem sikerült kijelentkezni.',

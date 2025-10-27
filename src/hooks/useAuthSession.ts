@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
+import { t } from '@/copy';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 
 type AuthSessionState = {
@@ -24,7 +25,7 @@ export function useAuthSession(): AuthSessionState {
     async function loadSession() {
       try {
         const response = await fetchWithSupabaseAuth('/api/auth/session', {
-          defaultErrorMessage: 'Nem sikerült ellenőrizni a bejelentkezést.',
+          defaultErrorMessage: t('errors.auth.sessionCheckFailed'),
         });
         const payload: unknown = await response.json().catch(() => null);
         if (cancelled) {
