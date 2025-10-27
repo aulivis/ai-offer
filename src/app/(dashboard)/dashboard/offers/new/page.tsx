@@ -169,19 +169,23 @@ export default function NewOfferPage() {
           style: 'detailed',
         }),
         signal: controller.signal,
-        authErrorMessage: 'Nem sikerült hitelesíteni az előnézet lekérését.',
-        errorMessageBuilder: (status) => `Hiba az előnézet betöltésekor (${status})`,
-        defaultErrorMessage: 'Ismeretlen hiba történt az előnézet lekérése közben.',
+        authErrorMessage: t('errors.offer.saveAuth'),
+        errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+        defaultErrorMessage: t('errors.preview.fetchUnknown'),
       });
 
       if (!resp.body) {
-        const message = 'Az AI nem küldött adatot az előnézethez.';
+        const message = t('errors.preview.noData');
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewStatus('error');
           setPreviewError(message);
           setPreviewHtml(DEFAULT_PREVIEW_HTML);
         }
-        showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
+        showToast({
+          title: t('toasts.preview.error.title'),
+          description: message,
+          variant: 'error',
+        });
         return;
       }
 
@@ -226,7 +230,7 @@ export default function NewOfferPage() {
               streamErrorMessage =
                 typeof payload.message === 'string'
                   ? payload.message
-                  : 'Ismeretlen hiba történt az AI stream során.';
+                  : t('errors.preview.streamUnknown');
               break;
             }
           } catch (err) {
@@ -250,7 +254,11 @@ export default function NewOfferPage() {
           setPreviewError(streamErrorMessage);
           setPreviewHtml(DEFAULT_PREVIEW_HTML);
         }
-        showToast({ title: 'Előnézet hiba', description: streamErrorMessage, variant: 'error' });
+        showToast({
+          title: t('toasts.preview.error.title'),
+          description: streamErrorMessage,
+          variant: 'error',
+        });
         return;
       }
 
@@ -266,7 +274,7 @@ export default function NewOfferPage() {
       if (isAbortError(error)) {
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewStatus('aborted');
-          setPreviewError('Az előnézet frissítése megszakadt.');
+          setPreviewError(t('errors.preview.aborted'));
           setPreviewHtml(DEFAULT_PREVIEW_HTML);
         }
         return;
@@ -277,13 +285,17 @@ export default function NewOfferPage() {
           ? error.message
           : error instanceof Error
             ? error.message
-            : 'Ismeretlen hiba történt az előnézet lekérése közben.';
+            : t('errors.preview.fetchUnknown');
       if (previewRequestIdRef.current === nextRequestId) {
         setPreviewStatus('error');
         setPreviewError(message);
         setPreviewHtml(DEFAULT_PREVIEW_HTML);
       }
-      showToast({ title: 'Előnézet hiba', description: message, variant: 'error' });
+      showToast({
+        title: t('toasts.preview.error.title'),
+        description: message,
+        variant: 'error',
+      });
     } finally {
       if (previewAbortRef.current === controller) {
         previewAbortRef.current = null;
@@ -308,7 +320,7 @@ export default function NewOfferPage() {
     previewRequestIdRef.current += 1;
     controller.abort();
     setPreviewStatus('aborted');
-    setPreviewError('Az előnézet frissítése megszakadt.');
+    setPreviewError(t('errors.preview.aborted'));
     setPreviewHtml(DEFAULT_PREVIEW_HTML);
   }, []);
 
@@ -412,8 +424,8 @@ export default function NewOfferPage() {
 
     if (!trimmedTitle || !trimmedDescription) {
       showToast({
-        title: 'Hiányzó adatok',
-        description: 'Add meg az ajánlat címét és rövid leírását a mentéshez.',
+        title: t('toasts.offers.missingDetails.title'),
+        description: t('toasts.offers.missingDetails.description'),
         variant: 'error',
       });
       return;
@@ -421,8 +433,8 @@ export default function NewOfferPage() {
 
     if (!hasPricingRows) {
       showToast({
-        title: 'Hiányzó tételek',
-        description: 'Adj hozzá legalább egy tételt az árlistához.',
+        title: t('toasts.offers.missingItems.title'),
+        description: t('toasts.offers.missingItems.description'),
         variant: 'error',
       });
       return;
@@ -430,8 +442,8 @@ export default function NewOfferPage() {
 
     if (!hasPreviewHtml) {
       showToast({
-        title: 'Hiányzó előnézet',
-        description: 'Generáld le az AI előnézetet, mielőtt elmented az ajánlatot.',
+        title: t('toasts.offers.missingPreview.title'),
+        description: t('toasts.offers.missingPreview.description'),
         variant: 'error',
       });
       return;
@@ -456,9 +468,9 @@ export default function NewOfferPage() {
           clientId: null,
           imageAssets: [],
         }),
-        authErrorMessage: 'Nem sikerült hitelesíteni az ajánlat mentését.',
-        errorMessageBuilder: (status) => `Hiba az ajánlat mentésekor (${status})`,
-        defaultErrorMessage: 'Ismeretlen hiba történt az ajánlat mentése közben.',
+        authErrorMessage: t('errors.offer.saveAuth'),
+        errorMessageBuilder: (status) => t('errors.offer.saveStatus', { status }),
+        defaultErrorMessage: t('errors.offer.saveUnknown'),
       });
 
       type GenerateResponse = { ok?: boolean; error?: string | null } | null;
@@ -471,13 +483,13 @@ export default function NewOfferPage() {
         const message =
           typeof payload?.error === 'string' && payload.error
             ? payload.error
-            : 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.';
+            : t('errors.offer.saveFailed');
         throw new ApiError(message);
       }
 
       showToast({
-        title: 'Ajánlat mentve',
-        description: 'A PDF generálása folyamatban van, hamarosan elérhető lesz.',
+        title: t('toasts.offers.saveSuccess.title'),
+        description: t('toasts.offers.saveSuccess.description'),
         variant: 'success',
       });
       router.replace('/dashboard');
@@ -487,10 +499,10 @@ export default function NewOfferPage() {
           ? error.message
           : error instanceof Error
             ? error.message
-            : 'Ismeretlen hiba történt az ajánlat mentése közben.';
+            : t('errors.offer.saveUnknown');
       showToast({
-        title: 'Ajánlat mentése sikertelen',
-        description: message,
+        title: t('toasts.offers.saveFailed.title'),
+        description: message || t('toasts.offers.saveFailed.description'),
         variant: 'error',
       });
     } finally {
