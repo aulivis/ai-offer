@@ -54,8 +54,11 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
     return NextResponse.json({ error: 'A webhook URL már nincs engedélyezve.' }, { status: 400 });
   }
 
+  const abortController = new AbortController();
+  const abortTimeout = setTimeout(() => abortController.abort(), 10_000);
+
   try {
-    await fetch(job.callback_url, {
+    const response = await fetch(job.callback_url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -64,10 +67,35 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
         pdfUrl: job.pdf_url,
         downloadToken: job.download_token,
       }),
+      signal: abortController.signal,
     });
+
+    if (!response.ok) {
+      let responseText: string | undefined;
+      try {
+        responseText = await response.text();
+      } catch (readError) {
+        console.error('Webhook replay response read error:', readError);
+      }
+
+      const truncatedBody =
+        responseText && responseText.length > 500
+          ? `${responseText.slice(0, 500)}…`
+          : responseText;
+
+      console.error('Webhook replay failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: truncatedBody,
+      });
+
+      return NextResponse.json({ error: 'A webhook hívása sikertelen volt.' }, { status: 502 });
+    }
   } catch (callbackError) {
     console.error('Webhook replay error:', callbackError);
     return NextResponse.json({ error: 'A webhook hívása sikertelen volt.' }, { status: 502 });
+  } finally {
+    clearTimeout(abortTimeout);
   }
 
   return NextResponse.json({ ok: true });
