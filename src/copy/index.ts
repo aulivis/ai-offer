@@ -1,3 +1,5 @@
+import { getLanguage } from '@/state/lang';
+
 import { hu } from './hu';
 
 type Primitive = string | number | boolean | bigint | symbol | null | undefined;
@@ -16,7 +18,7 @@ export type CopyKey = DeepKeys<typeof hu>;
 
 const dictionary = { hu } as const;
 
-type LocaleKey = keyof typeof dictionary;
+export type LocaleKey = keyof typeof dictionary;
 
 type InterpolationValues = Record<string, string | number>;
 
@@ -36,30 +38,31 @@ function format(value: string, params?: InterpolationValues): string {
 }
 
 export function t(key: CopyKey): string;
-export function t(key: CopyKey, locale: LocaleKey): string;
+export function t(key: CopyKey, lang: LocaleKey): string;
 export function t(key: CopyKey, params: InterpolationValues): string;
-export function t(key: CopyKey, params: InterpolationValues, locale: LocaleKey): string;
+export function t(key: CopyKey, params: InterpolationValues, lang: LocaleKey): string;
 export function t(
   key: CopyKey,
-  paramsOrLocale?: InterpolationValues | LocaleKey,
-  maybeLocale?: LocaleKey,
+  paramsOrLang?: InterpolationValues | LocaleKey,
+  maybeLang?: LocaleKey,
 ): string {
   let params: InterpolationValues | undefined;
-  let locale: LocaleKey = 'hu';
+  let locale: LocaleKey | undefined;
 
-  if (typeof paramsOrLocale === 'string' && paramsOrLocale in dictionary) {
-    locale = paramsOrLocale as LocaleKey;
-  } else if (paramsOrLocale && typeof paramsOrLocale === 'object') {
-    params = paramsOrLocale as InterpolationValues;
-    if (maybeLocale) {
-      locale = maybeLocale;
-    }
-  } else if (maybeLocale) {
-    locale = maybeLocale;
+  if (typeof paramsOrLang === 'string' && paramsOrLang in dictionary) {
+    locale = paramsOrLang as LocaleKey;
+  } else if (paramsOrLang && typeof paramsOrLang === 'object') {
+    params = paramsOrLang as InterpolationValues;
   }
 
+  if (maybeLang) {
+    locale = maybeLang;
+  }
+
+  const activeLocale = locale ?? getLanguage();
+
   const keys = key.split('.');
-  let value: unknown = dictionary[locale];
+  let value: unknown = dictionary[activeLocale];
 
   for (const k of keys) {
     if (typeof value !== 'object' || value === null) {
