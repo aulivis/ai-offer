@@ -91,8 +91,8 @@ export function PreferencesModal() {
   const consentSummary = useMemo(
     () =>
       consentState.analytics || consentState.marketing
-        ? 'Jelenleg engedélyezte a választható sütik egy részét.'
-        : 'Jelenleg csak a szükséges sütik vannak engedélyezve.',
+        ? t('cookies.preferences.summary.anyOptional')
+        : t('cookies.preferences.summary.onlyNecessary'),
     [consentState.analytics, consentState.marketing],
   );
 
@@ -106,24 +106,23 @@ export function PreferencesModal() {
       >
         <header className="space-y-2">
           <h2 id={titleId} className="text-xl font-semibold text-fg">
-            Sütibeállítások
+            {t('cookies.preferences.title')}
           </h2>
           <p id={descriptionId} className="text-sm text-muted-foreground">
-            Kezelje, hogy milyen típusú sütiket engedélyez az oldalon. A szükséges sütik nélkül az
-            oldal nem működne megfelelően.
+            {t('cookies.preferences.description')}
           </p>
         </header>
 
         <section className="space-y-4" aria-live="polite">
           <Switch
-            label="Szükséges sütik"
+            label={t('cookies.preferences.categories.necessary.label')}
             checked
             disabled
             readOnly
-            description="Mindig engedélyezve vannak."
+            description={t('cookies.preferences.categories.necessary.description')}
           />
           <Switch
-            label="Analitikai sütik"
+            label={t('cookies.preferences.categories.analytics.label')}
             checked={consentState.analytics}
             onChange={(event) =>
               setConsentState((previous) => ({
@@ -131,10 +130,10 @@ export function PreferencesModal() {
                 analytics: event.target.checked,
               }))
             }
-            description="Segítenek megérteni, hogyan használják a látogatók az oldalt."
+            description={t('cookies.preferences.categories.analytics.description')}
           />
           <Switch
-            label="Marketing sütik"
+            label={t('cookies.preferences.categories.marketing.label')}
             checked={consentState.marketing}
             onChange={(event) =>
               setConsentState((previous) => ({
@@ -142,7 +141,7 @@ export function PreferencesModal() {
                 marketing: event.target.checked,
               }))
             }
-            description="Lehetővé teszik személyre szabott tartalmak és ajánlatok megjelenítését."
+            description={t('cookies.preferences.categories.marketing.description')}
           />
         </section>
 
@@ -152,10 +151,10 @@ export function PreferencesModal() {
 
         <footer className="flex flex-wrap justify-end gap-3">
           <Button type="button" variant="ghost" onClick={handleCancel} disabled={isSaving}>
-            Mégse
+            {t('cookies.preferences.actions.cancel')}
           </Button>
           <Button type="submit" variant="primary" disabled={isSaving}>
-            Mentés
+            {t('cookies.preferences.actions.save')}
           </Button>
         </footer>
       </form>
