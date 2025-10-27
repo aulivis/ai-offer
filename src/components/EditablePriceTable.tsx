@@ -6,7 +6,43 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
-export type PriceRow = { name: string; qty: number; unit: string; unitPrice: number; vat: number };
+export type PriceRow = {
+  id: string;
+  name: string;
+  qty: number;
+  unit: string;
+  unitPrice: number;
+  vat: number;
+};
+
+const numericKeys: Array<keyof Pick<PriceRow, 'qty' | 'unitPrice' | 'vat'>> = [
+  'qty',
+  'unitPrice',
+  'vat',
+];
+
+const isNumericKey = (key: keyof PriceRow): key is (typeof numericKeys)[number] =>
+  numericKeys.includes(key as (typeof numericKeys)[number]);
+
+const generateRowId = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
+
+export function createPriceRow(
+  overrides: Partial<Omit<PriceRow, 'id'>> & { id?: string } = {},
+): PriceRow {
+  const { id, ...rest } = overrides;
+  return {
+    id: id ?? generateRowId(),
+    name: '',
+    qty: 1,
+    unit: 'db',
+    unitPrice: 0,
+    vat: 27,
+    ...rest,
+  };
+}
 
 type Props = {
   rows: PriceRow[];
@@ -27,16 +63,15 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
 
   const update = (idx: number, key: keyof PriceRow, val: string | number) => {
     const next = [...rows];
-    if (key === 'qty' || key === 'unitPrice' || key === 'vat') {
-      next[idx][key] = Number(val) as PriceRow[typeof key];
-    } else {
-      next[idx][key] = String(val) as PriceRow[typeof key];
-    }
+    const value = isNumericKey(key)
+      ? (Number(val) as PriceRow[typeof key])
+      : (String(val) as PriceRow[typeof key]);
+    next[idx] = { ...next[idx], [key]: value };
     onChange(next);
   };
 
-  const addRow = () => onChange([...rows, { name: '', qty: 1, unit: 'db', unitPrice: 0, vat: 27 }]);
-  const removeRow = (idx: number) => onChange(rows.filter((_, i) => i !== idx));
+  const addRow = () => onChange([...rows, createPriceRow()]);
+  const removeRow = (rowId: string) => onChange(rows.filter((row) => row.id !== rowId));
 
   return (
     <Card className="overflow-hidden p-0">
@@ -44,18 +79,30 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
         <table className="w-full text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-500">
             <tr className="text-left">
-              <th className="px-4 py-3 font-medium">{t('editablePriceTable.columns.item')}</th>
-              <th className="w-24 px-4 py-3 font-medium">{t('editablePriceTable.columns.quantity')}</th>
-              <th className="w-28 px-4 py-3 font-medium">{t('editablePriceTable.columns.unit')}</th>
-              <th className="w-36 px-4 py-3 font-medium">{t('editablePriceTable.columns.unitPrice')}</th>
-              <th className="w-24 px-4 py-3 font-medium">{t('editablePriceTable.columns.vat')}</th>
-              <th className="w-36 px-4 py-3 text-right font-medium">{t('editablePriceTable.columns.netTotal')}</th>
+              <th className="px-4 py-3 font-medium">
+                {t('editablePriceTable.columns.item')}
+              </th>
+              <th className="w-24 px-4 py-3 font-medium">
+                {t('editablePriceTable.columns.quantity')}
+              </th>
+              <th className="w-28 px-4 py-3 font-medium">
+                {t('editablePriceTable.columns.unit')}
+              </th>
+              <th className="w-36 px-4 py-3 font-medium">
+                {t('editablePriceTable.columns.unitPrice')}
+              </th>
+              <th className="w-24 px-4 py-3 font-medium">
+                {t('editablePriceTable.columns.vat')}
+              </th>
+              <th className="w-36 px-4 py-3 text-right font-medium">
+                {t('editablePriceTable.columns.netTotal')}
+              </th>
               <th className="w-16 px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {rows.map((r, idx) => (
-              <tr key={idx} className="border-t border-border">
+              <tr key={r.id} className="border-t border-border">
                 <td className="px-4 py-3">
                   <Input
                     placeholder={t('editablePriceTable.placeholders.name')}
@@ -105,7 +152,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                 <td className="px-4 py-3 text-right">
                   <Button
                     type="button"
-                    onClick={() => removeRow(idx)}
+                    onClick={() => removeRow(r.id)}
                     className="text-xs font-medium text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {t('editablePriceTable.actions.removeRow')}
