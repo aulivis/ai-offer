@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
-const MAGIC_LINK_MESSAGE =
-  'Ha létezik fiók ehhez az e-mail címhez, perceken belül elküldjük a belépési linket.';
+const MAGIC_LINK_MESSAGE = t('login.messages.magicLinkInfo');
 const GOOGLE_BUTTON_STYLES: CSSProperties = {
   '--btn-bg': '#ffffff',
   '--btn-fg': '#1f1f1f',
@@ -58,9 +57,7 @@ export default function LoginClient() {
         console.error('Failed to query Google sign-in availability.', e);
         if (ignore) return;
         setIsGoogleAvailable(false);
-        setGoogleStatusMessage(
-          'Nem sikerült ellenőrizni a Google bejelentkezés állapotát. Kérjük, próbáld újra később.',
-        );
+        setGoogleStatusMessage(t('login.googleUnavailable'));
       }
     }
 
@@ -112,10 +109,7 @@ export default function LoginClient() {
     setIsGoogleLoading(true);
     try {
       if (!isGoogleAvailable) {
-        throw new Error(
-          googleStatusMessage ??
-            'A Google bejelentkezés jelenleg nem érhető el. Kérjük, próbáld újra később.',
-        );
+        throw new Error(googleStatusMessage ?? t('login.googleDisabledFallback'));
       }
       const redirectTo = `${location.origin}/dashboard`;
       const url = new URL('/api/auth/google', location.origin);
@@ -139,19 +133,18 @@ export default function LoginClient() {
             P
           </span>
           <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
-            Bejelentkezés
+            {t('login.title')}
           </h1>
           <p className="text-base text-fg-muted">
-            Írd be az e-mail címed, és küldünk egy biztonságos belépési linket, mely 5 percig
-            érvényes. Csak kattints rá, és automatikusan bejelentkezhetsz – jelszó nélkül.
+            {t('login.description')}
           </p>
         </div>
 
         <div className="space-y-4">
           <Input
-            label="E-mail cím"
+            label={t('login.emailLabel')}
             type="email"
-            placeholder="email@cimed.hu"
+            placeholder={t('login.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -162,13 +155,17 @@ export default function LoginClient() {
             size="lg"
             disabled={!email || sent || isMagicLoading}
             aria-busy={isMagicLoading}
-            aria-label="Magic link küldése a megadott e-mail címre"
+            aria-label={t('login.magicLinkAria')}
           >
-            {sent ? 'Link elküldve' : isMagicLoading ? 'Küldés…' : 'Magic link küldése'}
+            {sent
+              ? t('login.magicLinkSent')
+              : isMagicLoading
+                ? t('login.magicLinkSending')
+                : t('login.magicLinkButton')}
           </Button>
 
           <div className="relative py-1 text-center text-xs uppercase tracking-[0.3em] text-fg-muted">
-            <span className="bg-bg px-2">vagy</span>
+            <span className="bg-bg px-2">{t('login.divider')}</span>
           </div>
 
           <Button
@@ -179,16 +176,16 @@ export default function LoginClient() {
             style={GOOGLE_BUTTON_STYLES}
             disabled={isGoogleLoading || !isGoogleAvailable}
             aria-busy={isGoogleLoading}
-            aria-label="Google bejelentkezés indítása"
+            aria-label={t('login.googleButton')}
           >
             {isGoogleLoading ? (
-              'Csatlakozás…'
+              t('login.googleJoining')
             ) : (
               <>
                 <span className="flex h-5 w-5 items-center justify-center">
                   <Image src="/google-logo.svg" alt="" width={18} height={18} aria-hidden="true" />
                 </span>
-                <span className="leading-none">Google Bejelentkezés</span>
+                <span className="leading-none">{t('login.googleButton')}</span>
               </>
             )}
           </Button>

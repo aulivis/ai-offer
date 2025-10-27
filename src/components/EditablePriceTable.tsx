@@ -44,12 +44,12 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
         <table className="w-full text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-500">
             <tr className="text-left">
-              <th className="px-4 py-3 font-medium">Tétel</th>
-              <th className="w-24 px-4 py-3 font-medium">Menny.</th>
-              <th className="w-28 px-4 py-3 font-medium">Egység</th>
-              <th className="w-36 px-4 py-3 font-medium">Egységár (Ft)</th>
-              <th className="w-24 px-4 py-3 font-medium">ÁFA %</th>
-              <th className="w-36 px-4 py-3 text-right font-medium">Nettó össz.</th>
+              <th className="px-4 py-3 font-medium">{t('editablePriceTable.columns.item')}</th>
+              <th className="w-24 px-4 py-3 font-medium">{t('editablePriceTable.columns.quantity')}</th>
+              <th className="w-28 px-4 py-3 font-medium">{t('editablePriceTable.columns.unit')}</th>
+              <th className="w-36 px-4 py-3 font-medium">{t('editablePriceTable.columns.unitPrice')}</th>
+              <th className="w-24 px-4 py-3 font-medium">{t('editablePriceTable.columns.vat')}</th>
+              <th className="w-36 px-4 py-3 text-right font-medium">{t('editablePriceTable.columns.netTotal')}</th>
               <th className="w-16 px-4 py-3" />
             </tr>
           </thead>
@@ -58,7 +58,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
               <tr key={idx} className="border-t border-border">
                 <td className="px-4 py-3">
                   <Input
-                    placeholder="Megnevezés"
+                    placeholder={t('editablePriceTable.placeholders.name')}
                     value={r.name}
                     onChange={(e) => update(idx, 'name', e.target.value)}
                     className="py-2 text-sm"
@@ -75,7 +75,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                 </td>
                 <td className="px-4 py-3">
                   <Input
-                    placeholder="db / óra / m²"
+                    placeholder={t('editablePriceTable.placeholders.unit')}
                     value={r.unit}
                     onChange={(e) => update(idx, 'unit', e.target.value)}
                     className="py-2 text-sm"
@@ -108,7 +108,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                     onClick={() => removeRow(idx)}
                     className="text-xs font-medium text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    Törlés
+                    {t('editablePriceTable.actions.removeRow')}
                   </Button>
                 </td>
               </tr>
@@ -123,17 +123,20 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
           onClick={addRow}
           className="w-full rounded-full border border-border px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
         >
-          + Új tétel
+          {t('editablePriceTable.actions.addRow')}
         </Button>
         <div className="grid gap-1 text-right text-sm text-slate-500">
           <span>
-            <strong className="text-slate-700">Nettó:</strong> {totals.net.toLocaleString('hu-HU')}{' '}
-            Ft
+            <strong className="text-slate-700">{t('editablePriceTable.totals.net')}</strong>{' '}
+            {totals.net.toLocaleString('hu-HU')} {t('editablePriceTable.totals.currency')}
           </span>
-          <span>ÁFA: {totals.vat.toLocaleString('hu-HU')} Ft</span>
           <span>
-            <strong className="text-slate-700">Bruttó:</strong>{' '}
-            {totals.gross.toLocaleString('hu-HU')} Ft
+            {t('editablePriceTable.totals.vat')}: {totals.vat.toLocaleString('hu-HU')}{' '}
+            {t('editablePriceTable.totals.currency')}
+          </span>
+          <span>
+            <strong className="text-slate-700">{t('editablePriceTable.totals.gross')}</strong>{' '}
+            {totals.gross.toLocaleString('hu-HU')} {t('editablePriceTable.totals.currency')}
           </span>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI, { APIError } from 'openai';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
+import { t } from '@/copy';
 import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import { z } from 'zod';
@@ -55,9 +56,9 @@ const optionalTrimmedString = z.preprocess(
 
 const previewRequestSchema = z
   .object({
-    industry: z.string().trim().min(1, 'Az iparág megadása kötelező.'),
-    title: z.string().trim().min(1, 'A cím megadása kötelező.'),
-    description: z.string().trim().min(1, 'A leírás megadása kötelező.'),
+    industry: z.string().trim().min(1, t('validation.required')),
+    title: z.string().trim().min(1, t('validation.required')),
+    description: z.string().trim().min(1, t('validation.required')),
     deadline: optionalTrimmedString,
     language: z.preprocess(
       (value) => (value === null || value === undefined ? undefined : value),

@@ -927,17 +927,17 @@ export default function NewOfferWizard() {
 
   const wizardSteps: StepIndicatorStep[] = [
     {
-      label: 'Projekt részletek',
+      label: t('offers.wizard.steps.details'),
       status: step === 1 ? 'current' : step > 1 ? 'completed' : 'upcoming',
       onSelect: () => goToStep(1),
     },
     {
-      label: 'Tételek',
+      label: t('offers.wizard.steps.pricing'),
       status: step === 2 ? 'current' : step > 2 ? 'completed' : 'upcoming',
       onSelect: () => goToStep(2),
     },
     {
-      label: 'Előnézet & PDF',
+      label: t('offers.wizard.steps.previewPdf'),
       status: step === 3 ? 'current' : 'upcoming',
       onSelect: () => goToStep(3),
     },
@@ -945,8 +945,8 @@ export default function NewOfferWizard() {
 
   return (
     <AppFrame
-      title="Új ajánlat"
-      description="Kövesd a háromlépéses varázslót: add meg a projekt részleteit, igazítsd a tételeket, majd generáld le a PDF-et."
+      title={t('offers.wizard.pageTitle')}
+      description={t('offers.wizard.pageDescription')}
     >
       <div className="space-y-8">
         <Card className="space-y-6">
@@ -968,7 +968,7 @@ export default function NewOfferWizard() {
             <Card className="space-y-6">
               <div className="grid gap-6">
                 <Select
-                  label="Iparág"
+                  label={t('offers.wizard.forms.details.industryLabel')}
                   value={form.industry}
                   onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
                 >
@@ -980,40 +980,43 @@ export default function NewOfferWizard() {
                 </Select>
 
                 <Input
-                  label="Ajánlat címe"
-                  placeholder="Pl. Weboldal fejlesztés"
+                  label={t('offers.wizard.forms.details.titleLabel')}
+                  placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 />
 
                 <label className="block space-y-2">
-                  <span className="text-sm font-medium text-fg">Rövid projektleírás</span>
+                  <span className="text-sm font-medium text-fg">
+                    {t('offers.wizard.forms.details.descriptionLabel')}
+                  </span>
                   <textarea
                     className={`${textareaClass} h-32`}
                     value={form.description}
                     onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
                   />
                 </label>
               </div>
 
               <div className="grid gap-y-6 gap-x-4 sm:grid-cols-3">
                 <Input
-                  label="Határidő"
+                  label={t('offers.wizard.forms.details.deadlineLabel')}
                   value={form.deadline}
                   onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
                 />
                 <Select
-                  label="Nyelv"
+                  label={t('offers.wizard.forms.details.languageLabel')}
                   value={form.language}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, language: e.target.value as Step1Form['language'] }))
                   }
                 >
-                  <option value="hu">Magyar</option>
-                  <option value="en">English</option>
+                  <option value="hu">{t('offers.wizard.forms.details.languageOptions.hu')}</option>
+                  <option value="en">{t('offers.wizard.forms.details.languageOptions.en')}</option>
                 </Select>
                 <Select
-                  label="Hangnem"
+                  label={t('offers.wizard.forms.details.voiceLabel')}
                   value={form.brandVoice}
                   onChange={(e) =>
                     setForm((f) => ({
@@ -1022,8 +1025,10 @@ export default function NewOfferWizard() {
                     }))
                   }
                 >
-                  <option value="friendly">Barátságos</option>
-                  <option value="formal">Formális</option>
+                  <option value="friendly">
+                    {t('offers.wizard.forms.details.voiceOptions.friendly')}
+                  </option>
+                  <option value="formal">{t('offers.wizard.forms.details.voiceOptions.formal')}</option>
                 </Select>
               </div>
 
@@ -1073,8 +1078,8 @@ export default function NewOfferWizard() {
                 </div>
                 <div className="relative">
                   <Input
-                    label="Cégnév"
-                    placeholder="Cégnév"
+                    label={t('offers.wizard.forms.details.clientLookupLabel')}
+                    placeholder={t('offers.wizard.forms.details.clientLookupPlaceholder')}
                     value={client.company_name}
                     onChange={(e) => {
                       setClientId(undefined);
@@ -1103,33 +1108,33 @@ export default function NewOfferWizard() {
                 </div>
                 <div className="grid gap-y-6 gap-x-4 sm:grid-cols-2">
                   <Input
-                    label="Cím"
-                    placeholder="Cím"
+                    label={t('offers.wizard.forms.details.clientFieldAddress')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
                     value={client.address || ''}
                     onChange={(e) => setClient((c) => ({ ...c, address: e.target.value }))}
                   />
                   <Input
-                    label="Adószám"
-                    placeholder="Adószám"
+                    label={t('offers.wizard.forms.details.clientFieldTax')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldTax')}
                     value={client.tax_id || ''}
                     onChange={(e) => setClient((c) => ({ ...c, tax_id: e.target.value }))}
                   />
                   <Input
-                    label="Képviselő neve"
-                    placeholder="Képviselő neve"
+                    label={t('offers.wizard.forms.details.clientFieldRepresentative')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldRepresentative')}
                     value={client.representative || ''}
                     onChange={(e) => setClient((c) => ({ ...c, representative: e.target.value }))}
                   />
                   <Input
-                    label="Telefon"
-                    placeholder="Telefon"
+                    label={t('offers.wizard.forms.details.clientFieldPhone')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldPhone')}
                     value={client.phone || ''}
                     onChange={(e) => setClient((c) => ({ ...c, phone: e.target.value }))}
                   />
                   <div className="sm:col-span-2">
                     <Input
-                      label="E-mail"
-                      placeholder="E-mail"
+                      label={t('offers.wizard.forms.details.clientFieldEmail')}
+                      placeholder={t('offers.wizard.forms.details.clientFieldEmail')}
                       value={client.email || ''}
                       onChange={(e) => setClient((c) => ({ ...c, email: e.target.value }))}
                     />
@@ -1253,7 +1258,7 @@ export default function NewOfferWizard() {
                 ref={richTextEditorRef}
                 value={editedHtml || previewHtml}
                 onChange={(html) => setEditedHtml(html)}
-                placeholder="Formázd át a generált szöveget..."
+                placeholder={t('richTextEditor.placeholderHint')}
               />
               <p className="text-xs text-slate-500">
                 Tartsd meg a címsorokat és listákat a jobb olvashatóságért.
