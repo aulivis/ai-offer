@@ -118,10 +118,17 @@ export async function fetchWithSupabaseAuth(
   input: RequestInfo | URL,
   options: AuthenticatedFetchOptions,
 ): Promise<Response> {
-  const { errorMessageBuilder, defaultErrorMessage, authErrorMessage, headers, ...init } = options;
+  const {
+    errorMessageBuilder,
+    defaultErrorMessage,
+    authErrorMessage,
+    headers,
+    signal,
+    ...restInit
+  } = options;
 
   const finalHeaders = new Headers(headers ?? undefined);
-  const method = (init.method ?? 'GET').toString().toUpperCase();
+  const method = (restInit.method ?? 'GET').toString().toUpperCase();
   if (method !== 'GET' && method !== 'HEAD' && !finalHeaders.has('x-csrf-token')) {
     const csrfToken = getCsrfToken();
     if (csrfToken) {
@@ -129,16 +136,17 @@ export async function fetchWithSupabaseAuth(
     }
   }
 
+  const requestSignal = signal ?? undefined;
+
   async function attemptFetch(): Promise<Response> {
     try {
-      const { signal: initSignal, ...restInit } = init;
       const requestInit: RequestInit = {
         ...restInit,
         credentials: restInit.credentials ?? 'include',
         headers: finalHeaders,
       };
-      if (initSignal) {
-        requestInit.signal = initSignal;
+      if (requestSignal !== undefined) {
+        requestInit.signal = requestSignal;
       }
 
       return await fetch(input, requestInit);
@@ -160,7 +168,7 @@ export async function fetchWithSupabaseAuth(
   response = await attemptFetch();
 
   if (response.status === 401) {
-    const refreshed = await refreshSession(init.signal ?? undefined);
+    const refreshed = await refreshSession(requestSignal);
     if (refreshed) {
       response = await attemptFetch();
     }

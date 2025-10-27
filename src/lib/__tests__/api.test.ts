@@ -98,6 +98,34 @@ describe('fetchWithSupabaseAuth', () => {
     expect(response.status).toBe(200);
   });
 
+  it('forwards abort signal through fetch and refresh attempts', async () => {
+    const controller = new AbortController();
+    const successResponse = new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const unauthorizedResponse = new Response(null, { status: 401 });
+    const refreshSuccessResponse = new Response(null, { status: 204 });
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(unauthorizedResponse)
+      .mockResolvedValueOnce(refreshSuccessResponse)
+      .mockResolvedValueOnce(successResponse);
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchWithSupabaseAuth('/api/protected', { method: 'GET', signal: controller.signal });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const firstCallInit = fetchMock.mock.calls[0][1] as RequestInit | undefined;
+    const refreshCallInit = fetchMock.mock.calls[1][1] as RequestInit | undefined;
+    const retryCallInit = fetchMock.mock.calls[2][1] as RequestInit | undefined;
+
+    expect(firstCallInit?.signal).toBe(controller.signal);
+    expect(refreshCallInit?.signal).toBe(controller.signal);
+    expect(retryCallInit?.signal).toBe(controller.signal);
+  });
+
   it('throws auth error when refresh fails', async () => {
     const unauthorizedResponse = new Response(null, { status: 401 });
     const fetchMock = vi.fn().mockResolvedValue(unauthorizedResponse);
