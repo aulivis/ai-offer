@@ -4,7 +4,7 @@ import { t } from '@/copy';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
-import EditablePriceTable, { PriceRow } from '@/components/EditablePriceTable';
+import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
 import { priceTableHtml, summarize } from '@/app/lib/pricing';
 import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
@@ -211,7 +211,7 @@ export default function NewOfferWizard() {
   // 2) tevékenységek / árlista
   const [activities, setActivities] = useState<Activity[]>([]);
   const [rows, setRows] = useState<PriceRow[]>([
-    { name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 },
+    createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
 
   // preview
@@ -1223,13 +1223,13 @@ export default function NewOfferWizard() {
                       type="button"
                       onClick={() =>
                         setRows((r) => [
-                          {
+                          createPriceRow({
                             name: a.name,
                             qty: 1,
                             unit: a.unit || 'db',
                             unitPrice: Number(a.default_unit_price || 0),
                             vat: Number(a.default_vat || 27),
-                          },
+                          }),
                           ...r,
                         ])
                       }

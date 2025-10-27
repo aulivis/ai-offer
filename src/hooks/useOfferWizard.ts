@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import type { PriceRow } from '@/components/EditablePriceTable';
+import { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
 
 type Step = 1 | 2 | 3;
 
@@ -38,9 +38,7 @@ function buildValidation({
   return result;
 }
 
-export function useOfferWizard(
-  initialRows: PriceRow[] = [{ name: '', qty: 1, unit: 'db', unitPrice: 0, vat: 27 }],
-) {
+export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
   const [step, setStep] = useState<Step>(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
