@@ -512,7 +512,7 @@ export default function NewOfferPage() {
       title="Új ajánlat"
       description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
     >
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:items-start lg:gap-12">
+      <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12">
         <div className="flex flex-col gap-8">
           <Card>
             <StepIndicator steps={wizardSteps} />
@@ -572,7 +572,7 @@ export default function NewOfferPage() {
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-col gap-6 lg:sticky lg:top-24">
+        <div className="flex min-h-0 flex-col gap-6 md:sticky md:top-20 lg:top-24">
           <OfferPreviewCard
             isPreviewAvailable={step === 3}
             previewMarkup={previewMarkup}

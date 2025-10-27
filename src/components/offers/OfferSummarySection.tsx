@@ -12,7 +12,7 @@ type OfferSummarySectionProps = {
 
 export function OfferSummarySection({ title, description, totals }: OfferSummarySectionProps) {
   return (
-    <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <section className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <Card
         header={
           <CardHeader>
