@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
 import { CONSENT_VERSION } from '@/lib/consent/constants';
 import { getConsent, updateConsent } from '@/lib/consent/client';
 
@@ -53,25 +52,38 @@ export default function CookieBar() {
     return null;
   }
 
+  const baseButtonClass =
+    'inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0]';
+
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4 sm:px-6 sm:pb-6">
-      <div className="w-full max-w-4xl rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-700">
-            We use cookies to improve your experience. You can accept all cookies, reject the
-            non-essential ones, or customise your preferences.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={handleCustomize}>
-              Customize
-            </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={handleRejectNonEssential}>
-              Reject non-essential
-            </Button>
-            <Button type="button" variant="primary" size="sm" onClick={handleAcceptAll}>
-              Accept all
-            </Button>
-          </div>
+    <div className="fixed inset-x-0 bottom-0 z-50 bg-[#111827] text-[#F8FAFC]">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-center text-sm text-[#F8FAFC]/90 sm:text-left">
+          We use cookies to improve your experience. You can accept all cookies, reject the
+          non-essential ones, or customise your preferences.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+          <button
+            type="button"
+            onClick={handleCustomize}
+            className={`${baseButtonClass} hover:bg-white/10`}
+          >
+            Customise
+          </button>
+          <button
+            type="button"
+            onClick={handleRejectNonEssential}
+            className={`${baseButtonClass} hover:bg-white/10`}
+          >
+            Reject non-essential
+          </button>
+          <button
+            type="button"
+            onClick={handleAcceptAll}
+            className={`${baseButtonClass} border-transparent bg-white text-[#111827] hover:bg-white/90`}
+          >
+            Accept all
+          </button>
         </div>
       </div>
     </div>

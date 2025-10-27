@@ -141,7 +141,8 @@ export default function LoginClient() {
             Bejelentkezés
           </h1>
           <p className="text-base text-fg-muted">
-            Írd be az e-mail címed, és küldünk egy magic linket.
+            Írd be az e-mail címed, és küldünk egy biztonságos belépési linket, mely 5 percig
+            érvényes. Csak kattints rá, és automatikusan bejelentkezhetsz – jelszó nélkül.
           </p>
         </div>
 
@@ -177,7 +178,7 @@ export default function LoginClient() {
             style={GOOGLE_BUTTON_STYLES}
             disabled={isGoogleLoading || !isGoogleAvailable}
             aria-busy={isGoogleLoading}
-            aria-label="Bejelentkezés Google-fiókkal"
+            aria-label="Google bejelentkezés indítása"
           >
             {isGoogleLoading ? (
               'Csatlakozás…'
@@ -186,7 +187,7 @@ export default function LoginClient() {
                 <span className="flex h-5 w-5 items-center justify-center">
                   <Image src="/google-logo.svg" alt="" width={18} height={18} aria-hidden="true" />
                 </span>
-                <span className="leading-none">Bejelentkezés Google-lel</span>
+                <span className="leading-none">Google Bejelentkezés</span>
               </>
             )}
           </Button>
@@ -218,10 +219,6 @@ export default function LoginClient() {
             )}
           </div>
         </div>
-
-        <footer aria-label="Oldal lábléc" className="text-center text-xs text-fg-muted">
-          Továbbra sem kell jelszót megjegyezned – a link 5 percig érvényes.
-        </footer>
       </Card>
     </main>
   );
