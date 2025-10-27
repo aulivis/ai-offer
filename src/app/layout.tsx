@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { t } from '@/copy';
 
 import AnnouncementBar from '@/components/AnnouncementBar';
 import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';

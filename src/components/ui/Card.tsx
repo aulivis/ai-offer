@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { t } from '@/copy';
 
 interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
   header?: React.ReactNode;

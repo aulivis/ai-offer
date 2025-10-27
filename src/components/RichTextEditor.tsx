@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import {
   forwardRef,
   useCallback,

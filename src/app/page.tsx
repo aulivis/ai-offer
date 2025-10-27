@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import HighlightUnderline from '@/components/HighlightUnderline';
 import { Card } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 export default function Home() {
   const features = [

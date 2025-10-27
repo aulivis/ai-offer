@@ -1,5 +1,6 @@
 import EditablePriceTable, { type PriceRow } from '@/components/EditablePriceTable';
 import { Card, CardHeader } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 type OfferPricingSectionProps = {
   rows: PriceRow[];

@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 

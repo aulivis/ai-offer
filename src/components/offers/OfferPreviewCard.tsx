@@ -1,6 +1,7 @@
 import { OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 type OfferPreviewStatusDescriptor = {
   tone: 'info' | 'success' | 'error' | 'warning';

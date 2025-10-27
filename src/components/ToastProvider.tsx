@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 

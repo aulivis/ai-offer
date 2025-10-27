@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';

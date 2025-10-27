@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { t } from '@/copy';
 
 import { ManageCookiesButton } from '@/components/cookies/ManageCookiesButton';
 import { envServer } from '@/env.server';

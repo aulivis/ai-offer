@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useId } from 'react';
+import { t } from '@/copy';
 
 type FieldMessage = React.ReactNode;
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { useCallback, useEffect, useState } from 'react';
 
 import { CONSENT_VERSION } from '@/lib/consent/constants';
