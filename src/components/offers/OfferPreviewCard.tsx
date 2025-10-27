@@ -40,7 +40,7 @@ export function OfferPreviewCard({
 }: OfferPreviewCardProps) {
   return (
     <Card
-      className="flex h-full flex-col space-y-5 overflow-hidden"
+      className="flex h-full w-full flex-col space-y-5 overflow-hidden"
       header={
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <div>

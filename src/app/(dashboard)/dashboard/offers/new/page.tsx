@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
@@ -507,68 +507,75 @@ export default function NewOfferPage() {
     description,
   ]);
 
+  const columnWidthStyle: CSSProperties = { '--column-width': 'min(100%, 42rem)' };
+
   return (
     <AppFrame
       title="Új ajánlat"
       description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
     >
-      <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12">
+      <div
+        className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12"
+        style={columnWidthStyle}
+      >
         <div className="flex flex-col gap-8">
-          <Card>
-            <StepIndicator steps={wizardSteps} />
-          </Card>
+          <div className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-8">
+            <Card className="w-full">
+              <StepIndicator steps={wizardSteps} />
+            </Card>
 
-          {step === 1 && (
-            <OfferProjectDetailsSection
-              title={title}
-              description={description}
-              onTitleChange={(event) => setTitle(event.target.value)}
-              onDescriptionChange={(event) => setDescription(event.target.value)}
-            />
-          )}
-
-          {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
-
-          {step === 3 && (
-            <OfferSummarySection title={title} description={description} totals={totals} />
-          )}
-
-          {inlineErrors.length > 0 && (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700">
-              <ul className="list-disc space-y-1 pl-4">
-                {inlineErrors.map((message, index) => (
-                  <li key={index}>{message}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              onClick={goPrev}
-              disabled={step === 1}
-              className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
-            >
-              Vissza
-            </Button>
-
-            {step < 3 ? (
-              <Button
-                onClick={goNext}
-                disabled={isNextDisabled}
-                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                Tovább
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitDisabled}
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
-              </Button>
+            {step === 1 && (
+              <OfferProjectDetailsSection
+                title={title}
+                description={description}
+                onTitleChange={(event) => setTitle(event.target.value)}
+                onDescriptionChange={(event) => setDescription(event.target.value)}
+              />
             )}
+
+            {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
+
+            {step === 3 && (
+              <OfferSummarySection title={title} description={description} totals={totals} />
+            )}
+
+            {inlineErrors.length > 0 && (
+              <div className="w-full rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700">
+                <ul className="list-disc space-y-1 pl-4">
+                  {inlineErrors.map((message, index) => (
+                    <li key={index}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Button
+                onClick={goPrev}
+                disabled={step === 1}
+                className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+              >
+                Vissza
+              </Button>
+
+              {step < 3 ? (
+                <Button
+                  onClick={goNext}
+                  disabled={isNextDisabled}
+                  className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  Tovább
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitDisabled}
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                >
+                  {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
