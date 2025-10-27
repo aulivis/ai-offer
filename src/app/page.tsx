@@ -222,7 +222,7 @@ export default function Home() {
         </Card>
       </div>
 
-      <footer aria-label="Oldal lábléc" className="sr-only" />
+      <footer aria-label={t('landing.footerAria')} className="sr-only" />
     </main>
   );
 }
