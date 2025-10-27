@@ -520,6 +520,10 @@ export const hu = {
       subtitle: 'Állítsd be a logót és a színeket, amelyek megjelennek az ajánlatok PDF-jeiben.',
       primaryLabel: 'Elsődleges szín',
       secondaryLabel: 'Másodlagos szín',
+      placeholders: {
+        primary: '#0f172a',
+        secondary: '#f3f4f6',
+      },
       logoPreviewAlt: 'Feltöltött logó',
       noLogo: 'Nincs logó',
       logoUpload: {
@@ -545,6 +549,7 @@ export const hu = {
       subtitle:
         'Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket használják.',
       activeBadge: 'Aktív',
+      proBadge: 'Pro',
       proOnly: 'Pro előfizetéssel érhető el.',
       upgradeHint: 'A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.',
     },
