@@ -45,10 +45,10 @@ export function OfferPreviewCard({
       header={
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Az előnézet automatikusan frissül, amikor a fenti mezőket módosítod.
-            </p>
+            <h2 className="text-sm font-semibold text-slate-700">
+              {t('offers.previewCard.heading')}
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">{t('offers.previewCard.helper')}</p>
           </div>
           {isPreviewAvailable ? (
             <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export function OfferPreviewCard({
                   onClick={onAbortPreview}
                   className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  Megszakítás
+                  {t('offers.wizard.actions.abortPreview')}
                 </Button>
               ) : (
                 <Button
@@ -66,7 +66,7 @@ export function OfferPreviewCard({
                   onClick={onManualRefresh}
                   className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  Újra generálás
+                  {t('offers.wizard.actions.generatePreviewAgain')}
                 </Button>
               )}
             </div>
@@ -106,10 +106,7 @@ export function OfferPreviewCard({
         </>
       ) : (
         <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border bg-slate-50/60 px-4 py-8 text-center text-sm text-slate-500">
-          <p className="mx-auto max-w-xs">
-            Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges
-            adatokat.
-          </p>
+          <p className="mx-auto max-w-xs">{t('offers.wizard.preview.unavailable')}</p>
         </div>
       )}
     </Card>

@@ -13,10 +13,10 @@ export function OfferPricingSection({ rows, onChange }: OfferPricingSectionProps
       <Card
         header={
           <CardHeader className="space-y-1">
-            <h2 className="text-sm font-semibold text-slate-700">Árlista</h2>
-            <p className="text-xs text-slate-500">
-              Adj meg legalább egy tételt – ez alapján számoljuk a nettó és bruttó összegeket.
-            </p>
+            <h2 className="text-sm font-semibold text-slate-700">
+              {t('offers.wizard.forms.pricing.title')}
+            </h2>
+            <p className="text-xs text-slate-500">{t('offers.wizard.forms.pricing.helper')}</p>
           </CardHeader>
         }
       >
