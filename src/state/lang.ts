@@ -2,32 +2,78 @@ import type { LocaleKey } from '@/copy';
 
 export type Language = LocaleKey;
 
-type SettingsState = {
-  lang: Language;
-};
+type LanguageListener = (language: Language) => void;
 
-let settingsState: SettingsState = {
-  lang: 'hu',
-};
+type AsyncLocalStorageModule = typeof import('node:async_hooks');
 
-export function getSettings(): SettingsState {
-  return settingsState;
+const LANGUAGE_COOKIE_NAME = 'language';
+
+const SUPPORTED_LANGUAGES: readonly Language[] = ['hu', 'en'];
+
+let clientLanguage: Language = 'hu';
+const listeners = new Set<LanguageListener>();
+
+let asyncLocalStorageModule: AsyncLocalStorageModule | null = null;
+let languageStorage: import('node:async_hooks').AsyncLocalStorage<Language> | null = null;
+
+function getAsyncLocalStorage(): import('node:async_hooks').AsyncLocalStorage<Language> | null {
+  if (typeof window !== 'undefined') {
+    return null;
+  }
+
+  if (!languageStorage) {
+    if (!asyncLocalStorageModule) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      asyncLocalStorageModule = require('node:async_hooks') as AsyncLocalStorageModule;
+    }
+
+    languageStorage = new asyncLocalStorageModule.AsyncLocalStorage<Language>();
+  }
+
+  return languageStorage;
 }
 
-export function setSettings(partial: Partial<SettingsState>): void {
-  settingsState = {
-    ...settingsState,
-    ...partial,
-  };
+export function withLanguage<T>(language: Language, callback: () => T): T {
+  const storage = getAsyncLocalStorage();
+
+  if (!storage) {
+    return callback();
+  }
+
+  return storage.run(language, callback);
 }
 
 export function getLanguage(): Language {
-  return settingsState.lang;
+  if (typeof window === 'undefined') {
+    const storage = getAsyncLocalStorage();
+    return storage?.getStore() ?? 'hu';
+  }
+
+  return clientLanguage;
 }
 
 export function setLanguage(language: Language): void {
-  settingsState = {
-    ...settingsState,
-    lang: language,
+  if (typeof window === 'undefined') {
+    throw new Error('setLanguage can only be used in a client environment');
+  }
+
+  if (clientLanguage === language) {
+    return;
+  }
+
+  clientLanguage = language;
+
+  for (const listener of listeners) {
+    listener(language);
+  }
+}
+
+export function subscribeToLanguage(listener: LanguageListener): () => void {
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
   };
 }
+
+export { LANGUAGE_COOKIE_NAME, SUPPORTED_LANGUAGES };

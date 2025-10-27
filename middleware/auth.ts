@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { envClient } from '@/env.client';
 import { envServer } from '@/env.server';
 import { CSRF_COOKIE_NAME, verifyCsrfToken } from '../lib/auth/csrf';
+import { resolveRequestLanguage } from '@/app/lib/language';
+import { withLanguage } from '@/state/lang';
 
 const supabase = createClient(
   envClient.NEXT_PUBLIC_SUPABASE_URL,
@@ -66,34 +68,22 @@ function validateRequestContext(req: NextRequest): NextResponse | null {
   const originToCheck = originHeader ?? extractOrigin(refererHeader);
 
   if (!isAllowedOrigin(originToCheck)) {
-    return NextResponse.json(
-      { error: 'A kérés forrása nincs engedélyezve.' },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   const fetchSite = req.headers.get('sec-fetch-site');
   if (fetchSite && !allowedFetchSites.has(fetchSite)) {
-    return NextResponse.json(
-      { error: 'A kérés forrása nincs engedélyezve.' },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   const fetchMode = req.headers.get('sec-fetch-mode');
   if (fetchMode && !allowedFetchModes.has(fetchMode)) {
-    return NextResponse.json(
-      { error: 'A kérés forrása nincs engedélyezve.' },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   const fetchDest = req.headers.get('sec-fetch-dest');
   if (fetchDest && !allowedFetchDests.has(fetchDest)) {
-    return NextResponse.json(
-      { error: 'A kérés forrása nincs engedélyezve.' },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   return null;
@@ -153,6 +143,8 @@ export function withAuth<Args extends unknown[], Result>(handler: Handler<Args, 
     const authenticatedReq = req as AuthenticatedNextRequest;
     authenticatedReq.user = authResult;
 
-    return handler(authenticatedReq, ...args);
+    const language = resolveRequestLanguage(req);
+
+    return withLanguage(language, () => handler(authenticatedReq, ...args));
   };
 }
