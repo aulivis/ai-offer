@@ -8,7 +8,7 @@ type OfferPricingSectionProps = {
 
 export function OfferPricingSection({ rows, onChange }: OfferPricingSectionProps) {
   return (
-    <section className="space-y-4">
+    <section className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-4">
       <Card
         header={
           <CardHeader className="space-y-1">
