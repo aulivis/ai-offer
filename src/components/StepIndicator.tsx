@@ -84,7 +84,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
 export default function StepIndicator({ steps }: Props) {
   return (
-    <ol className="flex flex-wrap items-center gap-4">
+    <ol className="-mx-2 flex w-auto snap-x snap-mandatory items-stretch gap-4 overflow-x-auto px-2 pb-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
       {steps.map((step, index) => {
         const tone = step.tone ?? 'default';
         const clickable = step.status === 'completed' && typeof step.onSelect === 'function';
@@ -97,7 +97,7 @@ export default function StepIndicator({ steps }: Props) {
               ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
               : step.status === 'current'
                 ? 'border-border bg-white text-slate-900 shadow-sm'
-                : 'border-border bg-white text-slate-400',
+                : 'border-border bg-white text-slate-500',
         );
 
         const labelClasses = classNames(
@@ -108,7 +108,7 @@ export default function StepIndicator({ steps }: Props) {
               ? 'font-semibold text-slate-900'
               : step.status === 'completed'
                 ? 'text-slate-700'
-                : 'text-slate-400',
+                : 'text-slate-500',
         );
 
         const indicatorContent: ReactNode = (() => {
@@ -124,14 +124,14 @@ export default function StepIndicator({ steps }: Props) {
         })();
 
         return (
-          <li key={index} className="flex items-center gap-3">
+          <li key={index} className="flex min-w-[220px] items-center gap-3 snap-start sm:min-w-0">
             <Button
               type="button"
               onClick={clickable ? step.onSelect : undefined}
               disabled={!clickable}
               aria-current={step.status === 'current' ? 'step' : undefined}
               className={classNames(
-                'flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                'flex items-center gap-3 rounded-2xl border border-transparent bg-white/90 px-3 py-2 text-left shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 clickable ? 'cursor-pointer' : 'cursor-default',
               )}
             >
@@ -142,7 +142,7 @@ export default function StepIndicator({ steps }: Props) {
               </span>
             </Button>
             {index < steps.length - 1 && (
-              <span className="h-px w-10 rounded bg-slate-200" aria-hidden="true" />
+              <span className="hidden h-px w-10 rounded bg-slate-200 sm:block" aria-hidden="true" />
             )}
           </li>
         );

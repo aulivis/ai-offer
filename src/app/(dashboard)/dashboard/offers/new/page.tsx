@@ -520,7 +520,7 @@ export default function NewOfferPage() {
       >
         <div className="flex flex-col gap-8">
           <div className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-8">
-            <Card className="w-full">
+            <Card className="w-full space-y-4">
               <StepIndicator steps={wizardSteps} />
             </Card>
 
@@ -549,32 +549,34 @@ export default function NewOfferPage() {
               </div>
             )}
 
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Button
-                onClick={goPrev}
-                disabled={step === 1}
-                className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
-              >
-                Vissza
-              </Button>
+            <div className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
+              <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button
+                  onClick={goPrev}
+                  disabled={step === 1}
+                  className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                >
+                  Vissza
+                </Button>
 
-              {step < 3 ? (
-                <Button
-                  onClick={goNext}
-                  disabled={isNextDisabled}
-                  className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  Tovább
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitDisabled}
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
-                </Button>
-              )}
+                {step < 3 ? (
+                  <Button
+                    onClick={goNext}
+                    disabled={isNextDisabled}
+                    className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    Tovább
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isSubmitDisabled}
+                    className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>

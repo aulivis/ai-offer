@@ -936,7 +936,7 @@ export default function NewOfferWizard() {
       description="Kövesd a háromlépéses varázslót: add meg a projekt részleteit, igazítsd a tételeket, majd generáld le a PDF-et."
     >
       <div className="space-y-8">
-        <Card className="space-y-4">
+        <Card className="space-y-6">
           <StepIndicator steps={wizardSteps} />
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
             <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -953,7 +953,7 @@ export default function NewOfferWizard() {
         {step === 1 && (
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <Card className="space-y-6">
-              <div className="grid gap-4">
+              <div className="grid gap-6">
                 <Select
                   label="Iparág"
                   value={form.industry}
@@ -983,7 +983,7 @@ export default function NewOfferWizard() {
                 </label>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-y-6 gap-x-4 sm:grid-cols-3">
                 <Input
                   label="Határidő"
                   value={form.deadline}
@@ -1049,7 +1049,7 @@ export default function NewOfferWizard() {
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-2xl border border-dashed border-border bg-slate-50/70 p-5">
+              <div className="space-y-6 rounded-2xl border border-dashed border-border bg-slate-50/70 p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-700">Címzett (opcionális)</p>
@@ -1081,14 +1081,14 @@ export default function NewOfferWizard() {
                         >
                           <span className="font-medium text-slate-700">{c.company_name}</span>
                           {c.email ? (
-                            <span className="text-xs text-slate-400">{c.email}</span>
+                            <span className="text-xs text-slate-500">{c.email}</span>
                           ) : null}
                         </Button>
                       ))}
                     </div>
                   )}
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-y-6 gap-x-4 sm:grid-cols-2">
                   <Input
                     label="Cím"
                     placeholder="Cím"
@@ -1125,11 +1125,11 @@ export default function NewOfferWizard() {
               </div>
             </Card>
 
-            <Card className="space-y-4">
+            <Card className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-                  <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-slate-500">
+                  <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-slate-600">
                     PDF nézet
                   </span>
                 </div>
@@ -1157,19 +1157,19 @@ export default function NewOfferWizard() {
                   {previewError}
                 </div>
               ) : null}
-              <div className="min-h-[260px] rounded-2xl border border-border bg-white/90 p-4 overflow-auto">
+              <div className="min-h-[260px] overflow-auto rounded-2xl border border-border bg-white/95 p-4 shadow-inner">
                 {previewLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
                     <div className="flex items-center gap-3">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-slate-500" />
                       <div className="flex flex-col">
                         <span>Az AI most készíti az előnézetet…</span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-500">
                           Kb. {previewCountdown} mp van hátra…
                         </span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500">
                       Ez néhány másodpercet is igénybe vehet.
                     </p>
                   </div>
@@ -1191,11 +1191,11 @@ export default function NewOfferWizard() {
         {step === 2 && (
           <section className="space-y-6">
             {filteredActivities.length > 0 && (
-              <Card className="space-y-3">
+              <Card className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="text-sm font-semibold text-slate-700">Gyors tétel beszúrása</h2>
-                    <p className="text-xs text-slate-500">Iparág: {form.industry}</p>
+                    <p className="text-xs text-slate-600">Iparág: {form.industry}</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -1230,10 +1230,10 @@ export default function NewOfferWizard() {
 
         {step === 3 && (
           <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <Card className="space-y-4">
+            <Card className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-700">AI-szöveg szerkesztése</h2>
-                <span className="text-xs font-medium text-slate-400">Ez kerül a PDF-be</span>
+                <span className="text-xs font-medium text-slate-600">Ez kerül a PDF-be</span>
               </div>
               <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
               <RichTextEditor
@@ -1334,19 +1334,19 @@ export default function NewOfferWizard() {
               </div>
               <dl className="grid gap-2 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-slate-400">Cím</dt>
+                  <dt className="text-slate-500">Cím</dt>
                   <dd className="font-medium text-slate-700">{form.title || '—'}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-slate-400">Iparág</dt>
+                  <dt className="text-slate-500">Iparág</dt>
                   <dd className="font-medium text-slate-700">{form.industry}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-slate-400">Címzett</dt>
+                  <dt className="text-slate-500">Címzett</dt>
                   <dd className="font-medium text-slate-700">{client.company_name || '—'}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-slate-400">Stílus</dt>
+                  <dt className="text-slate-500">Stílus</dt>
                   <dd className="font-medium text-slate-700">
                     {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
                   </dd>
@@ -1369,23 +1369,25 @@ export default function NewOfferWizard() {
           </section>
         )}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Button
-            onClick={() => setStep((s) => Math.max(1, s - 1))}
-            disabled={step === 1}
-            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
-          >
-            Vissza
-          </Button>
-          {step < 3 && (
+        <div className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
-              onClick={() => goToStep(step + 1)}
-              disabled={step === 1 && !previewLocked}
-              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
+              onClick={() => setStep((s) => Math.max(1, s - 1))}
+              disabled={step === 1}
+              className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
             >
-              Tovább
+              Vissza
             </Button>
-          )}
+            {step < 3 && (
+              <Button
+                onClick={() => goToStep(step + 1)}
+                disabled={step === 1 && !previewLocked}
+                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
+              >
+                Tovább
+              </Button>
+            )}
+          </div>
         </div>
         {step === 1 && !previewLocked ? (
           <p className="text-xs font-medium text-slate-500">
