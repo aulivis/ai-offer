@@ -25,6 +25,39 @@ export const hu = {
     skipToContent: 'Ugrás a tartalomra',
     authErrorTitle: 'Hitelesítés sikertelen',
     authErrorFallback: 'Nem sikerült hitelesíteni a felhasználói állapotot.',
+    loading: 'Betöltés…',
+    sidebar: {
+      open: 'Oldalsáv megnyitása',
+      close: 'Oldalsáv elrejtése',
+    },
+    footer: {
+      brand: 'Propono',
+      description:
+        'AI által támogatott, professzionális ajánlatok kis- és középvállalkozások számára.',
+      contactHeading: 'Kapcsolat',
+      legalNavLabel: 'Jogi információk',
+      legalLinks: {
+        privacy: 'Adatvédelmi tájékoztató',
+        cookies: 'Sütikezelési tájékoztató',
+      },
+      manageCookies: 'Sütibeállítások kezelése',
+      copyrightPrefix: '©',
+    },
+  },
+  nav: {
+    brand: 'Propono',
+    demo: 'Bemutató',
+    caseStudies: 'Esettanulmányok',
+    billing: 'Előfizetés',
+    offers: 'Ajánlatok',
+    dashboard: 'Ajánlatok',
+    settings: 'Beállítások',
+    logout: 'Kijelentkezés',
+    logoutInProgress: 'Kilépés…',
+    logoutAria: 'Kijelentkezés a fiókból',
+    login: 'Bejelentkezés',
+    freeTrial: 'Ingyenes Próba',
+    menuToggle: 'Navigáció megnyitása',
   },
   announcementBar: {
     message: 'Új ajánlat sablonok a Proponóban',
@@ -50,27 +83,6 @@ export const hu = {
     menu: {
       openLabel: 'Navigáció megnyitása',
     },
-  },
-  appFrame: {
-    loading: 'Betöltés…',
-    sidebar: {
-      open: 'Oldalsáv megnyitása',
-      close: 'Oldalsáv elrejtése',
-    },
-  },
-  footer: {
-    legalLinks: {
-      privacy: 'Adatvédelmi tájékoztató',
-      cookies: 'Sütikezelési tájékoztató',
-    },
-    manageCookies: 'Sütibeállítások kezelése',
-    contact: {
-      heading: 'Kapcsolat',
-      description:
-        'AI által támogatott, professzionális ajánlatok kis- és középvállalkozások számára.',
-    },
-    copyrightPrefix: '©',
-    brand: 'Propono',
   },
   toast: {
     dismiss: 'Bezárás',

@@ -1,6 +1,6 @@
 'use client';
 
-import { t } from '@/copy';
+import { t, type CopyKey } from '@/copy';
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,15 +13,20 @@ type LandingHeaderProps = {
   className?: string;
 };
 
-const PUBLIC_NAV_ITEMS = [
-  { href: '/demo', label: 'Bemutató' },
-  { href: '/#case-studies', label: 'Esettanulmányok' },
-  { href: '/billing', label: 'Előfizetés' },
+type NavItem = {
+  href: string;
+  labelKey: CopyKey;
+};
+
+const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { href: '/demo', labelKey: 'nav.demo' },
+  { href: '/#case-studies', labelKey: 'nav.caseStudies' },
+  { href: '/billing', labelKey: 'nav.billing' },
 ];
 
-const AUTH_NAV_ITEMS = [
-  { href: '/dashboard', label: 'Ajánlatok' },
-  { href: '/billing', label: 'Előfizetés' },
+const AUTH_NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { href: '/dashboard', labelKey: 'nav.dashboard' },
+  { href: '/billing', labelKey: 'nav.billing' },
 ];
 
 export default function LandingHeader({ className }: LandingHeaderProps) {
@@ -85,7 +90,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
     <header className={headerClass} style={headerStyle}>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-6">
         <Link href="/" className="text-lg font-bold text-fg" onClick={closeMenu}>
-          Propono
+          {t('nav.brand')}
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-fg-muted md:flex">
@@ -99,7 +104,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               aria-current={isNavItemActive(item.href) ? 'page' : undefined}
               onClick={closeMenu}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </nav>
@@ -113,7 +118,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   isNavItemActive('/settings') ? 'text-fg' : ''
                 }`}
               >
-                Beállítások
+                {t('nav.settings')}
               </Link>
               <Button
                 type="button"
@@ -122,9 +127,9 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 onClick={logout}
                 disabled={isLoggingOut}
                 aria-busy={isLoggingOut}
-                aria-label="Kijelentkezés a fiókból"
+                aria-label={t('nav.logoutAria')}
               >
-                {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
+                {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
               </Button>
             </>
           ) : (
@@ -133,13 +138,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 href="/login"
                 className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
               >
-                Bejelentkezés
+                {t('nav.login')}
               </Link>
               <Link
                 href="/demo"
                 className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
               >
-                Ingyenes Próba
+                {t('nav.freeTrial')}
               </Link>
             </>
           )}
@@ -148,7 +153,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-fg transition duration-200 hover:bg-bg-muted md:hidden"
-          aria-label="Navigáció megnyitása"
+          aria-label={t('nav.menuToggle')}
           aria-expanded={isMenuOpen}
           aria-controls="landing-navigation"
           onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -182,7 +187,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 aria-current={isNavItemActive(item.href) ? 'page' : undefined}
                 onClick={closeMenu}
               >
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             ))}
             {isAuthenticated ? (
@@ -192,7 +197,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   className="rounded-full px-3 py-1 text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
                   onClick={closeMenu}
                 >
-                  Beállítások
+                  {t('nav.settings')}
                 </Link>
                 <Button
                   type="button"
@@ -202,7 +207,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   aria-busy={isLoggingOut}
                   className="justify-center text-base"
                 >
-                  {isLoggingOut ? 'Kilépés…' : 'Kijelentkezés'}
+                  {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                 </Button>
               </>
             ) : (
@@ -212,14 +217,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   className="text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
                   onClick={closeMenu}
                 >
-                  Bejelentkezés
+                  {t('nav.login')}
                 </Link>
                 <Link
                   href="/demo"
                   className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
                   onClick={closeMenu}
                 >
-                  Ingyenes Próba
+                  {t('nav.freeTrial')}
                 </Link>
               </>
             )}

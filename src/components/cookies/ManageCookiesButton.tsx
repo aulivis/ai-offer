@@ -1,7 +1,14 @@
 'use client';
 
 import { t } from '@/copy';
-export function ManageCookiesButton({ label }: { label: string }) {
+
+type ManageCookiesButtonProps = {
+  label?: string;
+};
+
+export function ManageCookiesButton({
+  label = t('app.footer.manageCookies'),
+}: ManageCookiesButtonProps) {
   return (
     <button
       type="button"

@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="hu" className={`${workSans.variable} ${gota.variable} ${spaceMono.variable}`}>
       <body className="bg-bg font-sans text-fg antialiased">
         <a href="#main" className="skip-link">
-          Ugrás a tartalomra
+          {t('app.skipToContent')}
         </a>
         <SupabaseProvider>
           <ToastProvider>
