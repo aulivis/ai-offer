@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/Button';

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { t } from '@/copy';
 
 import { CONSENT_VERSION } from '@/lib/consent/constants';
 

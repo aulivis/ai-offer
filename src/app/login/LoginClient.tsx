@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import Image from 'next/image';
 import { type CSSProperties, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';

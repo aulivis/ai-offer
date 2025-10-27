@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';

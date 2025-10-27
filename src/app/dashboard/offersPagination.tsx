@@ -1,4 +1,5 @@
 import React, { type ComponentPropsWithoutRef } from 'react';
+import { t } from '@/copy';
 
 export const PAGE_SIZE = 12;
 

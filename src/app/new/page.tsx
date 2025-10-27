@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';

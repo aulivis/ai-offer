@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';

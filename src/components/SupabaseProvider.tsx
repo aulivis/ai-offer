@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 

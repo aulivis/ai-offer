@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
 

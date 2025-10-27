@@ -1,6 +1,7 @@
 import type { ChangeEventHandler } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 type OfferProjectDetailsSectionProps = {
   title: string;

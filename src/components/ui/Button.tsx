@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { tokens } from '@/styles/tokens.preset';
+import { t } from '@/copy';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'ghost';

@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import type { ReactNode, SVGProps } from 'react';
 import { Button } from '@/components/ui/Button';
 

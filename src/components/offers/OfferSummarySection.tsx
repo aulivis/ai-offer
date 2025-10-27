@@ -1,4 +1,5 @@
 import { Card, CardHeader } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 type OfferSummarySectionProps = {
   title: string;

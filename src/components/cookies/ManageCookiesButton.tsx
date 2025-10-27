@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 export function ManageCookiesButton({ label }: { label: string }) {
   return (
     <button

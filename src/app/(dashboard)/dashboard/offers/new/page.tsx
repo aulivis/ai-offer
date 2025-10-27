@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from '@/copy';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';

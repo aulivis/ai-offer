@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { t } from '@/copy';
 
 export default function DemoPlaceholderPage() {
   return (
