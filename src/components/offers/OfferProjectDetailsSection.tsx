@@ -16,7 +16,7 @@ export function OfferProjectDetailsSection({
   onDescriptionChange,
 }: OfferProjectDetailsSectionProps) {
   return (
-    <Card as="section" className="grid w-full max-w-[var(--column-width)] gap-5">
+    <Card as="section" className="grid w-full max-w-[var(--column-width)] gap-6">
       <Input
         label="Ajánlat címe"
         value={title}
@@ -24,7 +24,7 @@ export function OfferProjectDetailsSection({
         placeholder="Pl. Weboldal fejlesztés"
       />
 
-      <label className="block space-y-2">
+      <label className="block space-y-3">
         <span className="text-sm font-medium text-fg">Projekt leírása</span>
         <textarea
           value={description}
