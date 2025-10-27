@@ -25,6 +25,7 @@ import {
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
+import { t } from '@/copy';
 import { allowCategory } from '../../../../lib/consent/server';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import { z } from 'zod';
@@ -347,7 +348,11 @@ const optionalTrimmedString = z.preprocess(
 
 const optionalNonNegativeNumber = z.preprocess(
   (value) => (value === null || value === undefined ? undefined : value),
-  z.number({ error: 'A mezőnek számnak kell lennie.' }).finite().min(0).optional(),
+  z
+    .number({ error: t('validation.number') })
+    .finite()
+    .min(0)
+    .optional(),
 );
 
 const priceRowSchema = z
@@ -362,8 +367,8 @@ const priceRowSchema = z
 
 const imageAssetSchema = z
   .object({
-    key: z.string().trim().min(1, 'A kép azonosítója kötelező.').max(80),
-    dataUrl: z.string().trim().min(1, 'A kép adatának megadása kötelező.'),
+    key: z.string().trim().min(1, t('validation.required')).max(80),
+    dataUrl: z.string().trim().min(1, t('validation.required')),
     alt: z.preprocess(
       (value) => (value === null || value === undefined ? null : value),
       z.string().trim().max(160).nullable().optional(),
@@ -373,9 +378,9 @@ const imageAssetSchema = z
 
 const aiGenerateRequestSchema = z
   .object({
-    title: z.string().trim().min(1, 'A cím megadása kötelező.'),
-    industry: z.string().trim().min(1, 'Az iparág megadása kötelező.'),
-    description: z.string().trim().min(1, 'A leírás megadása kötelező.'),
+    title: z.string().trim().min(1, t('validation.required')),
+    industry: z.string().trim().min(1, t('validation.required')),
+    description: z.string().trim().min(1, t('validation.required')),
     deadline: optionalTrimmedString,
     language: z.preprocess(
       (value) => (value === null || value === undefined ? undefined : value),
@@ -403,7 +408,7 @@ const aiGenerateRequestSchema = z
     ),
     pdfWebhookUrl: z.preprocess(
       (value) => (value === null || value === undefined || value === '' ? undefined : value),
-      z.string().url('Érvénytelen webhook URL formátum.').optional(),
+      z.string().url(t('validation.urlInvalid')).optional(),
     ),
     imageAssets: z.preprocess(
       (value) => (value === null || value === undefined ? [] : value),
@@ -415,17 +420,17 @@ const aiGenerateRequestSchema = z
 function mapPdfWebhookError(error: PdfWebhookValidationError): string {
   switch (error.reason) {
     case 'invalid_url':
-      return 'A megadott webhook URL érvénytelen.';
+      return t('validation.webhook.invalidUrl');
     case 'protocol_not_allowed':
-      return 'A webhook URL csak engedélyezett HTTP/S protokollt használhat.';
+      return t('validation.webhook.protocolNotAllowed');
     case 'credentials_not_allowed':
-      return 'A webhook URL nem tartalmazhat hitelesítési adatokat.';
+      return t('validation.webhook.credentialsNotAllowed');
     case 'host_not_allowlisted':
-      return 'A webhook URL nincs az engedélyezett tartományok között.';
+      return t('validation.webhook.hostNotAllowlisted');
     case 'allowlist_empty':
-      return 'A webhook visszahívások jelenleg nincsenek engedélyezve.';
+      return t('validation.webhook.allowlistEmpty');
     default:
-      return 'A webhook URL érvénytelen.';
+      return t('validation.webhook.invalidUrl');
   }
 }
 

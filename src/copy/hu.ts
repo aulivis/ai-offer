@@ -696,6 +696,18 @@ export const hu = {
       unableToAuthenticate: 'Unable to authenticate',
     },
   },
+  validation: {
+    required: 'A mező kitöltése kötelező.',
+    number: 'A mezőnek számnak kell lennie.',
+    urlInvalid: 'Érvénytelen URL formátum.',
+    webhook: {
+      invalidUrl: 'A megadott webhook URL érvénytelen.',
+      protocolNotAllowed: 'A webhook URL csak engedélyezett HTTP/S protokollt használhat.',
+      credentialsNotAllowed: 'A webhook URL nem tartalmazhat hitelesítési adatokat.',
+      hostNotAllowlisted: 'A webhook URL nincs az engedélyezett tartományok között.',
+      allowlistEmpty: 'A webhook visszahívások jelenleg nincsenek engedélyezve.',
+    },
+  },
   offers: {
     wizard: {
       pageTitle: 'Új ajánlat',
@@ -713,6 +725,7 @@ export const hu = {
         details: 'Projekt részletek',
         pricing: 'Tételek',
         summary: 'Összegzés',
+        previewPdf: 'Előnézet & PDF',
       },
       actions: {
         back: 'Vissza',
@@ -759,11 +772,22 @@ export const hu = {
       },
       forms: {
         details: {
+          industryLabel: 'Iparág',
           titleLabel: 'Ajánlat címe',
           titlePlaceholder: 'Pl. Weboldal fejlesztés',
           descriptionLabel: 'Projekt leírása',
           descriptionPlaceholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
           deadlineLabel: 'Határidő (opcionális)',
+          languageLabel: 'Nyelv',
+          languageOptions: {
+            hu: 'Magyar',
+            en: 'Angol',
+          },
+          voiceLabel: 'Hangnem',
+          voiceOptions: {
+            friendly: 'Barátságos',
+            formal: 'Formális',
+          },
           clientLookupLabel: 'Cég neve',
           clientLookupPlaceholder: 'Kezdj el gépelni…',
           clientLookupEmpty: 'Nincs találat. Új cég mentése a mentésnél történik.',
