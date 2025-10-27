@@ -514,72 +514,82 @@ export default function NewOfferPage() {
       title="Új ajánlat"
       description="Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek."
     >
-      <div className="space-y-8">
-        <Card>
-          <StepIndicator steps={wizardSteps} />
-        </Card>
+      <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12">
+        <div className="flex flex-col gap-8">
+          <Card>
+            <StepIndicator steps={wizardSteps} />
+          </Card>
 
-        {step === 1 && (
-          <OfferProjectDetailsSection
-            title={title}
-            description={description}
-            onTitleChange={(event) => setTitle(event.target.value)}
-            onDescriptionChange={(event) => setDescription(event.target.value)}
-          />
-        )}
+          {step === 1 && (
+            <OfferProjectDetailsSection
+              title={title}
+              description={description}
+              onTitleChange={(event) => setTitle(event.target.value)}
+              onDescriptionChange={(event) => setDescription(event.target.value)}
+            />
+          )}
 
-        {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
+          {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
 
-        {step === 3 && (
-          <OfferSummarySection
-            title={title}
-            description={description}
-            previewMarkup={previewMarkup}
-            statusDescriptor={statusDescriptor}
-            isStreaming={isStreaming}
-            previewStatus={previewStatus}
-            previewError={previewError}
-            onAbortPreview={handleAbortPreview}
-            onManualRefresh={handleManualRefresh}
-            totals={totals}
-          />
-        )}
+          {inlineErrors.length > 0 && (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700">
+              <ul className="list-disc space-y-1 pl-4">
+                {inlineErrors.map((message, index) => (
+                  <li key={index}>{message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        {inlineErrors.length > 0 && (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700">
-            <ul className="list-disc space-y-1 pl-4">
-              {inlineErrors.map((message, index) => (
-                <li key={index}>{message}</li>
-              ))}
-            </ul>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              onClick={goPrev}
+              disabled={step === 1}
+              className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+            >
+              Vissza
+            </Button>
+
+            {step < 3 ? (
+              <Button
+                onClick={goNext}
+                disabled={isNextDisabled}
+                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                Tovább
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitDisabled}
+                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+              >
+                {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
+              </Button>
+            )}
           </div>
-        )}
+        </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Button
-            onClick={goPrev}
-            disabled={step === 1}
-            className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
-          >
-            Vissza
-          </Button>
-
-          {step < 3 ? (
-            <Button
-              onClick={goNext}
-              disabled={isNextDisabled}
-              className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              Tovább
-            </Button>
+        <div className="flex min-h-0 flex-col gap-6">
+          {step === 3 ? (
+            <OfferSummarySection
+              title={title}
+              description={description}
+              previewMarkup={previewMarkup}
+              statusDescriptor={statusDescriptor}
+              isStreaming={isStreaming}
+              previewStatus={previewStatus}
+              previewError={previewError}
+              onAbortPreview={handleAbortPreview}
+              onManualRefresh={handleManualRefresh}
+              totals={totals}
+            />
           ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitDisabled}
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              {isSubmitting ? 'Mentés folyamatban…' : 'Ajánlat mentése'}
-            </Button>
+            <Card className="hidden min-h-[320px] items-center justify-center text-center text-sm text-slate-500 md:flex">
+              <p className="max-w-xs">
+                Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.
+              </p>
+            </Card>
           )}
         </div>
       </div>
