@@ -572,7 +572,7 @@ export default function NewOfferPage() {
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-col gap-6 md:sticky md:top-20 lg:top-24">
+        <div className="flex min-h-0 flex-col gap-6 overflow-hidden md:sticky md:top-20 lg:top-24">
           <OfferPreviewCard
             isPreviewAvailable={step === 3}
             previewMarkup={previewMarkup}
