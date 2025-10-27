@@ -88,6 +88,50 @@ export const hu = {
     dismiss: 'Bezárás',
     providerError: 'useToast csak ToastProvider kontextusában használható.',
   },
+  a11y: {
+    richText: {
+      bold: {
+        label: 'Félkövér',
+        title: 'Félkövér (Ctrl/Cmd + B)',
+      },
+      italic: {
+        label: 'Dőlt',
+        title: 'Dőlt (Ctrl/Cmd + I)',
+      },
+      underline: {
+        label: 'Aláhúzás',
+        title: 'Aláhúzás (Ctrl/Cmd + U)',
+      },
+      strikeThrough: {
+        label: 'Áthúzás',
+        title: 'Áthúzás',
+      },
+      insertUnorderedList: {
+        label: 'Felsorolás',
+        title: 'Felsorolás',
+      },
+      insertOrderedList: {
+        label: 'Számozott lista',
+        title: 'Számozott lista',
+      },
+      blockquote: {
+        label: 'Idézet blokk',
+        title: 'Idézet blokk',
+      },
+      removeFormat: {
+        label: 'Formázás törlése',
+        title: 'Formázás törlése',
+      },
+      undo: {
+        label: 'Visszavonás',
+        title: 'Visszavonás (Ctrl/Cmd + Z)',
+      },
+      redo: {
+        label: 'Ismétlés',
+        title: 'Ismétlés (Ctrl/Cmd + Shift + Z)',
+      },
+    },
+  },
   stepIndicator: {
     statuses: {
       completed: 'Kész',

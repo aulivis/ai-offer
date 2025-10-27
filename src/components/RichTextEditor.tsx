@@ -1,6 +1,6 @@
 'use client';
 
-import { t } from '@/copy';
+import { t, type CopyKey } from '@/copy';
 import {
   forwardRef,
   useCallback,
@@ -36,20 +36,77 @@ type ToolbarButton = {
   command: Command;
   label: string;
   icon?: string;
-  title: string;
+  ariaLabelKey: CopyKey;
+  titleKey: CopyKey;
 };
 
 const toolbarButtons: ToolbarButton[] = [
-  { command: 'bold', label: 'B', title: 'Félkövér (Ctrl/Cmd + B)' },
-  { command: 'italic', label: 'I', title: 'Dőlt (Ctrl/Cmd + I)' },
-  { command: 'underline', label: 'U', title: 'Aláhúzás (Ctrl/Cmd + U)' },
-  { command: 'strikeThrough', label: 'S', title: 'Áthúzás' },
-  { command: 'insertUnorderedList', icon: '•', label: 'Lista', title: 'Felsorolás' },
-  { command: 'insertOrderedList', icon: '1.', label: 'Számozás', title: 'Számozott lista' },
-  { command: 'blockquote', icon: '❝', label: 'Idézet', title: 'Idézet blokk' },
-  { command: 'removeFormat', icon: '⨉', label: 'Törlés', title: 'Formázás törlése' },
-  { command: 'undo', icon: '↺', label: 'Vissza', title: 'Visszavonás (Ctrl/Cmd + Z)' },
-  { command: 'redo', icon: '↻', label: 'Előre', title: 'Ismét (Ctrl/Cmd + Shift + Z)' },
+  {
+    command: 'bold',
+    label: 'B',
+    ariaLabelKey: 'a11y.richText.bold.label',
+    titleKey: 'a11y.richText.bold.title',
+  },
+  {
+    command: 'italic',
+    label: 'I',
+    ariaLabelKey: 'a11y.richText.italic.label',
+    titleKey: 'a11y.richText.italic.title',
+  },
+  {
+    command: 'underline',
+    label: 'U',
+    ariaLabelKey: 'a11y.richText.underline.label',
+    titleKey: 'a11y.richText.underline.title',
+  },
+  {
+    command: 'strikeThrough',
+    label: 'S',
+    ariaLabelKey: 'a11y.richText.strikeThrough.label',
+    titleKey: 'a11y.richText.strikeThrough.title',
+  },
+  {
+    command: 'insertUnorderedList',
+    icon: '•',
+    label: 'Lista',
+    ariaLabelKey: 'a11y.richText.insertUnorderedList.label',
+    titleKey: 'a11y.richText.insertUnorderedList.title',
+  },
+  {
+    command: 'insertOrderedList',
+    icon: '1.',
+    label: 'Számozás',
+    ariaLabelKey: 'a11y.richText.insertOrderedList.label',
+    titleKey: 'a11y.richText.insertOrderedList.title',
+  },
+  {
+    command: 'blockquote',
+    icon: '❝',
+    label: 'Idézet',
+    ariaLabelKey: 'a11y.richText.blockquote.label',
+    titleKey: 'a11y.richText.blockquote.title',
+  },
+  {
+    command: 'removeFormat',
+    icon: '⨉',
+    label: 'Törlés',
+    ariaLabelKey: 'a11y.richText.removeFormat.label',
+    titleKey: 'a11y.richText.removeFormat.title',
+  },
+  {
+    command: 'undo',
+    icon: '↺',
+    label: 'Vissza',
+    ariaLabelKey: 'a11y.richText.undo.label',
+    titleKey: 'a11y.richText.undo.title',
+  },
+  {
+    command: 'redo',
+    icon: '↻',
+    label: 'Előre',
+    ariaLabelKey: 'a11y.richText.redo.label',
+    titleKey: 'a11y.richText.redo.title',
+  },
 ];
 
 const buttonBaseClasses =
@@ -293,6 +350,8 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
           <div className={`${toolbarContainerClasses} ${toolbarClassName ?? ''}`.trim()}>
             {toolbarButtons.map((button) => {
               const isActive = activeStates[button.command];
+              const ariaLabel = t(button.ariaLabelKey);
+              const title = t(button.titleKey);
               return (
                 <Button
                   key={button.command}
@@ -300,7 +359,8 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
                   onClick={() => applyCommand(button.command)}
                   className={buttonBaseClasses}
                   aria-pressed={isActive}
-                  title={button.title}
+                  aria-label={ariaLabel}
+                  title={title}
                 >
                   {button.icon ? (
                     <span className="text-sm leading-none">{button.icon}</span>
