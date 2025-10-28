@@ -28,7 +28,7 @@ import {
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
-import { t, hu } from '@/copy';
+import { t, createTranslator, resolveLocale } from '@/copy';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -791,19 +791,23 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     const resolvedLegacyTemplateId = (template as { legacyId?: string }).legacyId ?? 'modern';
     const resolvedRequestedTemplateId = normalizedRequestedTemplateId ?? resolvedTemplateId;
 
+    const resolvedLocale = resolveLocale(normalizedLanguage);
+    const translator = createTranslator(resolvedLocale);
+    const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
+
     const html = buildOfferHtml(
       {
         offer: {
-          title: safeTitle || 'Árajánlat',
+          title: safeTitle || defaultTitle,
           companyName: sanitizeInput(profile?.company_name || ''),
           bodyHtml: aiHtmlForPdf,
           templateId: resolvedTemplateId,
           legacyTemplateId: resolvedLegacyTemplateId,
-          locale: normalizedLanguage || 'hu',
+          locale: resolvedLocale,
         },
         rows,
         branding: brandingOptions,
-        i18n: hu,
+        i18n: translator,
         tokens: createThemeTokens(template.tokens, brandingOptions),
       },
       template,

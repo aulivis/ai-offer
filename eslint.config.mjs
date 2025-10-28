@@ -138,6 +138,47 @@ const noHardcodedUiStringsPlugin = {
         };
       },
     },
+    'pdf-templates-no-hardcoded-strings': {
+      meta: {
+        type: 'problem',
+        docs: {
+          description:
+            'Disallow hardcoded visible strings inside PDF template markup to enforce i18n usage.',
+        },
+        schema: [],
+        messages: {
+          pdfNoHardcoded:
+            'Hardcoded string detected in PDF template markup. Use ctx.i18n.t(...) instead.',
+        },
+      },
+      create(context) {
+        const filename = context.getFilename();
+
+        if (
+          !filename.endsWith('.ts') ||
+          !/(\\|\/)src(\\|\/)app(\\|\/)pdf(\\|\/)templates(\\|\/)/.test(filename)
+        ) {
+          return {};
+        }
+
+        const visibleTextPattern = />\s*[A-Za-zÁÉÍÓÖŐÚÜŰáéíóöőúüű].*?</;
+        const placeholderPattern = /placeholder=".*?"/i;
+
+        return {
+          TemplateElement(node) {
+            const raw = node.value.raw;
+
+            if (typeof raw !== 'string') {
+              return;
+            }
+
+            if (visibleTextPattern.test(raw) || placeholderPattern.test(raw)) {
+              context.report({ node, messageId: 'pdfNoHardcoded' });
+            }
+          },
+        };
+      },
+    },
   },
 };
 
@@ -158,6 +199,7 @@ const eslintConfig = [
     rules: {
       'prettier/prettier': 'error',
       'no-hardcoded-ui-strings/no-hardcoded-ui-strings': 'error',
+      'no-hardcoded-ui-strings/pdf-templates-no-hardcoded-strings': 'error',
     },
   },
   {

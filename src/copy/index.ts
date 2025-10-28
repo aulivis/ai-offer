@@ -7,6 +7,8 @@ const dictionary = {
   en: {} as Partial<typeof hu>,
 } as const;
 
+export type I18nDict = typeof hu;
+
 type Primitive = string | number | boolean | bigint | symbol | null | undefined;
 
 type DeepKeys<T> = T extends Primitive
@@ -22,6 +24,24 @@ type DeepKeys<T> = T extends Primitive
 export type CopyKey = DeepKeys<typeof hu>;
 
 export type LocaleKey = keyof typeof dictionary;
+
+const SUPPORTED_LOCALES = Object.keys(dictionary) as LocaleKey[];
+
+function normaliseLocale(locale: string | null | undefined): LocaleKey {
+  if (typeof locale !== 'string') {
+    return 'hu';
+  }
+
+  const candidate = locale.trim().toLowerCase();
+
+  if (!candidate) {
+    return 'hu';
+  }
+
+  return (SUPPORTED_LOCALES as readonly string[]).includes(candidate)
+    ? (candidate as LocaleKey)
+    : 'hu';
+}
 
 type InterpolationValues = Record<string, string | number>;
 
@@ -87,6 +107,30 @@ export function t(
   }
 
   return format(value, params);
+}
+
+export interface Translator {
+  locale: LocaleKey;
+  dict: I18nDict;
+  t: (key: CopyKey, params?: InterpolationValues) => string;
+}
+
+export function resolveLocale(locale: string | null | undefined): LocaleKey {
+  return normaliseLocale(locale);
+}
+
+export function createTranslator(locale: string | null | undefined): Translator {
+  const resolved = normaliseLocale(locale);
+  return {
+    locale: resolved,
+    dict: (dictionary[resolved] ?? dictionary.hu) as I18nDict,
+    t(key: CopyKey, params?: InterpolationValues) {
+      if (params) {
+        return t(key, params, resolved);
+      }
+      return t(key, resolved);
+    },
+  };
 }
 
 export { hu };

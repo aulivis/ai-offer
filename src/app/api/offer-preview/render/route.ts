@@ -5,7 +5,7 @@ import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { loadTemplate } from '@/app/pdf/templates/registry';
 import { createThemeTokens, normalizeBranding } from '@/app/pdf/templates/theme';
 import type { TemplateId } from '@/app/pdf/templates/types';
-import { hu } from '@/copy';
+import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeHTML } from '@/lib/sanitize';
 import type { PriceRow } from '@/app/lib/pricing';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
@@ -133,19 +133,23 @@ async function handlePost(req: AuthenticatedNextRequest) {
       ? legacyTemplateId
       : (templateLegacyId ?? 'modern');
 
+  const resolvedLocale = resolveLocale(locale);
+  const translator = createTranslator(resolvedLocale);
+  const defaultTitle = translator.t('pdf.templates.common.defaultTitle');
+
   const html = buildOfferHtml(
     {
       offer: {
-        title: title ?? 'Árajánlat',
+        title: (title ?? defaultTitle) || defaultTitle,
         companyName: companyName ?? '',
         bodyHtml: safeBody,
         templateId: template.id,
         legacyTemplateId: resolvedLegacyId,
-        locale: locale ?? 'hu',
+        locale: resolvedLocale,
       },
       rows: normalizedRows,
       branding: normalizedBranding,
-      i18n: hu,
+      i18n: translator,
       tokens: createThemeTokens(template.tokens, normalizedBranding),
     },
     template,
