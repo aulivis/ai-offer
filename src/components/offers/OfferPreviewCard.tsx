@@ -15,6 +15,7 @@ export type OfferPreviewStatus = 'idle' | 'loading' | 'streaming' | 'success' | 
 type OfferPreviewCardProps = {
   isPreviewAvailable: boolean;
   previewMarkup: string;
+  hasPreviewMarkup: boolean;
   statusDescriptor: OfferPreviewStatusDescriptor;
   isStreaming: boolean;
   previewStatus: OfferPreviewStatus;
@@ -198,6 +199,7 @@ function TabButton({
 export function OfferPreviewCard({
   isPreviewAvailable,
   previewMarkup,
+  hasPreviewMarkup,
   statusDescriptor,
   isStreaming,
   previewStatus,
@@ -365,6 +367,23 @@ export function OfferPreviewCard({
     );
   };
 
+  const renderLoading = () => {
+    const loadingDescriptor = statusDescriptor;
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-slate-50/70 px-6 py-12 text-center text-sm text-slate-600">
+        <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        <div className="space-y-1">
+          <p className="font-medium text-slate-700">
+            {loadingDescriptor?.title || t('offers.previewCard.loadingState.title')}
+          </p>
+          <p className="text-xs text-slate-500">
+            {loadingDescriptor?.description || t('offers.previewCard.loadingState.description')}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (!isPreviewAvailable) {
       return (
@@ -372,6 +391,10 @@ export function OfferPreviewCard({
           <p className="mx-auto max-w-xs">{t('offers.previewCard.empty')}</p>
         </div>
       );
+    }
+
+    if (isStreaming && !hasPreviewMarkup) {
+      return renderLoading();
     }
 
     return (
