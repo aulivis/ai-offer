@@ -156,3 +156,69 @@ a {
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
+
+@media print {
+  :root {
+    --fs-body: 11pt;
+    --lh-body: 1.45;
+    --fs-h1: 20pt;
+    --fs-h2: 16pt;
+    --fs-h3: 13pt;
+    --fs-table: 9.5pt;
+    --space-1: 4mm;
+    --space-2: 6mm;
+    --space-3: 10mm;
+  }
+
+  body {
+    font-family: 'Georgia', 'Cambria', 'Times New Roman', Times, serif;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    font-weight: 400;
+    color: #000;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Georgia', 'Cambria', 'Times New Roman', Times, serif;
+    margin: 0 0 var(--space-2);
+    font-weight: 700;
+    color: #000;
+  }
+
+  h1 {
+    font-size: var(--fs-h1);
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: var(--fs-h2);
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-size: var(--fs-h3);
+    line-height: 1.3;
+  }
+
+  p,
+  ul,
+  ol,
+  dl {
+    margin: 0 0 var(--space-1);
+  }
+
+  section {
+    margin: 0 0 var(--space-3);
+  }
+
+  table {
+    font-size: var(--fs-table);
+    line-height: 1.3;
+  }
+
+  th {
+    font-weight: 600;
+  }
+}
