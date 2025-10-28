@@ -9,6 +9,10 @@ import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeHTML } from '@/lib/sanitize';
 import type { PriceRow } from '@/app/lib/pricing';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import {
+  recordTemplateRenderTelemetry,
+  resolveTemplateRenderErrorCode,
+} from '@/lib/observability/templateTelemetry';
 
 export const runtime = 'nodejs';
 
@@ -137,23 +141,47 @@ async function handlePost(req: AuthenticatedNextRequest) {
   const translator = createTranslator(resolvedLocale);
   const defaultTitle = translator.t('pdf.templates.common.defaultTitle');
 
-  const html = buildOfferHtml(
-    {
-      offer: {
-        title: (title ?? defaultTitle) || defaultTitle,
-        companyName: companyName ?? '',
-        bodyHtml: safeBody,
-        templateId: template.id,
-        legacyTemplateId: resolvedLegacyId,
-        locale: resolvedLocale,
+  const renderStartedAt = performance.now();
+  let renderDuration: number | null = null;
+  let html: string;
+
+  try {
+    html = buildOfferHtml(
+      {
+        offer: {
+          title: (title ?? defaultTitle) || defaultTitle,
+          companyName: companyName ?? '',
+          bodyHtml: safeBody,
+          templateId: template.id,
+          legacyTemplateId: resolvedLegacyId,
+          locale: resolvedLocale,
+        },
+        rows: normalizedRows,
+        branding: normalizedBranding,
+        i18n: translator,
+        tokens: createThemeTokens(template.tokens, normalizedBranding),
       },
-      rows: normalizedRows,
-      branding: normalizedBranding,
-      i18n: translator,
-      tokens: createThemeTokens(template.tokens, normalizedBranding),
-    },
-    template,
-  );
+      template,
+    );
+    renderDuration = performance.now() - renderStartedAt;
+  } catch (error) {
+    renderDuration = performance.now() - renderStartedAt;
+    await recordTemplateRenderTelemetry({
+      templateId: template.id,
+      renderer: 'api.offer_preview.render',
+      outcome: 'failure',
+      renderMs: renderDuration,
+      errorCode: resolveTemplateRenderErrorCode(error),
+    });
+    throw error;
+  }
+
+  await recordTemplateRenderTelemetry({
+    templateId: template.id,
+    renderer: 'api.offer_preview.render',
+    outcome: 'success',
+    renderMs: renderDuration,
+  });
 
   const htmlWithCsp = injectCspMeta(html);
 

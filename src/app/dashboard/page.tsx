@@ -736,12 +736,20 @@ export default function DashboardPage() {
         title={t('dashboard.title')}
         description={t('dashboard.description')}
         actions={
-          <Link
-            href="/new"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            {t('dashboard.actions.newOffer')}
-          </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              href="/dashboard/telemetry"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {t('dashboard.actions.templateTelemetry')}
+            </Link>
+            <Link
+              href="/new"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {t('dashboard.actions.newOffer')}
+            </Link>
+          </div>
         }
       >
         {/* Metrikák */}
