@@ -760,36 +760,60 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     const planTier = planToTemplateTier(plan);
     const allTemplates = listTemplates() as Array<OfferTemplate & { legacyId?: string }>;
-    const allowedTemplates =
+    const fallbackTemplate =
+      allTemplates.find((tpl) => tpl.id === DEFAULT_TEMPLATE_ID) ||
+      (loadTemplate(DEFAULT_TEMPLATE_ID) as OfferTemplate & { legacyId?: string });
+
+    const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
+    const defaultTemplateForPlan =
       planTier === 'premium'
-        ? allTemplates
-        : allTemplates.filter((template) => template.tier === 'free');
+        ? allTemplates[0] || fallbackTemplate
+        : freeTemplates[0] || fallbackTemplate;
 
     const normalizedRequestedTemplateId =
       typeof templateId === 'string' && templateId.trim().length > 0
         ? (templateId.trim() as TemplateId)
         : null;
+
     const requestedTemplate = normalizedRequestedTemplateId
-      ? allowedTemplates.find((template) => template.id === normalizedRequestedTemplateId) || null
+      ? allTemplates.find((tpl) => tpl.id === normalizedRequestedTemplateId) || null
       : null;
+
+    if (normalizedRequestedTemplateId && !requestedTemplate) {
+      return NextResponse.json(
+        {
+          error: 'A kért sablon nem található. Kérlek válassz egy elérhető sablont.',
+        },
+        { status: 400 },
+      );
+    }
 
     const profileTemplateId = findTemplateIdByLegacyId(
       allTemplates,
       typeof profile?.offer_template === 'string' ? profile.offer_template : null,
     );
     const profileTemplate = profileTemplateId
-      ? allowedTemplates.find((template) => template.id === profileTemplateId) || null
+      ? allTemplates.find((tpl) => tpl.id === profileTemplateId) || null
       : null;
 
-    const template =
-      requestedTemplate ||
-      profileTemplate ||
-      allowedTemplates[0] ||
-      allTemplates.find((template) => template.id === DEFAULT_TEMPLATE_ID) ||
-      (loadTemplate(DEFAULT_TEMPLATE_ID) as OfferTemplate & { legacyId?: string });
+    const isTemplateAllowed = (tpl: OfferTemplate) => planTier === 'premium' || tpl.tier === 'free';
+
+    let template = defaultTemplateForPlan;
+    let resolvedRequestedTemplateId: TemplateId;
+
+    if (requestedTemplate) {
+      resolvedRequestedTemplateId = requestedTemplate.id;
+      template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
+    } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
+      template = profileTemplate;
+      resolvedRequestedTemplateId = template.id;
+    } else {
+      template = defaultTemplateForPlan;
+      resolvedRequestedTemplateId = template.id;
+    }
+
     const resolvedTemplateId = template.id;
     const resolvedLegacyTemplateId = (template as { legacyId?: string }).legacyId ?? 'modern';
-    const resolvedRequestedTemplateId = normalizedRequestedTemplateId ?? resolvedTemplateId;
 
     const resolvedLocale = resolveLocale(normalizedLanguage);
     const translator = createTranslator(resolvedLocale);
