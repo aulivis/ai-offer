@@ -232,6 +232,9 @@ describe('POST /api/ai-generate', () => {
     cookiesSetMock.mockReset();
     processPdfJobInlineMock.mockReset();
     supabaseServerMock.mockReset();
+    listTemplatesMock.mockReset();
+    loadTemplateMock.mockReset();
+    buildOfferHtmlMock.mockReset();
 
     insertOfferMock.mockResolvedValue({ error: null });
     enqueuePdfJobMock.mockRejectedValue(new Error('queue failed'));
@@ -262,6 +265,9 @@ describe('POST /api/ai-generate', () => {
         };
       },
     });
+    listTemplatesMock.mockReturnValue([templateStub]);
+    loadTemplateMock.mockImplementation(() => templateStub);
+    buildOfferHtmlMock.mockImplementation(() => '<html />');
   });
 
   afterEach(() => {
@@ -282,6 +288,39 @@ describe('POST /api/ai-generate', () => {
     });
 
     expect(insertOfferMock).not.toHaveBeenCalled();
+    expect(enqueuePdfJobMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown template identifiers with a 400 error', async () => {
+    const { POST } = await import('../route');
+
+    const response = await POST(
+      createRequest({
+        title: 'Ajánlat címe',
+        industry: 'Marketing',
+        projectDetails: {
+          overview: 'Részletes leírás',
+          deliverables: '',
+          timeline: '',
+          constraints: '',
+        },
+        deadline: '',
+        language: 'hu',
+        brandVoice: 'friendly',
+        style: 'detailed',
+        prices: [],
+        aiOverrideHtml: '<p>Előnézet</p>',
+        clientId: null,
+        templateId: 'missing.template@1.0.0',
+        pdfWebhookUrl: null,
+        imageAssets: [],
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining('sablon'),
+    });
     expect(enqueuePdfJobMock).not.toHaveBeenCalled();
   });
 
@@ -475,6 +514,68 @@ describe('POST /api/ai-generate', () => {
     expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
     expect(dispatchPdfJobMock).toHaveBeenCalledWith(expect.anything(), 'job-token');
     expect(processPdfJobInlineMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('downgrades premium template requests to the default free template for free plans', async () => {
+    const premiumTemplate = {
+      ...templateStub,
+      id: 'premium.elegant@1.0.0',
+      tier: 'premium' as const,
+      legacyId: 'premium-modern',
+    };
+
+    listTemplatesMock.mockReturnValue([templateStub, premiumTemplate]);
+    loadTemplateMock.mockImplementation((id: string) => {
+      if (id === templateStub.id) {
+        return templateStub;
+      }
+      if (id === premiumTemplate.id) {
+        return premiumTemplate;
+      }
+      throw new Error(`Unknown template ${id}`);
+    });
+
+    enqueuePdfJobMock.mockResolvedValueOnce(undefined);
+
+    const { POST } = await import('../route');
+
+    const response = await POST(
+      createRequest({
+        title: 'Ajánlat címe',
+        industry: 'Marketing',
+        projectDetails: {
+          overview: 'Részletes leírás',
+          deliverables: '',
+          timeline: '',
+          constraints: '',
+        },
+        deadline: '',
+        language: 'hu',
+        brandVoice: 'friendly',
+        style: 'detailed',
+        prices: [],
+        aiOverrideHtml: '<p>Előnézet</p>',
+        clientId: null,
+        templateId: premiumTemplate.id,
+        pdfWebhookUrl: null,
+        imageAssets: [],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(buildOfferHtmlMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        offer: expect.objectContaining({ templateId: templateStub.id }),
+      }),
+      templateStub,
+    );
+    expect(enqueuePdfJobMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        templateId: templateStub.id,
+        requestedTemplateId: premiumTemplate.id,
+      }),
+    );
   });
 
   it('does not set the device cookie when analytics consent is denied', async () => {
