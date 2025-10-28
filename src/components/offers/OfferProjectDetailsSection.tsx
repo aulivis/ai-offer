@@ -11,6 +11,10 @@ type OfferProjectDetailsSectionProps = {
   projectDetails: ProjectDetails;
   onTitleChange: ChangeEventHandler<HTMLInputElement>;
   onProjectDetailsChange: (field: ProjectDetailKey, value: string) => void;
+  errors?: {
+    title?: string;
+    projectDetails?: Partial<Record<ProjectDetailKey, string>>;
+  };
 };
 
 const MAX_LENGTHS: Record<ProjectDetailKey, number> = {
@@ -27,6 +31,7 @@ export function OfferProjectDetailsSection({
   projectDetails,
   onTitleChange,
   onProjectDetailsChange,
+  errors,
 }: OfferProjectDetailsSectionProps) {
   const [tipsOpen, setTipsOpen] = useState(false);
 
@@ -40,6 +45,7 @@ export function OfferProjectDetailsSection({
         onChange={onTitleChange}
         placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
         help={t('offers.wizard.forms.details.titleHelp')}
+        error={errors?.title}
       />
 
       <div className="space-y-4 rounded-2xl border border-border/70 bg-bg/50 p-4">
@@ -83,6 +89,7 @@ export function OfferProjectDetailsSection({
           maxLength={MAX_LENGTHS[field]}
           showCounter
           className="min-h-[7.5rem]"
+          error={errors?.projectDetails?.[field]}
         />
       ))}
     </Card>

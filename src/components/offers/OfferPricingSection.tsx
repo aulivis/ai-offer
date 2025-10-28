@@ -5,9 +5,10 @@ import { t } from '@/copy';
 type OfferPricingSectionProps = {
   rows: PriceRow[];
   onChange: (rows: PriceRow[]) => void;
+  error?: string;
 };
 
-export function OfferPricingSection({ rows, onChange }: OfferPricingSectionProps) {
+export function OfferPricingSection({ rows, onChange, error }: OfferPricingSectionProps) {
   return (
     <section className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-6">
       <Card
@@ -24,6 +25,11 @@ export function OfferPricingSection({ rows, onChange }: OfferPricingSectionProps
           <EditablePriceTable rows={rows} onChange={onChange} />
         </div>
       </Card>
+      {error ? (
+        <p className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700">
+          {error}
+        </p>
+      ) : null}
     </section>
   );
 }

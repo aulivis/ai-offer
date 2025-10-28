@@ -35,7 +35,6 @@ export default function NewOfferPage() {
     goNext,
     goPrev,
     goToStep,
-    inlineErrors,
     isNextDisabled,
     attemptedSteps,
     validation,
@@ -55,6 +54,11 @@ export default function NewOfferPage() {
   const previewRequestIdRef = useRef(0);
   const previewDebounceRef = useRef<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formEndRef = useRef<HTMLDivElement | null>(null);
+  const isNearFormEndRef = useRef(false);
+  const lastScrollYRef = useRef(0);
+  const isMobileRef = useRef(false);
+  const [isActionBarVisible, setIsActionBarVisible] = useState(true);
 
   const { totals, pricePreviewHtml } = usePricingRows(pricingRows);
   const previewMarkup = useMemo(() => {
@@ -121,6 +125,85 @@ export default function NewOfferPage() {
         return null;
     }
   }, [previewStatus]);
+
+  const showActionBar = useCallback(() => {
+    setIsActionBarVisible((visible) => (visible ? visible : true));
+  }, []);
+
+  const hideActionBar = useCallback(() => {
+    setIsActionBarVisible((visible) => (visible ? false : visible));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const updateIsMobile = () => {
+      isMobileRef.current = window.innerWidth < 640;
+      if (!isMobileRef.current) {
+        showActionBar();
+      }
+    };
+
+    updateIsMobile();
+    window.addEventListener('resize', updateIsMobile);
+    return () => {
+      window.removeEventListener('resize', updateIsMobile);
+    };
+  }, [showActionBar]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (!isMobileRef.current) {
+        lastScrollYRef.current = currentY;
+        return;
+      }
+
+      const delta = currentY - lastScrollYRef.current;
+      lastScrollYRef.current = currentY;
+
+      if (currentY < 32 || delta < -6 || isNearFormEndRef.current) {
+        showActionBar();
+        return;
+      }
+
+      if (delta > 6) {
+        hideActionBar();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [hideActionBar, showActionBar]);
+
+  useEffect(() => {
+    if (!formEndRef.current || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isNearFormEndRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          showActionBar();
+        }
+      },
+      { rootMargin: '0px 0px -35% 0px' },
+    );
+
+    observer.observe(formEndRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [showActionBar]);
 
   const coerceSummaryHighlights = (value: unknown): string[] => {
     if (!Array.isArray(value)) {
@@ -473,15 +556,24 @@ export default function NewOfferPage() {
     [],
   );
 
+  const stepLabels = useMemo(
+    () => ({
+      1: t('offers.wizard.steps.details'),
+      2: t('offers.wizard.steps.pricing'),
+      3: t('offers.wizard.steps.summary'),
+    }),
+    [],
+  ) as Record<1 | 2 | 3, string>;
+
   const wizardSteps = useMemo(() => {
     const definitions: Array<{ label: string; id: 1 | 2 | 3 }> = [
-      { label: t('offers.wizard.steps.details'), id: 1 },
-      { label: t('offers.wizard.steps.pricing'), id: 2 },
-      { label: t('offers.wizard.steps.summary'), id: 3 },
+      { label: stepLabels[1], id: 1 },
+      { label: stepLabels[2], id: 2 },
+      { label: stepLabels[3], id: 3 },
     ];
 
     return definitions.map(({ label, id }) => {
-      const hasErrors = (validation[id]?.length ?? 0) > 0;
+      const hasErrors = (validation.steps[id]?.length ?? 0) > 0;
       const attempted = attemptedSteps[id];
       const status: StepIndicatorStep['status'] =
         step === id ? 'current' : isStepValid(id) && step > id ? 'completed' : 'upcoming';
@@ -494,7 +586,7 @@ export default function NewOfferPage() {
         onSelect: () => goToStep(id),
       } satisfies StepIndicatorStep;
     });
-  }, [attemptedSteps, goToStep, isStepValid, step, validation]);
+  }, [attemptedSteps, goToStep, isStepValid, step, stepLabels, validation.steps]);
 
   const handleSubmit = useCallback(async () => {
     if (isSubmitting) {
@@ -611,6 +703,50 @@ export default function NewOfferPage() {
   const submitLabel = isSubmitting
     ? t('offers.wizard.actions.previewInProgress')
     : t('offers.wizard.actions.save');
+  const nextStepLabel = step < 3 ? stepLabels[(step + 1) as 2 | 3] : null;
+  const previousStepLabel = step > 1 ? stepLabels[(step - 1) as 1 | 2] : null;
+  const nextButtonLabel = nextStepLabel
+    ? `${t('offers.wizard.actions.next')}: ${nextStepLabel}`
+    : t('offers.wizard.actions.next');
+  const backButtonLabel = previousStepLabel
+    ? `${t('offers.wizard.actions.back')}: ${previousStepLabel}`
+    : t('offers.wizard.actions.back');
+  const validationPreviewIssues = useMemo(
+    () =>
+      validation.issues
+        .filter((issue) => attemptedSteps[issue.step])
+        .map(({ severity, message }) => ({ severity, message })),
+    [attemptedSteps, validation.issues],
+  );
+  const combinedIssues = useMemo(
+    () => [...validationPreviewIssues, ...previewIssues],
+    [previewIssues, validationPreviewIssues],
+  );
+  const previousIssueCountRef = useRef(combinedIssues.length);
+
+  useEffect(() => {
+    if (combinedIssues.length > 0 && previousIssueCountRef.current === 0) {
+      setActivePreviewTab('issues');
+    } else if (
+      combinedIssues.length === 0 &&
+      previousIssueCountRef.current > 0 &&
+      activePreviewTab === 'issues'
+    ) {
+      setActivePreviewTab('document');
+    }
+
+    previousIssueCountRef.current = combinedIssues.length;
+  }, [activePreviewTab, combinedIssues.length]);
+
+  const detailFieldErrors = attemptedSteps[1]
+    ? {
+        title: validation.fields[1].title,
+        projectDetails: validation.fields[1].projectDetails,
+      }
+    : undefined;
+  const pricingSectionError = attemptedSteps[2] ? validation.fields[2].pricing : undefined;
+  const actionBarIsHidden = !isActionBarVisible && isMobileRef.current;
+  const actionBarTabIndex = actionBarIsHidden ? -1 : undefined;
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
@@ -632,33 +768,39 @@ export default function NewOfferPage() {
                 onProjectDetailsChange={(field, value) =>
                   setProjectDetails((prev) => ({ ...prev, [field]: value }))
                 }
+                errors={detailFieldErrors}
               />
             )}
 
-            {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
+            {step === 2 && (
+              <OfferPricingSection
+                rows={pricingRows}
+                onChange={setPricingRows}
+                error={pricingSectionError}
+              />
+            )}
 
             {step === 3 && (
               <OfferSummarySection title={title} projectDetails={projectDetails} totals={totals} />
             )}
 
-            {inlineErrors.length > 0 && (
-              <div className="w-full rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700">
-                <ul className="list-disc space-y-1 pl-4">
-                  {inlineErrors.map((message, index) => (
-                    <li key={index}>{message}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
+            <div
+              className={`sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 ease-out sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none ${
+                actionBarIsHidden
+                  ? 'translate-y-full opacity-0 pointer-events-none'
+                  : 'translate-y-0 opacity-100'
+              } sm:translate-y-0 sm:opacity-100`}
+              aria-hidden={actionBarIsHidden || undefined}
+              onFocusCapture={showActionBar}
+            >
               <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   onClick={goPrev}
                   disabled={step === 1}
                   className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                  tabIndex={actionBarTabIndex}
                 >
-                  {t('offers.wizard.actions.back')}
+                  {backButtonLabel}
                 </Button>
 
                 {step < 3 ? (
@@ -666,20 +808,23 @@ export default function NewOfferPage() {
                     onClick={goNext}
                     disabled={isNextDisabled}
                     className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                    tabIndex={actionBarTabIndex}
                   >
-                    {t('offers.wizard.actions.next')}
+                    {nextButtonLabel}
                   </Button>
                 ) : (
                   <Button
                     onClick={handleSubmit}
                     disabled={isSubmitDisabled}
                     className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                    tabIndex={actionBarTabIndex}
                   >
                     {submitLabel}
                   </Button>
                 )}
               </div>
             </div>
+            <div ref={formEndRef} aria-hidden="true" className="h-1 w-full" />
           </div>
         </div>
 
@@ -692,7 +837,7 @@ export default function NewOfferPage() {
             previewStatus={previewStatus}
             previewError={previewError}
             summaryHighlights={previewSummary}
-            issues={previewIssues}
+            issues={combinedIssues}
             activeTab={activePreviewTab}
             onTabChange={setActivePreviewTab}
             onAbortPreview={handleAbortPreview}
@@ -715,7 +860,7 @@ export default function NewOfferPage() {
           previewStatus={previewStatus}
           previewError={previewError}
           summaryHighlights={previewSummary}
-          issues={previewIssues}
+          issues={combinedIssues}
           activeTab={activePreviewTab}
           onTabChange={setActivePreviewTab}
           onAbortPreview={handleAbortPreview}
