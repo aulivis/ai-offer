@@ -856,6 +856,7 @@ export const hu = {
         helper: 'Válaszd ki, milyen dizájnnal készüljön el a PDF ajánlat.',
         lockedTitle: 'Prémium sablonok',
         lockedDescription: 'A prémium sablonok Pro előfizetéssel érhetők el.',
+        lockedValueProp: 'Egyedi, márkázható dizájn extra vizuális elemekkel.',
         previewHeading: 'PDF előnézet',
         previewHint: 'A végleges PDF a kiválasztott sablont és a márkázott színeidet használja.',
         summaryLabel: 'Sablon',

@@ -4,6 +4,7 @@ import { t } from '@/copy';
 import {
   ChangeEvent,
   FormEvent,
+  SVGProps,
   useCallback,
   useEffect,
   useMemo,
@@ -82,6 +83,19 @@ type Client = {
   phone?: string;
   email?: string;
 };
+
+function LockBadgeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 type OfferSections = {
   introduction: string;
@@ -351,6 +365,15 @@ export default function NewOfferWizard() {
     }
     return allPdfTemplates.filter((template) => template.tier === 'premium');
   }, [allPdfTemplates, userTemplateTier]);
+  const lockedTemplateDefaultHighlight = t('offers.wizard.previewTemplates.lockedValueProp');
+  const lockedTemplateSummaries = useMemo(
+    () =>
+      lockedPdfTemplates.map((template) => ({
+        label: template.label,
+        highlight: template.marketingHighlight ?? lockedTemplateDefaultHighlight,
+      })),
+    [lockedPdfTemplates, lockedTemplateDefaultHighlight],
+  );
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>([
     'Marketing',
@@ -701,13 +724,20 @@ export default function NewOfferWizard() {
     setShowClientDrop(false);
   }
 
-  const handlePdfTemplateChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-    const templateId = event.target.value as TemplateId;
-    if (!templateId) {
-      return;
-    }
-    setSelectedPdfTemplateId(templateId);
-  }, []);
+  const handlePdfTemplateChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const templateId = event.target.value as TemplateId;
+      if (!templateId) {
+        return;
+      }
+      const isAllowed = availablePdfTemplates.some((template) => template.id === templateId);
+      if (!isAllowed) {
+        return;
+      }
+      setSelectedPdfTemplateId(templateId);
+    },
+    [availablePdfTemplates],
+  );
 
   const handleTemplateSelect = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -1941,27 +1971,42 @@ export default function NewOfferWizard() {
                     </option>
                   ))}
                 </Select>
-                {!isProPlan && lockedPdfTemplates.length > 0 ? (
-                  <div className="space-y-3 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-4">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-700">
-                        {t('offers.wizard.previewTemplates.lockedTitle')}
-                      </p>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                        Pro
+                {!isProPlan && lockedTemplateSummaries.length > 0 ? (
+                  <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                        <LockBadgeIcon className="h-4 w-4" />
                       </span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-700">
+                            {t('offers.wizard.previewTemplates.lockedTitle')}
+                          </p>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                            Pro
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          {t('offers.wizard.previewTemplates.lockedDescription')}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.previewTemplates.lockedDescription')}
-                    </p>
-                    <ul className="space-y-1 text-xs text-slate-500">
-                      {lockedPdfTemplates.map((template) => (
-                        <li key={template.id} className="flex items-center gap-2">
-                          <span aria-hidden="true">🔒</span>
-                          <span>{template.label}</span>
-                        </li>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {lockedTemplateSummaries.map((template) => (
+                        <div
+                          key={template.label}
+                          className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm"
+                        >
+                          <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                            <LockBadgeIcon className="h-3.5 w-3.5" />
+                          </span>
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold text-slate-700">{template.label}</p>
+                            <p className="text-xs text-slate-500">{template.highlight}</p>
+                          </div>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                     <Button
                       type="button"
                       size="sm"
