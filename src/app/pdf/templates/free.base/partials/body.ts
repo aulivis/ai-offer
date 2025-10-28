@@ -24,29 +24,75 @@ function sanitizeLogoUrl(value: string | null | undefined): string | null {
   }
 }
 
-export function renderBody(ctx: RenderCtx): string {
-  const priceTable = priceTableHtml(ctx.rows);
+function buildSafeCtx(ctx: RenderCtx) {
   const safeCompany = sanitizeInput(ctx.offer.companyName || '');
   const safeTitle = sanitizeInput(ctx.offer.title || 'Árajánlat');
   const logoUrl = sanitizeLogoUrl(ctx.branding?.logoUrl ?? null);
+
+  return {
+    safeCompany,
+    safeTitle,
+    logoUrl,
+  };
+}
+
+export function partialHeader(ctx: RenderCtx): string {
+  const { safeCompany, safeTitle, logoUrl } = buildSafeCtx(ctx);
   const logoMarkup = logoUrl
     ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
     : '';
 
   return `
-    <main class="offer-template offer-template--modern">
-      <article class="offer-doc offer-doc--modern">
         <header class="offer-doc__header">
           ${logoMarkup}
           <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>
           <h1 class="offer-doc__title">${safeTitle}</h1>
         </header>
+  `;
+}
+
+export function partialSections(ctx: RenderCtx): string {
+  return `
         <section class="offer-doc__content">
           ${ctx.offer.bodyHtml}
         </section>
+  `;
+}
+
+export function partialPriceTable(ctx: RenderCtx): string {
+  const priceTable = priceTableHtml(ctx.rows);
+  return `
         <section class="offer-doc__table">
           ${priceTable}
         </section>
+  `;
+}
+
+export function partialGallery(ctx: RenderCtx): string {
+  void ctx;
+  return '';
+}
+
+export function partialFooter(ctx: RenderCtx): string {
+  void ctx;
+  return `
+        <footer class="offer-doc__footer"></footer>
+  `;
+}
+
+export function renderBody(ctx: RenderCtx): string {
+  const header = partialHeader(ctx);
+  const sections = partialSections(ctx);
+  const priceTable = partialPriceTable(ctx);
+  const gallery = partialGallery(ctx);
+  const footer = partialFooter(ctx);
+
+  const content = [header, sections, priceTable, gallery, footer].join('');
+
+  return `
+    <main class="offer-template offer-template--modern">
+      <article class="offer-doc offer-doc--modern">
+${content}
       </article>
     </main>
   `;
