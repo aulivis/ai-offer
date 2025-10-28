@@ -1034,6 +1034,10 @@ export const hu = {
       },
       empty:
         'Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.',
+      loadingState: {
+        title: 'Előnézet előkészítése…',
+        description: 'Kérünk, várj pár másodpercet, amíg betöltjük a teljes dokumentumot.',
+      },
       tabs: {
         document: 'Dokumentum',
         summary: 'Összegzés',

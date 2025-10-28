@@ -1146,6 +1146,14 @@ export default function NewOfferWizard() {
           { ...emptyProjectDetails },
         );
 
+        const serializedPrices = rows.map(({ name, qty, unit, unitPrice, vat }) => ({
+          name,
+          qty,
+          unit,
+          unitPrice,
+          vat,
+        }));
+
         resp = await fetchWithSupabaseAuth('/api/ai-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1157,7 +1165,7 @@ export default function NewOfferWizard() {
             language: form.language,
             brandVoice: form.brandVoice,
             style: form.style,
-            prices: rows,
+            prices: serializedPrices,
             aiOverrideHtml: htmlForApi,
             clientId: cid,
             imageAssets: imagePayload,

@@ -489,6 +489,18 @@ export default function NewOfferPage() {
       return;
     }
 
+    const trimmedTitle = title.trim();
+    const trimmedDetails = projectDetailsText.trim();
+    const shouldGeneratePreview = trimmedTitle.length > 0 && trimmedDetails.length > 0;
+
+    if (shouldGeneratePreview) {
+      setPreviewStatus('loading');
+      setPreviewError(null);
+      setPreviewHtml(DEFAULT_PREVIEW_HTML);
+      setPreviewSummary([]);
+      setPreviewIssues([]);
+    }
+
     previewDebounceRef.current = window.setTimeout(() => {
       void callPreview();
     }, 600);
@@ -630,6 +642,14 @@ export default function NewOfferPage() {
     setIsSubmitting(true);
 
     try {
+      const serializedPrices = pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
+        name,
+        qty,
+        unit,
+        unitPrice,
+        vat,
+      }));
+
       const response = await fetchWithSupabaseAuth('/api/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -641,7 +661,7 @@ export default function NewOfferPage() {
           language: 'hu',
           brandVoice: 'professional',
           style: 'detailed',
-          prices: pricingRows,
+          prices: serializedPrices,
           aiOverrideHtml: trimmedPreview,
           clientId: null,
           imageAssets: [],
@@ -832,6 +852,7 @@ export default function NewOfferPage() {
           <OfferPreviewCard
             isPreviewAvailable={step === 3}
             previewMarkup={previewMarkup}
+            hasPreviewMarkup={hasPreviewHtml}
             statusDescriptor={statusDescriptor}
             isStreaming={isStreaming}
             previewStatus={previewStatus}
@@ -855,6 +876,7 @@ export default function NewOfferPage() {
         <OfferPreviewCard
           isPreviewAvailable={step === 3}
           previewMarkup={previewMarkup}
+          hasPreviewMarkup={hasPreviewHtml}
           statusDescriptor={statusDescriptor}
           isStreaming={isStreaming}
           previewStatus={previewStatus}
