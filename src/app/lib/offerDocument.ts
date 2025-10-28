@@ -3,6 +3,7 @@ import {
   isOfferTemplateId,
   type OfferTemplateId,
 } from './offerTemplates';
+import { PRINT_BASE_CSS } from '@/app/pdf/print.css';
 import { sanitizeInput } from '@/lib/sanitize';
 
 /**
@@ -318,16 +319,7 @@ export const OFFER_DOCUMENT_STYLES = `
  * separate constant so that the dashboard preview can avoid overriding the
  * surrounding page background.
  */
-export const OFFER_DOCUMENT_PDF_STYLES = `
-  body {
-    background: #f8fafc;
-    margin: 0;
-    padding: 56px 0;
-  }
-  body, p, table, th, td {
-    font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  }
-`;
+export const OFFER_DOCUMENT_PDF_STYLES = PRINT_BASE_CSS;
 
 export interface OfferBrandingOptions {
   logoUrl?: string | null;
