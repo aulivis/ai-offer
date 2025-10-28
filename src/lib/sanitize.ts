@@ -88,6 +88,7 @@ const ALLOWED_TARGETS = new Set(['_blank', '_self', '_parent', '_top']);
 const ALLOWED_REL_VALUES = new Set(['noopener', 'noreferrer', 'nofollow', 'external']);
 const ATTRIBUTE_PATTERN = /([a-zA-Z0-9:-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>/=`]+)))?/g;
 const TAG_PATTERN = /<\/?([a-zA-Z0-9]+)([^<>]*)>/g;
+const UNSAFE_HTML_PATTERN = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
 
 function escapeHtml(value: string): string {
   return value.replace(/[<>&"]/g, (ch) => {
@@ -241,6 +242,12 @@ function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: bool
 export function sanitizeInput(input: string | undefined | null): string {
   if (!input) return '';
   return escapeHtml(String(input));
+}
+
+export function ensureSafeHtml(html: string, context = 'HTML output'): void {
+  if (UNSAFE_HTML_PATTERN.test(html)) {
+    throw new Error(`Unsafe HTML blocked in ${context}.`);
+  }
 }
 
 /**
