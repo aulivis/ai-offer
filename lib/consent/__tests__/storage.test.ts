@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  CONSENT_COOKIE_NAME,
-  CONSENT_MAX_AGE_SECONDS,
-  CONSENT_VERSION,
-} from '../constants';
+import { CONSENT_COOKIE_NAME, CONSENT_MAX_AGE_SECONDS, CONSENT_VERSION } from '../constants';
 import { getConsent, setConsent } from '../storage';
 
 const getMock = vi.fn();
@@ -43,10 +39,12 @@ describe('server consent storage', () => {
   });
 
   it('falls back to the current version and returns null for malformed payloads', async () => {
-    getMock.mockReturnValue({ value: JSON.stringify({
-      granted: { analytics: true },
-      timestamp: '2025-01-01T00:00:00.000Z',
-    }) });
+    getMock.mockReturnValue({
+      value: JSON.stringify({
+        granted: { analytics: true },
+        timestamp: '2025-01-01T00:00:00.000Z',
+      }),
+    });
     cookiesMock.mockResolvedValue({ get: getMock });
 
     const consent = await getConsent();

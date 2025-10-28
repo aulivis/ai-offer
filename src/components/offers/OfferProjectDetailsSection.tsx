@@ -49,7 +49,14 @@ export function OfferProjectDetailsSection({
       <CardHeader className="!mb-6">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="h-5 w-5"
+              aria-hidden="true"
+            >
               <path
                 d="M7 3.75h10A1.25 1.25 0 0 1 18.25 5v14A1.25 1.25 0 0 1 17 20.25H7A1.25 1.25 0 0 1 5.75 19V5A1.25 1.25 0 0 1 7 3.75Z"
                 strokeLinecap="round"
@@ -85,7 +92,14 @@ export function OfferProjectDetailsSection({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
                   <path
                     d="M12 3.5a6.5 6.5 0 0 1 4.95 10.75c-.73.74-1.2 1.7-1.2 2.77v.48a.75.75 0 0 1-.75.75h-6a.75.75 0 0 1-.75-.75v-.48c0-1.07-.47-2.03-1.2-2.77A6.5 6.5 0 0 1 12 3.5Z"
                     strokeLinecap="round"

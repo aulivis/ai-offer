@@ -617,10 +617,13 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       periodStart: usagePeriodStart,
     });
 
-    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
-      acc[key] = sanitizeInput(projectDetails[key]);
-      return acc;
-    }, { ...emptyProjectDetails });
+    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
+      (acc, key) => {
+        acc[key] = sanitizeInput(projectDetails[key]);
+        return acc;
+      },
+      { ...emptyProjectDetails },
+    );
 
     // ---- AI szöveg (override elsőbbség) ----
     const safeTitle = sanitizeInput(title);

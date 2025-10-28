@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
+import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -196,6 +197,7 @@ export default function NewOfferWizard() {
   const router = useRouter();
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
+  const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
@@ -413,10 +415,13 @@ export default function NewOfferWizard() {
     );
   }, [activities, form.industry]);
   const projectDetailsText = useMemo(() => {
-    const normalized = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
-      acc[key] = form.projectDetails[key].trim();
-      return acc;
-    }, { ...emptyProjectDetails });
+    const normalized = projectDetailFields.reduce<ProjectDetails>(
+      (acc, key) => {
+        acc[key] = form.projectDetails[key].trim();
+        return acc;
+      },
+      { ...emptyProjectDetails },
+    );
 
     return formatProjectDetailsForPrompt(normalized);
   }, [form.projectDetails]);
@@ -484,10 +489,13 @@ export default function NewOfferWizard() {
       previewAbortRef.current = controller;
 
       try {
-        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
-          acc[key] = form.projectDetails[key].trim();
-          return acc;
-        }, { ...emptyProjectDetails });
+        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
+          (acc, key) => {
+            acc[key] = form.projectDetails[key].trim();
+            return acc;
+          },
+          { ...emptyProjectDetails },
+        );
 
         const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
           method: 'POST',
@@ -702,10 +710,8 @@ export default function NewOfferWizard() {
 
   const handlePickImage = useCallback(() => {
     if (!isProPlan) {
-      showToast({
-        title: t('toasts.preview.proFeature.title'),
-        description: t('toasts.preview.proFeature.description'),
-        variant: 'warning',
+      openPlanUpgradeDialog({
+        description: t('app.planUpgradeModal.reasons.previewImages'),
       });
       return;
     }
@@ -718,7 +724,7 @@ export default function NewOfferWizard() {
       return;
     }
     fileInputRef.current?.click();
-  }, [isProPlan, previewLocked, showToast]);
+  }, [isProPlan, openPlanUpgradeDialog, previewLocked, showToast]);
 
   const handleImageInputChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -726,7 +732,14 @@ export default function NewOfferWizard() {
       if (!files || files.length === 0) {
         return;
       }
-      if (!isProPlan || !previewLocked) {
+      if (!isProPlan) {
+        openPlanUpgradeDialog({
+          description: t('app.planUpgradeModal.reasons.previewImages'),
+        });
+        event.target.value = '';
+        return;
+      }
+      if (!previewLocked) {
         event.target.value = '';
         return;
       }
@@ -806,7 +819,14 @@ export default function NewOfferWizard() {
 
       event.target.value = '';
     },
-    [imageAssets.length, isProPlan, previewLocked, richTextEditorRef, showToast],
+    [
+      imageAssets.length,
+      isProPlan,
+      openPlanUpgradeDialog,
+      previewLocked,
+      richTextEditorRef,
+      showToast,
+    ],
   );
 
   const handleRemoveImage = useCallback((key: string) => {
@@ -895,10 +915,13 @@ export default function NewOfferWizard() {
         imagePayload = prepared.images;
       }
       try {
-        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
-          acc[key] = form.projectDetails[key].trim();
-          return acc;
-        }, { ...emptyProjectDetails });
+        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
+          (acc, key) => {
+            acc[key] = form.projectDetails[key].trim();
+            return acc;
+          },
+          { ...emptyProjectDetails },
+        );
 
         resp = await fetchWithSupabaseAuth('/api/ai-generate', {
           method: 'POST',
@@ -1015,7 +1038,9 @@ export default function NewOfferWizard() {
     <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7 md:sticky md:top-6 md:max-h-[calc(100vh-120px)] md:overflow-y-auto">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <h2 className="text-sm font-semibold text-slate-900">{t('offers.previewCard.heading')}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">
+            {t('offers.previewCard.heading')}
+          </h2>
           <p className="text-xs text-slate-500">{t('offers.wizard.preview.singleUseNotice')}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -1046,7 +1071,9 @@ export default function NewOfferWizard() {
         </Button>
       </div>
       {previewError ? (
-        <div className="rounded-2xl border border-rose-200/70 bg-rose-50/80 px-3 py-2 text-xs text-rose-700">{previewError}</div>
+        <div className="rounded-2xl border border-rose-200/70 bg-rose-50/80 px-3 py-2 text-xs text-rose-700">
+          {previewError}
+        </div>
       ) : null}
       <div className="min-h-[280px] overflow-hidden rounded-2xl border border-border/70 bg-white p-4 shadow-inner">
         {previewLoading ? (
@@ -1071,14 +1098,17 @@ export default function NewOfferWizard() {
   );
 
   return (
-    <AppFrame
-      title={t('offers.wizard.pageTitle')}
-      description={t('offers.wizard.pageDescription')}
-    >
+    <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
       <div className="space-y-10">
         <div className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-xl sm:p-8">
-          <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-slate-500/40 blur-3xl" aria-hidden="true" />
-          <div className="pointer-events-none absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-slate-700/40 blur-3xl" aria-hidden="true" />
+          <div
+            className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-slate-500/40 blur-3xl"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-slate-700/40 blur-3xl"
+            aria-hidden="true"
+          />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-4">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-100">
@@ -1141,7 +1171,9 @@ export default function NewOfferWizard() {
             <section className="grid gap-6 md:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)] md:items-start md:gap-8">
               <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
                 <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-slate-900">{t('offers.wizard.steps.details')}</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    {t('offers.wizard.steps.details')}
+                  </h2>
                   <p className="text-sm text-slate-600">
                     {t('offers.wizard.forms.details.sections.overviewHint')}
                   </p>
@@ -1232,7 +1264,10 @@ export default function NewOfferWizard() {
                           onChange={(event) =>
                             setForm((prev) => ({
                               ...prev,
-                              projectDetails: { ...prev.projectDetails, [field]: event.target.value },
+                              projectDetails: {
+                                ...prev.projectDetails,
+                                [field]: event.target.value,
+                              },
                             }))
                           }
                           label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
@@ -1268,11 +1303,18 @@ export default function NewOfferWizard() {
                       label={t('offers.wizard.forms.details.languageLabel')}
                       value={form.language}
                       onChange={(e) =>
-                        setForm((f) => ({ ...f, language: e.target.value as Step1Form['language'] }))
+                        setForm((f) => ({
+                          ...f,
+                          language: e.target.value as Step1Form['language'],
+                        }))
                       }
                     >
-                      <option value="hu">{t('offers.wizard.forms.details.languageOptions.hu')}</option>
-                      <option value="en">{t('offers.wizard.forms.details.languageOptions.en')}</option>
+                      <option value="hu">
+                        {t('offers.wizard.forms.details.languageOptions.hu')}
+                      </option>
+                      <option value="en">
+                        {t('offers.wizard.forms.details.languageOptions.en')}
+                      </option>
                     </Select>
                     <Select
                       label={t('offers.wizard.forms.details.voiceLabel')}
@@ -1287,7 +1329,9 @@ export default function NewOfferWizard() {
                       <option value="friendly">
                         {t('offers.wizard.forms.details.voiceOptions.friendly')}
                       </option>
-                      <option value="formal">{t('offers.wizard.forms.details.voiceOptions.formal')}</option>
+                      <option value="formal">
+                        {t('offers.wizard.forms.details.voiceOptions.formal')}
+                      </option>
                     </Select>
                   </div>
                 </section>
@@ -1306,12 +1350,16 @@ export default function NewOfferWizard() {
                       {
                         value: 'compact' as const,
                         label: t('offers.wizard.forms.details.styleOptions.compact.label'),
-                        description: t('offers.wizard.forms.details.styleOptions.compact.description'),
+                        description: t(
+                          'offers.wizard.forms.details.styleOptions.compact.description',
+                        ),
                       },
                       {
                         value: 'detailed' as const,
                         label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
-                        description: t('offers.wizard.forms.details.styleOptions.detailed.description'),
+                        description: t(
+                          'offers.wizard.forms.details.styleOptions.detailed.description',
+                        ),
                       },
                     ].map((option) => {
                       const active = form.style === option.value;
@@ -1444,7 +1492,9 @@ export default function NewOfferWizard() {
                       {t('common.close')}
                     </Button>
                   </div>
-                  <div className="max-h-[75vh] overflow-y-auto px-4 pb-6 pt-4">{renderPreviewCard()}</div>
+                  <div className="max-h-[75vh] overflow-y-auto px-4 pb-6 pt-4">
+                    {renderPreviewCard()}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -1457,7 +1507,9 @@ export default function NewOfferWizard() {
               <Card className="space-y-4 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-slate-900">{t('offers.wizard.forms.details.quickInsertTitle')}</h2>
+                    <h2 className="text-sm font-semibold text-slate-900">
+                      {t('offers.wizard.forms.details.quickInsertTitle')}
+                    </h2>
                     <p className="text-xs text-slate-500">
                       {t('offers.wizard.forms.details.quickInsertIndustryLabel')}: {form.industry}
                     </p>
@@ -1502,7 +1554,9 @@ export default function NewOfferWizard() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900">AI-szöveg szerkesztése</h2>
-                  <p className="text-xs text-slate-500">Ez a tartalom kerül a PDF-be – finomhangold bátran.</p>
+                  <p className="text-xs text-slate-500">
+                    Ez a tartalom kerül a PDF-be – finomhangold bátran.
+                  </p>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
                   Élő előnézet
@@ -1515,16 +1569,15 @@ export default function NewOfferWizard() {
                 onChange={(html) => setEditedHtml(html)}
                 placeholder={t('richTextEditor.placeholderHint')}
               />
-              <p className="text-xs text-slate-500">
-                {t('richTextEditor.placeholderReminder')}
-              </p>
+              <p className="text-xs text-slate-500">{t('richTextEditor.placeholderReminder')}</p>
               {isProPlan ? (
                 <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold text-slate-700">Képek a PDF-hez</p>
                       <p className="text-xs text-slate-500">
-                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB fájlméretig.
+                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB
+                        fájlméretig.
                       </p>
                     </div>
                     <Button
@@ -1566,7 +1619,9 @@ export default function NewOfferWizard() {
                             <div className="flex flex-1 flex-col justify-between text-xs text-slate-500">
                               <div>
                                 <p className="font-semibold text-slate-700">{asset.name}</p>
-                                <p className="mt-0.5">{sizeKb} KB • alt: {asset.alt}</p>
+                                <p className="mt-0.5">
+                                  {sizeKb} KB • alt: {asset.alt}
+                                </p>
                               </div>
                               <Button
                                 type="button"
@@ -1587,8 +1642,22 @@ export default function NewOfferWizard() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border/70 bg-slate-50/60 p-5 text-xs text-slate-500">
-                  Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag a generált dokumentumban kerülnek felhasználásra.
+                <div className="space-y-3 rounded-2xl border border-dashed border-border/70 bg-slate-50/60 p-5">
+                  <p className="text-xs text-slate-500">
+                    {t('richTextEditor.imageSection.proUpsell')}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() =>
+                      openPlanUpgradeDialog({
+                        description: t('app.planUpgradeModal.reasons.previewImages'),
+                      })
+                    }
+                    className="self-start"
+                  >
+                    {t('app.planUpgradeModal.primaryCta')}
+                  </Button>
                 </div>
               )}
             </Card>

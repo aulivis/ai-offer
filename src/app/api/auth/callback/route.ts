@@ -17,8 +17,7 @@ export async function GET(request: Request) {
   if (accessTokenFromLink) {
     const jar = await cookies();
     const isSecure = envServer.APP_URL.startsWith('https');
-    const maxAge =
-      (expiresInFromLink ? Number.parseInt(expiresInFromLink, 10) : NaN) || 3600;
+    const maxAge = (expiresInFromLink ? Number.parseInt(expiresInFromLink, 10) : NaN) || 3600;
 
     jar.set('propono_at', accessTokenFromLink, {
       httpOnly: true,

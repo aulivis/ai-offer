@@ -20,7 +20,9 @@ describe('SupabaseProvider', () => {
     const sharedClient = { auth: {} } as unknown as SupabaseClient;
 
     const { result } = renderHook(() => useSupabase(), {
-      wrapper: ({ children }) => <SupabaseProvider client={sharedClient}>{children}</SupabaseProvider>,
+      wrapper: ({ children }) => (
+        <SupabaseProvider client={sharedClient}>{children}</SupabaseProvider>
+      ),
     });
 
     expect(result.current).toBe(sharedClient);

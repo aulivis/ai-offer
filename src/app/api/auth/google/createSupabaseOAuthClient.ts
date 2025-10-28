@@ -48,7 +48,7 @@ export function createSupabaseOAuthClient() {
         detectSessionInUrl: false,
         storage,
       },
-    }
+    },
   );
 
   return {
@@ -80,7 +80,12 @@ export function createSupabaseOAuthClient() {
       const possible = (['pkce_code_verifier', 'code_verifier'] as string[]).concat(
         (jar.getAll?.() ?? [])
           .map((c: any) => c?.name as string)
-          .filter((n) => typeof n === 'string' && n.startsWith('sb_') && all.every(w => n.toLowerCase().includes(w)))
+          .filter(
+            (n) =>
+              typeof n === 'string' &&
+              n.startsWith('sb_') &&
+              all.every((w) => n.toLowerCase().includes(w)),
+          ),
       );
 
       for (const cookieName of possible) {

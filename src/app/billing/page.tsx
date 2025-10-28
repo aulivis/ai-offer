@@ -306,17 +306,16 @@ export default function BillingPage() {
   }
 
   return (
-    <AppFrame
-      title={t('billing.title')}
-      description={t('billing.description')}
-    >
+    <AppFrame title={t('billing.title')} description={t('billing.description')}>
       <div className="space-y-8">
         <Card
           as="section"
           header={
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-slate-700">{t('billing.currentPlan.title')}</h2>
+                <h2 className="text-sm font-semibold text-slate-700">
+                  {t('billing.currentPlan.title')}
+                </h2>
                 <p className="text-xs text-slate-500">{t('billing.currentPlan.subtitle')}</p>
               </div>
               <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-slate-600">
@@ -338,14 +337,18 @@ export default function BillingPage() {
                 {t('billing.currentPlan.offersThisMonth.title')}
               </dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{offersThisMonthLabel}</dd>
-              <p className="mt-1 text-xs text-slate-500">{t('billing.currentPlan.offersThisMonth.helper')}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {t('billing.currentPlan.offersThisMonth.helper')}
+              </p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 {t('billing.currentPlan.remaining.title')}
               </dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{remainingQuotaLabel}</dd>
-              <p className="mt-1 text-xs text-slate-500">{t('billing.currentPlan.remaining.helper')}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {t('billing.currentPlan.remaining.helper')}
+              </p>
             </div>
             <div className="rounded-2xl border border-border bg-white/70 p-4">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -373,7 +376,9 @@ export default function BillingPage() {
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t('billing.plans.standard.badge')}
             </div>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">{t('billing.plans.standard.name')}</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              {t('billing.plans.standard.name')}
+            </h2>
             <p className="mt-3 text-sm text-slate-500">{t('billing.plans.standard.description')}</p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">1 490</span>
@@ -402,7 +407,9 @@ export default function BillingPage() {
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
               {t('billing.plans.popularBadge')}
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t('billing.plans.pro.name')}</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+              {t('billing.plans.pro.name')}
+            </h2>
             <p className="mt-3 text-sm text-slate-500">{t('billing.plans.pro.description')}</p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">6 990</span>
@@ -429,7 +436,9 @@ export default function BillingPage() {
           as="section"
           header={
             <CardHeader>
-              <h2 className="text-sm font-semibold text-slate-700">{t('billing.stripeSecurity.title')}</h2>
+              <h2 className="text-sm font-semibold text-slate-700">
+                {t('billing.stripeSecurity.title')}
+              </h2>
             </CardHeader>
           }
         >
@@ -517,7 +526,9 @@ function PublicBillingLanding() {
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t('billing.plans.standard.badge')}
             </div>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900">{t('billing.plans.standard.name')}</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-900">
+              {t('billing.plans.standard.name')}
+            </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
               {t('billing.public.standard.description')}
             </p>
@@ -545,8 +556,12 @@ function PublicBillingLanding() {
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
               {t('billing.plans.popularBadge')}
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900">{t('billing.plans.pro.name')}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-500">{t('billing.public.pro.description')}</p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+              {t('billing.plans.pro.name')}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-500">
+              {t('billing.public.pro.description')}
+            </p>
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">6 990</span>
               <span className="text-sm text-slate-500">{t('billing.plans.priceMonthly')}</span>
@@ -616,7 +631,9 @@ function PublicBillingLanding() {
                 {t('billing.public.cta.badge')}
               </span>
               <h2 className="text-3xl font-semibold text-fg">{t('billing.public.cta.title')}</h2>
-              <p className="text-base leading-relaxed text-fg-muted">{t('billing.public.cta.description')}</p>
+              <p className="text-base leading-relaxed text-fg-muted">
+                {t('billing.public.cta.description')}
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <Link

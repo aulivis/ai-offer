@@ -11,8 +11,12 @@ type NavigationLink = {
 
 const navigationLinks: ReadonlyArray<NavigationLink> = [
   { href: '/privacy-policy', labelKey: 'app.footer.legalLinks.privacy' },
-  { href: '/cookie-policy', labelKey: 'app.footer.legalLinks.cookies' },
 ];
+
+const cookiePolicyLink: NavigationLink = {
+  href: '/cookie-policy',
+  labelKey: 'app.footer.legalLinks.cookies',
+};
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -39,8 +43,14 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
-            <li>
+            <li className="flex items-center gap-2">
               <ManageCookiesButton label={t('app.footer.manageCookies')} />
+              <Link
+                href={cookiePolicyLink.href}
+                className="font-medium text-muted-foreground underline-offset-4 transition hover:text-primary hover:underline"
+              >
+                {t(cookiePolicyLink.labelKey)}
+              </Link>
             </li>
           </ul>
         </nav>

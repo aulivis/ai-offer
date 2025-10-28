@@ -25,7 +25,8 @@ export async function getGoogleProviderStatus(): Promise<ProviderStatus> {
 
         // ha van Google objektum, és nincs explicit tiltva, tekintsük engedélyezettnek
         const enabled =
-          googleSettings && (googleSettings.enabled === undefined || googleSettings.enabled === true);
+          googleSettings &&
+          (googleSettings.enabled === undefined || googleSettings.enabled === true);
 
         if (enabled) return { enabled: true };
 

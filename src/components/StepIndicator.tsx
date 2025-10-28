@@ -152,7 +152,9 @@ export default function StepIndicator({ steps }: Props) {
 
           const cardClasses = classNames(
             'group flex h-full w-full flex-col items-start gap-3 rounded-2xl border border-border/60 bg-white/95 px-4 py-4 text-left shadow-sm transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:flex-row sm:items-center sm:gap-4',
-            clickable ? 'hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg' : 'cursor-default',
+            clickable
+              ? 'hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg'
+              : 'cursor-default',
             tone === 'error'
               ? 'border-rose-200 bg-rose-50/80'
               : step.status === 'current'

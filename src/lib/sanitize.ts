@@ -192,7 +192,9 @@ function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: bool
     ATTRIBUTE_PATTERN,
     (_match, name, _valueWithQuotes, valueDouble, valueSingle, valueUnquoted) => {
       const attrName = String(name).toLowerCase();
-      const isAllowed = (allowedAttributes && allowedAttributes.has(attrName)) || isGloballyAllowedAttribute(attrName);
+      const isAllowed =
+        (allowedAttributes && allowedAttributes.has(attrName)) ||
+        isGloballyAllowedAttribute(attrName);
       if (!isAllowed) return '';
       const rawValue = valueDouble ?? valueSingle ?? valueUnquoted ?? '';
       const sanitisedValue = sanitiseAttribute(tagName, attrName, rawValue);

@@ -5,11 +5,7 @@ import { envServer } from '@/env.server';
 import { sanitizeOAuthRedirect } from './redirectUtils';
 
 function base64url(input: Buffer) {
-  return input
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  return input.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
 function generateCodeVerifier(): string {

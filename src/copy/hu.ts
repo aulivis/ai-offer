@@ -43,6 +43,21 @@ export const hu = {
       manageCookies: 'Sütibeállítások kezelése',
       copyrightPrefix: '©',
     },
+    planUpgradeModal: {
+      badge: 'Pro funkció',
+      title: 'Válts Pro csomagra a teljes élményért',
+      description:
+        'Ez a funkció a Pro előfizetés része. Lépj szintet, és nyisd meg a prémium lehetőségeket a gyorsabb ajánlatkészítéshez.',
+      primaryCta: 'Pro csomag megtekintése',
+      secondaryCta: 'Maradok a jelenlegi csomagnál',
+      linkHelper: 'További részletek a számlázás oldalon',
+      reasons: {
+        previewImages:
+          'Képek beszúrása és szerkesztése csak Pro előfizetéssel lehetséges. A vizuális tartalmak segítenek profibb ajánlatot készíteni.',
+        proTemplates:
+          'A prémium ajánlat sablonok a Pro csomagban érhetők el, hogy még gyorsabban indulhass testreszabott dizájnokkal.',
+      },
+    },
   },
   nav: {
     brand: 'Propono',

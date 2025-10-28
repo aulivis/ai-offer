@@ -24,6 +24,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Configure the following secrets before running the application:
 
+<!-- prettier-ignore -->
 | Variable | Description |
 | --- | --- |
 | `AUTH_COOKIE_SECRET` | 32+ character secret used to encrypt OAuth state cookies and other authentication HMAC operations. |
