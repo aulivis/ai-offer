@@ -1,7 +1,16 @@
 'use client';
 
 import { t } from '@/copy';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useId,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
@@ -21,6 +30,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
+import { Modal } from '@/components/ui/Modal';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import {
   emptyProjectDetails,
@@ -180,6 +190,104 @@ function prepareImagesForSubmission(
   return { html: template.innerHTML, images: usedImages };
 }
 
+const DEFAULT_PREVIEW_PLACEHOLDER_HTML =
+  '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
+
+type OfferTextTemplatePayload = {
+  industry: string;
+  title: string;
+  projectDetails: ProjectDetails;
+  deadline: string;
+  language: Step1Form['language'];
+  brandVoice: Step1Form['brandVoice'];
+  style: Step1Form['style'];
+};
+
+type OfferTextTemplate = OfferTextTemplatePayload & {
+  id: string;
+  name: string;
+  updatedAt: string | null;
+};
+
+function normalizeTemplateProjectDetails(value: unknown): ProjectDetails | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const input = value as Record<string, unknown>;
+  const normalized = { ...emptyProjectDetails };
+
+  for (const key of projectDetailFields) {
+    const raw = input[key];
+    normalized[key] = typeof raw === 'string' ? raw : '';
+  }
+
+  return normalized;
+}
+
+function parseTemplatePayload(value: unknown): OfferTextTemplatePayload | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const obj = value as Record<string, unknown>;
+  const projectDetails = normalizeTemplateProjectDetails(obj.projectDetails);
+  if (!projectDetails) {
+    return null;
+  }
+
+  const language = obj.language === 'hu' || obj.language === 'en' ? obj.language : 'hu';
+  const brandVoice =
+    obj.brandVoice === 'friendly' || obj.brandVoice === 'formal' ? obj.brandVoice : 'friendly';
+  const style = obj.style === 'compact' || obj.style === 'detailed' ? obj.style : 'detailed';
+
+  return {
+    industry: typeof obj.industry === 'string' ? obj.industry : '',
+    title: typeof obj.title === 'string' ? obj.title : '',
+    projectDetails,
+    deadline: typeof obj.deadline === 'string' ? obj.deadline : '',
+    language,
+    brandVoice,
+    style,
+  };
+}
+
+function parseTemplateRow(row: {
+  id?: unknown;
+  name?: unknown;
+  payload?: unknown;
+  updated_at?: unknown;
+}): OfferTextTemplate | null {
+  if (typeof row.id !== 'string' || typeof row.name !== 'string') {
+    return null;
+  }
+
+  const payload = parseTemplatePayload(row.payload);
+  if (!payload) {
+    return null;
+  }
+
+  const updatedAt = typeof row.updated_at === 'string' ? row.updated_at : null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    updatedAt,
+    ...payload,
+  };
+}
+
+function sortTemplates(list: OfferTextTemplate[]): OfferTextTemplate[] {
+  return [...list].sort((a, b) => {
+    const aTime = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+    const bTime = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+    if (aTime !== bTime) {
+      return bTime - aTime;
+    }
+    return a.name.localeCompare(b.name, 'hu');
+  });
+}
+
 export default function NewOfferWizard() {
   const sb = useSupabase();
   const router = useRouter();
@@ -223,9 +331,7 @@ export default function NewOfferWizard() {
   ]);
 
   // preview
-  const [previewHtml, setPreviewHtml] = useState<string>(
-    '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>',
-  );
+  const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewLocked, setPreviewLocked] = useState(false);
   const previewAbortRef = useRef<AbortController | null>(null);
@@ -236,7 +342,16 @@ export default function NewOfferWizard() {
   const richTextEditorRef = useRef<RichTextEditorHandle | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageAssets, setImageAssets] = useState<OfferImageAsset[]>([]);
+  const [textTemplates, setTextTemplates] = useState<OfferTextTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateNameError, setTemplateNameError] = useState<string | null>(null);
+  const [templateSaving, setTemplateSaving] = useState(false);
   const isProPlan = plan === 'pro';
+  const templateModalTitleId = useId();
+  const templateModalDescriptionId = useId();
+  const templateNameFieldId = useId();
 
   // auth + preload
   useEffect(() => {
@@ -283,6 +398,29 @@ export default function NewOfferWizard() {
         return;
       }
       setClientList(cl || []);
+
+      const { data: templateRows } = await sb
+        .from('offer_text_templates')
+        .select('id,name,payload,updated_at')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false, nullsFirst: false });
+      if (!active) {
+        return;
+      }
+      const parsedTemplates =
+        templateRows
+          ?.map((row) =>
+            parseTemplateRow(
+              row as {
+                id?: unknown;
+                name?: unknown;
+                payload?: unknown;
+                updated_at?: unknown;
+              },
+            ),
+          )
+          .filter((item): item is OfferTextTemplate => item !== null) ?? [];
+      setTextTemplates(sortTemplates(parsedTemplates));
     })();
 
     return () => {
@@ -318,6 +456,12 @@ export default function NewOfferWizard() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedTemplateId && !textTemplates.some((tpl) => tpl.id === selectedTemplateId)) {
+      setSelectedTemplateId('');
+    }
+  }, [selectedTemplateId, textTemplates]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(
@@ -357,6 +501,210 @@ export default function NewOfferWizard() {
     });
     setShowClientDrop(false);
   }
+
+  const handleTemplateSelect = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const templateId = event.target.value;
+      setSelectedTemplateId(templateId);
+      if (!templateId) {
+        return;
+      }
+
+      const template = textTemplates.find((item) => item.id === templateId);
+      if (!template) {
+        return;
+      }
+
+      if (previewAbortRef.current) {
+        previewAbortRef.current.abort();
+        previewAbortRef.current = null;
+        previewRequestIdRef.current += 1;
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        industry: template.industry,
+        title: template.title,
+        projectDetails: { ...template.projectDetails },
+        deadline: template.deadline,
+        language: template.language,
+        brandVoice: template.brandVoice,
+        style: template.style,
+      }));
+      setPreviewLocked(false);
+      setPreviewLoading(false);
+      setPreviewHtml(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
+      setEditedHtml('');
+      setImageAssets([]);
+
+      showToast({
+        title: t('toasts.templates.applied.title', { name: template.name }),
+        description: t('toasts.templates.applied.description', { name: template.name }),
+        variant: 'success',
+      });
+    },
+    [showToast, textTemplates],
+  );
+
+  const handleOpenTemplateModal = useCallback(() => {
+    const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
+      (acc, key) => {
+        acc[key] = form.projectDetails[key].trim();
+        return acc;
+      },
+      { ...emptyProjectDetails },
+    );
+    const trimmedTitle = form.title.trim();
+
+    if (!trimmedTitle || normalizedDetails.overview.trim().length === 0) {
+      showToast({
+        title: t('toasts.templates.missingFields.title'),
+        description: t('toasts.templates.missingFields.description'),
+        variant: 'error',
+      });
+      return;
+    }
+
+    setTemplateName(trimmedTitle);
+    setTemplateNameError(null);
+    setTemplateModalOpen(true);
+  }, [form.projectDetails, form.title, showToast]);
+
+  const handleTemplateModalClose = useCallback(() => {
+    if (templateSaving) {
+      return;
+    }
+    setTemplateModalOpen(false);
+    setTemplateName('');
+    setTemplateNameError(null);
+  }, [templateSaving]);
+
+  const handleTemplateNameChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setTemplateName(event.target.value);
+      if (templateNameError) {
+        setTemplateNameError(null);
+      }
+    },
+    [templateNameError],
+  );
+
+  const handleTemplateSave = useCallback(
+    async (event?: FormEvent<HTMLFormElement>) => {
+      event?.preventDefault();
+
+      if (!user) {
+        showToast({
+          title: t('errors.auth.notLoggedIn'),
+          description: t('errors.auth.notLoggedIn'),
+          variant: 'error',
+        });
+        return;
+      }
+
+      const trimmedName = templateName.trim();
+      if (!trimmedName) {
+        setTemplateNameError(t('offers.wizard.forms.details.templates.modal.nameRequired'));
+        return;
+      }
+
+      const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
+        (acc, key) => {
+          acc[key] = form.projectDetails[key].trim();
+          return acc;
+        },
+        { ...emptyProjectDetails },
+      );
+      const trimmedTitle = form.title.trim();
+
+      if (!trimmedTitle || normalizedDetails.overview.trim().length === 0) {
+        showToast({
+          title: t('toasts.templates.missingFields.title'),
+          description: t('toasts.templates.missingFields.description'),
+          variant: 'error',
+        });
+        return;
+      }
+
+      const payload: OfferTextTemplatePayload = {
+        industry: form.industry,
+        title: trimmedTitle,
+        projectDetails: normalizedDetails,
+        deadline: form.deadline.trim(),
+        language: form.language,
+        brandVoice: form.brandVoice,
+        style: form.style,
+      };
+
+      setTemplateSaving(true);
+
+      try {
+        const { data, error } = await sb
+          .from('offer_text_templates')
+          .insert({
+            user_id: user.id,
+            name: trimmedName,
+            payload,
+          })
+          .select('id,name,payload,updated_at')
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const parsed = data
+          ? parseTemplateRow(
+              data as {
+                id?: unknown;
+                name?: unknown;
+                payload?: unknown;
+                updated_at?: unknown;
+              },
+            )
+          : null;
+
+        if (!parsed) {
+          throw new Error('invalid-template-payload');
+        }
+
+        setTextTemplates((prev) =>
+          sortTemplates([...prev.filter((item) => item.id !== parsed.id), parsed]),
+        );
+        setSelectedTemplateId(parsed.id);
+        showToast({
+          title: t('toasts.templates.saved.title'),
+          description: t('toasts.templates.saved.description', { name: parsed.name }),
+          variant: 'success',
+        });
+        setTemplateModalOpen(false);
+        setTemplateName('');
+        setTemplateNameError(null);
+      } catch (error: unknown) {
+        console.error('Nem sikerült menteni a szövegsablont', error);
+        showToast({
+          title: t('toasts.templates.saveFailed.title'),
+          description: t('toasts.templates.saveFailed.description'),
+          variant: 'error',
+        });
+      } finally {
+        setTemplateSaving(false);
+      }
+    },
+    [
+      form.brandVoice,
+      form.deadline,
+      form.industry,
+      form.language,
+      form.projectDetails,
+      form.style,
+      form.title,
+      sb,
+      showToast,
+      templateName,
+      user,
+    ],
+  );
 
   // === Preview hívó ===
   const callPreview = useCallback(async () => {
@@ -984,6 +1332,37 @@ export default function NewOfferWizard() {
                 </p>
               </div>
 
+              <section className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-white/70 p-5">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {t('offers.wizard.forms.details.templates.heading')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.templates.helper')}
+                  </p>
+                </div>
+                {textTemplates.length > 0 ? (
+                  <Select
+                    label={t('offers.wizard.forms.details.templates.selectLabel')}
+                    value={selectedTemplateId}
+                    onChange={handleTemplateSelect}
+                  >
+                    <option value="">
+                      {t('offers.wizard.forms.details.templates.selectPlaceholder')}
+                    </option>
+                    {textTemplates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </Select>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.templates.empty')}
+                  </p>
+                )}
+              </section>
+
               <section className="space-y-4">
                 <div className="space-y-1">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -1468,13 +1847,23 @@ export default function NewOfferWizard() {
                   </span>
                 </div>
               </div>
-              <Button
-                onClick={generate}
-                disabled={loading}
-                className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
-              >
-                {loading ? 'Generálás…' : 'PDF generálása és mentés'}
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button
+                  type="button"
+                  onClick={handleOpenTemplateModal}
+                  disabled={loading}
+                  className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                >
+                  {t('offers.wizard.forms.details.templates.saveAction')}
+                </Button>
+                <Button
+                  onClick={generate}
+                  disabled={loading}
+                  className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  {loading ? 'Generálás…' : 'PDF generálása és mentés'}
+                </Button>
+              </div>
             </Card>
           </section>
         )}
@@ -1499,6 +1888,46 @@ export default function NewOfferWizard() {
           </div>
         </div>
       </div>
+      <Modal
+        open={isTemplateModalOpen}
+        onClose={handleTemplateModalClose}
+        labelledBy={templateModalTitleId}
+        describedBy={templateModalDescriptionId}
+      >
+        <form className="space-y-6" onSubmit={handleTemplateSave}>
+          <div className="space-y-2">
+            <h2 id={templateModalTitleId} className="text-lg font-semibold text-slate-900">
+              {t('offers.wizard.forms.details.templates.modal.title')}
+            </h2>
+            <p id={templateModalDescriptionId} className="text-sm text-slate-600">
+              {t('offers.wizard.forms.details.templates.modal.description')}
+            </p>
+          </div>
+          <Input
+            id={templateNameFieldId}
+            label={t('offers.wizard.forms.details.templates.modal.nameLabel')}
+            placeholder={t('offers.wizard.forms.details.templates.modal.namePlaceholder')}
+            value={templateName}
+            onChange={handleTemplateNameChange}
+            error={templateNameError || undefined}
+          />
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleTemplateModalClose}
+              disabled={templateSaving}
+            >
+              {t('offers.wizard.forms.details.templates.modal.cancel')}
+            </Button>
+            <Button type="submit" loading={templateSaving} disabled={templateSaving}>
+              {templateSaving
+                ? t('offers.wizard.forms.details.templates.modal.saving')
+                : t('offers.wizard.forms.details.templates.modal.save')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </AppFrame>
   );
 }

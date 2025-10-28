@@ -909,6 +909,25 @@ export const hu = {
               constraints: 'Sorolj fel feltételezéseket, felelősségi köröket vagy kizárásokat.',
             },
           },
+          templates: {
+            heading: 'Mentett szövegsablonok',
+            helper: 'Töltsd ki pillanatok alatt a projekt mezőket korábban mentett sablonokkal.',
+            selectLabel: 'Sablon kiválasztása',
+            selectPlaceholder: 'Válassz sablont…',
+            empty: 'Még nincs mentett szövegsablonod. A befejező lépésben menthetsz egyet.',
+            saveAction: 'Mentés szövegsablonként',
+            modal: {
+              title: 'Új szövegsablon mentése',
+              description:
+                'Nevezd el a jelenlegi projekt részleteit tartalmazó sablont. Az ügyféladatokat nem tároljuk a sablonban.',
+              nameLabel: 'Sablon neve',
+              namePlaceholder: 'Pl. Webfejlesztési alap',
+              cancel: 'Mégse',
+              save: 'Sablon mentése',
+              saving: 'Mentés…',
+              nameRequired: 'Adj meg egy sablonnevet.',
+            },
+          },
           deadlineLabel: 'Határidő (opcionális)',
           languageLabel: 'Nyelv',
           languageOptions: {
@@ -1210,6 +1229,24 @@ export const hu = {
       missingPreview: {
         title: 'Hiányzó előnézet',
         description: 'Generáld le az AI előnézetet, mielőtt elmented az ajánlatot.',
+      },
+    },
+    templates: {
+      applied: {
+        title: 'Sablon betöltve',
+        description: 'A(z) {name} sablon adatai bekerültek az űrlap mezőibe.',
+      },
+      saved: {
+        title: 'Sablon mentve',
+        description: 'A(z) {name} sablon mostantól elérhető az első lépésben.',
+      },
+      saveFailed: {
+        title: 'Nem sikerült menteni a sablont',
+        description: 'Kérjük, próbáld újra egy kicsit később.',
+      },
+      missingFields: {
+        title: 'Hiányzó adatok',
+        description: 'Adj meg címet és projektáttekintést, mielőtt sablont mentenél.',
       },
     },
     preview: {
