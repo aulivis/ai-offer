@@ -15,9 +15,13 @@ import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
-import { summarize } from '@/app/lib/pricing';
-import { OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
-import { type SubscriptionPlan } from '@/app/lib/offerTemplates';
+import { priceTableHtml, summarize } from '@/app/lib/pricing';
+import { OFFER_DOCUMENT_STYLES, offerBodyMarkup } from '@/app/lib/offerDocument';
+import {
+  DEFAULT_OFFER_TEMPLATE_ID,
+  type OfferTemplateId,
+  type SubscriptionPlan,
+} from '@/app/lib/offerTemplates';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -32,6 +36,8 @@ import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
+import { listTemplates } from '@/app/pdf/templates/registry';
+import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -193,6 +199,8 @@ function prepareImagesForSubmission(
 const DEFAULT_PREVIEW_PLACEHOLDER_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
 
+const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.base@1.0.0';
+
 type OfferTextTemplatePayload = {
   industry: string;
   title: string;
@@ -252,6 +260,23 @@ function parseTemplatePayload(value: unknown): OfferTextTemplatePayload | null {
   };
 }
 
+function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+  return plan === 'pro' ? 'premium' : 'free';
+}
+
+function findTemplateIdByLegacyId(
+  templates: Array<OfferTemplate & { legacyId?: string }>,
+  legacyId: string | null | undefined,
+): TemplateId | null {
+  if (typeof legacyId !== 'string' || legacyId.trim().length === 0) {
+    return null;
+  }
+
+  const normalized = legacyId.trim();
+  const match = templates.find((template) => template.legacyId === normalized);
+  return match ? match.id : null;
+}
+
 function parseTemplateRow(row: {
   id?: unknown;
   name?: unknown;
@@ -297,6 +322,35 @@ export default function NewOfferWizard() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
+  const [profileCompanyName, setProfileCompanyName] = useState('');
+  const [pdfBranding, setPdfBranding] = useState<{
+    primaryColor: string | null;
+    secondaryColor: string | null;
+    logoUrl: string | null;
+  }>({
+    primaryColor: null,
+    secondaryColor: null,
+    logoUrl: null,
+  });
+  const [selectedPdfTemplateId, setSelectedPdfTemplateId] = useState<TemplateId | null>(null);
+
+  const allPdfTemplates = useMemo(
+    () => listTemplates() as Array<OfferTemplate & { legacyId?: string }>,
+    [],
+  );
+  const userTemplateTier = planToTemplateTier(plan);
+  const availablePdfTemplates = useMemo(() => {
+    if (userTemplateTier === 'premium') {
+      return allPdfTemplates;
+    }
+    return allPdfTemplates.filter((template) => template.tier === 'free');
+  }, [allPdfTemplates, userTemplateTier]);
+  const lockedPdfTemplates = useMemo(() => {
+    if (userTemplateTier === 'premium') {
+      return [] as Array<OfferTemplate & { legacyId?: string }>;
+    }
+    return allPdfTemplates.filter((template) => template.tier === 'premium');
+  }, [allPdfTemplates, userTemplateTier]);
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>([
     'Marketing',
@@ -348,10 +402,35 @@ export default function NewOfferWizard() {
   const [templateName, setTemplateName] = useState('');
   const [templateNameError, setTemplateNameError] = useState<string | null>(null);
   const [templateSaving, setTemplateSaving] = useState(false);
-  const isProPlan = plan === 'pro';
   const templateModalTitleId = useId();
   const templateModalDescriptionId = useId();
   const templateNameFieldId = useId();
+  const isProPlan = plan === 'pro';
+
+  useEffect(() => {
+    if (!availablePdfTemplates.length) {
+      return;
+    }
+    if (
+      selectedPdfTemplateId &&
+      availablePdfTemplates.some((template) => template.id === selectedPdfTemplateId)
+    ) {
+      return;
+    }
+    setSelectedPdfTemplateId(availablePdfTemplates[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID);
+  }, [availablePdfTemplates, selectedPdfTemplateId]);
+
+  const selectedPdfTemplate = useMemo(() => {
+    if (!selectedPdfTemplateId) {
+      return null;
+    }
+    return (
+      availablePdfTemplates.find((template) => template.id === selectedPdfTemplateId) ||
+      allPdfTemplates.find((template) => template.id === selectedPdfTemplateId) ||
+      null
+    );
+  }, [allPdfTemplates, availablePdfTemplates, selectedPdfTemplateId]);
+  const selectedPdfTemplateLabel = selectedPdfTemplate?.label ?? null;
 
   // auth + preload
   useEffect(() => {
@@ -378,6 +457,29 @@ export default function NewOfferWizard() {
       }
       const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setPlan(normalizedPlan);
+      setProfileCompanyName(typeof prof?.company_name === 'string' ? prof.company_name : '');
+      setPdfBranding({
+        primaryColor:
+          typeof prof?.brand_color_primary === 'string' ? prof.brand_color_primary : null,
+        secondaryColor:
+          typeof prof?.brand_color_secondary === 'string' ? prof.brand_color_secondary : null,
+        logoUrl: typeof prof?.brand_logo_url === 'string' ? prof.brand_logo_url : null,
+      });
+      const planTierForTemplates = planToTemplateTier(normalizedPlan);
+      const templatesForPlan =
+        planTierForTemplates === 'premium'
+          ? allPdfTemplates
+          : allPdfTemplates.filter((template) => template.tier === 'free');
+      const preferredTemplateId = findTemplateIdByLegacyId(
+        allPdfTemplates,
+        typeof prof?.offer_template === 'string' ? prof.offer_template : null,
+      );
+      const initialTemplateId =
+        preferredTemplateId &&
+        templatesForPlan.some((template) => template.id === preferredTemplateId)
+          ? preferredTemplateId
+          : (templatesForPlan[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID);
+      setSelectedPdfTemplateId(initialTemplateId);
 
       const { data: acts } = await sb
         .from('activities')
@@ -426,7 +528,7 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
-  }, [authStatus, sb, user]);
+  }, [allPdfTemplates, authStatus, sb, user]);
 
   useEffect(() => {
     setImageAssets((prev) => {
@@ -468,6 +570,50 @@ export default function NewOfferWizard() {
       (a) => (a.industries || []).length === 0 || a.industries.includes(form.industry),
     );
   }, [activities, form.industry]);
+  const pricePreviewHtml = useMemo(() => priceTableHtml(rows), [rows]);
+  const previewBodyHtml = useMemo(() => {
+    const trimmed = (editedHtml || previewHtml || '').trim();
+    if (!trimmed) {
+      return DEFAULT_PREVIEW_PLACEHOLDER_HTML;
+    }
+    return trimmed;
+  }, [editedHtml, previewHtml]);
+  const selectedLegacyTemplateId = useMemo<OfferTemplateId>(() => {
+    if (selectedPdfTemplate && typeof selectedPdfTemplate.legacyId === 'string') {
+      return selectedPdfTemplate.legacyId as OfferTemplateId;
+    }
+    return DEFAULT_OFFER_TEMPLATE_ID;
+  }, [selectedPdfTemplate]);
+  const previewDocumentHtml = useMemo(() => {
+    const wrapperClass =
+      selectedLegacyTemplateId === 'premium-banner'
+        ? 'offer-template offer-template--premium'
+        : 'offer-template offer-template--modern';
+
+    const markup = offerBodyMarkup({
+      title: form.title || 'Árajánlat',
+      companyName: profileCompanyName || '',
+      aiBodyHtml: previewBodyHtml,
+      priceTableHtml: pricePreviewHtml,
+      branding: {
+        primaryColor: pdfBranding.primaryColor,
+        secondaryColor: pdfBranding.secondaryColor,
+        logoUrl: pdfBranding.logoUrl,
+      },
+      templateId: selectedLegacyTemplateId,
+    });
+
+    return `<div class="${wrapperClass}">${markup}</div>`;
+  }, [
+    form.title,
+    pdfBranding.logoUrl,
+    pdfBranding.primaryColor,
+    pdfBranding.secondaryColor,
+    previewBodyHtml,
+    pricePreviewHtml,
+    profileCompanyName,
+    selectedLegacyTemplateId,
+  ]);
   const projectDetailsText = useMemo(() => {
     const normalized = projectDetailFields.reduce<ProjectDetails>(
       (acc, key) => {
@@ -501,6 +647,14 @@ export default function NewOfferWizard() {
     });
     setShowClientDrop(false);
   }
+
+  const handlePdfTemplateChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    const templateId = event.target.value as TemplateId;
+    if (!templateId) {
+      return;
+    }
+    setSelectedPdfTemplateId(templateId);
+  }, []);
 
   const handleTemplateSelect = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -1169,6 +1323,7 @@ export default function NewOfferWizard() {
             aiOverrideHtml: htmlForApi,
             clientId: cid,
             imageAssets: imagePayload,
+            templateId: selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID,
           }),
           authErrorMessage: t('errors.auth.notLoggedIn'),
           errorMessageBuilder: (status) => t('errors.offer.generateStatus', { status }),
@@ -1720,6 +1875,55 @@ export default function NewOfferWizard() {
                   Élő előnézet
                 </span>
               </div>
+              <div className="space-y-4">
+                <Select
+                  label={t('offers.wizard.previewTemplates.heading')}
+                  help={t('offers.wizard.previewTemplates.helper')}
+                  value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
+                  onChange={handlePdfTemplateChange}
+                >
+                  {availablePdfTemplates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.label}
+                    </option>
+                  ))}
+                </Select>
+                {!isProPlan && lockedPdfTemplates.length > 0 ? (
+                  <div className="space-y-3 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-4">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-700">
+                        {t('offers.wizard.previewTemplates.lockedTitle')}
+                      </p>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                        Pro
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {t('offers.wizard.previewTemplates.lockedDescription')}
+                    </p>
+                    <ul className="space-y-1 text-xs text-slate-500">
+                      {lockedPdfTemplates.map((template) => (
+                        <li key={template.id} className="flex items-center gap-2">
+                          <span aria-hidden="true">🔒</span>
+                          <span>{template.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() =>
+                        openPlanUpgradeDialog({
+                          description: t('app.planUpgradeModal.reasons.proTemplates'),
+                        })
+                      }
+                      className="self-start"
+                    >
+                      {t('app.planUpgradeModal.primaryCta')}
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
               <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
               <div className="relative">
                 <RichTextEditor
@@ -1743,6 +1947,27 @@ export default function NewOfferWizard() {
                 ) : null}
               </div>
               <p className="text-xs text-slate-500">{t('richTextEditor.placeholderReminder')}</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    {t('offers.wizard.previewTemplates.previewHeading')}
+                  </p>
+                  {selectedPdfTemplate ? (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                      {selectedPdfTemplate.label}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-inner">
+                  <div
+                    className="offer-template-preview"
+                    dangerouslySetInnerHTML={{ __html: previewDocumentHtml }}
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
+                  {t('offers.wizard.previewTemplates.previewHint')}
+                </p>
+              </div>
               {isProPlan ? (
                 <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1859,6 +2084,14 @@ export default function NewOfferWizard() {
                   <dt className="text-slate-500">Stílus</dt>
                   <dd className="font-medium text-slate-800">
                     {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-slate-500">
+                    {t('offers.wizard.previewTemplates.summaryLabel')}
+                  </dt>
+                  <dd className="font-medium text-slate-800">
+                    {selectedPdfTemplateLabel || availablePdfTemplates[0]?.label || '—'}
                   </dd>
                 </div>
               </dl>

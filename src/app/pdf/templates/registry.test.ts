@@ -17,6 +17,15 @@ describe('template registry', () => {
     expect(freeTemplates.every((template) => template.tier === 'free')).toBe(true);
   });
 
+  it('returns all templates for premium tier', () => {
+    const premiumTemplates = listTemplates({ tier: 'premium' });
+    const allTemplates = listTemplates();
+
+    expect(premiumTemplates.length).toBe(allTemplates.length);
+    expect(premiumTemplates.some((template) => template.tier === 'free')).toBe(true);
+    expect(premiumTemplates.some((template) => template.tier === 'premium')).toBe(true);
+  });
+
   it('throws a typed error when loading an unknown template id', () => {
     expect(() => loadTemplate('unknown@1.0.0')).toThrow(TemplateNotFoundError);
   });
