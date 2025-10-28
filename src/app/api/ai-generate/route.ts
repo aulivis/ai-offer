@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 // Use shared pricing utilities and HTML template helpers.  The
 // summarization and table HTML generation are centralised in
 // `app/lib/pricing.ts`, and the full document template lives in
@@ -817,7 +818,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
             : {}),
         };
 
-        immediatePdfUrl = await processPdfJobInline(sb, inlineJob);
+        const serviceClient = supabaseServiceRole();
+        immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
         responseStatus = 'completed';
         responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
       } catch (inlineError) {

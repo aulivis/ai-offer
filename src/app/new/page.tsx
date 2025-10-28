@@ -1721,12 +1721,27 @@ export default function NewOfferWizard() {
                 </span>
               </div>
               <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
-              <RichTextEditor
-                ref={richTextEditorRef}
-                value={editedHtml || previewHtml}
-                onChange={(html) => setEditedHtml(html)}
-                placeholder={t('richTextEditor.placeholderHint')}
-              />
+              <div className="relative">
+                <RichTextEditor
+                  ref={richTextEditorRef}
+                  value={editedHtml || previewHtml}
+                  onChange={(html) => setEditedHtml(html)}
+                  placeholder={t('richTextEditor.placeholderHint')}
+                />
+                {previewLoading ? (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/80 backdrop-blur">
+                    <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
+                    <div className="space-y-1 text-center">
+                      <p className="text-sm font-medium text-slate-700">
+                        {t('offers.wizard.preview.loading')}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {t('offers.wizard.preview.loadingHint')}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
               <p className="text-xs text-slate-500">{t('richTextEditor.placeholderReminder')}</p>
               {isProPlan ? (
                 <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
