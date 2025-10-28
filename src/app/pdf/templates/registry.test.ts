@@ -5,6 +5,7 @@ import {
   TemplateRegistrationError,
   listTemplates,
   loadTemplate,
+  getOfferTemplateByLegacyId,
   registerTemplate,
 } from './registry';
 
@@ -18,6 +19,10 @@ describe('template registry', () => {
 
   it('throws a typed error when loading an unknown template id', () => {
     expect(() => loadTemplate('unknown@1.0.0')).toThrow(TemplateNotFoundError);
+  });
+
+  it('loads templates by legacy id when available', () => {
+    expect(getOfferTemplateByLegacyId('modern').id).toBe('free.base@1.0.0');
   });
 
   it('validates templates during registration', () => {

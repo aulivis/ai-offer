@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { modernTemplate } from './modern';
-import { premiumBannerTemplate } from './premiumBanner';
+import { freeBaseTemplate } from './free.base';
+import { premiumElegantTemplate } from './premium.elegant';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
 
 const renderFunctionSchema = z.custom<OfferTemplate['renderHead']>(
@@ -46,6 +46,16 @@ export class TemplateNotFoundError extends TemplateRegistryError {
 }
 
 const templates = new Map<TemplateId, OfferTemplate>();
+const legacyTemplates = new Map<string, OfferTemplate>();
+
+function extractLegacyId(template: unknown): string | null {
+  if (typeof template !== 'object' || !template) {
+    return null;
+  }
+
+  const candidate = (template as { legacyId?: unknown }).legacyId;
+  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null;
+}
 
 function formatValidationError(error: z.ZodError) {
   return error.issues
@@ -74,7 +84,25 @@ export function registerTemplate(templateModule: unknown): OfferTemplate {
     );
   }
 
+  if (legacyTemplates.has(template.id)) {
+    throw new TemplateRegistrationError(
+      `Failed to register template "${template.id}": template already registered.`,
+    );
+  }
+
   templates.set(template.id, template);
+
+  const legacyId = extractLegacyId(template);
+  if (legacyId) {
+    if (legacyTemplates.has(legacyId)) {
+      throw new TemplateRegistrationError(
+        `Failed to register template "${template.id}": legacy id "${legacyId}" already registered.`,
+      );
+    }
+    legacyTemplates.set(legacyId, template);
+  }
+
+  legacyTemplates.set(template.id, template);
 
   return template;
 }
@@ -94,8 +122,18 @@ export function loadTemplate(id: TemplateId): OfferTemplate {
   return template;
 }
 
+export function getOfferTemplateByLegacyId(legacyId: string): OfferTemplate {
+  const template = legacyTemplates.get(legacyId) ?? templates.get(legacyId as TemplateId);
+
+  if (!template) {
+    throw new TemplateNotFoundError(legacyId as TemplateId);
+  }
+
+  return template;
+}
+
 // Register built-in templates
-const builtinTemplates = [modernTemplate, premiumBannerTemplate];
+const builtinTemplates = [freeBaseTemplate, premiumElegantTemplate];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);
