@@ -17,6 +17,8 @@ import { usePricingRows } from '@/hooks/usePricingRows';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
+import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
 
 const DEFAULT_PREVIEW_HTML = `<p>${t('offers.wizard.preview.idle')}</p>`;
 
@@ -45,6 +47,10 @@ export default function NewOfferPage() {
   const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_HTML);
   const [previewStatus, setPreviewStatus] = useState<OfferPreviewStatus>('idle');
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewSummary, setPreviewSummary] = useState<string[]>([]);
+  const [previewIssues, setPreviewIssues] = useState<PreviewIssue[]>([]);
+  const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
   const previewDebounceRef = useRef<number | null>(null);
@@ -116,6 +122,46 @@ export default function NewOfferPage() {
     }
   }, [previewStatus]);
 
+  const coerceSummaryHighlights = (value: unknown): string[] => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => (typeof item === 'string' ? item.trim() : ''))
+      .filter((item) => item.length > 0)
+      .slice(0, 6);
+  };
+
+  const coercePreviewIssues = (value: unknown): PreviewIssue[] => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => {
+        if (!item || typeof item !== 'object') {
+          return null;
+        }
+
+        const severity = (item as { severity?: unknown }).severity;
+        const message = (item as { message?: unknown }).message;
+
+        if (
+          (severity === 'info' || severity === 'warning' || severity === 'error') &&
+          typeof message === 'string'
+        ) {
+          const trimmed = message.trim();
+          if (trimmed.length > 0) {
+            return { severity, message: trimmed } as PreviewIssue;
+          }
+        }
+
+        return null;
+      })
+      .filter((item): item is PreviewIssue => item !== null);
+  };
+
   const callPreview = useCallback(async () => {
     if (step !== 3) {
       return;
@@ -137,6 +183,8 @@ export default function NewOfferPage() {
       setPreviewHtml(DEFAULT_PREVIEW_HTML);
       setPreviewStatus('idle');
       setPreviewError(null);
+      setPreviewSummary([]);
+      setPreviewIssues([]);
       return;
     }
 
@@ -153,6 +201,8 @@ export default function NewOfferPage() {
     setPreviewHtml(DEFAULT_PREVIEW_HTML);
     setPreviewStatus('loading');
     setPreviewError(null);
+    setPreviewSummary([]);
+    setPreviewIssues([]);
 
     const controller = new AbortController();
     previewAbortRef.current = controller;
@@ -184,6 +234,8 @@ export default function NewOfferPage() {
           setPreviewStatus('error');
           setPreviewError(message);
           setPreviewHtml(DEFAULT_PREVIEW_HTML);
+          setPreviewSummary([]);
+          setPreviewIssues([{ severity: 'error', message }]);
         }
         showToast({
           title: t('toasts.preview.error.title'),
@@ -217,6 +269,8 @@ export default function NewOfferPage() {
               type?: string;
               html?: string;
               message?: string;
+              summary?: unknown;
+              issues?: unknown;
             };
             if (payload.type === 'delta' || payload.type === 'done') {
               if (!hasDelta && previewRequestIdRef.current === nextRequestId) {
@@ -229,6 +283,12 @@ export default function NewOfferPage() {
               ) {
                 latestHtml = payload.html;
                 setPreviewHtml(payload.html || DEFAULT_PREVIEW_HTML);
+              }
+              if (payload.type === 'done' && previewRequestIdRef.current === nextRequestId) {
+                const summary = coerceSummaryHighlights(payload.summary);
+                const parsedIssues = coercePreviewIssues(payload.issues);
+                setPreviewSummary(summary);
+                setPreviewIssues(parsedIssues);
               }
             } else if (payload.type === 'error') {
               streamErrorMessage =
@@ -257,6 +317,8 @@ export default function NewOfferPage() {
           setPreviewStatus('error');
           setPreviewError(streamErrorMessage);
           setPreviewHtml(DEFAULT_PREVIEW_HTML);
+          setPreviewSummary([]);
+          setPreviewIssues([{ severity: 'error', message: streamErrorMessage }]);
         }
         showToast({
           title: t('toasts.preview.error.title'),
@@ -280,6 +342,8 @@ export default function NewOfferPage() {
           setPreviewStatus('aborted');
           setPreviewError(t('errors.preview.aborted'));
           setPreviewHtml(DEFAULT_PREVIEW_HTML);
+          setPreviewSummary([]);
+          setPreviewIssues([{ severity: 'warning', message: t('errors.preview.aborted') }]);
         }
         return;
       }
@@ -294,6 +358,8 @@ export default function NewOfferPage() {
         setPreviewStatus('error');
         setPreviewError(message);
         setPreviewHtml(DEFAULT_PREVIEW_HTML);
+        setPreviewSummary([]);
+        setPreviewIssues([{ severity: 'error', message }]);
       }
       showToast({
         title: t('toasts.preview.error.title'),
@@ -326,6 +392,8 @@ export default function NewOfferPage() {
     setPreviewStatus('aborted');
     setPreviewError(t('errors.preview.aborted'));
     setPreviewHtml(DEFAULT_PREVIEW_HTML);
+    setPreviewSummary([]);
+    setPreviewIssues([{ severity: 'warning', message: t('errors.preview.aborted') }]);
   }, []);
 
   useEffect(() => {
@@ -351,6 +419,15 @@ export default function NewOfferPage() {
   }, [callPreview, projectDetailsText, pricingRows, step, title]);
 
   useEffect(() => {
+    if (step !== 3) {
+      setActivePreviewTab('document');
+      setIsPreviewModalOpen(false);
+      setPreviewSummary([]);
+      setPreviewIssues([]);
+    }
+  }, [step]);
+
+  useEffect(() => {
     if (step === 3) {
       return;
     }
@@ -366,6 +443,8 @@ export default function NewOfferPage() {
     setPreviewStatus('idle');
     setPreviewError(null);
     setPreviewHtml(DEFAULT_PREVIEW_HTML);
+    setPreviewSummary([]);
+    setPreviewIssues([]);
   }, [step]);
 
   useEffect(() => {
@@ -559,11 +638,7 @@ export default function NewOfferPage() {
             {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
 
             {step === 3 && (
-              <OfferSummarySection
-                title={title}
-                projectDetails={projectDetails}
-                totals={totals}
-              />
+              <OfferSummarySection title={title} projectDetails={projectDetails} totals={totals} />
             )}
 
             {inlineErrors.length > 0 && (
@@ -616,11 +691,40 @@ export default function NewOfferPage() {
             isStreaming={isStreaming}
             previewStatus={previewStatus}
             previewError={previewError}
+            summaryHighlights={previewSummary}
+            issues={previewIssues}
+            activeTab={activePreviewTab}
+            onTabChange={setActivePreviewTab}
             onAbortPreview={handleAbortPreview}
             onManualRefresh={handleManualRefresh}
+            onOpenFullscreen={() => setIsPreviewModalOpen(true)}
+            titleId="offer-preview-card-title"
           />
         </div>
       </div>
+      <Modal
+        open={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        labelledBy="preview-modal-title"
+      >
+        <OfferPreviewCard
+          isPreviewAvailable={step === 3}
+          previewMarkup={previewMarkup}
+          statusDescriptor={statusDescriptor}
+          isStreaming={isStreaming}
+          previewStatus={previewStatus}
+          previewError={previewError}
+          summaryHighlights={previewSummary}
+          issues={previewIssues}
+          activeTab={activePreviewTab}
+          onTabChange={setActivePreviewTab}
+          onAbortPreview={handleAbortPreview}
+          onManualRefresh={handleManualRefresh}
+          onExitFullscreen={() => setIsPreviewModalOpen(false)}
+          titleId="preview-modal-title"
+          variant="modal"
+        />
+      </Modal>
     </AppFrame>
   );
 }

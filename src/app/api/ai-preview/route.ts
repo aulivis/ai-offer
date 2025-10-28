@@ -4,6 +4,7 @@ import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { t } from '@/copy';
 import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { detectPreviewIssues, extractPreviewSummaryHighlights } from '@/lib/previewInsights';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import {
   emptyProjectDetails,
@@ -111,10 +112,13 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     const safeBrand = sanitizeInput(brandVoice);
     const safeIndustry = sanitizeInput(industry);
     const safeTitle = sanitizeInput(title);
-    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
-      acc[key] = sanitizeInput(projectDetails[key]);
-      return acc;
-    }, { ...emptyProjectDetails });
+    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
+      (acc, key) => {
+        acc[key] = sanitizeInput(projectDetails[key]);
+        return acc;
+      },
+      { ...emptyProjectDetails },
+    );
     const safeDescription = formatProjectDetailsForPrompt(sanitizedDetails);
     const safeDeadline = sanitizeInput(deadline || '—');
 
@@ -248,7 +252,9 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
         const handleEnd = () => {
           const finalHtml = sanitizeHTML(accumulated || '<p>(nincs előnézet)</p>');
-          push({ type: 'done', html: finalHtml });
+          const summary = extractPreviewSummaryHighlights(finalHtml);
+          const issues = detectPreviewIssues(finalHtml);
+          push({ type: 'done', html: finalHtml, summary, issues });
           closeStream();
         };
 

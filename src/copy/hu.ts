@@ -315,7 +315,8 @@ export const hu = {
   },
   billing: {
     title: 'Előfizetés',
-    description: 'Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést.',
+    description:
+      'Válaszd ki a csomagot, és biztonságosan, a Stripe felületén keresztül intézd a fizetést.',
     loading: 'Betöltés…',
     currentPlan: {
       title: 'Aktuális csomag',
@@ -409,7 +410,8 @@ export const hu = {
         2: 'Automatikus PDF export és státuszjelentés',
       },
       standard: {
-        description: '10 automatikus, professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval.',
+        description:
+          '10 automatikus, professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval.',
         cta: 'Standard csomag aktiválása',
       },
       pro: {
@@ -460,7 +462,8 @@ export const hu = {
       cta: {
         badge: 'Ajánlatkészítés újrafogalmazva',
         title: 'Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton',
-        description: 'Próbáld ki demóban, majd lépj be, hogy azonnal aktiválhasd a Standard vagy Pro csomagot.',
+        description:
+          'Próbáld ki demóban, majd lépj be, hogy azonnal aktiválhasd a Standard vagy Pro csomagot.',
         primary: 'Belépés és előfizetés',
         secondary: 'Ingyenes generálás indítása',
       },
@@ -468,8 +471,10 @@ export const hu = {
   },
   settings: {
     title: 'Beállítások',
-    description: 'Az itt megadott információk automatikusan megjelennek az ajánlatokban és a generált PDF-ekben.',
-    loadingDescription: 'Add meg a cégadatokat és hozd létre a gyakran használt tételek sablonjait.',
+    description:
+      'Az itt megadott információk automatikusan megjelennek az ajánlatokban és a generált PDF-ekben.',
+    loadingDescription:
+      'Add meg a cégadatokat és hozd létre a gyakran használt tételek sablonjait.',
     loading: 'Betöltés…',
     actions: {
       loggedInAs: 'Belépve:',
@@ -484,7 +489,8 @@ export const hu = {
       },
       googleNotLinked: {
         title: 'Kapcsold össze a Google fiókodat.',
-        description: 'Az összekapcsolás után a Google fiókoddal is bejelentkezhetsz az alkalmazásba.',
+        description:
+          'Az összekapcsolás után a Google fiókoddal is bejelentkezhetsz az alkalmazásba.',
       },
       googleLinking: 'Átirányítás…',
       connectGoogle: 'Google összekapcsolása',
@@ -551,11 +557,13 @@ export const hu = {
       activeBadge: 'Aktív',
       proBadge: 'Pro',
       proOnly: 'Pro előfizetéssel érhető el.',
-      upgradeHint: 'A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.',
+      upgradeHint:
+        'A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.',
     },
     activities: {
       title: 'Tevékenység-sablonok',
-      subtitle: 'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
+      subtitle:
+        'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
       fields: {
         name: 'Megnevezés',
         unit: 'Mértékegység',
@@ -984,9 +992,38 @@ export const hu = {
       actions: {
         abort: 'Megszakítás',
         refresh: 'Újra generálás',
+        fullscreenOpen: 'Teljes előnézet megnyitása',
+        fullscreenClose: 'Előnézet bezárása',
       },
       empty:
         'Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.',
+      tabs: {
+        document: 'Dokumentum',
+        summary: 'Összegzés',
+        issues: 'Figyelmeztetések',
+      },
+      summary: {
+        empty:
+          'Az AI összegzés még nem áll rendelkezésre. Generáld újra az előnézetet, ha frissített tartalomra van szükség.',
+      },
+      issuesList: {
+        empty: 'Nincs jelentett probléma. Az AI előnézet rendben van.',
+        missingSection: 'Az előnézetből hiányzik a(z) „{section}” szakasz.',
+        defaultHtml: 'Az AI előnézet nem készült el. Próbáld újra generálni.',
+        shortContent:
+          'Az AI előnézet nagyon rövid. Ellenőrizd, hogy minden projektadat ki van-e töltve.',
+        labels: {
+          info: 'INFO',
+          warning: 'FIGYELEM',
+          error: 'HIBA',
+        },
+        sections: {
+          intro: 'Bevezető',
+          projectSummary: 'Projekt összegzés',
+          deliverables: 'Szállítandók',
+          nextSteps: 'Következő lépések',
+        },
+      },
       statuses: {
         idle: {
           title: 'Előnézetre várunk',
@@ -1006,32 +1043,32 @@ export const hu = {
         },
       },
     },
-  projectDetailsSection: {
-    title: 'Ajánlat címe',
-    placeholder: 'Pl. Weboldal fejlesztés',
-    fields: {
-      overview: {
-        label: 'Projekt áttekintés',
-        placeholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
-        help: 'Foglalj össze 2-3 mondatban a projekt célját és a kiinduló helyzetet.',
-      },
-      deliverables: {
-        label: 'Kulcs szállítandók',
-        placeholder: 'Sorold fel pontokban vagy bekezdésben a várható eredményeket.',
-        help: 'Mit kap pontosan az ügyfél? Adj meg konkrét példákat vagy mérhető kimeneteket.',
-      },
-      timeline: {
-        label: 'Ütemezés & mérföldkövek',
-        placeholder: 'Pl. kickoff dátum, prototípus határidő, végleges átadás.',
-        help: 'Emeld ki a legfontosabb határidőket vagy fázisokat, ha vannak.',
-      },
-      constraints: {
-        label: 'Feltételezések & korlátok',
-        placeholder: 'Pl. szükséges erőforrások, kizárások, együttműködési feltételek.',
-        help: 'Írd le, mire van szükség a sikerhez, vagy mit nem tartalmaz az ajánlat.',
+    projectDetailsSection: {
+      title: 'Ajánlat címe',
+      placeholder: 'Pl. Weboldal fejlesztés',
+      fields: {
+        overview: {
+          label: 'Projekt áttekintés',
+          placeholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
+          help: 'Foglalj össze 2-3 mondatban a projekt célját és a kiinduló helyzetet.',
+        },
+        deliverables: {
+          label: 'Kulcs szállítandók',
+          placeholder: 'Sorold fel pontokban vagy bekezdésben a várható eredményeket.',
+          help: 'Mit kap pontosan az ügyfél? Adj meg konkrét példákat vagy mérhető kimeneteket.',
+        },
+        timeline: {
+          label: 'Ütemezés & mérföldkövek',
+          placeholder: 'Pl. kickoff dátum, prototípus határidő, végleges átadás.',
+          help: 'Emeld ki a legfontosabb határidőket vagy fázisokat, ha vannak.',
+        },
+        constraints: {
+          label: 'Feltételezések & korlátok',
+          placeholder: 'Pl. szükséges erőforrások, kizárások, együttműködési feltételek.',
+          help: 'Írd le, mire van szükség a sikerhez, vagy mit nem tartalmaz az ajánlat.',
+        },
       },
     },
-  },
     pricingSection: {
       heading: 'Árlista',
       helper: 'Adj meg legalább egy tételt – ez alapján számoljuk a nettó és bruttó összegeket.',
