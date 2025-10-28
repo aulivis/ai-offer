@@ -40,6 +40,7 @@ export interface OfferTemplate {
   tier: TemplateTier;
   label: string;
   version: string; // semver
+  marketingHighlight?: string;
   renderHead(ctx: RenderCtx): string; // returns <head> content (styles+meta)
   renderBody(ctx: RenderCtx): string; // returns <main>…</main>
   tokens: ThemeTokens;

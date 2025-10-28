@@ -11,6 +11,7 @@ export const premiumElegantTemplate: OfferTemplate & { legacyId: LegacyOfferTemp
   tier: 'premium',
   label: 'Prémium szalagos',
   version: '1.0.0',
+  marketingHighlight: 'Elegáns, logóval testreszabható dizájn a profi ajánlatokhoz.',
   tokens: premiumElegantTokens,
   capabilities: {
     'branding.logo': true,
