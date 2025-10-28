@@ -5,11 +5,19 @@ type RpcResponse = { error: { message: string } | null };
 
 const REQUIRED_ENV = {
   NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
   SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+  AUTH_COOKIE_SECRET: 'test-auth-secret-value-test-auth-secret-value',
+  CSRF_SECRET: 'test-csrf-secret-value-test-csrf-secret-value',
+  MAGIC_LINK_RATE_LIMIT_SALT: 'test-rate-limit-salt',
   OPENAI_API_KEY: 'test-key',
   STRIPE_SECRET_KEY: 'sk_test',
   APP_URL: 'https://app.example.com',
+  PUBLIC_CONTACT_EMAIL: 'hello@example.com',
   STRIPE_PRICE_ALLOWLIST: '',
+  OAUTH_REDIRECT_ALLOWLIST: '',
+  PDF_WEBHOOK_ALLOWLIST: '',
+  SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: 'https://example.supabase.co/auth/v1/callback',
 };
 
 function stubEnvironment() {
@@ -30,6 +38,15 @@ function createInsertMock(errors: Array<{ message: string } | null>) {
     insertMock.mockResolvedValueOnce({ error });
   });
   return insertMock;
+}
+
+function createProfileSelectMock(plan: string | null = 'free') {
+  const maybeSingle = vi
+    .fn()
+    .mockResolvedValue({ data: plan ? { plan } : null, error: null });
+  const eq = vi.fn(() => ({ maybeSingle }));
+  const select = vi.fn(() => ({ eq }));
+  return { select, eq, maybeSingle };
 }
 
 describe('enqueuePdfJob schema cache recovery', () => {
@@ -57,7 +74,17 @@ describe('enqueuePdfJob schema cache recovery', () => {
       })
       .mockResolvedValueOnce({ error: null });
 
-    const fromMock = vi.fn().mockReturnValue({ insert: insertMock });
+    const profileMocks = createProfileSelectMock('free');
+
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'pdf_jobs') {
+        return { insert: insertMock };
+      }
+      if (table === 'profiles') {
+        return { select: profileMocks.select };
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
     const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
 
     const fetchSpy = vi.fn();
@@ -96,7 +123,17 @@ describe('enqueuePdfJob schema cache recovery', () => {
         error: { message: 'function pgrest.schema_cache_reload does not exist' },
       });
 
-    const fromMock = vi.fn().mockReturnValue({ insert: insertMock });
+    const profileMocks = createProfileSelectMock('free');
+
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'pdf_jobs') {
+        return { insert: insertMock };
+      }
+      if (table === 'profiles') {
+        return { select: profileMocks.select };
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
     const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
 
     const fetchSpy = vi.fn().mockResolvedValue(new Response(null, { status: 406 }));
@@ -127,5 +164,49 @@ describe('enqueuePdfJob schema cache recovery', () => {
         'Accept-Profile': 'public',
       }),
     });
+  });
+
+  it('downgrades premium templates for free plans and annotates metadata', async () => {
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+    const rpcMock = vi.fn().mockResolvedValue({ error: null });
+    const profileMocks = createProfileSelectMock('free');
+
+    const fromMock = vi.fn((table: string) => {
+      if (table === 'pdf_jobs') {
+        return { insert: insertMock };
+      }
+      if (table === 'profiles') {
+        return { select: profileMocks.select };
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
+
+    const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
+
+    const { enqueuePdfJob } = await import('../pdf');
+
+    await enqueuePdfJob(supabase, {
+      jobId: 'job-1',
+      offerId: 'offer-1',
+      userId: 'user-1',
+      storagePath: 'path',
+      html: '<p>html</p>',
+      usagePeriodStart: '2024-01-01',
+      userLimit: null,
+      templateId: 'premium.elegant@1.0.0',
+      requestedTemplateId: 'premium-banner',
+    });
+
+    expect(insertMock).toHaveBeenCalledTimes(1);
+    const payload = insertMock.mock.calls[0][0]?.payload;
+    expect(payload.templateId).toBe('free.base@1.0.0');
+    expect(payload.metadata).toMatchObject({
+      planTier: 'free',
+      requestedTemplateId: 'premium.elegant@1.0.0',
+      requestedTemplateRaw: 'premium-banner',
+      enforcedTemplateId: 'free.base@1.0.0',
+      originalTemplateId: 'premium.elegant@1.0.0',
+    });
+    expect(payload.metadata.notes?.[0]).toMatch(/requires a premium plan/i);
   });
 });

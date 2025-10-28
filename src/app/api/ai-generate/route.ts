@@ -763,12 +763,11 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
     };
 
-    const templateId = enforceTemplateForPlan(
-      typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-      plan,
-    );
+    const requestedTemplateLegacyId =
+      typeof profile?.offer_template === 'string' ? profile.offer_template : null;
+    const enforcedTemplateLegacyId = enforceTemplateForPlan(requestedTemplateLegacyId, plan);
 
-    const template = getOfferTemplateByLegacyId(templateId);
+    const template = getOfferTemplateByLegacyId(enforcedTemplateLegacyId);
 
     const html = buildOfferHtml(
       {
@@ -831,6 +830,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
       deviceId: deviceLimit !== null ? deviceId : null,
       deviceLimit,
+      templateId: template.id,
+      requestedTemplateId: requestedTemplateLegacyId,
     };
 
     try {
@@ -879,6 +880,13 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           ...(pdfJobInput.deviceLimit !== undefined
             ? { deviceLimit: pdfJobInput.deviceLimit }
             : {}),
+          ...(pdfJobInput.templateId !== undefined
+            ? { templateId: pdfJobInput.templateId }
+            : {}),
+          ...(pdfJobInput.requestedTemplateId !== undefined
+            ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
+            : {}),
+          ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
         };
 
         const serviceClient = supabaseServiceRole();

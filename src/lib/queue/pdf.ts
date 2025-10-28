@@ -8,6 +8,18 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { envServer } from '@/env.server';
+import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/registry';
+import type { TemplateId } from '@/app/pdf/templates/types';
+
+export interface PdfJobMetadata {
+  notes?: string[];
+  requestedTemplateId?: string | null;
+  requestedTemplateRaw?: string | null;
+  enforcedTemplateId?: string | null;
+  originalTemplateId?: string | null;
+  planTier?: 'free' | 'premium';
+  [key: string]: unknown;
+}
 
 export interface PdfJobInput {
   jobId: string;
@@ -20,7 +32,14 @@ export interface PdfJobInput {
   userLimit: number | null;
   deviceId?: string | null;
   deviceLimit?: number | null;
+  templateId?: string | null;
+  requestedTemplateId?: string | null;
+  metadata?: PdfJobMetadata;
 }
+
+const FALLBACK_TEMPLATE_ID: TemplateId = 'free.base@1.0.0';
+
+type PlanTier = 'free' | 'premium';
 
 // Fragments used to detect specific error messages from Supabase/PostgREST.
 const SCHEMA_CACHE_ERROR_FRAGMENT =
@@ -109,7 +128,137 @@ function isSchemaCacheError(message: string | undefined): boolean {
   return message.toLowerCase().includes(SCHEMA_CACHE_ERROR_FRAGMENT);
 }
 
-async function insertPdfJob(sb: SupabaseClient, job: PdfJobInput) {
+function normalizePlanTier(value: unknown): PlanTier {
+  if (typeof value !== 'string') {
+    return 'free';
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) {
+    return 'free';
+  }
+
+  if (normalized === 'pro' || normalized === 'premium') {
+    return 'premium';
+  }
+
+  return 'free';
+}
+
+async function resolvePlanTier(sb: SupabaseClient, userId: string): Promise<PlanTier> {
+  try {
+    const { data, error } = await sb
+      .from('profiles')
+      .select('plan')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Failed to resolve user plan for PDF job.', {
+        userId,
+        error: error.message,
+      });
+      return 'free';
+    }
+
+    return normalizePlanTier(data?.plan);
+  } catch (error) {
+    console.warn('Unexpected error while resolving user plan for PDF job.', error);
+    return 'free';
+  }
+}
+
+function normalizeTemplateIdentifier(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function mergeMetadata(
+  base: PdfJobMetadata | undefined,
+  updates: PdfJobMetadata | undefined,
+): PdfJobMetadata | undefined {
+  if (!base && !updates) {
+    return undefined;
+  }
+
+  const merged: PdfJobMetadata = { ...(base ?? {}) };
+
+  if (updates) {
+    if (Array.isArray(updates.notes) && updates.notes.length > 0) {
+      merged.notes = [...(merged.notes ?? []), ...updates.notes];
+    }
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (key === 'notes') {
+        return;
+      }
+
+      if (value !== undefined) {
+        merged[key] = value;
+      }
+    });
+  }
+
+  return merged;
+}
+
+function resolveTemplateForPlan(
+  plan: PlanTier,
+  job: PdfJobInput,
+): { templateId: TemplateId; metadata: PdfJobMetadata } {
+  const fallbackTemplate = getOfferTemplateByLegacyId(FALLBACK_TEMPLATE_ID);
+  const requestedRaw = normalizeTemplateIdentifier(job.requestedTemplateId ?? job.templateId ?? null);
+
+  let requestedTemplate = fallbackTemplate;
+  let requestedCanonicalId: string | null = null;
+  const metadataNotes: string[] = [];
+
+  if (requestedRaw) {
+    try {
+      requestedTemplate = getOfferTemplateByLegacyId(requestedRaw);
+      requestedCanonicalId = requestedTemplate.id;
+    } catch (error) {
+      console.warn('Requested template is not registered; falling back to default.', {
+        requestedTemplateId: requestedRaw,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      metadataNotes.push(
+        `Requested template "${requestedRaw}" is not registered. Using "${fallbackTemplate.id}" instead.`,
+      );
+      requestedTemplate = fallbackTemplate;
+    }
+  }
+
+  let resolvedTemplateId: TemplateId = requestedTemplate.id;
+
+  if (plan === 'free' && requestedTemplate.tier === 'premium') {
+    metadataNotes.push(
+      `Requested template "${requestedTemplate.id}" requires a premium plan. Using "${fallbackTemplate.id}" instead.`,
+    );
+    resolvedTemplateId = fallbackTemplate.id;
+  }
+
+  const metadata: PdfJobMetadata = {
+    planTier: plan,
+    requestedTemplateRaw: requestedRaw,
+    requestedTemplateId: requestedCanonicalId ?? requestedRaw,
+    originalTemplateId: job.templateId ?? null,
+    enforcedTemplateId: resolvedTemplateId,
+  };
+
+  if (metadataNotes.length > 0) {
+    metadata.notes = metadataNotes;
+  }
+
+  return { templateId: resolvedTemplateId, metadata };
+}
+
+type PreparedPdfJob = PdfJobInput & { templateId: TemplateId; metadata?: PdfJobMetadata };
+
+async function insertPdfJob(sb: SupabaseClient, job: PreparedPdfJob) {
   return sb.from('pdf_jobs').insert({
     id: job.jobId,
     offer_id: job.offerId,
@@ -122,6 +271,8 @@ async function insertPdfJob(sb: SupabaseClient, job: PdfJobInput) {
       userLimit: job.userLimit,
       deviceId: job.deviceId ?? null,
       deviceLimit: job.deviceLimit ?? null,
+      templateId: job.templateId,
+      ...(job.metadata ? { metadata: job.metadata } : {}),
     },
     callback_url: job.callbackUrl ?? null,
     download_token: job.jobId,
@@ -130,8 +281,16 @@ async function insertPdfJob(sb: SupabaseClient, job: PdfJobInput) {
 
 export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promise<void> {
   try {
+    const planTier = await resolvePlanTier(sb, job.userId);
+    const { templateId, metadata } = resolveTemplateForPlan(planTier, job);
+    const preparedJob: PreparedPdfJob = {
+      ...job,
+      templateId,
+      metadata: mergeMetadata(job.metadata, metadata),
+    };
+
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const { error } = await insertPdfJob(sb, job);
+      const { error } = await insertPdfJob(sb, preparedJob);
 
       if (!error) {
         return;
