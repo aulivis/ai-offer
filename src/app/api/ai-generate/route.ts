@@ -26,6 +26,13 @@ import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebho
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { t } from '@/copy';
+import {
+  emptyProjectDetails,
+  formatProjectDetailsForPrompt,
+  projectDetailFields,
+  projectDetailsSchema,
+  type ProjectDetails,
+} from '@/lib/projectDetails';
 import { allowCategory } from '../../../../lib/consent/server';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import { z } from 'zod';
@@ -380,7 +387,7 @@ const aiGenerateRequestSchema = z
   .object({
     title: z.string().trim().min(1, t('validation.required')),
     industry: z.string().trim().min(1, t('validation.required')),
-    description: z.string().trim().min(1, t('validation.required')),
+    projectDetails: projectDetailsSchema,
     deadline: optionalTrimmedString,
     language: z.preprocess(
       (value) => (value === null || value === undefined ? undefined : value),
@@ -498,7 +505,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     const {
       title,
       industry,
-      description,
+      projectDetails,
       deadline,
       language,
       brandVoice,
@@ -610,6 +617,11 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       periodStart: usagePeriodStart,
     });
 
+    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
+      acc[key] = sanitizeInput(projectDetails[key]);
+      return acc;
+    }, { ...emptyProjectDetails });
+
     // ---- AI szöveg (override elsőbbség) ----
     const safeTitle = sanitizeInput(title);
     let aiHtml = '';
@@ -634,7 +646,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
       // Sanitize user inputs before passing to OpenAI
       const safeIndustry = sanitizeInput(industry);
-      const safeDescription = sanitizeInput(description);
+      const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
       const safeDeadline = sanitizeInput(deadline || '—');
       const safeLanguage = sanitizeInput(language);
       const safeBrand = sanitizeInput(brandVoice);
@@ -644,7 +656,8 @@ Nyelv: ${safeLanguage}
 Hangnem: ${safeBrand}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
-Projekt leírás: ${safeDescription}
+Projekt részletek:
+${safeProjectDetails || '—'}
 Határidő: ${safeDeadline}
 ${styleAddon}
 Ne találj ki árakat, az árképzés külön jelenik meg.
@@ -722,7 +735,13 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       title: safeTitle,
       industry: sanitizeInput(industry),
       recipient_id: clientId || null,
-      inputs: { description: sanitizeInput(description), deadline, language, brandVoice, style },
+      inputs: {
+        projectDetails: sanitizedDetails,
+        deadline,
+        language,
+        brandVoice,
+        style,
+      },
       ai_text: aiHtmlForStorage,
       price_json: rows,
       pdf_url: null,

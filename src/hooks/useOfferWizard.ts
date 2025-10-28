@@ -2,6 +2,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
+import {
+  emptyProjectDetails,
+  formatProjectDetailsForPrompt,
+  projectDetailFields,
+  type ProjectDetails,
+} from '@/lib/projectDetails';
 
 type Step = 1 | 2 | 3;
 
@@ -9,24 +15,24 @@ type ValidationResult = Partial<Record<Step, string[]>>;
 
 function buildValidation({
   title,
-  description,
+  projectDetails,
   pricingRows,
 }: {
   title: string;
-  description: string;
+  projectDetails: ProjectDetails;
   pricingRows: PriceRow[];
 }): ValidationResult {
   const result: ValidationResult = {};
 
   const trimmedTitle = title.trim();
-  const trimmedDescription = description.trim();
+  const trimmedOverview = projectDetails.overview.trim();
 
   if (!trimmedTitle) {
     result[1] = [...(result[1] ?? []), 'Adj meg egy címet az ajánlathoz.'];
   }
 
-  if (!trimmedDescription) {
-    result[1] = [...(result[1] ?? []), 'Írj rövid leírást a projektről.'];
+  if (!trimmedOverview) {
+    result[1] = [...(result[1] ?? []), 'Adj rövid projektáttekintést az AI-nak.'];
   }
 
   const hasPricingRow = pricingRows.some((row) => row.name.trim().length > 0);
@@ -41,7 +47,7 @@ function buildValidation({
 export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
   const [step, setStep] = useState<Step>(1);
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [projectDetails, setProjectDetails] = useState<ProjectDetails>(emptyProjectDetails);
   const [pricingRows, setPricingRows] = useState<PriceRow[]>(initialRows);
   const [attemptedSteps, setAttemptedSteps] = useState<Record<Step, boolean>>({
     1: false,
@@ -50,9 +56,18 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
   });
 
   const validation = useMemo(
-    () => buildValidation({ title, description, pricingRows }),
-    [title, description, pricingRows],
+    () => buildValidation({ title, projectDetails, pricingRows }),
+    [title, projectDetails, pricingRows],
   );
+
+  const projectDetailsText = useMemo(() => {
+    const normalized = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
+      acc[key] = projectDetails[key].trim();
+      return acc;
+    }, { ...emptyProjectDetails });
+
+    return formatProjectDetailsForPrompt(normalized);
+  }, [projectDetails]);
 
   const isStepValid = useCallback(
     (target: Step) => (validation[target]?.length ?? 0) === 0,
@@ -102,8 +117,9 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     step,
     title,
     setTitle,
-    description,
-    setDescription,
+    projectDetails,
+    setProjectDetails,
+    projectDetailsText,
     pricingRows,
     setPricingRows: updatePricingRows,
     goNext,

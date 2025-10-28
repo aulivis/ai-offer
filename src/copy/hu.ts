@@ -808,7 +808,7 @@ export const hu = {
         previewReady: 'Előnézet kész',
         previewInProgress: 'Generálás…',
         previewButtonIdle: 'AI előnézet generálása',
-        previewDisabledTooltip: 'Add meg a címet és a leírást az előnézethez.',
+        previewDisabledTooltip: 'Add meg a címet és a projekt áttekintést az előnézethez.',
         generatePreviewAgain: 'Újra generálás',
         abortPreview: 'Megszakítás',
         goToSummaryReminder:
@@ -848,8 +848,41 @@ export const hu = {
           industryLabel: 'Iparág',
           titleLabel: 'Ajánlat címe',
           titlePlaceholder: 'Pl. Weboldal fejlesztés',
-          descriptionLabel: 'Projekt leírása',
-          descriptionPlaceholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
+          titleHelp: 'Adj meg egy rövid, emlékezetes címet az ajánlatodnak.',
+          fields: {
+            overview: {
+              label: 'Projekt áttekintés',
+              placeholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
+              help: 'Foglalj össze 2-3 mondatban a projekt célját és a kiinduló helyzetet.',
+            },
+            deliverables: {
+              label: 'Kulcs szállítandók',
+              placeholder: 'Sorold fel pontokban vagy bekezdésben a várható eredményeket.',
+              help: 'Mit kap pontosan az ügyfél? Adj meg konkrét példákat vagy mérhető kimeneteket.',
+            },
+            timeline: {
+              label: 'Ütemezés & mérföldkövek',
+              placeholder: 'Pl. kickoff dátum, prototípus határidő, végleges átadás.',
+              help: 'Emeld ki a legfontosabb határidőket vagy fázisokat, ha vannak.',
+            },
+            constraints: {
+              label: 'Feltételezések & korlátok',
+              placeholder: 'Pl. szükséges erőforrások, kizárások, együttműködési feltételek.',
+              help: 'Írd le, mire van szükség a sikerhez, vagy mit nem tartalmaz az ajánlat.',
+            },
+          },
+          tips: {
+            title: 'Tippek az AI előnézethez',
+            subtitle: 'Minél konkrétabb a brief, annál pontosabb lesz az ajánlat.',
+            show: 'Tippek megjelenítése',
+            hide: 'Tippek elrejtése',
+            items: {
+              overview: 'Írd le, milyen üzleti célt szolgál a projekt és miért sürgős.',
+              deliverables: 'Nevezz meg kézzelfogható eredményeket vagy modulokat.',
+              timeline: 'Adj meg dátumokat vagy becsült időtartamokat, ha elérhetők.',
+              constraints: 'Sorolj fel feltételezéseket, felelősségi köröket vagy kizárásokat.',
+            },
+          },
           deadlineLabel: 'Határidő (opcionális)',
           languageLabel: 'Nyelv',
           languageOptions: {
@@ -973,12 +1006,32 @@ export const hu = {
         },
       },
     },
-    projectDetailsSection: {
-      title: 'Ajánlat címe',
-      placeholder: 'Pl. Weboldal fejlesztés',
-      descriptionLabel: 'Projekt leírása',
-      descriptionPlaceholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
+  projectDetailsSection: {
+    title: 'Ajánlat címe',
+    placeholder: 'Pl. Weboldal fejlesztés',
+    fields: {
+      overview: {
+        label: 'Projekt áttekintés',
+        placeholder: 'Fogalmazd meg röviden az ügyfél problémáját és a megoldást.',
+        help: 'Foglalj össze 2-3 mondatban a projekt célját és a kiinduló helyzetet.',
+      },
+      deliverables: {
+        label: 'Kulcs szállítandók',
+        placeholder: 'Sorold fel pontokban vagy bekezdésben a várható eredményeket.',
+        help: 'Mit kap pontosan az ügyfél? Adj meg konkrét példákat vagy mérhető kimeneteket.',
+      },
+      timeline: {
+        label: 'Ütemezés & mérföldkövek',
+        placeholder: 'Pl. kickoff dátum, prototípus határidő, végleges átadás.',
+        help: 'Emeld ki a legfontosabb határidőket vagy fázisokat, ha vannak.',
+      },
+      constraints: {
+        label: 'Feltételezések & korlátok',
+        placeholder: 'Pl. szükséges erőforrások, kizárások, együttműködési feltételek.',
+        help: 'Írd le, mire van szükség a sikerhez, vagy mit nem tartalmaz az ajánlat.',
+      },
     },
+  },
     pricingSection: {
       heading: 'Árlista',
       helper: 'Adj meg legalább egy tételt – ez alapján számoljuk a nettó és bruttó összegeket.',
@@ -988,7 +1041,10 @@ export const hu = {
       compensationHeading: 'Díjazás összesítése',
       fields: {
         title: 'Cím',
-        description: 'Leírás',
+        overview: 'Projekt áttekintés',
+        deliverables: 'Kulcs szállítandók',
+        timeline: 'Ütemezés & mérföldkövek',
+        constraints: 'Feltételezések & korlátok',
         netTotal: 'Nettó összesen',
         vat: 'ÁFA',
         gross: 'Bruttó végösszeg',
@@ -1090,7 +1146,7 @@ export const hu = {
       },
       missingDetails: {
         title: 'Hiányzó adatok',
-        description: 'Add meg az ajánlat címét és rövid leírását a mentéshez.',
+        description: 'Add meg az ajánlat címét és a projekt áttekintést a mentéshez.',
       },
       missingItems: {
         title: 'Hiányzó tételek',
@@ -1111,7 +1167,7 @@ export const hu = {
       },
       missingData: {
         title: 'Hiányzó adatok',
-        description: 'Az előnézethez add meg az ajánlat címét és a rövid leírást.',
+        description: 'Az előnézethez add meg az ajánlat címét és a projekt áttekintést.',
       },
       proFeature: {
         title: 'Pro funkció',

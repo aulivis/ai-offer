@@ -1,9 +1,10 @@
 import { Card, CardHeader } from '@/components/ui/Card';
 import { t } from '@/copy';
+import { type ProjectDetailKey, type ProjectDetails } from '@/lib/projectDetails';
 
 type OfferSummarySectionProps = {
   title: string;
-  description: string;
+  projectDetails: ProjectDetails;
   totals: {
     net: number;
     vat: number;
@@ -11,7 +12,9 @@ type OfferSummarySectionProps = {
   };
 };
 
-export function OfferSummarySection({ title, description, totals }: OfferSummarySectionProps) {
+const summaryFields: ProjectDetailKey[] = ['overview', 'deliverables', 'timeline', 'constraints'];
+
+export function OfferSummarySection({ title, projectDetails, totals }: OfferSummarySectionProps) {
   return (
     <section className="grid w-full max-w-[var(--column-width)] gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
       <Card
@@ -30,14 +33,19 @@ export function OfferSummarySection({ title, description, totals }: OfferSummary
               {title || t('offers.wizard.summarySection.empty')}
             </dd>
           </div>
-          <div className="flex items-start justify-between gap-3">
-            <dt className="text-slate-500">
-              {t('offers.wizard.summarySection.fields.description')}
-            </dt>
-            <dd className="max-w-xl text-right text-slate-700">
-              {description || t('offers.wizard.summarySection.empty')}
-            </dd>
-          </div>
+          {summaryFields.map((field) => {
+            const value = projectDetails[field].trim();
+            return (
+              <div key={field} className="flex items-start justify-between gap-3">
+                <dt className="text-slate-500">
+                  {t(`offers.wizard.summarySection.fields.${field}` as const)}
+                </dt>
+                <dd className="max-w-xl text-right text-slate-700">
+                  {value || t('offers.wizard.summarySection.empty')}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       </Card>
 
