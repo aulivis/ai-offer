@@ -4,7 +4,7 @@ import {
   type OfferTemplateId,
 } from './offerTemplates';
 import { PRINT_BASE_CSS } from '@/app/pdf/print.css';
-import { sanitizeInput } from '@/lib/sanitize';
+import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 /**
  * Shared CSS for the rendered offer document.  The rules only target the
@@ -388,14 +388,15 @@ export function offerBodyMarkup({
   const primaryContrast = contrastColor(primaryColor);
   const logoUrl = sanitizeLogoUrl(branding?.logoUrl);
   const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #1F2937;`;
+  const safeStyleAttr = sanitizeInput(styleAttr);
   const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
 
   if (normalizedTemplate === 'premium-banner') {
     const logoSlot = logoUrl
       ? `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--filled"><img class="offer-doc__logo offer-doc__logo--premium" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
       : `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"></div>`;
-    return `
-      <article class="offer-doc offer-doc--premium" style="${styleAttr}">
+    const markup = `
+      <article class="offer-doc offer-doc--premium" style="${safeStyleAttr}">
         <header class="offer-doc__header offer-doc__header--premium">
           <div class="offer-doc__premium-banner">
             ${logoSlot}
@@ -415,14 +416,16 @@ export function offerBodyMarkup({
         </div>
       </article>
     `;
+    ensureSafeHtml(markup, 'offer body markup (premium)');
+    return markup;
   }
 
   const logoMarkup = logoUrl
     ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
     : '';
 
-  return `
-    <article class="offer-doc offer-doc--modern" style="${styleAttr}">
+  const markup = `
+    <article class="offer-doc offer-doc--modern" style="${safeStyleAttr}">
       <header class="offer-doc__header">
         ${logoMarkup}
         <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>
@@ -436,4 +439,6 @@ export function offerBodyMarkup({
       </section>
     </article>
   `;
+  ensureSafeHtml(markup, 'offer body markup (modern)');
+  return markup;
 }

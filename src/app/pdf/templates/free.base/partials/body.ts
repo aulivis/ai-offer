@@ -1,5 +1,5 @@
 import { priceTableHtml } from '@/app/lib/pricing';
-import { sanitizeInput } from '@/lib/sanitize';
+import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 
@@ -95,11 +95,13 @@ export function renderBody(ctx: RenderCtx): string {
 
   const content = [header, sections, priceTable, gallery, footer].join('');
 
-  return `
+  const html = `
     <main class="offer-template offer-template--modern">
       <article class="offer-doc offer-doc--modern">
 ${content}
       </article>
     </main>
   `;
+  ensureSafeHtml(html, 'free template body');
+  return html;
 }

@@ -52,6 +52,35 @@ const {
     capabilities: {},
     renderHead: vi.fn(() => '<style />'),
     renderBody: vi.fn(() => '<main />'),
+    tokens: {
+      color: {
+        primary: '#0f172a',
+        secondary: '#f3f4f6',
+        text: '#111827',
+        muted: '#6b7280',
+        border: '#d1d5db',
+        bg: '#ffffff',
+      },
+      spacing: {
+        xs: '0.25rem',
+        sm: '0.5rem',
+        md: '1rem',
+        lg: '1.5rem',
+        xl: '2.5rem',
+      },
+      typography: {
+        body: '400 1rem/1.5 Inter, sans-serif',
+        h1: '700 2rem/1.2 Inter, sans-serif',
+        h2: '600 1.5rem/1.3 Inter, sans-serif',
+        h3: '600 1.25rem/1.3 Inter, sans-serif',
+        table: '600 0.9rem/1.2 Inter, sans-serif',
+      },
+      radius: {
+        sm: '0.5rem',
+        md: '0.75rem',
+        lg: '1rem',
+      },
+    },
   },
 }));
 
@@ -127,10 +156,19 @@ vi.mock('@/lib/pdfInlineWorker', () => ({
   processPdfJobInline: processPdfJobInlineMock,
 }));
 
-vi.mock('@/lib/sanitize', () => ({
-  sanitizeInput: (value: unknown) => (typeof value === 'string' ? value : ''),
-  sanitizeHTML: (value: unknown) => (typeof value === 'string' ? value : ''),
-}));
+vi.mock('@/lib/sanitize', () => {
+  const unsafePattern = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
+  return {
+    sanitizeInput: (value: unknown) => (typeof value === 'string' ? value : ''),
+    sanitizeHTML: (value: unknown) => (typeof value === 'string' ? value : ''),
+    ensureSafeHtml: (html: unknown, context = 'HTML output') => {
+      if (typeof html !== 'string') return;
+      if (unsafePattern.test(html)) {
+        throw new Error(`Unsafe HTML blocked in ${context}.`);
+      }
+    },
+  };
+});
 
 vi.mock('uuid', () => ({
   v4: uuidMock,
