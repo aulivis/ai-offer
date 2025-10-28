@@ -118,7 +118,7 @@ function isOfferSections(value: unknown): value is OfferSections {
 }
 
 const textareaClass =
-  'w-full rounded-2xl border border-border bg-bg px-4 py-3 text-base text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+  'w-full rounded-xl border border-border/70 bg-white px-4 py-3 text-sm text-fg placeholder:text-fg-muted shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_PREVIEW_TIMEOUT_RETRIES = 2;
 const MAX_IMAGE_COUNT = 3;
@@ -948,105 +948,183 @@ export default function NewOfferWizard() {
       title={t('offers.wizard.pageTitle')}
       description={t('offers.wizard.pageDescription')}
     >
-      <div className="space-y-8">
-        <Card className="space-y-6">
-          <StepIndicator steps={wizardSteps} />
-          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              <span className="h-2 w-2 rounded-full bg-slate-400" />
-              AI asszisztens
-            </span>
-            <span>
-              Az AI előnézetet a gomb megnyomásával kérheted le, és ajánlatonként egyszer
-              futtatható.
-            </span>
+      <div className="space-y-10">
+        <div className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-xl sm:p-8">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-slate-500/40 blur-3xl" aria-hidden="true" />
+          <div className="pointer-events-none absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-slate-700/40 blur-3xl" aria-hidden="true" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-4">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-100">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                {t('offers.wizard.hero.badge')}
+              </span>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  {t('offers.wizard.hero.title')}
+                </p>
+                <p className="max-w-2xl text-sm text-slate-200 sm:text-base">
+                  {t('offers.wizard.hero.description')}
+                </p>
+              </div>
+            </div>
+            <dl className="grid gap-4 text-left text-xs text-slate-200 sm:grid-cols-3 sm:text-sm">
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner backdrop-blur">
+                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
+                  {t('offers.wizard.hero.highlights.guided.title')}
+                </dt>
+                <dd className="mt-2 text-base font-semibold text-white sm:text-lg">
+                  {t('offers.wizard.hero.highlights.guided.value')}
+                </dd>
+                <dd className="mt-1 text-[13px] text-slate-200/80">
+                  {t('offers.wizard.hero.highlights.guided.subtitle')}
+                </dd>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner backdrop-blur">
+                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
+                  {t('offers.wizard.hero.highlights.preview.title')}
+                </dt>
+                <dd className="mt-2 text-base font-semibold text-white sm:text-lg">
+                  {t('offers.wizard.hero.highlights.preview.value')}
+                </dd>
+                <dd className="mt-1 text-[13px] text-slate-200/80">
+                  {t('offers.wizard.hero.highlights.preview.subtitle')}
+                </dd>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner backdrop-blur">
+                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
+                  {t('offers.wizard.hero.highlights.delivery.title')}
+                </dt>
+                <dd className="mt-2 text-base font-semibold text-white sm:text-lg">
+                  {t('offers.wizard.hero.highlights.delivery.value')}
+                </dd>
+                <dd className="mt-1 text-[13px] text-slate-200/80">
+                  {t('offers.wizard.hero.highlights.delivery.subtitle')}
+                </dd>
+              </div>
+            </dl>
           </div>
+        </div>
+
+        <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
+          <StepIndicator steps={wizardSteps} />
         </Card>
 
         {step === 1 && (
           <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <Card className="space-y-6">
-              <div className="grid gap-6">
-                <Select
-                  label={t('offers.wizard.forms.details.industryLabel')}
-                  value={form.industry}
-                  onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-                >
-                  {availableIndustries.map((ind) => (
-                    <option key={ind} value={ind}>
-                      {ind}
-                    </option>
-                  ))}
-                </Select>
-
-                <Input
-                  label={t('offers.wizard.forms.details.titleLabel')}
-                  placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
-                  value={form.title}
-                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                />
-
-                <label className="block space-y-2">
-                  <span className="text-sm font-medium text-fg">
-                    {t('offers.wizard.forms.details.descriptionLabel')}
-                  </span>
-                  <textarea
-                    className={`${textareaClass} h-32`}
-                    value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                    placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-y-6 gap-x-4 sm:grid-cols-3">
-                <Input
-                  label={t('offers.wizard.forms.details.deadlineLabel')}
-                  value={form.deadline}
-                  onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
-                />
-                <Select
-                  label={t('offers.wizard.forms.details.languageLabel')}
-                  value={form.language}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, language: e.target.value as Step1Form['language'] }))
-                  }
-                >
-                  <option value="hu">{t('offers.wizard.forms.details.languageOptions.hu')}</option>
-                  <option value="en">{t('offers.wizard.forms.details.languageOptions.en')}</option>
-                </Select>
-                <Select
-                  label={t('offers.wizard.forms.details.voiceLabel')}
-                  value={form.brandVoice}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      brandVoice: e.target.value as Step1Form['brandVoice'],
-                    }))
-                  }
-                >
-                  <option value="friendly">
-                    {t('offers.wizard.forms.details.voiceOptions.friendly')}
-                  </option>
-                  <option value="formal">{t('offers.wizard.forms.details.voiceOptions.formal')}</option>
-                </Select>
-              </div>
-
+            <Card className="space-y-10 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
               <div className="space-y-3">
-                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Ajánlat stílusa
-                </span>
+                <h2 className="text-lg font-semibold text-slate-900">{t('offers.wizard.steps.details')}</h2>
+                <p className="text-sm text-slate-600">
+                  {t('offers.wizard.forms.details.sections.overviewHint')}
+                </p>
+              </div>
+
+              <section className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {t('offers.wizard.forms.details.sections.overview')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.sections.overviewHelper')}
+                  </p>
+                </div>
+                <div className="grid gap-6">
+                  <Select
+                    label={t('offers.wizard.forms.details.industryLabel')}
+                    value={form.industry}
+                    onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
+                  >
+                    {availableIndustries.map((ind) => (
+                      <option key={ind} value={ind}>
+                        {ind}
+                      </option>
+                    ))}
+                  </Select>
+
+                  <Input
+                    label={t('offers.wizard.forms.details.titleLabel')}
+                    placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
+                    value={form.title}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  />
+
+                  <label className="block space-y-2">
+                    <span className="text-sm font-medium text-fg">
+                      {t('offers.wizard.forms.details.descriptionLabel')}
+                    </span>
+                    <textarea
+                      className={`${textareaClass} h-36`}
+                      value={form.description}
+                      onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                      placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {t('offers.wizard.forms.details.sections.scope')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.sections.scopeHelper')}
+                  </p>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-3">
+                  <Input
+                    label={t('offers.wizard.forms.details.deadlineLabel')}
+                    value={form.deadline}
+                    onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
+                  />
+                  <Select
+                    label={t('offers.wizard.forms.details.languageLabel')}
+                    value={form.language}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, language: e.target.value as Step1Form['language'] }))
+                    }
+                  >
+                    <option value="hu">{t('offers.wizard.forms.details.languageOptions.hu')}</option>
+                    <option value="en">{t('offers.wizard.forms.details.languageOptions.en')}</option>
+                  </Select>
+                  <Select
+                    label={t('offers.wizard.forms.details.voiceLabel')}
+                    value={form.brandVoice}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        brandVoice: e.target.value as Step1Form['brandVoice'],
+                      }))
+                    }
+                  >
+                    <option value="friendly">
+                      {t('offers.wizard.forms.details.voiceOptions.friendly')}
+                    </option>
+                    <option value="formal">{t('offers.wizard.forms.details.voiceOptions.formal')}</option>
+                  </Select>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {t('offers.wizard.forms.details.sections.style')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.sections.styleHelper')}
+                  </p>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
                     {
                       value: 'compact' as const,
-                      label: 'Kompakt',
-                      description: 'Tömör, lényegre törő ajánlat',
+                      label: t('offers.wizard.forms.details.styleOptions.compact.label'),
+                      description: t('offers.wizard.forms.details.styleOptions.compact.description'),
                     },
                     {
                       value: 'detailed' as const,
-                      label: 'Részletes',
-                      description: 'Kibontott háttérrel és indoklással',
+                      label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
+                      description: t('offers.wizard.forms.details.styleOptions.detailed.description'),
                     },
                   ].map((option) => {
                     const active = form.style === option.value;
@@ -1055,24 +1133,28 @@ export default function NewOfferWizard() {
                         key={option.value}
                         type="button"
                         onClick={() => setForm((f) => ({ ...f, style: option.value }))}
-                        className={`rounded-2xl border px-4 py-3 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white shadow-sm' : 'border-border text-slate-600 hover:border-border'}`}
+                        className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                          active
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-lg'
+                            : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
+                        }`}
                       >
-                        <span className="font-semibold">{option.label}</span>
-                        <span className="mt-1 block text-xs text-inherit opacity-80">
-                          {option.description}
-                        </span>
+                        <span className="text-sm font-semibold">{option.label}</span>
+                        <span className="text-xs text-current/80">{option.description}</span>
                       </Button>
                     );
                   })}
                 </div>
-              </div>
+              </section>
 
-              <div className="space-y-6 rounded-2xl border border-dashed border-border bg-slate-50/70 p-5">
-                <div className="flex items-center justify-between gap-3">
+              <section className="space-y-5 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-700">Címzett (opcionális)</p>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {t('offers.wizard.forms.details.sections.client')}
+                    </p>
                     <p className="text-xs text-slate-500">
-                      Elmentjük az ügyfelet, így később gyorsabban kitölthető.
+                      {t('offers.wizard.forms.details.sections.clientHelper')}
                     </p>
                   </div>
                 </div>
@@ -1089,12 +1171,12 @@ export default function NewOfferWizard() {
                     onFocus={() => setShowClientDrop(true)}
                   />
                   {showClientDrop && filteredClients.length > 0 && (
-                    <div className="absolute z-10 mt-2 max-h-48 w-full overflow-auto rounded-2xl border border-border bg-white shadow-lg">
+                    <div className="absolute z-10 mt-2 max-h-52 w-full overflow-auto rounded-2xl border border-border/70 bg-white shadow-xl">
                       {filteredClients.map((c) => (
                         <Button
                           key={c.id}
                           type="button"
-                          className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           onMouseDown={() => pickClient(c)}
                         >
                           <span className="font-medium text-slate-700">{c.company_name}</span>
@@ -1106,7 +1188,7 @@ export default function NewOfferWizard() {
                     </div>
                   )}
                 </div>
-                <div className="grid gap-y-6 gap-x-4 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <Input
                     label={t('offers.wizard.forms.details.clientFieldAddress')}
                     placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
@@ -1140,56 +1222,61 @@ export default function NewOfferWizard() {
                     />
                   </div>
                 </div>
-              </div>
+              </section>
             </Card>
 
-            <Card className="space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-sm font-semibold text-slate-700">AI előnézet</h2>
-                  <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-slate-600">
-                    PDF nézet
-                  </span>
+
+            <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <h2 className="text-sm font-semibold text-slate-900">{t('offers.previewCard.heading')}</h2>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.preview.singleUseNotice')}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-border/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    {t('offers.wizard.forms.details.previewBadge')}
+                  </span>
                   {previewLocked ? (
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+                    <span className="hidden rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-600 sm:inline">
                       Előnézet kész
                     </span>
                   ) : null}
-                  <Button
-                    type="button"
-                    onClick={handleGeneratePreview}
-                    disabled={previewButtonDisabled}
-                    className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
-                    title={
-                      hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'
-                    }
-                  >
-                    {previewButtonLabel}
-                  </Button>
                 </div>
               </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                {previewLocked ? (
+                  <span className="sm:hidden rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+                    Előnézet kész
+                  </span>
+                ) : null}
+                <Button
+                  type="button"
+                  onClick={handleGeneratePreview}
+                  disabled={previewButtonDisabled}
+                  className="w-full rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:w-auto"
+                  title={hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'}
+                >
+                  {previewButtonLabel}
+                </Button>
+              </div>
               {previewError ? (
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                <div className="rounded-2xl border border-rose-200/70 bg-rose-50/80 px-3 py-2 text-xs text-rose-700">
                   {previewError}
                 </div>
               ) : null}
-              <div className="min-h-[260px] overflow-auto rounded-2xl border border-border bg-white/95 p-4 shadow-inner">
+              <div className="min-h-[280px] overflow-hidden rounded-2xl border border-border/70 bg-white p-4 shadow-inner">
                 {previewLoading ? (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
                     <div className="flex items-center gap-3">
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-slate-500" />
                       <div className="flex flex-col">
                         <span>Az AI most készíti az előnézetet…</span>
-                        <span className="text-xs text-slate-500">
-                          Kb. {previewCountdown} mp van hátra…
-                        </span>
+                        <span className="text-xs text-slate-500">Kb. {previewCountdown} mp van hátra…</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Ez néhány másodpercet is igénybe vehet.
-                    </p>
+                    <p className="text-xs text-slate-500">Ez néhány másodpercet is igénybe vehet.</p>
                   </div>
                 ) : (
                   <>
@@ -1198,10 +1285,6 @@ export default function NewOfferWizard() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-slate-500">
-                Az AI előnézet egyszer kérhető le. A végső módosításokat a PDF szerkesztő lépésében
-                végezheted el.
-              </p>
             </Card>
           </section>
         )}
@@ -1209,12 +1292,17 @@ export default function NewOfferWizard() {
         {step === 2 && (
           <section className="space-y-6">
             {filteredActivities.length > 0 && (
-              <Card className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+              <Card className="space-y-4 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-slate-700">Gyors tétel beszúrása</h2>
-                    <p className="text-xs text-slate-600">Iparág: {form.industry}</p>
+                    <h2 className="text-sm font-semibold text-slate-900">{t('offers.wizard.forms.details.quickInsertTitle')}</h2>
+                    <p className="text-xs text-slate-500">
+                      {t('offers.wizard.forms.details.quickInsertIndustryLabel')}: {form.industry}
+                    </p>
                   </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    {filteredActivities.length} tétel
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {filteredActivities.map((a) => (
@@ -1233,7 +1321,7 @@ export default function NewOfferWizard() {
                           ...r,
                         ])
                       }
-                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                     >
                       + {a.name}
                     </Button>
@@ -1248,10 +1336,15 @@ export default function NewOfferWizard() {
 
         {step === 3 && (
           <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <Card className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-slate-700">AI-szöveg szerkesztése</h2>
-                <span className="text-xs font-medium text-slate-600">Ez kerül a PDF-be</span>
+            <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">AI-szöveg szerkesztése</h2>
+                  <p className="text-xs text-slate-500">Ez a tartalom kerül a PDF-be – finomhangold bátran.</p>
+                </div>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  Élő előnézet
+                </span>
               </div>
               <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
               <RichTextEditor
@@ -1261,23 +1354,22 @@ export default function NewOfferWizard() {
                 placeholder={t('richTextEditor.placeholderHint')}
               />
               <p className="text-xs text-slate-500">
-                Tartsd meg a címsorokat és listákat a jobb olvashatóságért.
+                {t('richTextEditor.placeholderReminder')}
               </p>
               {isProPlan ? (
-                <div className="space-y-3 rounded-2xl border border-dashed border-border bg-slate-50/70 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold text-slate-700">Képek a PDF-hez</p>
                       <p className="text-xs text-slate-500">
-                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB
-                        fájlméretig. A képeket csak a PDF generálásához használjuk fel.
+                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB fájlméretig.
                       </p>
                     </div>
                     <Button
                       type="button"
                       onClick={handlePickImage}
                       disabled={imageLimitReached || !previewLocked || previewLoading}
-                      className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                      className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                     >
                       Kép beszúrása
                     </Button>
@@ -1302,9 +1394,8 @@ export default function NewOfferWizard() {
                         return (
                           <li
                             key={asset.key}
-                            className="flex gap-3 rounded-2xl border border-border bg-white/90 p-3"
+                            className="flex gap-3 rounded-2xl border border-border/70 bg-white p-3 shadow-sm"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={asset.dataUrl}
                               alt={asset.alt}
@@ -1313,14 +1404,12 @@ export default function NewOfferWizard() {
                             <div className="flex flex-1 flex-col justify-between text-xs text-slate-500">
                               <div>
                                 <p className="font-semibold text-slate-700">{asset.name}</p>
-                                <p className="mt-0.5">
-                                  {sizeKb} KB • alt: {asset.alt}
-                                </p>
+                                <p className="mt-0.5">{sizeKb} KB • alt: {asset.alt}</p>
                               </div>
                               <Button
                                 type="button"
                                 onClick={() => handleRemoveImage(asset.key)}
-                                className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                               >
                                 Eltávolítás
                               </Button>
@@ -1336,50 +1425,51 @@ export default function NewOfferWizard() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-slate-50/60 p-4 text-xs text-slate-500">
-                  Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag
-                  a generált dokumentumban kerülnek felhasználásra.
+                <div className="rounded-2xl border border-dashed border-border/70 bg-slate-50/60 p-5 text-xs text-slate-500">
+                  Pro előfizetéssel képeket is hozzáadhatsz a PDF-hez. A feltöltött képek kizárólag a generált dokumentumban kerülnek felhasználásra.
                 </div>
               )}
             </Card>
 
-            <Card className="space-y-4">
+            <Card className="space-y-5 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
               <div>
-                <h2 className="text-sm font-semibold text-slate-700">Összegzés</h2>
+                <h2 className="text-sm font-semibold text-slate-900">Összegzés</h2>
                 <p className="mt-1 text-xs text-slate-500">
                   A PDF generálása után az ajánlat megjelenik a listádban.
                 </p>
               </div>
-              <dl className="grid gap-2 text-sm text-slate-600">
+              <dl className="space-y-3 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-slate-500">Cím</dt>
-                  <dd className="font-medium text-slate-700">{form.title || '—'}</dd>
+                  <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-slate-500">Iparág</dt>
-                  <dd className="font-medium text-slate-700">{form.industry}</dd>
+                  <dd className="font-medium text-slate-800">{form.industry}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-slate-500">Címzett</dt>
-                  <dd className="font-medium text-slate-700">{client.company_name || '—'}</dd>
+                  <dd className="font-medium text-slate-800">{client.company_name || '—'}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-slate-500">Stílus</dt>
-                  <dd className="font-medium text-slate-700">
+                  <dd className="font-medium text-slate-800">
                     {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
                   </dd>
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-4 rounded-2xl border border-border bg-slate-50/80 px-4 py-3">
-                  <dt className="text-slate-500">Bruttó összesen</dt>
-                  <dd className="text-base font-semibold text-slate-900">
-                    {totals.gross.toLocaleString('hu-HU')} Ft
-                  </dd>
-                </div>
               </dl>
+              <div className="rounded-2xl border border-border/70 bg-slate-50 px-4 py-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Bruttó összesen</span>
+                  <span className="text-base font-semibold text-slate-900">
+                    {totals.gross.toLocaleString('hu-HU')} Ft
+                  </span>
+                </div>
+              </div>
               <Button
                 onClick={generate}
                 disabled={loading}
-                className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {loading ? 'Generálás…' : 'PDF generálása és mentés'}
               </Button>
@@ -1387,12 +1477,12 @@ export default function NewOfferWizard() {
           </section>
         )}
 
-        <div className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-white/95 px-6 py-4 shadow-[0_-12px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
               onClick={() => setStep((s) => Math.max(1, s - 1))}
               disabled={step === 1}
-              className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300 disabled:hover:border-border disabled:hover:text-slate-300"
+              className="rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300"
             >
               Vissza
             </Button>
@@ -1400,7 +1490,7 @@ export default function NewOfferWizard() {
               <Button
                 onClick={() => goToStep(step + 1)}
                 disabled={step === 1 && !previewLocked}
-                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200"
+                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-200"
               >
                 Tovább
               </Button>
