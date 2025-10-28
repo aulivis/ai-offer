@@ -23,6 +23,16 @@ export const PRINT_BASE_CSS = `
     font: 400 11pt/1.5 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   }
 
+  .offer-doc {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    background: #ffffff;
+    border: none;
+    box-shadow: none;
+  }
+
   p {
     margin: 0 0 1em;
   }
