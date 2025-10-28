@@ -21,8 +21,8 @@ export const metadata: Metadata = {
   description: 'AI-assisted, professional offers for SMEs',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const language = getRequestLanguage();
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const language = await getRequestLanguage();
 
   return withLanguage(language, () => (
     <html lang={language} className={`${workSans.variable} ${gota.variable} ${spaceMono.variable}`}>

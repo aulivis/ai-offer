@@ -63,8 +63,9 @@ function detectFromAcceptLanguage(raw: string | null): LocaleKey | undefined {
   return undefined;
 }
 
-export function getRequestLanguage(): Language {
-  const cookieLanguage = normalizeLocale(cookies().get(LANGUAGE_COOKIE_NAME)?.value);
+export async function getRequestLanguage(): Promise<Language> {
+  const cookieStore = await cookies();
+  const cookieLanguage = normalizeLocale(cookieStore.get(LANGUAGE_COOKIE_NAME)?.value);
   if (cookieLanguage) {
     return cookieLanguage;
   }
