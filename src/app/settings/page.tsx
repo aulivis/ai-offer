@@ -22,6 +22,7 @@ import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
+import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 
 type Profile = {
   company_name?: string;
@@ -100,6 +101,7 @@ export default function SettingsPage() {
   const supabase = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
+  const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -647,10 +649,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <AppFrame
-        title={t('settings.title')}
-        description={t('settings.loadingDescription')}
-      >
+      <AppFrame title={t('settings.title')} description={t('settings.loadingDescription')}>
         <Card className="text-sm text-slate-500">{t('settings.loading')}</Card>
       </AppFrame>
     );
@@ -675,7 +674,9 @@ export default function SettingsPage() {
           className="space-y-4"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">{t('settings.authMethods.title')}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {t('settings.authMethods.title')}
+              </h2>
               <p className="text-sm text-slate-500">{t('settings.authMethods.subtitle')}</p>
             </CardHeader>
           }
@@ -713,7 +714,9 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">{t('settings.company.title')}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {t('settings.company.title')}
+              </h2>
               <p className="text-sm text-slate-500">{t('settings.company.subtitle')}</p>
             </CardHeader>
           }
@@ -759,9 +762,7 @@ export default function SettingsPage() {
               <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 {t('settings.company.industries.heading')}
               </span>
-              <p className="text-xs text-slate-400">
-                {t('settings.company.industries.helper')}
-              </p>
+              <p className="text-xs text-slate-400">{t('settings.company.industries.helper')}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {ALL_INDUSTRIES_HU.map((ind) => {
@@ -812,7 +813,9 @@ export default function SettingsPage() {
                 </span>
               ))}
               {(profile.industries || []).length === 0 && (
-                <span className="text-xs text-slate-400">{t('settings.company.industries.empty')}</span>
+                <span className="text-xs text-slate-400">
+                  {t('settings.company.industries.empty')}
+                </span>
               )}
             </div>
           </div>
@@ -832,14 +835,18 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">{t('settings.branding.title')}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {t('settings.branding.title')}
+              </h2>
               <p className="text-sm text-slate-500">{t('settings.branding.subtitle')}</p>
             </CardHeader>
           }
         >
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <span className="text-sm font-medium text-fg">{t('settings.branding.primaryLabel')}</span>
+              <span className="text-sm font-medium text-fg">
+                {t('settings.branding.primaryLabel')}
+              </span>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -864,7 +871,9 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <span className="text-sm font-medium text-fg">{t('settings.branding.secondaryLabel')}</span>
+              <span className="text-sm font-medium text-fg">
+                {t('settings.branding.secondaryLabel')}
+              </span>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -905,7 +914,9 @@ export default function SettingsPage() {
                 </div>
               )}
               <div className="flex-1 text-sm text-slate-500">
-                <p className="font-semibold text-slate-700">{t('settings.branding.logoUpload.title')}</p>
+                <p className="font-semibold text-slate-700">
+                  {t('settings.branding.logoUpload.title')}
+                </p>
                 <p className="text-xs text-slate-400">{t('settings.branding.logoUpload.helper')}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Button
@@ -949,9 +960,7 @@ export default function SettingsPage() {
                 <p className="mt-2 text-base font-semibold" style={{ color: primaryPreview }}>
                   {t('settings.branding.preview.offer')}
                 </p>
-                <p className="text-xs text-slate-600">
-                  {t('settings.branding.preview.helper')}
-                </p>
+                <p className="text-xs text-slate-600">{t('settings.branding.preview.helper')}</p>
                 <div
                   className="mt-4 h-1.5 w-24 rounded-full"
                   style={{ background: primaryPreview }}
@@ -985,7 +994,9 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">{t('settings.templates.title')}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {t('settings.templates.title')}
+              </h2>
               <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
             </CardHeader>
           }
@@ -994,24 +1005,29 @@ export default function SettingsPage() {
             {OFFER_TEMPLATES.map((template) => {
               const isSelected = selectedTemplateId === template.id;
               const requiresPro = offerTemplateRequiresPro(template.id);
-              const disabled = requiresPro && !canUseProTemplates;
+              const requiresUpgrade = requiresPro && !canUseProTemplates;
               const cardClassNames = [
                 'flex h-full w-full flex-col gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 isSelected
                   ? 'border-border shadow-lg ring-2 ring-slate-900/10'
                   : 'border-border hover:border-border',
-                disabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-sm',
+                requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'hover:shadow-sm',
               ].join(' ');
               return (
                 <Button
                   key={template.id}
                   type="button"
                   className={cardClassNames}
+                  aria-disabled={requiresUpgrade}
                   onClick={() => {
-                    if (disabled) return;
+                    if (requiresUpgrade) {
+                      openPlanUpgradeDialog({
+                        description: t('app.planUpgradeModal.reasons.proTemplates'),
+                      });
+                      return;
+                    }
                     setProfile((prev) => ({ ...prev, offer_template: template.id }));
                   }}
-                  disabled={disabled}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold text-slate-900">{template.label}</span>
@@ -1028,7 +1044,7 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-xs text-slate-500">{template.description}</p>
                   {renderTemplatePreview(template.previewVariant)}
-                  {disabled && (
+                  {requiresUpgrade && (
                     <p className="text-xs font-medium text-amber-600">
                       {t('settings.templates.proOnly')}
                     </p>
@@ -1039,9 +1055,7 @@ export default function SettingsPage() {
           </div>
 
           {!canUseProTemplates && (
-            <p className="text-xs text-slate-500">
-              {t('settings.templates.upgradeHint')}
-            </p>
+            <p className="text-xs text-slate-500">{t('settings.templates.upgradeHint')}</p>
           )}
         </Card>
 
@@ -1050,7 +1064,9 @@ export default function SettingsPage() {
           className="space-y-6"
           header={
             <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">{t('settings.activities.title')}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {t('settings.activities.title')}
+              </h2>
               <p className="text-sm text-slate-500">{t('settings.activities.subtitle')}</p>
             </CardHeader>
           }

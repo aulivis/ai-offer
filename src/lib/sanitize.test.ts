@@ -33,12 +33,16 @@ describe('sanitizeHTML', () => {
 
   it('adds noopener noreferrer when keeping target="_blank"', () => {
     const html = '<a href="/foo" target="_blank">safe</a>';
-    expect(sanitizeHTML(html)).toBe('<a href="/foo" target="_blank" rel="noopener noreferrer">safe</a>');
+    expect(sanitizeHTML(html)).toBe(
+      '<a href="/foo" target="_blank" rel="noopener noreferrer">safe</a>',
+    );
   });
 
   it('merges noopener noreferrer with existing rel values', () => {
     const html = '<a href="/foo" target="_blank" rel="nofollow">safe</a>';
-    expect(sanitizeHTML(html)).toBe('<a href="/foo" target="_blank" rel="nofollow noopener noreferrer">safe</a>');
+    expect(sanitizeHTML(html)).toBe(
+      '<a href="/foo" target="_blank" rel="nofollow noopener noreferrer">safe</a>',
+    );
   });
 
   it('normalises colspan and rowspan values', () => {

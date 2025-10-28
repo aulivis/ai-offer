@@ -2,9 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-const getGoogleProviderStatusMock = vi.hoisted(() =>
-  vi.fn().mockResolvedValue({ enabled: true }),
-);
+const getGoogleProviderStatusMock = vi.hoisted(() => vi.fn().mockResolvedValue({ enabled: true }));
 
 vi.mock('../google/providerStatus', () => ({
   getGoogleProviderStatus: getGoogleProviderStatusMock,

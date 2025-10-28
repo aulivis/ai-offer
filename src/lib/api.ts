@@ -157,9 +157,7 @@ export async function fetchWithSupabaseAuth(
 
       const message =
         defaultErrorMessage ??
-        (error instanceof Error && error.message
-          ? error.message
-          : t('errors.requestFailed'));
+        (error instanceof Error && error.message ? error.message : t('errors.requestFailed'));
       throw new ApiError(message, { cause: error ?? undefined });
     }
   }

@@ -62,4 +62,3 @@ export function formatProjectDetailsForPrompt(details: ProjectDetails): string {
 export function hasProjectDetailsContent(details: ProjectDetails): boolean {
   return details.overview.trim().length > 0;
 }
-

@@ -16,7 +16,6 @@ vi.mock('next/script', () => ({
   ),
 }));
 
-
 function ConsentSuite() {
   return (
     <>

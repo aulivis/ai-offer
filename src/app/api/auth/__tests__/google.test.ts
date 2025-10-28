@@ -5,9 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const signInWithOAuthMock = vi.hoisted(() => vi.fn());
 const cookiesSetMock = vi.hoisted(() => vi.fn());
 const consumeCodeVerifierMock = vi.hoisted(() => vi.fn());
-const getGoogleProviderStatusMock = vi.hoisted(() =>
-  vi.fn().mockResolvedValue({ enabled: true }),
-);
+const getGoogleProviderStatusMock = vi.hoisted(() => vi.fn().mockResolvedValue({ enabled: true }));
 
 vi.mock('../google/createSupabaseOAuthClient', () => ({
   createSupabaseOAuthClient: () => ({

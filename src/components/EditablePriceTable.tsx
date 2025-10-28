@@ -79,21 +79,15 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
         <table className="w-full text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-500">
             <tr className="text-left">
-              <th className="px-4 py-3 font-medium">
-                {t('editablePriceTable.columns.item')}
-              </th>
+              <th className="px-4 py-3 font-medium">{t('editablePriceTable.columns.item')}</th>
               <th className="w-24 px-4 py-3 font-medium">
                 {t('editablePriceTable.columns.quantity')}
               </th>
-              <th className="w-28 px-4 py-3 font-medium">
-                {t('editablePriceTable.columns.unit')}
-              </th>
+              <th className="w-28 px-4 py-3 font-medium">{t('editablePriceTable.columns.unit')}</th>
               <th className="w-36 px-4 py-3 font-medium">
                 {t('editablePriceTable.columns.unitPrice')}
               </th>
-              <th className="w-24 px-4 py-3 font-medium">
-                {t('editablePriceTable.columns.vat')}
-              </th>
+              <th className="w-24 px-4 py-3 font-medium">{t('editablePriceTable.columns.vat')}</th>
               <th className="w-36 px-4 py-3 text-right font-medium">
                 {t('editablePriceTable.columns.netTotal')}
               </th>

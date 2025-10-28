@@ -21,13 +21,11 @@ const noHardcodedUiStringsPlugin = {
       meta: {
         type: 'problem',
         docs: {
-          description:
-            'Disallow hardcoded UI strings in TSX files to enforce translation usage.',
+          description: 'Disallow hardcoded UI strings in TSX files to enforce translation usage.',
         },
         schema: [],
         messages: {
-          noHardcoded:
-            'Hardcoded UI string detected. Use the translation helper instead.',
+          noHardcoded: 'Hardcoded UI string detected. Use the translation helper instead.',
         },
       },
       create(context) {
@@ -102,18 +100,14 @@ const noHardcodedUiStringsPlugin = {
             return;
           }
 
-          if (
-            parent.type === 'JSXExpressionContainer' &&
-            parent.parent?.type === 'JSXAttribute'
-          ) {
+          if (parent.type === 'JSXExpressionContainer' && parent.parent?.type === 'JSXAttribute') {
             reportAttribute(reportNode, parent.parent);
             return;
           }
 
           if (
             parent.type === 'JSXExpressionContainer' &&
-            (parent.parent?.type === 'JSXElement' ||
-              parent.parent?.type === 'JSXFragment')
+            (parent.parent?.type === 'JSXElement' || parent.parent?.type === 'JSXFragment')
           ) {
             context.report({ node: reportNode, messageId: 'noHardcoded' });
           }

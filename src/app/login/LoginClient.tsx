@@ -135,9 +135,7 @@ export default function LoginClient() {
           <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
             {t('login.title')}
           </h1>
-          <p className="text-base text-fg-muted">
-            {t('login.description')}
-          </p>
+          <p className="text-base text-fg-muted">{t('login.description')}</p>
         </div>
 
         <div className="space-y-4">

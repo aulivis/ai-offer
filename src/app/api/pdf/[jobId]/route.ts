@@ -79,9 +79,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
       }
 
       const truncatedBody =
-        responseText && responseText.length > 500
-          ? `${responseText.slice(0, 500)}…`
-          : responseText;
+        responseText && responseText.length > 500 ? `${responseText.slice(0, 500)}…` : responseText;
 
       console.error('Webhook replay failed:', {
         status: response.status,
