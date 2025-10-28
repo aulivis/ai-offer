@@ -83,7 +83,12 @@ function createRequest(overrides: Record<string, unknown> = {}): AuthenticatedNe
   const payload = {
     industry: 'Tech',
     title: 'Sample',
-    description: 'Desc',
+    projectDetails: {
+      overview: 'Desc',
+      deliverables: '',
+      timeline: '',
+      constraints: '',
+    },
     deadline: '2024-01-01',
     language: 'hu',
     brandVoice: 'friendly',
@@ -144,7 +149,18 @@ afterEach(() => {
 
 describe('ai-preview route streaming', () => {
   it('returns validation errors for malformed input', async () => {
-    const response = await POST(createRequest({ title: '   ', industry: '', description: '' }));
+    const response = await POST(
+      createRequest({
+        title: '   ',
+        industry: '',
+        projectDetails: {
+          overview: '',
+          deliverables: '',
+          timeline: '',
+          constraints: '',
+        },
+      }),
+    );
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toMatchObject({

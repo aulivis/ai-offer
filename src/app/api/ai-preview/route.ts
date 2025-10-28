@@ -5,6 +5,13 @@ import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { t } from '@/copy';
 import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import {
+  emptyProjectDetails,
+  formatProjectDetailsForPrompt,
+  projectDetailFields,
+  projectDetailsSchema,
+  type ProjectDetails,
+} from '@/lib/projectDetails';
 import { z } from 'zod';
 export const runtime = 'nodejs';
 
@@ -58,7 +65,7 @@ const previewRequestSchema = z
   .object({
     industry: z.string().trim().min(1, t('validation.required')),
     title: z.string().trim().min(1, t('validation.required')),
-    description: z.string().trim().min(1, t('validation.required')),
+    projectDetails: projectDetailsSchema,
     deadline: optionalTrimmedString,
     language: z.preprocess(
       (value) => (value === null || value === undefined ? undefined : value),
@@ -88,7 +95,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       );
     }
 
-    const { industry, title, description, deadline, language, brandVoice, style } = parsed.data;
+    const { industry, title, projectDetails, deadline, language, brandVoice, style } = parsed.data;
 
     if (!envServer.OPENAI_API_KEY) {
       return NextResponse.json({ error: 'OPENAI_API_KEY missing' }, { status: 500 });
@@ -104,7 +111,11 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     const safeBrand = sanitizeInput(brandVoice);
     const safeIndustry = sanitizeInput(industry);
     const safeTitle = sanitizeInput(title);
-    const safeDescription = sanitizeInput(description);
+    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
+      acc[key] = sanitizeInput(projectDetails[key]);
+      return acc;
+    }, { ...emptyProjectDetails });
+    const safeDescription = formatProjectDetailsForPrompt(sanitizedDetails);
     const safeDeadline = sanitizeInput(deadline || '—');
 
     const userPrompt = `

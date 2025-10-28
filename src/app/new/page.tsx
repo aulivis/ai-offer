@@ -25,11 +25,19 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
+import { Textarea } from '@/components/ui/Textarea';
+import {
+  emptyProjectDetails,
+  formatProjectDetailsForPrompt,
+  projectDetailFields,
+  type ProjectDetailKey,
+  type ProjectDetails,
+} from '@/lib/projectDetails';
 
 type Step1Form = {
   industry: string;
   title: string;
-  description: string;
+  projectDetails: ProjectDetails;
   deadline: string;
   language: 'hu' | 'en';
   brandVoice: 'friendly' | 'formal';
@@ -117,8 +125,18 @@ function isOfferSections(value: unknown): value is OfferSections {
   );
 }
 
-const textareaClass =
-  'w-full rounded-xl border border-border/70 bg-white px-4 py-3 text-sm text-fg placeholder:text-fg-muted shadow-inner focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+const PROJECT_DETAIL_FIELDS: ProjectDetailKey[] = [
+  'overview',
+  'deliverables',
+  'timeline',
+  'constraints',
+];
+const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
+  overview: 600,
+  deliverables: 400,
+  timeline: 400,
+  constraints: 400,
+};
 const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_PREVIEW_TIMEOUT_RETRIES = 2;
 const MAX_IMAGE_COUNT = 3;
@@ -195,12 +213,13 @@ export default function NewOfferWizard() {
   const [form, setForm] = useState<Step1Form>({
     industry: 'Marketing',
     title: '',
-    description: '',
+    projectDetails: { ...emptyProjectDetails },
     deadline: '',
     language: 'hu',
     brandVoice: 'friendly',
     style: 'detailed',
   });
+  const [detailsTipsOpen, setDetailsTipsOpen] = useState(false);
 
   // 1/b) címzett (opcionális) + autocomplete
   const [client, setClient] = useState<ClientForm>({ company_name: '' });
@@ -393,7 +412,15 @@ export default function NewOfferWizard() {
       (a) => (a.industries || []).length === 0 || a.industries.includes(form.industry),
     );
   }, [activities, form.industry]);
-  const hasPreviewInputs = form.title.trim().length > 0 && form.description.trim().length > 0;
+  const projectDetailsText = useMemo(() => {
+    const normalized = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
+      acc[key] = form.projectDetails[key].trim();
+      return acc;
+    }, { ...emptyProjectDetails });
+
+    return formatProjectDetailsForPrompt(normalized);
+  }, [form.projectDetails]);
+  const hasPreviewInputs = form.title.trim().length > 0 && projectDetailsText.trim().length > 0;
   const imageLimitReached = imageAssets.length >= MAX_IMAGE_COUNT;
   const previewButtonLabel = previewLocked
     ? 'Előnézet kész'
@@ -429,7 +456,7 @@ export default function NewOfferWizard() {
     }
 
     const hasTitle = form.title.trim().length > 0;
-    const hasDescription = form.description.trim().length > 0;
+    const hasDescription = projectDetailsText.trim().length > 0;
     if (!hasTitle || !hasDescription) {
       setPreviewLoading(false);
       setPreviewError(null);
@@ -457,13 +484,18 @@ export default function NewOfferWizard() {
       previewAbortRef.current = controller;
 
       try {
+        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
+          acc[key] = form.projectDetails[key].trim();
+          return acc;
+        }, { ...emptyProjectDetails });
+
         const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             industry: form.industry,
             title: form.title,
-            description: form.description,
+            projectDetails: normalizedDetails,
             deadline: form.deadline,
             language: form.language,
             brandVoice: form.brandVoice,
@@ -633,12 +665,13 @@ export default function NewOfferWizard() {
   }, [
     form.brandVoice,
     form.deadline,
-    form.description,
+    form.projectDetails,
     form.industry,
     form.language,
     form.style,
     form.title,
     previewLocked,
+    projectDetailsText,
     showToast,
   ]);
 
@@ -862,13 +895,18 @@ export default function NewOfferWizard() {
         imagePayload = prepared.images;
       }
       try {
+        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
+          acc[key] = form.projectDetails[key].trim();
+          return acc;
+        }, { ...emptyProjectDetails });
+
         resp = await fetchWithSupabaseAuth('/api/ai-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: form.title,
             industry: form.industry,
-            description: form.description,
+            projectDetails: normalizedDetails,
             deadline: form.deadline,
             language: form.language,
             brandVoice: form.brandVoice,
@@ -1156,17 +1194,58 @@ export default function NewOfferWizard() {
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     />
 
-                    <label className="block space-y-2">
-                      <span className="text-sm font-medium text-fg">
-                        {t('offers.wizard.forms.details.descriptionLabel')}
-                      </span>
-                      <textarea
-                        className={`${textareaClass} h-36`}
-                        value={form.description}
-                        onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                        placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
-                      />
-                    </label>
+                    <div className="space-y-4">
+                      <div className="space-y-4 rounded-2xl border border-border/70 bg-white/70 p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-semibold text-fg">
+                              {t('offers.wizard.forms.details.tips.title')}
+                            </p>
+                            <p className="text-xs text-fg-muted">
+                              {t('offers.wizard.forms.details.tips.subtitle')}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setDetailsTipsOpen((value) => !value)}
+                            className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-fg transition hover:border-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          >
+                            {detailsTipsOpen
+                              ? t('offers.wizard.forms.details.tips.hide')
+                              : t('offers.wizard.forms.details.tips.show')}
+                          </button>
+                        </div>
+                        {detailsTipsOpen && (
+                          <ul className="list-disc space-y-2 pl-5 text-xs text-fg-muted">
+                            <li>{t('offers.wizard.forms.details.tips.items.overview')}</li>
+                            <li>{t('offers.wizard.forms.details.tips.items.deliverables')}</li>
+                            <li>{t('offers.wizard.forms.details.tips.items.timeline')}</li>
+                            <li>{t('offers.wizard.forms.details.tips.items.constraints')}</li>
+                          </ul>
+                        )}
+                      </div>
+
+                      {PROJECT_DETAIL_FIELDS.map((field) => (
+                        <Textarea
+                          key={field}
+                          value={form.projectDetails[field]}
+                          onChange={(event) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              projectDetails: { ...prev.projectDetails, [field]: event.target.value },
+                            }))
+                          }
+                          label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
+                          placeholder={t(
+                            `offers.wizard.forms.details.fields.${field}.placeholder` as const,
+                          )}
+                          help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
+                          maxLength={PROJECT_DETAIL_LIMITS[field]}
+                          showCounter
+                          className="min-h-[7.5rem]"
+                        />
+                      ))}
+                    </div>
                   </div>
                 </section>
 

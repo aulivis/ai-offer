@@ -131,8 +131,8 @@ function createRequest(
   const headerMap = new Headers({
     'content-type': 'application/json',
     'x-csrf-token': csrfToken,
-    origin: 'http://localhost:3000',
-    referer: 'http://localhost:3000/generate',
+    origin: 'https://app.example.com',
+    referer: 'https://app.example.com/generate',
     'sec-fetch-site': 'same-origin',
     'sec-fetch-mode': 'cors',
     'sec-fetch-dest': 'empty',
@@ -233,7 +233,12 @@ describe('POST /api/ai-generate', () => {
     const request = createRequest({
       title: 'Ajánlat címe',
       industry: 'Marketing',
-      description: 'Részletes leírás',
+      projectDetails: {
+        overview: 'Részletes leírás',
+        deliverables: '',
+        timeline: '',
+        constraints: '',
+      },
       deadline: '',
       language: 'hu',
       brandVoice: 'friendly',
@@ -261,7 +266,12 @@ describe('POST /api/ai-generate', () => {
       industry: 'Marketing',
       recipient_id: null,
       inputs: {
-        description: 'Részletes leírás',
+        projectDetails: {
+          overview: 'Részletes leírás',
+          deliverables: '',
+          timeline: '',
+          constraints: '',
+        },
         deadline: '',
         language: 'hu',
         brandVoice: 'friendly',
@@ -288,7 +298,12 @@ describe('POST /api/ai-generate', () => {
     const request = createRequest({
       title: 'Ajánlat címe',
       industry: 'Marketing',
-      description: 'Részletes leírás',
+      projectDetails: {
+        overview: 'Részletes leírás',
+        deliverables: '',
+        timeline: '',
+        constraints: '',
+      },
       deadline: '',
       language: 'hu',
       brandVoice: 'friendly',
@@ -332,7 +347,12 @@ describe('POST /api/ai-generate', () => {
     const request = createRequest({
       title: 'Ajánlat címe',
       industry: 'Marketing',
-      description: 'Részletes leírás',
+      projectDetails: {
+        overview: 'Részletes leírás',
+        deliverables: '',
+        timeline: '',
+        constraints: '',
+      },
       deadline: '',
       language: 'hu',
       brandVoice: 'friendly',
@@ -364,7 +384,12 @@ describe('POST /api/ai-generate', () => {
       {
         title: 'Ajánlat címe',
         industry: 'Marketing',
-        description: 'Részletes leírás',
+        projectDetails: {
+          overview: 'Részletes leírás',
+          deliverables: '',
+          timeline: '',
+          constraints: '',
+        },
         deadline: '',
         language: 'hu',
         brandVoice: 'friendly',
@@ -400,7 +425,12 @@ describe('POST /api/ai-generate', () => {
       {
         title: 'Ajánlat címe',
         industry: 'Marketing',
-        description: 'Részletes leírás',
+        projectDetails: {
+          overview: 'Részletes leírás',
+          deliverables: '',
+          timeline: '',
+          constraints: '',
+        },
         deadline: '',
         language: 'hu',
         brandVoice: 'friendly',

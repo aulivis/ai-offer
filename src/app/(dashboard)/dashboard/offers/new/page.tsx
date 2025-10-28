@@ -25,8 +25,9 @@ export default function NewOfferPage() {
     step,
     title,
     setTitle,
-    description,
-    setDescription,
+    projectDetails,
+    setProjectDetails,
+    projectDetailsText,
     pricingRows,
     setPricingRows,
     goNext,
@@ -76,7 +77,7 @@ export default function NewOfferPage() {
     !hasPreviewHtml ||
     !hasPricingRows ||
     title.trim().length === 0 ||
-    description.trim().length === 0;
+    projectDetailsText.trim().length === 0;
   const statusDescriptor = useMemo<{
     tone: 'info' | 'success' | 'error' | 'warning';
     title: string;
@@ -121,9 +122,12 @@ export default function NewOfferPage() {
     }
 
     const trimmedTitle = title.trim();
-    const trimmedDescription = description.trim();
+    const normalizedDetails = Object.fromEntries(
+      Object.entries(projectDetails).map(([key, value]) => [key, value.trim()]),
+    ) as typeof projectDetails;
+    const trimmedDetails = projectDetailsText.trim();
 
-    if (!trimmedTitle || !trimmedDescription) {
+    if (!trimmedTitle || !trimmedDetails) {
       if (previewAbortRef.current) {
         previewRequestIdRef.current += 1;
         const controller = previewAbortRef.current;
@@ -162,7 +166,7 @@ export default function NewOfferPage() {
         body: JSON.stringify({
           industry: 'Egyedi projekt',
           title: trimmedTitle,
-          description: trimmedDescription,
+          projectDetails: normalizedDetails,
           deadline: '',
           language: 'hu',
           brandVoice: 'professional',
@@ -301,7 +305,7 @@ export default function NewOfferPage() {
         previewAbortRef.current = null;
       }
     }
-  }, [description, showToast, step, title]);
+  }, [projectDetails, projectDetailsText, showToast, step, title]);
 
   const handleManualRefresh = useCallback(() => {
     if (previewDebounceRef.current) {
@@ -344,7 +348,7 @@ export default function NewOfferPage() {
         previewDebounceRef.current = null;
       }
     };
-  }, [callPreview, description, pricingRows, step, title]);
+  }, [callPreview, projectDetailsText, pricingRows, step, title]);
 
   useEffect(() => {
     if (step === 3) {
@@ -419,10 +423,13 @@ export default function NewOfferPage() {
     }
 
     const trimmedTitle = title.trim();
-    const trimmedDescription = description.trim();
+    const normalizedDetails = Object.fromEntries(
+      Object.entries(projectDetails).map(([key, value]) => [key, value.trim()]),
+    ) as typeof projectDetails;
+    const trimmedDetails = projectDetailsText.trim();
     const trimmedPreview = previewHtml.trim();
 
-    if (!trimmedTitle || !trimmedDescription) {
+    if (!trimmedTitle || !trimmedDetails) {
       showToast({
         title: t('toasts.offers.missingDetails.title'),
         description: t('toasts.offers.missingDetails.description'),
@@ -458,7 +465,7 @@ export default function NewOfferPage() {
         body: JSON.stringify({
           title: trimmedTitle,
           industry: 'Egyedi projekt',
-          description: trimmedDescription,
+          projectDetails: normalizedDetails,
           deadline: '',
           language: 'hu',
           brandVoice: 'professional',
@@ -514,10 +521,11 @@ export default function NewOfferPage() {
     isSubmitting,
     previewHtml,
     pricingRows,
+    projectDetails,
+    projectDetailsText,
     router,
     showToast,
     title,
-    description,
   ]);
 
   const columnWidthStyle: CSSProperties = { '--column-width': 'min(100%, 42rem)' };
@@ -540,16 +548,22 @@ export default function NewOfferPage() {
             {step === 1 && (
               <OfferProjectDetailsSection
                 title={title}
-                description={description}
+                projectDetails={projectDetails}
                 onTitleChange={(event) => setTitle(event.target.value)}
-                onDescriptionChange={(event) => setDescription(event.target.value)}
+                onProjectDetailsChange={(field, value) =>
+                  setProjectDetails((prev) => ({ ...prev, [field]: value }))
+                }
               />
             )}
 
             {step === 2 && <OfferPricingSection rows={pricingRows} onChange={setPricingRows} />}
 
             {step === 3 && (
-              <OfferSummarySection title={title} description={description} totals={totals} />
+              <OfferSummarySection
+                title={title}
+                projectDetails={projectDetails}
+                totals={totals}
+              />
             )}
 
             {inlineErrors.length > 0 && (
