@@ -377,6 +377,49 @@ describe('POST /api/ai-generate', () => {
     expect(processPdfJobInlineMock).toHaveBeenCalledTimes(1);
   });
 
+  it('returns usage limit error when inline fallback reports quota exceeded', async () => {
+    const { POST } = await import('../route');
+
+    enqueuePdfJobMock.mockResolvedValue(undefined);
+    dispatchPdfJobMock.mockRejectedValue(
+      new Error('Edge Function returned a non-2xx status code'),
+    );
+    processPdfJobInlineMock.mockRejectedValue(
+      new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.'),
+    );
+
+    const request = createRequest({
+      title: 'Ajánlat címe',
+      industry: 'Marketing',
+      projectDetails: {
+        overview: 'Részletes leírás',
+        deliverables: '',
+        timeline: '',
+        constraints: '',
+      },
+      deadline: '',
+      language: 'hu',
+      brandVoice: 'friendly',
+      style: 'detailed',
+      prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+      aiOverrideHtml: '<p>Előnézet</p>',
+      clientId: null,
+      pdfWebhookUrl: null,
+      imageAssets: [],
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(402);
+    await expect(response.json()).resolves.toMatchObject({
+      error: 'Elérted a havi ajánlatlimitálást a csomagban.',
+    });
+
+    expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
+    expect(dispatchPdfJobMock).toHaveBeenCalledWith(expect.anything(), 'job-token');
+    expect(processPdfJobInlineMock).toHaveBeenCalledTimes(1);
+  });
+
   it('does not set the device cookie when analytics consent is denied', async () => {
     const { POST } = await import('../route');
 

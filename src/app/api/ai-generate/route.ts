@@ -40,6 +40,24 @@ import { z } from 'zod';
 
 export const runtime = 'nodejs';
 
+const USER_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást a csomagban.';
+const DEVICE_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást ezen az eszközön.';
+
+function normalizeUsageLimitError(message: string | undefined): string | null {
+  if (!message) return null;
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('eszközön elérted a havi ajánlatlimitálást')) {
+    return DEVICE_LIMIT_RESPONSE;
+  }
+
+  if (normalized.includes('havi ajánlatlimitálás')) {
+    return USER_LIMIT_RESPONSE;
+  }
+
+  return null;
+}
+
 // System prompt for our OpenAI assistant.  The model should populate the
 // JSON schema defined below using természetes, gördülékeny magyar üzleti
 // nyelv.  HTML-t nem kell visszaadni, azt a szerver állítja elő a
@@ -800,6 +818,11 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
       console.error('PDF queue error (dispatch):', message);
 
+      const dispatchLimitMessage = normalizeUsageLimitError(message);
+      if (dispatchLimitMessage) {
+        return NextResponse.json({ error: dispatchLimitMessage }, { status: 402 });
+      }
+
       try {
         const inlineJob: PdfJobInput = {
           jobId: pdfJobInput.jobId,
@@ -826,6 +849,12 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         const inlineMessage =
           inlineError instanceof Error ? inlineError.message : String(inlineError);
         console.error('Inline PDF fallback error:', inlineMessage);
+
+        const limitMessage = normalizeUsageLimitError(inlineMessage);
+        if (limitMessage) {
+          return NextResponse.json({ error: limitMessage }, { status: 402 });
+        }
+
         return NextResponse.json(
           {
             error: 'Nem sikerült elindítani a PDF generálását.',
