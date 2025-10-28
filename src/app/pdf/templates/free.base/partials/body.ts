@@ -1,58 +1,33 @@
 import { priceTableHtml } from '@/app/lib/pricing';
-import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
+import { ensureSafeHtml } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
-
-function sanitizeLogoUrl(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-      return null;
-    }
-    return parsed.toString();
-  } catch {
-    return null;
-  }
-}
-
-function buildSafeCtx(ctx: RenderCtx) {
-  const companyPlaceholder = sanitizeInput(ctx.i18n.t('pdf.templates.common.companyPlaceholder'));
-  const safeCompany = sanitizeInput(ctx.offer.companyName || '');
-  const safeTitle = sanitizeInput(
-    ctx.offer.title || ctx.i18n.t('pdf.templates.common.defaultTitle'),
-  );
-  const logoAlt = sanitizeInput(ctx.i18n.t('pdf.templates.common.logoAlt'));
-  const logoUrl = sanitizeLogoUrl(ctx.branding?.logoUrl ?? null);
-
-  return {
-    safeCompany,
-    safeTitle,
-    companyPlaceholder,
-    logoAlt,
-    logoUrl,
-  };
-}
+import { buildHeaderFooterCtx } from '../../shared/headerFooter';
 
 export function partialHeader(ctx: RenderCtx): string {
-  const { safeCompany, safeTitle, companyPlaceholder, logoAlt, logoUrl } = buildSafeCtx(ctx);
-  const logoMarkup = logoUrl
-    ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="${logoAlt}" />`
-    : '';
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const { company, title, companyPlaceholder, logoAlt, logoUrl, issueDate, labels, monogram } =
+    safeCtx;
+  const resolvedLogoMarkup = logoUrl
+    ? `<div class="offer-doc__logo-wrap"><img class="offer-doc__logo" src="${logoUrl}" alt="${logoAlt}" /></div>`
+    : `<div class="offer-doc__logo-wrap"><span class="offer-doc__monogram">${monogram}</span></div>`;
+  const metaValueClass = issueDate.isPlaceholder
+    ? 'offer-doc__meta-value offer-doc__meta-value--placeholder'
+    : 'offer-doc__meta-value';
 
   return `
         <header class="offer-doc__header">
-          ${logoMarkup}
-          <div class="offer-doc__company">${safeCompany || companyPlaceholder}</div>
-          <h1 class="offer-doc__title">${safeTitle}</h1>
+          <div class="offer-doc__header-brand">
+            ${resolvedLogoMarkup}
+            <div class="offer-doc__header-text">
+              <div class="offer-doc__company">${company.value || companyPlaceholder}</div>
+              <h1 class="offer-doc__title">${title}</h1>
+            </div>
+          </div>
+          <div class="offer-doc__meta">
+            <span class="offer-doc__meta-label">${labels.date}</span>
+            <span class="${metaValueClass}">${issueDate.value}</span>
+          </div>
         </header>
   `;
 }
@@ -80,9 +55,62 @@ export function partialGallery(ctx: RenderCtx): string {
 }
 
 export function partialFooter(ctx: RenderCtx): string {
-  void ctx;
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const {
+    labels,
+    contactName,
+    contactEmail,
+    contactPhone,
+    companyWebsite,
+    companyAddress,
+    companyTaxId,
+  } = safeCtx;
+
+  const contactClass = contactName.isPlaceholder
+    ? 'offer-doc__footer-value offer-doc__footer-value--placeholder'
+    : 'offer-doc__footer-value';
+  const emailClass = contactEmail.isPlaceholder
+    ? 'offer-doc__footer-value offer-doc__footer-value--placeholder'
+    : 'offer-doc__footer-value';
+  const phoneClass = contactPhone.isPlaceholder
+    ? 'offer-doc__footer-value offer-doc__footer-value--placeholder'
+    : 'offer-doc__footer-value';
+  const websiteClass = companyWebsite.isPlaceholder
+    ? 'offer-doc__footer-value offer-doc__footer-value--placeholder'
+    : 'offer-doc__footer-value';
+  const addressClass = companyAddress.isPlaceholder
+    ? 'offer-doc__footer-value offer-doc__footer-value--placeholder'
+    : 'offer-doc__footer-value';
+  const taxClass = companyTaxId.isPlaceholder
+    ? 'offer-doc__footer-value offer-doc__footer-value--placeholder'
+    : 'offer-doc__footer-value';
+
   return `
-        <footer class="offer-doc__footer"></footer>
+        <footer class="offer-doc__footer">
+          <div class="offer-doc__footer-grid">
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${labels.contact}</span>
+              <span class="${contactClass}">${contactName.value}</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${labels.email}</span>
+              <span class="${emailClass}">${contactEmail.value}</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">${labels.phone}</span>
+              <span class="${phoneClass}">${contactPhone.value}</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${labels.website}</span>
+              <span class="${websiteClass}">${companyWebsite.value}</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${labels.company}</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">${labels.address}</span>
+              <span class="${addressClass}">${companyAddress.value}</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">${labels.taxId}</span>
+              <span class="${taxClass}">${companyTaxId.value}</span>
+            </div>
+          </div>
+        </footer>
   `;
 }
 

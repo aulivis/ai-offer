@@ -53,6 +53,13 @@ export interface OfferData {
   templateId: TemplateId;
   locale?: string;
   legacyTemplateId?: string | null;
+  issueDate?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  companyWebsite?: string | null;
+  companyAddress?: string | null;
+  companyTaxId?: string | null;
 }
 export interface RenderCtx {
   offer: OfferData;

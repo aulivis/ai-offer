@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`offer templates golden tests > free.base@1.0.0 > produces a stable PDF hash > free.base@1.0.0 pdf sha256 1`] = `"f28ea21527e1451d1d9a1fc0fdbb13b934a17e669961e2619bf75433ebf80adb"`;
+exports[`offer templates golden tests > free.base@1.0.0 > produces a stable PDF hash > free.base@1.0.0 pdf sha256 1`] = `"ada727af33ece74e3894369716dd872796390affa257e773759efd86552743f6"`;
 
-exports[`offer templates golden tests > free.base@1.0.0 > produces the expected HTML hash > free.base@1.0.0 html sha256 1`] = `"2553181f1fbb998bf2208ba885e56848df7cc4ac625ae6ab5d1580fffbd791c5"`;
+exports[`offer templates golden tests > free.base@1.0.0 > produces the expected HTML hash > free.base@1.0.0 html sha256 1`] = `"719dbcc5c4f5a757e9540006a5a6bbb798d2ad4bf32a404f931f4636bdad0c4a"`;
 
 exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > free.base@1.0.0 html 1`] = `
 "<!DOCTYPE html>
@@ -35,6 +35,92 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     background: #f8fafc;
     color: #0f172a;
     font: 400 11pt/1.5 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .offer-doc {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    background: #ffffff;
+    border: none;
+    box-shadow: none;
+    padding-top: 60mm;
+    padding-bottom: 42mm;
+    position: relative;
+  }
+
+  .offer-doc__header {
+    background: #ffffff;
+    left: 16mm;
+    margin-bottom: 0;
+    padding-bottom: 6mm;
+    position: fixed;
+    right: 16mm;
+    top: 18mm;
+    z-index: 20;
+  }
+
+  .offer-doc__header-brand {
+    gap: 12mm;
+  }
+
+  .offer-doc__logo-wrap {
+    border-radius: 10mm;
+    height: 34mm;
+    padding: 6mm;
+    width: 34mm;
+  }
+
+  .offer-doc__logo {
+    max-height: 28mm;
+    max-width: 100%;
+  }
+
+  .offer-doc__monogram {
+    font-size: 12pt;
+    height: 28mm;
+    width: 28mm;
+  }
+
+  .offer-doc__meta {
+    min-width: auto;
+  }
+
+  .offer-doc__meta-label {
+    font-size: 7pt;
+  }
+
+  .offer-doc__meta-value {
+    font-size: 10pt;
+  }
+
+  .offer-doc__footer {
+    background: #ffffff;
+    border-top: 1px solid rgba(15, 23, 42, 0.12);
+    bottom: 18mm;
+    left: 16mm;
+    margin-top: 0;
+    padding-top: 6mm;
+    position: fixed;
+    right: 16mm;
+    z-index: 20;
+  }
+
+  .offer-doc__footer-grid {
+    gap: 12mm;
+  }
+
+  .offer-doc__footer-column {
+    gap: 4mm;
+  }
+
+  .offer-doc__footer-label {
+    font-size: 7pt;
+  }
+
+  .offer-doc__footer-value {
+    font-size: 9.5pt;
   }
 
   p {
@@ -85,32 +171,142 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
   }
-  .offer-doc--modern .offer-doc__header {
-    align-items: flex-end;
+  .offer-doc__header {
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-lg, 0.65rem);
+    gap: var(--space-lg, 1.5rem);
+    justify-content: space-between;
     margin-bottom: var(--space-xl, 2.75rem);
-    text-align: right;
+    padding-bottom: var(--space-lg, 1.5rem);
   }
-  .offer-doc--modern .offer-doc__logo {
-    align-self: flex-end;
+  .offer-doc__header-brand {
+    align-items: center;
+    display: flex;
+    gap: var(--space-lg, 1.5rem);
+  }
+  .offer-doc__logo-wrap {
+    align-items: center;
+    background: var(--brand-secondary, #f3f4f6);
+    border: 1px solid var(--brand-border, #d1d5db);
     border-radius: var(--radius-md, 14px);
+    display: flex;
+    height: 88px;
+    justify-content: center;
+    padding: 12px;
+    flex-shrink: 0;
+    width: 88px;
+  }
+  .offer-doc__logo {
     max-height: 72px;
-    max-width: 260px;
+    max-width: 220px;
     object-fit: contain;
   }
-  .offer-doc--modern .offer-doc__company {
+  .offer-doc__monogram {
+    align-items: center;
+    background: var(--brand-primary, #151035);
+    border-radius: var(--radius-md, 14px);
+    color: var(--brand-primary-contrast, #ffffff);
+    display: flex;
+    font-size: 1.5rem;
+    font-weight: 700;
+    height: 72px;
+    justify-content: center;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    width: 72px;
+  }
+  .offer-doc__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .offer-doc__company {
     color: var(--brand-muted, #6b7280);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
   }
-  .offer-doc--modern .offer-doc__title {
+  .offer-doc__title {
     color: var(--brand-primary);
     font: var(--font-h1, 700 1.9rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0;
+  }
+  .offer-doc__meta {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-width: 160px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .offer-doc__meta-label {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .offer-doc__meta-value {
+    color: var(--brand-text, #1f2937);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .offer-doc__meta-value--placeholder {
+    color: var(--brand-muted, #6b7280);
+    font-style: italic;
+  }
+  @media (max-width: 640px) {
+    .offer-doc__header {
+      align-items: stretch;
+      flex-direction: column;
+      text-align: left;
+    }
+    .offer-doc__header-brand {
+      justify-content: flex-start;
+    }
+    .offer-doc__meta {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+  .offer-doc__footer {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    margin-top: var(--space-xl, 2.75rem);
+    padding-top: var(--space-lg, 1.5rem);
+  }
+  .offer-doc__footer-grid {
+    display: grid;
+    gap: var(--space-lg, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+  .offer-doc__footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .offer-doc__footer-label {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .offer-doc__footer-label--sub {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    margin-top: 0.25rem;
+  }
+  .offer-doc__footer-value {
+    color: var(--brand-text, #1f2937);
+    font-size: 0.92rem;
+    word-break: break-word;
+  }
+  .offer-doc__footer-value--placeholder {
+    color: var(--brand-muted, #6b7280);
+    font-style: italic;
   }
   .offer-doc__content {
     font-size: 0.95rem;
@@ -276,6 +472,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
     color: var(--brand-primary-contrast);
     padding: 48px 48px 32px;
+    border-bottom: none;
   }
   .offer-doc__premium-banner {
     align-items: center;
@@ -294,7 +491,21 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     background: rgba(255, 255, 255, 0.12);
   }
   .offer-doc__premium-logo-slot--empty {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .offer-doc__monogram--premium {
+    align-items: center;
+    background: rgba(4, 21, 36, 0.3);
+    border-radius: 18px;
+    color: #ffffff;
+    display: flex;
+    font-size: 2rem;
+    font-weight: 700;
+    height: 96px;
+    justify-content: center;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    width: 96px;
   }
   .offer-doc__logo--premium {
     max-height: 100%;
@@ -320,6 +531,22 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     font-weight: 700;
     letter-spacing: -0.125rem;
     margin: 0;
+  }
+  .offer-doc__meta--premium {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 28px;
+    text-align: right;
+  }
+  .offer-doc__meta-label--premium {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .offer-doc__meta-value--premium {
+    color: #ffffff;
+  }
+  .offer-doc__meta-value--premium.offer-doc__meta-value--placeholder {
+    color: rgba(255, 255, 255, 0.75);
   }
   .offer-doc__premium-body {
     background: #f8fafc;
@@ -382,9 +609,17 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
       <article class="offer-doc offer-doc--modern">
 
         <header class="offer-doc__header">
-          <img class="offer-doc__logo" src="https://cdn.example.com/assets/logo.png" alt="Cég logó" />
-          <div class="offer-doc__company">Digitális Megoldások Kft.</div>
-          <h1 class="offer-doc__title">AI ajánlatkészítő bevezetése</h1>
+          <div class="offer-doc__header-brand">
+            <div class="offer-doc__logo-wrap"><img class="offer-doc__logo" src="https://cdn.example.com/assets/logo.png" alt="Cég logó" /></div>
+            <div class="offer-doc__header-text">
+              <div class="offer-doc__company">Digitális Megoldások Kft.</div>
+              <h1 class="offer-doc__title">AI ajánlatkészítő bevezetése</h1>
+            </div>
+          </div>
+          <div class="offer-doc__meta">
+            <span class="offer-doc__meta-label">Ajánlat dátuma</span>
+            <span class="offer-doc__meta-value">2025. január 15.</span>
+          </div>
         </header>
   
         <section class="offer-doc__content">
@@ -472,7 +707,31 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
   
         </section>
   
-        <footer class="offer-doc__footer"></footer>
+        <footer class="offer-doc__footer">
+          <div class="offer-doc__footer-grid">
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">Kapcsolattartó</span>
+              <span class="offer-doc__footer-value">Kiss Júlia</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">E-mail</span>
+              <span class="offer-doc__footer-value">hello@example.com</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">Telefon</span>
+              <span class="offer-doc__footer-value">+36 30 123 4567</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">Weboldal</span>
+              <span class="offer-doc__footer-value">https://example.com</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">Cégadatok</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">Cím</span>
+              <span class="offer-doc__footer-value">Budapest, Andrássy út 1.</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">Adószám</span>
+              <span class="offer-doc__footer-value">12345678-1-12</span>
+            </div>
+          </div>
+        </footer>
   
       </article>
     </main>
@@ -480,9 +739,9 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
 </html>"
 `;
 
-exports[`offer templates golden tests > premium.elegant@1.0.0 > produces a stable PDF hash > premium.elegant@1.0.0 pdf sha256 1`] = `"0dc7dbc1ee72eb5d69d722b52243e4da3b12a58b2fa07619ffbfe6097043ca62"`;
+exports[`offer templates golden tests > premium.elegant@1.0.0 > produces a stable PDF hash > premium.elegant@1.0.0 pdf sha256 1`] = `"d55e1f6da75ff67e911f01cbf18b20a73f5fa0d4c4a855fce1b342469def5c3d"`;
 
-exports[`offer templates golden tests > premium.elegant@1.0.0 > produces the expected HTML hash > premium.elegant@1.0.0 html sha256 1`] = `"57582e12ff3a7ba3c25bc3a8667bd2f75271b1d957823ed0a4b0e3e1afb766d2"`;
+exports[`offer templates golden tests > premium.elegant@1.0.0 > produces the expected HTML hash > premium.elegant@1.0.0 html sha256 1`] = `"be52cbbfe62375dec253420a80143a3d7b13468df830ebd21d19908842b74584"`;
 
 exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable HTML > premium.elegant@1.0.0 html 1`] = `
 "<!DOCTYPE html>
@@ -515,6 +774,92 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     background: #f8fafc;
     color: #0f172a;
     font: 400 11pt/1.5 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .offer-doc {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    background: #ffffff;
+    border: none;
+    box-shadow: none;
+    padding-top: 60mm;
+    padding-bottom: 42mm;
+    position: relative;
+  }
+
+  .offer-doc__header {
+    background: #ffffff;
+    left: 16mm;
+    margin-bottom: 0;
+    padding-bottom: 6mm;
+    position: fixed;
+    right: 16mm;
+    top: 18mm;
+    z-index: 20;
+  }
+
+  .offer-doc__header-brand {
+    gap: 12mm;
+  }
+
+  .offer-doc__logo-wrap {
+    border-radius: 10mm;
+    height: 34mm;
+    padding: 6mm;
+    width: 34mm;
+  }
+
+  .offer-doc__logo {
+    max-height: 28mm;
+    max-width: 100%;
+  }
+
+  .offer-doc__monogram {
+    font-size: 12pt;
+    height: 28mm;
+    width: 28mm;
+  }
+
+  .offer-doc__meta {
+    min-width: auto;
+  }
+
+  .offer-doc__meta-label {
+    font-size: 7pt;
+  }
+
+  .offer-doc__meta-value {
+    font-size: 10pt;
+  }
+
+  .offer-doc__footer {
+    background: #ffffff;
+    border-top: 1px solid rgba(15, 23, 42, 0.12);
+    bottom: 18mm;
+    left: 16mm;
+    margin-top: 0;
+    padding-top: 6mm;
+    position: fixed;
+    right: 16mm;
+    z-index: 20;
+  }
+
+  .offer-doc__footer-grid {
+    gap: 12mm;
+  }
+
+  .offer-doc__footer-column {
+    gap: 4mm;
+  }
+
+  .offer-doc__footer-label {
+    font-size: 7pt;
+  }
+
+  .offer-doc__footer-value {
+    font-size: 9.5pt;
   }
 
   p {
@@ -565,32 +910,142 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
   }
-  .offer-doc--modern .offer-doc__header {
-    align-items: flex-end;
+  .offer-doc__header {
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-lg, 0.65rem);
+    gap: var(--space-lg, 1.5rem);
+    justify-content: space-between;
     margin-bottom: var(--space-xl, 2.75rem);
-    text-align: right;
+    padding-bottom: var(--space-lg, 1.5rem);
   }
-  .offer-doc--modern .offer-doc__logo {
-    align-self: flex-end;
+  .offer-doc__header-brand {
+    align-items: center;
+    display: flex;
+    gap: var(--space-lg, 1.5rem);
+  }
+  .offer-doc__logo-wrap {
+    align-items: center;
+    background: var(--brand-secondary, #f3f4f6);
+    border: 1px solid var(--brand-border, #d1d5db);
     border-radius: var(--radius-md, 14px);
+    display: flex;
+    height: 88px;
+    justify-content: center;
+    padding: 12px;
+    flex-shrink: 0;
+    width: 88px;
+  }
+  .offer-doc__logo {
     max-height: 72px;
-    max-width: 260px;
+    max-width: 220px;
     object-fit: contain;
   }
-  .offer-doc--modern .offer-doc__company {
+  .offer-doc__monogram {
+    align-items: center;
+    background: var(--brand-primary, #151035);
+    border-radius: var(--radius-md, 14px);
+    color: var(--brand-primary-contrast, #ffffff);
+    display: flex;
+    font-size: 1.5rem;
+    font-weight: 700;
+    height: 72px;
+    justify-content: center;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    width: 72px;
+  }
+  .offer-doc__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .offer-doc__company {
     color: var(--brand-muted, #6b7280);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
   }
-  .offer-doc--modern .offer-doc__title {
+  .offer-doc__title {
     color: var(--brand-primary);
     font: var(--font-h1, 700 1.9rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0;
+  }
+  .offer-doc__meta {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-width: 160px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .offer-doc__meta-label {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .offer-doc__meta-value {
+    color: var(--brand-text, #1f2937);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .offer-doc__meta-value--placeholder {
+    color: var(--brand-muted, #6b7280);
+    font-style: italic;
+  }
+  @media (max-width: 640px) {
+    .offer-doc__header {
+      align-items: stretch;
+      flex-direction: column;
+      text-align: left;
+    }
+    .offer-doc__header-brand {
+      justify-content: flex-start;
+    }
+    .offer-doc__meta {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+  .offer-doc__footer {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    margin-top: var(--space-xl, 2.75rem);
+    padding-top: var(--space-lg, 1.5rem);
+  }
+  .offer-doc__footer-grid {
+    display: grid;
+    gap: var(--space-lg, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+  .offer-doc__footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .offer-doc__footer-label {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .offer-doc__footer-label--sub {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    margin-top: 0.25rem;
+  }
+  .offer-doc__footer-value {
+    color: var(--brand-text, #1f2937);
+    font-size: 0.92rem;
+    word-break: break-word;
+  }
+  .offer-doc__footer-value--placeholder {
+    color: var(--brand-muted, #6b7280);
+    font-style: italic;
   }
   .offer-doc__content {
     font-size: 0.95rem;
@@ -756,6 +1211,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
     color: var(--brand-primary-contrast);
     padding: 48px 48px 32px;
+    border-bottom: none;
   }
   .offer-doc__premium-banner {
     align-items: center;
@@ -774,7 +1230,21 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     background: rgba(255, 255, 255, 0.12);
   }
   .offer-doc__premium-logo-slot--empty {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .offer-doc__monogram--premium {
+    align-items: center;
+    background: rgba(4, 21, 36, 0.3);
+    border-radius: 18px;
+    color: #ffffff;
+    display: flex;
+    font-size: 2rem;
+    font-weight: 700;
+    height: 96px;
+    justify-content: center;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    width: 96px;
   }
   .offer-doc__logo--premium {
     max-height: 100%;
@@ -800,6 +1270,22 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     font-weight: 700;
     letter-spacing: -0.125rem;
     margin: 0;
+  }
+  .offer-doc__meta--premium {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 28px;
+    text-align: right;
+  }
+  .offer-doc__meta-label--premium {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .offer-doc__meta-value--premium {
+    color: #ffffff;
+  }
+  .offer-doc__meta-value--premium.offer-doc__meta-value--placeholder {
+    color: rgba(255, 255, 255, 0.75);
   }
   .offer-doc__premium-body {
     background: #f8fafc;
@@ -868,6 +1354,10 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
               <div class="offer-doc__company offer-doc__company--premium">Digitális Megoldások Kft.</div>
               <h1 class="offer-doc__title offer-doc__title--premium">AI ajánlatkészítő bevezetése</h1>
             </div>
+          </div>
+          <div class="offer-doc__meta offer-doc__meta--premium">
+            <span class="offer-doc__meta-label offer-doc__meta-label--premium">Ajánlat dátuma</span>
+            <span class="offer-doc__meta-value offer-doc__meta-value--premium">2025. január 15.</span>
           </div>
         </header>
           <div class="offer-doc__premium-body">
@@ -958,7 +1448,31 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
         </section>
           </div>
 
-        <footer class="offer-doc__footer"></footer>
+        <footer class="offer-doc__footer">
+          <div class="offer-doc__footer-grid">
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">Kapcsolattartó</span>
+              <span class="offer-doc__footer-value">Kiss Júlia</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">E-mail</span>
+              <span class="offer-doc__footer-value">hello@example.com</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">Telefon</span>
+              <span class="offer-doc__footer-value">+36 30 123 4567</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">Weboldal</span>
+              <span class="offer-doc__footer-value">https://example.com</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">Cégadatok</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">Cím</span>
+              <span class="offer-doc__footer-value">Budapest, Andrássy út 1.</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">Adószám</span>
+              <span class="offer-doc__footer-value">12345678-1-12</span>
+            </div>
+          </div>
+        </footer>
   
       </article>
     </main>

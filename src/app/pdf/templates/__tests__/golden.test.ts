@@ -72,7 +72,10 @@ function normalisePdfMetadata(pdfBinary: Buffer): Buffer {
   const normalisedXmp = withFixedDates
     .replace(/<xmp:CreateDate>[^<]+<\/xmp:CreateDate>/g, '<xmp:CreateDate>0000<\/xmp:CreateDate>')
     .replace(/<xmp:ModifyDate>[^<]+<\/xmp:ModifyDate>/g, '<xmp:ModifyDate>0000<\/xmp:ModifyDate>')
-    .replace(/<xmp:MetadataDate>[^<]+<\/xmp:MetadataDate>/g, '<xmp:MetadataDate>0000<\/xmp:MetadataDate>');
+    .replace(
+      /<xmp:MetadataDate>[^<]+<\/xmp:MetadataDate>/g,
+      '<xmp:MetadataDate>0000<\/xmp:MetadataDate>',
+    );
 
   return Buffer.from(normalisedXmp, 'latin1');
 }
@@ -112,6 +115,13 @@ describe('offer templates golden tests', () => {
           templateId: template.id,
           locale: 'hu',
           legacyTemplateId: null,
+          issueDate: '2025. január 15.',
+          contactName: 'Kiss Júlia',
+          contactEmail: 'hello@example.com',
+          contactPhone: '+36 30 123 4567',
+          companyWebsite: 'https://example.com',
+          companyAddress: 'Budapest, Andrássy út 1.',
+          companyTaxId: '12345678-1-12',
         },
         rows: FIXED_ROWS,
         branding: {
@@ -153,7 +163,10 @@ describe('offer templates golden tests', () => {
           if (process.env.DEBUG_PDF === '1') {
             const slug = template.id.replace(/[^a-z0-9]/gi, '-');
             writeFileSync(join(process.cwd(), `debug-${slug}-raw.bin`), pdfBuffer);
-            writeFileSync(join(process.cwd(), `debug-${slug}-normalised.txt`), normalised.toString('latin1'));
+            writeFileSync(
+              join(process.cwd(), `debug-${slug}-normalised.txt`),
+              normalised.toString('latin1'),
+            );
           }
           expect(normalised.toString('latin1')).not.toMatch(/CreationDate \(D:/);
           expect(sha256(normalised)).toMatchSnapshot(`${template.id} pdf sha256`);
