@@ -12,12 +12,15 @@ export function ManageCookiesButton({
   return (
     <button
       type="button"
-      className="font-medium text-muted-foreground underline-offset-4 transition hover:text-primary hover:underline"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-muted-foreground/30 text-muted-foreground transition hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      aria-label={label}
+      title={label}
       onClick={() => {
         window.dispatchEvent(new Event('consent:openPreferences'));
       }}
     >
-      {label}
+      <span aria-hidden className="text-lg">🍪</span>
+      <span className="sr-only">{label}</span>
     </button>
   );
 }
