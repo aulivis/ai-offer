@@ -25,27 +25,33 @@ function sanitizeLogoUrl(value: string | null | undefined): string | null {
 }
 
 function buildSafeCtx(ctx: RenderCtx) {
+  const companyPlaceholder = sanitizeInput(ctx.i18n.t('pdf.templates.common.companyPlaceholder'));
   const safeCompany = sanitizeInput(ctx.offer.companyName || '');
-  const safeTitle = sanitizeInput(ctx.offer.title || 'Árajánlat');
+  const safeTitle = sanitizeInput(
+    ctx.offer.title || ctx.i18n.t('pdf.templates.common.defaultTitle'),
+  );
+  const logoAlt = sanitizeInput(ctx.i18n.t('pdf.templates.common.logoAlt'));
   const logoUrl = sanitizeLogoUrl(ctx.branding?.logoUrl ?? null);
 
   return {
     safeCompany,
     safeTitle,
+    companyPlaceholder,
+    logoAlt,
     logoUrl,
   };
 }
 
 export function partialHeader(ctx: RenderCtx): string {
-  const { safeCompany, safeTitle, logoUrl } = buildSafeCtx(ctx);
+  const { safeCompany, safeTitle, companyPlaceholder, logoAlt, logoUrl } = buildSafeCtx(ctx);
   const logoMarkup = logoUrl
-    ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
+    ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="${logoAlt}" />`
     : '';
 
   return `
         <header class="offer-doc__header">
           ${logoMarkup}
-          <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>
+          <div class="offer-doc__company">${safeCompany || companyPlaceholder}</div>
           <h1 class="offer-doc__title">${safeTitle}</h1>
         </header>
   `;
@@ -60,7 +66,7 @@ export function partialSections(ctx: RenderCtx): string {
 }
 
 export function partialPriceTable(ctx: RenderCtx): string {
-  const priceTable = priceTableHtml(ctx.rows);
+  const priceTable = priceTableHtml(ctx.rows, ctx.i18n);
   return `
         <section class="offer-doc__table">
           ${priceTable}

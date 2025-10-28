@@ -5,7 +5,9 @@ import { createThemeCssVariables } from '../../theme';
 import { pdfStyles, templateStyles } from '../styles.css';
 
 export function renderHead(ctx: RenderCtx): string {
-  const safeTitle = sanitizeInput(ctx.offer.title || 'Árajánlat');
+  const safeTitle = sanitizeInput(
+    ctx.offer.title || ctx.i18n.t('pdf.templates.common.defaultTitle'),
+  );
   const themeStyles = createThemeCssVariables(ctx.tokens);
 
   return `

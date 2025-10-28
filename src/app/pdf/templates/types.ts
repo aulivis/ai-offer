@@ -1,8 +1,8 @@
 import type { OfferBrandingOptions } from '@/app/lib/offerDocument';
 import type { PriceRow } from '@/app/lib/pricing';
+import type { Translator } from '@/copy';
 
 export type Branding = OfferBrandingOptions;
-export type I18nDict = typeof import('@/copy/hu').hu;
 export interface ThemeTokens {
   color: {
     primary: string;
@@ -57,6 +57,6 @@ export interface RenderCtx {
   offer: OfferData;
   rows: PriceRow[];
   branding?: Branding;
-  i18n: I18nDict;
+  i18n: Translator;
   tokens: ThemeTokens;
 }

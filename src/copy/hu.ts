@@ -1353,4 +1353,29 @@ export const hu = {
       missingStructure: 'A struktúrált AI válasz hiányos, próbáld újra a generálást.',
     },
   },
+  pdf: {
+    templates: {
+      common: {
+        defaultTitle: 'Árajánlat',
+        logoAlt: 'Cég logó',
+        companyPlaceholder: 'Vállalat neve',
+      },
+    },
+    pricingTable: {
+      headers: {
+        item: 'Tétel',
+        quantity: 'Mennyiség',
+        unit: 'Egység',
+        unitPrice: 'Egységár (Ft)',
+        vat: 'ÁFA %',
+        netTotal: 'Összesen (nettó)',
+      },
+      footer: {
+        net: 'Nettó összesen',
+        vat: 'ÁFA',
+        gross: 'Bruttó összesen',
+      },
+      currency: 'Ft',
+    },
+  },
 } as const;
