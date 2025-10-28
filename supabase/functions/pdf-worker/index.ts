@@ -488,4 +488,6 @@ type PdfJobPayload = {
   userLimit?: number | null;
   deviceId?: string | null;
   deviceLimit?: number | null;
+  templateId?: string | null;
+  metadata?: Record<string, unknown> | null;
 };
