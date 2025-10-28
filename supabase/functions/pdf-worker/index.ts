@@ -18,6 +18,8 @@ const pdfWebhookAllowlist = createPdfWebhookAllowlist(
   splitAllowlist(Deno.env.get('PDF_WEBHOOK_ALLOWLIST')),
 );
 
+const JOB_TIMEOUT_MS = 90_000;
+
 serve(async (request) => {
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -100,16 +102,36 @@ serve(async (request) => {
   let deviceUsageIncremented = false;
 
   try {
-    const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
-    });
+    const pdfBinary = await withTimeout(async () => {
+      const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
+      });
 
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    const pdfBinary = await page.pdf({ format: 'A4', printBackground: true });
-    await page.close();
-    await browser.close();
+      try {
+        const page = await browser.newPage();
+        try {
+          page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
+          page.setDefaultTimeout(JOB_TIMEOUT_MS);
+          await page.setContent(html, { waitUntil: 'networkidle0' });
+          return await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            preferCSSPageSize: true,
+            margin: {
+              top: '24mm',
+              right: '16mm',
+              bottom: '24mm',
+              left: '16mm',
+            },
+          });
+        } finally {
+          await page.close();
+        }
+      } finally {
+        await browser.close();
+      }
+    }, JOB_TIMEOUT_MS, 'PDF generation timed out');
 
     const pdfBuffer = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
 
@@ -317,6 +339,24 @@ async function rollbackUsageIncrement<K extends CounterKind>(
   if (updateError) {
     console.warn('Failed to rollback usage counter increment', updateError);
   }
+}
+
+async function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, message: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+
+    operation()
+      .then((result) => {
+        clearTimeout(timer);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
 }
 
 function normalizeDate(value: unknown, fallback: string): string {
