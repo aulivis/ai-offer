@@ -3,6 +3,7 @@ import type { Page } from 'puppeteer';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
+import { rollbackUsageIncrement } from '@/lib/services/usage';
 
 type CounterKind = 'user' | 'device';
 
@@ -209,6 +210,8 @@ export async function processPdfJobInline(
     .eq('id', job.jobId);
 
   let uploadedToStorage = false;
+  let userUsageIncremented = false;
+  let deviceUsageIncremented = false;
 
   try {
     const { default: puppeteer } = await import('puppeteer');
@@ -253,6 +256,7 @@ export async function processPdfJobInline(
       if (!usageResult.allowed) {
         throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
       }
+      userUsageIncremented = true;
 
       if (job.deviceId && job.deviceLimit != null) {
         const deviceResult = await incrementUsage(
@@ -265,6 +269,7 @@ export async function processPdfJobInline(
         if (!deviceResult.allowed) {
           throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
         }
+        deviceUsageIncremented = true;
       }
 
       await supabase
@@ -330,6 +335,24 @@ export async function processPdfJobInline(
         await supabase.storage.from('offers').remove([job.storagePath]);
       } catch (cleanupError) {
         console.error('Failed to remove uploaded PDF after inline worker error:', cleanupError);
+      }
+    }
+
+    if (userUsageIncremented) {
+      try {
+        await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart);
+      } catch (rollbackError) {
+        console.error('Failed to rollback user usage increment (inline worker):', rollbackError);
+      }
+    }
+
+    if (deviceUsageIncremented && job.deviceId) {
+      try {
+        await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart, {
+          deviceId: job.deviceId,
+        });
+      } catch (rollbackError) {
+        console.error('Failed to rollback device usage increment (inline worker):', rollbackError);
       }
     }
 

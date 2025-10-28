@@ -96,6 +96,8 @@ serve(async (request) => {
     : null;
 
   let uploadedToStorage = false;
+  let userUsageIncremented = false;
+  let deviceUsageIncremented = false;
 
   try {
     const browser = await puppeteer.launch({
@@ -135,6 +137,7 @@ serve(async (request) => {
     if (!usageResult.allowed) {
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
+    userUsageIncremented = true;
 
     if (deviceId && deviceLimit !== null) {
       const deviceResult = await incrementUsage(
@@ -147,6 +150,7 @@ serve(async (request) => {
       if (!deviceResult.allowed) {
         throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
       }
+      deviceUsageIncremented = true;
     }
 
     await supabase
@@ -206,6 +210,27 @@ serve(async (request) => {
       }
     }
 
+    if (userUsageIncremented) {
+      try {
+        await rollbackUsageIncrement(supabase, 'user', { userId: job.user_id }, usagePeriodStart);
+      } catch (rollbackError) {
+        console.error('Failed to rollback user usage increment:', rollbackError);
+      }
+    }
+
+    if (deviceUsageIncremented && deviceId) {
+      try {
+        await rollbackUsageIncrement(
+          supabase,
+          'device',
+          { userId: job.user_id, deviceId },
+          usagePeriodStart,
+        );
+      } catch (rollbackError) {
+        console.error('Failed to rollback device usage increment:', rollbackError);
+      }
+    }
+
     await supabase
       .from('pdf_jobs')
       .update({
@@ -246,6 +271,53 @@ const COUNTER_CONFIG: { [K in CounterKind]: UsageConfig<K> } = {
     rpc: 'check_and_increment_device_usage',
   },
 };
+
+async function rollbackUsageIncrement<K extends CounterKind>(
+  supabase: SupabaseClient,
+  kind: K,
+  target: CounterTargets[K],
+  expectedPeriod: string,
+) {
+  const config = COUNTER_CONFIG[kind];
+  let query = supabase.from(config.table).select('offers_generated, period_start');
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      query = query.eq(column, target[key]);
+    },
+  );
+
+  const { data: existing, error } = await query.maybeSingle();
+  if (error) {
+    console.warn('Failed to load usage counter for rollback', error);
+    return;
+  }
+
+  if (!existing) {
+    return;
+  }
+
+  const currentCount = Number(existing.offers_generated ?? 0);
+  if (currentCount <= 0) {
+    return;
+  }
+
+  const periodStart = normalizeDate(existing.period_start, expectedPeriod);
+  if (periodStart !== expectedPeriod) {
+    return;
+  }
+
+  let updateBuilder = supabase.from(config.table).update({ offers_generated: currentCount - 1 });
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      updateBuilder = updateBuilder.eq(column, target[key]);
+    },
+  );
+
+  const { error: updateError } = await updateBuilder;
+  if (updateError) {
+    console.warn('Failed to rollback usage counter increment', updateError);
+  }
+}
 
 function normalizeDate(value: unknown, fallback: string): string {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {

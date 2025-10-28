@@ -310,7 +310,25 @@ describe('rollbackUsageIncrement', () => {
   });
 
   it('reduces the counter when the period matches and count is positive', async () => {
-    const selectBuilder = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectBuilder: any = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      maybeSingle: vi.fn(),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateBuilder: any = {
+      update: vi.fn(),
+      eq: vi.fn(),
+      then: vi.fn((onFulfilled: (value: { error: null }) => void) =>
+        Promise.resolve({ error: null }).then(onFulfilled),
+      ),
+      catch: vi.fn((onRejected: (reason: unknown) => void) =>
+        Promise.resolve({ error: null }).catch(onRejected),
+      ),
+    };
+
     selectBuilder.select.mockReturnValue(selectBuilder);
     selectBuilder.eq.mockReturnValue(selectBuilder);
     selectBuilder.maybeSingle.mockResolvedValue({
@@ -318,9 +336,8 @@ describe('rollbackUsageIncrement', () => {
       error: null,
     });
 
-    const updateBuilder = { update: vi.fn(), eq: vi.fn() };
     updateBuilder.update.mockReturnValue(updateBuilder);
-    updateBuilder.eq.mockResolvedValue({ error: null });
+    updateBuilder.eq.mockReturnValue(updateBuilder);
 
     from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(updateBuilder as never);
 
@@ -328,6 +345,47 @@ describe('rollbackUsageIncrement', () => {
 
     expect(updateBuilder.update).toHaveBeenCalledWith({ offers_generated: 1 });
     expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('reduces the device counter when the period matches and count is positive', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectBuilder: any = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      maybeSingle: vi.fn(),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateBuilder: any = {
+      update: vi.fn(),
+      eq: vi.fn(),
+      then: vi.fn((onFulfilled: (value: { error: null }) => void) =>
+        Promise.resolve({ error: null }).then(onFulfilled),
+      ),
+      catch: vi.fn((onRejected: (reason: unknown) => void) =>
+        Promise.resolve({ error: null }).catch(onRejected),
+      ),
+    };
+
+    selectBuilder.select.mockReturnValue(selectBuilder);
+    selectBuilder.eq.mockReturnValue(selectBuilder);
+    selectBuilder.maybeSingle.mockResolvedValue({
+      data: { offers_generated: 5, period_start: '2024-07-01' },
+      error: null,
+    });
+
+    updateBuilder.update.mockReturnValue(updateBuilder);
+    updateBuilder.eq.mockReturnValue(updateBuilder);
+
+    from
+      .mockReturnValueOnce(selectBuilder as never)
+      .mockReturnValueOnce(updateBuilder as never);
+
+    await rollbackUsageIncrement(mockClient, 'user-1', '2024-07-01', { deviceId: 'device-1' });
+
+    expect(updateBuilder.update).toHaveBeenCalledWith({ offers_generated: 4 });
+    expect(selectBuilder.eq).toHaveBeenCalledWith('device_id', 'device-1');
+    expect(updateBuilder.eq).toHaveBeenCalledWith('device_id', 'device-1');
   });
 
   it('skips rollback when the counter is missing', async () => {

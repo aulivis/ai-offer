@@ -266,16 +266,27 @@ export async function checkAndIncrementDeviceUsage(
   };
 }
 
+type RollbackOptions = { deviceId?: string | null };
+
 export async function rollbackUsageIncrement(
   sb: SupabaseClient,
   userId: string,
   expectedPeriod: string,
+  options: RollbackOptions = {},
 ) {
-  const { data: existing, error } = await sb
-    .from('usage_counters')
+  const isDevice = typeof options.deviceId === 'string' && options.deviceId.length > 0;
+  const table = isDevice ? 'device_usage_counters' : 'usage_counters';
+
+  let selectBuilder = sb
+    .from(table)
     .select('offers_generated, period_start')
-    .eq('user_id', userId)
-    .maybeSingle();
+    .eq('user_id', userId);
+
+  if (isDevice) {
+    selectBuilder = selectBuilder.eq('device_id', options.deviceId);
+  }
+
+  const { data: existing, error } = await selectBuilder.maybeSingle();
 
   if (error) {
     console.warn('Failed to load usage counter for rollback', error);
@@ -296,10 +307,13 @@ export async function rollbackUsageIncrement(
     return;
   }
 
-  const { error: updateError } = await sb
-    .from('usage_counters')
-    .update({ offers_generated: currentCount - 1 })
-    .eq('user_id', userId);
+  let updateBuilder = sb.from(table).update({ offers_generated: currentCount - 1 }).eq('user_id', userId);
+
+  if (isDevice) {
+    updateBuilder = updateBuilder.eq('device_id', options.deviceId);
+  }
+
+  const { error: updateError } = await updateBuilder;
 
   if (updateError) {
     console.warn('Failed to rollback usage counter increment', updateError);
