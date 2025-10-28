@@ -3,6 +3,7 @@ import type { OfferTemplateId as LegacyOfferTemplateId } from '@/app/lib/offerTe
 
 import { renderBody } from './partials/body';
 import { renderHead } from './partials/head';
+import { freeBaseTokens } from './tokens';
 
 export const freeBaseTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId } = {
   id: 'free.base@1.0.0',
@@ -10,6 +11,7 @@ export const freeBaseTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId
   tier: 'free',
   label: 'Modern minimal',
   version: '1.0.0',
+  tokens: freeBaseTokens,
   capabilities: {
     'branding.logo': true,
     'branding.colors': true,

@@ -146,7 +146,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
       rows: normalizedRows,
       branding: normalizedBranding,
       i18n: hu,
-      tokens: createThemeTokens(normalizedBranding),
+      tokens: createThemeTokens(template.tokens, normalizedBranding),
     },
     template,
   );

@@ -17,36 +17,52 @@ export const OFFER_DOCUMENT_STYLES = `
     --brand-secondary: #f3f4f6;
     --brand-secondary-border: #d1d5db;
     --brand-secondary-text: #1f2937;
-    background: #ffffff;
-    color: #1f2937;
-    font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    line-height: 1.65;
+    --brand-muted: #6b7280;
+    --brand-text: #1f2937;
+    --brand-bg: #ffffff;
+    --brand-border: #d1d5db;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2.75rem;
+    --font-body: 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-h1: 700 1.9rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-h2: 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-h3: 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-table: 600 0.72rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --radius-sm: 0.75rem;
+    --radius-md: 1.25rem;
+    --radius-lg: 2rem;
+    background: var(--brand-bg, #ffffff);
+    color: var(--brand-text, #1f2937);
+    font: var(--font-body, 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0 auto;
     max-width: 760px;
   }
   .offer-doc--modern {
-    border: 1px solid var(--brand-secondary-border);
-    border-radius: 32px;
+    border: 1px solid var(--brand-border, #d1d5db);
+    border-radius: var(--radius-lg, 32px);
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
-    padding: 44px;
+    padding: var(--space-xl, 44px);
   }
   .offer-doc--modern .offer-doc__header {
     align-items: flex-end;
     display: flex;
     flex-direction: column;
-    gap: 0.65rem;
-    margin-bottom: 2.75rem;
+    gap: var(--space-lg, 0.65rem);
+    margin-bottom: var(--space-xl, 2.75rem);
     text-align: right;
   }
   .offer-doc--modern .offer-doc__logo {
     align-self: flex-end;
-    border-radius: 14px;
+    border-radius: var(--radius-md, 14px);
     max-height: 72px;
     max-width: 260px;
     object-fit: contain;
   }
   .offer-doc--modern .offer-doc__company {
-    color: #6b7280;
+    color: var(--brand-muted, #6b7280);
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.22em;
@@ -54,9 +70,7 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc--modern .offer-doc__title {
     color: var(--brand-primary);
-    font-size: 1.9rem;
-    font-weight: 700;
-    letter-spacing: -0.125rem;
+    font: var(--font-h1, 700 1.9rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0;
   }
   .offer-doc__content {
@@ -70,15 +84,13 @@ export const OFFER_DOCUMENT_STYLES = `
     margin: 2.2rem 0 0.9rem;
   }
   .offer-doc__content h1 {
-    font-size: 1.15rem;
-    font-weight: 700;
+    font: var(--font-h2, 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     letter-spacing: -0.125rem;
   }
   .offer-doc__content h2,
   .offer-doc__content h3,
   .offer-doc__content h4 {
-    font-size: 1.15rem;
-    font-weight: 600;
+    font: var(--font-h3, 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
   }
   .offer-doc__content h1:first-child,
   .offer-doc__content h2:first-child,
@@ -118,10 +130,10 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__compact-intro {
     background: var(--brand-secondary);
     border: 1px solid var(--brand-secondary-border);
-    border-radius: 24px;
+    border-radius: var(--radius-lg, 24px);
     display: grid;
     gap: 1.4rem;
-    padding: 1.6rem 1.9rem;
+    padding: var(--space-lg, 1.6rem) var(--space-xl, 1.9rem);
   }
   @media (min-width: 640px) {
     .offer-doc__compact-intro {
@@ -145,11 +157,11 @@ export const OFFER_DOCUMENT_STYLES = `
     }
   }
   .offer-doc__compact-card {
-    background: #ffffff;
-    border: 1px solid var(--brand-secondary-border);
-    border-radius: 22px;
+    background: var(--brand-bg, #ffffff);
+    border: 1px solid var(--brand-border, #d1d5db);
+    border-radius: var(--radius-md, 22px);
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-    padding: 1.5rem 1.7rem;
+    padding: var(--space-lg, 1.5rem) var(--space-xl, 1.7rem);
   }
   .offer-doc__compact-card h3 {
     margin-top: 0;
@@ -177,7 +189,7 @@ export const OFFER_DOCUMENT_STYLES = `
     color: inherit;
   }
   .offer-doc__compact-card--closing {
-    background: #f9fafb;
+    background: var(--brand-secondary, #f9fafb);
   }
   .offer-doc__table {
     margin-top: 2.5rem;
@@ -191,15 +203,14 @@ export const OFFER_DOCUMENT_STYLES = `
     background: var(--brand-secondary);
     border-bottom: 1px solid var(--brand-secondary-border);
     color: var(--brand-secondary-text);
-    font-size: 0.72rem;
-    font-weight: 600;
+    font: var(--font-table, 600 0.72rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     letter-spacing: 0.08em;
     padding: 0.65rem 0.75rem;
     text-transform: uppercase;
   }
   .offer-doc__pricing-table tbody td {
     border-bottom: 1px solid var(--brand-secondary-border);
-    color: #374151;
+    color: var(--brand-text, #374151);
     padding: 0.6rem 0.75rem;
     vertical-align: top;
   }
@@ -278,14 +289,14 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content--card {
     background: #ffffff;
     border: 1px solid var(--brand-secondary-border);
-    border-radius: 28px;
+    border-radius: var(--radius-lg, 28px);
     box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
     padding: 32px 36px;
   }
   .offer-doc__table--card {
     background: #ffffff;
     border: 1px solid var(--brand-secondary-border);
-    border-radius: 28px;
+    border-radius: var(--radius-lg, 28px);
     box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
     margin-top: 32px;
     overflow: hidden;

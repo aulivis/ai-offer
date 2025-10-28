@@ -24,24 +24,6 @@ function sanitizeLogoUrl(value: string | null | undefined): string | null {
   }
 }
 
-function createStyleAttribute(tokens: RenderCtx['tokens']): string {
-  const primary = tokens['color.primary'] ?? '#0f172a';
-  const primaryContrast = tokens['color.primary-contrast'] ?? '#ffffff';
-  const secondary = tokens['color.secondary'] ?? '#f3f4f6';
-  const secondaryBorder = tokens['color.secondary-border'] ?? '#d1d5db';
-  const secondaryText = tokens['color.secondary-text'] ?? '#1f2937';
-
-  return (
-    [
-      `--brand-primary: ${primary}`,
-      `--brand-primary-contrast: ${primaryContrast}`,
-      `--brand-secondary: ${secondary}`,
-      `--brand-secondary-border: ${secondaryBorder}`,
-      `--brand-secondary-text: ${secondaryText}`,
-    ].join('; ') + ';'
-  );
-}
-
 export function renderBody(ctx: RenderCtx): string {
   const priceTable = priceTableHtml(ctx.rows);
   const safeCompany = sanitizeInput(ctx.offer.companyName || '');
@@ -50,11 +32,10 @@ export function renderBody(ctx: RenderCtx): string {
   const logoMarkup = logoUrl
     ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
     : '';
-  const styleAttr = createStyleAttribute(ctx.tokens);
 
   return `
     <main class="offer-template offer-template--modern">
-      <article class="offer-doc offer-doc--modern" style="${styleAttr}">
+      <article class="offer-doc offer-doc--modern">
         <header class="offer-doc__header">
           ${logoMarkup}
           <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>

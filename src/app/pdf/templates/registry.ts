@@ -9,6 +9,38 @@ const renderFunctionSchema = z.custom<OfferTemplate['renderHead']>(
   'must be a function',
 );
 
+const themeTokensSchema = z
+  .object({
+    color: z.object({
+      primary: z.string(),
+      secondary: z.string(),
+      text: z.string(),
+      muted: z.string(),
+      border: z.string(),
+      bg: z.string(),
+    }),
+    spacing: z.object({
+      xs: z.string(),
+      sm: z.string(),
+      md: z.string(),
+      lg: z.string(),
+      xl: z.string(),
+    }),
+    typography: z.object({
+      body: z.string(),
+      h1: z.string(),
+      h2: z.string(),
+      h3: z.string(),
+      table: z.string(),
+    }),
+    radius: z.object({
+      sm: z.string(),
+      md: z.string(),
+      lg: z.string(),
+    }),
+  })
+  .strict();
+
 const offerTemplateSchema = z
   .object({
     id: z.string().min(1, 'id is required'),
@@ -17,6 +49,7 @@ const offerTemplateSchema = z
     version: z.string().min(1, 'version is required'),
     renderHead: renderFunctionSchema,
     renderBody: renderFunctionSchema,
+    tokens: themeTokensSchema,
     capabilities: z.record(z.string(), z.boolean()).optional(),
   })
   .passthrough();

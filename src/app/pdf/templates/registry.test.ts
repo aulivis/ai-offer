@@ -48,6 +48,35 @@ describe('template registry', () => {
       version: '1.0.0',
       renderHead: () => '<head></head>',
       renderBody: () => '<main></main>',
+      tokens: {
+        color: {
+          primary: '#000000',
+          secondary: '#ffffff',
+          text: '#111111',
+          muted: '#222222',
+          border: '#333333',
+          bg: '#ffffff',
+        },
+        spacing: {
+          xs: '0.25rem',
+          sm: '0.5rem',
+          md: '1rem',
+          lg: '1.5rem',
+          xl: '2rem',
+        },
+        typography: {
+          body: "400 1rem/1.5 'Work Sans'",
+          h1: "700 2rem/1.2 'Work Sans'",
+          h2: "600 1.5rem/1.3 'Work Sans'",
+          h3: "600 1.25rem/1.3 'Work Sans'",
+          table: "600 0.875rem/1.2 'Work Sans'",
+        },
+        radius: {
+          sm: '0.5rem',
+          md: '1rem',
+          lg: '1.5rem',
+        },
+      },
     });
 
     expect(loadTemplate(templateId)).toBe(template);
