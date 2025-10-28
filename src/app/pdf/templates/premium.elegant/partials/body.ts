@@ -24,18 +24,25 @@ function sanitizeLogoUrl(value: string | null | undefined): string | null {
   }
 }
 
-export function renderBody(ctx: RenderCtx): string {
-  const priceTable = priceTableHtml(ctx.rows);
+function buildSafeCtx(ctx: RenderCtx) {
   const safeCompany = sanitizeInput(ctx.offer.companyName || '');
   const safeTitle = sanitizeInput(ctx.offer.title || 'Árajánlat');
   const logoUrl = sanitizeLogoUrl(ctx.branding?.logoUrl ?? null);
+
+  return {
+    safeCompany,
+    safeTitle,
+    logoUrl,
+  };
+}
+
+export function partialHeader(ctx: RenderCtx): string {
+  const { safeCompany, safeTitle, logoUrl } = buildSafeCtx(ctx);
   const logoSlot = logoUrl
     ? `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--filled"><img class="offer-doc__logo offer-doc__logo--premium" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
     : '<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"></div>';
 
   return `
-    <main class="offer-template offer-template--premium">
-      <article class="offer-doc offer-doc--premium">
         <header class="offer-doc__header offer-doc__header--premium">
           <div class="offer-doc__premium-banner">
             ${logoSlot}
@@ -45,14 +52,59 @@ export function renderBody(ctx: RenderCtx): string {
             </div>
           </div>
         </header>
-        <div class="offer-doc__premium-body">
-          <section class="offer-doc__content offer-doc__content--card">
-            ${ctx.offer.bodyHtml}
-          </section>
-          <section class="offer-doc__table offer-doc__table--card">
-            ${priceTable}
-          </section>
-        </div>
+  `;
+}
+
+export function partialSections(ctx: RenderCtx): string {
+  return `
+        <section class="offer-doc__content offer-doc__content--card">
+          ${ctx.offer.bodyHtml}
+        </section>
+  `;
+}
+
+export function partialPriceTable(ctx: RenderCtx): string {
+  const priceTable = priceTableHtml(ctx.rows);
+  return `
+        <section class="offer-doc__table offer-doc__table--card">
+          ${priceTable}
+        </section>
+  `;
+}
+
+export function partialGallery(ctx: RenderCtx): string {
+  void ctx;
+  return '';
+}
+
+export function partialFooter(ctx: RenderCtx): string {
+  void ctx;
+  return `
+        <footer class="offer-doc__footer"></footer>
+  `;
+}
+
+export function renderBody(ctx: RenderCtx): string {
+  const header = partialHeader(ctx);
+  const sections = partialSections(ctx);
+  const priceTable = partialPriceTable(ctx);
+  const gallery = partialGallery(ctx);
+  const footer = partialFooter(ctx);
+
+  const content = [
+    header,
+    '        <div class="offer-doc__premium-body">\n',
+    sections,
+    priceTable,
+    '        </div>\n',
+    gallery,
+    footer,
+  ].join('');
+
+  return `
+    <main class="offer-template offer-template--premium">
+      <article class="offer-doc offer-doc--premium">
+${content}
       </article>
     </main>
   `;
