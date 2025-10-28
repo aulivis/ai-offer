@@ -42,7 +42,7 @@ const {
   buildOfferHtmlMock: vi.fn(() => '<html />'),
   getOfferTemplateByLegacyIdMock: vi.fn(),
   templateStub: {
-    id: 'modern@1.0.0',
+    id: 'free.base@1.0.0',
     legacyId: 'modern',
     tier: 'free',
     label: 'Mock template',

@@ -6,7 +6,7 @@ export type I18nDict = typeof import('@/copy/hu').hu;
 export type ThemeTokens = Record<string, string>;
 
 export type TemplateTier = 'free' | 'premium';
-export type TemplateId = string; // e.g. "modern@1.0.0" or "premium.elegant@1.0.0"
+export type TemplateId = string; // e.g. "free.base@1.0.0" or "premium.elegant@1.0.0"
 export interface OfferTemplate {
   id: TemplateId;
   tier: TemplateTier;
