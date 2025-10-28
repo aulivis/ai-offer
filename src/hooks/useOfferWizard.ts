@@ -6,12 +6,33 @@ import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
   projectDetailFields,
+  type ProjectDetailKey,
   type ProjectDetails,
 } from '@/lib/projectDetails';
+import type { PreviewIssue } from '@/types/preview';
 
 type Step = 1 | 2 | 3;
 
-type ValidationResult = Partial<Record<Step, string[]>>;
+type ValidationSteps = Partial<Record<Step, string[]>>;
+
+type StepFieldErrors = {
+  title?: string;
+  projectDetails: Partial<Record<ProjectDetailKey, string>>;
+};
+
+type ValidationFields = {
+  1: StepFieldErrors;
+  2: { pricing?: string };
+  3: Record<string, never>;
+};
+
+type ValidationIssue = PreviewIssue & { step: Step };
+
+type ValidationResult = {
+  steps: ValidationSteps;
+  fields: ValidationFields;
+  issues: ValidationIssue[];
+};
 
 function buildValidation({
   title,
@@ -22,26 +43,44 @@ function buildValidation({
   projectDetails: ProjectDetails;
   pricingRows: PriceRow[];
 }): ValidationResult {
-  const result: ValidationResult = {};
+  const steps: ValidationSteps = {};
+  const fields: ValidationFields = {
+    1: { projectDetails: {} },
+    2: {},
+    3: {},
+  };
+  const issues: ValidationIssue[] = [];
+
+  const registerError = (step: Step, message: string, assign?: () => void) => {
+    steps[step] = [...(steps[step] ?? []), message];
+    issues.push({ step, severity: 'error', message });
+    assign?.();
+  };
 
   const trimmedTitle = title.trim();
   const trimmedOverview = projectDetails.overview.trim();
 
   if (!trimmedTitle) {
-    result[1] = [...(result[1] ?? []), 'Adj meg egy címet az ajánlathoz.'];
+    registerError(1, 'Adj meg egy címet az ajánlathoz.', () => {
+      fields[1].title = 'Adj meg egy címet az ajánlathoz.';
+    });
   }
 
   if (!trimmedOverview) {
-    result[1] = [...(result[1] ?? []), 'Adj rövid projektáttekintést az AI-nak.'];
+    registerError(1, 'Adj rövid projektáttekintést az AI-nak.', () => {
+      fields[1].projectDetails.overview = 'Adj rövid projektáttekintést az AI-nak.';
+    });
   }
 
   const hasPricingRow = pricingRows.some((row) => row.name.trim().length > 0);
 
   if (!hasPricingRow) {
-    result[2] = ['Adj hozzá legalább egy tételt az árlistához.'];
+    registerError(2, 'Adj hozzá legalább egy tételt az árlistához.', () => {
+      fields[2].pricing = 'Adj hozzá legalább egy tételt az árlistához.';
+    });
   }
 
-  return result;
+  return { steps, fields, issues };
 }
 
 export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
@@ -61,21 +100,24 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
   );
 
   const projectDetailsText = useMemo(() => {
-    const normalized = projectDetailFields.reduce<ProjectDetails>((acc, key) => {
-      acc[key] = projectDetails[key].trim();
-      return acc;
-    }, { ...emptyProjectDetails });
+    const normalized = projectDetailFields.reduce<ProjectDetails>(
+      (acc, key) => {
+        acc[key] = projectDetails[key].trim();
+        return acc;
+      },
+      { ...emptyProjectDetails },
+    );
 
     return formatProjectDetailsForPrompt(normalized);
   }, [projectDetails]);
 
   const isStepValid = useCallback(
-    (target: Step) => (validation[target]?.length ?? 0) === 0,
-    [validation],
+    (target: Step) => (validation.steps[target]?.length ?? 0) === 0,
+    [validation.steps],
   );
 
   const goNext = useCallback(() => {
-    const errors = validation[step] ?? [];
+    const errors = validation.steps[step] ?? [];
 
     if (errors.length > 0) {
       setAttemptedSteps((prev) => ({ ...prev, [step]: true }));
@@ -85,7 +127,7 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     setAttemptedSteps((prev) => ({ ...prev, [step]: false }));
     setStep((prev) => (prev < 3 ? ((prev + 1) as Step) : prev));
     return true;
-  }, [step, validation]);
+  }, [step, validation.steps]);
 
   const goPrev = useCallback(() => {
     setStep((prev) => (prev > 1 ? ((prev - 1) as Step) : prev));
@@ -106,7 +148,6 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     [isStepValid, step],
   );
 
-  const inlineErrors = attemptedSteps[step] ? (validation[step] ?? []) : [];
   const isNextDisabled = attemptedSteps[step] && !isStepValid(step);
 
   const updatePricingRows = useCallback((rows: PriceRow[]) => {
@@ -125,7 +166,6 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     goNext,
     goPrev,
     goToStep,
-    inlineErrors,
     isNextDisabled,
     attemptedSteps,
     validation,
