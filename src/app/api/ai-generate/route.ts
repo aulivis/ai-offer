@@ -30,6 +30,10 @@ import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { t, createTranslator, resolveLocale } from '@/copy';
 import {
+  recordTemplateRenderTelemetry,
+  resolveTemplateRenderErrorCode,
+} from '@/lib/observability/templateTelemetry';
+import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
   projectDetailFields,
@@ -819,23 +823,47 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     const translator = createTranslator(resolvedLocale);
     const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 
-    const html = buildOfferHtml(
-      {
-        offer: {
-          title: safeTitle || defaultTitle,
-          companyName: sanitizeInput(profile?.company_name || ''),
-          bodyHtml: aiHtmlForPdf,
-          templateId: resolvedTemplateId,
-          legacyTemplateId: resolvedLegacyTemplateId,
-          locale: resolvedLocale,
+    const renderStartedAt = performance.now();
+    let renderDuration: number | null = null;
+    let html: string;
+
+    try {
+      html = buildOfferHtml(
+        {
+          offer: {
+            title: safeTitle || defaultTitle,
+            companyName: sanitizeInput(profile?.company_name || ''),
+            bodyHtml: aiHtmlForPdf,
+            templateId: resolvedTemplateId,
+            legacyTemplateId: resolvedLegacyTemplateId,
+            locale: resolvedLocale,
+          },
+          rows,
+          branding: brandingOptions,
+          i18n: translator,
+          tokens: createThemeTokens(template.tokens, brandingOptions),
         },
-        rows,
-        branding: brandingOptions,
-        i18n: translator,
-        tokens: createThemeTokens(template.tokens, brandingOptions),
-      },
-      template,
-    );
+        template,
+      );
+      renderDuration = performance.now() - renderStartedAt;
+    } catch (error) {
+      renderDuration = performance.now() - renderStartedAt;
+      await recordTemplateRenderTelemetry({
+        templateId: resolvedTemplateId,
+        renderer: 'api.ai_generate.render',
+        outcome: 'failure',
+        renderMs: renderDuration,
+        errorCode: resolveTemplateRenderErrorCode(error),
+      });
+      throw error;
+    }
+
+    await recordTemplateRenderTelemetry({
+      templateId: resolvedTemplateId,
+      renderer: 'api.ai_generate.render',
+      outcome: 'success',
+      renderMs: renderDuration,
+    });
 
     const downloadToken = uuid();
 

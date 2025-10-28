@@ -223,6 +223,7 @@ export const hu = {
       revertDecision: 'Döntés törlése',
       deleting: 'Törlés…',
       deleteOffer: 'Ajánlat törlése',
+      templateTelemetry: 'Telemetria',
     },
     metrics: {
       created: {
@@ -326,6 +327,42 @@ export const hu = {
       cancel: 'Mégse',
       deleting: 'Törlés…',
       confirm: 'Ajánlat törlése',
+    },
+  },
+  adminTelemetry: {
+    title: 'Sablon teljesítmény telemetria',
+    description:
+      'Lásd, mely sablonok használata a legintenzívebb, hol jelennek meg hibák és mennyi ideig tart a renderelés.',
+    actions: {
+      refresh: 'Frissítés',
+    },
+    lastUpdated: 'Frissítve: {time}',
+    metrics: {
+      totalRenders: 'Összes render',
+      totalRendersHelper: 'Minden forrásból rögzített render esemény.',
+      failureRate: 'Hibaarány',
+      failureRateHelper: 'A sikertelen render próbálkozások aránya.',
+      averageRenderTime: 'Átlagos render idő',
+      averageRenderTimeHelper: 'Sikeres és sikertelen próbálkozások átlagos futási ideje.',
+    },
+    table: {
+      title: 'Sablonok használati toplistája',
+      description: 'Részletes statisztika sablononként: render szám, hibák és átlagos idő.',
+      columns: {
+        template: 'Sablon',
+        totalRenders: 'Összes',
+        successes: 'Sikeres',
+        failures: 'Sikertelen',
+        failureRate: 'Hibaarány',
+        averageRenderTime: 'Átlag idő',
+      },
+      empty: 'Még nem érkezett telemetria adat.',
+    },
+    toast: {
+      loadError: {
+        title: 'Telemetria nem elérhető',
+        description: 'Próbáld újra később, vagy ellenőrizd a naplókat.',
+      },
     },
   },
   billing: {

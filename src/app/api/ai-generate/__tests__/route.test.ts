@@ -24,6 +24,8 @@ const {
   buildOfferHtmlMock,
   listTemplatesMock,
   loadTemplateMock,
+  recordTemplateRenderTelemetryMock,
+  resolveTemplateRenderErrorCodeMock,
   templateStub,
 } = vi.hoisted(() => ({
   insertOfferMock: vi.fn(),
@@ -43,6 +45,8 @@ const {
   buildOfferHtmlMock: vi.fn(() => '<html />'),
   listTemplatesMock: vi.fn(),
   loadTemplateMock: vi.fn(),
+  recordTemplateRenderTelemetryMock: vi.fn(),
+  resolveTemplateRenderErrorCodeMock: vi.fn(() => 'render_error'),
   templateStub: {
     id: 'free.base@1.0.0',
     legacyId: 'modern',
@@ -156,6 +160,11 @@ vi.mock('@/lib/pdfInlineWorker', () => ({
   processPdfJobInline: processPdfJobInlineMock,
 }));
 
+vi.mock('@/lib/observability/templateTelemetry', () => ({
+  recordTemplateRenderTelemetry: recordTemplateRenderTelemetryMock,
+  resolveTemplateRenderErrorCode: resolveTemplateRenderErrorCodeMock,
+}));
+
 vi.mock('@/lib/sanitize', () => {
   const unsafePattern = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
   return {
@@ -235,6 +244,10 @@ describe('POST /api/ai-generate', () => {
     listTemplatesMock.mockReset();
     loadTemplateMock.mockReset();
     buildOfferHtmlMock.mockReset();
+    recordTemplateRenderTelemetryMock.mockReset();
+    resolveTemplateRenderErrorCodeMock.mockReset();
+    resolveTemplateRenderErrorCodeMock.mockReturnValue('render_error');
+    recordTemplateRenderTelemetryMock.mockResolvedValue(undefined);
 
     insertOfferMock.mockResolvedValue({ error: null });
     enqueuePdfJobMock.mockRejectedValue(new Error('queue failed'));
@@ -382,6 +395,14 @@ describe('POST /api/ai-generate', () => {
     });
 
     expect(dispatchPdfJobMock).not.toHaveBeenCalled();
+    expect(recordTemplateRenderTelemetryMock).toHaveBeenCalledTimes(1);
+    expect(recordTemplateRenderTelemetryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        templateId: 'free.base@1.0.0',
+        renderer: 'api.ai_generate.render',
+        outcome: 'success',
+      }),
+    );
   });
 
   it('falls back to inline PDF generation when dispatch fails', async () => {
@@ -431,6 +452,46 @@ describe('POST /api/ai-generate', () => {
         jobId: 'job-token',
         offerId: 'offer-uuid',
         storagePath: expect.stringContaining('offer-uuid.pdf'),
+      }),
+    );
+  });
+
+  it('records telemetry failure when template rendering throws', async () => {
+    buildOfferHtmlMock.mockImplementationOnce(() => {
+      throw new Error('render failed');
+    });
+
+    const { POST } = await import('../route');
+
+    const request = createRequest({
+      title: 'Ajánlat címe',
+      industry: 'Marketing',
+      projectDetails: {
+        overview: 'Részletes leírás',
+        deliverables: '',
+        timeline: '',
+        constraints: '',
+      },
+      deadline: '',
+      language: 'hu',
+      brandVoice: 'friendly',
+      style: 'detailed',
+      prices: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
+      aiOverrideHtml: '<p>Előnézet</p>',
+      clientId: null,
+      pdfWebhookUrl: null,
+      imageAssets: [],
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(500);
+    expect(recordTemplateRenderTelemetryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        templateId: 'free.base@1.0.0',
+        renderer: 'api.ai_generate.render',
+        outcome: 'failure',
+        errorCode: 'render_error',
       }),
     );
   });
