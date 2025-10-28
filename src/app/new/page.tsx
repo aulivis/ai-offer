@@ -1,24 +1,19 @@
 'use client';
 
 import { t } from '@/copy';
-import { ChangeEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
-import { priceTableHtml, summarize } from '@/app/lib/pricing';
-import { offerBodyMarkup, OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
-import {
-  DEFAULT_OFFER_TEMPLATE_ID,
-  enforceTemplateForPlan,
-  type OfferTemplateId,
-  type SubscriptionPlan,
-} from '@/app/lib/offerTemplates';
+import { summarize } from '@/app/lib/pricing';
+import { OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
+import { type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
@@ -70,12 +65,6 @@ type Client = {
   representative?: string;
   phone?: string;
   email?: string;
-};
-
-type BrandingState = {
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  logoUrl?: string | null;
 };
 
 type OfferSections = {
@@ -138,7 +127,6 @@ const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
   timeline: 400,
   constraints: 400,
 };
-const PREVIEW_TIMEOUT_SECONDS = Math.ceil(STREAM_TIMEOUT_MS / 1000);
 const MAX_PREVIEW_TIMEOUT_RETRIES = 2;
 const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
@@ -201,7 +189,6 @@ export default function NewOfferWizard() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
-  const [offerTemplate, setOfferTemplate] = useState<OfferTemplateId>(DEFAULT_OFFER_TEMPLATE_ID);
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>([
     'Marketing',
@@ -240,18 +227,9 @@ export default function NewOfferWizard() {
     '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>',
   );
   const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewCountdown, setPreviewCountdown] = useState(PREVIEW_TIMEOUT_SECONDS);
-  const [previewCountdownToken, setPreviewCountdownToken] = useState(0);
-  const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLocked, setPreviewLocked] = useState(false);
-  const [isPreviewSheetOpen, setIsPreviewSheetOpen] = useState(false);
-  const previewSheetId = useId();
-  const previewSheetTitleId = `${previewSheetId}-title`;
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
-  const previewCountdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [branding, setBranding] = useState<BrandingState>({});
-  const [profileCompanyName, setProfileCompanyName] = useState('');
 
   // edit on step 3
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -283,20 +261,8 @@ export default function NewOfferWizard() {
         setAvailableIndustries(prof.industries);
         setForm((f) => ({ ...f, industry: prof.industries?.[0] ?? f.industry }));
       }
-      setProfileCompanyName(prof?.company_name ?? '');
-      setBranding({
-        primaryColor: prof?.brand_color_primary ?? null,
-        secondaryColor: prof?.brand_color_secondary ?? null,
-        logoUrl: prof?.brand_logo_url ?? null,
-      });
       const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setPlan(normalizedPlan);
-      setOfferTemplate(
-        enforceTemplateForPlan(
-          typeof prof?.offer_template === 'string' ? prof.offer_template : null,
-          normalizedPlan,
-        ),
-      );
 
       const { data: acts } = await sb
         .from('activities')
@@ -353,62 +319,6 @@ export default function NewOfferWizard() {
     };
   }, []);
 
-  useEffect(() => {
-    const clearCountdown = () => {
-      if (previewCountdownIntervalRef.current) {
-        clearInterval(previewCountdownIntervalRef.current);
-        previewCountdownIntervalRef.current = null;
-      }
-    };
-
-    if (!previewLoading) {
-      clearCountdown();
-      setPreviewCountdown(PREVIEW_TIMEOUT_SECONDS);
-      return clearCountdown;
-    }
-
-    clearCountdown();
-    setPreviewCountdown(PREVIEW_TIMEOUT_SECONDS);
-    previewCountdownIntervalRef.current = setInterval(() => {
-      setPreviewCountdown((prev) => {
-        if (prev <= 1) {
-          clearCountdown();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return clearCountdown;
-  }, [previewLoading, previewCountdownToken]);
-
-  useEffect(() => {
-    if (!isPreviewSheetOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsPreviewSheetOpen(false);
-      }
-    };
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isPreviewSheetOpen]);
-
-  useEffect(() => {
-    if (step !== 1) {
-      setIsPreviewSheetOpen(false);
-    }
-  }, [step]);
-
   const filteredActivities = useMemo(() => {
     return activities.filter(
       (a) => (a.industries || []).length === 0 || a.industries.includes(form.industry),
@@ -427,12 +337,6 @@ export default function NewOfferWizard() {
   }, [form.projectDetails]);
   const hasPreviewInputs = form.title.trim().length > 0 && projectDetailsText.trim().length > 0;
   const imageLimitReached = imageAssets.length >= MAX_IMAGE_COUNT;
-  const previewButtonLabel = previewLocked
-    ? 'Előnézet kész'
-    : previewLoading
-      ? 'Generálás…'
-      : 'AI előnézet generálása';
-  const previewButtonDisabled = previewLocked || previewLoading || !hasPreviewInputs;
 
   // === Autocomplete (cég) ===
   const filteredClients = useMemo(() => {
@@ -464,7 +368,6 @@ export default function NewOfferWizard() {
     const hasDescription = projectDetailsText.trim().length > 0;
     if (!hasTitle || !hasDescription) {
       setPreviewLoading(false);
-      setPreviewError(null);
       return;
     }
 
@@ -482,8 +385,6 @@ export default function NewOfferWizard() {
 
       const nextRequestId = previewRequestIdRef.current + 1;
       previewRequestIdRef.current = nextRequestId;
-
-      setPreviewCountdownToken((value) => value + 1);
 
       const controller = new AbortController();
       previewAbortRef.current = controller;
@@ -621,7 +522,6 @@ export default function NewOfferWizard() {
     };
 
     setPreviewLoading(true);
-    setPreviewError(null);
 
     try {
       for (let attempt = 0; attempt <= MAX_PREVIEW_TIMEOUT_RETRIES; attempt += 1) {
@@ -647,7 +547,6 @@ export default function NewOfferWizard() {
             continue;
           }
           const finalMessage = `${result.message} ${t('toasts.preview.finalFailureSuffix')}`;
-          setPreviewError(finalMessage);
           showToast({
             title: t('toasts.preview.error.title'),
             description: finalMessage,
@@ -657,7 +556,6 @@ export default function NewOfferWizard() {
         }
         if (result.status === 'error') {
           if (result.message) {
-            setPreviewError(result.message);
             showToast({
               title: t('toasts.preview.error.title'),
               description: result.message,
@@ -836,29 +734,6 @@ export default function NewOfferWizard() {
 
   const totals = useMemo(() => summarize(rows), [rows]);
 
-  const pricePreviewHtml = useMemo(() => priceTableHtml(rows), [rows]);
-  const previewMarkup = useMemo(() => {
-    const headerCompany = profileCompanyName.trim() || 'Vállalkozásod neve';
-    const title = form.title.trim() || 'Árajánlat';
-    const body = editedHtml || previewHtml || '<p>(nincs előnézet)</p>';
-    return offerBodyMarkup({
-      title,
-      companyName: headerCompany,
-      aiBodyHtml: body,
-      priceTableHtml: pricePreviewHtml,
-      branding,
-      templateId: offerTemplate,
-    });
-  }, [
-    branding,
-    editedHtml,
-    form.title,
-    offerTemplate,
-    previewHtml,
-    pricePreviewHtml,
-    profileCompanyName,
-  ]);
-
   async function ensureClient(): Promise<string | undefined> {
     const name = (client.company_name || '').trim();
     if (!name) return undefined;
@@ -1001,19 +876,13 @@ export default function NewOfferWizard() {
 
   const goToStep = useCallback(
     (nextStep: number) => {
-      if (step === 1 && nextStep > 1 && !previewLocked) {
-        showToast({
-          title: t('toasts.preview.requiredForNextStep.title'),
-          description: t('toasts.preview.requiredForNextStep.description'),
-          variant: 'warning',
-        });
-        return;
-      }
-
       const clampedStep = Math.max(1, Math.min(3, nextStep));
+      if (step === 1 && clampedStep > 1) {
+        handleGeneratePreview();
+      }
       setStep(clampedStep);
     },
-    [previewLocked, showToast, step],
+    [handleGeneratePreview, step],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
@@ -1033,69 +902,6 @@ export default function NewOfferWizard() {
       onSelect: () => goToStep(3),
     },
   ];
-
-  const renderPreviewCard = () => (
-    <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7 md:sticky md:top-6 md:max-h-[calc(100vh-120px)] md:overflow-y-auto">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-sm font-semibold text-slate-900">
-            {t('offers.previewCard.heading')}
-          </h2>
-          <p className="text-xs text-slate-500">{t('offers.wizard.preview.singleUseNotice')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="rounded-full border border-border/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-            {t('offers.wizard.forms.details.previewBadge')}
-          </span>
-          {previewLocked ? (
-            <span className="hidden rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-600 sm:inline">
-              Előnézet kész
-            </span>
-          ) : null}
-        </div>
-      </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {previewLocked ? (
-          <span className="sm:hidden rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
-            Előnézet kész
-          </span>
-        ) : null}
-        <Button
-          type="button"
-          onClick={handleGeneratePreview}
-          disabled={previewButtonDisabled}
-          className="w-full rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:w-auto"
-          title={hasPreviewInputs ? undefined : 'Add meg a címet és a leírást az előnézethez.'}
-        >
-          {previewButtonLabel}
-        </Button>
-      </div>
-      {previewError ? (
-        <div className="rounded-2xl border border-rose-200/70 bg-rose-50/80 px-3 py-2 text-xs text-rose-700">
-          {previewError}
-        </div>
-      ) : null}
-      <div className="min-h-[280px] overflow-hidden rounded-2xl border border-border/70 bg-white p-4 shadow-inner">
-        {previewLoading ? (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-slate-500">
-            <div className="flex items-center gap-3">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-slate-500" />
-              <div className="flex flex-col">
-                <span>Az AI most készíti az előnézetet…</span>
-                <span className="text-xs text-slate-500">Kb. {previewCountdown} mp van hátra…</span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500">Ez néhány másodpercet is igénybe vehet.</p>
-          </div>
-        ) : (
-          <>
-            <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
-            <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
-          </>
-        )}
-      </div>
-    </Card>
-  );
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
@@ -1167,46 +973,74 @@ export default function NewOfferWizard() {
         </Card>
 
         {step === 1 && (
-          <>
-            <section className="grid gap-6 md:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)] md:items-start md:gap-8">
-              <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
-                <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    {t('offers.wizard.steps.details')}
-                  </h2>
-                  <p className="text-sm text-slate-600">
-                    {t('offers.wizard.forms.details.sections.overviewHint')}
+          <section className="space-y-6">
+            <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
+              <div className="space-y-3">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  {t('offers.wizard.steps.details')}
+                </h2>
+                <p className="text-sm text-slate-600">
+                  {t('offers.wizard.forms.details.sections.overviewHint')}
+                </p>
+              </div>
+
+              <section className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {t('offers.wizard.forms.details.sections.style')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.sections.styleHelper')}
                   </p>
                 </div>
-
-                <div className="md:hidden">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="md"
-                    onClick={() => setIsPreviewSheetOpen(true)}
-                    aria-haspopup="dialog"
-                    aria-expanded={isPreviewSheetOpen}
-                    aria-controls={previewSheetId}
-                    className="w-full justify-between rounded-2xl px-4 py-3 text-sm"
-                  >
-                    <span>{t('offers.previewCard.heading')}</span>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      {t('common.open')}
-                    </span>
-                  </Button>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    {
+                      value: 'compact' as const,
+                      label: t('offers.wizard.forms.details.styleOptions.compact.label'),
+                      description: t(
+                        'offers.wizard.forms.details.styleOptions.compact.description',
+                      ),
+                    },
+                    {
+                      value: 'detailed' as const,
+                      label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
+                      description: t(
+                        'offers.wizard.forms.details.styleOptions.detailed.description',
+                      ),
+                    },
+                  ].map((option) => {
+                    const active = form.style === option.value;
+                    return (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, style: option.value }))}
+                        className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                          active
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-lg'
+                            : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">{option.label}</span>
+                        <span className="text-xs text-current/80">{option.description}</span>
+                      </Button>
+                    );
+                  })}
                 </div>
+              </section>
 
-                <section className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      {t('offers.wizard.forms.details.sections.overview')}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.sections.overviewHelper')}
-                    </p>
-                  </div>
-                  <div className="grid gap-6">
+              <section className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {t('offers.wizard.forms.details.sections.overview')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {t('offers.wizard.forms.details.sections.overviewHelper')}
+                  </p>
+                </div>
+                <div className="grid gap-6">
+                  {form.style === 'detailed' ? (
                     <Select
                       label={t('offers.wizard.forms.details.industryLabel')}
                       value={form.industry}
@@ -1218,14 +1052,32 @@ export default function NewOfferWizard() {
                         </option>
                       ))}
                     </Select>
+                  ) : null}
 
-                    <Input
-                      label={t('offers.wizard.forms.details.titleLabel')}
-                      placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
-                      value={form.title}
-                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    />
+                  <Input
+                    label={t('offers.wizard.forms.details.titleLabel')}
+                    placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
+                    value={form.title}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  />
 
+                  <Textarea
+                    label={t('offers.wizard.forms.details.descriptionLabel')}
+                    placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
+                    value={form.projectDetails.overview}
+                    maxLength={PROJECT_DETAIL_LIMITS.overview}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        projectDetails: {
+                          ...f.projectDetails,
+                          overview: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+
+                  {form.style === 'detailed' ? (
                     <div className="space-y-4">
                       <div className="space-y-4 rounded-2xl border border-border/70 bg-white/70 p-4">
                         <div className="flex items-start justify-between gap-4">
@@ -1257,33 +1109,37 @@ export default function NewOfferWizard() {
                         )}
                       </div>
 
-                      {PROJECT_DETAIL_FIELDS.map((field) => (
-                        <Textarea
-                          key={field}
-                          value={form.projectDetails[field]}
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              projectDetails: {
-                                ...prev.projectDetails,
-                                [field]: event.target.value,
-                              },
-                            }))
-                          }
-                          label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
-                          placeholder={t(
-                            `offers.wizard.forms.details.fields.${field}.placeholder` as const,
-                          )}
-                          help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
-                          maxLength={PROJECT_DETAIL_LIMITS[field]}
-                          showCounter
-                          className="min-h-[7.5rem]"
-                        />
-                      ))}
+                      {PROJECT_DETAIL_FIELDS.filter((field) => field !== 'overview').map(
+                        (field) => (
+                          <Textarea
+                            key={field}
+                            value={form.projectDetails[field]}
+                            onChange={(event) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                projectDetails: {
+                                  ...prev.projectDetails,
+                                  [field]: event.target.value,
+                                },
+                              }))
+                            }
+                            label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
+                            placeholder={t(
+                              `offers.wizard.forms.details.fields.${field}.placeholder` as const,
+                            )}
+                            help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
+                            maxLength={PROJECT_DETAIL_LIMITS[field]}
+                            showCounter
+                            className="min-h-[7.5rem]"
+                          />
+                        ),
+                      )}
                     </div>
-                  </div>
-                </section>
+                  ) : null}
+                </div>
+              </section>
 
+              {form.style === 'detailed' ? (
                 <section className="space-y-4">
                   <div className="space-y-1">
                     <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -1335,172 +1191,87 @@ export default function NewOfferWizard() {
                     </Select>
                   </div>
                 </section>
+              ) : null}
 
-                <section className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      {t('offers.wizard.forms.details.sections.style')}
-                    </h3>
+              <section className="space-y-5 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {t('offers.wizard.forms.details.sections.client')}
+                    </p>
                     <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.sections.styleHelper')}
+                      {t('offers.wizard.forms.details.sections.clientHelper')}
                     </p>
                   </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      {
-                        value: 'compact' as const,
-                        label: t('offers.wizard.forms.details.styleOptions.compact.label'),
-                        description: t(
-                          'offers.wizard.forms.details.styleOptions.compact.description',
-                        ),
-                      },
-                      {
-                        value: 'detailed' as const,
-                        label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
-                        description: t(
-                          'offers.wizard.forms.details.styleOptions.detailed.description',
-                        ),
-                      },
-                    ].map((option) => {
-                      const active = form.style === option.value;
-                      return (
+                </div>
+                <div className="relative">
+                  <Input
+                    label={t('offers.wizard.forms.details.clientLookupLabel')}
+                    placeholder={t('offers.wizard.forms.details.clientLookupPlaceholder')}
+                    value={client.company_name}
+                    onChange={(e) => {
+                      setClientId(undefined);
+                      setClient((c) => ({ ...c, company_name: e.target.value }));
+                      setShowClientDrop(true);
+                    }}
+                    onFocus={() => setShowClientDrop(true)}
+                  />
+                  {showClientDrop && filteredClients.length > 0 && (
+                    <div className="absolute z-10 mt-2 max-h-52 w-full overflow-auto rounded-2xl border border-border/70 bg-white shadow-xl">
+                      {filteredClients.map((c) => (
                         <Button
-                          key={option.value}
+                          key={c.id}
                           type="button"
-                          onClick={() => setForm((f) => ({ ...f, style: option.value }))}
-                          className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                            active
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-lg'
-                              : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
-                          }`}
+                          className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          onMouseDown={() => pickClient(c)}
                         >
-                          <span className="text-sm font-semibold">{option.label}</span>
-                          <span className="text-xs text-current/80">{option.description}</span>
+                          <span className="font-medium text-slate-700">{c.company_name}</span>
+                          {c.email ? (
+                            <span className="text-xs text-slate-500">{c.email}</span>
+                          ) : null}
                         </Button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                <section className="space-y-5 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-5">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-700">
-                        {t('offers.wizard.forms.details.sections.client')}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {t('offers.wizard.forms.details.sections.clientHelper')}
-                      </p>
+                      ))}
                     </div>
-                  </div>
-                  <div className="relative">
+                  )}
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input
+                    label={t('offers.wizard.forms.details.clientFieldAddress')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
+                    value={client.address || ''}
+                    onChange={(e) => setClient((c) => ({ ...c, address: e.target.value }))}
+                  />
+                  <Input
+                    label={t('offers.wizard.forms.details.clientFieldTax')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldTax')}
+                    value={client.tax_id || ''}
+                    onChange={(e) => setClient((c) => ({ ...c, tax_id: e.target.value }))}
+                  />
+                  <Input
+                    label={t('offers.wizard.forms.details.clientFieldRepresentative')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldRepresentative')}
+                    value={client.representative || ''}
+                    onChange={(e) => setClient((c) => ({ ...c, representative: e.target.value }))}
+                  />
+                  <Input
+                    label={t('offers.wizard.forms.details.clientFieldPhone')}
+                    placeholder={t('offers.wizard.forms.details.clientFieldPhone')}
+                    value={client.phone || ''}
+                    onChange={(e) => setClient((c) => ({ ...c, phone: e.target.value }))}
+                  />
+                  <div className="sm:col-span-2">
                     <Input
-                      label={t('offers.wizard.forms.details.clientLookupLabel')}
-                      placeholder={t('offers.wizard.forms.details.clientLookupPlaceholder')}
-                      value={client.company_name}
-                      onChange={(e) => {
-                        setClientId(undefined);
-                        setClient((c) => ({ ...c, company_name: e.target.value }));
-                        setShowClientDrop(true);
-                      }}
-                      onFocus={() => setShowClientDrop(true)}
+                      label={t('offers.wizard.forms.details.clientFieldEmail')}
+                      placeholder={t('offers.wizard.forms.details.clientFieldEmail')}
+                      value={client.email || ''}
+                      onChange={(e) => setClient((c) => ({ ...c, email: e.target.value }))}
                     />
-                    {showClientDrop && filteredClients.length > 0 && (
-                      <div className="absolute z-10 mt-2 max-h-52 w-full overflow-auto rounded-2xl border border-border/70 bg-white shadow-xl">
-                        {filteredClients.map((c) => (
-                          <Button
-                            key={c.id}
-                            type="button"
-                            className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            onMouseDown={() => pickClient(c)}
-                          >
-                            <span className="font-medium text-slate-700">{c.company_name}</span>
-                            {c.email ? (
-                              <span className="text-xs text-slate-500">{c.email}</span>
-                            ) : null}
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldAddress')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
-                      value={client.address || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, address: e.target.value }))}
-                    />
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldTax')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldTax')}
-                      value={client.tax_id || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, tax_id: e.target.value }))}
-                    />
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldRepresentative')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldRepresentative')}
-                      value={client.representative || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, representative: e.target.value }))}
-                    />
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldPhone')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldPhone')}
-                      value={client.phone || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, phone: e.target.value }))}
-                    />
-                    <div className="sm:col-span-2">
-                      <Input
-                        label={t('offers.wizard.forms.details.clientFieldEmail')}
-                        placeholder={t('offers.wizard.forms.details.clientFieldEmail')}
-                        value={client.email || ''}
-                        onChange={(e) => setClient((c) => ({ ...c, email: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                </section>
-              </Card>
-
-              <div className="hidden md:block md:self-start">{renderPreviewCard()}</div>
-            </section>
-
-            {isPreviewSheetOpen ? (
-              <div
-                id={previewSheetId}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby={previewSheetTitleId}
-                className="fixed inset-0 z-50 flex flex-col bg-slate-900/40 backdrop-blur-sm md:hidden"
-              >
-                <button
-                  type="button"
-                  aria-label={t('common.close')}
-                  className="flex-1"
-                  onClick={() => setIsPreviewSheetOpen(false)}
-                />
-                <div className="mt-auto w-full rounded-t-3xl bg-white shadow-[0_-20px_40px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/5">
-                  <div className="flex items-center justify-between border-b border-border/70 px-6 py-4">
-                    <h2 id={previewSheetTitleId} className="text-sm font-semibold text-slate-900">
-                      {t('offers.previewCard.heading')}
-                    </h2>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsPreviewSheetOpen(false)}
-                      className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 hover:text-slate-900"
-                    >
-                      {t('common.close')}
-                    </Button>
-                  </div>
-                  <div className="max-h-[75vh] overflow-y-auto px-4 pb-6 pt-4">
-                    {renderPreviewCard()}
                   </div>
                 </div>
-              </div>
-            ) : null}
-          </>
+              </section>
+            </Card>
+          </section>
         )}
-
         {step === 2 && (
           <section className="space-y-6">
             {filteredActivities.length > 0 && (
@@ -1720,7 +1491,6 @@ export default function NewOfferWizard() {
             {step < 3 && (
               <Button
                 onClick={() => goToStep(step + 1)}
-                disabled={step === 1 && !previewLocked}
                 className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-200"
               >
                 Tovább
@@ -1728,11 +1498,6 @@ export default function NewOfferWizard() {
             )}
           </div>
         </div>
-        {step === 1 && !previewLocked ? (
-          <p className="text-xs font-medium text-slate-500">
-            A továbblépéshez előbb generáld le az AI előnézetet az első lépésben.
-          </p>
-        ) : null}
       </div>
     </AppFrame>
   );
