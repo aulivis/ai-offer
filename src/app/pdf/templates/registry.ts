@@ -109,7 +109,16 @@ export function registerTemplate(templateModule: unknown): OfferTemplate {
 
 export function listTemplates({ tier }: { tier?: TemplateTier } = {}): OfferTemplate[] {
   const allTemplates = Array.from(templates.values());
-  return tier ? allTemplates.filter((template) => template.tier === tier) : allTemplates;
+
+  if (!tier) {
+    return allTemplates;
+  }
+
+  if (tier === 'premium') {
+    return allTemplates;
+  }
+
+  return allTemplates.filter((template) => template.tier === tier);
 }
 
 export function loadTemplate(id: TemplateId): OfferTemplate {

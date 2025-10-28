@@ -8,9 +8,15 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 // live under `app/pdf/templates`.
 import { PriceRow } from '@/app/lib/pricing';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/registry';
-import type { Branding, ThemeTokens } from '@/app/pdf/templates/types';
-import { enforceTemplateForPlan, type SubscriptionPlan } from '@/app/lib/offerTemplates';
+import { listTemplates, loadTemplate } from '@/app/pdf/templates/registry';
+import type {
+  Branding,
+  OfferTemplate,
+  TemplateId,
+  TemplateTier,
+  ThemeTokens,
+} from '@/app/pdf/templates/types';
+import { type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import { v4 as uuid } from 'uuid';
@@ -43,6 +49,25 @@ export const runtime = 'nodejs';
 
 const USER_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást a csomagban.';
 const DEVICE_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást ezen az eszközön.';
+
+const DEFAULT_TEMPLATE_ID: TemplateId = 'free.base@1.0.0';
+
+function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+  return plan === 'pro' ? 'premium' : 'free';
+}
+
+function findTemplateIdByLegacyId(
+  templates: Array<OfferTemplate & { legacyId?: string }>,
+  legacyId: string | null | undefined,
+): TemplateId | null {
+  if (typeof legacyId !== 'string' || legacyId.trim().length === 0) {
+    return null;
+  }
+
+  const normalized = legacyId.trim();
+  const match = templates.find((template) => template.legacyId === normalized);
+  return match ? match.id : null;
+}
 
 function normalizeUsageLimitError(message: string | undefined): string | null {
   if (!message) return null;
@@ -433,6 +458,10 @@ const aiGenerateRequestSchema = z
       (value) => (value === null || value === undefined || value === '' ? undefined : value),
       z.string().trim().optional(),
     ),
+    templateId: z.preprocess(
+      (value) => (value === null || value === undefined || value === '' ? undefined : value),
+      z.string().trim().optional(),
+    ),
     pdfWebhookUrl: z.preprocess(
       (value) => (value === null || value === undefined || value === '' ? undefined : value),
       z.string().url(t('validation.urlInvalid')).optional(),
@@ -563,6 +592,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       prices,
       aiOverrideHtml,
       clientId,
+      templateId,
       pdfWebhookUrl,
       imageAssets,
     } = parsed.data;
@@ -763,11 +793,38 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
     };
 
-    const requestedTemplateLegacyId =
-      typeof profile?.offer_template === 'string' ? profile.offer_template : null;
-    const enforcedTemplateLegacyId = enforceTemplateForPlan(requestedTemplateLegacyId, plan);
+    const planTier = planToTemplateTier(plan);
+    const allTemplates = listTemplates() as Array<OfferTemplate & { legacyId?: string }>;
+    const allowedTemplates =
+      planTier === 'premium'
+        ? allTemplates
+        : allTemplates.filter((template) => template.tier === 'free');
 
-    const template = getOfferTemplateByLegacyId(enforcedTemplateLegacyId);
+    const normalizedRequestedTemplateId =
+      typeof templateId === 'string' && templateId.trim().length > 0
+        ? (templateId.trim() as TemplateId)
+        : null;
+    const requestedTemplate = normalizedRequestedTemplateId
+      ? allowedTemplates.find((template) => template.id === normalizedRequestedTemplateId) || null
+      : null;
+
+    const profileTemplateId = findTemplateIdByLegacyId(
+      allTemplates,
+      typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+    );
+    const profileTemplate = profileTemplateId
+      ? allowedTemplates.find((template) => template.id === profileTemplateId) || null
+      : null;
+
+    const template =
+      requestedTemplate ||
+      profileTemplate ||
+      allowedTemplates[0] ||
+      allTemplates.find((template) => template.id === DEFAULT_TEMPLATE_ID) ||
+      (loadTemplate(DEFAULT_TEMPLATE_ID) as OfferTemplate & { legacyId?: string });
+    const resolvedTemplateId = template.id;
+    const resolvedLegacyTemplateId = (template as { legacyId?: string }).legacyId ?? 'modern';
+    const resolvedRequestedTemplateId = normalizedRequestedTemplateId ?? resolvedTemplateId;
 
     const html = buildOfferHtml(
       {
@@ -775,8 +832,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           title: safeTitle || 'Árajánlat',
           companyName: sanitizeInput(profile?.company_name || ''),
           bodyHtml: aiHtmlForPdf,
-          templateId: template.id,
-          legacyTemplateId: template.legacyId,
+          templateId: resolvedTemplateId,
+          legacyTemplateId: resolvedLegacyTemplateId,
           locale: normalizedLanguage || 'hu',
         },
         rows,
@@ -802,6 +859,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         language,
         brandVoice,
         style,
+        templateId: resolvedTemplateId,
       },
       ai_text: aiHtmlForStorage,
       price_json: rows,
@@ -830,8 +888,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
       deviceId: deviceLimit !== null ? deviceId : null,
       deviceLimit,
-      templateId: template.id,
-      requestedTemplateId: requestedTemplateLegacyId,
+      templateId: resolvedTemplateId,
+      requestedTemplateId: resolvedRequestedTemplateId,
     };
 
     try {
@@ -880,9 +938,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           ...(pdfJobInput.deviceLimit !== undefined
             ? { deviceLimit: pdfJobInput.deviceLimit }
             : {}),
-          ...(pdfJobInput.templateId !== undefined
-            ? { templateId: pdfJobInput.templateId }
-            : {}),
+          ...(pdfJobInput.templateId !== undefined ? { templateId: pdfJobInput.templateId } : {}),
           ...(pdfJobInput.requestedTemplateId !== undefined
             ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
             : {}),

@@ -22,7 +22,8 @@ const {
   processPdfJobInlineMock,
   supabaseServerMock,
   buildOfferHtmlMock,
-  getOfferTemplateByLegacyIdMock,
+  listTemplatesMock,
+  loadTemplateMock,
   templateStub,
 } = vi.hoisted(() => ({
   insertOfferMock: vi.fn(),
@@ -40,7 +41,8 @@ const {
   processPdfJobInlineMock: vi.fn(),
   supabaseServerMock: vi.fn(),
   buildOfferHtmlMock: vi.fn(() => '<html />'),
-  getOfferTemplateByLegacyIdMock: vi.fn(),
+  listTemplatesMock: vi.fn(),
+  loadTemplateMock: vi.fn(),
   templateStub: {
     id: 'free.base@1.0.0',
     legacyId: 'modern',
@@ -109,10 +111,11 @@ vi.mock('@/app/pdf/templates/engine', () => ({
 }));
 
 vi.mock('@/app/pdf/templates/registry', () => ({
-  getOfferTemplateByLegacyId: getOfferTemplateByLegacyIdMock,
+  listTemplates: listTemplatesMock,
+  loadTemplate: loadTemplateMock,
 }));
-
-getOfferTemplateByLegacyIdMock.mockReturnValue(templateStub);
+listTemplatesMock.mockReturnValue([templateStub]);
+loadTemplateMock.mockReturnValue(templateStub);
 
 vi.mock('@/lib/queue/pdf', () => ({
   enqueuePdfJob: enqueuePdfJobMock,
@@ -293,6 +296,7 @@ describe('POST /api/ai-generate', () => {
         language: 'hu',
         brandVoice: 'friendly',
         style: 'detailed',
+        templateId: 'free.base@1.0.0',
       },
       ai_text: '<p>Előnézet</p>',
       price_json: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
@@ -398,9 +402,7 @@ describe('POST /api/ai-generate', () => {
     const { POST } = await import('../route');
 
     enqueuePdfJobMock.mockResolvedValue(undefined);
-    dispatchPdfJobMock.mockRejectedValue(
-      new Error('Edge Function returned a non-2xx status code'),
-    );
+    dispatchPdfJobMock.mockRejectedValue(new Error('Edge Function returned a non-2xx status code'));
     processPdfJobInlineMock.mockRejectedValue(
       new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.'),
     );

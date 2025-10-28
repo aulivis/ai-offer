@@ -851,6 +851,15 @@ export const hu = {
           'Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.',
         loadingHint: 'Ez néhány másodpercet is igénybe vehet.',
       },
+      previewTemplates: {
+        heading: 'PDF sablon',
+        helper: 'Válaszd ki, milyen dizájnnal készüljön el a PDF ajánlat.',
+        lockedTitle: 'Prémium sablonok',
+        lockedDescription: 'A prémium sablonok Pro előfizetéssel érhetők el.',
+        previewHeading: 'PDF előnézet',
+        previewHint: 'A végleges PDF a kiválasztott sablont és a márkázott színeidet használja.',
+        summaryLabel: 'Sablon',
+      },
       toast: {
         previewRequiredTitle: 'Előnézet szükséges',
         previewRequiredDescription: 'Generáld le az AI előnézetet a továbblépéshez.',
