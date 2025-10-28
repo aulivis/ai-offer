@@ -804,7 +804,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         rows,
         branding: brandingOptions,
         i18n: hu,
-        tokens: createThemeTokens(brandingOptions),
+        tokens: createThemeTokens(template.tokens, brandingOptions),
       },
       template,
     );

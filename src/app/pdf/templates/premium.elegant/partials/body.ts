@@ -24,37 +24,18 @@ function sanitizeLogoUrl(value: string | null | undefined): string | null {
   }
 }
 
-function createStyleAttribute(tokens: RenderCtx['tokens']): string {
-  const primary = tokens['color.primary'] ?? '#0f172a';
-  const primaryContrast = tokens['color.primary-contrast'] ?? '#ffffff';
-  const secondary = tokens['color.secondary'] ?? '#f3f4f6';
-  const secondaryBorder = tokens['color.secondary-border'] ?? '#d1d5db';
-  const secondaryText = tokens['color.secondary-text'] ?? '#1f2937';
-
-  return (
-    [
-      `--brand-primary: ${primary}`,
-      `--brand-primary-contrast: ${primaryContrast}`,
-      `--brand-secondary: ${secondary}`,
-      `--brand-secondary-border: ${secondaryBorder}`,
-      `--brand-secondary-text: ${secondaryText}`,
-    ].join('; ') + ';'
-  );
-}
-
 export function renderBody(ctx: RenderCtx): string {
   const priceTable = priceTableHtml(ctx.rows);
   const safeCompany = sanitizeInput(ctx.offer.companyName || '');
   const safeTitle = sanitizeInput(ctx.offer.title || 'Árajánlat');
   const logoUrl = sanitizeLogoUrl(ctx.branding?.logoUrl ?? null);
-  const styleAttr = createStyleAttribute(ctx.tokens);
   const logoSlot = logoUrl
     ? `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--filled"><img class="offer-doc__logo offer-doc__logo--premium" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
     : '<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"></div>';
 
   return `
     <main class="offer-template offer-template--premium">
-      <article class="offer-doc offer-doc--premium" style="${styleAttr}">
+      <article class="offer-doc offer-doc--premium">
         <header class="offer-doc__header offer-doc__header--premium">
           <div class="offer-doc__premium-banner">
             ${logoSlot}

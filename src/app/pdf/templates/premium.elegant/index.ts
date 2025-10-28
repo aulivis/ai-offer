@@ -3,6 +3,7 @@ import type { OfferTemplateId as LegacyOfferTemplateId } from '@/app/lib/offerTe
 
 import { renderBody } from './partials/body';
 import { renderHead } from './partials/head';
+import { premiumElegantTokens } from './tokens';
 
 export const premiumElegantTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId } = {
   id: 'premium.elegant@1.0.0',
@@ -10,6 +11,7 @@ export const premiumElegantTemplate: OfferTemplate & { legacyId: LegacyOfferTemp
   tier: 'premium',
   label: 'Prémium szalagos',
   version: '1.0.0',
+  tokens: premiumElegantTokens,
   capabilities: {
     'branding.logo': true,
     'branding.colors': true,
