@@ -52,49 +52,64 @@ export function summarize(rows: PriceRow[]): { net: number; vat: number; gross: 
  */
 export function priceTableHtml(rows: PriceRow[]): string {
   const totals = summarize(rows);
+  const formatNumber = (value: number) => value.toLocaleString('hu-HU');
+  const formatCurrency = (value: number) => `${value.toLocaleString('hu-HU')} Ft`;
+
   return `
-    <table class="offer-doc__pricing-table">
+    <table class="offer-doc__pricing-table" style="width: 100%; border-collapse: collapse;">
+      <colgroup>
+        <col style="width: 32%;" />
+        <col style="width: 12%;" />
+        <col style="width: 12%;" />
+        <col style="width: 16%;" />
+        <col style="width: 12%;" />
+        <col style="width: 16%;" />
+      </colgroup>
       <thead>
-        <tr>
-          <th>Tétel</th>
-          <th>Mennyiség</th>
-          <th>Egység</th>
-          <th>Egységár (HUF)</th>
-          <th>ÁFA %</th>
-          <th>Összesen (nettó)</th>
+        <tr style="background-color: #f1f4f8;">
+          <th style="text-align: left; padding: 8px 12px;">Tétel</th>
+          <th style="text-align: right; padding: 8px 12px;">Mennyiség</th>
+          <th style="text-align: left; padding: 8px 12px;">Egység</th>
+          <th style="text-align: right; padding: 8px 12px;">Egységár (Ft)</th>
+          <th style="text-align: right; padding: 8px 12px;">ÁFA %</th>
+          <th style="text-align: right; padding: 8px 12px;">Összesen (nettó)</th>
         </tr>
       </thead>
       <tbody>
         ${rows
-          .map((r) => {
+          .map((r, index) => {
             const qty = r.qty ?? 0;
             const unitPrice = r.unitPrice ?? 0;
+            const vatPct = r.vat ?? 0;
             const lineNet = qty * unitPrice;
+            const zebraStyle = index % 2 === 1 ? 'background-color: #fafbff;' : '';
+            const name = sanitizeInput(r.name || '');
+            const unit = sanitizeInput(r.unit || '');
             return `
-              <tr>
-                <td>${sanitizeInput(r.name || '')}</td>
-                <td>${qty}</td>
-                <td>${sanitizeInput(r.unit || '')}</td>
-                <td>${unitPrice.toLocaleString('hu-HU')}</td>
-                <td>${r.vat ?? 0}</td>
-                <td>${lineNet.toLocaleString('hu-HU')}</td>
+              <tr style="${zebraStyle}">
+                <td style="padding: 8px 12px; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${name}">${name}</td>
+                <td style="padding: 8px 12px; text-align: right;">${formatNumber(qty)}</td>
+                <td style="padding: 8px 12px;">${unit}</td>
+                <td style="padding: 8px 12px; text-align: right;">${formatCurrency(unitPrice)}</td>
+                <td style="padding: 8px 12px; text-align: right;">${formatNumber(vatPct)}</td>
+                <td style="padding: 8px 12px; text-align: right;">${formatCurrency(lineNet)}</td>
               </tr>
             `;
           })
           .join('')}
       </tbody>
       <tfoot>
-        <tr>
-          <td colspan="5"><b>Nettó összesen</b></td>
-          <td><b>${totals.net.toLocaleString('hu-HU')} Ft</b></td>
+        <tr style="background-color: #e6efff; font-weight: 600;">
+          <td style="padding: 10px 12px;" colspan="5">Nettó összesen</td>
+          <td style="padding: 10px 12px; text-align: right;">${formatCurrency(totals.net)}</td>
         </tr>
-        <tr>
-          <td colspan="5">ÁFA</td>
-          <td>${totals.vat.toLocaleString('hu-HU')} Ft</td>
+        <tr style="background-color: #eef3ff; font-weight: 600;">
+          <td style="padding: 10px 12px;" colspan="5">ÁFA</td>
+          <td style="padding: 10px 12px; text-align: right;">${formatCurrency(totals.vat)}</td>
         </tr>
-        <tr>
-          <td colspan="5"><b>Bruttó összesen</b></td>
-          <td><b>${totals.gross.toLocaleString('hu-HU')} Ft</b></td>
+        <tr style="background-color: #dbe7ff; font-weight: 700;">
+          <td style="padding: 12px 12px;" colspan="5">Bruttó összesen</td>
+          <td style="padding: 12px 12px; text-align: right;">${formatCurrency(totals.gross)}</td>
         </tr>
       </tfoot>
     </table>
