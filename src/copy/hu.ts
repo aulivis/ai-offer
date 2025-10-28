@@ -853,6 +853,9 @@ export const hu = {
       },
       forms: {
         details: {
+          sectionHeading: 'Projekt brief',
+          sectionDescription:
+            'Fogalmazd meg a legfontosabb hátteret, hogy az AI pontos ajánlatot készíthessen.',
           industryLabel: 'Iparág',
           titleLabel: 'Ajánlat címe',
           titlePlaceholder: 'Pl. Weboldal fejlesztés',
