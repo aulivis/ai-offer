@@ -9,13 +9,8 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { PriceRow } from '@/app/lib/pricing';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { listTemplates, loadTemplate } from '@/app/pdf/templates/registry';
-import type {
-  Branding,
-  OfferTemplate,
-  TemplateId,
-  TemplateTier,
-  ThemeTokens,
-} from '@/app/pdf/templates/types';
+import { createThemeTokens, normalizeBranding } from '@/app/pdf/templates/theme';
+import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import { type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
@@ -535,36 +530,6 @@ function applyImageAssetsToHtml(
   return { pdfHtml, storedHtml };
 }
 
-function normalizeBrandColor(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
-  return `#${trimmed.slice(1).toLowerCase()}`;
-}
-
-function contrastColor(hex: string): string {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.slice(0, 2), 16) / 255;
-  const g = parseInt(clean.slice(2, 4), 16) / 255;
-  const b = parseInt(clean.slice(4, 6), 16) / 255;
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 0.6 ? '#111827' : '#ffffff';
-}
-
-function createThemeTokens(branding?: Branding): ThemeTokens {
-  const primary = normalizeBrandColor(branding?.primaryColor) ?? '#0f172a';
-  const secondary = normalizeBrandColor(branding?.secondaryColor) ?? '#f3f4f6';
-  const contrast = contrastColor(primary);
-
-  return {
-    'color.primary': primary,
-    'color.primary-contrast': contrast,
-    'color.secondary': secondary,
-    'color.secondary-border': '#d1d5db',
-    'color.secondary-text': '#1f2937',
-  } satisfies ThemeTokens;
-}
-
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   try {
     // Parse and sanitize the incoming JSON body.  Sanitizing early
@@ -785,13 +750,13 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // ---- PDF queueing ----
     const offerId = uuid();
     const storagePath = `${user.id}/${offerId}.pdf`;
-    const brandingOptions: Branding = {
+    const brandingOptions = normalizeBranding({
       primaryColor:
         typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
       secondaryColor:
         typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
       logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
-    };
+    });
 
     const planTier = planToTemplateTier(plan);
     const allTemplates = listTemplates() as Array<OfferTemplate & { legacyId?: string }>;

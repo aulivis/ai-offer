@@ -15,8 +15,7 @@ import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
-import { priceTableHtml, summarize } from '@/app/lib/pricing';
-import { OFFER_DOCUMENT_STYLES, offerBodyMarkup } from '@/app/lib/offerDocument';
+import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
   type OfferTemplateId,
@@ -45,6 +44,7 @@ import {
   type ProjectDetailKey,
   type ProjectDetails,
 } from '@/lib/projectDetails';
+import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
 
 type Step1Form = {
   industry: string;
@@ -390,6 +390,13 @@ export default function NewOfferWizard() {
   const [previewLocked, setPreviewLocked] = useState(false);
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
+  const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
+  const previewDocumentAbortRef = useRef<AbortController | null>(null);
+  const {
+    frameRef: previewFrameRef,
+    height: previewFrameHeight,
+    updateHeight: updatePreviewFrameHeight,
+  } = useIframeAutoHeight({ minHeight: 720 });
 
   // edit on step 3
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -570,7 +577,6 @@ export default function NewOfferWizard() {
       (a) => (a.industries || []).length === 0 || a.industries.includes(form.industry),
     );
   }, [activities, form.industry]);
-  const pricePreviewHtml = useMemo(() => priceTableHtml(rows), [rows]);
   const previewBodyHtml = useMemo(() => {
     const trimmed = (editedHtml || previewHtml || '').trim();
     if (!trimmed) {
@@ -584,36 +590,83 @@ export default function NewOfferWizard() {
     }
     return DEFAULT_OFFER_TEMPLATE_ID;
   }, [selectedPdfTemplate]);
-  const previewDocumentHtml = useMemo(() => {
-    const wrapperClass =
-      selectedLegacyTemplateId === 'premium-banner'
-        ? 'offer-template offer-template--premium'
-        : 'offer-template offer-template--modern';
 
-    const markup = offerBodyMarkup({
-      title: form.title || 'Árajánlat',
-      companyName: profileCompanyName || '',
-      aiBodyHtml: previewBodyHtml,
-      priceTableHtml: pricePreviewHtml,
+  useEffect(() => {
+    const controller = new AbortController();
+    if (previewDocumentAbortRef.current) {
+      previewDocumentAbortRef.current.abort();
+    }
+    previewDocumentAbortRef.current = controller;
+
+    const templateId = selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID;
+    const payload = {
+      title: form.title,
+      companyName: profileCompanyName,
+      bodyHtml: previewBodyHtml,
+      rows: rows.map(({ name, qty, unit, unitPrice, vat }) => ({
+        name,
+        qty,
+        unit,
+        unitPrice,
+        vat,
+      })),
+      templateId,
+      legacyTemplateId: selectedLegacyTemplateId,
+      locale: form.language,
       branding: {
         primaryColor: pdfBranding.primaryColor,
         secondaryColor: pdfBranding.secondaryColor,
         logoUrl: pdfBranding.logoUrl,
       },
-      templateId: selectedLegacyTemplateId,
-    });
+    };
 
-    return `<div class="${wrapperClass}">${markup}</div>`;
+    (async () => {
+      try {
+        const response = await fetchWithSupabaseAuth('/api/offer-preview/render', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+          defaultErrorMessage: t('errors.preview.fetchUnknown'),
+          errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+        });
+        const html = await response.text();
+        if (!controller.signal.aborted) {
+          setPreviewDocumentHtml(html);
+        }
+      } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
+        console.error('Failed to render preview document', error);
+        if (!controller.signal.aborted) {
+          const fallbackMessage = t('errors.preview.fetchUnknown');
+          setPreviewDocumentHtml(
+            `<!DOCTYPE html>\n<html><head><meta charset="UTF-8" /></head><body><main><p>${fallbackMessage}</p></main></body></html>`,
+          );
+        }
+      }
+    })();
+
+    return () => {
+      controller.abort();
+    };
   }, [
+    form.language,
     form.title,
     pdfBranding.logoUrl,
     pdfBranding.primaryColor,
     pdfBranding.secondaryColor,
     previewBodyHtml,
-    pricePreviewHtml,
     profileCompanyName,
+    rows,
     selectedLegacyTemplateId,
+    selectedPdfTemplateId,
   ]);
+
+  useEffect(() => {
+    updatePreviewFrameHeight();
+  }, [previewDocumentHtml, updatePreviewFrameHeight]);
   const projectDetailsText = useMemo(() => {
     const normalized = projectDetailFields.reduce<ProjectDetails>(
       (acc, key) => {
@@ -1924,7 +1977,6 @@ export default function NewOfferWizard() {
                   </div>
                 ) : null}
               </div>
-              <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
               <div className="relative">
                 <RichTextEditor
                   ref={richTextEditorRef}
@@ -1959,9 +2011,19 @@ export default function NewOfferWizard() {
                   ) : null}
                 </div>
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-inner">
-                  <div
-                    className="offer-template-preview"
-                    dangerouslySetInnerHTML={{ __html: previewDocumentHtml }}
+                  <iframe
+                    ref={previewFrameRef}
+                    className="offer-template-preview block w-full"
+                    sandbox="allow-same-origin"
+                    srcDoc={previewDocumentHtml}
+                    style={{
+                      border: '0',
+                      width: '100%',
+                      height: `${previewFrameHeight}px`,
+                      minHeight: '720px',
+                      backgroundColor: 'transparent',
+                    }}
+                    title={t('offers.wizard.previewTemplates.previewHeading')}
                   />
                 </div>
                 <p className="text-xs text-slate-500">
