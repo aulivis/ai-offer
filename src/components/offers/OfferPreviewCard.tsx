@@ -1,8 +1,8 @@
-import { OFFER_DOCUMENT_STYLES } from '@/app/lib/offerDocument';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { t } from '@/copy';
 import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
 
 export type OfferPreviewStatusDescriptor = {
   tone: 'info' | 'success' | 'error' | 'warning';
@@ -354,14 +354,38 @@ export function OfferPreviewCard({
     );
   };
 
+  const {
+    frameRef: previewFrameRef,
+    height: previewFrameHeight,
+    updateHeight,
+  } = useIframeAutoHeight({
+    minHeight: 720,
+  });
+
+  useEffect(() => {
+    updateHeight();
+  }, [previewMarkup, updateHeight]);
+
   const renderDocument = () => {
     const scrollClass = variant === 'modal' ? 'max-h-[70vh]' : 'lg:max-h-[70vh]';
 
     return (
       <div className="flex-1 min-h-0 overflow-hidden rounded-2xl border border-border bg-white/95">
-        <style dangerouslySetInnerHTML={{ __html: OFFER_DOCUMENT_STYLES }} />
         <div className={`h-full overflow-auto px-4 py-4 ${scrollClass}`}>
-          <div dangerouslySetInnerHTML={{ __html: previewMarkup }} />
+          <iframe
+            ref={previewFrameRef}
+            className="block w-full"
+            sandbox="allow-same-origin"
+            srcDoc={previewMarkup}
+            style={{
+              border: '0',
+              width: '100%',
+              height: `${previewFrameHeight}px`,
+              minHeight: '720px',
+              backgroundColor: 'transparent',
+            }}
+            title={t('offers.previewCard.tabs.document')}
+          />
         </div>
       </div>
     );

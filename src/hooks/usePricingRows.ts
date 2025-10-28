@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import type { PriceRow } from '@/components/EditablePriceTable';
-import { priceTableHtml } from '@/app/lib/pricing';
 
 type PricingTotals = {
   net: number;
@@ -10,7 +9,6 @@ type PricingTotals = {
 
 export function usePricingRows(pricingRows: PriceRow[]): {
   totals: PricingTotals;
-  pricePreviewHtml: string;
 } {
   const totals = useMemo(() => {
     const net = pricingRows.reduce(
@@ -26,7 +24,5 @@ export function usePricingRows(pricingRows: PriceRow[]): {
     return { net, vat, gross: net + vat };
   }, [pricingRows]);
 
-  const pricePreviewHtml = useMemo(() => priceTableHtml(pricingRows), [pricingRows]);
-
-  return { totals, pricePreviewHtml };
+  return { totals };
 }

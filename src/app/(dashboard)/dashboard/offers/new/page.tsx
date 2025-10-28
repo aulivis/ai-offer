@@ -9,7 +9,6 @@ import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDeta
 import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
 import { OfferPreviewCard, type OfferPreviewStatus } from '@/components/offers/OfferPreviewCard';
 import { OfferSummarySection } from '@/components/offers/OfferSummarySection';
-import { offerBodyMarkup } from '@/app/lib/offerDocument';
 import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
@@ -60,18 +59,9 @@ export default function NewOfferPage() {
   const isMobileRef = useRef(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(true);
 
-  const { totals, pricePreviewHtml } = usePricingRows(pricingRows);
-  const previewMarkup = useMemo(() => {
-    const safeTitle = title.trim() || t('offers.wizard.defaults.fallbackTitle');
-    const bodyHtml = previewHtml || DEFAULT_PREVIEW_HTML;
-    return offerBodyMarkup({
-      title: safeTitle,
-      companyName: t('offers.wizard.defaults.fallbackCompany'),
-      aiBodyHtml: bodyHtml,
-      priceTableHtml: pricePreviewHtml,
-      templateId: DEFAULT_OFFER_TEMPLATE_ID,
-    });
-  }, [pricePreviewHtml, previewHtml, title]);
+  const { totals } = usePricingRows(pricingRows);
+  const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
+  const previewDocumentAbortRef = useRef<AbortController | null>(null);
   const isStreaming = previewStatus === 'loading' || previewStatus === 'streaming';
   const hasPricingRows = useMemo(
     () => pricingRows.some((row) => row.name.trim().length > 0),
@@ -125,6 +115,61 @@ export default function NewOfferPage() {
         return null;
     }
   }, [previewStatus]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    if (previewDocumentAbortRef.current) {
+      previewDocumentAbortRef.current.abort();
+    }
+    previewDocumentAbortRef.current = controller;
+
+    const payload = {
+      title: title || t('offers.wizard.defaults.fallbackTitle'),
+      companyName: t('offers.wizard.defaults.fallbackCompany'),
+      bodyHtml: previewHtml || DEFAULT_PREVIEW_HTML,
+      rows: pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
+        name,
+        qty,
+        unit,
+        unitPrice,
+        vat,
+      })),
+      templateId: DEFAULT_OFFER_TEMPLATE_ID,
+      locale: 'hu',
+    };
+
+    (async () => {
+      try {
+        const response = await fetchWithSupabaseAuth('/api/offer-preview/render', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+          defaultErrorMessage: t('errors.preview.fetchUnknown'),
+          errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+        });
+        const html = await response.text();
+        if (!controller.signal.aborted) {
+          setPreviewDocumentHtml(html);
+        }
+      } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
+        console.error('Failed to render preview document', error);
+        if (!controller.signal.aborted) {
+          const fallbackMessage = t('errors.preview.fetchUnknown');
+          setPreviewDocumentHtml(
+            `<!DOCTYPE html>\n<html><head><meta charset="UTF-8" /></head><body><main><p>${fallbackMessage}</p></main></body></html>`,
+          );
+        }
+      }
+    })();
+
+    return () => {
+      controller.abort();
+    };
+  }, [previewHtml, pricingRows, title]);
 
   const showActionBar = useCallback(() => {
     setIsActionBarVisible((visible) => (visible ? visible : true));
@@ -851,7 +896,7 @@ export default function NewOfferPage() {
         <div className="flex min-h-0 flex-col gap-6 overflow-hidden md:sticky md:top-20 lg:top-24">
           <OfferPreviewCard
             isPreviewAvailable={step === 3}
-            previewMarkup={previewMarkup}
+            previewMarkup={previewDocumentHtml}
             hasPreviewMarkup={hasPreviewHtml}
             statusDescriptor={statusDescriptor}
             isStreaming={isStreaming}
@@ -875,7 +920,7 @@ export default function NewOfferPage() {
       >
         <OfferPreviewCard
           isPreviewAvailable={step === 3}
-          previewMarkup={previewMarkup}
+          previewMarkup={previewDocumentHtml}
           hasPreviewMarkup={hasPreviewHtml}
           statusDescriptor={statusDescriptor}
           isStreaming={isStreaming}
