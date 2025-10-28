@@ -762,6 +762,30 @@ export const hu = {
       pageTitle: 'Új ajánlat',
       pageDescription:
         'Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek.',
+      progressLabel: 'Lépés {current}/{total}',
+      hero: {
+        badge: 'AI asszisztens',
+        title: '3 lépéses folyamat',
+        description:
+          'Add meg a projekt részleteit, finomhangold az árakat, majd szerkeszd a PDF-et – minden lépésnél segít az AI.',
+        highlights: {
+          guided: {
+            title: 'Folyamat',
+            value: '3 lépés',
+            subtitle: 'Végigvezet a kitöltésen.',
+          },
+          preview: {
+            title: 'AI előnézet',
+            value: '1 kattintás',
+            subtitle: 'Azonnali tartalmi javaslat.',
+          },
+          delivery: {
+            title: 'PDF kész',
+            value: 'Másodpercek alatt',
+            subtitle: 'Letölthető, megosztható dokumentum.',
+          },
+        },
+      },
       defaults: {
         activityName: 'Konzultáció',
         activityUnit: 'óra',
@@ -853,6 +877,27 @@ export const hu = {
           previewGenerate: 'AI előnézet generálása',
           previewCountdownLabel: 'Kb. {seconds} mp van hátra…',
           previewLoadingSecondary: 'Ez néhány másodpercet is igénybe vehet.',
+          sections: {
+            overviewHint: 'Ezek az adatok segítenek az AI-nak pontos előnézetet készíteni.',
+            overview: 'Projekt alapok',
+            overviewHelper: 'Add meg a legfontosabb adatokat a projektedről.',
+            scope: 'Hangnem és határidő',
+            scopeHelper: 'Finomhangold az ajánlat stílusát és időzítését.',
+            style: 'Ajánlat stílusa',
+            styleHelper: 'Válaszd ki, mennyire részletes legyen a dokumentum.',
+            client: 'Címzett (opcionális)',
+            clientHelper: 'Elmentjük az ügyfelet, így a következő ajánlatnál is felhasználhatod.',
+          },
+          styleOptions: {
+            compact: {
+              label: 'Kompakt',
+              description: 'Tömör, lényegre törő összefoglaló.',
+            },
+            detailed: {
+              label: 'Részletes',
+              description: 'Bővebb háttérrel és indoklással.',
+            },
+          },
         },
         pricing: {
           title: 'Árlista',
