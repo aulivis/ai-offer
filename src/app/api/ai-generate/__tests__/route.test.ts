@@ -21,6 +21,9 @@ const {
   cookiesSetMock,
   processPdfJobInlineMock,
   supabaseServerMock,
+  buildOfferHtmlMock,
+  getOfferTemplateByLegacyIdMock,
+  templateStub,
 } = vi.hoisted(() => ({
   insertOfferMock: vi.fn(),
   enqueuePdfJobMock: vi.fn(),
@@ -36,6 +39,18 @@ const {
   cookiesSetMock: vi.fn(),
   processPdfJobInlineMock: vi.fn(),
   supabaseServerMock: vi.fn(),
+  buildOfferHtmlMock: vi.fn(() => '<html />'),
+  getOfferTemplateByLegacyIdMock: vi.fn(),
+  templateStub: {
+    id: 'modern@1.0.0',
+    legacyId: 'modern',
+    tier: 'free',
+    label: 'Mock template',
+    version: '1.0.0',
+    capabilities: {},
+    renderHead: vi.fn(() => '<style />'),
+    renderBody: vi.fn(() => '<main />'),
+  },
 }));
 
 vi.mock('@/app/lib/supabaseServer', () => ({
@@ -89,13 +104,15 @@ vi.mock('@/lib/subscription', () => ({
   resolveEffectivePlan: resolveEffectivePlanMock,
 }));
 
-vi.mock('@/app/lib/pricing', () => ({
-  priceTableHtml: () => '<table />',
+vi.mock('@/app/pdf/templates/engine', () => ({
+  buildOfferHtml: buildOfferHtmlMock,
 }));
 
-vi.mock('@/app/lib/htmlTemplate', () => ({
-  offerHtml: () => '<html />',
+vi.mock('@/app/pdf/templates/registry', () => ({
+  getOfferTemplateByLegacyId: getOfferTemplateByLegacyIdMock,
 }));
+
+getOfferTemplateByLegacyIdMock.mockReturnValue(templateStub);
 
 vi.mock('@/lib/queue/pdf', () => ({
   enqueuePdfJob: enqueuePdfJobMock,

@@ -3,12 +3,13 @@ import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-// Use shared pricing utilities and HTML template helpers.  The
-// summarization and table HTML generation are centralised in
-// `app/lib/pricing.ts`, and the full document template lives in
-// `app/lib/htmlTemplate.ts`.
-import { PriceRow, priceTableHtml } from '@/app/lib/pricing';
-import { offerHtml } from '@/app/lib/htmlTemplate';
+// Use shared pricing utilities and the pluggable PDF template engine.
+// Pricing calculations remain in `app/lib/pricing.ts`, while templates
+// live under `app/pdf/templates`.
+import { PriceRow } from '@/app/lib/pricing';
+import { buildOfferHtml } from '@/app/pdf/templates/engine';
+import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/registry';
+import type { Branding, ThemeTokens } from '@/app/pdf/templates/types';
 import { enforceTemplateForPlan, type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
@@ -26,7 +27,7 @@ import {
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
-import { t } from '@/copy';
+import { t, hu } from '@/copy';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -505,6 +506,36 @@ function applyImageAssetsToHtml(
   return { pdfHtml, storedHtml };
 }
 
+function normalizeBrandColor(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
+  return `#${trimmed.slice(1).toLowerCase()}`;
+}
+
+function contrastColor(hex: string): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.6 ? '#111827' : '#ffffff';
+}
+
+function createThemeTokens(branding?: Branding): ThemeTokens {
+  const primary = normalizeBrandColor(branding?.primaryColor) ?? '#0f172a';
+  const secondary = normalizeBrandColor(branding?.secondaryColor) ?? '#f3f4f6';
+  const contrast = contrastColor(primary);
+
+  return {
+    'color.primary': primary,
+    'color.primary-contrast': contrast,
+    'color.secondary': secondary,
+    'color.secondary-border': '#d1d5db',
+    'color.secondary-text': '#1f2937',
+  } satisfies ThemeTokens;
+}
+
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   try {
     // Parse and sanitize the incoming JSON body.  Sanitizing early
@@ -644,6 +675,8 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       { ...emptyProjectDetails },
     );
 
+    const normalizedLanguage = sanitizeInput(language);
+
     // ---- AI szöveg (override elsőbbség) ----
     const safeTitle = sanitizeInput(title);
     let aiHtml = '';
@@ -670,11 +703,10 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       const safeIndustry = sanitizeInput(industry);
       const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
       const safeDeadline = sanitizeInput(deadline || '—');
-      const safeLanguage = sanitizeInput(language);
       const safeBrand = sanitizeInput(brandVoice);
 
       const userPrompt = `
-Nyelv: ${safeLanguage}
+Nyelv: ${normalizedLanguage}
 Hangnem: ${safeBrand}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
@@ -712,11 +744,8 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       }
     }
 
-    // ---- Ár tábla HTML ----
+    // ---- Ár tábla adatok ----
     const rows: PriceRow[] = prices;
-    // Use shared price table HTML builder.  This returns a complete
-    // `<table>` element including header, body and footer with totals.
-    const priceTable = priceTableHtml(rows);
 
     const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(
       aiHtml,
@@ -726,7 +755,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     // ---- PDF queueing ----
     const offerId = uuid();
     const storagePath = `${user.id}/${offerId}.pdf`;
-    const brandingOptions = {
+    const brandingOptions: Branding = {
       primaryColor:
         typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
       secondaryColor:
@@ -739,14 +768,25 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       plan,
     );
 
-    const html = offerHtml({
-      title: safeTitle || 'Árajánlat',
-      companyName: sanitizeInput(profile?.company_name || ''),
-      aiBodyHtml: aiHtmlForPdf,
-      priceTableHtml: priceTable,
-      branding: brandingOptions,
-      templateId,
-    });
+    const template = getOfferTemplateByLegacyId(templateId);
+
+    const html = buildOfferHtml(
+      {
+        offer: {
+          title: safeTitle || 'Árajánlat',
+          companyName: sanitizeInput(profile?.company_name || ''),
+          bodyHtml: aiHtmlForPdf,
+          templateId: template.id,
+          legacyTemplateId: template.legacyId,
+          locale: normalizedLanguage || 'hu',
+        },
+        rows,
+        branding: brandingOptions,
+        i18n: hu,
+        tokens: createThemeTokens(brandingOptions),
+      },
+      template,
+    );
 
     const downloadToken = uuid();
 
