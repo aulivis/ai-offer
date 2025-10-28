@@ -17,6 +17,7 @@ import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/respon
 import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
+import { formatOfferIssueDate } from '@/lib/datetime';
 import { getUserProfile } from '@/lib/services/user';
 import { currentMonthStart, getDeviceUsageSnapshot, getUsageSnapshot } from '@/lib/services/usage';
 import {
@@ -837,6 +838,35 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
             templateId: resolvedTemplateId,
             legacyTemplateId: resolvedLegacyTemplateId,
             locale: resolvedLocale,
+            issueDate: sanitizeInput(formatOfferIssueDate(new Date(), resolvedLocale)),
+            contactName: sanitizeInput(
+              (typeof profile?.company_contact_name === 'string'
+                ? profile.company_contact_name
+                : typeof profile?.representative === 'string'
+                  ? profile.representative
+                  : profile?.company_name) || '',
+            ),
+            contactEmail: sanitizeInput(
+              (typeof profile?.company_email === 'string'
+                ? profile.company_email
+                : req.user.email) || '',
+            ),
+            contactPhone: sanitizeInput(
+              (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
+            ),
+            companyWebsite: sanitizeInput(
+              (typeof profile?.company_website === 'string'
+                ? profile.company_website
+                : typeof profile?.website === 'string'
+                  ? profile.website
+                  : '') || '',
+            ),
+            companyAddress: sanitizeInput(
+              (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
+            ),
+            companyTaxId: sanitizeInput(
+              (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
+            ),
           },
           rows,
           branding: brandingOptions,

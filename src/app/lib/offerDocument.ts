@@ -47,32 +47,142 @@ export const OFFER_DOCUMENT_STYLES = `
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
   }
-  .offer-doc--modern .offer-doc__header {
-    align-items: flex-end;
+  .offer-doc__header {
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     display: flex;
-    flex-direction: column;
-    gap: var(--space-lg, 0.65rem);
+    gap: var(--space-lg, 1.5rem);
+    justify-content: space-between;
     margin-bottom: var(--space-xl, 2.75rem);
-    text-align: right;
+    padding-bottom: var(--space-lg, 1.5rem);
   }
-  .offer-doc--modern .offer-doc__logo {
-    align-self: flex-end;
+  .offer-doc__header-brand {
+    align-items: center;
+    display: flex;
+    gap: var(--space-lg, 1.5rem);
+  }
+  .offer-doc__logo-wrap {
+    align-items: center;
+    background: var(--brand-secondary, #f3f4f6);
+    border: 1px solid var(--brand-border, #d1d5db);
     border-radius: var(--radius-md, 14px);
+    display: flex;
+    height: 88px;
+    justify-content: center;
+    padding: 12px;
+    flex-shrink: 0;
+    width: 88px;
+  }
+  .offer-doc__logo {
     max-height: 72px;
-    max-width: 260px;
+    max-width: 220px;
     object-fit: contain;
   }
-  .offer-doc--modern .offer-doc__company {
+  .offer-doc__monogram {
+    align-items: center;
+    background: var(--brand-primary, #151035);
+    border-radius: var(--radius-md, 14px);
+    color: var(--brand-primary-contrast, #ffffff);
+    display: flex;
+    font-size: 1.5rem;
+    font-weight: 700;
+    height: 72px;
+    justify-content: center;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    width: 72px;
+  }
+  .offer-doc__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .offer-doc__company {
     color: var(--brand-muted, #6b7280);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
   }
-  .offer-doc--modern .offer-doc__title {
+  .offer-doc__title {
     color: var(--brand-primary);
     font: var(--font-h1, 700 1.9rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0;
+  }
+  .offer-doc__meta {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-width: 160px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .offer-doc__meta-label {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .offer-doc__meta-value {
+    color: var(--brand-text, #1f2937);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .offer-doc__meta-value--placeholder {
+    color: var(--brand-muted, #6b7280);
+    font-style: italic;
+  }
+  @media (max-width: 640px) {
+    .offer-doc__header {
+      align-items: stretch;
+      flex-direction: column;
+      text-align: left;
+    }
+    .offer-doc__header-brand {
+      justify-content: flex-start;
+    }
+    .offer-doc__meta {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+  .offer-doc__footer {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    margin-top: var(--space-xl, 2.75rem);
+    padding-top: var(--space-lg, 1.5rem);
+  }
+  .offer-doc__footer-grid {
+    display: grid;
+    gap: var(--space-lg, 1.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+  .offer-doc__footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .offer-doc__footer-label {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .offer-doc__footer-label--sub {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    margin-top: 0.25rem;
+  }
+  .offer-doc__footer-value {
+    color: var(--brand-text, #1f2937);
+    font-size: 0.92rem;
+    word-break: break-word;
+  }
+  .offer-doc__footer-value--placeholder {
+    color: var(--brand-muted, #6b7280);
+    font-style: italic;
   }
   .offer-doc__content {
     font-size: 0.95rem;
@@ -238,6 +348,7 @@ export const OFFER_DOCUMENT_STYLES = `
     background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
     color: var(--brand-primary-contrast);
     padding: 48px 48px 32px;
+    border-bottom: none;
   }
   .offer-doc__premium-banner {
     align-items: center;
@@ -256,7 +367,21 @@ export const OFFER_DOCUMENT_STYLES = `
     background: rgba(255, 255, 255, 0.12);
   }
   .offer-doc__premium-logo-slot--empty {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .offer-doc__monogram--premium {
+    align-items: center;
+    background: rgba(4, 21, 36, 0.3);
+    border-radius: 18px;
+    color: #ffffff;
+    display: flex;
+    font-size: 2rem;
+    font-weight: 700;
+    height: 96px;
+    justify-content: center;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    width: 96px;
   }
   .offer-doc__logo--premium {
     max-height: 100%;
@@ -282,6 +407,22 @@ export const OFFER_DOCUMENT_STYLES = `
     font-weight: 700;
     letter-spacing: -0.125rem;
     margin: 0;
+  }
+  .offer-doc__meta--premium {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 28px;
+    text-align: right;
+  }
+  .offer-doc__meta-label--premium {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .offer-doc__meta-value--premium {
+    color: #ffffff;
+  }
+  .offer-doc__meta-value--premium.offer-doc__meta-value--placeholder {
+    color: rgba(255, 255, 255, 0.75);
   }
   .offer-doc__premium-body {
     background: #f8fafc;
@@ -334,6 +475,13 @@ export interface OfferDocumentMarkupProps {
   priceTableHtml: string;
   branding?: OfferBrandingOptions;
   templateId?: OfferTemplateId | null;
+  issueDate?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  companyWebsite?: string | null;
+  companyAddress?: string | null;
+  companyTaxId?: string | null;
 }
 
 function normalizeColor(value: string | null | undefined): string | null {
@@ -367,6 +515,27 @@ function sanitizeLogoUrl(value: string | null | undefined): string | null {
   }
 }
 
+function deriveMonogram(value: string | null | undefined): string {
+  if (typeof value !== 'string') {
+    return 'AI';
+  }
+
+  const tokens = value
+    .trim()
+    .split(/[\s,.;:/\\-]+/)
+    .filter((token) => token.length > 0);
+
+  if (tokens.length === 0) {
+    return 'AI';
+  }
+
+  const initials = tokens
+    .slice(0, 2)
+    .map((token) => token[0]!.toUpperCase())
+    .join('');
+  return initials || 'AI';
+}
+
 /**
  * Build the inner HTML fragment shared by both the dashboard preview and the
  * PDF generator.  The returned markup always wraps content in a root
@@ -379,6 +548,13 @@ export function offerBodyMarkup({
   priceTableHtml,
   branding,
   templateId,
+  issueDate,
+  contactName,
+  contactEmail,
+  contactPhone,
+  companyWebsite,
+  companyAddress,
+  companyTaxId,
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
@@ -390,11 +566,56 @@ export function offerBodyMarkup({
   const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #1F2937;`;
   const safeStyleAttr = sanitizeInput(styleAttr);
   const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
+  const fallbackValue = '—';
+  const safeIssueDate = sanitizeInput(issueDate || '');
+  const resolvedIssueDate = safeIssueDate || fallbackValue;
+  const issueDateClass = safeIssueDate
+    ? 'offer-doc__meta-value'
+    : 'offer-doc__meta-value offer-doc__meta-value--placeholder';
+  const safeContactName = sanitizeInput(contactName || '');
+  const safeContactEmail = sanitizeInput(contactEmail || '');
+  const safeContactPhone = sanitizeInput(contactPhone || '');
+  const safeCompanyWebsite = sanitizeInput(companyWebsite || '');
+  const safeCompanyAddress = sanitizeInput(companyAddress || '');
+  const safeCompanyTaxId = sanitizeInput(companyTaxId || '');
+  const contactClass = safeContactName
+    ? 'offer-doc__footer-value'
+    : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
+  const emailClass = safeContactEmail
+    ? 'offer-doc__footer-value'
+    : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
+  const phoneClass = safeContactPhone
+    ? 'offer-doc__footer-value'
+    : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
+  const websiteClass = safeCompanyWebsite
+    ? 'offer-doc__footer-value'
+    : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
+  const addressClass = safeCompanyAddress
+    ? 'offer-doc__footer-value'
+    : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
+  const taxClass = safeCompanyTaxId
+    ? 'offer-doc__footer-value'
+    : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
+  const monogram = sanitizeInput(deriveMonogram(companyName || contactName || title));
+  const resolvedContactName = safeContactName || fallbackValue;
+  const resolvedContactEmail = safeContactEmail || fallbackValue;
+  const resolvedContactPhone = safeContactPhone || fallbackValue;
+  const resolvedCompanyWebsite = safeCompanyWebsite || fallbackValue;
+  const resolvedCompanyAddress = safeCompanyAddress || fallbackValue;
+  const resolvedCompanyTaxId = safeCompanyTaxId || fallbackValue;
+  const dateLabel = 'Ajánlat dátuma';
+  const contactLabel = 'Kapcsolattartó';
+  const emailLabel = 'E-mail';
+  const phoneLabel = 'Telefon';
+  const websiteLabel = 'Weboldal';
+  const companyDetailsLabel = 'Cégadatok';
+  const addressLabel = 'Cím';
+  const taxLabel = 'Adószám';
 
   if (normalizedTemplate === 'premium-banner') {
     const logoSlot = logoUrl
       ? `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--filled"><img class="offer-doc__logo offer-doc__logo--premium" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
-      : `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"></div>`;
+      : `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"><span class="offer-doc__monogram offer-doc__monogram--premium">${monogram}</span></div>`;
     const markup = `
       <article class="offer-doc offer-doc--premium" style="${safeStyleAttr}">
         <header class="offer-doc__header offer-doc__header--premium">
@@ -405,6 +626,10 @@ export function offerBodyMarkup({
               <h1 class="offer-doc__title offer-doc__title--premium">${safeTitle}</h1>
             </div>
           </div>
+          <div class="offer-doc__meta offer-doc__meta--premium">
+            <span class="offer-doc__meta-label offer-doc__meta-label--premium">${dateLabel}</span>
+            <span class="offer-doc__meta-value offer-doc__meta-value--premium${safeIssueDate ? '' : ' offer-doc__meta-value--placeholder'}">${resolvedIssueDate}</span>
+          </div>
         </header>
         <div class="offer-doc__premium-body">
           <section class="offer-doc__content offer-doc__content--card">
@@ -414,6 +639,31 @@ export function offerBodyMarkup({
             ${priceTableHtml}
           </section>
         </div>
+        <footer class="offer-doc__footer">
+          <div class="offer-doc__footer-grid">
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${contactLabel}</span>
+              <span class="${contactClass}">${resolvedContactName}</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${emailLabel}</span>
+              <span class="${emailClass}">${resolvedContactEmail}</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">${phoneLabel}</span>
+              <span class="${phoneClass}">${resolvedContactPhone}</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${websiteLabel}</span>
+              <span class="${websiteClass}">${resolvedCompanyWebsite}</span>
+            </div>
+            <div class="offer-doc__footer-column">
+              <span class="offer-doc__footer-label">${companyDetailsLabel}</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">${addressLabel}</span>
+              <span class="${addressClass}">${resolvedCompanyAddress}</span>
+              <span class="offer-doc__footer-label offer-doc__footer-label--sub">${taxLabel}</span>
+              <span class="${taxClass}">${resolvedCompanyTaxId}</span>
+            </div>
+          </div>
+        </footer>
       </article>
     `;
     ensureSafeHtml(markup, 'offer body markup (premium)');
@@ -421,15 +671,23 @@ export function offerBodyMarkup({
   }
 
   const logoMarkup = logoUrl
-    ? `<img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" />`
-    : '';
+    ? `<div class="offer-doc__logo-wrap"><img class="offer-doc__logo" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
+    : `<div class="offer-doc__logo-wrap"><span class="offer-doc__monogram">${monogram}</span></div>`;
 
   const markup = `
     <article class="offer-doc offer-doc--modern" style="${safeStyleAttr}">
       <header class="offer-doc__header">
-        ${logoMarkup}
-        <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>
-        <h1 class="offer-doc__title">${safeTitle}</h1>
+        <div class="offer-doc__header-brand">
+          ${logoMarkup}
+          <div class="offer-doc__header-text">
+            <div class="offer-doc__company">${safeCompany || 'Vállalat neve'}</div>
+            <h1 class="offer-doc__title">${safeTitle}</h1>
+          </div>
+        </div>
+        <div class="offer-doc__meta">
+          <span class="offer-doc__meta-label">${dateLabel}</span>
+          <span class="${issueDateClass}">${resolvedIssueDate}</span>
+        </div>
       </header>
       <section class="offer-doc__content">
         ${aiBodyHtml}
@@ -437,6 +695,31 @@ export function offerBodyMarkup({
       <section class="offer-doc__table">
         ${priceTableHtml}
       </section>
+      <footer class="offer-doc__footer">
+        <div class="offer-doc__footer-grid">
+          <div class="offer-doc__footer-column">
+            <span class="offer-doc__footer-label">${contactLabel}</span>
+            <span class="${contactClass}">${resolvedContactName}</span>
+          </div>
+          <div class="offer-doc__footer-column">
+            <span class="offer-doc__footer-label">${emailLabel}</span>
+            <span class="${emailClass}">${resolvedContactEmail}</span>
+            <span class="offer-doc__footer-label offer-doc__footer-label--sub">${phoneLabel}</span>
+            <span class="${phoneClass}">${resolvedContactPhone}</span>
+          </div>
+          <div class="offer-doc__footer-column">
+            <span class="offer-doc__footer-label">${websiteLabel}</span>
+            <span class="${websiteClass}">${resolvedCompanyWebsite}</span>
+          </div>
+          <div class="offer-doc__footer-column">
+            <span class="offer-doc__footer-label">${companyDetailsLabel}</span>
+            <span class="offer-doc__footer-label offer-doc__footer-label--sub">${addressLabel}</span>
+            <span class="${addressClass}">${resolvedCompanyAddress}</span>
+            <span class="offer-doc__footer-label offer-doc__footer-label--sub">${taxLabel}</span>
+            <span class="${taxClass}">${resolvedCompanyTaxId}</span>
+          </div>
+        </div>
+      </footer>
     </article>
   `;
   ensureSafeHtml(markup, 'offer body markup (modern)');

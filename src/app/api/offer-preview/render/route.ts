@@ -6,13 +6,14 @@ import { loadTemplate } from '@/app/pdf/templates/registry';
 import { createThemeTokens, normalizeBranding } from '@/app/pdf/templates/theme';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { createTranslator, resolveLocale } from '@/copy';
-import { sanitizeHTML } from '@/lib/sanitize';
+import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
 import type { PriceRow } from '@/app/lib/pricing';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 import {
   recordTemplateRenderTelemetry,
   resolveTemplateRenderErrorCode,
 } from '@/lib/observability/templateTelemetry';
+import { formatOfferIssueDate } from '@/lib/datetime';
 
 export const runtime = 'nodejs';
 
@@ -72,6 +73,13 @@ const previewRequestSchema = z
     legacyTemplateId: optionalTrimmedString,
     locale: optionalTrimmedString,
     branding: brandingSchema,
+    issueDate: optionalTrimmedString,
+    contactName: optionalTrimmedString,
+    contactEmail: optionalTrimmedString,
+    contactPhone: optionalTrimmedString,
+    companyWebsite: optionalTrimmedString,
+    companyAddress: optionalTrimmedString,
+    companyTaxId: optionalTrimmedString,
   })
   .strict();
 
@@ -113,8 +121,23 @@ async function handlePost(req: AuthenticatedNextRequest) {
     );
   }
 
-  const { title, companyName, bodyHtml, rows, templateId, legacyTemplateId, locale, branding } =
-    parsed.data;
+  const {
+    title,
+    companyName,
+    bodyHtml,
+    rows,
+    templateId,
+    legacyTemplateId,
+    locale,
+    branding,
+    issueDate,
+    contactName,
+    contactEmail,
+    contactPhone,
+    companyWebsite,
+    companyAddress,
+    companyTaxId,
+  } = parsed.data;
 
   let template;
   try {
@@ -155,6 +178,17 @@ async function handlePost(req: AuthenticatedNextRequest) {
           templateId: template.id,
           legacyTemplateId: resolvedLegacyId,
           locale: resolvedLocale,
+          issueDate: sanitizeInput(
+            issueDate && issueDate.length > 0
+              ? issueDate
+              : formatOfferIssueDate(new Date(), resolvedLocale),
+          ),
+          contactName: sanitizeInput(contactName ?? ''),
+          contactEmail: sanitizeInput(contactEmail ?? ''),
+          contactPhone: sanitizeInput(contactPhone ?? ''),
+          companyWebsite: sanitizeInput(companyWebsite ?? ''),
+          companyAddress: sanitizeInput(companyAddress ?? ''),
+          companyTaxId: sanitizeInput(companyTaxId ?? ''),
         },
         rows: normalizedRows,
         branding: normalizedBranding,
