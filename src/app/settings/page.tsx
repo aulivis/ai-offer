@@ -17,6 +17,7 @@ import {
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
+import { normalizeBrandHex } from '@/lib/branding';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
@@ -77,13 +78,6 @@ type SupabaseErrorLike = {
   details?: string | null;
   hint?: string | null;
 };
-
-function normalizeColorHex(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
-  return `#${trimmed.slice(1).toLowerCase()}`;
-}
 
 function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error {
   if (error) {
@@ -148,13 +142,13 @@ export default function SettingsPage() {
 
     const brandPrimary =
       typeof profile.brand_color_primary === 'string' ? profile.brand_color_primary.trim() : '';
-    if (brandPrimary && !normalizeColorHex(brandPrimary)) {
+    if (brandPrimary && !normalizeBrandHex(brandPrimary)) {
       branding.brandPrimary = t('settings.validation.hexColor');
     }
 
     const brandSecondary =
       typeof profile.brand_color_secondary === 'string' ? profile.brand_color_secondary.trim() : '';
-    if (brandSecondary && !normalizeColorHex(brandSecondary)) {
+    if (brandSecondary && !normalizeBrandHex(brandSecondary)) {
       branding.brandSecondary = t('settings.validation.hexColor');
     }
 
@@ -192,8 +186,8 @@ export default function SettingsPage() {
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
   const hasErrors = hasGeneralErrors || hasBrandingErrors;
 
-  const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#1c274c';
-  const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#e2e8f0';
+  const primaryPreview = normalizeBrandHex(profile.brand_color_primary) ?? '#1c274c';
+  const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
   const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
   const canUseProTemplates = plan === 'pro';
 
@@ -320,8 +314,8 @@ export default function SettingsPage() {
         alert(t('errors.settings.validationRequired'));
         return;
       }
-      const primary = normalizeColorHex(profile.brand_color_primary);
-      const secondary = normalizeColorHex(profile.brand_color_secondary);
+      const primary = normalizeBrandHex(profile.brand_color_primary);
+      const secondary = normalizeBrandHex(profile.brand_color_secondary);
       const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
       const sanitizedIndustries = Array.isArray(profile.industries)
         ? profile.industries

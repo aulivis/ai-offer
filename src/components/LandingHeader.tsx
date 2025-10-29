@@ -3,11 +3,13 @@
 import { t, type CopyKey } from '@/copy';
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useLogout } from '@/hooks/useLogout';
+import { useBranding } from '@/components/BrandingProvider';
 
 type LandingHeaderProps = {
   className?: string;
@@ -36,6 +38,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   const pathname = usePathname();
   const { status: authStatus } = useAuthSession();
   const { logout, isLoggingOut } = useLogout();
+  const { companyName, logoUrl, monogram } = useBranding();
 
   const isAuthenticated = authStatus === 'authenticated';
   const navItems = isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
@@ -90,8 +93,31 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   return (
     <header className={headerClass} style={headerStyle}>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-6">
-        <Link href="/" className="text-lg font-bold text-fg" onClick={closeMenu}>
-          {t('nav.brand')}
+        <Link
+          href="/"
+          className="flex items-center gap-3 text-lg font-bold text-[var(--text)]"
+          onClick={closeMenu}
+        >
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt={companyName ? `${companyName} logo` : t('nav.brand')}
+              width={220}
+              height={106}
+              priority
+              sizes="(max-width: 768px) 160px, 220px"
+              className="h-auto w-auto object-contain"
+              style={{ maxHeight: '28mm', maxWidth: '220px' }}
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-contrast)]"
+            >
+              {monogram}
+            </span>
+          )}
+          <span className="text-lg font-bold">{companyName ?? t('nav.brand')}</span>
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-fg-muted md:flex">

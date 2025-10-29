@@ -1,17 +1,5 @@
+import { normalizeBrandHex, sanitizeBrandLogoUrl } from '@/lib/branding';
 import type { Branding, ThemeTokens } from './types';
-
-function normalizeBrandColor(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) {
-    return null;
-  }
-
-  return `#${trimmed.slice(1).toLowerCase()}`;
-}
 
 function contrastColor(hex: string): string {
   const clean = hex.replace('#', '');
@@ -23,8 +11,8 @@ function contrastColor(hex: string): string {
 }
 
 export function createThemeTokens(baseTokens: ThemeTokens, branding?: Branding): ThemeTokens {
-  const primary = normalizeBrandColor(branding?.primaryColor) ?? baseTokens.color.primary;
-  const secondary = normalizeBrandColor(branding?.secondaryColor) ?? baseTokens.color.secondary;
+  const primary = normalizeBrandHex(branding?.primaryColor) ?? baseTokens.color.primary;
+  const secondary = normalizeBrandHex(branding?.secondaryColor) ?? baseTokens.color.secondary;
 
   return {
     color: {
@@ -76,13 +64,13 @@ export function normalizeBranding(branding?: Branding): Branding | undefined {
     return undefined;
   }
 
-  const primaryColor = normalizeBrandColor(branding.primaryColor ?? undefined);
-  const secondaryColor = normalizeBrandColor(branding.secondaryColor ?? undefined);
-  const logoUrl = typeof branding.logoUrl === 'string' ? branding.logoUrl.trim() : null;
+  const primaryColor = normalizeBrandHex(branding.primaryColor ?? undefined);
+  const secondaryColor = normalizeBrandHex(branding.secondaryColor ?? undefined);
+  const logoUrl = sanitizeBrandLogoUrl(branding.logoUrl ?? null);
 
   return {
     primaryColor: primaryColor ?? null,
     secondaryColor: secondaryColor ?? null,
-    logoUrl: logoUrl && logoUrl.length > 0 ? logoUrl : null,
+    logoUrl,
   } satisfies Branding;
 }
