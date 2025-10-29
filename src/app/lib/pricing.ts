@@ -16,6 +16,24 @@ export interface PriceRow {
   vat?: number | undefined;
 }
 
+function hasRenderableContent(row: PriceRow | null | undefined): boolean {
+  if (!row) {
+    return false;
+  }
+
+  const hasName = typeof row.name === 'string' && row.name.trim().length > 0;
+  const hasUnit = typeof row.unit === 'string' && row.unit.trim().length > 0;
+  const hasQty = typeof row.qty === 'number' && Number.isFinite(row.qty);
+  const hasUnitPrice = typeof row.unitPrice === 'number' && Number.isFinite(row.unitPrice);
+  const hasVat = typeof row.vat === 'number' && Number.isFinite(row.vat);
+
+  return hasName || hasUnit || hasQty || hasUnitPrice || hasVat;
+}
+
+export function countRenderablePricingRows(rows: PriceRow[]): number {
+  return rows.reduce((count, row) => (hasRenderableContent(row) ? count + 1 : count), 0);
+}
+
 /**
  * Summarize an array of price rows into net, VAT and gross totals.  This
  * function encapsulates the logic for computing totals so that the
@@ -78,6 +96,16 @@ export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRAN
         width: 100%;
         border-collapse: collapse;
         border: 1px solid #d7dce6;
+      }
+      .offer-doc__pricing-table,
+      .offer-doc__pricing-table thead,
+      .offer-doc__pricing-table tbody,
+      .offer-doc__pricing-table tfoot,
+      .offer-doc__pricing-table tr,
+      .offer-doc__pricing-table th,
+      .offer-doc__pricing-table td {
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
       .offer-doc__pricing-table th,
       .offer-doc__pricing-table td {

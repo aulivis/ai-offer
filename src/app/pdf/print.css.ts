@@ -183,4 +183,37 @@ export const PRINT_BASE_CSS = `
     font-size: 9.5pt;
     line-height: 1.4;
   }
+  .offer-doc__content h1,
+  .offer-doc__content h2,
+  .offer-doc__content h3,
+  .offer-doc__content h4,
+  .offer-doc__section-title {
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .offer-doc__content .section,
+  .offer-doc__content .pricing-summary,
+  .section,
+  .pricing-summary,
+  .offer-doc__table,
+  .offer-doc__section-note {
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .offer-doc__pricing-table,
+  .offer-doc__pricing-table thead,
+  .offer-doc__pricing-table tbody,
+  .offer-doc__pricing-table tfoot,
+  .offer-doc__pricing-table tr,
+  .offer-doc__pricing-table th,
+  .offer-doc__pricing-table td {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .offer-doc__table--force-break {
+    break-before: page;
+    page-break-before: always;
+  }
 `;
