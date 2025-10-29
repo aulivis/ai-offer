@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Page } from 'puppeteer';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
+import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 import { rollbackUsageIncrement } from '@/lib/services/usage';
 
@@ -236,48 +237,54 @@ export async function processPdfJobInline(
   try {
     const { default: puppeteer } = await import('puppeteer');
 
-    const pdfBinary = await withTimeout(async () => {
-      const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: true,
-      });
+    assertPdfEngineHtml(job.html, 'Inline PDF job HTML');
 
-      try {
-        let page: Page | null = null;
+    const pdfBinary = await withTimeout(
+      async () => {
+        const browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          headless: true,
+        });
 
         try {
-          page = await browser.newPage();
-          page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
-          page.setDefaultTimeout(JOB_TIMEOUT_MS);
-          await page.setContent(job.html, { waitUntil: 'networkidle0' });
-          return await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            preferCSSPageSize: true,
-            margin: {
-              top: '24mm',
-              right: '16mm',
-              bottom: '24mm',
-              left: '16mm',
-            },
-          });
-        } finally {
-          if (page) {
-            try {
-              await page.close();
-            } catch (closeError) {
-              console.error('Failed to close Puppeteer page (inline worker):', closeError);
+          let page: Page | null = null;
+
+          try {
+            page = await browser.newPage();
+            page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
+            page.setDefaultTimeout(JOB_TIMEOUT_MS);
+            await page.setContent(job.html, { waitUntil: 'networkidle0' });
+            return await page.pdf({
+              format: 'A4',
+              printBackground: true,
+              preferCSSPageSize: true,
+              margin: {
+                top: '24mm',
+                right: '16mm',
+                bottom: '24mm',
+                left: '16mm',
+              },
+            });
+          } finally {
+            if (page) {
+              try {
+                await page.close();
+              } catch (closeError) {
+                console.error('Failed to close Puppeteer page (inline worker):', closeError);
+              }
             }
           }
+        } finally {
+          try {
+            await browser.close();
+          } catch (closeError) {
+            console.error('Failed to close Puppeteer browser (inline worker):', closeError);
+          }
         }
-      } finally {
-        try {
-          await browser.close();
-        } catch (closeError) {
-          console.error('Failed to close Puppeteer browser (inline worker):', closeError);
-        }
-      }
-    }, JOB_TIMEOUT_MS, 'PDF generation timed out');
+      },
+      JOB_TIMEOUT_MS,
+      'PDF generation timed out',
+    );
 
     const pdfUint8 = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
     const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);

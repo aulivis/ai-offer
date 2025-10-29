@@ -1,10 +1,7 @@
-import type {
-  OfferTemplate,
-  RenderCtx,
-  TemplateId,
-} from './types';
+import type { OfferTemplate, RenderCtx, TemplateId } from './types';
 import { loadTemplate } from './registry';
 import { createThemeCssVariables, createThemeTokens } from './theme';
+import { PDF_ENGINE_META_TAG } from '@/lib/pdfHtmlSignature';
 
 const HTML_ROOT_PATTERN = /^<html[\s\S]*<\/html>$/i;
 const UNSAFE_HTML_PATTERN = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
@@ -111,9 +108,9 @@ function renderWithTemplate(ctx: RenderCtx, tpl: OfferTemplate): string {
     .filter(Boolean)
     .join('\n');
   const styleTag = inlineStyles ? `<style>${inlineStyles}</style>` : '';
-  const headWithStyles = `${headContent}${styleTag}`;
+  const headWithSignature = `${headContent}${PDF_ENGINE_META_TAG}${styleTag}`;
 
-  const minifiedHead = minifyHtml(headWithStyles);
+  const minifiedHead = minifyHtml(headWithSignature);
   const minifiedBody = minifyHtml(body);
 
   const html = `<!DOCTYPE html><html lang="${lang}"><head>${minifiedHead}</head><body>${minifiedBody}</body></html>`;
