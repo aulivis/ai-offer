@@ -71,11 +71,6 @@ export function summarize(rows: PriceRow[]): { net: number; vat: number; gross: 
  */
 const DEFAULT_TRANSLATOR = createTranslator('hu');
 
-const LOCALE_MAP: Record<Translator['locale'], string> = {
-  hu: 'hu-HU',
-  en: 'en-US',
-};
-
 export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRANSLATOR): string {
   const totals = summarize(rows);
   const formatNumber = (value: number) => value.toLocaleString('hu-HU');
@@ -116,39 +111,45 @@ export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRAN
         background-color: #f1f4f8;
         text-align: left;
       }
+      .offer-doc__pricing-table thead th:nth-child(2),
+      .offer-doc__pricing-table thead th:nth-child(4),
+      .offer-doc__pricing-table thead th:nth-child(5),
+      .offer-doc__pricing-table thead th:nth-child(6) {
+        text-align: right;
+      }
       .offer-doc__pricing-table tbody tr:nth-child(even) {
         background-color: #f9fbff;
+      }
+      .offer-doc__pricing-table tbody td {
+        border-bottom: 1px solid #e4e8f0;
       }
       .offer-doc__pricing-table tbody td:nth-child(2),
       .offer-doc__pricing-table tbody td:nth-child(4),
       .offer-doc__pricing-table tbody td:nth-child(5),
-      .offer-doc__pricing-table tbody td:nth-child(6),
-      .offer-doc__pricing-table thead th:nth-child(2),
-      .offer-doc__pricing-table thead th:nth-child(4),
-      .offer-doc__pricing-table thead th:nth-child(5),
-      .offer-doc__pricing-table thead th:nth-child(6),
-      .offer-doc__pricing-table tfoot td:last-child {
+      .offer-doc__pricing-table tbody td:nth-child(6) {
         text-align: right;
-      }
-      .offer-doc__pricing-table tfoot tr {
-        background-color: #eef2ff;
-        font-weight: 600;
+        font-variant-numeric: tabular-nums;
       }
       .offer-doc__pricing-table tfoot tr:first-child td {
         border-top: 2px solid #b2c3ff;
       }
-      .offer-doc__pricing-table tfoot tr:last-child {
+      .offer-doc__pricing-table tfoot td {
+        background-color: #eef2ff;
+        font-weight: 600;
+      }
+      .offer-doc__pricing-table tfoot td:last-child {
+        text-align: right;
         font-weight: 700;
       }
     </style>
     <table class="offer-doc__pricing-table">
       <colgroup>
         <col style="width: 32%;" />
-        <col style="width: 12%; min-width: 60px;" />
-        <col style="width: 12%; min-width: 80px;" />
-        <col style="width: 16%; min-width: 110px;" />
-        <col style="width: 12%; min-width: 80px;" />
-        <col style="width: 16%;" />
+        <col style="width: 12%; min-width: 70px;" />
+        <col style="width: 12%; min-width: 90px;" />
+        <col style="width: 16%; min-width: 120px;" />
+        <col style="width: 12%; min-width: 90px;" />
+        <col style="width: 16%; min-width: 130px;" />
       </colgroup>
       <thead>
         <tr>
