@@ -55,18 +55,22 @@ function createSupabaseStub() {
     throw new Error(`Unexpected table: ${table}`);
   });
 
+  const storageBucket = {
+    upload: vi.fn(),
+    getPublicUrl: vi.fn(() => ({ data: null })),
+    remove: vi.fn(),
+  };
+
+  const storage = {
+    from: vi.fn(() => storageBucket),
+  };
+
   const supabase = {
     from: fromMock,
-    storage: {
-      from: vi.fn(() => ({
-        upload: vi.fn(),
-        getPublicUrl: vi.fn(() => ({ data: null })),
-        remove: vi.fn(),
-      })),
-    },
+    storage,
   } as unknown as SupabaseClient;
 
-  return { supabase, fromMock, updateMock, eqMock };
+  return { supabase, fromMock, updateMock, eqMock, storageBucket };
 }
 
 describe('processPdfJobInline resource cleanup', () => {
@@ -83,6 +87,8 @@ describe('processPdfJobInline resource cleanup', () => {
     const page = {
       setContent,
       pdf: vi.fn(),
+      setDefaultNavigationTimeout: vi.fn(),
+      setDefaultTimeout: vi.fn(),
       close: pageClose,
     };
 
@@ -118,6 +124,54 @@ describe('processPdfJobInline resource cleanup', () => {
 
     await expect(processPdfJobInline(supabase, createJob())).rejects.toThrow('new page failed');
 
+    expect(browserClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders PDFs with backgrounds, margins, and timeouts configured', async () => {
+    const pdfBuffer = new Uint8Array([1, 2, 3]);
+    const pageClose = vi.fn().mockResolvedValue(undefined);
+    const browserClose = vi.fn().mockResolvedValue(undefined);
+    const setContent = vi.fn().mockResolvedValue(undefined);
+    const pdf = vi.fn().mockResolvedValue(pdfBuffer);
+
+    const page = {
+      setContent,
+      pdf,
+      setDefaultNavigationTimeout: vi.fn(),
+      setDefaultTimeout: vi.fn(),
+      close: pageClose,
+    };
+
+    const browser = {
+      newPage: vi.fn().mockResolvedValue(page),
+      close: browserClose,
+    };
+
+    launchMock.mockResolvedValue(browser);
+
+    const { supabase, storageBucket } = createSupabaseStub();
+    storageBucket.upload.mockResolvedValue({ error: { message: 'upload failed' } });
+
+    const { processPdfJobInline } = await import('@/lib/pdfInlineWorker');
+
+    await expect(processPdfJobInline(supabase, createJob())).rejects.toThrow('upload failed');
+
+    expect(page.setDefaultNavigationTimeout).toHaveBeenCalledWith(90_000);
+    expect(page.setDefaultTimeout).toHaveBeenCalledWith(90_000);
+    expect(setContent).toHaveBeenCalledWith('<p>Hello</p>', { waitUntil: 'networkidle0' });
+    expect(pdf).toHaveBeenCalledWith({
+      format: 'A4',
+      printBackground: true,
+      preferCSSPageSize: true,
+      margin: {
+        top: '24mm',
+        right: '16mm',
+        bottom: '24mm',
+        left: '16mm',
+      },
+    });
+
+    expect(pageClose).toHaveBeenCalledTimes(1);
     expect(browserClose).toHaveBeenCalledTimes(1);
   });
 });
