@@ -102,7 +102,8 @@ async function handlePost(req: AuthenticatedNextRequest) {
   let json: unknown;
   try {
     json = await req.json();
-  } catch {
+  } catch (error) {
+    console.warn('offer-preview render: failed to parse request JSON body', error);
     return NextResponse.json(
       {
         error: 'Érvénytelen előnézeti kérés.',
