@@ -61,7 +61,14 @@ export function partialPriceTable(ctx: RenderCtx): string {
 }
 
 export function partialGallery(ctx: RenderCtx): string {
-  const images = Array.isArray(ctx.images) ? ctx.images.slice(0, 3) : [];
+  const availableImages = Array.isArray(ctx.offer.images)
+    ? ctx.offer.images
+    : Array.isArray(ctx.images)
+      ? ctx.images
+      : [];
+  const images = availableImages
+    .filter((image) => typeof image?.src === 'string' && image.src.trim().length > 0)
+    .slice(0, 3);
   if (images.length === 0) {
     return '';
   }
@@ -76,7 +83,7 @@ export function partialGallery(ctx: RenderCtx): string {
       const safeSrc = sanitizeInput(image.src);
       const safeAlt = sanitizeInput(image.alt);
       const safeKey = sanitizeInput(image.key);
-      return `<figure class="offer-doc__gallery-item" data-offer-gallery-key="${safeKey}"><img class="offer-doc__gallery-image" src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async" /></figure>`;
+      return `<figure class="offer-doc__gallery-item" data-offer-gallery-key="${safeKey}"><img class="offer-doc__gallery-image" src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async" onerror="this.remove()" /></figure>`;
     })
     .join('');
 
