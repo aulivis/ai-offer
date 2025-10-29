@@ -26,6 +26,7 @@ const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
 
 const AUTH_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: '/dashboard', labelKey: 'nav.dashboard' },
+  { href: '/settings', labelKey: 'nav.settings' },
   { href: '/billing', labelKey: 'nav.billing' },
 ];
 
@@ -113,12 +114,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           {isAuthenticated ? (
             <>
               <Link
-                href="/settings"
-                className={`text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg ${
-                  isNavItemActive('/settings') ? 'text-fg' : ''
-                }`}
+                href="/new"
+                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
               >
-                {t('nav.settings')}
+                {t('dashboard.actions.newOffer')}
               </Link>
               <Button
                 type="button"
@@ -193,11 +192,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/settings"
-                  className="rounded-full px-3 py-1 text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+                  href="/new"
+                  className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
                   onClick={closeMenu}
                 >
-                  {t('nav.settings')}
+                  {t('dashboard.actions.newOffer')}
                 </Link>
                 <Button
                   type="button"

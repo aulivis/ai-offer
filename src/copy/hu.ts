@@ -226,6 +226,16 @@ export const hu = {
       templateTelemetry: 'Telemetria',
     },
     metrics: {
+      quota: {
+        label: 'Hátralévő kvóta',
+        loading: 'Betöltés…',
+        unlimitedValue: 'Korlátlan',
+        value: '{remaining} / {limit}',
+        helperUnlimited: 'Ebben a hónapban {used} ajánlat készült. Pro előfizetés — nincs limit.',
+        helperLimitedWithReset:
+          'Ebben a hónapban {used} ajánlat készült. Következő frissítés: {resetDate}.',
+        helperLimited: 'Ebben a hónapban {used} ajánlat készült.',
+      },
       created: {
         label: 'Létrehozott ajánlatok',
         monthlyHelper: 'Ebben a hónapban {count} új ajánlat',
@@ -921,6 +931,8 @@ export const hu = {
           industryLabel: 'Iparág',
           titleLabel: 'Ajánlat címe',
           titlePlaceholder: 'Pl. Weboldal fejlesztés',
+          descriptionLabel: 'Projekt rövid leírása',
+          descriptionPlaceholder: 'Fogalmazd meg néhány mondatban a projekt célját és fókuszát.',
           titleHelp: 'Adj meg egy rövid, emlékezetes címet az ajánlatodnak.',
           fields: {
             overview: {
