@@ -225,11 +225,17 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content h4 {
     color: var(--brand-primary);
     margin: 2.2rem 0 0.9rem;
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__section-title {
     align-items: center;
     display: flex;
     gap: 0.55rem;
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__section-icon {
     color: currentColor;
@@ -247,6 +253,8 @@ export const OFFER_DOCUMENT_STYLES = `
     color: var(--brand-muted, #334155);
     font-size: 0.92rem;
     margin-top: 0.75rem;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__section-note--compact {
     color: inherit;
@@ -284,6 +292,16 @@ export const OFFER_DOCUMENT_STYLES = `
     margin: 0 0 1.2rem 1.4rem;
     padding: 0;
     list-style-position: outside;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .offer-doc__content .section,
+  .offer-doc__content .pricing-summary,
+  .section,
+  .pricing-summary {
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__content ul {
     list-style-type: disc;
@@ -300,6 +318,8 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__content li {
     margin-bottom: 0.45rem;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__compact {
     display: flex;
@@ -372,6 +392,9 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__table {
     margin-top: 2.5rem;
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__gallery {
     margin-top: var(--space-xl, 2.75rem);
@@ -406,6 +429,17 @@ export const OFFER_DOCUMENT_STYLES = `
     border-collapse: collapse;
     font-size: 0.85rem;
     width: 100%;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .offer-doc__pricing-table thead,
+  .offer-doc__pricing-table tbody,
+  .offer-doc__pricing-table tfoot,
+  .offer-doc__pricing-table tr,
+  .offer-doc__pricing-table th,
+  .offer-doc__pricing-table td {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .offer-doc__pricing-table thead th {
     background: var(--brand-secondary);
@@ -550,6 +584,10 @@ export const OFFER_DOCUMENT_STYLES = `
     box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
     margin-top: 32px;
     overflow: hidden;
+  }
+  .offer-doc__table--force-break {
+    break-before: page;
+    page-break-before: always;
   }
   .offer-doc__table--card .offer-doc__pricing-table thead th {
     background: var(--brand-secondary);
@@ -743,6 +781,16 @@ export function offerBodyMarkup({
       ? pricingHeading
       : 'Pricing';
   const pricingHeadingHtml = renderSectionHeading(resolvedPricingHeading, 'pricing');
+  const pricingBodyMatch = priceTableHtml.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
+  const pricingBodyContent = pricingBodyMatch?.[1] ?? '';
+  const pricingRowCount = (pricingBodyContent.match(/<tr\b/gi) || []).length;
+  const shouldForcePricingBreak = pricingRowCount > 0 && pricingRowCount <= 3;
+  const standardTableClasses = ['offer-doc__table'];
+  const premiumTableClasses = ['offer-doc__table', 'offer-doc__table--card'];
+  if (shouldForcePricingBreak) {
+    standardTableClasses.push('offer-doc__table--force-break');
+    premiumTableClasses.push('offer-doc__table--force-break');
+  }
 
   if (normalizedTemplate === 'premium-banner') {
     const logoSlot = logoUrl
@@ -768,7 +816,7 @@ export function offerBodyMarkup({
           <section class="offer-doc__content offer-doc__content--card">
             ${aiBodyHtml}
           </section>
-          <section class="offer-doc__table offer-doc__table--card">
+          <section class="${premiumTableClasses.join(' ')}">
             ${pricingHeadingHtml}
             ${priceTableHtml}
           </section>
@@ -828,7 +876,7 @@ export function offerBodyMarkup({
       <section class="offer-doc__content">
         ${aiBodyHtml}
       </section>
-      <section class="offer-doc__table">
+      <section class="${standardTableClasses.join(' ')}">
         ${pricingHeadingHtml}
         ${priceTableHtml}
       </section>

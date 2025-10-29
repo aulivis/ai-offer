@@ -1,4 +1,4 @@
-import { priceTableHtml } from '@/app/lib/pricing';
+import { countRenderablePricingRows, priceTableHtml } from '@/app/lib/pricing';
 import { renderSectionHeading } from '@/app/lib/offerSections';
 import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
@@ -43,12 +43,17 @@ export function partialSections(ctx: RenderCtx): string {
 
 export function partialPriceTable(ctx: RenderCtx): string {
   const priceTable = priceTableHtml(ctx.rows, ctx.i18n);
+  const rowCount = countRenderablePricingRows(ctx.rows);
+  const tableClasses = ['offer-doc__table'];
+  if (rowCount > 0 && rowCount <= 3) {
+    tableClasses.push('offer-doc__table--force-break');
+  }
   const pricingHeading = renderSectionHeading(
     ctx.i18n.t('pdf.templates.sections.pricing'),
     'pricing',
   );
   return `
-        <section class="offer-doc__table">
+        <section class="${tableClasses.join(' ')}">
           ${pricingHeading}
           ${priceTable}
         </section>
