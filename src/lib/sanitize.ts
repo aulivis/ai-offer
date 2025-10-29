@@ -88,8 +88,7 @@ const ALLOWED_TARGETS = new Set(['_blank', '_self', '_parent', '_top']);
 const ALLOWED_REL_VALUES = new Set(['noopener', 'noreferrer', 'nofollow', 'external']);
 const ATTRIBUTE_PATTERN = /([a-zA-Z0-9:-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>/=`]+)))?/g;
 const TAG_PATTERN = /<\/?([a-zA-Z0-9]+)([^<>]*)>/g;
-const UNSAFE_HTML_PATTERN =
-  /<script\b|onload\s*=|javascript:|onerror\s*=\s*(?!(?:"this\.remove\(\)"|'this\.remove\(\)'|this\.remove\(\)))/i;
+const UNSAFE_HTML_PATTERN = /<script\b|onload\s*=|javascript:|onerror\s*=/i;
 
 function escapeHtml(value: string): string {
   return value.replace(/[<>&"]/g, (ch) => {
