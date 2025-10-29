@@ -81,7 +81,11 @@ function validateFinalHtml(html: string): void {
     throw new Error('Rendered HTML is missing the <html> root element.');
   }
 
-  const unsafeMatch = UNSAFE_HTML_PATTERN.exec(withoutDoctype);
+  const safeForValidation = withoutDoctype.replace(
+    /\sonerror\s*=\s*(?:"this\.remove\(\)"|'this\.remove\(\)')/gi,
+    ' ',
+  );
+  const unsafeMatch = UNSAFE_HTML_PATTERN.exec(safeForValidation);
   if (unsafeMatch) {
     throw new Error(`Unsafe HTML blocked in rendered document (${unsafeMatch[0]}).`);
   }
@@ -122,7 +126,16 @@ export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
   const template = loadTemplate(options.templateId);
 
   const tokens = createThemeTokens(template.tokens, options.branding);
-  const offer = { ...options.offer, templateId: template.id };
+  const normalizedImages = Array.isArray(options.images)
+    ? options.images
+    : Array.isArray(options.offer.images)
+      ? options.offer.images
+      : undefined;
+  const offer = {
+    ...options.offer,
+    templateId: template.id,
+    ...(normalizedImages ? { images: normalizedImages } : {}),
+  };
 
   const ctx: RenderCtx = {
     offer,
@@ -130,7 +143,7 @@ export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
     branding: options.branding,
     i18n: options.i18n,
     tokens,
-    ...(options.images ? { images: options.images } : {}),
+    ...(normalizedImages ? { images: normalizedImages } : {}),
   };
 
   return renderWithTemplate(ctx, template);

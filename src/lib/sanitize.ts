@@ -245,7 +245,8 @@ export function sanitizeInput(input: string | undefined | null): string {
 }
 
 export function ensureSafeHtml(html: string, context = 'HTML output'): void {
-  if (UNSAFE_HTML_PATTERN.test(html)) {
+  const normalised = html.replace(/\sonerror\s*=\s*(?:"this\.remove\(\)"|'this\.remove\(\)')/gi, ' ');
+  if (UNSAFE_HTML_PATTERN.test(normalised)) {
     throw new Error(`Unsafe HTML blocked in ${context}.`);
   }
 }

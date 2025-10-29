@@ -131,6 +131,7 @@ describe('offer templates golden tests', () => {
           companyWebsite: 'https://example.com',
           companyAddress: 'Budapest, Andrássy út 1.',
           companyTaxId: '12345678-1-12',
+          images: FIXED_IMAGES,
         },
         rows: FIXED_ROWS,
         branding: {
