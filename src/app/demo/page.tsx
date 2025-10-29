@@ -11,7 +11,7 @@ export default function DemoPlaceholderPage() {
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
           Demó
         </span>
-        <h1 className="text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
+        <h1 className="text-4xl font-bold tracking-[-0.125rem] text-[#1c274c]">
           Interaktív demó hamarosan
         </h1>
         <p className="text-base leading-relaxed text-fg-muted">

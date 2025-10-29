@@ -96,7 +96,7 @@ export default function AppFrame({
       <main id="main" className="flex-1 space-y-8">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#151035]">
+            <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c]">
               {title}
             </h1>
             {description ? (

@@ -14,15 +14,15 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
  */
 export const OFFER_DOCUMENT_STYLES = `
   .offer-doc {
-    --brand-primary: #151035;
+    --brand-primary: #1c274c;
     --brand-primary-contrast: #ffffff;
-    --brand-secondary: #f3f4f6;
-    --brand-secondary-border: #d1d5db;
-    --brand-secondary-text: #1f2937;
-    --brand-muted: #6b7280;
-    --brand-text: #1f2937;
+    --brand-secondary: #e2e8f0;
+    --brand-secondary-border: #475569;
+    --brand-secondary-text: #334155;
+    --brand-muted: #334155;
+    --brand-text: #0f172a;
     --brand-bg: #ffffff;
-    --brand-border: #d1d5db;
+    --brand-border: #475569;
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
     --space-md: 1rem;
@@ -37,13 +37,13 @@ export const OFFER_DOCUMENT_STYLES = `
     --radius-md: 1.25rem;
     --radius-lg: 2rem;
     background: var(--brand-bg, #ffffff);
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font: var(--font-body, 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0 auto;
     max-width: 760px;
   }
   .offer-doc--modern {
-    border: 1px solid var(--brand-border, #d1d5db);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-lg, 32px);
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
@@ -64,8 +64,8 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__logo-wrap {
     align-items: center;
-    background: var(--brand-secondary, #f3f4f6);
-    border: 1px solid var(--brand-border, #d1d5db);
+    background: var(--brand-secondary, #e2e8f0);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-md, 14px);
     display: flex;
     height: 88px;
@@ -81,7 +81,7 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__monogram {
     align-items: center;
-    background: var(--brand-primary, #151035);
+    background: var(--brand-primary, #1c274c);
     border-radius: var(--radius-md, 14px);
     color: var(--brand-primary-contrast, #ffffff);
     display: flex;
@@ -99,7 +99,7 @@ export const OFFER_DOCUMENT_STYLES = `
     gap: 0.35rem;
   }
   .offer-doc__company {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.22em;
@@ -120,19 +120,19 @@ export const OFFER_DOCUMENT_STYLES = `
     text-align: right;
   }
   .offer-doc__meta-label {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .offer-doc__meta-value {
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font-size: 0.95rem;
     font-weight: 600;
   }
   .offer-doc__meta-value--placeholder {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-style: italic;
   }
   @media (max-width: 640px) {
@@ -165,7 +165,7 @@ export const OFFER_DOCUMENT_STYLES = `
     gap: 0.4rem;
   }
   .offer-doc__footer-label {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -177,12 +177,12 @@ export const OFFER_DOCUMENT_STYLES = `
     margin-top: 0.25rem;
   }
   .offer-doc__footer-value {
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font-size: 0.92rem;
     word-break: break-word;
   }
   .offer-doc__footer-value--placeholder {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-style: italic;
   }
   .offer-doc__content {
@@ -213,7 +213,7 @@ export const OFFER_DOCUMENT_STYLES = `
     width: 100%;
   }
   .offer-doc__section-note {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.92rem;
     margin-top: 0.75rem;
   }
@@ -296,7 +296,7 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__compact-card {
     background: var(--brand-bg, #ffffff);
-    border: 1px solid var(--brand-border, #d1d5db);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-md, 22px);
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     padding: var(--space-lg, 1.5rem) var(--space-xl, 1.7rem);
@@ -348,7 +348,7 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__pricing-table tbody td {
     border-bottom: 1px solid var(--brand-secondary-border);
-    color: var(--brand-text, #374151);
+    color: var(--brand-text, #0f172a);
     padding: 0.6rem 0.75rem;
     vertical-align: top;
   }
@@ -525,7 +525,7 @@ function contrastColor(hex: string): string {
   const g = parseInt(clean.slice(2, 4), 16) / 255;
   const b = parseInt(clean.slice(4, 6), 16) / 255;
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 0.6 ? '#111827' : '#ffffff';
+  return luminance > 0.6 ? '#0f172a' : '#ffffff';
 }
 
 function sanitizeLogoUrl(value: string | null | undefined): string | null {
@@ -587,12 +587,12 @@ export function offerBodyMarkup({
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
-  const primaryColor = normalizeColor(branding?.primaryColor) ?? '#0f172a';
-  const secondaryColor = normalizeColor(branding?.secondaryColor) ?? '#f3f4f6';
-  const secondaryBorder = '#D1D5DB';
+  const primaryColor = normalizeColor(branding?.primaryColor) ?? '#1c274c';
+  const secondaryColor = normalizeColor(branding?.secondaryColor) ?? '#e2e8f0';
+  const secondaryBorder = '#475569';
   const primaryContrast = contrastColor(primaryColor);
   const logoUrl = sanitizeLogoUrl(branding?.logoUrl);
-  const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #1F2937;`;
+  const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #334155;`;
   const safeStyleAttr = sanitizeInput(styleAttr);
   const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
   const fallbackValue = '—';

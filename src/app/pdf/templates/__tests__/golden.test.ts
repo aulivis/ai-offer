@@ -126,8 +126,8 @@ describe('offer templates golden tests', () => {
         rows: FIXED_ROWS,
         branding: {
           logoUrl: 'https://cdn.example.com/assets/logo.png',
-          primaryColor: '#111827',
-          secondaryColor: '#e5e7eb',
+          primaryColor: '#1c274c',
+          secondaryColor: '#e2e8f0',
         },
         i18n: translator,
         tokens: template.tokens,

@@ -485,7 +485,7 @@ function PublicBillingLanding() {
           <span className="inline-flex w-fit items-center rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
             {t('billing.public.badge')}
           </span>
-          <h1 className="text-4xl font-bold leading-[1.15] tracking-[-0.1rem] text-[#151035] md:text-5xl">
+          <h1 className="text-4xl font-bold leading-[1.15] tracking-[-0.1rem] text-[#1c274c] md:text-5xl">
             {t('billing.public.hero.title')}
           </h1>
           <p className="max-w-[60ch] text-base leading-[1.7] text-fg-muted md:text-lg">

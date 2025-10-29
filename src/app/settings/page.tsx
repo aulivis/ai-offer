@@ -192,8 +192,8 @@ export default function SettingsPage() {
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
   const hasErrors = hasGeneralErrors || hasBrandingErrors;
 
-  const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#0f172a';
-  const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#f3f4f6';
+  const primaryPreview = normalizeColorHex(profile.brand_color_primary) ?? '#1c274c';
+  const secondaryPreview = normalizeColorHex(profile.brand_color_secondary) ?? '#e2e8f0';
   const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
   const canUseProTemplates = plan === 'pro';
 
@@ -283,8 +283,8 @@ export default function SettingsPage() {
         company_email: prof?.company_email ?? user.email ?? '',
         industries,
         brand_logo_url: prof?.brand_logo_url ?? null,
-        brand_color_primary: prof?.brand_color_primary ?? '#0f172a',
-        brand_color_secondary: prof?.brand_color_secondary ?? '#f3f4f6',
+        brand_color_primary: prof?.brand_color_primary ?? '#1c274c',
+        brand_color_secondary: prof?.brand_color_secondary ?? '#e2e8f0',
         offer_template: templateId,
       });
       setNewAct((prev) => ({ ...prev, industries }));

@@ -58,11 +58,11 @@ const {
     renderBody: vi.fn(() => '<main />'),
     tokens: {
       color: {
-        primary: '#0f172a',
-        secondary: '#f3f4f6',
-        text: '#111827',
-        muted: '#6b7280',
-        border: '#d1d5db',
+        primary: '#1c274c',
+        secondary: '#e2e8f0',
+        text: '#0f172a',
+        muted: '#334155',
+        border: '#475569',
         bg: '#ffffff',
       },
       spacing: {
