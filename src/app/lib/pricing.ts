@@ -60,10 +60,8 @@ const LOCALE_MAP: Record<Translator['locale'], string> = {
 
 export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRANSLATOR): string {
   const totals = summarize(rows);
-  const localeTag = LOCALE_MAP[i18n.locale] ?? 'hu-HU';
-  const formatNumber = (value: number) => value.toLocaleString(localeTag);
-  const currencyLabel = sanitizeInput(i18n.t('pdf.pricingTable.currency'));
-  const formatCurrency = (value: number) => `${formatNumber(value)} ${currencyLabel}`;
+  const formatNumber = (value: number) => value.toLocaleString('hu-HU');
+  const formatCurrency = (value: number) => `${formatNumber(value)} Ft`;
   const headerItem = sanitizeInput(i18n.t('pdf.pricingTable.headers.item'));
   const headerQuantity = sanitizeInput(i18n.t('pdf.pricingTable.headers.quantity'));
   const headerUnit = sanitizeInput(i18n.t('pdf.pricingTable.headers.unit'));
@@ -75,60 +73,99 @@ export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRAN
   const footerGross = sanitizeInput(i18n.t('pdf.pricingTable.footer.gross'));
 
   return `
-    <table class="offer-doc__pricing-table" style="width: 100%; border-collapse: collapse;">
+    <style>
+      .offer-doc__pricing-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #d7dce6;
+      }
+      .offer-doc__pricing-table th,
+      .offer-doc__pricing-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e4e8f0;
+      }
+      .offer-doc__pricing-table thead th {
+        background-color: #f1f4f8;
+        text-align: left;
+      }
+      .offer-doc__pricing-table tbody tr:nth-child(even) {
+        background-color: #f9fbff;
+      }
+      .offer-doc__pricing-table tbody td:nth-child(2),
+      .offer-doc__pricing-table tbody td:nth-child(4),
+      .offer-doc__pricing-table tbody td:nth-child(5),
+      .offer-doc__pricing-table tbody td:nth-child(6),
+      .offer-doc__pricing-table thead th:nth-child(2),
+      .offer-doc__pricing-table thead th:nth-child(4),
+      .offer-doc__pricing-table thead th:nth-child(5),
+      .offer-doc__pricing-table thead th:nth-child(6),
+      .offer-doc__pricing-table tfoot td:last-child {
+        text-align: right;
+      }
+      .offer-doc__pricing-table tfoot tr {
+        background-color: #eef2ff;
+        font-weight: 600;
+      }
+      .offer-doc__pricing-table tfoot tr:first-child td {
+        border-top: 2px solid #b2c3ff;
+      }
+      .offer-doc__pricing-table tfoot tr:last-child {
+        font-weight: 700;
+      }
+    </style>
+    <table class="offer-doc__pricing-table">
       <colgroup>
         <col style="width: 32%;" />
-        <col style="width: 12%;" />
-        <col style="width: 12%;" />
-        <col style="width: 16%;" />
-        <col style="width: 12%;" />
+        <col style="width: 12%; min-width: 60px;" />
+        <col style="width: 12%; min-width: 80px;" />
+        <col style="width: 16%; min-width: 110px;" />
+        <col style="width: 12%; min-width: 80px;" />
         <col style="width: 16%;" />
       </colgroup>
       <thead>
-        <tr style="background-color: #f1f4f8;">
-          <th style="text-align: left; padding: 8px 12px;">${headerItem}</th>
-          <th style="text-align: right; padding: 8px 12px;">${headerQuantity}</th>
-          <th style="text-align: left; padding: 8px 12px;">${headerUnit}</th>
-          <th style="text-align: right; padding: 8px 12px;">${headerUnitPrice}</th>
-          <th style="text-align: right; padding: 8px 12px;">${headerVat}</th>
-          <th style="text-align: right; padding: 8px 12px;">${headerNet}</th>
+        <tr>
+          <th>${headerItem}</th>
+          <th>${headerQuantity}</th>
+          <th style="text-align: left;">${headerUnit}</th>
+          <th>${headerUnitPrice}</th>
+          <th>${headerVat}</th>
+          <th>${headerNet}</th>
         </tr>
       </thead>
       <tbody>
         ${rows
-          .map((r, index) => {
+          .map((r) => {
             const qty = r.qty ?? 0;
             const unitPrice = r.unitPrice ?? 0;
             const vatPct = r.vat ?? 0;
             const lineNet = qty * unitPrice;
-            const zebraStyle = index % 2 === 1 ? 'background-color: #fafbff;' : '';
             const name = sanitizeInput(r.name || '');
             const unit = sanitizeInput(r.unit || '');
             return `
-              <tr style="${zebraStyle}">
-                <td style="padding: 8px 12px; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${name}">${name}</td>
-                <td style="padding: 8px 12px; text-align: right;">${formatNumber(qty)}</td>
-                <td style="padding: 8px 12px;">${unit}</td>
-                <td style="padding: 8px 12px; text-align: right;">${formatCurrency(unitPrice)}</td>
-                <td style="padding: 8px 12px; text-align: right;">${formatNumber(vatPct)}</td>
-                <td style="padding: 8px 12px; text-align: right;">${formatCurrency(lineNet)}</td>
+              <tr>
+                <td style="max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${name}">${name}</td>
+                <td>${formatNumber(qty)}</td>
+                <td style="text-align: left;">${unit}</td>
+                <td>${formatCurrency(unitPrice)}</td>
+                <td>${formatNumber(vatPct)} %</td>
+                <td>${formatCurrency(lineNet)}</td>
               </tr>
             `;
           })
           .join('')}
       </tbody>
       <tfoot>
-        <tr style="background-color: #e6efff; font-weight: 600;">
-          <td style="padding: 10px 12px;" colspan="5">${footerNet}</td>
-          <td style="padding: 10px 12px; text-align: right;">${formatCurrency(totals.net)}</td>
+        <tr>
+          <td colspan="5">${footerNet}</td>
+          <td>${formatCurrency(totals.net)}</td>
         </tr>
-        <tr style="background-color: #eef3ff; font-weight: 600;">
-          <td style="padding: 10px 12px;" colspan="5">${footerVat}</td>
-          <td style="padding: 10px 12px; text-align: right;">${formatCurrency(totals.vat)}</td>
+        <tr>
+          <td colspan="5">${footerVat}</td>
+          <td>${formatCurrency(totals.vat)}</td>
         </tr>
-        <tr style="background-color: #dbe7ff; font-weight: 700;">
-          <td style="padding: 12px 12px;" colspan="5">${footerGross}</td>
-          <td style="padding: 12px 12px; text-align: right;">${formatCurrency(totals.gross)}</td>
+        <tr>
+          <td colspan="5">${footerGross}</td>
+          <td>${formatCurrency(totals.gross)}</td>
         </tr>
       </tfoot>
     </table>
