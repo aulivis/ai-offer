@@ -22,8 +22,8 @@ function normalizeLang(value: string | null | undefined): string {
   return /^[a-z]{2}(?:-[a-z0-9]+)?$/i.test(normalized) ? normalized : fallback;
 }
 
-function minifyInlineStyle(css: string): string {
-  const rules = css
+function minifyCssDeclarations(css: string): string {
+  return css
     .split(';')
     .map((rule) => rule.trim())
     .filter(Boolean)
@@ -32,10 +32,15 @@ function minifyInlineStyle(css: string): string {
       if (!property || valueParts.length === 0) {
         return rule;
       }
-      return `${property.trim()}:${valueParts.join(':').trim()}`;
-    });
+      const name = property.trim();
+      const value = valueParts.join(':').trim().replace(/\s+/g, ' ');
+      return `${name}:${value}`;
+    })
+    .join(';');
+}
 
-  return rules.join(';');
+function minifyInlineStyle(css: string): string {
+  return minifyCssDeclarations(css);
 }
 
 function minifyInlineCss(html: string): string {
@@ -45,13 +50,22 @@ function minifyInlineCss(html: string): string {
   });
 }
 
+function minifyCss(css: string): string {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s*{\s*/g, '{')
+    .replace(/\s*}\s*/g, '}')
+    .replace(/\s*;\s*/g, ';')
+    .replace(/\s*:\s*/g, ':')
+    .replace(/\s*,\s*/g, ',')
+    .replace(/\s+/g, ' ')
+    .replace(/;}/g, '}')
+    .trim();
+}
+
 function minifyStyleTags(html: string): string {
   return html.replace(/<style(\b[^>]*)>([\s\S]*?)<\/style>/gi, (_, attrs: string, css: string) => {
-    const minified = css
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .join('');
+    const minified = minifyCss(css);
     return `<style${attrs}>${minified}</style>`;
   });
 }
@@ -81,11 +95,7 @@ function validateFinalHtml(html: string): void {
     throw new Error('Rendered HTML is missing the <html> root element.');
   }
 
-  const safeForValidation = withoutDoctype.replace(
-    /\sonerror\s*=\s*(?:"this\.remove\(\)"|'this\.remove\(\)')/gi,
-    ' ',
-  );
-  const unsafeMatch = UNSAFE_HTML_PATTERN.exec(safeForValidation);
+  const unsafeMatch = UNSAFE_HTML_PATTERN.exec(withoutDoctype);
   if (unsafeMatch) {
     throw new Error(`Unsafe HTML blocked in rendered document (${unsafeMatch[0]}).`);
   }
