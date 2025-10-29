@@ -1,4 +1,10 @@
-import type { OfferTemplate, RenderCtx } from './types';
+import type {
+  OfferTemplate,
+  RenderCtx,
+  TemplateId,
+} from './types';
+import { loadTemplate } from './registry';
+import { createThemeTokens } from './theme';
 
 const HTML_ROOT_PATTERN = /^<html[\s\S]*<\/html>$/i;
 const UNSAFE_HTML_PATTERN = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
@@ -81,7 +87,7 @@ function validateFinalHtml(html: string): void {
   }
 }
 
-export function buildOfferHtml(ctx: RenderCtx, tpl: OfferTemplate): string {
+function renderWithTemplate(ctx: RenderCtx, tpl: OfferTemplate): string {
   const lang = normalizeLang(ctx.offer.locale);
   const head = tpl.renderHead(ctx).trim();
   const body = tpl.renderBody(ctx).trim();
@@ -94,4 +100,31 @@ export function buildOfferHtml(ctx: RenderCtx, tpl: OfferTemplate): string {
   validateFinalHtml(html);
 
   return html;
+}
+
+type BuildOfferHtmlOptions = {
+  offer: RenderCtx['offer'];
+  rows: RenderCtx['rows'];
+  branding?: RenderCtx['branding'];
+  i18n: RenderCtx['i18n'];
+  templateId: TemplateId;
+  images?: RenderCtx['images'];
+};
+
+export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
+  const template = loadTemplate(options.templateId);
+
+  const tokens = createThemeTokens(template.tokens, options.branding);
+  const offer = { ...options.offer, templateId: template.id };
+
+  const ctx: RenderCtx = {
+    offer,
+    rows: options.rows,
+    branding: options.branding,
+    i18n: options.i18n,
+    tokens,
+    ...(options.images ? { images: options.images } : {}),
+  };
+
+  return renderWithTemplate(ctx, template);
 }
