@@ -641,6 +641,15 @@ function contrastColor(hex: string): string {
   return luminance > 0.6 ? '#0f172a' : '#ffffff';
 }
 
+const FALLBACK_COLORS = {
+  primary: '#1c274c',
+  secondary: '#e2e8f0',
+  text: '#0f172a',
+  muted: '#334155',
+  border: '#475569',
+  bg: '#ffffff',
+} as const;
+
 /**
  * Build the inner HTML fragment shared by both the dashboard preview and the
  * PDF generator.  The returned markup always wraps content in a root
@@ -664,12 +673,15 @@ export function offerBodyMarkup({
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
-  const primaryColor = normalizeBrandHex(branding?.primaryColor) ?? '#1c274c';
-  const secondaryColor = normalizeBrandHex(branding?.secondaryColor) ?? '#e2e8f0';
-  const secondaryBorder = '#475569';
+  const primaryColor = normalizeBrandHex(branding?.primaryColor) ?? FALLBACK_COLORS.primary;
+  const secondaryColor = normalizeBrandHex(branding?.secondaryColor) ?? FALLBACK_COLORS.secondary;
+  const textColor = FALLBACK_COLORS.text;
+  const mutedColor = FALLBACK_COLORS.muted;
+  const borderColor = FALLBACK_COLORS.border;
+  const backgroundColor = FALLBACK_COLORS.bg;
   const primaryContrast = contrastColor(primaryColor);
   const logoUrl = sanitizeBrandLogoUrl(branding?.logoUrl);
-  const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #334155;`;
+  const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${borderColor}; --brand-secondary-text: ${mutedColor}; --brand-muted: ${mutedColor}; --brand-text: ${textColor}; --brand-bg: ${backgroundColor}; --brand-border: ${borderColor}; --text: ${textColor}; --muted: ${mutedColor}; --border: ${borderColor}; --bg: ${backgroundColor};`;
   const safeStyleAttr = sanitizeInput(styleAttr);
   const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
   const fallbackValue = '—';

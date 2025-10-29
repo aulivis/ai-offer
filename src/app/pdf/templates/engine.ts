@@ -4,7 +4,7 @@ import type {
   TemplateId,
 } from './types';
 import { loadTemplate } from './registry';
-import { createThemeTokens } from './theme';
+import { createThemeCssVariables, createThemeTokens } from './theme';
 
 const HTML_ROOT_PATTERN = /^<html[\s\S]*<\/html>$/i;
 const UNSAFE_HTML_PATTERN = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
