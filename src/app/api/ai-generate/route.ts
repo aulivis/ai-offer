@@ -16,7 +16,7 @@ import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
-import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
+import { ensureSafeHtml, sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { getUserProfile } from '@/lib/services/user';
 import { currentMonthStart, getDeviceUsageSnapshot, getUsageSnapshot } from '@/lib/services/usage';
@@ -547,7 +547,8 @@ function applyImageAssetsToHtml(
       const key = keyMatch[1] ?? keyMatch[2];
       const asset = key ? imageMap.get(key) : undefined;
       if (asset) {
-        const altAttr = asset.alt ? ` alt="${asset.alt}"` : '';
+        const safeAlt = typeof asset.alt === 'string' ? asset.alt : '';
+        const altAttr = safeAlt ? ` alt="${safeAlt}"` : '';
         pdfHtml += `<img src="${asset.dataUrl}"${altAttr} />`;
       }
     }
@@ -557,6 +558,9 @@ function applyImageAssetsToHtml(
 
   pdfHtml += html.slice(lastIndex);
   storedHtml += html.slice(lastIndex);
+
+  ensureSafeHtml(pdfHtml, 'pdf html with embedded assets');
+  ensureSafeHtml(storedHtml, 'pdf html for storage');
 
   return { pdfHtml, storedHtml };
 }
