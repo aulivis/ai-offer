@@ -62,6 +62,10 @@ export const OFFER_DOCUMENT_STYLES = `
     display: flex;
     gap: var(--space-lg, 1.5rem);
   }
+  .offer-doc p {
+    hyphens: auto;
+    overflow-wrap: anywhere;
+  }
   .offer-doc__logo-wrap {
     align-items: center;
     background: var(--brand-secondary, #e2e8f0);
@@ -237,6 +241,16 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__content p {
     margin: 0 0 1rem;
+    hyphens: auto;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    widows: 2;
+    orphans: 2;
+  }
+  @supports (text-wrap: pretty) {
+    .offer-doc__content p {
+      text-wrap: pretty;
+    }
   }
   .offer-doc__content ul,
   .offer-doc__content ol {

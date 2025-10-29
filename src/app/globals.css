@@ -113,6 +113,26 @@ a {
   @apply text-inherit no-underline;
 }
 
+p {
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+.offer-doc__content p {
+  margin: 0 0 1rem;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  widows: 2;
+  orphans: 2;
+}
+
+@supports (text-wrap: pretty) {
+  .offer-doc__content p {
+    text-wrap: pretty;
+  }
+}
+
 .offer-doc__content ul,
 .offer-doc__content ol {
   list-style-position: outside;
