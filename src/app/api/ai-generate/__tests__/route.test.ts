@@ -628,8 +628,8 @@ describe('POST /api/ai-generate', () => {
       expect.objectContaining({
         offer: expect.objectContaining({ templateId: templateStub.id }),
         images: [],
+        templateId: templateStub.id,
       }),
-      templateStub,
     );
     expect(enqueuePdfJobMock).toHaveBeenCalledWith(
       expect.anything(),

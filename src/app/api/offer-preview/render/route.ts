@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { loadTemplate } from '@/app/pdf/templates/registry';
-import { createThemeTokens, normalizeBranding } from '@/app/pdf/templates/theme';
+import { normalizeBranding } from '@/app/pdf/templates/theme';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
@@ -169,34 +169,31 @@ async function handlePost(req: AuthenticatedNextRequest) {
   let html: string;
 
   try {
-    html = buildOfferHtml(
-      {
-        offer: {
-          title: (title ?? defaultTitle) || defaultTitle,
-          companyName: companyName ?? '',
-          bodyHtml: safeBody,
-          templateId: template.id,
-          legacyTemplateId: resolvedLegacyId,
-          locale: resolvedLocale,
-          issueDate: sanitizeInput(
-            issueDate && issueDate.length > 0
-              ? issueDate
-              : formatOfferIssueDate(new Date(), resolvedLocale),
-          ),
-          contactName: sanitizeInput(contactName ?? ''),
-          contactEmail: sanitizeInput(contactEmail ?? ''),
-          contactPhone: sanitizeInput(contactPhone ?? ''),
-          companyWebsite: sanitizeInput(companyWebsite ?? ''),
-          companyAddress: sanitizeInput(companyAddress ?? ''),
-          companyTaxId: sanitizeInput(companyTaxId ?? ''),
-        },
-        rows: normalizedRows,
-        branding: normalizedBranding,
-        i18n: translator,
-        tokens: createThemeTokens(template.tokens, normalizedBranding),
+    html = buildOfferHtml({
+      offer: {
+        title: (title ?? defaultTitle) || defaultTitle,
+        companyName: companyName ?? '',
+        bodyHtml: safeBody,
+        templateId: template.id,
+        legacyTemplateId: resolvedLegacyId,
+        locale: resolvedLocale,
+        issueDate: sanitizeInput(
+          issueDate && issueDate.length > 0
+            ? issueDate
+            : formatOfferIssueDate(new Date(), resolvedLocale),
+        ),
+        contactName: sanitizeInput(contactName ?? ''),
+        contactEmail: sanitizeInput(contactEmail ?? ''),
+        contactPhone: sanitizeInput(contactPhone ?? ''),
+        companyWebsite: sanitizeInput(companyWebsite ?? ''),
+        companyAddress: sanitizeInput(companyAddress ?? ''),
+        companyTaxId: sanitizeInput(companyTaxId ?? ''),
       },
-      template,
-    );
+      rows: normalizedRows,
+      branding: normalizedBranding,
+      i18n: translator,
+      templateId: template.id,
+    });
     renderDuration = performance.now() - renderStartedAt;
   } catch (error) {
     renderDuration = performance.now() - renderStartedAt;

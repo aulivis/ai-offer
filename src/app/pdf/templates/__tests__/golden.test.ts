@@ -146,7 +146,14 @@ describe('offer templates golden tests', () => {
       let html: string;
 
       beforeAll(() => {
-        html = buildOfferHtml(ctx, template);
+        html = buildOfferHtml({
+          offer: ctx.offer,
+          rows: ctx.rows,
+          branding: ctx.branding,
+          i18n: ctx.i18n,
+          templateId: template.id,
+          images: ctx.images,
+        });
       });
 
       it('renders stable HTML', () => {
