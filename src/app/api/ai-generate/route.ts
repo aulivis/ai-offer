@@ -51,7 +51,7 @@ export const runtime = 'nodejs';
 const USER_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást a csomagban.';
 const DEVICE_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást ezen az eszközön.';
 
-const DEFAULT_TEMPLATE_ID: TemplateId = 'free.base@1.0.0';
+const DEFAULT_TEMPLATE_ID: TemplateId = 'free.base@1.1.0';
 
 function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';
@@ -854,6 +854,10 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 
+    const galleryImages = sanitizedImageAssets
+      .slice(0, MAX_IMAGE_COUNT)
+      .map((asset) => ({ key: asset.key, src: asset.dataUrl, alt: asset.alt }));
+
     const renderStartedAt = performance.now();
     let renderDuration: number | null = null;
     let html: string;
@@ -902,6 +906,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           branding: brandingOptions,
           i18n: translator,
           tokens: createThemeTokens(template.tokens, brandingOptions),
+          images: galleryImages,
         },
         template,
       );

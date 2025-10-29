@@ -34,7 +34,7 @@ export interface ThemeTokens {
 }
 
 export type TemplateTier = 'free' | 'premium';
-export type TemplateId = string; // e.g. "free.base@1.0.0" or "premium.elegant@1.0.0"
+export type TemplateId = string; // e.g. "free.base@1.1.0" or "premium.elegant@1.1.0"
 export interface OfferTemplate {
   id: TemplateId;
   tier: TemplateTier;
@@ -61,10 +61,18 @@ export interface OfferData {
   companyAddress?: string | null;
   companyTaxId?: string | null;
 }
+
+export interface TemplateImageAsset {
+  key: string;
+  src: string;
+  alt: string;
+}
+
 export interface RenderCtx {
   offer: OfferData;
   rows: PriceRow[];
   branding?: Branding;
   i18n: Translator;
   tokens: ThemeTokens;
+  images?: TemplateImageAsset[];
 }

@@ -1,6 +1,6 @@
 import { priceTableHtml } from '@/app/lib/pricing';
 import { renderSectionHeading } from '@/app/lib/offerSections';
-import { ensureSafeHtml } from '@/lib/sanitize';
+import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
@@ -56,8 +56,33 @@ export function partialPriceTable(ctx: RenderCtx): string {
 }
 
 export function partialGallery(ctx: RenderCtx): string {
-  void ctx;
-  return '';
+  const images = Array.isArray(ctx.images) ? ctx.images.slice(0, 3) : [];
+  if (images.length === 0) {
+    return '';
+  }
+
+  const galleryHeading = renderSectionHeading(
+    ctx.i18n.t('pdf.templates.sections.gallery'),
+    'gallery',
+  );
+
+  const items = images
+    .map((image) => {
+      const safeSrc = sanitizeInput(image.src);
+      const safeAlt = sanitizeInput(image.alt);
+      const safeKey = sanitizeInput(image.key);
+      return `<figure class="offer-doc__gallery-item" data-offer-gallery-key="${safeKey}"><img class="offer-doc__gallery-image" src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async" onerror="this.remove()" /></figure>`;
+    })
+    .join('');
+
+  return `
+        <section class="offer-doc__gallery offer-doc__gallery--card offer-doc__gallery--premium">
+          ${galleryHeading}
+          <div class="offer-doc__gallery-grid">
+            ${items}
+          </div>
+        </section>
+  `;
 }
 
 export function partialFooter(ctx: RenderCtx): string {
