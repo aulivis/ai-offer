@@ -3,6 +3,7 @@ import {
   isOfferTemplateId,
   type OfferTemplateId,
 } from './offerTemplates';
+import { renderSectionHeading } from './offerSections';
 import { PRINT_BASE_CSS } from '@/app/pdf/print.css';
 import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
@@ -193,6 +194,32 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content h4 {
     color: var(--brand-primary);
     margin: 2.2rem 0 0.9rem;
+  }
+  .offer-doc__section-title {
+    align-items: center;
+    display: flex;
+    gap: 0.55rem;
+  }
+  .offer-doc__section-icon {
+    color: currentColor;
+    display: inline-flex;
+    flex-shrink: 0;
+    height: 1.1rem;
+    width: 1.1rem;
+  }
+  .offer-doc__section-icon svg {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+  .offer-doc__section-note {
+    color: var(--brand-muted, #6b7280);
+    font-size: 0.92rem;
+    margin-top: 0.75rem;
+  }
+  .offer-doc__section-note--compact {
+    color: inherit;
+    font-weight: 600;
   }
   .offer-doc__content h1 {
     font: var(--font-h2, 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
@@ -482,6 +509,7 @@ export interface OfferDocumentMarkupProps {
   companyWebsite?: string | null;
   companyAddress?: string | null;
   companyTaxId?: string | null;
+  pricingHeading?: string | null;
 }
 
 function normalizeColor(value: string | null | undefined): string | null {
@@ -555,6 +583,7 @@ export function offerBodyMarkup({
   companyWebsite,
   companyAddress,
   companyTaxId,
+  pricingHeading,
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
@@ -612,6 +641,12 @@ export function offerBodyMarkup({
   const addressLabel = 'Cím';
   const taxLabel = 'Adószám';
 
+  const resolvedPricingHeading =
+    typeof pricingHeading === 'string' && pricingHeading.trim().length > 0
+      ? pricingHeading
+      : 'Pricing';
+  const pricingHeadingHtml = renderSectionHeading(resolvedPricingHeading, 'pricing');
+
   if (normalizedTemplate === 'premium-banner') {
     const logoSlot = logoUrl
       ? `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--filled"><img class="offer-doc__logo offer-doc__logo--premium" src="${sanitizeInput(logoUrl)}" alt="Cég logó" /></div>`
@@ -636,6 +671,7 @@ export function offerBodyMarkup({
             ${aiBodyHtml}
           </section>
           <section class="offer-doc__table offer-doc__table--card">
+            ${pricingHeadingHtml}
             ${priceTableHtml}
           </section>
         </div>
@@ -693,6 +729,7 @@ export function offerBodyMarkup({
         ${aiBodyHtml}
       </section>
       <section class="offer-doc__table">
+        ${pricingHeadingHtml}
         ${priceTableHtml}
       </section>
       <footer class="offer-doc__footer">

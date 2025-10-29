@@ -29,7 +29,7 @@ import {
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan } from '@/lib/subscription';
-import { t, createTranslator, resolveLocale } from '@/copy';
+import { t, createTranslator, resolveLocale, type Translator } from '@/copy';
 import {
   recordTemplateRenderTelemetry,
   resolveTemplateRenderErrorCode,
@@ -44,6 +44,7 @@ import {
 import { allowCategory } from '../../../../lib/consent/server';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import { z } from 'zod';
+import { renderSectionHeading } from '@/app/lib/offerSections';
 
 export const runtime = 'nodejs';
 
@@ -183,9 +184,15 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
   },
 };
 
-function safeParagraph(value: string | undefined): string {
-  const trimmed = (value || '').trim();
-  return trimmed ? `<p>${sanitizeInput(trimmed)}</p>` : '<p>-</p>';
+function safeParagraphGroup(values: Array<string | undefined>): string {
+  const normalized = values
+    .map((value) => (value || '').trim())
+    .filter(Boolean)
+    .map((value) => `<p>${sanitizeInput(value)}</p>`);
+  if (!normalized.length) {
+    return '<p>-</p>';
+  }
+  return normalized.join('');
 }
 
 function safeList(items: string[] | undefined): string {
@@ -202,46 +209,68 @@ function limitList(items: string[] | undefined, max: number): string[] {
   return normalized.slice(0, Math.max(0, max));
 }
 
-function sectionsToHtml(sections: OfferSections, style: 'compact' | 'detailed'): string {
+function renderClosingNote(value: string | undefined, extraClass?: string): string {
+  const trimmed = (value || '').trim();
+  if (!trimmed) {
+    return '';
+  }
+  const classNames = ['offer-doc__section-note'];
+  if (extraClass) {
+    classNames.push(extraClass);
+  }
+  return `<p class="${classNames.join(' ')}">${sanitizeInput(trimmed)}</p>`;
+}
+
+function sectionsToHtml(
+  sections: OfferSections,
+  style: 'compact' | 'detailed',
+  i18n: Translator,
+): string {
+  const labels = {
+    overview: i18n.t('pdf.templates.sections.overview'),
+    scope: i18n.t('pdf.templates.sections.scope'),
+    deliverables: i18n.t('pdf.templates.sections.deliverables'),
+    timeline: i18n.t('pdf.templates.sections.timeline'),
+    assumptions: i18n.t('pdf.templates.sections.assumptions'),
+    nextSteps: i18n.t('pdf.templates.sections.nextSteps'),
+  } as const;
+
   if (style === 'compact') {
-    const intro = sanitizeInput((sections.introduction || '').trim());
-    const summary = sanitizeInput((sections.project_summary || '').trim());
-    const combinedIntro = [intro, summary].filter(Boolean).join(' ');
+    const overviewContent = safeParagraphGroup([sections.introduction, sections.project_summary]);
+    const nextSteps = safeList(limitList(sections.next_steps, 3));
+    const closingNote = renderClosingNote(sections.closing, 'offer-doc__section-note--compact');
 
     const html = `
       <div class="offer-doc__compact">
         <section class="offer-doc__compact-intro">
           <div class="offer-doc__compact-block">
-            <h2>Gyors áttekintés</h2>
-            ${safeParagraph(combinedIntro)}
+            ${renderSectionHeading(labels.overview, 'overview')}
+            ${overviewContent}
           </div>
           <div class="offer-doc__compact-block offer-doc__compact-block--highlights">
-            <h3>Kiemelt fókuszok</h3>
+            ${renderSectionHeading(labels.scope, 'scope', { level: 'h3' })}
             ${safeList(limitList(sections.scope, 3))}
           </div>
         </section>
         <section class="offer-doc__compact-grid">
           <div class="offer-doc__compact-card">
-            <h3>Szállítandók</h3>
+            ${renderSectionHeading(labels.deliverables, 'deliverables', { level: 'h3' })}
             ${safeList(limitList(sections.deliverables, 3))}
           </div>
           <div class="offer-doc__compact-card">
-            <h3>Menetrend</h3>
+            ${renderSectionHeading(labels.timeline, 'timeline', { level: 'h3' })}
             ${safeList(limitList(sections.schedule, 3))}
           </div>
           <div class="offer-doc__compact-card">
-            <h3>Lényeges feltételek</h3>
+            ${renderSectionHeading(labels.assumptions, 'assumptions', { level: 'h3' })}
             ${safeList(limitList(sections.assumptions, 3))}
           </div>
         </section>
         <section class="offer-doc__compact-bottom">
           <div class="offer-doc__compact-card offer-doc__compact-card--accent">
-            <h3>Következő lépések</h3>
-            ${safeList(limitList(sections.next_steps, 3))}
-          </div>
-          <div class="offer-doc__compact-card offer-doc__compact-card--closing">
-            <h3>Zárás</h3>
-            ${safeParagraph(sections.closing)}
+            ${renderSectionHeading(labels.nextSteps, 'nextSteps', { level: 'h3' })}
+            ${nextSteps}
+            ${closingNote}
           </div>
         </section>
       </div>
@@ -251,22 +280,19 @@ function sectionsToHtml(sections: OfferSections, style: 'compact' | 'detailed'):
   }
 
   const html = `
-    <h2>Bevezető</h2>
-    ${safeParagraph(sections.introduction)}
-    <h2>Projekt összefoglaló</h2>
-    ${safeParagraph(sections.project_summary)}
-    <h2>Terjedelem</h2>
+    ${renderSectionHeading(labels.overview, 'overview')}
+    ${safeParagraphGroup([sections.introduction, sections.project_summary])}
+    ${renderSectionHeading(labels.scope, 'scope')}
     ${safeList(sections.scope)}
-    <h2>Szállítandók</h2>
+    ${renderSectionHeading(labels.deliverables, 'deliverables')}
     ${safeList(sections.deliverables)}
-    <h2>Ütemezés</h2>
+    ${renderSectionHeading(labels.timeline, 'timeline')}
     ${safeList(sections.schedule)}
-    <h2>Feltételezések &amp; Kizárások</h2>
+    ${renderSectionHeading(labels.assumptions, 'assumptions')}
     ${safeList(sections.assumptions)}
-    <h2>Következő lépések</h2>
+    ${renderSectionHeading(labels.nextSteps, 'nextSteps')}
     ${safeList(sections.next_steps)}
-    <h2>Zárás</h2>
-    ${safeParagraph(sections.closing)}
+    ${renderClosingNote(sections.closing)}
   `;
 
   return sanitizeHTML(html);
@@ -676,6 +702,8 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     );
 
     const normalizedLanguage = sanitizeInput(language);
+    const resolvedLocale = resolveLocale(normalizedLanguage);
+    const translator = createTranslator(resolvedLocale);
 
     // ---- AI szöveg (override elsőbbség) ----
     const safeTitle = sanitizeInput(title);
@@ -733,7 +761,11 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           throw new Error('Structured output missing');
         }
 
-        aiHtml = sectionsToHtml(structuredSections, style === 'compact' ? 'compact' : 'detailed');
+        aiHtml = sectionsToHtml(
+          structuredSections,
+          style === 'compact' ? 'compact' : 'detailed',
+          translator,
+        );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error('OpenAI structured output error:', message);
@@ -820,8 +852,6 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     const resolvedTemplateId = template.id;
     const resolvedLegacyTemplateId = (template as { legacyId?: string }).legacyId ?? 'modern';
 
-    const resolvedLocale = resolveLocale(normalizedLanguage);
-    const translator = createTranslator(resolvedLocale);
     const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 
     const renderStartedAt = performance.now();

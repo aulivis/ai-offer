@@ -1,4 +1,5 @@
 import { priceTableHtml } from '@/app/lib/pricing';
+import { renderSectionHeading } from '@/app/lib/offerSections';
 import { ensureSafeHtml } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
@@ -42,8 +43,13 @@ export function partialSections(ctx: RenderCtx): string {
 
 export function partialPriceTable(ctx: RenderCtx): string {
   const priceTable = priceTableHtml(ctx.rows, ctx.i18n);
+  const pricingHeading = renderSectionHeading(
+    ctx.i18n.t('pdf.templates.sections.pricing'),
+    'pricing',
+  );
   return `
         <section class="offer-doc__table">
+          ${pricingHeading}
           ${priceTable}
         </section>
   `;
