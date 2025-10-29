@@ -5,6 +5,7 @@ import { useMemo, type ReactNode } from 'react';
 import { SupabaseProvider } from '@/components/SupabaseProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { PlanUpgradeDialogProvider } from '@/components/PlanUpgradeDialogProvider';
+import { BrandingProvider } from '@/components/BrandingProvider';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 
 interface AppProvidersProps {
@@ -17,7 +18,9 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <SupabaseProvider client={supabase}>
       <ToastProvider>
-        <PlanUpgradeDialogProvider>{children}</PlanUpgradeDialogProvider>
+        <PlanUpgradeDialogProvider>
+          <BrandingProvider>{children}</BrandingProvider>
+        </PlanUpgradeDialogProvider>
       </ToastProvider>
     </SupabaseProvider>
   );

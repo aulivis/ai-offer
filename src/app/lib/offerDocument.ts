@@ -6,6 +6,7 @@ import {
 import { renderSectionHeading } from './offerSections';
 import { PRINT_BASE_CSS } from '@/app/pdf/print.css';
 import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
+import { deriveBrandMonogram, normalizeBrandHex, sanitizeBrandLogoUrl } from '@/lib/branding';
 
 /**
  * Shared CSS for the rendered offer document.  The rules only target the
@@ -631,13 +632,6 @@ export interface OfferDocumentMarkupProps {
   pricingHeading?: string | null;
 }
 
-function normalizeColor(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  if (!/^#([0-9a-fA-F]{6})$/.test(trimmed)) return null;
-  return `#${trimmed.slice(1).toLowerCase()}`;
-}
-
 function contrastColor(hex: string): string {
   const clean = hex.replace('#', '');
   const r = parseInt(clean.slice(0, 2), 16) / 255;
@@ -645,42 +639,6 @@ function contrastColor(hex: string): string {
   const b = parseInt(clean.slice(4, 6), 16) / 255;
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   return luminance > 0.6 ? '#0f172a' : '#ffffff';
-}
-
-function sanitizeLogoUrl(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  try {
-    const parsed = new URL(trimmed);
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-      return null;
-    }
-    return parsed.toString();
-  } catch {
-    return null;
-  }
-}
-
-function deriveMonogram(value: string | null | undefined): string {
-  if (typeof value !== 'string') {
-    return 'AI';
-  }
-
-  const tokens = value
-    .trim()
-    .split(/[\s,.;:/\\-]+/)
-    .filter((token) => token.length > 0);
-
-  if (tokens.length === 0) {
-    return 'AI';
-  }
-
-  const initials = tokens
-    .slice(0, 2)
-    .map((token) => token[0]!.toUpperCase())
-    .join('');
-  return initials || 'AI';
 }
 
 /**
@@ -706,11 +664,11 @@ export function offerBodyMarkup({
 }: OfferDocumentMarkupProps): string {
   const safeTitle = sanitizeInput(title || 'Árajánlat');
   const safeCompany = sanitizeInput(companyName || '');
-  const primaryColor = normalizeColor(branding?.primaryColor) ?? '#1c274c';
-  const secondaryColor = normalizeColor(branding?.secondaryColor) ?? '#e2e8f0';
+  const primaryColor = normalizeBrandHex(branding?.primaryColor) ?? '#1c274c';
+  const secondaryColor = normalizeBrandHex(branding?.secondaryColor) ?? '#e2e8f0';
   const secondaryBorder = '#475569';
   const primaryContrast = contrastColor(primaryColor);
-  const logoUrl = sanitizeLogoUrl(branding?.logoUrl);
+  const logoUrl = sanitizeBrandLogoUrl(branding?.logoUrl);
   const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${secondaryBorder}; --brand-secondary-text: #334155;`;
   const safeStyleAttr = sanitizeInput(styleAttr);
   const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
@@ -744,7 +702,7 @@ export function offerBodyMarkup({
   const taxClass = safeCompanyTaxId
     ? 'offer-doc__footer-value'
     : 'offer-doc__footer-value offer-doc__footer-value--placeholder';
-  const monogram = sanitizeInput(deriveMonogram(companyName || contactName || title));
+  const monogram = sanitizeInput(deriveBrandMonogram(companyName || contactName || title));
   const resolvedContactName = safeContactName || fallbackValue;
   const resolvedContactEmail = safeContactEmail || fallbackValue;
   const resolvedContactPhone = safeContactPhone || fallbackValue;
