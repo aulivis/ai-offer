@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { createMinimalEngineHtml } from '@/lib/pdfHtmlSignature';
+
 type RpcResponse = { error: { message: string } | null };
 
 const REQUIRED_ENV = {
@@ -41,9 +43,7 @@ function createInsertMock(errors: Array<{ message: string } | null>) {
 }
 
 function createProfileSelectMock(plan: string | null = 'free') {
-  const maybeSingle = vi
-    .fn()
-    .mockResolvedValue({ data: plan ? { plan } : null, error: null });
+  const maybeSingle = vi.fn().mockResolvedValue({ data: plan ? { plan } : null, error: null });
   const eq = vi.fn(() => ({ maybeSingle }));
   const select = vi.fn(() => ({ eq }));
   return { select, eq, maybeSingle };
@@ -97,7 +97,7 @@ describe('enqueuePdfJob schema cache recovery', () => {
       offerId: 'offer',
       userId: 'user',
       storagePath: 'path',
-      html: '<p>html</p>',
+      html: createMinimalEngineHtml('<p>html</p>'),
       usagePeriodStart: '2024-01-01',
       userLimit: null,
     });
@@ -146,7 +146,7 @@ describe('enqueuePdfJob schema cache recovery', () => {
       offerId: 'offer',
       userId: 'user',
       storagePath: 'path',
-      html: '<p>html</p>',
+      html: createMinimalEngineHtml('<p>html</p>'),
       usagePeriodStart: '2024-01-01',
       userLimit: null,
     });
@@ -190,7 +190,7 @@ describe('enqueuePdfJob schema cache recovery', () => {
       offerId: 'offer-1',
       userId: 'user-1',
       storagePath: 'path',
-      html: '<p>html</p>',
+      html: createMinimalEngineHtml('<p>html</p>'),
       usagePeriodStart: '2024-01-01',
       userLimit: null,
       templateId: 'premium.elegant@1.1.0',

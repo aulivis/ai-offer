@@ -6,6 +6,7 @@ import {
   isPdfWebhookUrlAllowed,
   splitAllowlist,
 } from '../../shared/pdfWebhook.ts';
+import { assertPdfEngineHtml } from '../../shared/pdfHtmlSignature.ts';
 
 function assertEnv(value: string | undefined, name: string): string {
   if (!value) {
@@ -86,6 +87,20 @@ serve(async (request) => {
     });
   }
 
+  try {
+    assertPdfEngineHtml(html, 'PDF job payload HTML');
+  } catch (error) {
+    await supabase
+      .from('pdf_jobs')
+      .update({ status: 'failed', completed_at: new Date().toISOString() })
+      .eq('id', jobId);
+    const message = error instanceof Error ? error.message : 'PDF job payload failed validation.';
+    return new Response(JSON.stringify({ error: message }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 400,
+    });
+  }
+
   const usagePeriodStart = normalizeDate(
     typeof payload.usagePeriodStart === 'string' ? payload.usagePeriodStart : null,
     new Date(job.created_at ?? new Date()).toISOString().slice(0, 10),
@@ -102,36 +117,52 @@ serve(async (request) => {
   let deviceUsageIncremented = false;
 
   try {
-    const pdfBinary = await withTimeout(async () => {
-      const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: true,
-      });
+    const pdfBinary = await withTimeout(
+      async () => {
+        const browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          headless: true,
+        });
 
-      try {
-        const page = await browser.newPage();
         try {
-          page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
-          page.setDefaultTimeout(JOB_TIMEOUT_MS);
-          await page.setContent(html, { waitUntil: 'networkidle0' });
-          return await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            preferCSSPageSize: true,
-            margin: {
-              top: '24mm',
-              right: '16mm',
-              bottom: '24mm',
-              left: '16mm',
-            },
-          });
+          let page: Awaited<ReturnType<typeof browser.newPage>> | null = null;
+
+          try {
+            page = await browser.newPage();
+            page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
+            page.setDefaultTimeout(JOB_TIMEOUT_MS);
+            await page.setContent(html, { waitUntil: 'networkidle0' });
+            return await page.pdf({
+              format: 'A4',
+              printBackground: true,
+              preferCSSPageSize: true,
+              margin: {
+                top: '24mm',
+                right: '16mm',
+                bottom: '24mm',
+                left: '16mm',
+              },
+            });
+          } finally {
+            if (page) {
+              try {
+                await page.close();
+              } catch (closeError) {
+                console.error('Failed to close Puppeteer page (edge worker):', closeError);
+              }
+            }
+          }
         } finally {
-          await page.close();
+          try {
+            await browser.close();
+          } catch (closeError) {
+            console.error('Failed to close Puppeteer browser (edge worker):', closeError);
+          }
         }
-      } finally {
-        await browser.close();
-      }
-    }, JOB_TIMEOUT_MS, 'PDF generation timed out');
+      },
+      JOB_TIMEOUT_MS,
+      'PDF generation timed out',
+    );
 
     const pdfBuffer = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
 

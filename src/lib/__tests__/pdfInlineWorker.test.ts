@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
+import { createMinimalEngineHtml } from '@/lib/pdfHtmlSignature';
 
 const launchMock = vi.fn();
 
@@ -17,7 +18,7 @@ function createJob(overrides: Partial<PdfJobInput> = {}): PdfJobInput {
     offerId: 'offer-123',
     userId: 'user-123',
     storagePath: 'offers/job-123.pdf',
-    html: '<p>Hello</p>',
+    html: createMinimalEngineHtml('<p>Hello</p>'),
     usagePeriodStart: '2024-07-01',
     userLimit: 5,
     deviceId: null,

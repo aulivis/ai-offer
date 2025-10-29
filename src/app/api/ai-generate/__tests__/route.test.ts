@@ -2,6 +2,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createMinimalEngineHtml } from '@/lib/pdfHtmlSignature';
+
 import { createCsrfToken } from '../../../../../lib/auth/csrf';
 import { CONSENT_COOKIE_NAME } from '../../../../../lib/consent/constants';
 import type { AuthenticatedNextRequest } from '../../../../../middleware/auth';
@@ -42,7 +44,7 @@ const {
   cookiesSetMock: vi.fn(),
   processPdfJobInlineMock: vi.fn(),
   supabaseServerMock: vi.fn(),
-  buildOfferHtmlMock: vi.fn(() => '<html />'),
+  buildOfferHtmlMock: vi.fn(() => createMinimalEngineHtml('<section>Mock</section>')),
   listTemplatesMock: vi.fn(),
   loadTemplateMock: vi.fn(),
   recordTemplateRenderTelemetryMock: vi.fn(),
@@ -284,7 +286,7 @@ describe('POST /api/ai-generate', () => {
     });
     listTemplatesMock.mockReturnValue([templateStub]);
     loadTemplateMock.mockImplementation(() => templateStub);
-    buildOfferHtmlMock.mockImplementation(() => '<html />');
+    buildOfferHtmlMock.mockImplementation(() => createMinimalEngineHtml('<section>Mock</section>'));
   });
 
   afterEach(() => {

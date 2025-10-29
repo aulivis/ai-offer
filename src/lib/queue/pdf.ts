@@ -10,6 +10,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { envServer } from '@/env.server';
 import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/registry';
 import type { TemplateId } from '@/app/pdf/templates/types';
+import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 
 export interface PdfJobMetadata {
   notes?: string[];
@@ -147,11 +148,7 @@ function normalizePlanTier(value: unknown): PlanTier {
 
 async function resolvePlanTier(sb: SupabaseClient, userId: string): Promise<PlanTier> {
   try {
-    const { data, error } = await sb
-      .from('profiles')
-      .select('plan')
-      .eq('id', userId)
-      .maybeSingle();
+    const { data, error } = await sb.from('profiles').select('plan').eq('id', userId).maybeSingle();
 
     if (error) {
       console.warn('Failed to resolve user plan for PDF job.', {
@@ -210,7 +207,9 @@ function resolveTemplateForPlan(
   job: PdfJobInput,
 ): { templateId: TemplateId; metadata: PdfJobMetadata } {
   const fallbackTemplate = getOfferTemplateByLegacyId(FALLBACK_TEMPLATE_ID);
-  const requestedRaw = normalizeTemplateIdentifier(job.requestedTemplateId ?? job.templateId ?? null);
+  const requestedRaw = normalizeTemplateIdentifier(
+    job.requestedTemplateId ?? job.templateId ?? null,
+  );
 
   let requestedTemplate = fallbackTemplate;
   let requestedCanonicalId: string | null = null;
@@ -281,6 +280,8 @@ async function insertPdfJob(sb: SupabaseClient, job: PreparedPdfJob) {
 
 export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promise<void> {
   try {
+    assertPdfEngineHtml(job.html, 'Pdf job payload');
+
     const planTier = await resolvePlanTier(sb, job.userId);
     const { templateId, metadata } = resolveTemplateForPlan(planTier, job);
     const preparedJob: PreparedPdfJob = {
