@@ -1407,6 +1407,15 @@ export const hu = {
         taxIdLabel: 'Adószám',
         notProvided: '—',
       },
+      sections: {
+        overview: 'Overview',
+        scope: 'Scope',
+        deliverables: 'Deliverables',
+        timeline: 'Timeline',
+        assumptions: 'Assumptions & Exclusions',
+        nextSteps: 'Next steps',
+        pricing: 'Pricing',
+      },
     },
     pricingTable: {
       headers: {
