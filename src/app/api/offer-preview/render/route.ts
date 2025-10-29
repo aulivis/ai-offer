@@ -99,7 +99,23 @@ function normalizeRows(rows: PriceRow[] | undefined): PriceRow[] {
 }
 
 async function handlePost(req: AuthenticatedNextRequest) {
-  const parsed = previewRequestSchema.safeParse(await req.json());
+  let json: unknown;
+  try {
+    json = await req.json();
+  } catch {
+    return NextResponse.json(
+      {
+        error: 'Érvénytelen előnézeti kérés.',
+        issues: {
+          fieldErrors: {},
+          formErrors: ['Érvénytelen JSON törzs.'],
+        },
+      },
+      { status: 400 },
+    );
+  }
+
+  const parsed = previewRequestSchema.safeParse(json);
 
   if (!parsed.success) {
     return NextResponse.json(
