@@ -19,7 +19,7 @@ function contrastColor(hex: string): string {
   const g = parseInt(clean.slice(2, 4), 16) / 255;
   const b = parseInt(clean.slice(4, 6), 16) / 255;
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance > 0.6 ? '#111827' : '#ffffff';
+  return luminance > 0.6 ? '#0f172a' : '#ffffff';
 }
 
 export function createThemeTokens(baseTokens: ThemeTokens, branding?: Branding): ThemeTokens {

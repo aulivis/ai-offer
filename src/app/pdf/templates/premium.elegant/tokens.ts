@@ -2,11 +2,11 @@ import type { ThemeTokens } from '../types';
 
 export const premiumElegantTokens: ThemeTokens = {
   color: {
-    primary: '#0f172a',
-    secondary: '#e5e7eb',
-    text: '#111827',
-    muted: '#4b5563',
-    border: '#cbd5f5',
+    primary: '#1c274c',
+    secondary: '#e2e8f0',
+    text: '#0f172a',
+    muted: '#334155',
+    border: '#475569',
     bg: '#ffffff',
   },
   spacing: {

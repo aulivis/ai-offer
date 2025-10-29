@@ -11,7 +11,7 @@ const MAGIC_LINK_MESSAGE = t('login.messages.magicLinkInfo');
 const GOOGLE_BUTTON_STYLES: CSSProperties = {
   '--btn-bg': '#ffffff',
   '--btn-fg': '#1f1f1f',
-  '--btn-border': '#d1d5db',
+  '--btn-border': '#475569',
   '--btn-hover-border': '#4285f4',
   '--btn-hover-bg': '#f8fafc',
 };
@@ -132,7 +132,7 @@ export default function LoginClient() {
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg text-base font-semibold text-fg">
             P
           </span>
-          <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#151035]">
+          <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#1c274c]">
             {t('login.title')}
           </h1>
           <p className="text-base text-fg-muted">{t('login.description')}</p>

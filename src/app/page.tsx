@@ -55,7 +55,7 @@ export default function Home() {
             Ajánlatkészítés újragondolva
           </span>
 
-          <h1 className="relative isolate group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#151035] md:text-6xl">
+          <h1 className="relative isolate group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-6xl">
             Készíts lenyűgöző <HighlightUnderline>ajánlatokat</HighlightUnderline>.
             <br />
             <span className="text-primary">Villámgyorsan.</span>

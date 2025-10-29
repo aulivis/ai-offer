@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`offer templates golden tests > free.base@1.0.0 > produces a stable PDF hash > free.base@1.0.0 pdf sha256 1`] = `"2f61324c9713bcbf71d0793a077222db689ab34be4bae445953c81ea3c845697"`;
+exports[`offer templates golden tests > free.base@1.0.0 > produces a stable PDF hash > free.base@1.0.0 pdf sha256 1`] = `"e163f0fc0356eb4c8ebf3b744539a364802717a0ce82c82f072a36e1b035e6af"`;
 
-exports[`offer templates golden tests > free.base@1.0.0 > produces the expected HTML hash > free.base@1.0.0 html sha256 1`] = `"147665ba027c2a6e85fe95a1ffe1f9dce5d94c646d24bc921bef827edef83648"`;
+exports[`offer templates golden tests > free.base@1.0.0 > produces the expected HTML hash > free.base@1.0.0 html sha256 1`] = `"652f8fec647f8faebd48f8c780a3c7e5ad8fe2f575126e2169283e04e908854d"`;
 
 exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > free.base@1.0.0 html 1`] = `
 "<!DOCTYPE html>
@@ -137,15 +137,15 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
 
       
   .offer-doc {
-    --brand-primary: #151035;
+    --brand-primary: #1c274c;
     --brand-primary-contrast: #ffffff;
-    --brand-secondary: #f3f4f6;
-    --brand-secondary-border: #d1d5db;
-    --brand-secondary-text: #1f2937;
-    --brand-muted: #6b7280;
-    --brand-text: #1f2937;
+    --brand-secondary: #e2e8f0;
+    --brand-secondary-border: #475569;
+    --brand-secondary-text: #334155;
+    --brand-muted: #334155;
+    --brand-text: #0f172a;
     --brand-bg: #ffffff;
-    --brand-border: #d1d5db;
+    --brand-border: #475569;
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
     --space-md: 1rem;
@@ -160,13 +160,13 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     --radius-md: 1.25rem;
     --radius-lg: 2rem;
     background: var(--brand-bg, #ffffff);
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font: var(--font-body, 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0 auto;
     max-width: 760px;
   }
   .offer-doc--modern {
-    border: 1px solid var(--brand-border, #d1d5db);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-lg, 32px);
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
@@ -187,8 +187,8 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
   }
   .offer-doc__logo-wrap {
     align-items: center;
-    background: var(--brand-secondary, #f3f4f6);
-    border: 1px solid var(--brand-border, #d1d5db);
+    background: var(--brand-secondary, #e2e8f0);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-md, 14px);
     display: flex;
     height: 88px;
@@ -204,7 +204,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
   }
   .offer-doc__monogram {
     align-items: center;
-    background: var(--brand-primary, #151035);
+    background: var(--brand-primary, #1c274c);
     border-radius: var(--radius-md, 14px);
     color: var(--brand-primary-contrast, #ffffff);
     display: flex;
@@ -222,7 +222,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     gap: 0.35rem;
   }
   .offer-doc__company {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.22em;
@@ -243,19 +243,19 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     text-align: right;
   }
   .offer-doc__meta-label {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .offer-doc__meta-value {
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font-size: 0.95rem;
     font-weight: 600;
   }
   .offer-doc__meta-value--placeholder {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-style: italic;
   }
   @media (max-width: 640px) {
@@ -288,7 +288,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     gap: 0.4rem;
   }
   .offer-doc__footer-label {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -300,12 +300,12 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     margin-top: 0.25rem;
   }
   .offer-doc__footer-value {
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font-size: 0.92rem;
     word-break: break-word;
   }
   .offer-doc__footer-value--placeholder {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-style: italic;
   }
   .offer-doc__content {
@@ -336,7 +336,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
     width: 100%;
   }
   .offer-doc__section-note {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.92rem;
     margin-top: 0.75rem;
   }
@@ -419,7 +419,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
   }
   .offer-doc__compact-card {
     background: var(--brand-bg, #ffffff);
-    border: 1px solid var(--brand-border, #d1d5db);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-md, 22px);
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     padding: var(--space-lg, 1.5rem) var(--space-xl, 1.7rem);
@@ -471,7 +471,7 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
   }
   .offer-doc__pricing-table tbody td {
     border-bottom: 1px solid var(--brand-secondary-border);
-    color: var(--brand-text, #374151);
+    color: var(--brand-text, #0f172a);
     padding: 0.6rem 0.75rem;
     vertical-align: top;
   }
@@ -605,15 +605,15 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
   }
 
       .offer-doc {
-      --brand-primary: #151035;
+      --brand-primary: #1c274c;
       --brand-primary-contrast: #ffffff;
-      --brand-secondary: #f3f4f6;
-      --brand-secondary-border: #d1d5db;
-      --brand-secondary-text: #6b7280;
-      --brand-muted: #6b7280;
-      --brand-text: #1f2937;
+      --brand-secondary: #e2e8f0;
+      --brand-secondary-border: #475569;
+      --brand-secondary-text: #334155;
+      --brand-muted: #334155;
+      --brand-text: #0f172a;
       --brand-bg: #ffffff;
-      --brand-border: #d1d5db;
+      --brand-border: #475569;
       --space-xs: 0.25rem;
       --space-sm: 0.5rem;
       --space-md: 1rem;
@@ -806,9 +806,9 @@ exports[`offer templates golden tests > free.base@1.0.0 > renders stable HTML > 
 </html>"
 `;
 
-exports[`offer templates golden tests > premium.elegant@1.0.0 > produces a stable PDF hash > premium.elegant@1.0.0 pdf sha256 1`] = `"0177ab8e32fbde566d948d61fa5d5360761c7977b57731f5763aeed4c7acc964"`;
+exports[`offer templates golden tests > premium.elegant@1.0.0 > produces a stable PDF hash > premium.elegant@1.0.0 pdf sha256 1`] = `"9992c778feae447b5ea0e193ac7f3c63a69db0c007b481250b5b2ede559dd87c"`;
 
-exports[`offer templates golden tests > premium.elegant@1.0.0 > produces the expected HTML hash > premium.elegant@1.0.0 html sha256 1`] = `"03ccfe711662c9c26dc35d3d94226a454f5788f5947b30f8d1f716808d2df6de"`;
+exports[`offer templates golden tests > premium.elegant@1.0.0 > produces the expected HTML hash > premium.elegant@1.0.0 html sha256 1`] = `"68b8912e1580e5f169ef3eb1fed3cf020d713cd31726af49a1c79f31daeb4658"`;
 
 exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable HTML > premium.elegant@1.0.0 html 1`] = `
 "<!DOCTYPE html>
@@ -943,15 +943,15 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
 
       
   .offer-doc {
-    --brand-primary: #151035;
+    --brand-primary: #1c274c;
     --brand-primary-contrast: #ffffff;
-    --brand-secondary: #f3f4f6;
-    --brand-secondary-border: #d1d5db;
-    --brand-secondary-text: #1f2937;
-    --brand-muted: #6b7280;
-    --brand-text: #1f2937;
+    --brand-secondary: #e2e8f0;
+    --brand-secondary-border: #475569;
+    --brand-secondary-text: #334155;
+    --brand-muted: #334155;
+    --brand-text: #0f172a;
     --brand-bg: #ffffff;
-    --brand-border: #d1d5db;
+    --brand-border: #475569;
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
     --space-md: 1rem;
@@ -966,13 +966,13 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     --radius-md: 1.25rem;
     --radius-lg: 2rem;
     background: var(--brand-bg, #ffffff);
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font: var(--font-body, 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0 auto;
     max-width: 760px;
   }
   .offer-doc--modern {
-    border: 1px solid var(--brand-border, #d1d5db);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-lg, 32px);
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
@@ -993,8 +993,8 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
   }
   .offer-doc__logo-wrap {
     align-items: center;
-    background: var(--brand-secondary, #f3f4f6);
-    border: 1px solid var(--brand-border, #d1d5db);
+    background: var(--brand-secondary, #e2e8f0);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-md, 14px);
     display: flex;
     height: 88px;
@@ -1010,7 +1010,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
   }
   .offer-doc__monogram {
     align-items: center;
-    background: var(--brand-primary, #151035);
+    background: var(--brand-primary, #1c274c);
     border-radius: var(--radius-md, 14px);
     color: var(--brand-primary-contrast, #ffffff);
     display: flex;
@@ -1028,7 +1028,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     gap: 0.35rem;
   }
   .offer-doc__company {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.22em;
@@ -1049,19 +1049,19 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     text-align: right;
   }
   .offer-doc__meta-label {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .offer-doc__meta-value {
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font-size: 0.95rem;
     font-weight: 600;
   }
   .offer-doc__meta-value--placeholder {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-style: italic;
   }
   @media (max-width: 640px) {
@@ -1094,7 +1094,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     gap: 0.4rem;
   }
   .offer-doc__footer-label {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -1106,12 +1106,12 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     margin-top: 0.25rem;
   }
   .offer-doc__footer-value {
-    color: var(--brand-text, #1f2937);
+    color: var(--brand-text, #0f172a);
     font-size: 0.92rem;
     word-break: break-word;
   }
   .offer-doc__footer-value--placeholder {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-style: italic;
   }
   .offer-doc__content {
@@ -1142,7 +1142,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
     width: 100%;
   }
   .offer-doc__section-note {
-    color: var(--brand-muted, #6b7280);
+    color: var(--brand-muted, #334155);
     font-size: 0.92rem;
     margin-top: 0.75rem;
   }
@@ -1225,7 +1225,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
   }
   .offer-doc__compact-card {
     background: var(--brand-bg, #ffffff);
-    border: 1px solid var(--brand-border, #d1d5db);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: var(--radius-md, 22px);
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
     padding: var(--space-lg, 1.5rem) var(--space-xl, 1.7rem);
@@ -1277,7 +1277,7 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
   }
   .offer-doc__pricing-table tbody td {
     border-bottom: 1px solid var(--brand-secondary-border);
-    color: var(--brand-text, #374151);
+    color: var(--brand-text, #0f172a);
     padding: 0.6rem 0.75rem;
     vertical-align: top;
   }
@@ -1411,15 +1411,15 @@ exports[`offer templates golden tests > premium.elegant@1.0.0 > renders stable H
   }
 
       .offer-doc {
-      --brand-primary: #0f172a;
+      --brand-primary: #1c274c;
       --brand-primary-contrast: #ffffff;
-      --brand-secondary: #e5e7eb;
-      --brand-secondary-border: #cbd5f5;
-      --brand-secondary-text: #4b5563;
-      --brand-muted: #4b5563;
-      --brand-text: #111827;
+      --brand-secondary: #e2e8f0;
+      --brand-secondary-border: #475569;
+      --brand-secondary-text: #334155;
+      --brand-muted: #334155;
+      --brand-text: #0f172a;
       --brand-bg: #ffffff;
-      --brand-border: #cbd5f5;
+      --brand-border: #475569;
       --space-xs: 0.35rem;
       --space-sm: 0.65rem;
       --space-md: 1.15rem;

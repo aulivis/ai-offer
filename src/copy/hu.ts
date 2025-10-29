@@ -579,8 +579,8 @@ export const hu = {
       primaryLabel: 'Elsődleges szín',
       secondaryLabel: 'Másodlagos szín',
       placeholders: {
-        primary: '#0f172a',
-        secondary: '#f3f4f6',
+        primary: '#1c274c',
+        secondary: '#e2e8f0',
       },
       logoPreviewAlt: 'Feltöltött logó',
       noLogo: 'Nincs logó',
