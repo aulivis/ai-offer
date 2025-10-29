@@ -225,8 +225,20 @@ export async function processPdfJobInline(
 
     try {
       page = await browser.newPage();
+      page.setDefaultNavigationTimeout(60_000);
+      page.setDefaultTimeout(60_000);
       await page.setContent(job.html, { waitUntil: 'networkidle0' });
-      const pdfBinary = await page.pdf({ format: 'A4', printBackground: true });
+      const pdfBinary = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: {
+          top: '24mm',
+          right: '16mm',
+          bottom: '24mm',
+          left: '16mm',
+        },
+      });
 
       const pdfUint8 = pdfBinary instanceof Uint8Array ? pdfBinary : new Uint8Array(pdfBinary);
       const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
