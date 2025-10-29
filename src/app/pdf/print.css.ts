@@ -15,8 +15,8 @@ export const PRINT_BASE_CSS = `
 
   body {
     margin: 0;
-    background: #f8fafc;
-    color: #0f172a;
+    background: var(--bg, #f8fafc);
+    color: var(--text, #0f172a);
     font: 400 11pt/1.5 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   }
 
@@ -25,7 +25,7 @@ export const PRINT_BASE_CSS = `
     width: 100%;
     max-width: 100%;
     margin: 0;
-    background: #ffffff;
+    background: var(--brand-bg, #ffffff);
     border: none;
     box-shadow: none;
     padding-top: 34mm;
@@ -34,7 +34,7 @@ export const PRINT_BASE_CSS = `
   }
 
   .offer-doc__header {
-    background: #ffffff;
+    background: var(--brand-bg, #ffffff);
     margin-bottom: 12mm;
     padding-bottom: 6mm;
     position: static;
@@ -45,6 +45,8 @@ export const PRINT_BASE_CSS = `
   }
 
   .offer-doc__logo-wrap {
+    background: var(--brand-secondary, #e2e8f0);
+    border: 1px solid var(--brand-border, #475569);
     border-radius: 10mm;
     height: 34mm;
     padding: 6mm;
@@ -75,8 +77,8 @@ export const PRINT_BASE_CSS = `
   }
 
   .offer-doc__footer {
-    background: #ffffff;
-    border-top: 1px solid rgba(15, 23, 42, 0.12);
+    background: var(--brand-bg, #ffffff);
+    border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
     margin-top: 18mm;
     padding-top: 6mm;
     position: static;
@@ -100,7 +102,7 @@ export const PRINT_BASE_CSS = `
 
   .offer-doc__slim-bar {
     align-items: center;
-    color: #1f2937;
+    color: var(--muted, #1f2937);
     column-gap: 10mm;
     display: none;
     font-size: 9pt;
@@ -140,8 +142,9 @@ export const PRINT_BASE_CSS = `
     .slim-header,
     .slim-footer {
       background: rgba(255, 255, 255, 0.96);
+      background: color-mix(in srgb, var(--brand-bg, #ffffff) 96%, transparent);
       border: none;
-      color: #1f2937;
+      color: var(--muted, #1f2937);
       display: flex;
       justify-content: space-between;
       left: 16mm;
@@ -154,12 +157,12 @@ export const PRINT_BASE_CSS = `
 
     .slim-header {
       top: 10mm;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+      border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
     }
 
     .slim-footer {
       bottom: 12mm;
-      border-top: 1px solid rgba(15, 23, 42, 0.12);
+      border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
     }
 
     .slim-footer__page-number::after {

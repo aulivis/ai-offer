@@ -40,6 +40,10 @@ export function createThemeCssVariables(tokens: ThemeTokens): string {
       --brand-text: ${tokens.color.text};
       --brand-bg: ${tokens.color.bg};
       --brand-border: ${tokens.color.border};
+      --text: ${tokens.color.text};
+      --muted: ${tokens.color.muted};
+      --border: ${tokens.color.border};
+      --bg: ${tokens.color.bg};
       --space-xs: ${tokens.spacing.xs};
       --space-sm: ${tokens.spacing.sm};
       --space-md: ${tokens.spacing.md};
