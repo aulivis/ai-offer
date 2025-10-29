@@ -263,4 +263,23 @@ p {
   th {
     font-weight: 600;
   }
+
+  .first-page-only {
+    display: block;
+  }
+
+  .not-first-page {
+    display: none;
+  }
+
+  .offer-doc .not-first-page {
+    display: flex;
+  }
+}
+
+@media print {
+  body.printing .slim-footer,
+  body.printing .slim-header {
+    position: fixed;
+  }
 }
