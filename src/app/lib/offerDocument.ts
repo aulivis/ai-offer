@@ -48,6 +48,33 @@ export const OFFER_DOCUMENT_STYLES = `
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
     padding: var(--space-xl, 44px);
   }
+  .offer-doc__slim-bar {
+    display: none;
+  }
+  .slim-header,
+  .slim-footer {
+    align-items: center;
+    color: var(--brand-muted, #334155);
+    font-size: 0.75rem;
+    font-weight: 500;
+    gap: var(--space-sm, 0.5rem);
+    justify-content: space-between;
+    line-height: 1.3;
+  }
+  .slim-header__title {
+    font-weight: 600;
+  }
+  .slim-footer__page-number {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .first-page-only {
+    display: block;
+  }
+  .not-first-page {
+    display: none;
+  }
   .offer-doc__header {
     align-items: flex-start;
     border-bottom: 1px solid rgba(15, 23, 42, 0.08);
@@ -694,6 +721,22 @@ export function offerBodyMarkup({
   const companyDetailsLabel = 'Cégadatok';
   const addressLabel = 'Cím';
   const taxLabel = 'Adószám';
+  const pageLabel = 'Oldal';
+
+  const slimHeaderMarkup = `
+    <div class="offer-doc__slim-bar slim-header not-first-page" aria-hidden="true">
+      <span class="slim-header__company">${safeCompany || 'Vállalat neve'}</span>
+      <span class="slim-header__title">${safeTitle}</span>
+      <span class="slim-header__meta">${dateLabel}: ${resolvedIssueDate}</span>
+    </div>
+  `;
+
+  const slimFooterMarkup = `
+    <div class="offer-doc__slim-bar slim-footer not-first-page" aria-hidden="true">
+      <span class="slim-footer__meta">${dateLabel}: ${resolvedIssueDate}</span>
+      <span class="slim-footer__page-number">${pageLabel}</span>
+    </div>
+  `;
 
   const resolvedPricingHeading =
     typeof pricingHeading === 'string' && pricingHeading.trim().length > 0
@@ -707,7 +750,8 @@ export function offerBodyMarkup({
       : `<div class="offer-doc__premium-logo-slot offer-doc__premium-logo-slot--empty"><span class="offer-doc__monogram offer-doc__monogram--premium">${monogram}</span></div>`;
     const markup = `
       <article class="offer-doc offer-doc--premium" style="${safeStyleAttr}">
-        <header class="offer-doc__header offer-doc__header--premium">
+        ${slimHeaderMarkup}
+        <header class="offer-doc__header offer-doc__header--premium first-page-only">
           <div class="offer-doc__premium-banner">
             ${logoSlot}
             <div class="offer-doc__premium-text">
@@ -729,7 +773,7 @@ export function offerBodyMarkup({
             ${priceTableHtml}
           </section>
         </div>
-        <footer class="offer-doc__footer">
+        <footer class="offer-doc__footer first-page-only">
           <div class="offer-doc__footer-grid">
             <div class="offer-doc__footer-column">
               <span class="offer-doc__footer-label">${contactLabel}</span>
@@ -754,6 +798,7 @@ export function offerBodyMarkup({
             </div>
           </div>
         </footer>
+        ${slimFooterMarkup}
       </article>
     `;
     ensureSafeHtml(markup, 'offer body markup (premium)');
@@ -766,7 +811,8 @@ export function offerBodyMarkup({
 
   const markup = `
     <article class="offer-doc offer-doc--modern" style="${safeStyleAttr}">
-      <header class="offer-doc__header">
+      ${slimHeaderMarkup}
+      <header class="offer-doc__header first-page-only">
         <div class="offer-doc__header-brand">
           ${logoMarkup}
           <div class="offer-doc__header-text">
@@ -786,7 +832,7 @@ export function offerBodyMarkup({
         ${pricingHeadingHtml}
         ${priceTableHtml}
       </section>
-      <footer class="offer-doc__footer">
+      <footer class="offer-doc__footer first-page-only">
         <div class="offer-doc__footer-grid">
           <div class="offer-doc__footer-column">
             <span class="offer-doc__footer-label">${contactLabel}</span>
@@ -811,6 +857,7 @@ export function offerBodyMarkup({
           </div>
         </div>
       </footer>
+      ${slimFooterMarkup}
     </article>
   `;
   ensureSafeHtml(markup, 'offer body markup (modern)');
