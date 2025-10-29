@@ -41,6 +41,13 @@ const themeTokensSchema = z
   })
   .strict();
 
+const templateStylesSchema = z
+  .object({
+    print: z.string().min(1, 'styles.print is required'),
+    template: z.string().min(1, 'styles.template is required'),
+  })
+  .strict();
+
 const offerTemplateSchema = z
   .object({
     id: z.string().min(1, 'id is required'),
@@ -49,6 +56,7 @@ const offerTemplateSchema = z
     version: z.string().min(1, 'version is required'),
     renderHead: renderFunctionSchema,
     renderBody: renderFunctionSchema,
+    styles: templateStylesSchema,
     tokens: themeTokensSchema,
     capabilities: z.record(z.string(), z.boolean()).optional(),
   })

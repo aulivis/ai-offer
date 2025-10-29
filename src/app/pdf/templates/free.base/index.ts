@@ -3,6 +3,7 @@ import type { OfferTemplateId as LegacyOfferTemplateId } from '@/app/lib/offerTe
 
 import { renderBody } from './partials/body';
 import { renderHead } from './partials/head';
+import { pdfStyles, templateStyles } from './styles.css';
 import { freeBaseTokens } from './tokens';
 
 export const freeBaseTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId } = {
@@ -11,6 +12,10 @@ export const freeBaseTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId
   tier: 'free',
   label: 'Modern minimal',
   version: '1.1.0',
+  styles: {
+    print: pdfStyles,
+    template: templateStyles,
+  },
   tokens: freeBaseTokens,
   capabilities: {
     'branding.logo': true,
