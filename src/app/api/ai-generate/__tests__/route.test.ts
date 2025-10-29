@@ -48,11 +48,11 @@ const {
   recordTemplateRenderTelemetryMock: vi.fn(),
   resolveTemplateRenderErrorCodeMock: vi.fn(() => 'render_error'),
   templateStub: {
-    id: 'free.base@1.0.0',
+    id: 'free.base@1.1.0',
     legacyId: 'modern',
     tier: 'free',
     label: 'Mock template',
-    version: '1.0.0',
+    version: '1.1.0',
     capabilities: {},
     renderHead: vi.fn(() => '<style />'),
     renderBody: vi.fn(() => '<main />'),
@@ -386,7 +386,7 @@ describe('POST /api/ai-generate', () => {
         language: 'hu',
         brandVoice: 'friendly',
         style: 'detailed',
-        templateId: 'free.base@1.0.0',
+        templateId: 'free.base@1.1.0',
       },
       ai_text: '<p>Előnézet</p>',
       price_json: [{ name: 'Tétel', qty: 1, unit: 'db', unitPrice: 1000, vat: 27 }],
@@ -398,7 +398,7 @@ describe('POST /api/ai-generate', () => {
     expect(recordTemplateRenderTelemetryMock).toHaveBeenCalledTimes(1);
     expect(recordTemplateRenderTelemetryMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        templateId: 'free.base@1.0.0',
+        templateId: 'free.base@1.1.0',
         renderer: 'api.ai_generate.render',
         outcome: 'success',
       }),
@@ -488,7 +488,7 @@ describe('POST /api/ai-generate', () => {
     expect(response.status).toBe(500);
     expect(recordTemplateRenderTelemetryMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        templateId: 'free.base@1.0.0',
+        templateId: 'free.base@1.1.0',
         renderer: 'api.ai_generate.render',
         outcome: 'failure',
         errorCode: 'render_error',
@@ -580,7 +580,7 @@ describe('POST /api/ai-generate', () => {
   it('downgrades premium template requests to the default free template for free plans', async () => {
     const premiumTemplate = {
       ...templateStub,
-      id: 'premium.elegant@1.0.0',
+      id: 'premium.elegant@1.1.0',
       tier: 'premium' as const,
       legacyId: 'premium-modern',
     };
@@ -627,6 +627,7 @@ describe('POST /api/ai-generate', () => {
     expect(buildOfferHtmlMock).toHaveBeenCalledWith(
       expect.objectContaining({
         offer: expect.objectContaining({ templateId: templateStub.id }),
+        images: [],
       }),
       templateStub,
     );

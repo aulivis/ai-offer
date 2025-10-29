@@ -40,7 +40,7 @@ describe('GET /api/admin/template-telemetry', () => {
     limitMock.mockResolvedValueOnce({
       data: [
         {
-          template_id: 'free.base@1.0.0',
+          template_id: 'free.base@1.1.0',
           total_renders: '12',
           success_count: '9',
           failure_count: '3',
@@ -50,7 +50,7 @@ describe('GET /api/admin/template-telemetry', () => {
           average_render_ms: '200',
         },
         {
-          template_id: 'premium.elegant@1.0.0',
+          template_id: 'premium.elegant@1.1.0',
           total_renders: 8,
           success_count: 8,
           failure_count: 0,
@@ -77,7 +77,7 @@ describe('GET /api/admin/template-telemetry', () => {
       },
       rows: [
         expect.objectContaining({
-          templateId: 'free.base@1.0.0',
+          templateId: 'free.base@1.1.0',
           totalRenders: 12,
           successCount: 9,
           failureCount: 3,
@@ -85,7 +85,7 @@ describe('GET /api/admin/template-telemetry', () => {
           averageRenderMs: 200,
         }),
         expect.objectContaining({
-          templateId: 'premium.elegant@1.0.0',
+          templateId: 'premium.elegant@1.1.0',
           totalRenders: 8,
           successCount: 8,
           failureCount: 0,

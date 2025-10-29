@@ -31,7 +31,7 @@ describe('template registry', () => {
   });
 
   it('loads templates by legacy id when available', () => {
-    expect(getOfferTemplateByLegacyId('modern').id).toBe('free.base@1.0.0');
+    expect(getOfferTemplateByLegacyId('modern').id).toBe('free.base@1.1.0');
   });
 
   it('validates templates during registration', () => {

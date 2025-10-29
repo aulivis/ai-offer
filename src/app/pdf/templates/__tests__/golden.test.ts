@@ -52,6 +52,15 @@ const FIXED_BODY_HTML = `
   </section>
 `.trim();
 
+const SAMPLE_IMAGE_DATA =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==';
+
+const FIXED_IMAGES: NonNullable<RenderCtx['images']> = [
+  { key: 'gallery-1', src: SAMPLE_IMAGE_DATA, alt: 'Workshop hangulat' },
+  { key: 'gallery-2', src: SAMPLE_IMAGE_DATA, alt: 'UX prototípus' },
+  { key: 'gallery-3', src: SAMPLE_IMAGE_DATA, alt: 'Képernyőfotó' },
+];
+
 function sha256(content: string | Buffer): string {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
@@ -131,6 +140,7 @@ describe('offer templates golden tests', () => {
         },
         i18n: translator,
         tokens: template.tokens,
+        images: FIXED_IMAGES,
       };
 
       let html: string;

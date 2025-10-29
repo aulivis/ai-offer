@@ -193,19 +193,19 @@ describe('enqueuePdfJob schema cache recovery', () => {
       html: '<p>html</p>',
       usagePeriodStart: '2024-01-01',
       userLimit: null,
-      templateId: 'premium.elegant@1.0.0',
+      templateId: 'premium.elegant@1.1.0',
       requestedTemplateId: 'premium-banner',
     });
 
     expect(insertMock).toHaveBeenCalledTimes(1);
     const payload = insertMock.mock.calls[0][0]?.payload;
-    expect(payload.templateId).toBe('free.base@1.0.0');
+    expect(payload.templateId).toBe('free.base@1.1.0');
     expect(payload.metadata).toMatchObject({
       planTier: 'free',
-      requestedTemplateId: 'premium.elegant@1.0.0',
+      requestedTemplateId: 'premium.elegant@1.1.0',
       requestedTemplateRaw: 'premium-banner',
-      enforcedTemplateId: 'free.base@1.0.0',
-      originalTemplateId: 'premium.elegant@1.0.0',
+      enforcedTemplateId: 'free.base@1.1.0',
+      originalTemplateId: 'premium.elegant@1.1.0',
     });
     expect(payload.metadata.notes?.[0]).toMatch(/requires a premium plan/i);
   });

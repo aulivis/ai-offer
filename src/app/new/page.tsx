@@ -213,7 +213,7 @@ function prepareImagesForSubmission(
 const DEFAULT_PREVIEW_PLACEHOLDER_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
 
-const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.base@1.0.0';
+const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.base@1.1.0';
 
 type OfferTextTemplatePayload = {
   industry: string;

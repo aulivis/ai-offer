@@ -7,7 +7,7 @@ This guide walks new template authors through the core concepts, file layout, an
 ### OfferTemplate contract
 Templates export an `OfferTemplate` object from their `index.ts`. The object declares:
 
-- `id`: A unique identifier in the form `name@semver` (for example `premium.elegant@1.0.0`).
+- `id`: A unique identifier in the form `name@semver` (for example `premium.elegant@1.1.0`).
 - `tier`: Either `free` or `premium`, which gates template visibility by customer plan.
 - `label`, `marketingHighlight`, and optional `capabilities` flags used by the app for selection UI.
 - `tokens`: A `ThemeTokens` record describing colors, typography, spacing, and radii consumed by the renderer.
@@ -23,6 +23,8 @@ See [`src/app/pdf/templates/types.ts`](../src/app/pdf/templates/types.ts) for th
 - `branding`: Optional logo/color overrides selected by the customer.
 - `i18n`: A typed translator, so you can localize labels via `ctx.i18n('key.path')`.
 - `tokens`: The same theme token object declared on the template, already merged with user branding overrides when available.
+- `images`: Up to three image assets (key, src, alt) that the customer attached to the offer. Use them to build optional galleries
+  without mutating the main body HTML.
 
 Because the renderer runs in a server context, avoid browser-only APIs and rely on the data passed in through `RenderCtx`.
 

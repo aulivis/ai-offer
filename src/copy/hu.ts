@@ -1415,6 +1415,7 @@ export const hu = {
         assumptions: 'Assumptions & Exclusions',
         nextSteps: 'Next steps',
         pricing: 'Pricing',
+        gallery: 'Galéria',
       },
     },
     pricingTable: {
