@@ -48,6 +48,10 @@ describe('template registry', () => {
       version: '1.0.0',
       renderHead: () => '<head></head>',
       renderBody: () => '<main></main>',
+      styles: {
+        print: '@page{size:A4;}',
+        template: '.offer-doc{}',
+      },
       tokens: {
         color: {
           primary: '#000000',

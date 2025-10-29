@@ -41,8 +41,12 @@ export interface OfferTemplate {
   label: string;
   version: string; // semver
   marketingHighlight?: string;
-  renderHead(ctx: RenderCtx): string; // returns <head> content (styles+meta)
+  renderHead(ctx: RenderCtx): string; // returns <head> meta/content (styles injected by engine)
   renderBody(ctx: RenderCtx): string; // returns <main>…</main>
+  styles: {
+    print: string;
+    template: string;
+  };
   tokens: ThemeTokens;
   capabilities?: Record<string, boolean>;
 }

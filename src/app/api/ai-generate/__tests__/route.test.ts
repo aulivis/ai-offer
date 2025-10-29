@@ -56,6 +56,10 @@ const {
     capabilities: {},
     renderHead: vi.fn(() => '<style />'),
     renderBody: vi.fn(() => '<main />'),
+    styles: {
+      print: '@page{margin:1cm;}',
+      template: '.offer-doc{}',
+    },
     tokens: {
       color: {
         primary: '#1c274c',

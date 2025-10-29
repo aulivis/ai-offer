@@ -89,10 +89,17 @@ function validateFinalHtml(html: string): void {
 
 function renderWithTemplate(ctx: RenderCtx, tpl: OfferTemplate): string {
   const lang = normalizeLang(ctx.offer.locale);
-  const head = tpl.renderHead(ctx).trim();
+  const headContent = tpl.renderHead(ctx).trim();
   const body = tpl.renderBody(ctx).trim();
+  const themeStyles = createThemeCssVariables(ctx.tokens);
+  const inlineStyles = [tpl.styles.print, tpl.styles.template, themeStyles]
+    .map((css) => css.trim())
+    .filter(Boolean)
+    .join('\n');
+  const styleTag = inlineStyles ? `<style>${inlineStyles}</style>` : '';
+  const headWithStyles = `${headContent}${styleTag}`;
 
-  const minifiedHead = minifyHtml(head);
+  const minifiedHead = minifyHtml(headWithStyles);
   const minifiedBody = minifyHtml(body);
 
   const html = `<!DOCTYPE html><html lang="${lang}"><head>${minifiedHead}</head><body>${minifiedBody}</body></html>`;
