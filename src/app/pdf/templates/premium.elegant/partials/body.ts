@@ -71,7 +71,7 @@ export function partialGallery(ctx: RenderCtx): string {
       const safeSrc = sanitizeInput(image.src);
       const safeAlt = sanitizeInput(image.alt);
       const safeKey = sanitizeInput(image.key);
-      return `<figure class="offer-doc__gallery-item" data-offer-gallery-key="${safeKey}"><img class="offer-doc__gallery-image" src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async" onerror="this.remove()" /></figure>`;
+      return `<figure class="offer-doc__gallery-item" data-offer-gallery-key="${safeKey}"><img class="offer-doc__gallery-image" src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async" /></figure>`;
     })
     .join('');
 
