@@ -1142,6 +1142,17 @@ export const hu = {
           title: 'Nem sikerült frissíteni az előnézetet.',
         },
       },
+      controls: {
+        title: 'Dokumentum megjelenés',
+        helper:
+          'Válaszd ki az exportált PDF sablonját és állítsd be a márkaszíneket. Az előnézet azonnal frissül.',
+        templateLabel: 'PDF sablon',
+        brandingTitle: 'Márkaszínek',
+        primaryLabel: 'Elsődleges szín',
+        secondaryLabel: 'Másodlagos szín',
+        logoLabel: 'Logó URL (opcionális)',
+        logoPlaceholder: 'https://példa.hu/logo.png',
+      },
     },
     projectDetailsSection: {
       title: 'Ajánlat címe',

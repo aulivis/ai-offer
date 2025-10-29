@@ -16,8 +16,12 @@ import { usePricingRows } from '@/hooks/usePricingRows';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
 import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
+import { listTemplates } from '@/app/pdf/templates/registry';
+import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
 
 const DEFAULT_PREVIEW_HTML = `<p>${t('offers.wizard.preview.idle')}</p>`;
 
@@ -58,6 +62,20 @@ export default function NewOfferPage() {
   const lastScrollYRef = useRef(0);
   const isMobileRef = useRef(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(true);
+  const templateOptions = useMemo(
+    () => listTemplates() as Array<OfferTemplate & { legacyId?: string }>,
+    [],
+  );
+  const defaultTemplateId = useMemo<TemplateId>(() => {
+    const legacyMatch = templateOptions.find(
+      (template) => template.legacyId === DEFAULT_OFFER_TEMPLATE_ID,
+    );
+    return (legacyMatch ?? templateOptions[0])?.id ?? DEFAULT_OFFER_TEMPLATE_ID;
+  }, [templateOptions]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(defaultTemplateId);
+  const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');
+  const [brandingSecondary, setBrandingSecondary] = useState('#e2e8f0');
+  const [brandingLogoUrl, setBrandingLogoUrl] = useState('');
 
   const { totals } = usePricingRows(pricingRows);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
@@ -123,6 +141,23 @@ export default function NewOfferPage() {
     }
     previewDocumentAbortRef.current = controller;
 
+    const resolvedTemplateId = templateOptions.some(
+      (template) => template.id === selectedTemplateId,
+    )
+      ? selectedTemplateId
+      : defaultTemplateId;
+    const trimmedPrimary = brandingPrimary.trim();
+    const trimmedSecondary = brandingSecondary.trim();
+    const trimmedLogo = brandingLogoUrl.trim();
+    const brandingPayload =
+      trimmedPrimary || trimmedSecondary || trimmedLogo
+        ? {
+            primaryColor: trimmedPrimary || undefined,
+            secondaryColor: trimmedSecondary || undefined,
+            logoUrl: trimmedLogo || undefined,
+          }
+        : undefined;
+
     const payload = {
       title: title || t('offers.wizard.defaults.fallbackTitle'),
       companyName: t('offers.wizard.defaults.fallbackCompany'),
@@ -134,7 +169,8 @@ export default function NewOfferPage() {
         unitPrice,
         vat,
       })),
-      templateId: DEFAULT_OFFER_TEMPLATE_ID,
+      templateId: resolvedTemplateId,
+      branding: brandingPayload,
       locale: 'hu',
     };
 
@@ -169,7 +205,17 @@ export default function NewOfferPage() {
     return () => {
       controller.abort();
     };
-  }, [previewHtml, pricingRows, title]);
+  }, [
+    previewHtml,
+    pricingRows,
+    title,
+    selectedTemplateId,
+    brandingPrimary,
+    brandingSecondary,
+    brandingLogoUrl,
+    templateOptions,
+    defaultTemplateId,
+  ]);
 
   const showActionBar = useCallback(() => {
     setIsActionBarVisible((visible) => (visible ? visible : true));
@@ -812,6 +858,88 @@ export default function NewOfferPage() {
   const pricingSectionError = attemptedSteps[2] ? validation.fields[2].pricing : undefined;
   const actionBarIsHidden = !isActionBarVisible && isMobileRef.current;
   const actionBarTabIndex = actionBarIsHidden ? -1 : undefined;
+  const resolvedTemplateForControls = templateOptions.some(
+    (template) => template.id === selectedTemplateId,
+  )
+    ? selectedTemplateId
+    : defaultTemplateId;
+  const previewControls = (
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-slate-700">
+          {t('offers.previewCard.controls.title')}
+        </p>
+        <p className="text-xs text-slate-500">{t('offers.previewCard.controls.helper')}</p>
+      </div>
+      {templateOptions.length > 0 ? (
+        <Select
+          label={t('offers.previewCard.controls.templateLabel')}
+          value={resolvedTemplateForControls}
+          onChange={(event) => setSelectedTemplateId(event.target.value as TemplateId)}
+        >
+          {templateOptions.map((template) => (
+            <option key={template.id} value={template.id}>
+              {template.label}
+            </option>
+          ))}
+        </Select>
+      ) : null}
+      <div className="space-y-3">
+        <p className="text-sm font-semibold text-slate-700">
+          {t('offers.previewCard.controls.brandingTitle')}
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {t('offers.previewCard.controls.primaryLabel')}
+            </span>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={brandingPrimary}
+                onChange={(event) => setBrandingPrimary(event.target.value)}
+                className="h-10 w-12 cursor-pointer rounded-md border border-border bg-white"
+                aria-label={t('offers.previewCard.controls.primaryLabel')}
+              />
+              <Input
+                value={brandingPrimary}
+                onChange={(event) => setBrandingPrimary(event.target.value)}
+                className="py-2 text-sm font-mono"
+                wrapperClassName="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {t('offers.previewCard.controls.secondaryLabel')}
+            </span>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={brandingSecondary}
+                onChange={(event) => setBrandingSecondary(event.target.value)}
+                className="h-10 w-12 cursor-pointer rounded-md border border-border bg-white"
+                aria-label={t('offers.previewCard.controls.secondaryLabel')}
+              />
+              <Input
+                value={brandingSecondary}
+                onChange={(event) => setBrandingSecondary(event.target.value)}
+                className="py-2 text-sm font-mono"
+                wrapperClassName="flex-1"
+              />
+            </div>
+          </div>
+        </div>
+        <Input
+          label={t('offers.previewCard.controls.logoLabel')}
+          placeholder={t('offers.previewCard.controls.logoPlaceholder')}
+          value={brandingLogoUrl}
+          onChange={(event) => setBrandingLogoUrl(event.target.value)}
+          type="url"
+        />
+      </div>
+    </div>
+  );
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
@@ -910,6 +1038,7 @@ export default function NewOfferPage() {
             onManualRefresh={handleManualRefresh}
             onOpenFullscreen={() => setIsPreviewModalOpen(true)}
             titleId="offer-preview-card-title"
+            controls={previewControls}
           />
         </div>
       </div>
@@ -935,6 +1064,7 @@ export default function NewOfferPage() {
           onExitFullscreen={() => setIsPreviewModalOpen(false)}
           titleId="preview-modal-title"
           variant="modal"
+          controls={previewControls}
         />
       </Modal>
     </AppFrame>

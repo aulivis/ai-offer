@@ -3,6 +3,7 @@ import { t } from '@/copy';
 import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
 import { useEffect, type ReactNode } from 'react';
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
+import { PREVIEW_CSP_DIRECTIVE } from '@/lib/previewSecurity';
 
 export type OfferPreviewStatusDescriptor = {
   tone: 'info' | 'success' | 'error' | 'warning';
@@ -30,6 +31,7 @@ type OfferPreviewCardProps = {
   onExitFullscreen?: () => void;
   titleId?: string;
   variant?: 'embedded' | 'modal';
+  controls?: ReactNode;
 };
 
 const STATUS_STYLES: Record<
@@ -214,6 +216,7 @@ export function OfferPreviewCard({
   onExitFullscreen,
   titleId,
   variant = 'embedded',
+  controls,
 }: OfferPreviewCardProps) {
   const resolvedStatus = statusDescriptor ?? {
     tone: 'info' as const,
@@ -376,6 +379,7 @@ export function OfferPreviewCard({
             ref={previewFrameRef}
             className="block w-full"
             sandbox="allow-same-origin"
+            csp={PREVIEW_CSP_DIRECTIVE}
             srcDoc={previewMarkup}
             style={{
               border: '0',
@@ -448,7 +452,14 @@ export function OfferPreviewCard({
 
   return (
     <Card className="flex h-full w-full flex-col overflow-hidden" header={header}>
-      <div className="flex flex-1 flex-col gap-4">{renderContent()}</div>
+      <div className="flex flex-1 flex-col gap-4">
+        {controls ? (
+          <div className="rounded-2xl border border-border/60 bg-white/70 p-4 shadow-sm">
+            {controls}
+          </div>
+        ) : null}
+        {renderContent()}
+      </div>
     </Card>
   );
 }

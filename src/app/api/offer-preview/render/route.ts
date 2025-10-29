@@ -14,13 +14,11 @@ import {
   resolveTemplateRenderErrorCode,
 } from '@/lib/observability/templateTelemetry';
 import { formatOfferIssueDate } from '@/lib/datetime';
+import { PREVIEW_CSP_DIRECTIVE, injectPreviewCspMeta } from '@/lib/previewSecurity';
 
 export const runtime = 'nodejs';
 
 const MAX_ROW_COUNT = 100;
-const CSP_DIRECTIVE =
-  "default-src 'none'; style-src 'unsafe-inline'; img-src data: https:; font-src data:; connect-src 'none'; frame-ancestors 'none'";
-
 const optionalTrimmedString = z.preprocess(
   (value) => (typeof value === 'string' ? value.trim() : undefined),
   z.string().optional(),
@@ -98,14 +96,6 @@ function normalizeRows(rows: PriceRow[] | undefined): PriceRow[] {
         : undefined,
     vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
   }));
-}
-
-function injectCspMeta(html: string): string {
-  const meta = `<meta http-equiv="Content-Security-Policy" content="${CSP_DIRECTIVE}" />`;
-  if (html.includes('<head>')) {
-    return html.replace('<head>', `<head>\n    ${meta}`);
-  }
-  return html;
 }
 
 async function handlePost(req: AuthenticatedNextRequest) {
@@ -214,7 +204,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
     renderMs: renderDuration,
   });
 
-  const htmlWithCsp = injectCspMeta(html);
+  const htmlWithCsp = injectPreviewCspMeta(html);
 
   return new NextResponse(htmlWithCsp, {
     status: 200,
@@ -222,7 +212,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
       'Content-Type': 'text/html; charset=utf-8',
       'X-Content-Type-Options': 'nosniff',
       'Cache-Control': 'no-store, max-age=0',
-      'Content-Security-Policy': CSP_DIRECTIVE,
+      'Content-Security-Policy': PREVIEW_CSP_DIRECTIVE,
       'Referrer-Policy': 'no-referrer',
     },
   });
