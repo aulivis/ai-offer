@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
+import { resolveEffectivePlan } from '@/lib/subscription';
+import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 
 type Offer = {
   id: string;
@@ -180,6 +182,68 @@ function StatusStep({
   );
 }
 
+type UsageQuotaSnapshot = {
+  plan: SubscriptionPlan;
+  limit: number | null;
+  used: number;
+  periodStart: string | null;
+};
+
+function resolvePlanLimit(plan: SubscriptionPlan): number | null {
+  if (plan === 'pro') {
+    return null;
+  }
+  if (plan === 'standard') {
+    return 10;
+  }
+  return 3;
+}
+
+function parsePeriodStart(value: string | null | undefined): Date | null {
+  if (!value) {
+    return null;
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  parsed.setHours(0, 0, 0, 0);
+  return parsed;
+}
+
+function computeNextResetDate(periodStart: string | null | undefined): Date | null {
+  const parsed = parsePeriodStart(periodStart);
+  if (!parsed) {
+    return null;
+  }
+
+  const next = new Date(parsed);
+  next.setHours(0, 0, 0, 0);
+  next.setMonth(next.getMonth() + 1, 1);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  while (next <= today) {
+    next.setMonth(next.getMonth() + 1, 1);
+  }
+
+  return next;
+}
+
+function hasAdminFlag(value: unknown): boolean {
+  if (value === true) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'admin';
+  }
+  if (Array.isArray(value)) {
+    return value.some((entry) => hasAdminFlag(entry));
+  }
+  return false;
+}
+
 /** Törlés megerősítése (dialog) — semantic + A11y */
 function DeleteConfirmationDialog({
   offer,
@@ -279,6 +343,8 @@ export default function DashboardPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [offerToDelete, setOfferToDelete] = useState<Offer | null>(null);
+  const [quotaSnapshot, setQuotaSnapshot] = useState<UsageQuotaSnapshot | null>(null);
+  const [isQuotaLoading, setIsQuotaLoading] = useState(false);
 
   // keresés/szűrés/rendezés
   const [q, setQ] = useState('');
@@ -286,6 +352,24 @@ export default function DashboardPage() {
   const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
+
+  const isAdmin = useMemo(() => {
+    if (!user) {
+      return false;
+    }
+
+    const appMeta = (user.app_metadata ?? {}) as Record<string, unknown>;
+    const userMeta = (user.user_metadata ?? {}) as Record<string, unknown>;
+
+    return (
+      hasAdminFlag(appMeta.role) ||
+      hasAdminFlag(appMeta.roles) ||
+      hasAdminFlag(appMeta.is_admin) ||
+      hasAdminFlag(userMeta.role) ||
+      hasAdminFlag(userMeta.roles) ||
+      hasAdminFlag(userMeta.is_admin)
+    );
+  }, [user]);
 
   const fetchPage = useCallback(
     async (user: string, pageNumber: number): Promise<{ items: Offer[]; count: number | null }> => {
@@ -368,6 +452,59 @@ export default function DashboardPage() {
       active = false;
     };
   }, [authStatus, fetchPage, showToast, sb, user]);
+
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      setQuotaSnapshot(null);
+      setIsQuotaLoading(false);
+      return;
+    }
+
+    let active = true;
+    setIsQuotaLoading(true);
+
+    (async () => {
+      try {
+        const [{ data: profile }, { data: usageRow }] = await Promise.all([
+          sb.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
+          sb
+            .from('usage_counters')
+            .select('offers_generated, period_start')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
+        const limit = resolvePlanLimit(plan);
+        const rawUsed = Number(usageRow?.offers_generated ?? 0);
+
+        setQuotaSnapshot({
+          plan,
+          limit,
+          used: Number.isFinite(rawUsed) ? rawUsed : 0,
+          periodStart: (usageRow?.period_start as string | null) ?? null,
+        });
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+        console.error('Failed to load usage quota.', error);
+        setQuotaSnapshot(null);
+      } finally {
+        if (active) {
+          setIsQuotaLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [authStatus, sb, user]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 
@@ -694,6 +831,55 @@ export default function DashboardPage() {
     };
   }, [authStatus, sb, user]);
 
+  const quotaResetLabel = useMemo(() => {
+    if (!quotaSnapshot?.periodStart) {
+      return null;
+    }
+    const reset = computeNextResetDate(quotaSnapshot.periodStart);
+    if (!reset) {
+      return null;
+    }
+    return reset.toLocaleDateString('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, [quotaSnapshot?.periodStart]);
+
+  const quotaValue = useMemo(() => {
+    if (isQuotaLoading) {
+      return t('dashboard.metrics.quota.loading');
+    }
+    if (!quotaSnapshot) {
+      return '—';
+    }
+    if (quotaSnapshot.limit === null) {
+      return t('dashboard.metrics.quota.unlimitedValue');
+    }
+    const remaining = Math.max(quotaSnapshot.limit - quotaSnapshot.used, 0);
+    return t('dashboard.metrics.quota.value', {
+      remaining: remaining.toLocaleString('hu-HU'),
+      limit: quotaSnapshot.limit.toLocaleString('hu-HU'),
+    });
+  }, [isQuotaLoading, quotaSnapshot]);
+
+  const quotaHelper = useMemo(() => {
+    if (isQuotaLoading || !quotaSnapshot) {
+      return undefined;
+    }
+    const usedLabel = quotaSnapshot.used.toLocaleString('hu-HU');
+    if (quotaSnapshot.limit === null) {
+      return t('dashboard.metrics.quota.helperUnlimited', { used: usedLabel });
+    }
+    if (quotaResetLabel) {
+      return t('dashboard.metrics.quota.helperLimitedWithReset', {
+        used: usedLabel,
+        resetDate: quotaResetLabel,
+      });
+    }
+    return t('dashboard.metrics.quota.helperLimited', { used: usedLabel });
+  }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
+
   /** Derived UI szövegek */
   const acceptanceLabel =
     stats.acceptanceRate !== null
@@ -737,12 +923,14 @@ export default function DashboardPage() {
         description={t('dashboard.description')}
         actions={
           <div className="flex flex-wrap justify-end gap-2">
-            <Link
-              href="/dashboard/telemetry"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {t('dashboard.actions.templateTelemetry')}
-            </Link>
+            {isAdmin ? (
+              <Link
+                href="/dashboard/telemetry"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {t('dashboard.actions.templateTelemetry')}
+              </Link>
+            ) : null}
             <Link
               href="/new"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -754,6 +942,11 @@ export default function DashboardPage() {
       >
         {/* Metrikák */}
         <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label={t('dashboard.metrics.quota.label')}
+            value={quotaValue}
+            helper={quotaHelper}
+          />
           <MetricCard
             label={t('dashboard.metrics.created.label')}
             value={totalOffersCount.toLocaleString('hu-HU')}
