@@ -14,3 +14,13 @@ export function normalizePlan(rawPlan: string | null | undefined): SubscriptionP
 export function resolveEffectivePlan(rawPlan: string | null | undefined): SubscriptionPlan {
   return normalizePlan(rawPlan);
 }
+
+export function getMonthlyOfferLimit(plan: SubscriptionPlan): number | null {
+  if (plan === 'pro') {
+    return null;
+  }
+  if (plan === 'standard') {
+    return 10;
+  }
+  return 3;
+}

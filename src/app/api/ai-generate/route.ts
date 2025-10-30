@@ -28,7 +28,7 @@ import {
 } from '@/lib/queue/pdf';
 import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
 import { processPdfJobInline } from '@/lib/pdfInlineWorker';
-import { resolveEffectivePlan } from '@/lib/subscription';
+import { resolveEffectivePlan, getMonthlyOfferLimit } from '@/lib/subscription';
 import { t, createTranslator, resolveLocale, type Translator } from '@/copy';
 import {
   recordTemplateRenderTelemetry,
@@ -83,6 +83,45 @@ function normalizeUsageLimitError(message: string | undefined): string | null {
   }
 
   return null;
+}
+
+const FALLBACK_CUSTOMER_NAME = 'Ismeretlen ugyfel';
+const FALLBACK_TITLE = 'Ajanlat';
+const MAX_FILENAME_PART_LENGTH = 80;
+
+function sanitizeFileNamePart(value: string | null | undefined, fallback: string): string {
+  const base = typeof value === 'string' ? value : '';
+  const normalise = (input: string) =>
+    input
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9 _-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const sanitizedFallback = normalise(fallback) || FALLBACK_TITLE;
+  const sanitized = normalise(base);
+  const candidate = sanitized || sanitizedFallback;
+  return candidate.slice(0, MAX_FILENAME_PART_LENGTH);
+}
+
+function createOfferStoragePath(params: {
+  userId: string;
+  offerId: string;
+  customerName?: string | null;
+  offerTitle?: string | null;
+  fallbackCompany?: string | null;
+  date?: Date;
+}): string {
+  const { userId, offerId, customerName, offerTitle, fallbackCompany, date } = params;
+  const issuedAt = (date ?? new Date()).toISOString().slice(0, 10);
+  const customerPart = sanitizeFileNamePart(
+    customerName ?? fallbackCompany ?? FALLBACK_CUSTOMER_NAME,
+    FALLBACK_CUSTOMER_NAME,
+  );
+  const titlePart = sanitizeFileNamePart(offerTitle ?? FALLBACK_TITLE, FALLBACK_TITLE);
+  const fileName = `${customerPart} - ${titlePart} - ${issuedAt}.pdf`;
+  return `${userId}/${offerId}/${fileName}`;
 }
 
 // System prompt for our OpenAI assistant.  The model should populate the
@@ -615,13 +654,30 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       return NextResponse.json({ error: message }, { status });
     }
 
-    let planLimit: number | null;
-    if (plan === 'pro') {
-      planLimit = null;
-    } else if (plan === 'standard') {
-      planLimit = 10;
-    } else {
-      planLimit = 3;
+    const planLimit = getMonthlyOfferLimit(plan);
+
+    let clientCompanyName: string | null = null;
+    if (clientId) {
+      try {
+        const { data: clientRow, error: clientError } = await sb
+          .from('clients')
+          .select('company_name')
+          .eq('id', clientId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (clientError) {
+          console.warn('Failed to load client for offer generation.', {
+            userId: user.id,
+            clientId,
+            error: clientError.message,
+          });
+        } else if (clientRow?.company_name && typeof clientRow.company_name === 'string') {
+          clientCompanyName = clientRow.company_name;
+        }
+      } catch (clientLookupError) {
+        console.warn('Unexpected client lookup error during offer generation.', clientLookupError);
+      }
     }
 
     const cookieStore = await cookies();
@@ -790,7 +846,13 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     // ---- PDF queueing ----
     const offerId = uuid();
-    const storagePath = `${user.id}/${offerId}.pdf`;
+    const storagePath = createOfferStoragePath({
+      userId: user.id,
+      offerId,
+      customerName: clientCompanyName,
+      offerTitle: safeTitle,
+      fallbackCompany: typeof profile?.company_name === 'string' ? profile.company_name : null,
+    });
     const brandingOptions = normalizeBranding({
       primaryColor:
         typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,

@@ -99,9 +99,46 @@ function normalizeRows(rows: PriceRow[] | undefined): PriceRow[] {
 }
 
 async function handlePost(req: AuthenticatedNextRequest) {
+  let rawBody = '';
+  try {
+    rawBody = await req.text();
+  } catch (error) {
+    if (req.signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+      return new NextResponse(null, { status: 499 });
+    }
+    console.warn('offer-preview render: failed to read request body', error);
+    return NextResponse.json(
+      {
+        error: 'Érvénytelen előnézeti kérés.',
+        issues: {
+          fieldErrors: {},
+          formErrors: ['Érvénytelen JSON törzs.'],
+        },
+      },
+      { status: 400 },
+    );
+  }
+
+  if (req.signal.aborted) {
+    return new NextResponse(null, { status: 499 });
+  }
+
+  if (!rawBody) {
+    return NextResponse.json(
+      {
+        error: 'Érvénytelen előnézeti kérés.',
+        issues: {
+          fieldErrors: {},
+          formErrors: ['Érvénytelen JSON törzs.'],
+        },
+      },
+      { status: 400 },
+    );
+  }
+
   let json: unknown;
   try {
-    json = await req.json();
+    json = JSON.parse(rawBody);
   } catch (error) {
     console.warn('offer-preview render: failed to parse request JSON body', error);
     return NextResponse.json(

@@ -28,7 +28,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
-import { resolveEffectivePlan } from '@/lib/subscription';
+import { getMonthlyOfferLimit, resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -117,6 +117,13 @@ type OfferImageAsset = {
   mime: string;
 };
 
+type QuotaSnapshot = {
+  limit: number | null;
+  used: number;
+  pending: number;
+  periodStart: string | null;
+};
+
 function isOfferSections(value: unknown): value is OfferSections {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
@@ -161,6 +168,13 @@ const MAX_PREVIEW_TIMEOUT_RETRIES = 2;
 const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10) / 10;
+
+function getCurrentPeriodStartIso(): string {
+  const now = new Date();
+  now.setDate(1);
+  now.setHours(0, 0, 0, 0);
+  return now.toISOString().slice(0, 10);
+}
 
 type PreparedImagePayload = { key: string; dataUrl: string; alt: string };
 
@@ -436,6 +450,53 @@ export default function NewOfferWizard() {
   const templateModalDescriptionId = useId();
   const templateNameFieldId = useId();
   const isProPlan = plan === 'pro';
+  const quotaLimit = quotaSnapshot?.limit ?? null;
+  const quotaUsed = quotaSnapshot?.used ?? 0;
+  const quotaPending = quotaSnapshot?.pending ?? 0;
+  const remainingQuota = useMemo(() => {
+    if (quotaLimit === null) {
+      return Number.POSITIVE_INFINITY;
+    }
+    const remaining = quotaLimit - quotaUsed - quotaPending;
+    return remaining > 0 ? remaining : 0;
+  }, [quotaLimit, quotaPending, quotaUsed]);
+  const isQuotaExhausted = quotaLimit !== null && remainingQuota <= 0;
+  const quotaTitle = isQuotaExhausted
+    ? t('offers.wizard.quota.exhaustedTitle')
+    : t('offers.wizard.quota.availableTitle');
+  const quotaDescription = useMemo(() => {
+    if (quotaLoading) {
+      return t('offers.wizard.quota.loading');
+    }
+    if (quotaError) {
+      return quotaError;
+    }
+    if (isQuotaExhausted) {
+      return t('offers.wizard.quota.exhaustedDescription');
+    }
+    return t('offers.wizard.quota.availableDescription');
+  }, [isQuotaExhausted, quotaError, quotaLoading, t]);
+  const quotaRemainingText = useMemo(() => {
+    if (quotaLoading || quotaError) {
+      return null;
+    }
+    if (quotaLimit === null) {
+      return t('offers.wizard.quota.unlimited');
+    }
+    return t('offers.wizard.quota.remainingLabel', {
+      remaining: remainingQuota,
+      limit: quotaLimit,
+    });
+  }, [quotaError, quotaLimit, quotaLoading, remainingQuota, t]);
+  const quotaPendingText = useMemo(() => {
+    if (quotaLoading || quotaError || quotaLimit === null || quotaPending <= 0) {
+      return null;
+    }
+    return t('offers.wizard.quota.pendingInfo', { count: quotaPending });
+  }, [quotaError, quotaLimit, quotaLoading, quotaPending, t]);
+  const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaSnapshot | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!availablePdfTemplates.length) {
@@ -495,6 +556,71 @@ export default function NewOfferWizard() {
           typeof prof?.brand_color_secondary === 'string' ? prof.brand_color_secondary : null,
         logoUrl: typeof prof?.brand_logo_url === 'string' ? prof.brand_logo_url : null,
       });
+
+      const planLimitForUser = getMonthlyOfferLimit(normalizedPlan);
+      setQuotaLoading(true);
+      try {
+        const periodStart = getCurrentPeriodStartIso();
+        const usagePromise = sb
+          .from('usage_counters')
+          .select('offers_generated, period_start')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        let pendingCount = 0;
+        if (planLimitForUser !== null) {
+          const { count, error: pendingError } = await sb
+            .from('pdf_jobs')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .in('status', ['pending', 'processing'])
+            .eq('payload->>usagePeriodStart', periodStart);
+
+          if (pendingError) {
+            throw pendingError;
+          }
+
+          pendingCount = count ?? 0;
+        }
+
+        const { data: usageRow, error: usageError } = await usagePromise;
+        if (usageError) {
+          throw usageError;
+        }
+
+        if (!active) {
+          return;
+        }
+
+        const periodMatches =
+          typeof usageRow?.period_start === 'string' && usageRow.period_start === periodStart;
+        const usedValue = periodMatches ? Number(usageRow?.offers_generated ?? 0) : 0;
+
+        setQuotaSnapshot({
+          limit: planLimitForUser,
+          used: Number.isFinite(usedValue) ? usedValue : 0,
+          pending: planLimitForUser === null ? 0 : pendingCount,
+          periodStart: periodMatches ? periodStart : (usageRow?.period_start as string | null) ?? periodStart,
+        });
+        setQuotaError(null);
+      } catch (quotaLoadError) {
+        if (!active) {
+          return;
+        }
+        console.error('Failed to load usage quota for new offer wizard.', quotaLoadError);
+        if (planLimitForUser === null) {
+          setQuotaSnapshot({ limit: null, used: 0, pending: 0, periodStart: null });
+          setQuotaError(null);
+        } else {
+          setQuotaSnapshot(null);
+          setQuotaError(t('offers.wizard.quota.loadFailed'));
+        }
+      } finally {
+        if (active) {
+          setQuotaLoading(false);
+        }
+      }
+
       const planTierForTemplates = planToTemplateTier(normalizedPlan);
       const templatesForPlan =
         planTierForTemplates === 'premium'
@@ -558,7 +684,7 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
-  }, [allPdfTemplates, authStatus, sb, user]);
+  }, [allPdfTemplates, authStatus, sb, t, user]);
 
   useEffect(() => {
     setImageAssets((prev) => {
@@ -1170,6 +1296,22 @@ export default function NewOfferWizard() {
     if (previewLocked) {
       return;
     }
+    if (quotaLoading) {
+      showToast({
+        title: t('offers.wizard.quota.loading'),
+        description: t('offers.wizard.quota.loading'),
+        variant: 'info',
+      });
+      return;
+    }
+    if (isQuotaExhausted) {
+      showToast({
+        title: t('offers.wizard.quota.exhaustedToastTitle'),
+        description: t('offers.wizard.quota.exhaustedToastDescription'),
+        variant: 'warning',
+      });
+      return;
+    }
     if (!hasPreviewInputs) {
       showToast({
         title: t('toasts.preview.missingData.title'),
@@ -1179,17 +1321,36 @@ export default function NewOfferWizard() {
       return;
     }
     void callPreview();
-  }, [callPreview, hasPreviewInputs, previewLocked, showToast]);
+  }, [
+    callPreview,
+    hasPreviewInputs,
+    isQuotaExhausted,
+    previewLocked,
+    quotaLoading,
+    showToast,
+    t,
+  ]);
 
   useEffect(() => {
     if (step !== 3) {
       return;
     }
-    if (previewLocked || previewLoading || !hasPreviewInputs) {
+    if (quotaLoading) {
+      return;
+    }
+    if (isQuotaExhausted || previewLocked || previewLoading || !hasPreviewInputs) {
       return;
     }
     void callPreview();
-  }, [callPreview, hasPreviewInputs, previewLoading, previewLocked, step]);
+  }, [
+    callPreview,
+    hasPreviewInputs,
+    isQuotaExhausted,
+    previewLoading,
+    previewLocked,
+    quotaLoading,
+    step,
+  ]);
 
   const handlePickImage = useCallback(() => {
     if (!isProPlan) {
@@ -1356,6 +1517,22 @@ export default function NewOfferWizard() {
 
   async function generate() {
     try {
+      if (quotaLoading) {
+        showToast({
+          title: t('offers.wizard.quota.loading'),
+          description: t('offers.wizard.quota.loading'),
+          variant: 'info',
+        });
+        return;
+      }
+      if (isQuotaExhausted) {
+        showToast({
+          title: t('offers.wizard.quota.exhaustedToastTitle'),
+          description: t('offers.wizard.quota.exhaustedToastDescription'),
+          variant: 'warning',
+        });
+        return;
+      }
       if (!previewLocked) {
         showToast({
           title: t('toasts.preview.backgroundGeneration.title'),
@@ -1471,12 +1648,38 @@ export default function NewOfferWizard() {
   const goToStep = useCallback(
     (nextStep: number) => {
       const clampedStep = Math.max(1, Math.min(3, nextStep));
+      const movingForward = clampedStep > step;
+      if (movingForward) {
+        if (quotaLoading) {
+          showToast({
+            title: t('offers.wizard.quota.loading'),
+            description: t('offers.wizard.quota.loading'),
+            variant: 'info',
+          });
+          return;
+        }
+        if (isQuotaExhausted) {
+          showToast({
+            title: t('offers.wizard.quota.exhaustedToastTitle'),
+            description: t('offers.wizard.quota.exhaustedToastDescription'),
+            variant: 'warning',
+          });
+          return;
+        }
+      }
       if (step === 1 && clampedStep > 1) {
         handleGeneratePreview();
       }
       setStep(clampedStep);
     },
-    [handleGeneratePreview, step],
+    [
+      handleGeneratePreview,
+      isQuotaExhausted,
+      quotaLoading,
+      showToast,
+      step,
+      t,
+    ],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
@@ -1576,6 +1779,25 @@ export default function NewOfferWizard() {
                 <p className="text-sm text-slate-600">
                   {t('offers.wizard.forms.details.sections.overviewHint')}
                 </p>
+              </div>
+
+              <div
+                className={`rounded-2xl border p-4 transition ${
+                  isQuotaExhausted
+                    ? 'border-rose-200 bg-rose-50/90 text-rose-700'
+                    : 'border-slate-200 bg-slate-50/90 text-slate-700'
+                }`}
+              >
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold">{quotaTitle}</p>
+                  <p className="text-xs text-current/80">{quotaDescription}</p>
+                  {quotaRemainingText ? (
+                    <p className="text-xs font-semibold text-current">{quotaRemainingText}</p>
+                  ) : null}
+                  {quotaPendingText ? (
+                    <p className="text-[11px] text-current/70">{quotaPendingText}</p>
+                  ) : null}
+                </div>
               </div>
 
               <section className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-white/70 p-5">
@@ -1945,7 +2167,7 @@ export default function NewOfferWizard() {
         )}
 
         {step === 3 && (
-          <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="space-y-6">
             <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -2221,7 +2443,7 @@ export default function NewOfferWizard() {
                 </Button>
                 <Button
                   onClick={generate}
-                  disabled={loading}
+                  disabled={loading || isQuotaExhausted || quotaLoading}
                   className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   {loading ? 'Generálás…' : 'PDF generálása és mentés'}
@@ -2243,6 +2465,7 @@ export default function NewOfferWizard() {
             {step < 3 && (
               <Button
                 onClick={() => goToStep(step + 1)}
+                disabled={isQuotaExhausted || quotaLoading}
                 className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-200"
               >
                 Tovább

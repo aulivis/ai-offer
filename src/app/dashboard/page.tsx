@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
-import { resolveEffectivePlan } from '@/lib/subscription';
+import { resolveEffectivePlan, getMonthlyOfferLimit } from '@/lib/subscription';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 
 type Offer = {
@@ -188,16 +188,6 @@ type UsageQuotaSnapshot = {
   used: number;
   periodStart: string | null;
 };
-
-function resolvePlanLimit(plan: SubscriptionPlan): number | null {
-  if (plan === 'pro') {
-    return null;
-  }
-  if (plan === 'standard') {
-    return 10;
-  }
-  return 3;
-}
 
 function parsePeriodStart(value: string | null | undefined): Date | null {
   if (!value) {
@@ -479,7 +469,7 @@ export default function DashboardPage() {
         }
 
         const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
-        const limit = resolvePlanLimit(plan);
+        const limit = getMonthlyOfferLimit(plan);
         const rawUsed = Number(usageRow?.offers_generated ?? 0);
 
         setQuotaSnapshot({
