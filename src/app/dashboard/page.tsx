@@ -13,9 +13,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
-import { resolveEffectivePlan, getMonthlyOfferLimit } from '@/lib/subscription';
-import { countPendingPdfJobs } from '@/lib/queue/pdf';
-import { currentMonthStart } from '@/lib/services/usage';
+import { resolveEffectivePlan } from '@/lib/subscription';
+import { currentMonthStart, getUsageWithPending } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 
 type Offer = {
@@ -211,30 +210,6 @@ function parsePeriodStart(value: string | null | undefined): Date | null {
   }
   parsed.setHours(0, 0, 0, 0);
   return parsed;
-}
-
-function normalizePeriodStartIso(value: string | null | undefined): string {
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (trimmed) {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-        const timestamp = Date.parse(`${trimmed}T00:00:00Z`);
-        if (!Number.isNaN(timestamp)) {
-          return new Date(timestamp).toISOString().slice(0, 10);
-        }
-      }
-
-      const parsed = new Date(trimmed);
-      if (!Number.isNaN(parsed.getTime())) {
-        const normalized = new Date(
-          Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()),
-        );
-        return normalized.toISOString().slice(0, 10);
-      }
-    }
-  }
-
-  return currentMonthStart().iso;
 }
 
 function getDeviceIdFromCookie(name = 'propono_device_id'): string | null {
@@ -521,62 +496,27 @@ export default function DashboardPage() {
     (async () => {
       try {
         const deviceId = getDeviceIdFromCookie();
-        const [{ data: profile }, { data: usageRow }] = await Promise.all([
-          sb.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
-          sb
-            .from('usage_counters')
-            .select('offers_generated, period_start')
-            .eq('user_id', user.id)
-            .maybeSingle(),
-        ]);
+        const { data: profile, error: profileError } = await sb
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          throw profileError;
+        }
 
         if (!active) {
           return;
         }
 
         const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
-        const limit = getMonthlyOfferLimit(plan);
-        const rawUsed = Number(usageRow?.offers_generated ?? 0);
-        const periodStart = normalizePeriodStartIso(
-          (usageRow?.period_start as string | null) ?? null,
-        );
-
-        let pending = 0;
-        try {
-          pending = await countPendingPdfJobs(sb, { userId: user.id, periodStart });
-          if (!active) {
-            return;
-          }
-        } catch (pendingError) {
-          if (!active) {
-            return;
-          }
-          console.warn('Failed to count pending PDF jobs for dashboard quota', pendingError);
-          pending = 0;
-        }
-
-        let devicePending: number | null = null;
-        if (deviceId) {
-          try {
-            devicePending = await countPendingPdfJobs(sb, {
-              userId: user.id,
-              periodStart,
-              deviceId,
-            });
-            if (!active) {
-              return;
-            }
-          } catch (devicePendingError) {
-            if (!active) {
-              return;
-            }
-            console.warn('Failed to count device-level pending PDF jobs for dashboard quota', {
-              deviceId,
-              error: devicePendingError,
-            });
-            devicePending = null;
-          }
-        }
+        const { iso: expectedPeriod } = currentMonthStart();
+        const usageSnapshot = await getUsageWithPending(sb, {
+          userId: user.id,
+          periodStart: expectedPeriod,
+          deviceId,
+        });
 
         if (!active) {
           return;
@@ -584,11 +524,16 @@ export default function DashboardPage() {
 
         setQuotaSnapshot({
           plan,
-          limit,
-          used: Number.isFinite(rawUsed) ? rawUsed : 0,
-          pending: Number.isFinite(pending) ? pending : 0,
-          devicePending,
-          periodStart,
+          limit: usageSnapshot.limit,
+          used: Number.isFinite(usageSnapshot.confirmed) ? usageSnapshot.confirmed : 0,
+          pending: Number.isFinite(usageSnapshot.pendingUser) ? usageSnapshot.pendingUser : 0,
+          devicePending:
+            typeof usageSnapshot.pendingDevice === 'number'
+              ? usageSnapshot.pendingDevice
+              : deviceId
+                ? (usageSnapshot.pendingDevice ?? 0)
+                : null,
+          periodStart: usageSnapshot.periodStart,
         });
       } catch (error) {
         if (!active) {

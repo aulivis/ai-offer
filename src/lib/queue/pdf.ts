@@ -299,7 +299,8 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
 
       if (isSchemaCacheError(error.message) && attempt === 0) {
         await refreshPdfJobsSchemaCache(sb);
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        // Allow the PostgREST (PGRST) schema cache to catch up before retrying.
+        await new Promise((resolve) => setTimeout(resolve, 250));
         continue;
       }
 
@@ -385,7 +386,8 @@ export async function countPendingPdfJobs(
 
     if (isSchemaCacheError(error.message) && attempt === 0) {
       await refreshPdfJobsSchemaCache(sb);
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // Allow the PostgREST (PGRST) schema cache to catch up before retrying.
+      await new Promise((resolve) => setTimeout(resolve, 250));
       continue;
     }
 

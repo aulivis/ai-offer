@@ -1,5 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { countPendingPdfJobs } from '../queue/pdf';
+import { getMonthlyOfferLimit, resolveEffectivePlan } from '../subscription';
+
 /**
  * Compute the first day of the current month in YYYY-MM-DD format.  This
  * helper is used to determine the billing period for usage counters.
@@ -58,6 +61,20 @@ function normalizeDate(value: unknown, fallback: string): string {
 
 type UsageState = { periodStart: string; offersGenerated: number };
 
+type PeriodSource = { period_start?: unknown; created_at?: unknown } | null | undefined;
+
+function resolveStoredPeriod(row: PeriodSource, fallback: string): string {
+  if (row && row.period_start) {
+    return normalizeDate(row.period_start, fallback);
+  }
+
+  if (row && row.created_at) {
+    return normalizeDate(row.created_at, fallback);
+  }
+
+  return fallback;
+}
+
 async function ensureUsageCounter<K extends CounterKind>(
   sb: SupabaseClient,
   kind: K,
@@ -65,7 +82,7 @@ async function ensureUsageCounter<K extends CounterKind>(
   periodStart: string,
 ): Promise<UsageState> {
   const { table, columnMap } = COUNTER_CONFIG[kind];
-  let selectBuilder = sb.from(table).select('period_start, offers_generated');
+  let selectBuilder = sb.from(table).select('period_start, offers_generated, created_at');
 
   (Object.entries(columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
     selectBuilder = selectBuilder.eq(column, target[key]);
@@ -89,7 +106,7 @@ async function ensureUsageCounter<K extends CounterKind>(
     const { data: inserted, error: insertError } = await sb
       .from(table)
       .insert(insertPayload)
-      .select('period_start, offers_generated')
+      .select('period_start, offers_generated, created_at')
       .maybeSingle();
     if (insertError) {
       throw new Error(`Failed to initialise usage counter: ${insertError.message}`);
@@ -97,7 +114,7 @@ async function ensureUsageCounter<K extends CounterKind>(
     usageRow = inserted ?? { period_start: periodStart, offers_generated: 0 };
   }
 
-  let currentPeriod = normalizeDate(usageRow?.period_start, periodStart);
+  let currentPeriod = resolveStoredPeriod(usageRow, periodStart);
   let generated = Number(usageRow?.offers_generated ?? 0);
 
   if (currentPeriod !== periodStart) {
@@ -106,12 +123,12 @@ async function ensureUsageCounter<K extends CounterKind>(
       updateBuilder = updateBuilder.eq(column, target[key]);
     });
     const { data: resetRow, error: resetError } = await updateBuilder
-      .select('period_start, offers_generated')
+      .select('period_start, offers_generated, created_at')
       .maybeSingle();
     if (resetError) {
       throw new Error(`Failed to reset usage counter: ${resetError.message}`);
     }
-    currentPeriod = normalizeDate(resetRow?.period_start, periodStart);
+    currentPeriod = resolveStoredPeriod(resetRow, periodStart);
     generated = Number(resetRow?.offers_generated ?? 0);
   }
 
@@ -140,13 +157,13 @@ async function fallbackUsageUpdate<K extends CounterKind>(
     updateBuilder = updateBuilder.eq(column, target[key]);
   });
   const { data: updatedRow, error: updateError } = await updateBuilder
-    .select('period_start, offers_generated')
+    .select('period_start, offers_generated, created_at')
     .maybeSingle();
   if (updateError) {
     throw new Error(`Failed to bump usage counter: ${updateError.message}`);
   }
 
-  const finalPeriod = normalizeDate(updatedRow?.period_start, currentPeriod);
+  const finalPeriod = resolveStoredPeriod(updatedRow, currentPeriod);
   const finalCount = Number(updatedRow?.offers_generated ?? offersGenerated + 1);
 
   return { allowed: true, offersGenerated: finalCount, periodStart: finalPeriod };
@@ -162,6 +179,74 @@ export async function getUsageSnapshot(
       ? normalizeDate(periodStartOverride, currentMonthStart().iso)
       : currentMonthStart().iso;
   return ensureUsageCounter(sb, 'user', { userId }, periodStart);
+}
+
+type UsageWithPendingParams = {
+  userId: string;
+  periodStart: string;
+  deviceId?: string | null;
+};
+
+export type UsageWithPendingSnapshot = {
+  limit: number | null;
+  confirmed: number;
+  pendingUser: number;
+  pendingDevice: number | null;
+  remaining: number | null;
+  periodStart: string;
+};
+
+export async function getUsageWithPending(
+  sb: SupabaseClient,
+  params: UsageWithPendingParams,
+): Promise<UsageWithPendingSnapshot> {
+  const { userId, periodStart, deviceId } = params;
+  const { iso: defaultPeriod } = currentMonthStart();
+  const normalizedPeriod = normalizeDate(periodStart, defaultPeriod);
+
+  const [{ data: profile, error: profileError }, usageState] = await Promise.all([
+    sb.from('profiles').select('plan').eq('id', userId).maybeSingle(),
+    ensureUsageCounter(sb, 'user', { userId }, normalizedPeriod),
+  ]);
+
+  if (profileError) {
+    throw new Error(`Failed to load profile for usage snapshot: ${profileError.message}`);
+  }
+
+  const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
+  const limit = getMonthlyOfferLimit(plan);
+
+  const confirmed = Number.isFinite(usageState.offersGenerated) ? usageState.offersGenerated : 0;
+
+  let pendingUser = 0;
+  let pendingDevice: number | null = null;
+
+  pendingUser = await countPendingPdfJobs(sb, {
+    userId,
+    periodStart: usageState.periodStart,
+  });
+
+  if (deviceId) {
+    pendingDevice = await countPendingPdfJobs(sb, {
+      userId,
+      periodStart: usageState.periodStart,
+      deviceId,
+    });
+  }
+
+  const remaining =
+    typeof limit === 'number' && Number.isFinite(limit)
+      ? Math.max(limit - confirmed - pendingUser, 0)
+      : null;
+
+  return {
+    limit,
+    confirmed,
+    pendingUser,
+    pendingDevice,
+    remaining,
+    periodStart: usageState.periodStart,
+  };
 }
 
 export async function syncUsageCounter(
@@ -262,10 +347,11 @@ export async function checkAndIncrementUsage(
   }
 
   const [result] = Array.isArray(data) ? data : [data];
+  const resolvedPeriod = normalizeDate(result?.period_start, periodStart);
   return {
     allowed: Boolean(result?.allowed),
     offersGenerated: Number(result?.offers_generated ?? 0),
-    periodStart: String(result?.period_start ?? periodStart),
+    periodStart: resolvedPeriod,
   };
 }
 
@@ -304,10 +390,11 @@ export async function checkAndIncrementDeviceUsage(
   }
 
   const [result] = Array.isArray(data) ? data : [data];
+  const resolvedPeriod = normalizeDate(result?.period_start, periodStart);
   return {
     allowed: Boolean(result?.allowed),
     offersGenerated: Number(result?.offers_generated ?? 0),
-    periodStart: String(result?.period_start ?? periodStart),
+    periodStart: resolvedPeriod,
   };
 }
 
@@ -324,7 +411,7 @@ export async function rollbackUsageIncrement(
 
   let selectBuilder = sb
     .from(table)
-    .select('offers_generated, period_start')
+    .select('offers_generated, period_start, created_at')
     .eq('user_id', userId);
 
   if (isDevice) {
@@ -347,12 +434,15 @@ export async function rollbackUsageIncrement(
     return;
   }
 
-  const periodStart = normalizeDate(existing.period_start, expectedPeriod);
+  const periodStart = resolveStoredPeriod(existing, expectedPeriod);
   if (periodStart !== expectedPeriod) {
     return;
   }
 
-  let updateBuilder = sb.from(table).update({ offers_generated: currentCount - 1 }).eq('user_id', userId);
+  let updateBuilder = sb
+    .from(table)
+    .update({ offers_generated: currentCount - 1 })
+    .eq('user_id', userId);
 
   if (isDevice) {
     updateBuilder = updateBuilder.eq('device_id', options.deviceId);
