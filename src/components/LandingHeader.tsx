@@ -105,6 +105,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               width={220}
               height={106}
               priority
+              unoptimized
               sizes="(max-width: 768px) 160px, 220px"
               className="h-auto w-auto object-contain"
               style={{ maxHeight: '28mm', maxWidth: '220px' }}
