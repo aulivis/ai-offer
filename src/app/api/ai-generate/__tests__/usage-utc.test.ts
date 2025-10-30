@@ -164,7 +164,10 @@ describe('usage UTC handling for AI generate API', () => {
 
     await rollbackUsageIncrement({ from } as never, 'user-timezone', '2025-10-01');
 
-    expect(updateBuilder.update).toHaveBeenCalledWith({ offers_generated: 2 });
+    expect(updateBuilder.update).toHaveBeenCalledWith({
+      offers_generated: 2,
+      period_start: '2025-10-01',
+    });
   });
 
   it('falls back to manual quota updates when RPC results are ambiguous', async () => {

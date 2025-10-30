@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { countPendingPdfJobs } from '../queue/pdf';
 import { getMonthlyOfferLimit, resolveEffectivePlan } from '../subscription';
+import { normalizeDate, rollbackUsageIncrement, type RollbackOptions } from '../usageHelpers';
 
 /**
  * Compute the first day of the current month in YYYY-MM-DD format.  This
@@ -45,19 +46,6 @@ const COUNTER_CONFIG: {
     rpc: 'check_and_increment_device_usage',
   },
 };
-
-function normalizeDate(value: unknown, fallback: string): string {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString().slice(0, 10);
-  }
-  if (typeof value === 'string' && value) {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString().slice(0, 10);
-    }
-  }
-  return fallback;
-}
 
 type UsageState = { periodStart: string; offersGenerated: number };
 
@@ -398,59 +386,5 @@ export async function checkAndIncrementDeviceUsage(
   };
 }
 
-type RollbackOptions = { deviceId?: string | null };
-
-export async function rollbackUsageIncrement(
-  sb: SupabaseClient,
-  userId: string,
-  expectedPeriod: string,
-  options: RollbackOptions = {},
-) {
-  const isDevice = typeof options.deviceId === 'string' && options.deviceId.length > 0;
-  const table = isDevice ? 'device_usage_counters' : 'usage_counters';
-
-  let selectBuilder = sb
-    .from(table)
-    .select('offers_generated, period_start, created_at')
-    .eq('user_id', userId);
-
-  if (isDevice) {
-    selectBuilder = selectBuilder.eq('device_id', options.deviceId);
-  }
-
-  const { data: existing, error } = await selectBuilder.maybeSingle();
-
-  if (error) {
-    console.warn('Failed to load usage counter for rollback', error);
-    return;
-  }
-
-  if (!existing) {
-    return;
-  }
-
-  const currentCount = Number(existing.offers_generated ?? 0);
-  if (currentCount <= 0) {
-    return;
-  }
-
-  const periodStart = resolveStoredPeriod(existing, expectedPeriod);
-  if (periodStart !== expectedPeriod) {
-    return;
-  }
-
-  let updateBuilder = sb
-    .from(table)
-    .update({ offers_generated: currentCount - 1 })
-    .eq('user_id', userId);
-
-  if (isDevice) {
-    updateBuilder = updateBuilder.eq('device_id', options.deviceId);
-  }
-
-  const { error: updateError } = await updateBuilder;
-
-  if (updateError) {
-    console.warn('Failed to rollback usage counter increment', updateError);
-  }
-}
+export { rollbackUsageIncrement };
+export type { RollbackOptions };

@@ -236,6 +236,8 @@ export const hu = {
         helperLimitedWithReset:
           'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Következő frissítés: {resetDate}.',
         helperLimited: 'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban.',
+        pendingNote:
+          'A függőben lévő PDF-ek is számítanak. Ha egy generálás hibára fut, a számláló automatikusan visszaáll.',
       },
       created: {
         label: 'Létrehozott ajánlatok',
