@@ -83,7 +83,7 @@ describe('usage UTC handling for AI generate API', () => {
     });
   });
 
-  it('falls back to created_at when period_start is missing', async () => {
+  it('falls back to timestamp metadata when period_start is missing', async () => {
     countPendingPdfJobsMock.mockResolvedValueOnce(2);
     const profilesBuilder = {
       select: vi.fn().mockReturnThis(),
@@ -96,7 +96,7 @@ describe('usage UTC handling for AI generate API', () => {
       maybeSingle: vi.fn().mockResolvedValue({
         data: {
           period_start: null,
-          created_at: '2025-10-01T06:00:00+02:00',
+          updated_at: '2025-10-01T06:00:00+02:00',
           offers_generated: 4,
         },
         error: null,
