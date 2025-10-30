@@ -17,3 +17,6 @@ process.env.PDF_WEBHOOK_ALLOWLIST =
   process.env.PDF_WEBHOOK_ALLOWLIST ?? 'https://hooks.example.com';
 process.env.PUBLIC_CONTACT_EMAIL = process.env.PUBLIC_CONTACT_EMAIL ?? 'hello@example.com';
 process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-TEST';
+process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI =
+  process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI ??
+  'http://localhost:3000/api/auth/callback';
