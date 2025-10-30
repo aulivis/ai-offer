@@ -19,7 +19,12 @@ import { envServer } from '@/env.server';
 import { ensureSafeHtml, sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { getUserProfile } from '@/lib/services/user';
-import { currentMonthStart, getDeviceUsageSnapshot, getUsageSnapshot } from '@/lib/services/usage';
+import {
+  currentMonthStart,
+  getDeviceUsageSnapshot,
+  getUsageSnapshot,
+  syncUsageCounter,
+} from '@/lib/services/usage';
 import {
   countPendingPdfJobs,
   dispatchPdfJob,
@@ -700,6 +705,19 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     const { iso: usagePeriodStart } = currentMonthStart();
     const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
+
+    if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+      try {
+        await syncUsageCounter(
+          supabaseServiceRole(),
+          user.id,
+          usageSnapshot.offersGenerated,
+          usagePeriodStart,
+        );
+      } catch (syncError) {
+        console.warn('Failed to sync usage counter before PDF generation.', syncError);
+      }
+    }
 
     let normalizedWebhookUrl: string | null = null;
     try {

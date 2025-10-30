@@ -164,6 +164,39 @@ export async function getUsageSnapshot(
   return ensureUsageCounter(sb, 'user', { userId }, periodStart);
 }
 
+export async function syncUsageCounter(
+  sb: SupabaseClient,
+  userId: string,
+  expectedUsage: number,
+  periodStartOverride?: string,
+): Promise<void> {
+  const normalizedExpected = Number.isFinite(expectedUsage ?? NaN)
+    ? Math.max(0, Math.floor(expectedUsage))
+    : 0;
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+      : currentMonthStart().iso;
+
+  const state = await ensureUsageCounter(sb, 'user', { userId }, periodStart);
+
+  if (state.offersGenerated === normalizedExpected && state.periodStart === periodStart) {
+    return;
+  }
+
+  const { error } = await sb
+    .from('usage_counters')
+    .update({
+      offers_generated: normalizedExpected,
+      period_start: periodStart,
+    })
+    .eq('user_id', userId);
+
+  if (error) {
+    throw new Error(`Failed to sync usage counter: ${error.message}`);
+  }
+}
+
 export async function getDeviceUsageSnapshot(
   sb: SupabaseClient,
   userId: string,
