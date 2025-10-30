@@ -23,7 +23,7 @@ describe('sanitizeHTML', () => {
 
     expect(clean).toContain('<p>Lásd a részleteket:</p>');
     expect(clean).toContain(
-      '<a href="https://example.com" rel="noopener" target="_blank">link</a>',
+      '<a href="https://example.com" rel="noopener noreferrer" target="_blank">link</a>',
     );
     expect(clean).toContain('<th colspan="2">Fejléc</th>');
     expect(clean).toContain('<td colspan="2">Tartalom</td>');
