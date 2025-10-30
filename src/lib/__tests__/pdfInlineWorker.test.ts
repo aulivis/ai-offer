@@ -159,7 +159,10 @@ describe('processPdfJobInline resource cleanup', () => {
 
     expect(page.setDefaultNavigationTimeout).toHaveBeenCalledWith(90_000);
     expect(page.setDefaultTimeout).toHaveBeenCalledWith(90_000);
-    expect(setContent).toHaveBeenCalledWith('<p>Hello</p>', { waitUntil: 'networkidle0' });
+    expect(setContent).toHaveBeenCalledWith(
+      createMinimalEngineHtml('<p>Hello</p>'),
+      { waitUntil: 'networkidle0' },
+    );
     expect(pdf).toHaveBeenCalledWith({
       format: 'A4',
       printBackground: true,

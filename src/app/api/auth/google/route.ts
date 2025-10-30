@@ -1,48 +1,91 @@
-import { NextResponse } from 'next/server';
+import { createHmac, randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
-import { createHash, randomBytes } from 'crypto';
+import { NextResponse } from 'next/server';
+
 import { envServer } from '@/env.server';
+
+import { createSupabaseOAuthClient } from './createSupabaseOAuthClient';
+import { getGoogleProviderStatus } from './providerStatus';
 import { sanitizeOAuthRedirect } from './redirectUtils';
 
-function base64url(input: Buffer) {
-  return input.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+function base64url(buffer: Buffer): string {
+  return buffer.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
-function generateCodeVerifier(): string {
-  return base64url(randomBytes(64));
+function randomState(): string {
+  return base64url(randomBytes(32));
 }
 
-function codeChallengeFromVerifier(verifier: string): string {
-  const digest = createHash('sha256').update(verifier).digest();
-  return base64url(digest);
+function createStateSignature(state: string): string {
+  return createHmac('sha256', envServer.AUTH_COOKIE_SECRET).update(state).digest('hex');
 }
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
+  const providerStatus = await getGoogleProviderStatus();
+  if (!providerStatus.enabled) {
+    const message =
+      providerStatus.message ??
+      'A Google bejelentkezés jelenleg nem elérhető. Kérjük, próbáld újra később.';
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
 
+  const url = new URL(request.url);
   const requested = url.searchParams.get('redirect_to');
   const finalRedirect = sanitizeOAuthRedirect(requested, '/dashboard');
 
-  const callbackUrl = new URL('/api/auth/callback', envServer.APP_URL);
-  callbackUrl.searchParams.set('redirect_to', finalRedirect);
+  const { client: supabase, consumeCodeVerifier } = createSupabaseOAuthClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: finalRedirect,
+      skipBrowserRedirect: true,
+    },
+  });
 
-  const codeVerifier = generateCodeVerifier();
-  const codeChallenge = codeChallengeFromVerifier(codeVerifier);
+  if (error || !data?.url) {
+    console.error('Failed to initiate Google authentication.', error ?? null);
+    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+  }
+
+  const codeVerifier = await consumeCodeVerifier();
+  if (!codeVerifier) {
+    console.error('Supabase did not provide a PKCE code verifier for Google auth.');
+    return NextResponse.json({ error: 'Unable to start Google authentication.' }, { status: 500 });
+  }
+
+  const authUrl = new URL(data.url);
+  let state = authUrl.searchParams.get('state');
+  if (!state) {
+    state = randomState();
+    authUrl.searchParams.set('state', state);
+  }
+
+  if (!authUrl.searchParams.get('nonce')) {
+    authUrl.searchParams.set('nonce', randomState());
+  }
 
   const jar = await cookies();
-  jar.set('sb_pkce_code_verifier', codeVerifier, {
+  const isSecure = envServer.APP_URL.startsWith('https');
+
+  jar.set({
+    name: 'auth_state',
+    value: `${state}:${createStateSignature(state)}`,
     httpOnly: true,
     sameSite: 'lax',
-    secure: envServer.APP_URL.startsWith('https'),
+    secure: isSecure,
     path: '/',
     maxAge: 5 * 60,
   });
 
-  const authorizeUrl = new URL('/auth/v1/authorize', envServer.NEXT_PUBLIC_SUPABASE_URL);
-  authorizeUrl.searchParams.set('provider', 'google');
-  authorizeUrl.searchParams.set('redirect_to', callbackUrl.toString());
-  authorizeUrl.searchParams.set('code_challenge', codeChallenge);
-  authorizeUrl.searchParams.set('code_challenge_method', 's256');
+  jar.set({
+    name: 'sb_pkce_code_verifier',
+    value: codeVerifier,
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isSecure,
+    path: '/',
+    maxAge: 5 * 60,
+  });
 
-  return NextResponse.redirect(authorizeUrl.toString(), { status: 302 });
+  return NextResponse.redirect(authUrl.toString(), { status: 302 });
 }

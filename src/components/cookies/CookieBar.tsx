@@ -61,7 +61,7 @@ export default function CookieBar() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-center text-sm text-[#F8FAFC]/90 sm:text-left">
           We use cookies to improve your experience. You can accept all cookies, reject the
-          non-essential ones, or customise your preferences.
+          non-essential ones, or customize your preferences.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
           <button
@@ -69,7 +69,7 @@ export default function CookieBar() {
             onClick={handleCustomize}
             className={`${baseButtonClass} hover:bg-white/10`}
           >
-            Customise
+            Customize
           </button>
           <button
             type="button"

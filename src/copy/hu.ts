@@ -659,8 +659,8 @@ export const hu = {
   cookies: {
     bar: {
       message:
-        'We use cookies to improve your experience. You can accept all cookies, reject the non-essential ones, or customise your preferences.',
-      customise: 'Customise',
+        'We use cookies to improve your experience. You can accept all cookies, reject the non-essential ones, or customize your preferences.',
+      customise: 'Customize',
       reject: 'Reject non-essential',
       accept: 'Accept all',
     },
