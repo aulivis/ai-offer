@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { countPendingPdfJobs } from '../queue/pdf';
 import { getMonthlyOfferLimit, resolveEffectivePlan } from '../subscription';
+import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { normalizeDate, rollbackUsageIncrement, type RollbackOptions } from '../usageHelpers';
 
 /**
@@ -49,11 +50,14 @@ const COUNTER_CONFIG: {
 
 type UsageState = { periodStart: string; offersGenerated: number };
 
-type PeriodSource = {
-  period_start?: unknown;
-  created_at?: unknown;
-  updated_at?: unknown;
-} | null | undefined;
+type PeriodSource =
+  | {
+      period_start?: unknown;
+      created_at?: unknown;
+      updated_at?: unknown;
+    }
+  | null
+  | undefined;
 
 function resolveStoredPeriod(row: PeriodSource, fallback: string): string {
   if (row && row.period_start) {
@@ -184,6 +188,7 @@ type UsageWithPendingParams = {
 };
 
 export type UsageWithPendingSnapshot = {
+  plan: SubscriptionPlan;
   limit: number | null;
   confirmed: number;
   pendingUser: number;
@@ -236,6 +241,7 @@ export async function getUsageWithPending(
       : null;
 
   return {
+    plan,
     limit,
     confirmed,
     pendingUser,
