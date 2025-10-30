@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import AppFrame from '@/components/AppFrame';
 import { Card } from '@/components/ui/Card';
@@ -53,7 +53,15 @@ function formatFailureRate(value: number): string {
   return percentFormatter.format(Math.max(0, Math.min(1, value)));
 }
 
-function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
+function MetricCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: string;
+  helper?: ReactNode;
+}) {
   return (
     <Card className="p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
@@ -223,7 +231,9 @@ export default function TemplateTelemetryPage() {
                     <td className="whitespace-nowrap px-5 py-4 font-mono text-xs text-fg">
                       {row.templateId}
                     </td>
-                    <td className="px-5 py-4 text-fg">{numberFormatter.format(row.totalRenders)}</td>
+                    <td className="px-5 py-4 text-fg">
+                      {numberFormatter.format(row.totalRenders)}
+                    </td>
                     <td className="px-5 py-4 text-success">
                       {numberFormatter.format(row.successCount)}
                     </td>
@@ -231,7 +241,9 @@ export default function TemplateTelemetryPage() {
                       {numberFormatter.format(row.failureCount)}
                     </td>
                     <td className="px-5 py-4 text-fg">{formatFailureRate(row.failureRate)}</td>
-                    <td className="px-5 py-4 text-fg">{formatAverageDuration(row.averageRenderMs)}</td>
+                    <td className="px-5 py-4 text-fg">
+                      {formatAverageDuration(row.averageRenderMs)}
+                    </td>
                   </tr>
                 ))
               )}
