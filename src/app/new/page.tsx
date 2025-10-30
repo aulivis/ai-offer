@@ -449,6 +449,9 @@ export default function NewOfferWizard() {
   const templateModalTitleId = useId();
   const templateModalDescriptionId = useId();
   const templateNameFieldId = useId();
+  const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaSnapshot | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
   const isProPlan = plan === 'pro';
   const quotaLimit = quotaSnapshot?.limit ?? null;
   const quotaUsed = quotaSnapshot?.used ?? 0;
@@ -494,9 +497,6 @@ export default function NewOfferWizard() {
     }
     return t('offers.wizard.quota.pendingInfo', { count: quotaPending });
   }, [quotaError, quotaLimit, quotaLoading, quotaPending, t]);
-  const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaSnapshot | null>(null);
-  const [quotaLoading, setQuotaLoading] = useState(false);
-  const [quotaError, setQuotaError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!availablePdfTemplates.length) {
