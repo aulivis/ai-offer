@@ -7,6 +7,7 @@ import {
   splitAllowlist,
 } from '../../shared/pdfWebhook.ts';
 import { assertPdfEngineHtml } from '../../shared/pdfHtmlSignature.ts';
+import { normalizeDate } from './dateUtils.ts';
 
 function assertEnv(value: string | undefined, name: string): string {
   if (!value) {
@@ -101,10 +102,16 @@ serve(async (request) => {
     });
   }
 
+  const payloadPeriodStart =
+    typeof payload.usagePeriodStart === 'string' && payload.usagePeriodStart
+      ? payload.usagePeriodStart
+      : null;
   const usagePeriodStart = normalizeDate(
-    typeof payload.usagePeriodStart === 'string' ? payload.usagePeriodStart : null,
+    payloadPeriodStart,
     new Date(job.created_at ?? new Date()).toISOString().slice(0, 10),
   );
+  // The billing window must be deterministic: prefer the payload-provided period
+  // start and only fall back to the job timestamp when the payload omits it.
   const userLimit = Number.isFinite(payload.userLimit ?? NaN) ? Number(payload.userLimit) : null;
   const deviceId =
     typeof payload.deviceId === 'string' && payload.deviceId ? payload.deviceId : null;
@@ -388,19 +395,6 @@ async function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, me
         reject(error);
       });
   });
-}
-
-function normalizeDate(value: unknown, fallback: string): string {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString().slice(0, 10);
-  }
-  if (typeof value === 'string' && value) {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed.toISOString().slice(0, 10);
-    }
-  }
-  return fallback;
 }
 
 async function ensureUsageCounter<K extends CounterKind>(
