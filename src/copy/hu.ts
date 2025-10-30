@@ -231,10 +231,11 @@ export const hu = {
         loading: 'Betöltés…',
         unlimitedValue: 'Korlátlan',
         value: '{remaining} / {limit}',
-        helperUnlimited: 'Ebben a hónapban {used} ajánlat készült. Pro előfizetés — nincs limit.',
+        helperUnlimited:
+          'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Pro előfizetés — nincs limit.',
         helperLimitedWithReset:
-          'Ebben a hónapban {used} ajánlat készült. Következő frissítés: {resetDate}.',
-        helperLimited: 'Ebben a hónapban {used} ajánlat készült.',
+          'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Következő frissítés: {resetDate}.',
+        helperLimited: 'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban.',
       },
       created: {
         label: 'Létrehozott ajánlatok',
@@ -888,7 +889,8 @@ export const hu = {
         unlimited: 'Pro előfizetéssel nincs havi limit.',
         pendingInfo: '{count} ajánlat generálása még folyamatban van, és beleszámít a keretbe.',
         loading: 'Kvóta ellenőrzése…',
-        loadFailed: 'Nem sikerült betölteni a kvótainformációkat. Frissítsd az oldalt, majd próbáld újra.',
+        loadFailed:
+          'Nem sikerült betölteni a kvótainformációkat. Frissítsd az oldalt, majd próbáld újra.',
       },
       previewTemplates: {
         heading: 'PDF sablon',

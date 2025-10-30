@@ -14,6 +14,8 @@ import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { resolveEffectivePlan, getMonthlyOfferLimit } from '@/lib/subscription';
+import { countPendingPdfJobs } from '@/lib/queue/pdf';
+import { currentMonthStart } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 
 type Offer = {
@@ -139,7 +141,15 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
 }
 
 /** Egyszerű metrika kártya semantic tokenekkel */
-function MetricCard({ label, value, helper }: { label: string; value: string; helper?: string }) {
+function MetricCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: string;
+  helper?: ReactNode;
+}) {
   return (
     <Card className="p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
@@ -186,6 +196,8 @@ type UsageQuotaSnapshot = {
   plan: SubscriptionPlan;
   limit: number | null;
   used: number;
+  pending: number;
+  devicePending: number | null;
   periodStart: string | null;
 };
 
@@ -199,6 +211,59 @@ function parsePeriodStart(value: string | null | undefined): Date | null {
   }
   parsed.setHours(0, 0, 0, 0);
   return parsed;
+}
+
+function normalizePeriodStartIso(value: string | null | undefined): string {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        const timestamp = Date.parse(`${trimmed}T00:00:00Z`);
+        if (!Number.isNaN(timestamp)) {
+          return new Date(timestamp).toISOString().slice(0, 10);
+        }
+      }
+
+      const parsed = new Date(trimmed);
+      if (!Number.isNaN(parsed.getTime())) {
+        const normalized = new Date(
+          Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()),
+        );
+        return normalized.toISOString().slice(0, 10);
+      }
+    }
+  }
+
+  return currentMonthStart().iso;
+}
+
+function getDeviceIdFromCookie(name = 'propono_device_id'): string | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const rawCookie = document.cookie;
+  if (!rawCookie) {
+    return null;
+  }
+
+  const parts = rawCookie.split(';');
+  for (const part of parts) {
+    const [cookieName, ...rest] = part.trim().split('=');
+    if (cookieName === name) {
+      const value = rest.join('=');
+      if (!value) {
+        return null;
+      }
+      try {
+        return decodeURIComponent(value);
+      } catch {
+        return value;
+      }
+    }
+  }
+
+  return null;
 }
 
 function computeNextResetDate(periodStart: string | null | undefined): Date | null {
@@ -455,6 +520,7 @@ export default function DashboardPage() {
 
     (async () => {
       try {
+        const deviceId = getDeviceIdFromCookie();
         const [{ data: profile }, { data: usageRow }] = await Promise.all([
           sb.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
           sb
@@ -471,12 +537,58 @@ export default function DashboardPage() {
         const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
         const limit = getMonthlyOfferLimit(plan);
         const rawUsed = Number(usageRow?.offers_generated ?? 0);
+        const periodStart = normalizePeriodStartIso(
+          (usageRow?.period_start as string | null) ?? null,
+        );
+
+        let pending = 0;
+        try {
+          pending = await countPendingPdfJobs(sb, { userId: user.id, periodStart });
+          if (!active) {
+            return;
+          }
+        } catch (pendingError) {
+          if (!active) {
+            return;
+          }
+          console.warn('Failed to count pending PDF jobs for dashboard quota', pendingError);
+          pending = 0;
+        }
+
+        let devicePending: number | null = null;
+        if (deviceId) {
+          try {
+            devicePending = await countPendingPdfJobs(sb, {
+              userId: user.id,
+              periodStart,
+              deviceId,
+            });
+            if (!active) {
+              return;
+            }
+          } catch (devicePendingError) {
+            if (!active) {
+              return;
+            }
+            console.warn('Failed to count device-level pending PDF jobs for dashboard quota', {
+              deviceId,
+              error: devicePendingError,
+            });
+            devicePending = null;
+          }
+        }
+
+        if (!active) {
+          return;
+        }
 
         setQuotaSnapshot({
           plan,
           limit,
           used: Number.isFinite(rawUsed) ? rawUsed : 0,
-          periodStart: (usageRow?.period_start as string | null) ?? null,
+          pending: Number.isFinite(pending) ? pending : 0,
+          devicePending,
+          periodStart,
         });
       } catch (error) {
         if (!active) {
@@ -846,7 +958,8 @@ export default function DashboardPage() {
     if (quotaSnapshot.limit === null) {
       return t('dashboard.metrics.quota.unlimitedValue');
     }
-    const remaining = Math.max(quotaSnapshot.limit - quotaSnapshot.used, 0);
+    const pendingTotal = Math.max(0, quotaSnapshot.pending);
+    const remaining = Math.max(quotaSnapshot.limit - (quotaSnapshot.used + pendingTotal), 0);
     return t('dashboard.metrics.quota.value', {
       remaining: remaining.toLocaleString('hu-HU'),
       limit: quotaSnapshot.limit.toLocaleString('hu-HU'),
@@ -857,17 +970,43 @@ export default function DashboardPage() {
     if (isQuotaLoading || !quotaSnapshot) {
       return undefined;
     }
-    const usedLabel = quotaSnapshot.used.toLocaleString('hu-HU');
+    const confirmedLabel = quotaSnapshot.used.toLocaleString('hu-HU');
+    const pendingLabel = quotaSnapshot.pending.toLocaleString('hu-HU');
+    let helperText: string;
     if (quotaSnapshot.limit === null) {
-      return t('dashboard.metrics.quota.helperUnlimited', { used: usedLabel });
-    }
-    if (quotaResetLabel) {
-      return t('dashboard.metrics.quota.helperLimitedWithReset', {
-        used: usedLabel,
+      helperText = t('dashboard.metrics.quota.helperUnlimited', {
+        confirmed: confirmedLabel,
+        pending: pendingLabel,
+      });
+    } else if (quotaResetLabel) {
+      helperText = t('dashboard.metrics.quota.helperLimitedWithReset', {
+        confirmed: confirmedLabel,
+        pending: pendingLabel,
         resetDate: quotaResetLabel,
       });
+    } else {
+      helperText = t('dashboard.metrics.quota.helperLimited', {
+        confirmed: confirmedLabel,
+        pending: pendingLabel,
+      });
     }
-    return t('dashboard.metrics.quota.helperLimited', { used: usedLabel });
+
+    if (quotaSnapshot.devicePending !== null) {
+      return (
+        <span>
+          {helperText}{' '}
+          <sup
+            aria-label="includes device-level pending"
+            className="cursor-help text-[0.65rem] text-fg-muted"
+            title="includes device-level pending"
+          >
+            *
+          </sup>
+        </span>
+      );
+    }
+
+    return helperText;
   }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
 
   /** Derived UI szövegek */

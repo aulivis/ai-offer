@@ -332,50 +332,112 @@ const COUNTER_CONFIG: { [K in CounterKind]: UsageConfig<K> } = {
   },
 };
 
-async function rollbackUsageIncrement<K extends CounterKind>(
+export async function rollbackUsageIncrement<K extends CounterKind>(
   supabase: SupabaseClient,
   kind: K,
   target: CounterTargets[K],
   expectedPeriod: string,
 ) {
   const config = COUNTER_CONFIG[kind];
-  let query = supabase.from(config.table).select('offers_generated, period_start');
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
-    ([key, column]) => {
-      query = query.eq(column, target[key]);
-    },
-  );
+  const normalizedExpected = normalizeDate(expectedPeriod, expectedPeriod);
 
-  const { data: existing, error } = await query.maybeSingle();
+  const buildQuery = () => {
+    let builder = supabase.from(config.table).select('offers_generated, period_start');
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        builder = builder.eq(column, target[key]);
+      },
+    );
+    return builder;
+  };
+
+  const { data: existing, error } = await buildQuery().maybeSingle();
   if (error) {
-    console.warn('Failed to load usage counter for rollback', error);
+    console.warn('Failed to load usage counter for rollback', { kind, target, error });
     return;
   }
 
   if (!existing) {
+    console.warn('Usage rollback skipped: counter not found', {
+      kind,
+      target,
+      expectedPeriod: normalizedExpected,
+    });
     return;
   }
 
-  const currentCount = Number(existing.offers_generated ?? 0);
+  let record = existing;
+  let periodStart = normalizeDate(record.period_start, normalizedExpected);
+
+  if (periodStart !== normalizedExpected) {
+    let normalizedQuery = buildQuery();
+    normalizedQuery = normalizedQuery.eq('period_start', normalizedExpected);
+    const { data: normalizedRow, error: normalizedError } = await normalizedQuery.maybeSingle();
+
+    if (normalizedError) {
+      console.warn('Failed to load normalized usage counter for rollback', {
+        kind,
+        target,
+        expectedPeriod: normalizedExpected,
+        error: normalizedError,
+      });
+      return;
+    }
+
+    if (!normalizedRow) {
+      console.warn('Usage rollback skipped: period mismatch', {
+        kind,
+        target,
+        expectedPeriod: normalizedExpected,
+        foundPeriod: periodStart,
+      });
+      return;
+    }
+
+    record = normalizedRow;
+    periodStart = normalizeDate(record.period_start, normalizedExpected);
+
+    if (periodStart !== normalizedExpected) {
+      console.warn('Usage rollback skipped: period mismatch', {
+        kind,
+        target,
+        expectedPeriod: normalizedExpected,
+        foundPeriod: periodStart,
+      });
+      return;
+    }
+  }
+
+  const currentCount = Number(record.offers_generated ?? 0);
   if (currentCount <= 0) {
+    console.warn('Usage rollback skipped: non-positive counter', {
+      kind,
+      target,
+      expectedPeriod: normalizedExpected,
+      offersGenerated: currentCount,
+    });
     return;
   }
 
-  const periodStart = normalizeDate(existing.period_start, expectedPeriod);
-  if (periodStart !== expectedPeriod) {
-    return;
-  }
-
-  let updateBuilder = supabase.from(config.table).update({ offers_generated: currentCount - 1 });
+  let updateBuilder = supabase
+    .from(config.table)
+    .update({ offers_generated: currentCount - 1, period_start: normalizedExpected });
   (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
     ([key, column]) => {
       updateBuilder = updateBuilder.eq(column, target[key]);
     },
   );
 
+  updateBuilder = updateBuilder.eq('period_start', record.period_start ?? normalizedExpected);
+
   const { error: updateError } = await updateBuilder;
   if (updateError) {
-    console.warn('Failed to rollback usage counter increment', updateError);
+    console.warn('Failed to rollback usage counter increment', {
+      kind,
+      target,
+      expectedPeriod: normalizedExpected,
+      error: updateError,
+    });
   }
 }
 
@@ -502,7 +564,7 @@ async function fallbackIncrement<K extends CounterKind>(
   return { allowed: true, offersGenerated, periodStart: period };
 }
 
-async function incrementUsage<K extends CounterKind>(
+export async function incrementUsage<K extends CounterKind>(
   supabase: SupabaseClient,
   kind: K,
   target: CounterTargets[K],
@@ -533,7 +595,13 @@ async function incrementUsage<K extends CounterKind>(
   const { data, error } = await supabase.rpc(config.rpc, rpcPayload as Record<string, unknown>);
   if (error) {
     const message = error.message ?? '';
-    if (message.toLowerCase().includes(config.rpc)) {
+    const details = error.details ?? '';
+    const combined = `${message} ${details}`.toLowerCase();
+    if (
+      combined.includes(config.rpc) ||
+      combined.includes('multiple function variants') ||
+      combined.includes('could not find function')
+    ) {
       return fallbackIncrement(supabase, kind, target, normalizedLimit, periodStart);
     }
     throw new Error(`Failed to update usage counter: ${message}`);
