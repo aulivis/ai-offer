@@ -452,6 +452,7 @@ export default function NewOfferWizard() {
   const [quotaLoading, setQuotaLoading] = useState(false);
   const [quotaError, setQuotaError] = useState<string | null>(null);
   const isProPlan = plan === 'pro';
+  const showLockedTemplates = !isProPlan && lockedTemplateSummaries.length > 0;
   const quotaLimit = quotaSnapshot?.limit ?? null;
   const quotaUsed = quotaSnapshot?.used ?? 0;
   const quotaPending = quotaSnapshot?.pending ?? 0;
@@ -1702,63 +1703,65 @@ export default function NewOfferWizard() {
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
       <div className="space-y-10">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-xl sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-5 text-white shadow-xl sm:px-8 sm:py-6">
           <div
-            className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-slate-500/40 blur-3xl"
+            className="pointer-events-none absolute inset-y-0 left-1/2 h-full w-[520px] -translate-x-1/2 rounded-full bg-slate-700/30 blur-3xl"
             aria-hidden="true"
           />
-          <div
-            className="pointer-events-none absolute -bottom-28 -left-24 h-64 w-64 rounded-full bg-slate-700/40 blur-3xl"
-            aria-hidden="true"
-          />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-4">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-100">
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-100">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
                 {t('offers.wizard.hero.badge')}
               </span>
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
                   {t('offers.wizard.hero.title')}
                 </p>
-                <p className="max-w-2xl text-sm text-slate-200 sm:text-base">
+                <p className="max-w-3xl text-sm text-slate-200 sm:text-[15px]">
                   {t('offers.wizard.hero.description')}
                 </p>
               </div>
             </div>
-            <dl className="grid gap-4 text-left text-xs text-slate-200 sm:grid-cols-3 sm:text-sm">
-              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner backdrop-blur">
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {t('offers.wizard.hero.highlights.guided.title')}
-                </dt>
-                <dd className="mt-2 text-base font-semibold text-white sm:text-lg">
-                  {t('offers.wizard.hero.highlights.guided.value')}
-                </dd>
-                <dd className="mt-1 text-[13px] text-slate-200/80">
-                  {t('offers.wizard.hero.highlights.guided.subtitle')}
-                </dd>
+            <dl className="flex flex-wrap items-center gap-3 text-left text-[11px] uppercase tracking-[0.14em] text-slate-300/90 sm:text-xs">
+              <div className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-inner backdrop-blur">
+                <div className="flex flex-col">
+                  <dt className="text-[10px] font-semibold text-slate-200/90">
+                    {t('offers.wizard.hero.highlights.guided.title')}
+                  </dt>
+                  <dd className="text-base font-semibold text-white sm:text-lg">
+                    {t('offers.wizard.hero.highlights.guided.value')}
+                  </dd>
+                  <dd className="text-[11px] normal-case tracking-normal text-slate-200/80">
+                    {t('offers.wizard.hero.highlights.guided.subtitle')}
+                  </dd>
+                </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner backdrop-blur">
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {t('offers.wizard.hero.highlights.preview.title')}
-                </dt>
-                <dd className="mt-2 text-base font-semibold text-white sm:text-lg">
-                  {t('offers.wizard.hero.highlights.preview.value')}
-                </dd>
-                <dd className="mt-1 text-[13px] text-slate-200/80">
-                  {t('offers.wizard.hero.highlights.preview.subtitle')}
-                </dd>
+              <div className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-inner backdrop-blur">
+                <div className="flex flex-col">
+                  <dt className="text-[10px] font-semibold text-slate-200/90">
+                    {t('offers.wizard.hero.highlights.preview.title')}
+                  </dt>
+                  <dd className="text-base font-semibold text-white sm:text-lg">
+                    {t('offers.wizard.hero.highlights.preview.value')}
+                  </dd>
+                  <dd className="text-[11px] normal-case tracking-normal text-slate-200/80">
+                    {t('offers.wizard.hero.highlights.preview.subtitle')}
+                  </dd>
+                </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner backdrop-blur">
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200">
-                  {t('offers.wizard.hero.highlights.delivery.title')}
-                </dt>
-                <dd className="mt-2 text-base font-semibold text-white sm:text-lg">
-                  {t('offers.wizard.hero.highlights.delivery.value')}
-                </dd>
-                <dd className="mt-1 text-[13px] text-slate-200/80">
-                  {t('offers.wizard.hero.highlights.delivery.subtitle')}
-                </dd>
+              <div className="flex min-w-[180px] items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-inner backdrop-blur">
+                <div className="flex flex-col">
+                  <dt className="text-[10px] font-semibold text-slate-200/90">
+                    {t('offers.wizard.hero.highlights.delivery.title')}
+                  </dt>
+                  <dd className="text-base font-semibold text-white sm:text-lg">
+                    {t('offers.wizard.hero.highlights.delivery.value')}
+                  </dd>
+                  <dd className="text-[11px] normal-case tracking-normal text-slate-200/80">
+                    {t('offers.wizard.hero.highlights.delivery.subtitle')}
+                  </dd>
+                </div>
               </div>
             </dl>
           </div>
@@ -2179,12 +2182,19 @@ export default function NewOfferWizard() {
                   Élő előnézet
                 </span>
               </div>
-              <div className="space-y-4">
+              <div
+                className={
+                  showLockedTemplates
+                    ? 'grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]'
+                    : 'space-y-4'
+                }
+              >
                 <Select
                   label={t('offers.wizard.previewTemplates.heading')}
                   help={t('offers.wizard.previewTemplates.helper')}
                   value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
                   onChange={handlePdfTemplateChange}
+                  wrapperClassName="flex flex-col gap-2 min-w-0"
                 >
                   {availablePdfTemplates.map((template) => (
                     <option key={template.id} value={template.id}>
@@ -2192,7 +2202,7 @@ export default function NewOfferWizard() {
                     </option>
                   ))}
                 </Select>
-                {!isProPlan && lockedTemplateSummaries.length > 0 ? (
+                {showLockedTemplates ? (
                   <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-4">
                     <div className="flex items-start gap-3">
                       <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
