@@ -171,9 +171,8 @@ const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10
 
 function getCurrentPeriodStartIso(): string {
   const now = new Date();
-  now.setDate(1);
-  now.setHours(0, 0, 0, 0);
-  return now.toISOString().slice(0, 10);
+  const utcStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  return utcStart.toISOString().slice(0, 10);
 }
 
 type PreparedImagePayload = { key: string; dataUrl: string; alt: string };

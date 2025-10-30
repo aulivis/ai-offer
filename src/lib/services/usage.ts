@@ -5,9 +5,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  * helper is used to determine the billing period for usage counters.
  */
 export function currentMonthStart(): { date: Date; iso: string } {
-  const date = new Date();
-  date.setDate(1);
-  date.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const iso = date.toISOString().slice(0, 10);
   return { date, iso };
 }
