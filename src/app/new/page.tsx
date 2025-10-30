@@ -28,7 +28,8 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
-import { getMonthlyOfferLimit, resolveEffectivePlan } from '@/lib/subscription';
+import { resolveEffectivePlan } from '@/lib/subscription';
+import { getUsageWithPending } from '@/lib/services/usage';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -557,50 +558,22 @@ export default function NewOfferWizard() {
         logoUrl: typeof prof?.brand_logo_url === 'string' ? prof.brand_logo_url : null,
       });
 
-      const planLimitForUser = getMonthlyOfferLimit(normalizedPlan);
       setQuotaLoading(true);
       try {
-        const periodStart = getCurrentPeriodStartIso();
-        const usagePromise = sb
-          .from('usage_counters')
-          .select('offers_generated, period_start')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        let pendingCount = 0;
-        if (planLimitForUser !== null) {
-          const { count, error: pendingError } = await sb
-            .from('pdf_jobs')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .in('status', ['pending', 'processing'])
-            .eq('payload->>usagePeriodStart', periodStart);
-
-          if (pendingError) {
-            throw pendingError;
-          }
-
-          pendingCount = count ?? 0;
-        }
-
-        const { data: usageRow, error: usageError } = await usagePromise;
-        if (usageError) {
-          throw usageError;
-        }
+        const usageSnapshot = await getUsageWithPending(sb, {
+          userId: user.id,
+          periodStart: getCurrentPeriodStartIso(),
+        });
 
         if (!active) {
           return;
         }
 
-        const periodMatches =
-          typeof usageRow?.period_start === 'string' && usageRow.period_start === periodStart;
-        const usedValue = periodMatches ? Number(usageRow?.offers_generated ?? 0) : 0;
-
         setQuotaSnapshot({
-          limit: planLimitForUser,
-          used: Number.isFinite(usedValue) ? usedValue : 0,
-          pending: planLimitForUser === null ? 0 : pendingCount,
-          periodStart: periodMatches ? periodStart : (usageRow?.period_start as string | null) ?? periodStart,
+          limit: usageSnapshot.limit,
+          used: Number.isFinite(usageSnapshot.confirmed) ? usageSnapshot.confirmed : 0,
+          pending: Number.isFinite(usageSnapshot.pendingUser) ? usageSnapshot.pendingUser : 0,
+          periodStart: usageSnapshot.periodStart,
         });
         setQuotaError(null);
       } catch (quotaLoadError) {
@@ -608,7 +581,7 @@ export default function NewOfferWizard() {
           return;
         }
         console.error('Failed to load usage quota for new offer wizard.', quotaLoadError);
-        if (planLimitForUser === null) {
+        if (normalizedPlan === 'pro') {
           setQuotaSnapshot({ limit: null, used: 0, pending: 0, periodStart: null });
           setQuotaError(null);
         } else {
@@ -1321,15 +1294,7 @@ export default function NewOfferWizard() {
       return;
     }
     void callPreview();
-  }, [
-    callPreview,
-    hasPreviewInputs,
-    isQuotaExhausted,
-    previewLocked,
-    quotaLoading,
-    showToast,
-    t,
-  ]);
+  }, [callPreview, hasPreviewInputs, isQuotaExhausted, previewLocked, quotaLoading, showToast, t]);
 
   useEffect(() => {
     if (step !== 3) {
@@ -1672,14 +1637,7 @@ export default function NewOfferWizard() {
       }
       setStep(clampedStep);
     },
-    [
-      handleGeneratePreview,
-      isQuotaExhausted,
-      quotaLoading,
-      showToast,
-      step,
-      t,
-    ],
+    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, t],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
