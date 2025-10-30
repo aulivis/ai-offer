@@ -361,7 +361,10 @@ describe('rollbackUsageIncrement', () => {
 
     await rollbackUsageIncrement(mockClient, 'user-1', '2024-07-01');
 
-    expect(updateBuilder.update).toHaveBeenCalledWith({ offers_generated: 1 });
+    expect(updateBuilder.update).toHaveBeenCalledWith({
+      offers_generated: 1,
+      period_start: '2024-07-01',
+    });
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
@@ -401,7 +404,10 @@ describe('rollbackUsageIncrement', () => {
 
     await rollbackUsageIncrement(mockClient, 'user-1', '2024-07-01', { deviceId: 'device-1' });
 
-    expect(updateBuilder.update).toHaveBeenCalledWith({ offers_generated: 4 });
+    expect(updateBuilder.update).toHaveBeenCalledWith({
+      offers_generated: 4,
+      period_start: '2024-07-01',
+    });
     expect(selectBuilder.eq).toHaveBeenCalledWith('device_id', 'device-1');
     expect(updateBuilder.eq).toHaveBeenCalledWith('device_id', 'device-1');
   });
@@ -417,6 +423,13 @@ describe('rollbackUsageIncrement', () => {
     await rollbackUsageIncrement(mockClient, 'user-2', '2024-07-01');
 
     expect(from).toHaveBeenCalledTimes(1);
-    expect(warnSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Usage rollback skipped: counter not found',
+      expect.objectContaining({
+        kind: 'user',
+        target: { userId: 'user-2' },
+        expectedPeriod: '2024-07-01',
+      }),
+    );
   });
 });

@@ -200,4 +200,33 @@ begin
 end
 $$;
 
+do $$
+begin
+  if not exists (
+    select 1
+      from pg_constraint
+     where conname = 'unique_user_device_period'
+       and conrelid = 'public.device_usage_counters'::regclass
+  ) then
+    alter table public.device_usage_counters
+      add constraint unique_user_device_period unique (user_id, device_id, period_start);
+  end if;
+end
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+      from pg_constraint
+     where conname = 'device_usage_counters_offers_generated_non_negative'
+       and conrelid = 'public.device_usage_counters'::regclass
+  ) then
+    alter table public.device_usage_counters
+      add constraint device_usage_counters_offers_generated_non_negative
+        check (offers_generated >= 0);
+  end if;
+end
+$$;
+
 select pgrest.schema_cache_reload();

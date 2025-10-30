@@ -936,8 +936,8 @@ export default function DashboardPage() {
       });
     }
 
-    if (quotaSnapshot.devicePending !== null) {
-      return (
+    const helperContent =
+      quotaSnapshot.devicePending !== null ? (
         <span>
           {helperText}{' '}
           <sup
@@ -948,10 +948,18 @@ export default function DashboardPage() {
             *
           </sup>
         </span>
+      ) : (
+        helperText
       );
-    }
 
-    return helperText;
+    const pendingNote = t('dashboard.metrics.quota.pendingNote');
+
+    return (
+      <span className="flex flex-col gap-1">
+        {typeof helperContent === 'string' ? <span>{helperContent}</span> : helperContent}
+        <span className="text-[0.65rem] leading-snug text-fg-muted">{pendingNote}</span>
+      </span>
+    );
   }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
 
   /** Derived UI szövegek */
