@@ -180,21 +180,34 @@ export async function syncUsageCounter(
 
   const state = await ensureUsageCounter(sb, 'user', { userId }, periodStart);
 
-  if (state.offersGenerated === normalizedExpected && state.periodStart === periodStart) {
+  if (state.periodStart !== periodStart) {
+    const alignedCount = Math.min(state.offersGenerated, normalizedExpected);
+    if (state.periodStart !== periodStart || state.offersGenerated !== alignedCount) {
+      const { error } = await sb
+        .from('usage_counters')
+        .update({
+          period_start: periodStart,
+          offers_generated: alignedCount,
+        })
+        .eq('user_id', userId);
+
+      if (error) {
+        throw new Error(`Failed to sync usage counter: ${error.message}`);
+      }
+    }
     return;
   }
 
-  const { error } = await sb
-    .from('usage_counters')
-    .update({
-      offers_generated: normalizedExpected,
-      period_start: periodStart,
-    })
-    .eq('user_id', userId);
-
-  if (error) {
-    throw new Error(`Failed to sync usage counter: ${error.message}`);
+  if (state.offersGenerated === normalizedExpected) {
+    return;
   }
+
+  console.info('Skipping usage counter sync due to observed usage drift', {
+    userId,
+    expected: normalizedExpected,
+    stored: state.offersGenerated,
+    periodStart,
+  });
 }
 
 export async function getDeviceUsageSnapshot(
