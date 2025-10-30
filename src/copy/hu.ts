@@ -898,6 +898,21 @@ export const hu = {
           'Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.',
         loadingHint: 'Ez néhány másodpercet is igénybe vehet.',
       },
+      quota: {
+        availableTitle: 'Havi kvóta állapota',
+        availableDescription: 'Az ajánlat generálása a havi keretedből foglal.',
+        exhaustedTitle: 'Elfogyott a havi kvótád',
+        exhaustedDescription:
+          'A jelenlegi csomagban már nincs több generálható ajánlat. Frissíts a csomagod vagy várd meg a következő hónapot.',
+        exhaustedToastTitle: 'Nincs több ajánlatkvótád',
+        exhaustedToastDescription:
+          'Frissíts a csomagod vagy várd meg a következő hónapot az új ajánlatokhoz.',
+        remainingLabel: 'Hátralévő kvóta: {remaining} / {limit}',
+        unlimited: 'Pro előfizetéssel nincs havi limit.',
+        pendingInfo: '{count} ajánlat generálása még folyamatban van, és beleszámít a keretbe.',
+        loading: 'Kvóta ellenőrzése…',
+        loadFailed: 'Nem sikerült betölteni a kvótainformációkat. Frissítsd az oldalt, majd próbáld újra.',
+      },
       previewTemplates: {
         heading: 'PDF sablon',
         helper: 'Válaszd ki, milyen dizájnnal készüljön el a PDF ajánlat.',

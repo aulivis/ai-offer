@@ -18,6 +18,7 @@ const {
   anonGetUserMock,
   getUserProfileMock,
   resolveEffectivePlanMock,
+  getMonthlyOfferLimitMock,
   uuidMock,
   cookiesGetMock,
   cookiesSetMock,
@@ -39,6 +40,11 @@ const {
   anonGetUserMock: vi.fn(),
   getUserProfileMock: vi.fn(),
   resolveEffectivePlanMock: vi.fn(),
+  getMonthlyOfferLimitMock: vi.fn((plan: string) => {
+    if (plan === 'pro') return null;
+    if (plan === 'standard') return 10;
+    return 3;
+  }),
   uuidMock: vi.fn(),
   cookiesGetMock: vi.fn(),
   cookiesSetMock: vi.fn(),
@@ -143,6 +149,7 @@ vi.mock('@/lib/services/usage', () => ({
 
 vi.mock('@/lib/subscription', () => ({
   resolveEffectivePlan: resolveEffectivePlanMock,
+  getMonthlyOfferLimit: getMonthlyOfferLimitMock,
 }));
 
 vi.mock('@/app/pdf/templates/engine', () => ({
@@ -233,6 +240,14 @@ function createRequest(
 
 describe('POST /api/ai-generate', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-05-15T12:00:00Z'));
+    getMonthlyOfferLimitMock.mockReset();
+    getMonthlyOfferLimitMock.mockImplementation((plan: string) => {
+      if (plan === 'pro') return null;
+      if (plan === 'standard') return 10;
+      return 3;
+    });
     insertOfferMock.mockReset();
     enqueuePdfJobMock.mockReset();
     dispatchPdfJobMock.mockReset();
@@ -291,6 +306,7 @@ describe('POST /api/ai-generate', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it('returns a validation error for malformed payloads', async () => {
@@ -452,12 +468,14 @@ describe('POST /api/ai-generate', () => {
 
     expect(enqueuePdfJobMock).toHaveBeenCalledTimes(1);
     expect(dispatchPdfJobMock).toHaveBeenCalledTimes(1);
+    const expectedStoragePath =
+      'user-123/offer-uuid/Ismeretlen ugyfel - Ajanlat cime - 2024-05-15.pdf';
     expect(processPdfJobInlineMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         jobId: 'job-token',
         offerId: 'offer-uuid',
-        storagePath: expect.stringContaining('offer-uuid.pdf'),
+        storagePath: expectedStoragePath,
       }),
     );
   });

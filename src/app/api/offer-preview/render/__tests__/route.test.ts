@@ -41,7 +41,7 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }));
 
-function createRequest(): AuthenticatedNextRequest {
+function createRequest(rawBody = '{'): AuthenticatedNextRequest {
   const { token: csrfToken, value: csrfCookie } = createCsrfToken();
   const cookies = {
     propono_at: 'test-token',
@@ -61,7 +61,9 @@ function createRequest(): AuthenticatedNextRequest {
   return {
     method: 'POST',
     headers,
-    json: vi.fn().mockRejectedValue(new SyntaxError('Unexpected end of JSON input')),
+    text: vi.fn().mockResolvedValue(rawBody),
+    json: vi.fn(),
+    signal: { aborted: false } as AbortSignal,
     cookies: {
       get: (name: string) =>
         cookies[name as keyof typeof cookies]
@@ -103,5 +105,17 @@ describe('offer preview render POST', () => {
         formErrors: ['Érvénytelen JSON törzs.'],
       },
     });
+  });
+
+  it('returns 499 when the request body is aborted mid-stream', async () => {
+    const request = createRequest();
+    (request as unknown as { text: ReturnType<typeof vi.fn> }).text = vi
+      .fn()
+      .mockRejectedValueOnce(new DOMException('The user aborted a request.', 'AbortError'));
+    Object.assign(request, { signal: { aborted: true } as AbortSignal });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(499);
   });
 });
