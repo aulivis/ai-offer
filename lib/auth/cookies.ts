@@ -12,13 +12,23 @@ const baseCookieOptions = {
   path: '/',
 };
 
-export async function setAuthCookies(accessToken: string, refreshToken: string) {
+type SetAuthCookiesOptions = {
+  accessTokenMaxAgeSeconds?: number;
+};
+
+export async function setAuthCookies(
+  accessToken: string,
+  refreshToken: string,
+  options: SetAuthCookiesOptions = {},
+) {
   const cookieStore = await cookies();
+  const { accessTokenMaxAgeSeconds } = options;
 
   cookieStore.set({
     name: 'propono_at',
     value: accessToken,
     ...baseCookieOptions,
+    ...(accessTokenMaxAgeSeconds ? { maxAge: accessTokenMaxAgeSeconds } : {}),
   });
 
   cookieStore.set({

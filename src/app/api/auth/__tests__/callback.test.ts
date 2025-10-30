@@ -9,8 +9,12 @@ const cookiesStoreMock = vi.hoisted(() => ({
 
 const verifyOtpMock = vi.hoisted(() => vi.fn());
 const setAuthCookiesMock = vi.hoisted(() => vi.fn());
-const setCSRFCookieMock = vi.hoisted(() => vi.fn());
+const clearAuthCookiesMock = vi.hoisted(() => vi.fn());
 const recordMagicLinkCallbackMock = vi.hoisted(() => vi.fn());
+const argon2HashMock = vi.hoisted(() => vi.fn());
+const decodeRefreshTokenMock = vi.hoisted(() => vi.fn());
+const supabaseInsertMock = vi.hoisted(() => vi.fn());
+const supabaseFromMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@/env.server', () => ({
   envServer: {
@@ -49,7 +53,16 @@ vi.mock('@/lib/observability/metrics', () => ({
 
 vi.mock('../../../../../lib/auth/cookies', () => ({
   setAuthCookies: setAuthCookiesMock,
-  setCSRFCookie: setCSRFCookieMock,
+  clearAuthCookies: clearAuthCookiesMock,
+}));
+
+vi.mock('../../../../../lib/auth/argon2', () => ({
+  Argon2Algorithm: { Argon2id: 'argon2id' },
+  argon2Hash: argon2HashMock,
+}));
+
+vi.mock('../token', () => ({
+  decodeRefreshToken: decodeRefreshTokenMock,
 }));
 
 vi.mock('../../../lib/supabaseAnonServer', () => ({
@@ -60,6 +73,12 @@ vi.mock('../../../lib/supabaseAnonServer', () => ({
   }),
 }));
 
+vi.mock('../../../lib/supabaseServiceRole', () => ({
+  supabaseServiceRole: () => ({
+    from: supabaseFromMock,
+  }),
+}));
+
 describe('GET /api/auth/callback', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -67,8 +86,21 @@ describe('GET /api/auth/callback', () => {
     cookiesStoreMock.set.mockReset();
     verifyOtpMock.mockReset();
     setAuthCookiesMock.mockReset();
-    setCSRFCookieMock.mockReset();
     recordMagicLinkCallbackMock.mockReset();
+    clearAuthCookiesMock.mockReset();
+    argon2HashMock.mockReset();
+    decodeRefreshTokenMock.mockReset();
+    supabaseInsertMock.mockReset();
+    supabaseFromMock.mockReset();
+
+    argon2HashMock.mockResolvedValue('hashed-refresh-token');
+    decodeRefreshTokenMock.mockReturnValue({
+      sub: 'user-123',
+      iat: 1_700_000_000,
+      exp: 1_700_003_600,
+    });
+    supabaseInsertMock.mockResolvedValue({ error: null });
+    supabaseFromMock.mockImplementation(() => ({ insert: supabaseInsertMock }));
   });
 
   it('verifies magic link token hashes when no authorization code is present', async () => {
@@ -85,8 +117,12 @@ describe('GET /api/auth/callback', () => {
     expect(response.status).toBe(307);
     expect(response.headers.get('location')).toBe('http://localhost/dashboard');
     expect(verifyOtpMock).toHaveBeenCalledWith({ token_hash: 'token-hash', type: 'magiclink' });
-    expect(setAuthCookiesMock).toHaveBeenCalledWith('access-123', 'refresh-456');
-    expect(setCSRFCookieMock).toHaveBeenCalled();
+    expect(setAuthCookiesMock).toHaveBeenCalledWith('access-123', 'refresh-456', {
+      accessTokenMaxAgeSeconds: 3600,
+    });
+    expect(supabaseFromMock).toHaveBeenCalledWith('sessions');
+    expect(supabaseInsertMock).toHaveBeenCalledTimes(1);
+    expect(clearAuthCookiesMock).not.toHaveBeenCalled();
     expect(recordMagicLinkCallbackMock).toHaveBeenCalledWith('success');
   });
 });

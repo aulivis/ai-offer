@@ -183,6 +183,7 @@ export async function POST(request: Request) {
   }
 
   const { access_token: accessToken, refresh_token: newRefreshToken } = refreshPayload;
+  const expiresIn = (refreshPayload.expires_in ?? 0) | 0;
 
   if (!accessToken || !newRefreshToken) {
     console.error('Supabase refresh did not return tokens.');
@@ -222,7 +223,8 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
 
-  await setAuthCookies(accessToken, newRefreshToken);
+  const accessTokenMaxAgeSeconds = expiresIn > 0 ? expiresIn : 3600;
+  await setAuthCookies(accessToken, newRefreshToken, { accessTokenMaxAgeSeconds });
 
   return Response.json({ success: true });
 }
