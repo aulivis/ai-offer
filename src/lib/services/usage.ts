@@ -49,11 +49,19 @@ const COUNTER_CONFIG: {
 
 type UsageState = { periodStart: string; offersGenerated: number };
 
-type PeriodSource = { period_start?: unknown; created_at?: unknown } | null | undefined;
+type PeriodSource = {
+  period_start?: unknown;
+  created_at?: unknown;
+  updated_at?: unknown;
+} | null | undefined;
 
 function resolveStoredPeriod(row: PeriodSource, fallback: string): string {
   if (row && row.period_start) {
     return normalizeDate(row.period_start, fallback);
+  }
+
+  if (row && row.updated_at) {
+    return normalizeDate(row.updated_at, fallback);
   }
 
   if (row && row.created_at) {
@@ -70,7 +78,7 @@ async function ensureUsageCounter<K extends CounterKind>(
   periodStart: string,
 ): Promise<UsageState> {
   const { table, columnMap } = COUNTER_CONFIG[kind];
-  let selectBuilder = sb.from(table).select('period_start, offers_generated, created_at');
+  let selectBuilder = sb.from(table).select('period_start, offers_generated, updated_at');
 
   (Object.entries(columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
     selectBuilder = selectBuilder.eq(column, target[key]);
@@ -94,7 +102,7 @@ async function ensureUsageCounter<K extends CounterKind>(
     const { data: inserted, error: insertError } = await sb
       .from(table)
       .insert(insertPayload)
-      .select('period_start, offers_generated, created_at')
+      .select('period_start, offers_generated, updated_at')
       .maybeSingle();
     if (insertError) {
       throw new Error(`Failed to initialise usage counter: ${insertError.message}`);
@@ -111,7 +119,7 @@ async function ensureUsageCounter<K extends CounterKind>(
       updateBuilder = updateBuilder.eq(column, target[key]);
     });
     const { data: resetRow, error: resetError } = await updateBuilder
-      .select('period_start, offers_generated, created_at')
+      .select('period_start, offers_generated, updated_at')
       .maybeSingle();
     if (resetError) {
       throw new Error(`Failed to reset usage counter: ${resetError.message}`);
@@ -145,7 +153,7 @@ async function fallbackUsageUpdate<K extends CounterKind>(
     updateBuilder = updateBuilder.eq(column, target[key]);
   });
   const { data: updatedRow, error: updateError } = await updateBuilder
-    .select('period_start, offers_generated, created_at')
+    .select('period_start, offers_generated, updated_at')
     .maybeSingle();
   if (updateError) {
     throw new Error(`Failed to bump usage counter: ${updateError.message}`);
