@@ -833,29 +833,6 @@ export const hu = {
       pageDescription:
         'Kövesd a lépéseket az ajánlat létrehozásához, majd töltsd le vagy küldd el az ügyfelednek.',
       progressLabel: 'Lépés {current}/{total}',
-      hero: {
-        badge: 'AI asszisztens',
-        title: '3 lépéses folyamat',
-        description:
-          'Add meg a projekt részleteit, finomhangold az árakat, majd szerkeszd a PDF-et – minden lépésnél segít az AI.',
-        highlights: {
-          guided: {
-            title: 'Folyamat',
-            value: '3 lépés',
-            subtitle: 'Végigvezet a kitöltésen.',
-          },
-          preview: {
-            title: 'AI előnézet',
-            value: '1 kattintás',
-            subtitle: 'Azonnali tartalmi javaslat.',
-          },
-          delivery: {
-            title: 'PDF kész',
-            value: 'Másodpercek alatt',
-            subtitle: 'Letölthető, megosztható dokumentum.',
-          },
-        },
-      },
       defaults: {
         activityName: 'Konzultáció',
         activityUnit: 'óra',
