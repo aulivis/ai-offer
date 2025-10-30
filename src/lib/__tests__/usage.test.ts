@@ -4,7 +4,25 @@ import {
   checkAndIncrementDeviceUsage,
   rollbackUsageIncrement,
   getUsageSnapshot,
+  currentMonthStart,
 } from '../services/usage';
+
+describe('currentMonthStart', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('computes the billing period start using UTC boundaries', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-06-30T23:59:59.000Z'));
+
+    expect(currentMonthStart().iso).toBe('2024-06-01');
+
+    vi.setSystemTime(new Date('2024-07-01T00:00:01.000Z'));
+
+    expect(currentMonthStart().iso).toBe('2024-07-01');
+  });
+});
 
 describe('checkAndIncrementUsage', () => {
   const rpc = vi.fn();
