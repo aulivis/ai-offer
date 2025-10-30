@@ -13,9 +13,9 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
-import { resolveEffectivePlan } from '@/lib/subscription';
-import { currentMonthStart, getUsageWithPending } from '@/lib/services/usage';
+import { currentMonthStart } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
+import { fetchWithSupabaseAuth } from '@/lib/api';
 
 type Offer = {
   id: string;
@@ -199,6 +199,73 @@ type UsageQuotaSnapshot = {
   devicePending: number | null;
   periodStart: string | null;
 };
+
+type UsageWithPendingResponse = {
+  plan: SubscriptionPlan;
+  limit: number | null;
+  confirmed: number;
+  pendingUser: number;
+  pendingDevice: number | null;
+  periodStart: string;
+};
+
+function isSubscriptionPlan(value: unknown): value is SubscriptionPlan {
+  return value === 'free' || value === 'standard' || value === 'pro';
+}
+
+function parseUsageResponse(payload: unknown): UsageWithPendingResponse | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const record = payload as Record<string, unknown>;
+  if (!isSubscriptionPlan(record.plan)) {
+    return null;
+  }
+
+  let limit: number | null = null;
+  if (record.limit === null) {
+    limit = null;
+  } else if (record.limit !== undefined) {
+    const numericLimit = Number(record.limit);
+    if (Number.isFinite(numericLimit)) {
+      limit = numericLimit;
+    } else {
+      return null;
+    }
+  }
+
+  const confirmedValue = Number(record.confirmed);
+  const confirmed = Number.isFinite(confirmedValue) ? confirmedValue : 0;
+
+  const pendingUserValue = Number(record.pendingUser);
+  const pendingUser = Number.isFinite(pendingUserValue) ? pendingUserValue : 0;
+
+  let pendingDevice: number | null = null;
+  if (record.pendingDevice === null) {
+    pendingDevice = null;
+  } else if (record.pendingDevice !== undefined) {
+    const numericPendingDevice = Number(record.pendingDevice);
+    if (Number.isFinite(numericPendingDevice)) {
+      pendingDevice = numericPendingDevice;
+    }
+  }
+
+  const periodStart = typeof record.periodStart === 'string' ? record.periodStart : '';
+
+  if (!periodStart) {
+    return null;
+  }
+
+  return {
+    plan: record.plan,
+    limit,
+    confirmed,
+    pendingUser,
+    pendingDevice,
+    periodStart,
+  };
+}
 
 function parsePeriodStart(value: string | null | undefined): Date | null {
   if (!value) {
@@ -496,44 +563,41 @@ export default function DashboardPage() {
     (async () => {
       try {
         const deviceId = getDeviceIdFromCookie();
-        const { data: profile, error: profileError } = await sb
-          .from('profiles')
-          .select('plan')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          throw profileError;
-        }
-
-        if (!active) {
-          return;
-        }
-
-        const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
         const { iso: expectedPeriod } = currentMonthStart();
-        const usageSnapshot = await getUsageWithPending(sb, {
-          userId: user.id,
-          periodStart: expectedPeriod,
-          deviceId,
-        });
+        const params = new URLSearchParams({ period_start: expectedPeriod });
+        if (deviceId) {
+          params.set('device_id', deviceId);
+        }
+
+        const response = await fetchWithSupabaseAuth(
+          `/api/usage/with-pending?${params.toString()}`,
+          { method: 'GET', defaultErrorMessage: t('errors.requestFailed') },
+        );
 
         if (!active) {
           return;
         }
+
+        const payload = (await response.json().catch(() => null)) as unknown;
+        const usageData = parseUsageResponse(payload);
+
+        if (!usageData) {
+          throw new Error('Invalid usage response payload.');
+        }
+
+        const normalizedDevicePending = deviceId
+          ? typeof usageData.pendingDevice === 'number'
+            ? usageData.pendingDevice
+            : 0
+          : usageData.pendingDevice;
 
         setQuotaSnapshot({
-          plan,
-          limit: usageSnapshot.limit,
-          used: Number.isFinite(usageSnapshot.confirmed) ? usageSnapshot.confirmed : 0,
-          pending: Number.isFinite(usageSnapshot.pendingUser) ? usageSnapshot.pendingUser : 0,
-          devicePending:
-            typeof usageSnapshot.pendingDevice === 'number'
-              ? usageSnapshot.pendingDevice
-              : deviceId
-                ? (usageSnapshot.pendingDevice ?? 0)
-                : null,
-          periodStart: usageSnapshot.periodStart,
+          plan: usageData.plan,
+          limit: usageData.limit,
+          used: usageData.confirmed,
+          pending: usageData.pendingUser,
+          devicePending: normalizedDevicePending,
+          periodStart: usageData.periodStart,
         });
       } catch (error) {
         if (!active) {
@@ -551,7 +615,7 @@ export default function DashboardPage() {
     return () => {
       active = false;
     };
-  }, [authStatus, sb, user]);
+  }, [authStatus, user]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 
