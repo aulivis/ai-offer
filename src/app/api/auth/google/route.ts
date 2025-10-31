@@ -12,10 +12,6 @@ function base64url(buffer: Buffer): string {
   return buffer.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
-function randomState(): string {
-  return base64url(randomBytes(32));
-}
-
 function createStateSignature(state: string): string {
   return createHmac('sha256', envServer.AUTH_COOKIE_SECRET).update(state).digest('hex');
 }
@@ -54,28 +50,28 @@ export async function GET(request: Request) {
   }
 
   const authUrl = new URL(data.url);
-  let state = authUrl.searchParams.get('state');
-  if (!state) {
-    state = randomState();
-    authUrl.searchParams.set('state', state);
-  }
+  const state = authUrl.searchParams.get('state');
 
   if (!authUrl.searchParams.get('nonce')) {
-    authUrl.searchParams.set('nonce', randomState());
+    authUrl.searchParams.set('nonce', base64url(randomBytes(32)));
   }
 
   const jar = await cookies();
   const isSecure = envServer.APP_URL.startsWith('https');
 
-  jar.set({
-    name: 'auth_state',
-    value: `${state}:${createStateSignature(state)}`,
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: isSecure,
-    path: '/',
-    maxAge: 5 * 60,
-  });
+  if (state) {
+    jar.set({
+      name: 'auth_state',
+      value: `${state}:${createStateSignature(state)}`,
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
+      maxAge: 5 * 60,
+    });
+  } else {
+    console.warn('Supabase OAuth authorization URL did not include a state parameter.');
+  }
 
   jar.set({
     name: 'sb_pkce_code_verifier',
