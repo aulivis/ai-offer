@@ -130,5 +130,36 @@ describe('GET /api/auth/google', () => {
       consumeCodeVerifierMock.mock.invocationCallOrder[0],
     );
   });
+
+  it('generates a state parameter when Supabase omits it', async () => {
+    providerStatusMock.mockResolvedValue({ enabled: true });
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://supabase.example.com/auth?nonce=nonce-value' },
+      error: null,
+    });
+    consumeCodeVerifierMock.mockResolvedValue('verifier-token');
+
+    const response = await GET(
+      new Request('http://localhost:3000/api/auth/google?redirect_to=/dashboard'),
+    );
+
+    expect(response.status).toBe(302);
+    const location = response.headers.get('location');
+    expect(location).toBeTruthy();
+
+    const redirectedUrl = location ? new URL(location) : null;
+    expect(redirectedUrl?.origin).toBe('https://supabase.example.com');
+    expect(redirectedUrl?.pathname).toBe('/auth');
+    expect(redirectedUrl?.searchParams.get('nonce')).toBe('nonce-value');
+
+    const generatedState = redirectedUrl?.searchParams.get('state');
+    expect(generatedState).toBeTruthy();
+
+    const authStateCookie = cookieStore.get('auth_state');
+    expect(authStateCookie).toBeTruthy();
+    if (generatedState) {
+      expect(authStateCookie?.split(':')[0]).toBe(generatedState);
+    }
+  });
 });
 

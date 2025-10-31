@@ -155,13 +155,12 @@ describe('GET /api/auth/google', () => {
     expect(signInWithOAuthMock).not.toHaveBeenCalled();
   });
 
-  it('does not inject a state parameter when Supabase omits it', async () => {
+  it('generates a state parameter when Supabase omits it', async () => {
     signInWithOAuthMock.mockResolvedValue({
       data: { url: 'https://accounts.google.com/o/oauth2/v2/auth?nonce=nonce-only' },
       error: null,
     });
     consumeCodeVerifierMock.mockReturnValue('code-321');
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const { GET } = await import('../google/route');
     const response = await GET(
@@ -170,13 +169,20 @@ describe('GET /api/auth/google', () => {
 
     expect(response.status).toBe(302);
     const location = response.headers.get('location');
-    expect(location).not.toContain('state=');
     expect(location).toContain('nonce=nonce-only');
+    expect(location).toContain('state=');
     expect(consumeCodeVerifierMock).toHaveBeenCalled();
-    expect(warnSpy).toHaveBeenCalledWith(
-      'Supabase OAuth authorization URL did not include a state parameter.',
-    );
-    warnSpy.mockRestore();
+
+    const redirectUrl = location ? new URL(location) : null;
+    const generatedState = redirectUrl?.searchParams.get('state');
+    expect(generatedState).toBeTruthy();
+
+    const authStateCall = cookiesSetMock.mock.calls.find(([options]) => options?.name === 'auth_state');
+    expect(authStateCall).toBeTruthy();
+    if (authStateCall && generatedState) {
+      const [options] = authStateCall as [{ name: string; value: string }];
+      expect(options.value.startsWith(`${generatedState}:`)).toBe(true);
+    }
   });
 
   it('generates a nonce parameter when Supabase omits it', async () => {

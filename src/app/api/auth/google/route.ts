@@ -50,10 +50,15 @@ export async function GET(request: Request) {
   }
 
   const authUrl = new URL(data.url);
-  const state = authUrl.searchParams.get('state');
+  let state = authUrl.searchParams.get('state');
 
   if (!authUrl.searchParams.get('nonce')) {
     authUrl.searchParams.set('nonce', base64url(randomBytes(32)));
+  }
+
+  if (!state) {
+    state = base64url(randomBytes(32));
+    authUrl.searchParams.set('state', state);
   }
 
   const jar = await cookies();
@@ -69,8 +74,6 @@ export async function GET(request: Request) {
       path: '/',
       maxAge: 5 * 60,
     });
-  } else {
-    console.warn('Supabase OAuth authorization URL did not include a state parameter.');
   }
 
   jar.set({
