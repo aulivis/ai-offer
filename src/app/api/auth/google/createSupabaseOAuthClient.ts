@@ -64,6 +64,8 @@ export function createSupabaseOAuthClient() {
         'code_verifier',
         'pkce.code_verifier',
         'oauth_pkce_code_verifier',
+        'oauth.pkce.code_verifier',
+        'auth.pkce.code_verifier',
       ];
 
       for (const key of candidates) {
@@ -77,19 +79,26 @@ export function createSupabaseOAuthClient() {
       // Fallback: keressünk bármilyen sütit, aminek a neve tartalmazza a 'code' és 'verifier' szavakat
       const jar = await cookies();
       const all = ['pkce', 'code', 'verifier'];
+      const cookieNames = (jar.getAll?.() ?? [])
+        .map((cookie: any) => cookie?.name as string)
+        .filter((name): name is string => typeof name === 'string');
       const possible = (['pkce_code_verifier', 'code_verifier'] as string[]).concat(
-        (jar.getAll?.() ?? [])
-          .map((c: any) => c?.name as string)
-          .filter(
-            (n) =>
-              typeof n === 'string' &&
-              n.startsWith('sb_') &&
-              all.every((w) => n.toLowerCase().includes(w)),
-          ),
+        cookieNames.filter((name) => {
+          const normalized = name.toLowerCase();
+          const hasKeywords = all.every((keyword) => normalized.includes(keyword));
+          if (!hasKeywords) {
+            return false;
+          }
+          return name.startsWith('sb_') || name.startsWith('sb-');
+        }),
       );
 
       for (const cookieName of possible) {
-        const name = cookieName.startsWith('sb_') ? cookieName.slice(3) : cookieName;
+        const name = cookieName.startsWith('sb_')
+          ? cookieName.slice(3)
+          : cookieName.startsWith('sb-')
+            ? cookieName.slice(3)
+            : cookieName;
         const val = await storage.getItem(name);
         if (val) {
           await storage.removeItem(name);

@@ -306,7 +306,12 @@ export default function BillingPage() {
   }
 
   return (
-    <AppFrame title={t('billing.title')} description={t('billing.description')}>
+    <AppFrame
+      title={t('billing.title')}
+      description={t('billing.description')}
+      requireAuth={false}
+      redirectOnUnauthenticated={false}
+    >
       <div className="space-y-8">
         <Card
           as="section"

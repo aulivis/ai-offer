@@ -15,7 +15,14 @@ export type RequireAuthState = {
   error: Error | null;
 };
 
-export function useRequireAuth(redirectOverride?: string): RequireAuthState {
+type RequireAuthOptions = {
+  redirectOnUnauthenticated?: boolean;
+};
+
+export function useRequireAuth(
+  redirectOverride?: string,
+  options?: RequireAuthOptions,
+): RequireAuthState {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -30,6 +37,8 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
     }
     return searchString ? `${pathname}?${searchString}` : pathname;
   }, [pathname, redirectOverride, searchString]);
+
+  const redirectOnUnauthenticated = options?.redirectOnUnauthenticated ?? true;
 
   const [state, setState] = useState<RequireAuthState>({
     status: 'loading',
@@ -68,10 +77,12 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
         const err =
           error instanceof Error ? error : new Error(t('errors.auth.verificationUnknown'));
         setState({ status: 'unauthenticated', user: null, error: err });
-        const redirectQuery = redirectTarget
-          ? `?redirect=${encodeURIComponent(redirectTarget)}`
-          : '';
-        router.replace(`/login${redirectQuery}`);
+        if (redirectOnUnauthenticated) {
+          const redirectQuery = redirectTarget
+            ? `?redirect=${encodeURIComponent(redirectTarget)}`
+            : '';
+          router.replace(`/login${redirectQuery}`);
+        }
       }
     };
 
@@ -81,7 +92,7 @@ export function useRequireAuth(redirectOverride?: string): RequireAuthState {
       active = false;
       abortController.abort();
     };
-  }, [redirectTarget, router]);
+  }, [redirectOnUnauthenticated, redirectTarget, router]);
 
   return state;
 }
