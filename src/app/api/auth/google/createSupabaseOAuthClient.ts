@@ -44,7 +44,7 @@ export function createSupabaseOAuthClient() {
     {
       auth: {
         flowType: 'pkce',
-        persistSession: false,
+        persistSession: true,
         detectSessionInUrl: false,
         storage,
       },
@@ -59,14 +59,14 @@ export function createSupabaseOAuthClient() {
      * végül fallbackként megkeresünk MINDEN 'sb_*code*verifier*' sütit.
      */
     async consumeCodeVerifier(): Promise<string | null> {
-      const storageKey = (() => {
-        const authClient = client.auth as { storageKey?: string };
-        const candidate = authClient?.storageKey;
-        return typeof candidate === 'string' && candidate.length > 0 ? candidate : null;
-      })();
+      const authClient = client.auth as { storageKey?: string };
+      const configuredStorageKey =
+        typeof authClient?.storageKey === 'string' && authClient.storageKey.length > 0
+          ? authClient.storageKey
+          : null;
 
-      const candidates = [
-        storageKey ? `${storageKey}-code-verifier` : null,
+      const baseCandidates = [
+        configuredStorageKey ? `${configuredStorageKey}-code-verifier` : null,
         'pkce_code_verifier',
         'code_verifier',
         'pkce.code_verifier',
@@ -75,43 +75,55 @@ export function createSupabaseOAuthClient() {
         'auth.pkce.code_verifier',
       ].filter((value): value is string => Boolean(value));
 
-      for (const key of candidates) {
-        const val = await storage.getItem(key);
-        if (val) {
-          await storage.removeItem(key);
-          return val;
+      const normalizeCandidate = (candidate: string) => {
+        if (candidate.startsWith('sb_')) {
+          return candidate.slice(3);
         }
-      }
+        if (candidate.startsWith('sb-')) {
+          return candidate.slice(3);
+        }
+        return candidate;
+      };
 
-      // Fallback: keressünk bármilyen sütit, aminek a neve tartalmazza a 'code' és 'verifier' szavakat
-      const jar = await cookies();
-      const all = ['pkce', 'code', 'verifier'];
-      const cookieEntries = (jar.getAll?.() ?? []) as Array<{ name?: string }>;
-      const cookieNames = cookieEntries
-        .map((cookie) => cookie?.name)
-        .filter((name): name is string => typeof name === 'string');
-      const possible = (['pkce_code_verifier', 'code_verifier'] as string[]).concat(
-        cookieNames.filter((name) => {
-          const normalized = name.toLowerCase();
-          const hasKeywords = all.every((keyword) => normalized.includes(keyword));
-          if (!hasKeywords) {
-            return false;
+      const readVerifier = async (candidate: string) => {
+        const value = await storage.getItem(candidate);
+        if (value) {
+          await storage.removeItem(candidate);
+          return value;
+        }
+        return null;
+      };
+
+      const seen = new Set<string>();
+      const deadline = Date.now() + 1000;
+
+      while (Date.now() <= deadline) {
+        const jar = await cookies();
+        const cookieEntries = (jar.getAll?.() ?? []) as Array<{ name?: string }>;
+
+        const dynamicCandidates = cookieEntries
+          .map((cookie) => cookie?.name)
+          .filter((name): name is string => typeof name === 'string')
+          .filter((name) => {
+            const normalized = name.toLowerCase();
+            return normalized.includes('code') && normalized.includes('verifier');
+          })
+          .map((name) => normalizeCandidate(name));
+
+        for (const candidate of baseCandidates.concat(dynamicCandidates)) {
+          if (!seen.has(candidate)) {
+            seen.add(candidate);
           }
-          return name.startsWith('sb_') || name.startsWith('sb-');
-        }),
-      );
-
-      for (const cookieName of possible) {
-        const name = cookieName.startsWith('sb_')
-          ? cookieName.slice(3)
-          : cookieName.startsWith('sb-')
-            ? cookieName.slice(3)
-            : cookieName;
-        const val = await storage.getItem(name);
-        if (val) {
-          await storage.removeItem(name);
-          return val;
         }
+
+        for (const candidate of seen) {
+          const value = await readVerifier(candidate);
+          if (value) {
+            return value;
+          }
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
 
       return null;

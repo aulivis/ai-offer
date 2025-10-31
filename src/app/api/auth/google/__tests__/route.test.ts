@@ -47,6 +47,10 @@ const cookiesMock = vi.hoisted(() =>
   }),
 );
 
+const providerStatusMock = vi.hoisted(() => vi.fn());
+const signInWithOAuthMock = vi.hoisted(() => vi.fn());
+const consumeCodeVerifierMock = vi.hoisted(() => vi.fn());
+
 vi.mock('next/headers', () => ({
   cookies: cookiesMock,
 }));
@@ -70,41 +74,61 @@ vi.mock('@/env.server', () => ({
   },
 }));
 
-describe('createSupabaseOAuthClient', () => {
+vi.mock('../providerStatus', () => ({
+  getGoogleProviderStatus: providerStatusMock,
+}));
+
+vi.mock('../createSupabaseOAuthClient', () => ({
+  createSupabaseOAuthClient: () => ({
+    client: {
+      auth: {
+        signInWithOAuth: signInWithOAuthMock,
+      },
+    },
+    consumeCodeVerifier: consumeCodeVerifierMock,
+  }),
+}));
+
+const { GET } = await import('../route');
+
+describe('GET /api/auth/google', () => {
   beforeEach(() => {
     cookieStore.clear();
+    providerStatusMock.mockReset();
+    signInWithOAuthMock.mockReset();
+    consumeCodeVerifierMock.mockReset();
   });
 
-  it('retrieves PKCE verifier stored with the Supabase storage key', async () => {
-    const store = cookieStore;
-    store.set('sb_sb-projectref-auth-token-code-verifier', 'verifier-value');
+  it('redirects to Supabase and stores the PKCE verifier cookie', async () => {
+    providerStatusMock.mockResolvedValue({ enabled: true });
+    signInWithOAuthMock.mockResolvedValue({
+      data: { url: 'https://supabase.example.com/auth?state=state-value&nonce=nonce-value' },
+      error: null,
+    });
+    consumeCodeVerifierMock.mockResolvedValue('verifier-token');
 
-    const { createSupabaseOAuthClient } = await import('../createSupabaseOAuthClient');
-    const { consumeCodeVerifier } = createSupabaseOAuthClient();
+    const response = await GET(
+      new Request('http://localhost:3000/api/auth/google?redirect_to=/dashboard'),
+    );
 
-    await expect(consumeCodeVerifier()).resolves.toBe('verifier-value');
-    expect(store.has('sb_sb-projectref-auth-token-code-verifier')).toBe(false);
-  });
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe(
+      'https://supabase.example.com/auth?state=state-value&nonce=nonce-value',
+    );
 
-  it('waits until Supabase persists the verifier before consuming it', async () => {
-    vi.useFakeTimers();
-    const store = cookieStore;
+    expect(signInWithOAuthMock).toHaveBeenCalledWith({
+      provider: 'google',
+      options: {
+        redirectTo: 'http://localhost:3000/dashboard',
+        skipBrowserRedirect: true,
+      },
+    });
 
-    try {
-      const { createSupabaseOAuthClient } = await import('../createSupabaseOAuthClient');
-      const { consumeCodeVerifier } = createSupabaseOAuthClient();
-
-      const promise = consumeCodeVerifier();
-
-      setTimeout(() => {
-        store.set('sb_pkce_code_verifier', 'eventual-verifier');
-      }, 25);
-
-      await vi.advanceTimersByTimeAsync(30);
-      await expect(promise).resolves.toBe('eventual-verifier');
-      expect(store.has('sb_pkce_code_verifier')).toBe(false);
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(cookieStore.get('sb_pkce_code_verifier')).toBe('verifier-token');
+    expect(cookieStore.get('auth_state')).toMatch(/^state-value:/);
+    expect(signInWithOAuthMock.mock.invocationCallOrder[0]).toBeLessThan(
+      consumeCodeVerifierMock.mock.invocationCallOrder[0],
+    );
   });
 });
+
