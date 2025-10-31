@@ -60,7 +60,8 @@ export function createSupabaseOAuthClient() {
      */
     async consumeCodeVerifier(): Promise<string | null> {
       const storageKey = (() => {
-        const candidate = (client as { storageKey?: string }).storageKey;
+        const authClient = client.auth as { storageKey?: string };
+        const candidate = authClient?.storageKey;
         return typeof candidate === 'string' && candidate.length > 0 ? candidate : null;
       })();
 
