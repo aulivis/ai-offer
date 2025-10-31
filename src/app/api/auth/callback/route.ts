@@ -9,7 +9,6 @@ import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback } from '@/lib/observability/metrics';
 import { Argon2Algorithm, argon2Hash, type Argon2Options } from '../../../../../lib/auth/argon2';
-import { decodeRefreshToken } from '../token';
 
 const MAGIC_LINK_FAILURE_REDIRECT = '/login?message=Unable%20to%20authenticate';
 const MISSING_AUTH_CODE_REDIRECT = '/login?message=Missing%20auth%20code';
@@ -22,7 +21,8 @@ const ARGON2_OPTIONS: Argon2Options = {
   parallelism: 1,
 };
 
-const ALLOWED_OTP_TYPES = new Set([
+/** KIZÁRÓLAG email-alapú OTP típusok (token_hash-hoz ezek érvényesek). */
+const EMAIL_OTP_TYPES = [
   'magiclink',
   'recovery',
   'signup',
@@ -30,9 +30,9 @@ const ALLOWED_OTP_TYPES = new Set([
   'email_change',
   'email_change_new',
   'email_change_current',
-]);
-
-type VerifyOtpParams = Parameters<ReturnType<typeof supabaseAnonServer>['auth']['verifyOtp']>[0];
+] as const;
+type EmailOtpTypeOnly = typeof EMAIL_OTP_TYPES[number];
+const ALLOWED_OTP_TYPES = new Set<EmailOtpTypeOnly>(EMAIL_OTP_TYPES);
 
 type MagicLinkTokens = {
   accessToken: string;
@@ -43,6 +43,7 @@ type MagicLinkTokens = {
 type ExchangeCodeParams = {
   code: string;
   codeVerifier: string;
+  redirectUri: string; // callback + redirect_to – PONTOSAN ugyanaz, mint indításkor
 };
 
 type ExchangeCodeResult = {
@@ -56,48 +57,35 @@ function redirectTo(path: string) {
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
-    return Math.floor(value);
-  }
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return Math.floor(value);
   if (typeof value === 'string') {
     const parsed = Number.parseInt(value, 10);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return parsed;
-    }
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
   }
   return FALLBACK_EXPIRES_IN;
 }
 
-function normalizeOtpType(type: string | null): string | null {
-  if (!type) {
-    return null;
-  }
-  const normalized = type.trim().toLowerCase();
-  return ALLOWED_OTP_TYPES.has(normalized) ? normalized : null;
+function normalizeOtpType(type: string | null): EmailOtpTypeOnly | null {
+  if (!type) return null;
+  const normalized = type.trim().toLowerCase() as EmailOtpTypeOnly | string;
+  return ALLOWED_OTP_TYPES.has(normalized as EmailOtpTypeOnly)
+    ? (normalized as EmailOtpTypeOnly)
+    : null;
 }
 
 function getClientIp(request: Request): string | null {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    const [first] = forwarded.split(',');
-    if (first) {
-      return first.trim();
-    }
+  const f = request.headers.get('x-forwarded-for');
+  if (f) {
+    const [first] = f.split(',');
+    if (first) return first.trim();
   }
-
   const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
-
+  if (realIp) return realIp;
   return null;
 }
 
 function redactJsonTokens(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((item) => redactJsonTokens(item));
-  }
-
+  if (Array.isArray(value)) return value.map((v) => redactJsonTokens(v));
   if (value && typeof value === 'object') {
     return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>(
       (acc, [key, entryValue]) => {
@@ -105,22 +93,17 @@ function redactJsonTokens(value: unknown): unknown {
           acc[key] = '[REDACTED]';
           return acc;
         }
-
         acc[key] = redactJsonTokens(entryValue);
         return acc;
       },
       {},
     );
   }
-
   return value;
 }
 
 function sanitizeErrorBody(contentType: string, rawBody: string): unknown {
-  if (!rawBody) {
-    return null;
-  }
-
+  if (!rawBody) return null;
   if (contentType.includes('application/json')) {
     try {
       const parsed = JSON.parse(rawBody) as unknown;
@@ -129,29 +112,47 @@ function sanitizeErrorBody(contentType: string, rawBody: string): unknown {
       return '[INVALID JSON]';
     }
   }
-
-  if (/token|secret|key/i.test(rawBody)) {
-    return '[REDACTED SENSITIVE CONTENT]';
-  }
-
+  if (/token|secret|key/i.test(rawBody)) return '[REDACTED SENSITIVE CONTENT]';
   return rawBody;
 }
 
-async function exchangeCode({ code, codeVerifier }: ExchangeCodeParams) {
-  const tokenUrl = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
-  tokenUrl.searchParams.set('grant_type', 'pkce');
+/** Gyors JWT payload decode (ACCESS tokenhez; REFRESH-t nem dekódoljuk) */
+function decodeJwtPayload<T = any>(jwt: string): T | null {
+  const parts = jwt.split('.');
+  if (parts.length !== 3) return null;
+  try {
+    const json = Buffer.from(
+      parts[1].replace(/-/g, '+').replace(/_/g, '/'),
+      'base64'
+    ).toString('utf8');
+    return JSON.parse(json) as T;
+  } catch {
+    return null;
+  }
+}
 
-  const response = await fetch(tokenUrl, {
+/**
+ * HELYES PKCE csere Supabase felé (GoTrue PKCE grant):
+ * - POST /auth/v1/token?grant_type=pkce
+ * - Content-Type: application/json
+ * - Body: { auth_code, code_verifier, redirect_uri }
+ * - Header: apikey
+ */
+async function exchangeCode({ code, codeVerifier, redirectUri }: ExchangeCodeParams) {
+  const url = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
+  url.searchParams.set('grant_type', 'pkce');
+
+  const response = await fetch(url.toString(), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+      'content-type': 'application/json',
+      accept: 'application/json',
     },
     body: JSON.stringify({
       auth_code: code,
       code_verifier: codeVerifier,
-      redirect_uri: envServer.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI,
+      redirect_uri: redirectUri,
     }),
   });
 
@@ -167,37 +168,46 @@ async function exchangeCode({ code, codeVerifier }: ExchangeCodeParams) {
     throw new Error(`Supabase token exchange failed with status ${response.status}`);
   }
 
-  if (!contentType.includes('application/json')) {
-    if (rawBody) {
-      try {
-        const parsed = JSON.parse(rawBody) as ExchangeCodeResult;
-        return parsed;
-      } catch (error) {
-        console.error('Supabase token exchange returned an unexpected payload.', error);
-        throw new Error('Supabase token exchange returned an unexpected payload.');
-      }
-    }
-    return {} satisfies ExchangeCodeResult;
-  }
-
   try {
-    const parsed = rawBody ? JSON.parse(rawBody) : {};
-    return parsed as ExchangeCodeResult;
+    return rawBody ? (JSON.parse(rawBody) as ExchangeCodeResult) : ({} as ExchangeCodeResult);
   } catch (error) {
     console.error('Supabase token exchange returned invalid JSON.', error);
     throw new Error('Supabase token exchange returned invalid JSON.');
   }
 }
 
-async function persistSession(refreshToken: string, request: Request, logger: RequestLogger) {
-  const decoded = decodeRefreshToken(refreshToken);
-  const userId = decoded?.sub ?? null;
-  const issuedAt = decoded?.iat ? new Date(decoded.iat * 1000) : null;
-  const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : null;
+/* ---------- verifyOtp (token_hash + email) TYPE ADAPTER ---------- */
+type VerifyEmailTokenHashParams = { token_hash: string; type: EmailOtpTypeOnly };
+type VerifyEmailTokenHashResponse = Promise<{ data: any; error: any }>;
 
-  if (!userId || !issuedAt || !expiresAt) {
-    throw new Error('Refresh token missing required claims.');
-  }
+function verifyEmailTokenHash(
+  supabase: ReturnType<typeof supabaseAnonServer>,
+  params: VerifyEmailTokenHashParams
+): VerifyEmailTokenHashResponse {
+  const fn = supabase.auth.verifyOtp as unknown as (
+    p: VerifyEmailTokenHashParams
+  ) => Promise<{ data: any; error: any }>;
+  return fn(params);
+}
+/* ---------------------------------------------------------------- */
+
+/**
+ * OPAQUE refresh token támogatás:
+ * - nem dekódoljuk a refresh tokent;
+ * - user_id: ACCESS token payloadból (JWT);
+ * - issued_at = now, expires_at = now + expiresIn.
+ */
+async function persistSessionOpaque(
+  userId: string,
+  refreshToken: string,
+  expiresInSec: number,
+  request: Request,
+  logger: RequestLogger,
+) {
+  const issuedAt = new Date();
+  const expiresAt = new Date(
+    issuedAt.getTime() + Math.max(1, expiresInSec || FALLBACK_EXPIRES_IN) * 1000
+  );
 
   const hashedRefresh = await argon2Hash(refreshToken, ARGON2_OPTIONS);
   const supabase = supabaseServiceRole();
@@ -218,25 +228,18 @@ async function persistSession(refreshToken: string, request: Request, logger: Re
 
 async function handleMagicLinkTokens(
   tokens: MagicLinkTokens,
+  userId: string,
   redirectTarget: string,
   request: Request,
   logger: RequestLogger,
 ) {
   try {
-    await persistSession(tokens.refreshToken, request, logger);
-  } catch (error) {
-    recordMagicLinkCallback('failure', { reason: 'session_persist_failed' });
-    await clearAuthCookies();
-    logger.error('Unable to persist session for magic link login.', error);
-    return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
-  }
-
-  try {
+    await persistSessionOpaque(userId, tokens.refreshToken, tokens.expiresIn, request, logger);
     await setAuthCookies(tokens.accessToken, tokens.refreshToken, {
       accessTokenMaxAgeSeconds: tokens.expiresIn,
     });
   } catch (error) {
-    recordMagicLinkCallback('failure', { reason: 'cookie_set_failed' });
+    recordMagicLinkCallback('failure', { reason: 'persist_or_cookie_failed' });
     await clearAuthCookies();
     logger.error('Unable to finalize magic link login.', error);
     return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
@@ -248,9 +251,20 @@ async function handleMagicLinkTokens(
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const finalRedirect = sanitizeOAuthRedirect(url.searchParams.get('redirect_to'), '/dashboard');
-  const logger = createAuthRequestLogger();
+  const cookieStore = await cookies();
 
+  // 0) Végső cél priorizálása: sütiből, aztán queryből, végül default
+  const cookieRedirect = cookieStore.get('post_auth_redirect')?.value ?? '';
+  const queryRedirect = url.searchParams.get('redirect_to');
+  const finalRedirect = sanitizeOAuthRedirect(
+    cookieRedirect || queryRedirect || '',
+    '/dashboard'
+  );
+
+  const logger = createAuthRequestLogger();
+  const supabase = supabaseAnonServer();
+
+  // --- Magic link implicit tokenek (access_token a URL-ben) ---
   const accessTokenFromLink = url.searchParams.get('access_token') ?? url.searchParams.get('token');
   const refreshTokenFromLink = url.searchParams.get('refresh_token');
   const expiresInFromLink = url.searchParams.get('expires_in');
@@ -261,15 +275,34 @@ export async function GET(request: Request) {
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
+    const payload = decodeJwtPayload<{ sub?: string }>(accessTokenFromLink);
+    const userId = payload?.sub ?? '';
+    if (!userId) {
+      recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+    }
+
     const tokens: MagicLinkTokens = {
       accessToken: accessTokenFromLink,
-      refreshToken: refreshTokenFromLink,
+      refreshToken: refreshTokenFromLink!,
       expiresIn: parseExpiresIn(expiresInFromLink),
     };
 
-    return handleMagicLinkTokens(tokens, finalRedirect, request, logger);
+    // takarítsuk a redirect sütit
+    cookieStore.set({
+      name: 'post_auth_redirect',
+      value: '',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: envServer.APP_URL.startsWith('https'),
+      path: '/',
+      maxAge: 0,
+    });
+
+    return handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger);
   }
 
+  // --- Magic link verifyOtp (token_hash) – csak email-alapú típusok ---
   const tokenHash = url.searchParams.get('token_hash');
   if (tokenHash) {
     const otpType = normalizeOtpType(url.searchParams.get('type'));
@@ -279,11 +312,8 @@ export async function GET(request: Request) {
     }
 
     try {
-      const supabase = supabaseAnonServer();
-      const { data, error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: otpType as VerifyOtpParams['type'],
-      });
+      const params: VerifyEmailTokenHashParams = { token_hash: tokenHash, type: otpType };
+      const { data, error } = await verifyEmailTokenHash(supabase, params);
 
       if (error || !data?.session) {
         recordMagicLinkCallback('failure', { reason: 'verify_failed' });
@@ -294,6 +324,7 @@ export async function GET(request: Request) {
       const session = data.session;
       const accessToken = session.access_token ?? '';
       const refreshToken = session.refresh_token ?? '';
+      const expiresIn = parseExpiresIn(session.expires_in ?? null);
 
       if (!accessToken || !refreshToken) {
         recordMagicLinkCallback('failure', { reason: 'missing_tokens' });
@@ -301,10 +332,27 @@ export async function GET(request: Request) {
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
 
-      const expiresIn = parseExpiresIn(session.expires_in ?? null);
+      const payload = decodeJwtPayload<{ sub?: string }>(accessToken);
+      const userId = payload?.sub ?? '';
+      if (!userId) {
+        recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      }
+
+      // takarítás
+      cookieStore.set({
+        name: 'post_auth_redirect',
+        value: '',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: envServer.APP_URL.startsWith('https'),
+        path: '/',
+        maxAge: 0,
+      });
 
       return handleMagicLinkTokens(
         { accessToken, refreshToken, expiresIn },
+        userId,
         finalRedirect,
         request,
         logger,
@@ -316,21 +364,30 @@ export async function GET(request: Request) {
     }
   }
 
+  // --- OAuth PKCE code exchange (Google) ---
   const code = url.searchParams.get('code');
   if (!code) {
     return redirectTo(MISSING_AUTH_CODE_REDIRECT);
   }
 
   try {
-    const cookieStore = await cookies();
     const verifierCookie = cookieStore.get('sb_pkce_code_verifier')?.value ?? null;
 
     if (!verifierCookie) {
+      console.error('Missing PKCE code verifier cookie at callback.');
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
-    const exchange = await exchangeCode({ code, codeVerifier: verifierCookie });
+    const redirectUriForExchange = new URL(envServer.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI);
+    redirectUriForExchange.searchParams.set('redirect_to', finalRedirect);
 
+    const exchange = await exchangeCode({
+      code,
+      codeVerifier: verifierCookie,
+      redirectUri: redirectUriForExchange.toString(),
+    });
+
+    // egyszer használatos PKCE sütit töröljük
     cookieStore.set({
       name: 'sb_pkce_code_verifier',
       value: '',
@@ -343,16 +400,32 @@ export async function GET(request: Request) {
 
     const accessToken = exchange.access_token ?? '';
     const refreshToken = exchange.refresh_token ?? '';
+    const expiresIn = parseExpiresIn(exchange.expires_in ?? null);
 
     if (!accessToken || !refreshToken) {
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
-    const expiresIn = parseExpiresIn(exchange.expires_in ?? null);
+    const payload = decodeJwtPayload<{ sub?: string }>(accessToken);
+    const userId = payload?.sub ?? '';
+    if (!userId) {
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+    }
 
-    await persistSession(refreshToken, request, logger);
+    await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger);
     await setAuthCookies(accessToken, refreshToken, {
       accessTokenMaxAgeSeconds: expiresIn,
+    });
+
+    // takarítás
+    cookieStore.set({
+      name: 'post_auth_redirect',
+      value: '',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: envServer.APP_URL.startsWith('https'),
+      path: '/',
+      maxAge: 0,
     });
 
     return redirectTo(finalRedirect);

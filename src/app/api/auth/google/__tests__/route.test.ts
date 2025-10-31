@@ -117,12 +117,12 @@ describe('GET /api/auth/google', () => {
     );
 
     expect(signInWithOAuthMock).toHaveBeenCalledWith({
-      provider: 'google',
-      options: {
-        redirectTo: 'http://localhost:3000/dashboard',
-        skipBrowserRedirect: true,
-      },
-    });
+  provider: 'google',
+  options: {
+    redirectTo: 'http://localhost:3000/api/auth/callback?redirect_to=http%3A%2F%2Flocalhost%3A3000%2Fdashboard',
+    skipBrowserRedirect: true,
+  },
+});
 
     expect(cookieStore.get('sb_pkce_code_verifier')).toBe('verifier-token');
     expect(cookieStore.get('auth_state')).toMatch(/^state-value:/);

@@ -1,50 +1,59 @@
 'use client';
 
-import { t } from '@/copy';
 import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 
-function parseHashParams(hash: string): Record<string, string> {
-  const h = hash.startsWith('#') ? hash.slice(1) : hash;
-  const params = new URLSearchParams(h);
-  const out: Record<string, string> = {};
-  params.forEach((v, k) => (out[k] = v));
-  return out;
+function parseHashParams(hash: string): URLSearchParams {
+  // hash pl.: "#access_token=...&refresh_token=...&expires_in=3600&type=magiclink&token_hash=..."
+  const raw = hash.startsWith('#') ? hash.slice(1) : hash;
+  return new URLSearchParams(raw);
 }
 
 export default function AuthCallbackPage() {
-  const searchParams = useSearchParams();
-
   useEffect(() => {
-    try {
-      const hash = window.location.hash || '';
-      const parsed = parseHashParams(hash);
+    // 1) Hash + query összefűzés (biztos, ami biztos)
+    const hashParams = parseHashParams(window.location.hash);
+    const searchParams = new URLSearchParams(window.location.search);
 
-      const access_token = parsed['access_token'] || parsed['token'] || '';
-      const refresh_token = parsed['refresh_token'] || '';
-      const expires_in = parsed['expires_in'] || '';
+    // 2) Ha a hash-ben vannak Supabase paramok, emeljük át
+    const expected = [
+      'access_token',
+      'refresh_token',
+      'expires_in',
+      'token_hash',
+      'type',
+      'redirect_to',
+    ] as const;
 
-      if (!access_token) {
-        window.location.replace('/login?message=Missing%20magic%20token');
-        return;
+    let foundAny = false;
+    for (const key of expected) {
+      const fromHash = hashParams.get(key);
+      if (fromHash && !searchParams.has(key)) {
+        searchParams.set(key, fromHash);
+        foundAny = true;
       }
-
-      const redirect_to = searchParams.get('redirect_to') ?? '/dashboard';
-      const url = new URL('/api/auth/callback', window.location.origin);
-      url.searchParams.set('access_token', access_token);
-      if (refresh_token) url.searchParams.set('refresh_token', refresh_token);
-      if (expires_in) url.searchParams.set('expires_in', expires_in);
-      url.searchParams.set('redirect_to', redirect_to);
-
-      window.location.replace(url.toString());
-    } catch {
-      window.location.replace('/login?message=Unable%20to%20authenticate');
     }
-  }, [searchParams]);
 
+    // 3) Ha semmi sincs se hash-ben, se query-ben → hibára vissza a loginra
+    const hasImplicit =
+      searchParams.has('access_token') &&
+      searchParams.has('refresh_token') &&
+      searchParams.has('expires_in');
+    const hasTokenHash = searchParams.has('token_hash') && searchParams.has('type');
+
+    if (!hasImplicit && !hasTokenHash) {
+      window.location.replace('/login?message=Missing%20auth%20code');
+      return;
+    }
+
+    // 4) Továbbítás a szerveres API callbackre — itt állítjuk a HTTPOnly sütiket
+    const qs = searchParams.toString();
+    window.location.replace(`/api/auth/callback${qs ? `?${qs}` : ''}`);
+  }, []);
+
+  // Minimal „loading” állapot
   return (
-    <main className="mx-auto flex min-h-[60vh] w-full max-w-md items-center justify-center p-6">
-      <p className="text-center text-base">Bejelentkezés folyamatban…</p>
-    </main>
+    <div style={{ display: 'grid', placeItems: 'center', minHeight: '50vh' }}>
+      <p>Finishing sign-in…</p>
+    </div>
   );
 }
