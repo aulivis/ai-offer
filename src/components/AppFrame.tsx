@@ -13,6 +13,8 @@ export type AppFrameProps = {
   actions?: ReactNode;
   children: ReactNode;
   sidebar?: ReactNode;
+  requireAuth?: boolean;
+  redirectOnUnauthenticated?: boolean;
 };
 
 export default function AppFrame({
@@ -21,10 +23,14 @@ export default function AppFrame({
   actions,
   children,
   sidebar,
+  requireAuth = true,
+  redirectOnUnauthenticated,
 }: AppFrameProps) {
   const pathname = usePathname();
   const { showToast } = useToast();
-  const { error, status } = useRequireAuth();
+  const { error, status } = useRequireAuth(undefined, {
+    redirectOnUnauthenticated: redirectOnUnauthenticated ?? requireAuth,
+  });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -43,7 +49,7 @@ export default function AppFrame({
     setIsSidebarOpen(false);
   }, [pathname]);
 
-  if (status !== 'authenticated') {
+  if (requireAuth && status !== 'authenticated') {
     return (
       <main
         id="main"
