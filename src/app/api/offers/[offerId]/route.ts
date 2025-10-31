@@ -5,6 +5,25 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { extractOfferStoragePath } from '@/lib/offers/storage';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
+const normalizeUserOwnedStoragePath = (path: string, userId: string): string | null => {
+  const trimmed = path.trim();
+  if (!trimmed) return null;
+
+  const normalized = extractOfferStoragePath(trimmed) ?? trimmed.replace(/^\/+/, '');
+  if (!normalized) return null;
+
+  const segments = normalized.split('/').filter(Boolean);
+  if (segments.length === 0 || segments[0] !== userId) {
+    return null;
+  }
+
+  if (segments.some((segment) => segment === '..')) {
+    return null;
+  }
+
+  return segments.join('/');
+};
+
 type RouteParams = {
   offerId?: string;
 };
@@ -76,7 +95,20 @@ export const DELETE = withAuth(
         return NextResponse.json({ error: 'Nem sikerült törölni az ajánlatot.' }, { status: 500 });
       }
 
-      const storageList = Array.from(storagePaths).filter(Boolean);
+      const validatedPaths = new Set<string>();
+      storagePaths.forEach((rawPath) => {
+        const normalizedPath = normalizeUserOwnedStoragePath(rawPath, offer.user_id);
+        if (!normalizedPath) {
+          console.warn('Skipping deletion for non-owned storage path', {
+            userId: offer.user_id,
+            path: rawPath,
+          });
+          return;
+        }
+        validatedPaths.add(normalizedPath);
+      });
+
+      const storageList = Array.from(validatedPaths);
       if (storageList.length > 0) {
         const { error: storageError } = await adminClient.storage
           .from('offers')
