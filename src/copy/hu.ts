@@ -56,6 +56,8 @@ export const hu = {
           'Képek beszúrása és szerkesztése csak Pro előfizetéssel lehetséges. A vizuális tartalmak segítenek profibb ajánlatot készíteni.',
         proTemplates:
           'A prémium ajánlat sablonok a Pro csomagban érhetők el, hogy még gyorsabban indulhass testreszabott dizájnokkal.',
+        brandingLogo:
+          'Pro előfizetéssel tölthetsz fel céges logót, amely automatikusan megjelenik minden generált ajánlat PDF-jében.',
       },
     },
   },
@@ -314,6 +316,8 @@ export const hu = {
       industryUnknown: 'Ismeretlen',
       export: 'Export',
       openPdf: 'PDF megnyitása',
+      savePdf: 'PDF mentése',
+      savePdfLoading: 'Mentés…',
     },
     statusSteps: {
       sent: {
@@ -603,6 +607,9 @@ export const hu = {
         button: 'Logó feltöltése',
         uploading: 'Feltöltés…',
         openInNewTab: 'Megnyitás új lapon',
+        lockedButton: 'Pro funkció',
+        lockedMessage:
+          'A logó feltöltése Pro előfizetéssel érhető el. Frissíts a korlátlan testreszabáshoz.',
       },
       preview: {
         title: 'Minta előnézet',
@@ -1287,6 +1294,11 @@ export const hu = {
       saveFailed: {
         title: 'Ajánlat mentése sikertelen',
         description: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.',
+      },
+      downloadFailed: {
+        title: 'PDF letöltése sikertelen',
+        description:
+          'Nem sikerült letölteni a PDF-et. Próbáld újra, vagy használd a megnyitás gombot.',
       },
       missingDetails: {
         title: 'Hiányzó adatok',
