@@ -59,14 +59,20 @@ export function createSupabaseOAuthClient() {
      * végül fallbackként megkeresünk MINDEN 'sb_*code*verifier*' sütit.
      */
     async consumeCodeVerifier(): Promise<string | null> {
+      const storageKey = (() => {
+        const candidate = (client as { storageKey?: string }).storageKey;
+        return typeof candidate === 'string' && candidate.length > 0 ? candidate : null;
+      })();
+
       const candidates = [
+        storageKey ? `${storageKey}-code-verifier` : null,
         'pkce_code_verifier',
         'code_verifier',
         'pkce.code_verifier',
         'oauth_pkce_code_verifier',
         'oauth.pkce.code_verifier',
         'auth.pkce.code_verifier',
-      ];
+      ].filter((value): value is string => Boolean(value));
 
       for (const key of candidates) {
         const val = await storage.getItem(key);
@@ -79,8 +85,9 @@ export function createSupabaseOAuthClient() {
       // Fallback: keressünk bármilyen sütit, aminek a neve tartalmazza a 'code' és 'verifier' szavakat
       const jar = await cookies();
       const all = ['pkce', 'code', 'verifier'];
-      const cookieNames = (jar.getAll?.() ?? [])
-        .map((cookie: any) => cookie?.name as string)
+      const cookieEntries = (jar.getAll?.() ?? []) as Array<{ name?: string }>;
+      const cookieNames = cookieEntries
+        .map((cookie) => cookie?.name)
         .filter((name): name is string => typeof name === 'string');
       const possible = (['pkce_code_verifier', 'code_verifier'] as string[]).concat(
         cookieNames.filter((name) => {
