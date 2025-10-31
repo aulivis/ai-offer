@@ -2,7 +2,7 @@
 
 import { t } from '@/copy';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, SVGProps } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
@@ -46,6 +46,19 @@ type ActivityRow = {
   default_vat: number;
   industries: string[];
 };
+
+function LockIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 const ALL_INDUSTRIES_HU = [
   'Marketing',
@@ -190,6 +203,7 @@ export default function SettingsPage() {
   const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
   const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
   const canUseProTemplates = plan === 'pro';
+  const canUploadBrandLogo = plan !== 'free';
 
   function renderTemplatePreview(variant: 'modern' | 'premium') {
     if (variant === 'premium') {
@@ -915,13 +929,36 @@ export default function SettingsPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
-                    onClick={triggerLogoUpload}
-                    disabled={logoUploading}
-                    className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+                    onClick={() => {
+                      if (!canUploadBrandLogo) {
+                        openPlanUpgradeDialog({
+                          description: t('app.planUpgradeModal.reasons.brandingLogo'),
+                        });
+                        return;
+                      }
+                      triggerLogoUpload();
+                    }}
+                    disabled={logoUploading && canUploadBrandLogo}
+                    aria-disabled={!canUploadBrandLogo}
+                    className={[
+                      'inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed',
+                      canUploadBrandLogo
+                        ? 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-400'
+                        : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
+                    ].join(' ')}
                   >
-                    {logoUploading
-                      ? t('settings.branding.logoUpload.uploading')
-                      : t('settings.branding.logoUpload.button')}
+                    {canUploadBrandLogo ? (
+                      logoUploading ? (
+                        t('settings.branding.logoUpload.uploading')
+                      ) : (
+                        t('settings.branding.logoUpload.button')
+                      )
+                    ) : (
+                      <>
+                        <LockIcon className="h-4 w-4" />
+                        {t('settings.branding.logoUpload.lockedButton')}
+                      </>
+                    )}
                   </Button>
                   {profile.brand_logo_url && (
                     <a
@@ -934,6 +971,12 @@ export default function SettingsPage() {
                     </a>
                   )}
                 </div>
+                {!canUploadBrandLogo && (
+                  <p className="mt-2 flex items-center gap-2 text-xs font-medium text-amber-600">
+                    <LockIcon className="h-3.5 w-3.5" />
+                    {t('settings.branding.logoUpload.lockedMessage')}
+                  </p>
+                )}
               </div>
             </div>
 

@@ -31,67 +31,6 @@ type Offer = {
   recipient?: { company_name: string | null } | null | undefined;
 };
 
-/** PDF storage path extractor (változatlan logika) */
-function extractOfferStoragePath(pdfUrl: string): string | null {
-  const normalized = pdfUrl.trim();
-  if (!normalized) return null;
-
-  const removeLeadingSlash = (value: string) => value.replace(/^\/+/, '');
-
-  const decodeAndNormalize = (value: string): string | null => {
-    if (!value) return null;
-    try {
-      return removeLeadingSlash(decodeURIComponent(value));
-    } catch (error) {
-      console.warn('Failed to decode offer PDF storage path', error);
-      return removeLeadingSlash(value);
-    }
-  };
-
-  const tryFromUrl = (): string | null => {
-    try {
-      const url = new URL(normalized);
-      const markerVariants = ['/object/public/offers/', '/object/sign/offers/', '/object/offers/'];
-
-      for (const marker of markerVariants) {
-        const markerIndex = url.pathname.indexOf(marker);
-        if (markerIndex !== -1) {
-          const extracted = url.pathname.slice(markerIndex + marker.length);
-          if (extracted) return decodeAndNormalize(extracted);
-        }
-      }
-
-      const segments = url.pathname.split('/');
-      const offersIndex = segments.indexOf('offers');
-      if (offersIndex !== -1 && offersIndex < segments.length - 1) {
-        return decodeAndNormalize(segments.slice(offersIndex + 1).join('/'));
-      }
-    } catch (error) {
-      if (normalized.includes('://')) console.warn('Failed to parse offer PDF storage path', error);
-    }
-    return null;
-  };
-
-  const tryFromEncodedMarker = (): string | null => {
-    const encodedMarker = 'offers%2F';
-    const markerIndex = normalized.indexOf(encodedMarker);
-    if (markerIndex !== -1) {
-      return decodeAndNormalize(normalized.slice(markerIndex + encodedMarker.length));
-    }
-    return null;
-  };
-
-  const tryFromPlainPath = (): string | null => {
-    if (!normalized.includes('://')) {
-      const cleaned = normalized.replace(/^public\/?offers\/?/, '');
-      return removeLeadingSlash(cleaned);
-    }
-    return null;
-  };
-
-  return tryFromUrl() ?? tryFromEncodedMarker() ?? tryFromPlainPath();
-}
-
 /** Státusz labellek (HU) */
 const STATUS_LABEL_KEYS: Record<Offer['status'], CopyKey> = {
   draft: 'dashboard.status.labels.draft',
@@ -341,6 +280,16 @@ function hasAdminFlag(value: unknown): boolean {
   return false;
 }
 
+function createOfferPdfFileName(offer: Offer): string {
+  const base = (offer.title || '').trim().toLowerCase();
+  const normalized = base
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '');
+  const safeBase = normalized || 'ajanlat';
+  return `${safeBase}.pdf`;
+}
+
 /** Törlés megerősítése (dialog) — semantic + A11y */
 function DeleteConfirmationDialog({
   offer,
@@ -435,6 +384,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -672,6 +622,40 @@ export default function DashboardPage() {
     }
   }
 
+  const handleDownloadPdf = useCallback(
+    async (offer: Offer) => {
+      if (!offer.pdf_url) return;
+
+      setDownloadingId(offer.id);
+      try {
+        const response = await fetch(offer.pdf_url, { credentials: 'include' });
+        if (!response.ok) {
+          throw new Error(`Download failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = createOfferPdfFileName(offer);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      } catch (error) {
+        console.error('Failed to download offer PDF', error);
+        showToast({
+          title: t('toasts.offers.downloadFailed.title'),
+          description: t('toasts.offers.downloadFailed.description'),
+          variant: 'error',
+        });
+      } finally {
+        setDownloadingId(null);
+      }
+    },
+    [showToast],
+  );
+
   async function markSent(offer: Offer, date?: string) {
     const timestamp = date ? new Date(`${date}T00:00:00`) : new Date();
     if (Number.isNaN(timestamp.getTime())) return;
@@ -719,39 +703,10 @@ export default function DashboardPage() {
 
     setDeletingId(offerToDelete.id);
     try {
-      const storagePaths = new Set<string>();
-      if (offerToDelete.pdf_url) {
-        const storagePathFromUrl = extractOfferStoragePath(offerToDelete.pdf_url);
-        if (storagePathFromUrl) storagePaths.add(storagePathFromUrl);
-      }
-      if (userId) {
-        storagePaths.add(`${userId}/${offerToDelete.id}.pdf`);
-        const { data: jobStoragePaths, error: jobStorageError } = await sb
-          .from('pdf_jobs')
-          .select('storage_path')
-          .eq('offer_id', offerToDelete.id)
-          .eq('user_id', userId);
-        if (jobStorageError) {
-          console.error('Failed to load offer PDF storage paths', jobStorageError);
-        }
-        jobStoragePaths?.forEach(({ storage_path: rawPath }) => {
-          const jobPath = typeof rawPath === 'string' ? rawPath.trim() : '';
-          if (jobPath) storagePaths.add(jobPath);
-          if (jobPath) {
-            const normalizedPath = extractOfferStoragePath(jobPath);
-            if (normalizedPath) storagePaths.add(normalizedPath);
-          }
-        });
-      }
-
-      const { error } = await sb.from('offers').delete().eq('id', offerToDelete.id);
-      if (error) throw error;
-
-      const storagePathList = Array.from(storagePaths).filter(Boolean);
-      if (storagePathList.length > 0) {
-        const { error: storageError } = await sb.storage.from('offers').remove(storagePathList);
-        if (storageError) console.error('Failed to delete offer PDF from storage', storageError);
-      }
+      await fetchWithSupabaseAuth(`/api/offers/${offerToDelete.id}`, {
+        method: 'DELETE',
+        defaultErrorMessage: t('toasts.offers.deleteFailed.description'),
+      });
 
       setOffers((prev) => prev.filter((item) => item.id !== offerToDelete.id));
       setTotalCount((prev) => (typeof prev === 'number' ? Math.max(prev - 1, 0) : prev));
@@ -773,7 +728,7 @@ export default function DashboardPage() {
       setDeletingId(null);
       setOfferToDelete(null);
     }
-  }, [offerToDelete, sb, showToast, userId]);
+  }, [offerToDelete, showToast]);
 
   const handleCancelDelete = useCallback(() => {
     if (deletingId) return;
@@ -1228,7 +1183,8 @@ export default function DashboardPage() {
               {filtered.map((o) => {
                 const isUpdating = updatingId === o.id;
                 const isDeleting = deletingId === o.id;
-                const isBusy = isUpdating || isDeleting;
+                const isDownloading = downloadingId === o.id;
+                const isBusy = isUpdating || isDeleting || isDownloading;
                 const isDecided = o.status === 'accepted' || o.status === 'lost';
 
                 return (
@@ -1262,14 +1218,25 @@ export default function DashboardPage() {
                       {o.pdf_url ? (
                         <div className="flex items-center justify-between gap-4">
                           <dt className="">{t('dashboard.offerCard.export')}</dt>
-                          <dd>
+                          <dd className="flex flex-wrap items-center gap-2">
                             <a
                               className="rounded-full border border-border px-3 py-1 text-xs font-medium text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                               href={o.pdf_url}
                               target="_blank"
+                              rel="noopener noreferrer"
                             >
                               {t('dashboard.offerCard.openPdf')}
                             </a>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadPdf(o)}
+                              disabled={isBusy}
+                              className="rounded-full border border-border px-3 py-1 text-xs font-medium text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {isDownloading
+                                ? t('dashboard.offerCard.savePdfLoading')
+                                : t('dashboard.offerCard.savePdf')}
+                            </button>
                           </dd>
                         </div>
                       ) : null}
