@@ -5,6 +5,11 @@ import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { createAuthRequestLogger } from '@/lib/observability/authLogging';
 
+/**
+ * A magic link elküldésekor eltároljuk a végső redirect útvonalat
+ * egy HTTPOnly sütiben (post_auth_redirect), majd a Supabase-nek csak
+ * a publikus /auth/callback-et adjuk meg emailRedirectTo-ként (query nélkül).
+ */
 export async function POST(request: Request) {
   const logger = createAuthRequestLogger();
   const body = await request.json().catch(() => ({}));
@@ -15,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing email' }, { status: 400 });
   }
 
-  // 1) Végső cél szanitizálása és eltárolása HttpOnly sütiben
+  // A végső cél szanitizálása és eltárolása sütiben
   const finalRedirect = sanitizeOAuthRedirect(requestedRedirect, '/dashboard');
   const jar = await cookies();
   const isSecure = envServer.APP_URL.startsWith('https');
@@ -27,17 +32,17 @@ export async function POST(request: Request) {
     sameSite: 'lax',
     secure: isSecure,
     path: '/',
-    maxAge: 5 * 60, // 5 perc
+    maxAge: 5 * 60,
   });
 
-  // 2) A magic link a PUBLikus callbackre mutasson, query NÉLKÜL
+  // A magic link a publikus /auth/callback-re mutat (nem tartalmaz query-t)
   const publicCallback = new URL('/auth/callback', envServer.APP_URL);
-
   const supabase = supabaseAnonServer();
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: publicCallback.toString(), // nincs redirect_to query!
+      emailRedirectTo: publicCallback.toString(),
       shouldCreateUser: true,
     },
   });

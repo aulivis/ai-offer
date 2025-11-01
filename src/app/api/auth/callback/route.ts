@@ -8,7 +8,11 @@ import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback } from '@/lib/observability/metrics';
-import { Argon2Algorithm, argon2Hash, type Argon2Options } from '../../../../../lib/auth/argon2';
+import {
+  Argon2Algorithm,
+  argon2Hash,
+  type Argon2Options,
+} from '../../../../../lib/auth/argon2';
 
 const MAGIC_LINK_FAILURE_REDIRECT = '/login?message=Unable%20to%20authenticate';
 const MISSING_AUTH_CODE_REDIRECT = '/login?message=Missing%20auth%20code';
@@ -21,7 +25,7 @@ const ARGON2_OPTIONS: Argon2Options = {
   parallelism: 1,
 };
 
-/** KIZÁRÓLAG email-alapú OTP típusok (token_hash-hoz ezek érvényesek). */
+// Emailes OTP típusok (token_hash-hez kizárólag ezek engedettek)
 const EMAIL_OTP_TYPES = [
   'magiclink',
   'recovery',
@@ -43,7 +47,7 @@ type MagicLinkTokens = {
 type ExchangeCodeParams = {
   code: string;
   codeVerifier: string;
-  redirectUri: string; // callback + redirect_to – PONTOSAN ugyanaz, mint indításkor
+  redirectUri: string;
 };
 
 type ExchangeCodeResult = {
@@ -57,10 +61,14 @@ function redirectTo(path: string) {
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return Math.floor(value);
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.floor(value);
+  }
   if (typeof value === 'string') {
     const parsed = Number.parseInt(value, 10);
-    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
   }
   return FALLBACK_EXPIRES_IN;
 }
@@ -74,10 +82,12 @@ function normalizeOtpType(type: string | null): EmailOtpTypeOnly | null {
 }
 
 function getClientIp(request: Request): string | null {
-  const f = request.headers.get('x-forwarded-for');
-  if (f) {
-    const [first] = f.split(',');
-    if (first) return first.trim();
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const [first] = forwarded.split(',');
+    if (first) {
+      return first.trim();
+    }
   }
   const realIp = request.headers.get('x-real-ip');
   if (realIp) return realIp;
@@ -85,7 +95,9 @@ function getClientIp(request: Request): string | null {
 }
 
 function redactJsonTokens(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map((v) => redactJsonTokens(v));
+  if (Array.isArray(value)) {
+    return value.map((item) => redactJsonTokens(item));
+  }
   if (value && typeof value === 'object') {
     return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>(
       (acc, [key, entryValue]) => {
@@ -103,7 +115,9 @@ function redactJsonTokens(value: unknown): unknown {
 }
 
 function sanitizeErrorBody(contentType: string, rawBody: string): unknown {
-  if (!rawBody) return null;
+  if (!rawBody) {
+    return null;
+  }
   if (contentType.includes('application/json')) {
     try {
       const parsed = JSON.parse(rawBody) as unknown;
@@ -112,18 +126,22 @@ function sanitizeErrorBody(contentType: string, rawBody: string): unknown {
       return '[INVALID JSON]';
     }
   }
-  if (/token|secret|key/i.test(rawBody)) return '[REDACTED SENSITIVE CONTENT]';
+  if (/token|secret|key/i.test(rawBody)) {
+    return '[REDACTED SENSITIVE CONTENT]';
+  }
   return rawBody;
 }
 
-/** Gyors JWT payload decode (ACCESS tokenhez; REFRESH-t nem dekódoljuk) */
+/** Gyors JWT payload decode (csak ACCESS tokenhez; REFRESH tokent nem dekódoljuk) */
 function decodeJwtPayload<T = any>(jwt: string): T | null {
   const parts = jwt.split('.');
-  if (parts.length !== 3) return null;
+  if (parts.length !== 3) {
+    return null;
+  }
   try {
     const json = Buffer.from(
       parts[1].replace(/-/g, '+').replace(/_/g, '/'),
-      'base64'
+      'base64',
     ).toString('utf8');
     return JSON.parse(json) as T;
   } catch {
@@ -131,13 +149,7 @@ function decodeJwtPayload<T = any>(jwt: string): T | null {
   }
 }
 
-/**
- * HELYES PKCE csere Supabase felé (GoTrue PKCE grant):
- * - POST /auth/v1/token?grant_type=pkce
- * - Content-Type: application/json
- * - Body: { auth_code, code_verifier, redirect_uri }
- * - Header: apikey
- */
+/** PKCE token csere a Supabase GoTrue felé (JSON formátum, grant_type=pkce) */
 async function exchangeCode({ code, codeVerifier, redirectUri }: ExchangeCodeParams) {
   const url = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
   url.searchParams.set('grant_type', 'pkce');
@@ -176,27 +188,20 @@ async function exchangeCode({ code, codeVerifier, redirectUri }: ExchangeCodePar
   }
 }
 
-/* ---------- verifyOtp (token_hash + email) TYPE ADAPTER ---------- */
 type VerifyEmailTokenHashParams = { token_hash: string; type: EmailOtpTypeOnly };
 type VerifyEmailTokenHashResponse = Promise<{ data: any; error: any }>;
 
 function verifyEmailTokenHash(
   supabase: ReturnType<typeof supabaseAnonServer>,
-  params: VerifyEmailTokenHashParams
+  params: VerifyEmailTokenHashParams,
 ): VerifyEmailTokenHashResponse {
   const fn = supabase.auth.verifyOtp as unknown as (
-    p: VerifyEmailTokenHashParams
+    p: VerifyEmailTokenHashParams,
   ) => Promise<{ data: any; error: any }>;
   return fn(params);
 }
-/* ---------------------------------------------------------------- */
 
-/**
- * OPAQUE refresh token támogatás:
- * - nem dekódoljuk a refresh tokent;
- * - user_id: ACCESS token payloadból (JWT);
- * - issued_at = now, expires_at = now + expiresIn.
- */
+/** Session tárolás opaque refresh tokennel (nem dekódoljuk a refresh tokent) */
 async function persistSessionOpaque(
   userId: string,
   refreshToken: string,
@@ -206,7 +211,7 @@ async function persistSessionOpaque(
 ) {
   const issuedAt = new Date();
   const expiresAt = new Date(
-    issuedAt.getTime() + Math.max(1, expiresInSec || FALLBACK_EXPIRES_IN) * 1000
+    issuedAt.getTime() + Math.max(1, expiresInSec || FALLBACK_EXPIRES_IN) * 1000,
   );
 
   const hashedRefresh = await argon2Hash(refreshToken, ARGON2_OPTIONS);
@@ -226,6 +231,7 @@ async function persistSessionOpaque(
   }
 }
 
+/** Magic link tokenek kezelése (implicit vagy verifyOtp) */
 async function handleMagicLinkTokens(
   tokens: MagicLinkTokens,
   userId: string,
@@ -253,18 +259,15 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const cookieStore = await cookies();
 
-  // 0) Végső cél priorizálása: sütiből, aztán queryből, végül default
+  // A végső redirect: először sütiből olvassuk (post_auth_redirect), ha nincs, a queryből, végül fallback
   const cookieRedirect = cookieStore.get('post_auth_redirect')?.value ?? '';
   const queryRedirect = url.searchParams.get('redirect_to');
-  const finalRedirect = sanitizeOAuthRedirect(
-    cookieRedirect || queryRedirect || '',
-    '/dashboard'
-  );
+  const finalRedirect = sanitizeOAuthRedirect(cookieRedirect || queryRedirect || '', '/dashboard');
 
   const logger = createAuthRequestLogger();
   const supabase = supabaseAnonServer();
 
-  // --- Magic link implicit tokenek (access_token a URL-ben) ---
+  // Magic link implicit (access_token + refresh_token + expires_in)
   const accessTokenFromLink = url.searchParams.get('access_token') ?? url.searchParams.get('token');
   const refreshTokenFromLink = url.searchParams.get('refresh_token');
   const expiresInFromLink = url.searchParams.get('expires_in');
@@ -288,7 +291,7 @@ export async function GET(request: Request) {
       expiresIn: parseExpiresIn(expiresInFromLink),
     };
 
-    // takarítsuk a redirect sütit
+    // Végcél sütit töröljük
     cookieStore.set({
       name: 'post_auth_redirect',
       value: '',
@@ -302,7 +305,7 @@ export async function GET(request: Request) {
     return handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger);
   }
 
-  // --- Magic link verifyOtp (token_hash) – csak email-alapú típusok ---
+  // Magic link verifyOtp (token_hash)
   const tokenHash = url.searchParams.get('token_hash');
   if (tokenHash) {
     const otpType = normalizeOtpType(url.searchParams.get('type'));
@@ -336,10 +339,10 @@ export async function GET(request: Request) {
       const userId = payload?.sub ?? '';
       if (!userId) {
         recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
-        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
 
-      // takarítás
+      // Végcél sütit töröljük
       cookieStore.set({
         name: 'post_auth_redirect',
         value: '',
@@ -364,7 +367,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // --- OAuth PKCE code exchange (Google) ---
+  // Google OAuth PKCE code exchange
   const code = url.searchParams.get('code');
   if (!code) {
     return redirectTo(MISSING_AUTH_CODE_REDIRECT);
@@ -387,7 +390,7 @@ export async function GET(request: Request) {
       redirectUri: redirectUriForExchange.toString(),
     });
 
-    // egyszer használatos PKCE sütit töröljük
+    // PKCE süti törlése
     cookieStore.set({
       name: 'sb_pkce_code_verifier',
       value: '',
@@ -417,7 +420,7 @@ export async function GET(request: Request) {
       accessTokenMaxAgeSeconds: expiresIn,
     });
 
-    // takarítás
+    // Végcél sütit töröljük
     cookieStore.set({
       name: 'post_auth_redirect',
       value: '',
