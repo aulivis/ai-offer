@@ -226,13 +226,7 @@ export function OfferCard({
             {t('dashboard.actions.revertDecision')}
           </Button>
         )}
-        <Button
-          onClick={() => onDelete(offer)}
-          disabled={isBusy}
-          variant="secondary"
-          size="sm"
-          className="text-red-600"
-        >
+        <Button onClick={() => onDelete(offer)} disabled={isBusy} variant="danger" size="sm">
           {isDeleting ? t('dashboard.actions.deleting') : t('dashboard.actions.deleteOffer')}
         </Button>
       </div>
