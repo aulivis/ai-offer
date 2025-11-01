@@ -3,7 +3,7 @@ import { tokens } from '@/styles/tokens.preset';
 import { t } from '@/copy';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
 };
@@ -16,16 +16,17 @@ const base = [
   'disabled:cursor-not-allowed disabled:opacity-60',
 ].join(' ');
 
-const variantClasses: Record<'primary' | 'secondary' | 'ghost', string> = {
+const variantClasses: Record<NonNullable<Props['variant']>, string> = {
   primary: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110',
   secondary: [
     'border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]',
     'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)]',
   ].join(' '),
   ghost: 'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)]',
+  danger: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110',
 };
 
-const variantStyles: Record<'primary' | 'secondary' | 'ghost', CSSVarStyle> = {
+const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {
   primary: {
     '--btn-bg': tokens.colors.primary,
     '--btn-fg': tokens.colors.primaryInk,
@@ -39,6 +40,13 @@ const variantStyles: Record<'primary' | 'secondary' | 'ghost', CSSVarStyle> = {
   },
   ghost: {
     '--btn-fg': tokens.colors.fg,
+    '--btn-hover-bg': tokens.colors.bgMuted,
+  },
+  danger: {
+    '--btn-bg': tokens.colors.danger,
+    '--btn-fg': tokens.colors.dangerInk,
+    '--btn-border': tokens.colors.danger,
+    '--btn-hover-border': tokens.colors.danger,
     '--btn-hover-bg': tokens.colors.bgMuted,
   },
 };
@@ -66,3 +74,6 @@ export function Button({
     </button>
   );
 }
+
+export type { Props as ButtonProps };
+export default Button;

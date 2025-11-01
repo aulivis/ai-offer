@@ -35,6 +35,7 @@
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
+  --color-danger-ink: #ffffff;
   --brand-primary: #1c274c;
   --brand-secondary: #e2e8f0;
   --brand-text: #0f172a;
@@ -62,6 +63,7 @@
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
+  --color-danger-ink: #ffffff;
   --brand-primary: #1c274c;
   --brand-secondary: #e2e8f0;
   --brand-text: #0f172a;
@@ -85,6 +87,7 @@
   --color-success-rgb: 22 163 74;
   --color-warning-rgb: 245 158 11;
   --color-danger-rgb: 220 38 38;
+  --color-danger-ink-rgb: 255 255 255;
 
   --color-bg: rgb(var(--color-bg-rgb) / 1);
   --color-bg-muted: rgb(var(--color-bg-muted-rgb) / 1);
@@ -97,6 +100,7 @@
   --color-success: rgb(var(--color-success-rgb) / 1);
   --color-warning: rgb(var(--color-warning-rgb) / 1);
   --color-danger: rgb(var(--color-danger-rgb) / 1);
+  --color-danger-ink: rgb(var(--color-danger-ink-rgb) / 1);
 
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 }
