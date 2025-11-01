@@ -4,11 +4,9 @@ import { t } from '@/copy';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import {
-  ArrowDownTrayIcon,
-  BuildingOffice2Icon,
-  DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+import ArrowDownTrayIcon from '@heroicons/react/24/outline/ArrowDownTrayIcon';
+import BuildingOffice2Icon from '@heroicons/react/24/outline/BuildingOffice2Icon';
+import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import { ReactNode, useMemo } from 'react';
