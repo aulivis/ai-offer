@@ -1,6 +1,6 @@
 'use client';
 
-import { t, type CopyKey } from '@/copy';
+import { t } from '@/copy';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
@@ -16,33 +16,9 @@ import { Modal } from '@/components/ui/Modal';
 import { currentMonthStart } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
-
-type Offer = {
-  id: string;
-  title: string;
-  industry: string;
-  status: 'draft' | 'sent' | 'accepted' | 'lost';
-  created_at: string | null;
-  sent_at: string | null;
-  decided_at: string | null;
-  decision: 'accepted' | 'lost' | null;
-  pdf_url: string | null;
-  recipient_id: string | null;
-  recipient?: { company_name: string | null } | null | undefined;
-};
-
-/** Státusz labellek (HU) */
-const STATUS_LABEL_KEYS: Record<Offer['status'], CopyKey> = {
-  draft: 'dashboard.status.labels.draft',
-  sent: 'dashboard.status.labels.sent',
-  accepted: 'dashboard.status.labels.accepted',
-  lost: 'dashboard.status.labels.lost',
-};
-
-const DECISION_LABEL_KEYS: Record<'accepted' | 'lost', CopyKey> = {
-  accepted: 'dashboard.status.labels.accepted',
-  lost: 'dashboard.status.labels.lost',
-};
+import OfferCard from '@/components/dashboard/OfferCard';
+import type { Offer } from '@/app/dashboard/types';
+import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -61,23 +37,6 @@ function isSortDirectionValue(value: string): value is SortDirectionOption {
   return (SORT_DIRECTION_OPTIONS as readonly string[]).includes(value);
 }
 
-/** Penpot-szerű, semantic tokenes státusz badge */
-function StatusBadge({ status }: { status: Offer['status'] }) {
-  const map: Record<Offer['status'], string> = {
-    draft: 'border-border bg-bg text-fg-muted',
-    sent: 'border-accent/30 bg-accent/10 text-accent',
-    accepted: 'border-success/30 bg-success/10 text-success',
-    lost: 'border-danger/30 bg-danger/10 text-danger',
-  };
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium tabular ${map[status]}`}
-    >
-      {t(STATUS_LABEL_KEYS[status])}
-    </span>
-  );
-}
-
 /** Egyszerű metrika kártya semantic tokenekkel */
 function MetricCard({
   label,
@@ -93,39 +52,6 @@ function MetricCard({
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-fg">{value}</p>
       {helper ? <p className="mt-2 text-xs text-fg-muted">{helper}</p> : null}
-    </Card>
-  );
-}
-
-/** Idővonal-szerű státusz lépés (semantic + focusbarát) */
-function StatusStep({
-  title,
-  description,
-  dateLabel,
-  highlight = false,
-  children,
-}: {
-  title: string;
-  description: string;
-  dateLabel: string;
-  highlight?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <Card className={`flex gap-3 px-4 py-3 ${highlight ? 'bg-bg' : 'bg-bg/70 shadow-none'}`}>
-      <span
-        className={`mt-1 h-2.5 w-2.5 rounded-full ${highlight ? 'bg-primary' : 'bg-fg-muted/40'}`}
-      />
-      <div className="flex-1 space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-fg">{title}</p>
-          <span className="text-xs uppercase tracking-[0.25em] text-fg-muted">
-            {dateLabel || '—'}
-          </span>
-        </div>
-        <p className="text-xs text-fg-muted">{description}</p>
-        {children}
-      </div>
     </Card>
   );
 }
@@ -359,20 +285,6 @@ function DeleteConfirmationDialog({
       )}
     </Modal>
   );
-}
-
-/** Dátum utilok (változatlan logika) */
-function isoDateInput(value: string | null): string {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(0, 10);
-}
-function formatDate(value: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 export default function DashboardPage() {
@@ -1180,210 +1092,21 @@ export default function DashboardPage() {
         {!loading && filtered.length > 0 && (
           <>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((o) => {
-                const isUpdating = updatingId === o.id;
-                const isDeleting = deletingId === o.id;
-                const isDownloading = downloadingId === o.id;
-                const isBusy = isUpdating || isDeleting || isDownloading;
-                const isDecided = o.status === 'accepted' || o.status === 'lost';
-
-                return (
-                  <Card
-                    key={o.id}
-                    className="group flex h-full flex-col bg-bg/80 p-5 transition hover:-translate-y-0.5 hover:shadow-pop"
-                  >
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div className="min-w-0 space-y-1">
-                        <p className="truncate text-base font-semibold text-fg">
-                          {o.title || '(névtelen)'}
-                        </p>
-                        <p className="truncate text-sm text-fg-muted">
-                          {(o.recipient?.company_name || '').trim() || '—'}
-                        </p>
-                      </div>
-                      <StatusBadge status={o.status} />
-                    </div>
-
-                    <dl className="space-y-2 text-sm text-fg-muted">
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="">{t('dashboard.offerCard.created')}</dt>
-                        <dd className="font-medium text-fg">{formatDate(o.created_at)}</dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="">{t('dashboard.offerCard.industry')}</dt>
-                        <dd className="font-medium text-fg">
-                          {o.industry || t('dashboard.offerCard.industryUnknown')}
-                        </dd>
-                      </div>
-                      {o.pdf_url ? (
-                        <div className="flex items-center justify-between gap-4">
-                          <dt className="">{t('dashboard.offerCard.export')}</dt>
-                          <dd className="flex flex-wrap items-center gap-2">
-                            <a
-                              className="rounded-full border border-border px-3 py-1 text-xs font-medium text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                              href={o.pdf_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {t('dashboard.offerCard.openPdf')}
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => handleDownloadPdf(o)}
-                              disabled={isBusy}
-                              className="rounded-full border border-border px-3 py-1 text-xs font-medium text-fg transition hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isDownloading
-                                ? t('dashboard.offerCard.savePdfLoading')
-                                : t('dashboard.offerCard.savePdf')}
-                            </button>
-                          </dd>
-                        </div>
-                      ) : null}
-                    </dl>
-
-                    <div className="mt-6 space-y-3">
-                      <StatusStep
-                        title={t('dashboard.statusSteps.sent.title')}
-                        description={t('dashboard.statusSteps.sent.description')}
-                        dateLabel={formatDate(o.sent_at)}
-                        highlight={o.status !== 'draft'}
-                      >
-                        {o.sent_at ? (
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-fg">
-                            <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
-                              <span>{t('dashboard.statusSteps.sent.editDate')}</span>
-                              <Input
-                                type="date"
-                                value={isoDateInput(o.sent_at)}
-                                onChange={(e) => markSent(o, e.target.value)}
-                                disabled={isBusy}
-                                wrapperClassName="flex items-center gap-2"
-                                className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-2 text-xs text-fg">
-                            <Button
-                              onClick={() => markSent(o)}
-                              disabled={isBusy}
-                              variant="secondary"
-                              size="sm"
-                            >
-                              {t('dashboard.statusSteps.sent.markToday')}
-                            </Button>
-                            <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
-                              <span>{t('dashboard.statusSteps.sent.chooseDate')}</span>
-                              <Input
-                                type="date"
-                                onChange={(e) => {
-                                  if (!e.target.value) return;
-                                  markSent(o, e.target.value);
-                                }}
-                                disabled={isBusy}
-                                wrapperClassName="flex items-center gap-2"
-                                className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </StatusStep>
-
-                      <StatusStep
-                        title={t('dashboard.statusSteps.decision.title')}
-                        description={t('dashboard.statusSteps.decision.description')}
-                        dateLabel={isDecided ? formatDate(o.decided_at) : '—'}
-                        highlight={isDecided}
-                      >
-                        {isDecided ? (
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-fg">
-                            <span
-                              className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${
-                                o.status === 'accepted'
-                                  ? 'bg-success/10 text-success'
-                                  : 'bg-danger/10 text-danger'
-                              }`}
-                            >
-                              {o.status === 'accepted'
-                                ? t(DECISION_LABEL_KEYS.accepted)
-                                : t(DECISION_LABEL_KEYS.lost)}
-                            </span>
-                            <div className="flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5">
-                              <span>{t('dashboard.statusSteps.decision.dateLabel')}</span>
-                              <Input
-                                type="date"
-                                value={isoDateInput(o.decided_at)}
-                                onChange={(e) =>
-                                  markDecision(o, o.status as 'accepted' | 'lost', e.target.value)
-                                }
-                                disabled={isBusy}
-                                wrapperClassName="flex items-center gap-2"
-                                className="rounded-lg border-border bg-bg px-2 py-1 text-xs"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-2 text-xs text-fg">
-                            <Button
-                              onClick={() => markDecision(o, 'accepted')}
-                              disabled={isBusy}
-                              variant="secondary"
-                              size="sm"
-                              className="text-success"
-                            >
-                              {t('dashboard.statusSteps.decision.markAccepted')}
-                            </Button>
-                            <Button
-                              onClick={() => markDecision(o, 'lost')}
-                              disabled={isBusy}
-                              variant="secondary"
-                              size="sm"
-                              className="text-danger"
-                            >
-                              {t('dashboard.statusSteps.decision.markLost')}
-                            </Button>
-                          </div>
-                        )}
-                      </StatusStep>
-                    </div>
-
-                    <div className="mt-5 flex flex-wrap gap-2 text-xs text-fg">
-                      {o.status !== 'draft' && (
-                        <Button
-                          onClick={() => revertToDraft(o)}
-                          disabled={isBusy}
-                          variant="secondary"
-                          size="sm"
-                        >
-                          {t('dashboard.actions.revertToDraft')}
-                        </Button>
-                      )}
-                      {isDecided && (
-                        <Button
-                          onClick={() => revertToSent(o)}
-                          disabled={isBusy}
-                          variant="secondary"
-                          size="sm"
-                        >
-                          {t('dashboard.actions.revertDecision')}
-                        </Button>
-                      )}
-                      <Button
-                        onClick={() => setOfferToDelete(o)}
-                        disabled={isBusy}
-                        variant="secondary"
-                        size="sm"
-                        className="text-danger"
-                      >
-                        {isDeleting
-                          ? t('dashboard.actions.deleting')
-                          : t('dashboard.actions.deleteOffer')}
-                      </Button>
-                    </div>
-                  </Card>
-                );
-              })}
+              {filtered.map((o) => (
+                <OfferCard
+                  key={o.id}
+                  offer={o}
+                  isUpdating={updatingId === o.id}
+                  isDownloading={downloadingId === o.id}
+                  isDeleting={deletingId === o.id}
+                  onMarkSent={(offer, date) => markSent(offer, date)}
+                  onMarkDecision={(offer, decision, date) => markDecision(offer, decision, date)}
+                  onRevertToSent={(offer) => revertToSent(offer)}
+                  onRevertToDraft={(offer) => revertToDraft(offer)}
+                  onDelete={(offer) => setOfferToDelete(offer)}
+                  onDownload={(offer) => handleDownloadPdf(offer)}
+                />
+              ))}
             </div>
 
             <div className="mt-6 flex flex-col items-center gap-3 text-center">
