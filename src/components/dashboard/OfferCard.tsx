@@ -68,8 +68,8 @@ export function OfferCard({
 
   return (
     <Card className="group relative flex flex-col gap-6 overflow-hidden rounded-3xl border border-border/60 bg-white/90 p-6 shadow-sm backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
-        <div className="flex flex-1 flex-col gap-6">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <header className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-semibold text-primary">
@@ -153,42 +153,9 @@ export function OfferCard({
             />
           </dl>
 
-          <div className="flex">
-            <StatusBadge
-              status={offer.status}
-              className="w-full justify-center sm:w-auto sm:justify-start"
-            />
-          </div>
-
-          {showRevertToDraft || showRevertDecision ? (
-            <div className="flex flex-wrap gap-2 text-xs text-fg">
-              {showRevertToDraft ? (
-                <Button
-                  onClick={() => onRevertToDraft(offer)}
-                  disabled={isBusy}
-                  variant="secondary"
-                  size="sm"
-                  className="rounded-xl"
-                >
-                  {t('dashboard.actions.revertToDraft')}
-                </Button>
-              ) : null}
-              {showRevertDecision ? (
-                <Button
-                  onClick={() => onRevertToSent(offer)}
-                  disabled={isBusy}
-                  variant="secondary"
-                  size="sm"
-                  className="rounded-xl"
-                >
-                  {t('dashboard.actions.revertDecision')}
-                </Button>
-              ) : null}
-            </div>
-          ) : null}
         </div>
 
-        <aside className="flex flex-col gap-5 rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/12 via-white to-sky-50/40 p-6 shadow-inner lg:w-[21rem] lg:flex-none">
+        <section className="flex flex-col gap-5 rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/12 via-white to-sky-50/40 p-6 shadow-inner">
           <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-primary/80">
             <ClockIcon aria-hidden="true" className="h-4 w-4" />
             <span>{t('dashboard.filters.sortBy.options.status')}</span>
@@ -288,7 +255,41 @@ export function OfferCard({
               )}
             </TimelineStep>
           </ol>
-        </aside>
+        </section>
+
+        {showRevertToDraft || showRevertDecision ? (
+          <div className="flex flex-wrap gap-2 text-xs text-fg">
+            {showRevertToDraft ? (
+              <Button
+                onClick={() => onRevertToDraft(offer)}
+                disabled={isBusy}
+                variant="secondary"
+                size="sm"
+                className="rounded-xl"
+              >
+                {t('dashboard.actions.revertToDraft')}
+              </Button>
+            ) : null}
+            {showRevertDecision ? (
+              <Button
+                onClick={() => onRevertToSent(offer)}
+                disabled={isBusy}
+                variant="secondary"
+                size="sm"
+                className="rounded-xl"
+              >
+                {t('dashboard.actions.revertDecision')}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="flex">
+          <StatusBadge
+            status={offer.status}
+            className="w-full justify-center"
+          />
+        </div>
       </div>
     </Card>
   );
