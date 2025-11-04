@@ -4,11 +4,16 @@ import { t } from '@/copy';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import ArrowDownTrayIcon from '@heroicons/react/24/outline/ArrowDownTrayIcon';
+import ArrowPathIcon from '@heroicons/react/24/outline/ArrowPathIcon';
 import BuildingOffice2Icon from '@heroicons/react/24/outline/BuildingOffice2Icon';
+import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
+import Squares2X2Icon from '@heroicons/react/24/outline/Squares2X2Icon';
+import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
+import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
-import { ReactNode, useMemo } from 'react';
+import { ComponentType, ReactNode, SVGProps, useMemo } from 'react';
 
 export interface OfferCardProps {
   offer: Offer;
@@ -48,13 +53,24 @@ export function OfferCard({
     sent: getTimelineStatus('sent', offer.status),
     decision: getTimelineStatus('decision', offer.status),
   };
+  const showRevertToDraft = offer.status !== 'draft';
+  const showRevertDecision = isDecided;
+  const downloadLabel = t('dashboard.offerCard.savePdf');
+  const openLabel = t('dashboard.offerCard.openPdf');
+  const deleteLabel = isDeleting
+    ? t('dashboard.actions.deleting')
+    : t('dashboard.actions.deleteOffer');
+
+  const actionButtonClass =
+    'inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+  const actionButtonDisabledClass = 'cursor-not-allowed opacity-60';
 
   return (
     <Card className="group relative flex flex-col gap-6 overflow-hidden rounded-3xl border border-border/60 bg-white/90 p-6 shadow-sm backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
         <div className="flex flex-1 flex-col gap-6">
-          <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex items-start gap-3">
+          <header className="flex flex-col gap-4">
+            <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-semibold text-primary">
                 {initials ? (
                   <span aria-hidden="true">{initials}</span>
@@ -62,86 +78,112 @@ export function OfferCard({
                   <BuildingOffice2Icon aria-hidden="true" className="h-6 w-6 text-primary" />
                 )}
               </div>
-              <div className="min-w-0 space-y-1">
-                <p className="truncate text-lg font-semibold text-fg">
-                  {offer.title || '(névtelen)'}
-                </p>
-                <p className="truncate text-sm text-fg-muted">{companyName || '—'}</p>
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="min-w-0 space-y-1">
+                  <p className="truncate text-lg font-semibold text-fg">
+                    {offer.title || '(névtelen)'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
+                  <StatusBadge status={offer.status} />
+                  <span className="truncate">{companyName || '—'}</span>
+                </div>
+              </div>
+              <div className="flex flex-none items-center gap-2 self-start">
+                {offer.pdf_url ? (
+                  <>
+                    <a
+                      className={actionButtonClass}
+                      href={offer.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={openLabel}
+                      title={openLabel}
+                    >
+                      <DocumentTextIcon aria-hidden="true" className="h-5 w-5" />
+                      <span className="sr-only">{openLabel}</span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => onDownload(offer)}
+                      disabled={isBusy}
+                      className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+                      aria-label={downloadLabel}
+                      title={downloadLabel}
+                    >
+                      {isDownloading ? (
+                        <ArrowPathIcon aria-hidden="true" className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <ArrowDownTrayIcon aria-hidden="true" className="h-5 w-5" />
+                      )}
+                      <span className="sr-only">{downloadLabel}</span>
+                    </button>
+                  </>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => onDelete(offer)}
+                  disabled={isBusy}
+                  className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+                  aria-label={deleteLabel}
+                  title={deleteLabel}
+                >
+                  {isDeleting ? (
+                    <ArrowPathIcon aria-hidden="true" className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <TrashIcon aria-hidden="true" className="h-5 w-5 text-rose-500" />
+                  )}
+                  <span className="sr-only">{deleteLabel}</span>
+                </button>
               </div>
             </div>
           </header>
 
-          <dl className="grid gap-4 text-sm text-fg-muted sm:grid-cols-2">
+          <dl className="grid gap-3 sm:grid-cols-2">
             <MetaItem
+              icon={CalendarDaysIcon}
               label={t('dashboard.offerCard.created')}
               value={formatDate(offer.created_at)}
             />
             <MetaItem
+              icon={Squares2X2Icon}
               label={t('dashboard.offerCard.industry')}
               value={offer.industry || t('dashboard.offerCard.industryUnknown')}
             />
-            {offer.pdf_url ? (
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <dt className="font-medium text-fg-muted">{t('dashboard.offerCard.export')}</dt>
-                <dd className="flex flex-wrap gap-2">
-                  <a
-                    className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-bg px-3 py-1.5 text-xs font-semibold text-fg transition-colors hover:border-fg hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    href={offer.pdf_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
-                    {t('dashboard.offerCard.openPdf')}
-                  </a>
-                  <Button
-                    type="button"
-                    onClick={() => onDownload(offer)}
-                    disabled={isBusy}
-                    loading={isDownloading}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
-                    {t('dashboard.offerCard.savePdf')}
-                  </Button>
-                </dd>
-              </div>
-            ) : null}
           </dl>
 
-          <div className="flex flex-wrap gap-2 text-xs text-fg">
-            {offer.status !== 'draft' && (
-              <Button
-                onClick={() => onRevertToDraft(offer)}
-                disabled={isBusy}
-                variant="secondary"
-                size="sm"
-              >
-                {t('dashboard.actions.revertToDraft')}
-              </Button>
-            )}
-            {isDecided && (
-              <Button
-                onClick={() => onRevertToSent(offer)}
-                disabled={isBusy}
-                variant="secondary"
-                size="sm"
-              >
-                {t('dashboard.actions.revertDecision')}
-              </Button>
-            )}
-            <Button onClick={() => onDelete(offer)} disabled={isBusy} variant="danger" size="sm">
-              {isDeleting ? t('dashboard.actions.deleting') : t('dashboard.actions.deleteOffer')}
-            </Button>
-          </div>
+          {showRevertToDraft || showRevertDecision ? (
+            <div className="flex flex-wrap gap-2 text-xs text-fg">
+              {showRevertToDraft ? (
+                <Button
+                  onClick={() => onRevertToDraft(offer)}
+                  disabled={isBusy}
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-xl"
+                >
+                  {t('dashboard.actions.revertToDraft')}
+                </Button>
+              ) : null}
+              {showRevertDecision ? (
+                <Button
+                  onClick={() => onRevertToSent(offer)}
+                  disabled={isBusy}
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-xl"
+                >
+                  {t('dashboard.actions.revertDecision')}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
-        <aside className="flex flex-col gap-5 rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/12 via-white to-sky-50/40 p-6 shadow-inner md:w-[22rem] md:flex-none">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-primary/80">
-              {t('dashboard.filters.sortBy.options.status')}
-            </span>
-            <StatusBadge status={offer.status} />
+        <aside className="flex flex-col gap-5 rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/12 via-white to-sky-50/40 p-6 shadow-inner lg:w-[21rem] lg:flex-none">
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-primary/80">
+            <ClockIcon aria-hidden="true" className="h-4 w-4" />
+            <span>{t('dashboard.filters.sortBy.options.status')}</span>
           </div>
 
           <ol className="relative">
@@ -246,16 +288,31 @@ export function OfferCard({
 
 export default OfferCard;
 
-function MetaItem({ label, value }: { label: string; value: string }) {
+function MetaItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  label: string;
+  value: string;
+}) {
   return (
-    <div className="flex flex-col gap-1">
-      <dt className="font-medium text-fg-muted">{label}</dt>
-      <dd className="text-sm font-semibold text-fg">{value}</dd>
+    <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-white/80 px-3 py-2 shadow-sm">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Icon aria-hidden="true" className="h-5 w-5" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-[11px] font-medium uppercase tracking-[0.2em] text-fg-muted">
+          {label}
+        </dt>
+        <dd className="truncate text-sm font-semibold text-fg">{value}</dd>
+      </div>
     </div>
   );
 }
 
-function StatusBadge({ status }: { status: Offer['status'] }) {
+function StatusBadge({ status, className }: { status: Offer['status']; className?: string }) {
   const map: Record<Offer['status'], string> = {
     draft: 'border-amber-200 bg-amber-100/70 text-amber-700',
     sent: 'border-blue-200 bg-blue-100/70 text-blue-700',
@@ -265,7 +322,7 @@ function StatusBadge({ status }: { status: Offer['status'] }) {
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur ${map[status]}`}
+      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur whitespace-nowrap ${map[status]} ${className ?? ''}`}
     >
       {t(STATUS_LABEL_KEYS[status])}
     </span>
