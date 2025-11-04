@@ -6,6 +6,7 @@ import { MOCK_SLOTS } from '@/app/pdf/sdk/mock';
 import { buildTokens } from '@/app/pdf/sdk/tokens';
 import type { RenderContext } from '@/app/pdf/sdk/types';
 import { loadTemplate, TemplateNotFoundError } from '@/app/pdf/sdk/registry';
+import '@/app/pdf/sdk/templates';
 
 export const metadata: Metadata = {
   title: 'PDF Template Preview',
