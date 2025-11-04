@@ -1064,7 +1064,7 @@ export default function DashboardPage() {
 
         {/* Skeletonok */}
         {loading && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="animate-pulse p-5">
                 <div className="mb-4 h-4 w-3/5 rounded-full bg-bg" />
@@ -1091,7 +1091,7 @@ export default function DashboardPage() {
         {/* Lista */}
         {!loading && filtered.length > 0 && (
           <>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               {filtered.map((o) => (
                 <OfferCard
                   key={o.id}
