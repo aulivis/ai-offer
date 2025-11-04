@@ -14,7 +14,9 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
-import { ComponentType, ReactNode, SVGProps, useMemo } from 'react';
+import { ComponentType, ReactNode, SVGProps, useEffect, useMemo, useState } from 'react';
+import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
+import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 
 export interface OfferCardProps {
   offer: Offer;
@@ -48,12 +50,14 @@ export function OfferCard({
   const isDecided = offer.status === 'accepted' || offer.status === 'lost';
   const companyName = (offer.recipient?.company_name ?? '').trim();
   const initials = useMemo(() => getInitials(companyName), [companyName]);
+  const [decisionDate, setDecisionDate] = useState<string>(() => isoDateInput(offer.decided_at));
 
   const timelineStates: Record<TimelineKey, TimelineStatus> = {
     draft: getTimelineStatus('draft', offer.status),
     sent: getTimelineStatus('sent', offer.status),
     decision: getTimelineStatus('decision', offer.status),
   };
+  const statusTheme = STATUS_CARD_THEMES[offer.status];
   const showRevertToDraft = offer.status !== 'draft';
   const showRevertDecision = isDecided;
   const downloadLabel = t('dashboard.offerCard.savePdf');
@@ -61,6 +65,10 @@ export function OfferCard({
   const deleteLabel = isDeleting
     ? t('dashboard.actions.deleting')
     : t('dashboard.actions.deleteOffer');
+
+  useEffect(() => {
+    setDecisionDate(isoDateInput(offer.decided_at));
+  }, [offer.decided_at]);
 
   const actionButtonClass =
     'inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
@@ -71,23 +79,36 @@ export function OfferCard({
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-6">
           <header className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-semibold text-primary">
-                {initials ? (
-                  <span aria-hidden="true">{initials}</span>
-                ) : (
-                  <BuildingOffice2Icon aria-hidden="true" className="h-6 w-6 text-primary" />
-                )}
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-semibold text-primary">
+                  {initials ? (
+                    <span aria-hidden="true" title={companyName || undefined}>
+                      {initials}
+                    </span>
+                  ) : (
+                    <BuildingOffice2Icon
+                      aria-hidden="true"
+                      className="h-6 w-6 text-primary"
+                      title={companyName || t('dashboard.offerCard.industryUnknown')}
+                    />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-lg font-semibold text-fg">
+                    {offer.title || '(névtelen)'}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-lg font-semibold text-fg">
-                  {offer.title || '(névtelen)'}
-                </p>
-              </div>
+              <StatusBadge status={offer.status} className="flex-none" />
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2 text-sm text-fg-muted">
-                <UserCircleIcon aria-hidden="true" className="h-5 w-5 flex-none text-primary/80" />
+                <UserCircleIcon
+                  aria-hidden="true"
+                  className="h-5 w-5 flex-none text-primary/80"
+                  title={companyName || '—'}
+                />
                 <span className="truncate font-medium text-fg">{companyName || '—'}</span>
               </div>
               <div className="flex items-center gap-2">
@@ -152,12 +173,19 @@ export function OfferCard({
               value={offer.industry || t('dashboard.offerCard.industryUnknown')}
             />
           </dl>
-
         </div>
 
-        <section className="flex flex-col gap-5 rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/12 via-white to-sky-50/40 p-6 shadow-inner">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-primary/80">
-            <ClockIcon aria-hidden="true" className="h-4 w-4" />
+        <section
+          className={`flex flex-col gap-5 rounded-3xl border p-6 shadow-inner ${statusTheme.container}`}
+        >
+          <div
+            className={`flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] ${statusTheme.accentText}`}
+          >
+            <ClockIcon
+              aria-hidden="true"
+              className={`h-4 w-4 ${statusTheme.accentIcon}`}
+              title={t('dashboard.filters.sortBy.options.status')}
+            />
             <span>{t('dashboard.filters.sortBy.options.status')}</span>
           </div>
 
@@ -184,12 +212,14 @@ export function OfferCard({
                   disabled={isBusy}
                 />
               ) : (
-                <>
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     onClick={() => onMarkSent(offer)}
                     disabled={isBusy}
                     variant="secondary"
                     size="sm"
+                    className="h-9 rounded-xl"
+                    title={t('dashboard.statusSteps.sent.markToday')}
                   >
                     {t('dashboard.statusSteps.sent.markToday')}
                   </Button>
@@ -199,7 +229,7 @@ export function OfferCard({
                     onChange={(value) => onMarkSent(offer, value)}
                     disabled={isBusy}
                   />
-                </>
+                </div>
               )}
             </TimelineStep>
             <TimelineStep
@@ -232,26 +262,40 @@ export function OfferCard({
                   />
                 </>
               ) : (
-                <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <CompactDatePicker
+                    label={t('dashboard.statusSteps.decision.chooseDate')}
+                    value={decisionDate}
+                    onChange={setDecisionDate}
+                    disabled={isBusy}
+                  />
                   <Button
-                    onClick={() => onMarkDecision(offer, 'accepted')}
+                    onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
                     disabled={isBusy}
                     variant="secondary"
                     size="sm"
-                    className="text-emerald-600"
+                    className="h-9 w-9 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                    aria-label={t('dashboard.statusSteps.decision.markAccepted')}
+                    title={t('dashboard.statusSteps.decision.markAccepted')}
                   >
-                    {t('dashboard.statusSteps.decision.markAccepted')}
+                    <CheckIcon aria-hidden="true" className="h-5 w-5" />
+                    <span className="sr-only">
+                      {t('dashboard.statusSteps.decision.markAccepted')}
+                    </span>
                   </Button>
                   <Button
-                    onClick={() => onMarkDecision(offer, 'lost')}
+                    onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
                     disabled={isBusy}
                     variant="secondary"
                     size="sm"
-                    className="text-rose-600"
+                    className="h-9 w-9 rounded-xl border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                    aria-label={t('dashboard.statusSteps.decision.markLost')}
+                    title={t('dashboard.statusSteps.decision.markLost')}
                   >
-                    {t('dashboard.statusSteps.decision.markLost')}
+                    <XMarkIcon aria-hidden="true" className="h-5 w-5" />
+                    <span className="sr-only">{t('dashboard.statusSteps.decision.markLost')}</span>
                   </Button>
-                </>
+                </div>
               )}
             </TimelineStep>
           </ol>
@@ -283,13 +327,6 @@ export function OfferCard({
             ) : null}
           </div>
         ) : null}
-
-        <div className="flex">
-          <StatusBadge
-            status={offer.status}
-            className="w-full justify-center"
-          />
-        </div>
       </div>
     </Card>
   );
@@ -308,7 +345,10 @@ function MetaItem({
 }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-white/80 px-3 py-2 shadow-sm">
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <span
+        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"
+        title={label}
+      >
         <Icon aria-hidden="true" className="h-5 w-5" />
       </span>
       <div className="min-w-0">
@@ -325,7 +365,7 @@ function StatusBadge({ status, className }: { status: Offer['status']; className
   const map: Record<Offer['status'], string> = {
     draft: 'border-amber-200 bg-amber-100/70 text-amber-700',
     sent: 'border-blue-200 bg-blue-100/70 text-blue-700',
-    accepted: 'border-emerald-200 bg-emerald-100/70 text-emerald-700',
+    accepted: 'border-emerald-300 bg-emerald-100/70 text-emerald-800',
     lost: 'border-rose-200 bg-rose-100/70 text-rose-700',
   };
 
@@ -337,6 +377,31 @@ function StatusBadge({ status, className }: { status: Offer['status']; className
     </span>
   );
 }
+const STATUS_CARD_THEMES: Record<
+  Offer['status'],
+  { container: string; accentText: string; accentIcon: string }
+> = {
+  draft: {
+    container: 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-amber-100/40',
+    accentText: 'text-amber-600',
+    accentIcon: 'text-amber-500',
+  },
+  sent: {
+    container: 'border-sky-200 bg-gradient-to-br from-sky-50 via-white to-sky-100/40',
+    accentText: 'text-sky-600',
+    accentIcon: 'text-sky-500',
+  },
+  accepted: {
+    container: 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100/40',
+    accentText: 'text-emerald-700',
+    accentIcon: 'text-emerald-600',
+  },
+  lost: {
+    container: 'border-rose-200 bg-gradient-to-br from-rose-50 via-white to-rose-100/40',
+    accentText: 'text-rose-700',
+    accentIcon: 'text-rose-600',
+  },
+};
 
 const indicatorRing: Record<TimelineStatus, string> = {
   complete: 'border-primary/60 shadow-[0_0_0_4px_rgba(59,130,246,0.12)]',
@@ -421,7 +486,7 @@ function CompactDatePicker({
   disabled?: boolean;
 }) {
   return (
-    <label className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-white/90 px-3 py-1.5 text-xs font-semibold text-fg shadow-sm">
+    <label className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 bg-white/90 px-3 text-xs font-semibold text-fg shadow-sm">
       <span>{label}</span>
       <input
         type="date"

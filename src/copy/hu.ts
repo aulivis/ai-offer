@@ -321,18 +321,19 @@ export const hu = {
     },
     statusSteps: {
       sent: {
-        title: 'Kiküldve az ügyfélnek',
+        title: 'Küldés',
         description: 'Add meg, mikor küldted el az ajánlatot.',
         editDate: 'Dátum módosítása',
-        markToday: 'Jelölés (ma)',
-        chooseDate: 'Dátum választása',
+        markToday: 'Ma',
+        chooseDate: 'Máskor:',
       },
       decision: {
-        title: 'Ügyfél döntése',
+        title: 'Döntés',
         description: 'Jegyezd fel, hogy elfogadták vagy elutasították az ajánlatot.',
         dateLabel: 'Döntés dátuma',
-        markAccepted: 'Megjelölés: Elfogadva',
-        markLost: 'Megjelölés: Elutasítva',
+        chooseDate: 'Máskor:',
+        markAccepted: 'Elfogadva',
+        markLost: 'Elutasítva',
       },
     },
     deleteModal: {
