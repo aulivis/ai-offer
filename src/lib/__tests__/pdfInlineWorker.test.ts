@@ -4,6 +4,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PdfJobInput } from '@/lib/queue/pdf';
 import { createMinimalEngineHtml } from '@/lib/pdfHtmlSignature';
 
+const renderRuntimePdfHtmlMock = vi.fn((runtimePayload) =>
+  createMinimalEngineHtml(`<p>Runtime:${runtimePayload.templateId}</p>`),
+);
+
+vi.mock('@/lib/pdfRuntime', () => ({
+  renderRuntimePdfHtml: (payload: unknown) => renderRuntimePdfHtmlMock(payload),
+}));
+
+const incrementUsageMock = vi.fn().mockResolvedValue({
+  allowed: true,
+  offersGenerated: 1,
+  periodStart: '2024-07-01',
+});
+const rollbackUsageIncrementMock = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('@/lib/usageHelpers', () => ({
+  incrementUsage: (...args: unknown[]) => incrementUsageMock(...args),
+  rollbackUsageIncrement: (...args: unknown[]) => rollbackUsageIncrementMock(...args),
+}));
+
 const launchMock = vi.fn();
 
 vi.mock('puppeteer', () => ({
@@ -53,6 +73,22 @@ function createSupabaseStub() {
       };
     }
 
+    if (table === 'offers') {
+      return {
+        update: vi.fn(() => ({
+          eq: (column: string, value: unknown) => {
+            eqMock(column, value);
+            return {
+              eq: (col: string, val: unknown) => {
+                eqMock(col, val);
+                return Promise.resolve({ data: null, error: null });
+              },
+            };
+          },
+        })),
+      };
+    }
+
     throw new Error(`Unexpected table: ${table}`);
   });
 
@@ -78,6 +114,9 @@ describe('processPdfJobInline resource cleanup', () => {
   beforeEach(() => {
     launchMock.mockReset();
     ensureServerEnv();
+    renderRuntimePdfHtmlMock.mockClear();
+    incrementUsageMock.mockClear();
+    rollbackUsageIncrementMock.mockClear();
   });
 
   it('closes the page and browser when rendering fails', async () => {
@@ -163,10 +202,9 @@ describe('processPdfJobInline resource cleanup', () => {
 
     expect(page.setDefaultNavigationTimeout).toHaveBeenCalledWith(90_000);
     expect(page.setDefaultTimeout).toHaveBeenCalledWith(90_000);
-    expect(setContent).toHaveBeenCalledWith(
-      createMinimalEngineHtml('<p>Hello</p>'),
-      { waitUntil: 'networkidle0' },
-    );
+    expect(setContent).toHaveBeenCalledWith(createMinimalEngineHtml('<p>Hello</p>'), {
+      waitUntil: 'networkidle0',
+    });
     expect(pdf).toHaveBeenCalledWith({
       printBackground: true,
       preferCSSPageSize: true,
@@ -176,6 +214,63 @@ describe('processPdfJobInline resource cleanup', () => {
       margin: { top: '0', right: '0', bottom: '0', left: '0' },
     });
 
+    expect(pageClose).toHaveBeenCalledTimes(1);
+    expect(browserClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders runtime template payload when provided', async () => {
+    const pdfBuffer = new Uint8Array([1, 2, 3]);
+    const pageClose = vi.fn().mockResolvedValue(undefined);
+    const browserClose = vi.fn().mockResolvedValue(undefined);
+    const setContent = vi.fn().mockResolvedValue(undefined);
+    const pdf = vi.fn().mockResolvedValue(pdfBuffer);
+
+    const page = {
+      setContent,
+      pdf,
+      setDefaultNavigationTimeout: vi.fn(),
+      setDefaultTimeout: vi.fn(),
+      close: pageClose,
+      on: vi.fn(),
+      off: vi.fn(),
+    };
+
+    const browser = {
+      newPage: vi.fn().mockResolvedValue(page),
+      close: browserClose,
+    };
+
+    launchMock.mockResolvedValue(browser);
+
+    const { supabase, storageBucket } = createSupabaseStub();
+    storageBucket.upload.mockResolvedValue({ error: null });
+
+    const runtimePayload = {
+      templateId: 'free.base',
+      locale: 'hu',
+      brand: { name: 'Acme', logoUrl: null, primaryHex: '#111111', secondaryHex: '#222222' },
+      slots: {
+        brand: { name: 'Acme', logoUrl: null },
+        doc: { title: 'Offer', subtitle: 'Subtitle', date: '2024-05-01' },
+        customer: { name: 'Jane Doe', address: '123 Street', taxId: '123' },
+        items: [],
+        totals: { net: 0, vat: 0, gross: 0, currency: 'HUF' },
+        notes: 'Thanks!',
+      },
+    };
+
+    const { processPdfJobInline } = await import('@/lib/pdfInlineWorker');
+
+    await processPdfJobInline(
+      supabase,
+      createJob({ runtimeTemplate: runtimePayload, html: 'ignored-html' }),
+    );
+
+    expect(renderRuntimePdfHtmlMock).toHaveBeenCalledWith(runtimePayload);
+    expect(setContent).toHaveBeenCalledWith(renderRuntimePdfHtmlMock.mock.results[0].value, {
+      waitUntil: 'networkidle0',
+    });
+    expect(pdf).toHaveBeenCalled();
     expect(pageClose).toHaveBeenCalledTimes(1);
     expect(browserClose).toHaveBeenCalledTimes(1);
   });

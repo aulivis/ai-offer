@@ -10,6 +10,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { envServer } from '@/env.server';
 import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateId } from '@/app/pdf/templates/types';
+import type { RuntimePdfPayload } from '../pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 
 export interface PdfJobMetadata {
@@ -28,6 +29,7 @@ export interface PdfJobInput {
   userId: string;
   storagePath: string;
   html: string;
+  runtimeTemplate?: RuntimePdfPayload | null;
   callbackUrl?: string | null;
   usagePeriodStart: string;
   userLimit: number | null;
@@ -266,6 +268,7 @@ async function insertPdfJob(sb: SupabaseClient, job: PreparedPdfJob) {
     status: 'pending',
     payload: {
       html: job.html,
+      runtimeTemplate: job.runtimeTemplate ?? null,
       usagePeriodStart: job.usagePeriodStart,
       userLimit: job.userLimit,
       deviceId: job.deviceId ?? null,
