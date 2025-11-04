@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Page } from 'puppeteer';
+import type { HTTPRequest, HTTPResponse, Page } from 'puppeteer';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
@@ -24,6 +24,70 @@ async function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, me
         reject(error);
       });
   });
+}
+
+type PageEventHandler = (...args: unknown[]) => void;
+
+function detachPageListener(page: Page, eventName: Parameters<Page['on']>[0], handler: PageEventHandler) {
+  const anyPage = page as unknown as {
+    off?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
+    removeListener?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
+  };
+
+  if (typeof anyPage.off === 'function') {
+    anyPage.off(eventName, handler);
+  } else if (typeof anyPage.removeListener === 'function') {
+    anyPage.removeListener(eventName, handler);
+  }
+}
+
+async function setContentWithNetworkIdleLogging(page: Page, html: string, context: string) {
+  const requestFailures: Array<{ url: string; errorText?: string | null }> = [];
+  const responseErrors: Array<{ url: string; status: number }> = [];
+
+  const onRequestFailed = (request: HTTPRequest) => {
+    const failure = request.failure();
+    requestFailures.push({ url: request.url(), errorText: failure?.errorText ?? null });
+  };
+
+  const onResponse = (response: HTTPResponse) => {
+    const status = response.status();
+    if (status >= 400) {
+      responseErrors.push({ url: response.url(), status });
+    }
+  };
+
+  page.on('requestfailed', onRequestFailed);
+  page.on('response', onResponse);
+
+  const startedAt = Date.now();
+
+  try {
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+  } catch (error) {
+    console.error(`[${context}] page.setContent failed while waiting for networkidle0`, error);
+    throw error;
+  } finally {
+    detachPageListener(page, 'requestfailed', onRequestFailed);
+    detachPageListener(page, 'response', onResponse);
+
+    const elapsed = Date.now() - startedAt;
+    console.info(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
+
+    if (requestFailures.length > 0) {
+      console.warn(
+        `[${context}] ${requestFailures.length} request(s) failed while loading PDF content`,
+        requestFailures,
+      );
+    }
+
+    if (responseErrors.length > 0) {
+      console.warn(
+        `[${context}] ${responseErrors.length} response(s) returned error status while loading PDF content`,
+        responseErrors,
+      );
+    }
+  }
 }
 
 export async function processPdfJobInline(
@@ -59,17 +123,14 @@ export async function processPdfJobInline(
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
-            await page.setContent(job.html, { waitUntil: 'networkidle0' });
+            await setContentWithNetworkIdleLogging(page, job.html, 'inline-pdf');
             return await page.pdf({
-              format: 'A4',
               printBackground: true,
               preferCSSPageSize: true,
-              margin: {
-                top: '24mm',
-                right: '16mm',
-                bottom: '24mm',
-                left: '16mm',
-              },
+              displayHeaderFooter: true,
+              headerTemplate: '<div></div>',
+              footerTemplate: '<div></div>',
+              margin: { top: '0', right: '0', bottom: '0', left: '0' },
             });
           } finally {
             if (page) {

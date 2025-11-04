@@ -173,7 +173,14 @@ describe('offer templates golden tests', () => {
         const page = await browser.newPage();
         try {
           await page.setContent(html, { waitUntil: 'networkidle0' });
-          const pdfBinary = await page.pdf({ format: 'A4', printBackground: true });
+          const pdfBinary = await page.pdf({
+            printBackground: true,
+            preferCSSPageSize: true,
+            displayHeaderFooter: true,
+            headerTemplate: '<div></div>',
+            footerTemplate: '<div></div>',
+            margin: { top: '0', right: '0', bottom: '0', left: '0' },
+          });
           const pdfBuffer = Buffer.isBuffer(pdfBinary)
             ? pdfBinary
             : Buffer.from(pdfBinary.buffer, pdfBinary.byteOffset, pdfBinary.byteLength);

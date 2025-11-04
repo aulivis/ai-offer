@@ -91,6 +91,8 @@ describe('processPdfJobInline resource cleanup', () => {
       setDefaultNavigationTimeout: vi.fn(),
       setDefaultTimeout: vi.fn(),
       close: pageClose,
+      on: vi.fn(),
+      off: vi.fn(),
     };
 
     const browser = {
@@ -141,6 +143,8 @@ describe('processPdfJobInline resource cleanup', () => {
       setDefaultNavigationTimeout: vi.fn(),
       setDefaultTimeout: vi.fn(),
       close: pageClose,
+      on: vi.fn(),
+      off: vi.fn(),
     };
 
     const browser = {
@@ -164,15 +168,12 @@ describe('processPdfJobInline resource cleanup', () => {
       { waitUntil: 'networkidle0' },
     );
     expect(pdf).toHaveBeenCalledWith({
-      format: 'A4',
       printBackground: true,
       preferCSSPageSize: true,
-      margin: {
-        top: '24mm',
-        right: '16mm',
-        bottom: '24mm',
-        left: '16mm',
-      },
+      displayHeaderFooter: true,
+      headerTemplate: '<div></div>',
+      footerTemplate: '<div></div>',
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
     });
 
     expect(pageClose).toHaveBeenCalledTimes(1);
