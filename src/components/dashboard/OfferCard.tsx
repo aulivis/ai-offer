@@ -9,6 +9,7 @@ import BuildingOffice2Icon from '@heroicons/react/24/outline/BuildingOffice2Icon
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 import Squares2X2Icon from '@heroicons/react/24/outline/Squares2X2Icon';
+import UserCircleIcon from '@heroicons/react/24/outline/UserCircleIcon';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
 import type { Offer } from '@/app/dashboard/types';
@@ -70,7 +71,7 @@ export function OfferCard({
       <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
         <div className="flex flex-1 flex-col gap-6">
           <header className="flex flex-col gap-4">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-semibold text-primary">
                 {initials ? (
                   <span aria-hidden="true">{initials}</span>
@@ -78,18 +79,18 @@ export function OfferCard({
                   <BuildingOffice2Icon aria-hidden="true" className="h-6 w-6 text-primary" />
                 )}
               </div>
-              <div className="min-w-0 flex-1 space-y-3">
-                <div className="min-w-0 space-y-1">
-                  <p className="truncate text-lg font-semibold text-fg">
-                    {offer.title || '(névtelen)'}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
-                  <StatusBadge status={offer.status} />
-                  <span className="truncate">{companyName || '—'}</span>
-                </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-lg font-semibold text-fg">
+                  {offer.title || '(névtelen)'}
+                </p>
               </div>
-              <div className="flex flex-none items-center gap-2 self-start">
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2 text-sm text-fg-muted">
+                <UserCircleIcon aria-hidden="true" className="h-5 w-5 flex-none text-primary/80" />
+                <span className="truncate font-medium text-fg">{companyName || '—'}</span>
+              </div>
+              <div className="flex items-center gap-2">
                 {offer.pdf_url ? (
                   <>
                     <a
@@ -151,6 +152,13 @@ export function OfferCard({
               value={offer.industry || t('dashboard.offerCard.industryUnknown')}
             />
           </dl>
+
+          <div className="flex">
+            <StatusBadge
+              status={offer.status}
+              className="w-full justify-center sm:w-auto sm:justify-start"
+            />
+          </div>
 
           {showRevertToDraft || showRevertDecision ? (
             <div className="flex flex-wrap gap-2 text-xs text-fg">
@@ -322,7 +330,7 @@ function StatusBadge({ status, className }: { status: Offer['status']; className
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur whitespace-nowrap ${map[status]} ${className ?? ''}`}
+      className={`flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur text-center ${map[status]} ${className ?? ''}`}
     >
       {t(STATUS_LABEL_KEYS[status])}
     </span>
