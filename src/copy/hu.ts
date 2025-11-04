@@ -1465,6 +1465,32 @@ export const hu = {
         pricing: 'Pricing',
         gallery: 'Galéria',
       },
+      runtime: {
+        freeBase: {
+          sections: {
+            client: 'Client',
+            pricing: 'Scope & Pricing',
+            totals: 'Totals',
+            notes: 'Notes',
+          },
+          labels: {
+            customerName: 'Customer',
+            customerAddress: 'Address',
+            customerTaxId: 'Tax ID',
+          },
+          table: {
+            service: 'Service',
+            quantity: 'Qty',
+            unitPrice: 'Unit price',
+            total: 'Total',
+          },
+          totals: {
+            subtotal: 'Subtotal',
+            tax: 'Tax',
+            total: 'Total',
+          },
+        },
+      },
     },
     pricingTable: {
       headers: {

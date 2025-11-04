@@ -6,6 +6,7 @@ import { MOCK_SLOTS } from '@/app/pdf/sdk/mock';
 import { buildTokens } from '@/app/pdf/sdk/tokens';
 import type { OfferTemplate, RenderContext } from '@/app/pdf/sdk/types';
 import { getTemplateMeta } from '@/app/pdf/templates/registry';
+import { createTranslator } from '@/copy';
 
 export const metadata: Metadata = {
   title: 'PDF Template Preview',
@@ -119,7 +120,10 @@ export default function PdfPreviewPage({ searchParams }: { searchParams: SearchP
     secondaryHex,
   });
 
-  const ctx: RenderContext = { slots, tokens };
+  const locale = getFirst(searchParams.locale);
+  const i18n = createTranslator(locale);
+
+  const ctx: RenderContext = { slots, tokens, i18n };
   const headHtml = template.renderHead(ctx);
   const bodyHtml = template.renderBody(ctx);
   const cssVars = tokensToCssVars(tokens);

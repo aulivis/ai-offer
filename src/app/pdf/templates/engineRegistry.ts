@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { freeBaseTemplate } from './free.base';
+import { legacyFreeBaseTemplate } from './free.base/legacy';
 import { premiumElegantTemplate } from './premium.elegant';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
 
@@ -183,7 +183,7 @@ export function getOfferTemplateByLegacyId(legacyId: string): OfferTemplate {
 }
 
 // Register built-in templates
-const builtinTemplates = [freeBaseTemplate, premiumElegantTemplate];
+const builtinTemplates = [legacyFreeBaseTemplate, premiumElegantTemplate];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);

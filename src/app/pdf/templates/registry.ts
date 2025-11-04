@@ -1,6 +1,8 @@
 import type { OfferTemplate } from '@/app/pdf/sdk/types';
 import { minimalRuntimeTemplate } from '@/app/pdf/sdk/templates/minimal';
 
+import freeBaseTemplate from './free.base';
+
 export type TemplateMeta = {
   id: string;
   name: string;
@@ -19,7 +21,15 @@ const minimalTemplateMeta: TemplateMeta = {
   factory: () => ({ ...minimalRuntimeTemplate }),
 };
 
-export const TEMPLATE_REGISTRY: TemplateMeta[] = [minimalTemplateMeta];
+const freeBaseTemplateMeta: TemplateMeta = {
+  id: freeBaseTemplate.id,
+  name: freeBaseTemplate.name,
+  version: freeBaseTemplate.version,
+  capabilities: freeBaseTemplate.capabilities,
+  factory: () => ({ ...freeBaseTemplate }),
+};
+
+export const TEMPLATE_REGISTRY: TemplateMeta[] = [freeBaseTemplateMeta, minimalTemplateMeta];
 
 export function getTemplateMeta(id: string) {
   return TEMPLATE_REGISTRY.find((t) => t.id === id) || null;
