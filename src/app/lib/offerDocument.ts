@@ -167,6 +167,66 @@ export const OFFER_DOCUMENT_STYLES = `
     color: var(--brand-muted, #334155);
     font-style: italic;
   }
+  .section-card {
+    background: rgba(15, 23, 42, 0.02);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: var(--radius-lg, 2rem);
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .section-card__body {
+    display: grid;
+    gap: var(--space-md, 1rem);
+    padding: var(--space-lg, 1.5rem);
+  }
+  .section-card--header {
+    background: transparent;
+    border: none;
+  }
+  .section-card--header .section-card__body {
+    padding: 0;
+  }
+  .section-card--pricing .section-card__body {
+    gap: var(--space-md, 1.25rem);
+  }
+  .section-card--gallery {
+    background: transparent;
+    border: none;
+  }
+  .section-card--gallery .section-card__body {
+    padding: 0;
+  }
+  .section-stack {
+    display: grid;
+    gap: var(--space-lg, 1.75rem);
+  }
+  .key-metrics {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .key-metrics__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .key-metrics__label {
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+  }
+  .key-metrics__value {
+    font-weight: 600;
+  }
+  .key-metrics__value--placeholder {
+    font-style: italic;
+    opacity: 0.8;
+  }
+  .section-card--header .key-metrics {
+    justify-items: end;
+  }
+  .section-card--header .key-metrics__item {
+    align-items: flex-end;
+  }
   @media (max-width: 640px) {
     .offer-doc__header {
       align-items: stretch;
@@ -179,6 +239,12 @@ export const OFFER_DOCUMENT_STYLES = `
     .offer-doc__meta {
       align-items: flex-start;
       text-align: left;
+    }
+    .section-card--header .key-metrics {
+      justify-items: flex-start;
+    }
+    .section-card--header .key-metrics__item {
+      align-items: flex-start;
     }
   }
   .offer-doc__footer {
@@ -755,8 +821,13 @@ export function offerBodyMarkup({
   const pricingBodyContent = pricingBodyMatch?.[1] ?? '';
   const pricingRowCount = (pricingBodyContent.match(/<tr\b/gi) || []).length;
   const shouldForcePricingBreak = pricingRowCount > 0 && pricingRowCount <= 3;
-  const standardTableClasses = ['offer-doc__table'];
-  const premiumTableClasses = ['offer-doc__table', 'offer-doc__table--card'];
+  const standardTableClasses = ['offer-doc__table', 'section-card', 'section-card--pricing'];
+  const premiumTableClasses = [
+    'offer-doc__table',
+    'offer-doc__table--card',
+    'section-card',
+    'section-card--pricing',
+  ];
   if (shouldForcePricingBreak) {
     standardTableClasses.push('offer-doc__table--force-break');
     premiumTableClasses.push('offer-doc__table--force-break');
@@ -783,12 +854,14 @@ export function offerBodyMarkup({
           </div>
         </header>
         <div class="offer-doc__premium-body">
-          <section class="offer-doc__content offer-doc__content--card">
+          <section class="offer-doc__content offer-doc__content--card section-stack">
             ${aiBodyHtml}
           </section>
           <section class="${premiumTableClasses.join(' ')}">
-            ${pricingHeadingHtml}
-            ${priceTableHtml}
+            <div class="section-card__body">
+              ${pricingHeadingHtml}
+              ${priceTableHtml}
+            </div>
           </section>
         </div>
         <footer class="offer-doc__footer first-page-only">
@@ -843,12 +916,14 @@ export function offerBodyMarkup({
           <span class="${issueDateClass}">${resolvedIssueDate}</span>
         </div>
       </header>
-      <section class="offer-doc__content">
+      <section class="offer-doc__content section-stack">
         ${aiBodyHtml}
       </section>
       <section class="${standardTableClasses.join(' ')}">
-        ${pricingHeadingHtml}
-        ${priceTableHtml}
+        <div class="section-card__body">
+          ${pricingHeadingHtml}
+          ${priceTableHtml}
+        </div>
       </section>
       <footer class="offer-doc__footer first-page-only">
         <div class="offer-doc__footer-grid">

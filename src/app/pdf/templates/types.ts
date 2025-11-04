@@ -64,6 +64,7 @@ export interface OfferData {
   companyWebsite?: string | null;
   companyAddress?: string | null;
   companyTaxId?: string | null;
+  pricingFootnote?: string | null;
   images?: TemplateImageAsset[] | null;
 }
 

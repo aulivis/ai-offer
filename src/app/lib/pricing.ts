@@ -71,7 +71,15 @@ export function summarize(rows: PriceRow[]): { net: number; vat: number; gross: 
  */
 const DEFAULT_TRANSLATOR = createTranslator('hu');
 
-export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRANSLATOR): string {
+interface PriceTableRenderOptions {
+  footnote?: string | null;
+}
+
+export function priceTableHtml(
+  rows: PriceRow[],
+  i18n: Translator = DEFAULT_TRANSLATOR,
+  options: PriceTableRenderOptions = {},
+): string {
   const totals = summarize(rows);
   const formatNumber = (value: number) => value.toLocaleString('hu-HU');
   const formatCurrency = (value: number) => `${formatNumber(value)} Ft`;
@@ -84,119 +92,154 @@ export function priceTableHtml(rows: PriceRow[], i18n: Translator = DEFAULT_TRAN
   const footerNet = sanitizeInput(i18n.t('pdf.pricingTable.footer.net'));
   const footerVat = sanitizeInput(i18n.t('pdf.pricingTable.footer.vat'));
   const footerGross = sanitizeInput(i18n.t('pdf.pricingTable.footer.gross'));
+  const resolvedFootnote = typeof options.footnote === 'string' ? sanitizeInput(options.footnote) : '';
+  const hasFootnote = resolvedFootnote.trim().length > 0;
 
   return `
     <style>
-      .offer-doc__pricing-table {
-        width: 100%;
-        border-collapse: collapse;
-        border: 1px solid #d7dce6;
-      }
-      .offer-doc__pricing-table,
-      .offer-doc__pricing-table thead,
-      .offer-doc__pricing-table tbody,
-      .offer-doc__pricing-table tfoot,
-      .offer-doc__pricing-table tr,
-      .offer-doc__pricing-table th,
-      .offer-doc__pricing-table td {
+      .pricing-table {
+        display: grid;
+        gap: 0.75rem;
         break-inside: avoid;
         page-break-inside: avoid;
       }
-      .offer-doc__pricing-table th,
-      .offer-doc__pricing-table td {
-        padding: 8px 12px;
-        border-bottom: 1px solid #e4e8f0;
+      .pricing-table__table-wrapper {
+        border: 1px solid #d7dce6;
+        border-radius: 18px;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
-      .offer-doc__pricing-table thead th {
+      .pricing-table__table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .pricing-table__table,
+      .pricing-table__table thead,
+      .pricing-table__table tbody,
+      .pricing-table__table tfoot,
+      .pricing-table__table tr,
+      .pricing-table__table th,
+      .pricing-table__table td {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .pricing-table__header {
         background-color: #f1f4f8;
+        color: #0f172a;
+        font-weight: 600;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        padding: 10px 14px;
         text-align: left;
+        text-transform: uppercase;
       }
-      .offer-doc__pricing-table thead th:nth-child(2),
-      .offer-doc__pricing-table thead th:nth-child(4),
-      .offer-doc__pricing-table thead th:nth-child(5),
-      .offer-doc__pricing-table thead th:nth-child(6) {
+      .pricing-table__header--numeric {
         text-align: right;
       }
-      .offer-doc__pricing-table tbody tr:nth-child(even) {
+      .pricing-table__row:nth-of-type(even) .pricing-table__cell {
         background-color: #f9fbff;
       }
-      .offer-doc__pricing-table tbody td {
+      .pricing-table__cell {
         border-bottom: 1px solid #e4e8f0;
+        color: #0f172a;
+        font-size: 0.86rem;
+        padding: 9px 14px;
+        vertical-align: top;
       }
-      .offer-doc__pricing-table tbody td:nth-child(2),
-      .offer-doc__pricing-table tbody td:nth-child(4),
-      .offer-doc__pricing-table tbody td:nth-child(5),
-      .offer-doc__pricing-table tbody td:nth-child(6) {
+      .pricing-table__cell--numeric {
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+      .pricing-table__cell--description {
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pricing-table__footer-cell {
+        font-weight: 600;
+        padding: 12px 14px;
+      }
+      .pricing-table__footer-cell--value {
         text-align: right;
         font-variant-numeric: tabular-nums;
       }
-      .offer-doc__pricing-table tfoot tr:first-child td {
+      .pricing-table__footer-row:first-of-type .pricing-table__footer-cell {
         border-top: 2px solid #b2c3ff;
       }
-      .offer-doc__pricing-table tfoot td {
+      .pricing-table__footer-row:last-of-type .pricing-table__footer-cell {
         background-color: #eef2ff;
-        font-weight: 600;
       }
-      .offer-doc__pricing-table tfoot td:last-child {
-        text-align: right;
-        font-weight: 700;
+      .pricing-table__footnote {
+        color: #1f2937;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        margin: 0;
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
     </style>
-    <table class="offer-doc__pricing-table">
-      <colgroup>
-        <col style="width: 32%;" />
-        <col style="width: 12%; min-width: 70px;" />
-        <col style="width: 12%; min-width: 90px;" />
-        <col style="width: 16%; min-width: 120px;" />
-        <col style="width: 12%; min-width: 90px;" />
-        <col style="width: 16%; min-width: 130px;" />
-      </colgroup>
-      <thead>
-        <tr>
-          <th>${headerItem}</th>
-          <th>${headerQuantity}</th>
-          <th style="text-align: left;">${headerUnit}</th>
-          <th>${headerUnitPrice}</th>
-          <th>${headerVat}</th>
-          <th>${headerNet}</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows
-          .map((r) => {
-            const qty = r.qty ?? 0;
-            const unitPrice = r.unitPrice ?? 0;
-            const vatPct = r.vat ?? 0;
-            const lineNet = qty * unitPrice;
-            const name = sanitizeInput(r.name || '');
-            const unit = sanitizeInput(r.unit || '');
-            return `
-              <tr>
-                <td style="max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${name}">${name}</td>
-                <td>${formatNumber(qty)}</td>
-                <td style="text-align: left;">${unit}</td>
-                <td>${formatCurrency(unitPrice)}</td>
-                <td>${formatNumber(vatPct)} %</td>
-                <td>${formatCurrency(lineNet)}</td>
-              </tr>
-            `;
-          })
-          .join('')}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5">${footerNet}</td>
-          <td>${formatCurrency(totals.net)}</td>
-        </tr>
-        <tr>
-          <td colspan="5">${footerVat}</td>
-          <td>${formatCurrency(totals.vat)}</td>
-        </tr>
-        <tr>
-          <td colspan="5">${footerGross}</td>
-          <td>${formatCurrency(totals.gross)}</td>
-        </tr>
-      </tfoot>
-    </table>
+    <div class="pricing-table" data-pricing-table="true">
+      <div class="pricing-table__table-wrapper">
+        <table class="offer-doc__pricing-table pricing-table__table">
+          <colgroup>
+            <col style="width: 32%;" />
+            <col style="width: 12%; min-width: 70px;" />
+            <col style="width: 12%; min-width: 90px;" />
+            <col style="width: 16%; min-width: 120px;" />
+            <col style="width: 12%; min-width: 90px;" />
+            <col style="width: 16%; min-width: 130px;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" class="pricing-table__header">${headerItem}</th>
+              <th scope="col" class="pricing-table__header pricing-table__header--numeric">${headerQuantity}</th>
+              <th scope="col" class="pricing-table__header">${headerUnit}</th>
+              <th scope="col" class="pricing-table__header pricing-table__header--numeric">${headerUnitPrice}</th>
+              <th scope="col" class="pricing-table__header pricing-table__header--numeric">${headerVat}</th>
+              <th scope="col" class="pricing-table__header pricing-table__header--numeric">${headerNet}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows
+              .map((r) => {
+                const qty = r.qty ?? 0;
+                const unitPrice = r.unitPrice ?? 0;
+                const vatPct = r.vat ?? 0;
+                const lineNet = qty * unitPrice;
+                const name = sanitizeInput(r.name || '');
+                const unit = sanitizeInput(r.unit || '');
+                return `
+                  <tr class="pricing-table__row">
+                    <td class="pricing-table__cell pricing-table__cell--description" title="${name}">${name}</td>
+                    <td class="pricing-table__cell pricing-table__cell--numeric">${formatNumber(qty)}</td>
+                    <td class="pricing-table__cell">${unit}</td>
+                    <td class="pricing-table__cell pricing-table__cell--numeric">${formatCurrency(unitPrice)}</td>
+                    <td class="pricing-table__cell pricing-table__cell--numeric">${formatNumber(vatPct)} %</td>
+                    <td class="pricing-table__cell pricing-table__cell--numeric">${formatCurrency(lineNet)}</td>
+                  </tr>
+                `;
+              })
+              .join('')}
+          </tbody>
+          <tfoot>
+            <tr class="pricing-table__footer-row">
+              <td colspan="5" class="pricing-table__footer-cell">${footerNet}</td>
+              <td class="pricing-table__footer-cell pricing-table__footer-cell--value">${formatCurrency(totals.net)}</td>
+            </tr>
+            <tr class="pricing-table__footer-row">
+              <td colspan="5" class="pricing-table__footer-cell">${footerVat}</td>
+              <td class="pricing-table__footer-cell pricing-table__footer-cell--value">${formatCurrency(totals.vat)}</td>
+            </tr>
+            <tr class="pricing-table__footer-row">
+              <td colspan="5" class="pricing-table__footer-cell">${footerGross}</td>
+              <td class="pricing-table__footer-cell pricing-table__footer-cell--value">${formatCurrency(totals.gross)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      ${hasFootnote ? `<p class="pricing-table__footnote">${resolvedFootnote}</p>` : ''}
+    </div>
   `;
 }
