@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { HTTPRequest, HTTPResponse, Page } from 'puppeteer';
 
 import type { PdfJobInput } from '@/lib/queue/pdf';
+import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 import { incrementUsage, rollbackUsageIncrement } from '@/lib/usageHelpers';
@@ -28,7 +29,11 @@ async function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, me
 
 type PageEventHandler = (...args: unknown[]) => void;
 
-function detachPageListener(page: Page, eventName: Parameters<Page['on']>[0], handler: PageEventHandler) {
+function detachPageListener(
+  page: Page,
+  eventName: Parameters<Page['on']>[0],
+  handler: PageEventHandler,
+) {
   const anyPage = page as unknown as {
     off?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
     removeListener?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
@@ -107,7 +112,9 @@ export async function processPdfJobInline(
   try {
     const { default: puppeteer } = await import('puppeteer');
 
-    assertPdfEngineHtml(job.html, 'Inline PDF job HTML');
+    const html = job.runtimeTemplate ? renderRuntimePdfHtml(job.runtimeTemplate) : job.html;
+
+    assertPdfEngineHtml(html, 'Inline PDF job HTML');
 
     const pdfBinary = await withTimeout(
       async () => {
@@ -123,7 +130,7 @@ export async function processPdfJobInline(
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
-            await setContentWithNetworkIdleLogging(page, job.html, 'inline-pdf');
+            await setContentWithNetworkIdleLogging(page, html, 'inline-pdf');
             return await page.pdf({
               printBackground: true,
               preferCSSPageSize: true,
