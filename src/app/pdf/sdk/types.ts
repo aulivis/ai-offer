@@ -1,3 +1,5 @@
+import type { Translator } from '@/copy';
+
 export type BrandInput = {
   name: string;
   logoUrl?: string | null;
@@ -38,6 +40,7 @@ export type TemplateTokens = {
 export type RenderContext = {
   slots: DocSlots;
   tokens: TemplateTokens;
+  i18n: Translator;
 };
 
 export type OfferTemplate = {
