@@ -1,11 +1,29 @@
 export const PRINT_BASE_CSS = `
+  :root {
+    --page-margin-top: 24mm;
+    --page-margin-right: 16mm;
+    --page-margin-bottom: 24mm;
+    --page-margin-left: 16mm;
+    --page-first-margin-top: 28mm;
+    --page-header-clearance: 34mm;
+    --page-footer-clearance: 28mm;
+    --page-header-gap: 12mm;
+    --page-header-padding: 6mm;
+    --page-footer-margin: 18mm;
+    --page-footer-padding: 6mm;
+    --page-safe-inset: 4mm;
+    --page-header-offset: 10mm;
+    --page-footer-offset: 12mm;
+  }
+
   @page {
     size: A4;
-    margin: 24mm 16mm 24mm;
+    margin: var(--page-margin-top) var(--page-margin-right) var(--page-margin-bottom)
+      var(--page-margin-left);
   }
 
   @page :first {
-    margin-top: 28mm;
+    margin-top: var(--page-first-margin-top);
   }
 
   html,
@@ -28,15 +46,15 @@ export const PRINT_BASE_CSS = `
     background: var(--brand-bg, #ffffff);
     border: none;
     box-shadow: none;
-    padding-top: 34mm;
-    padding-bottom: 28mm;
+    padding-top: var(--page-header-clearance);
+    padding-bottom: var(--page-footer-clearance);
     position: relative;
   }
 
   .offer-doc__header {
     background: var(--brand-bg, #ffffff);
-    margin-bottom: 12mm;
-    padding-bottom: 6mm;
+    margin-bottom: var(--page-header-gap);
+    padding-bottom: var(--page-header-padding);
     position: static;
   }
 
@@ -79,8 +97,8 @@ export const PRINT_BASE_CSS = `
   .offer-doc__footer {
     background: var(--brand-bg, #ffffff);
     border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
-    margin-top: 18mm;
-    padding-top: 6mm;
+    margin-top: var(--page-footer-margin);
+    padding-top: var(--page-footer-padding);
     position: static;
   }
 
@@ -131,8 +149,8 @@ export const PRINT_BASE_CSS = `
 
   @media print {
     .offer-doc {
-      padding-top: 34mm;
-      padding-bottom: 28mm;
+      padding-top: var(--page-header-clearance);
+      padding-bottom: var(--page-footer-clearance);
     }
 
     .not-first-page {
@@ -147,21 +165,21 @@ export const PRINT_BASE_CSS = `
       color: var(--muted, #1f2937);
       display: flex;
       justify-content: space-between;
-      left: 16mm;
+      left: var(--page-margin-left);
       pointer-events: none;
-      right: 16mm;
-      padding: 4mm 0;
+      right: var(--page-margin-right);
+      padding: var(--page-safe-inset) 0;
       position: fixed;
       z-index: 40;
     }
 
     .slim-header {
-      top: 10mm;
+      top: var(--page-header-offset);
       border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
     }
 
     .slim-footer {
-      bottom: 12mm;
+      bottom: var(--page-footer-offset);
       border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
     }
 
@@ -185,6 +203,13 @@ export const PRINT_BASE_CSS = `
     font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: 9.5pt;
     line-height: 1.4;
+  }
+
+  ul,
+  ol,
+  table {
+    widows: 2;
+    orphans: 2;
   }
   .offer-doc__content h1,
   .offer-doc__content h2,
@@ -215,8 +240,15 @@ export const PRINT_BASE_CSS = `
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .offer-doc__table--force-break {
+  .offer-doc__table--force-break,
+  .page-break-before {
     break-before: page;
     page-break-before: always;
+  }
+  .page-avoid-break {
+    break-before: avoid;
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 `;
