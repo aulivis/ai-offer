@@ -13,38 +13,45 @@ export function partialHeader(ctx: RenderCtx): string {
     ? `<div class="offer-doc__logo-wrap"><img class="offer-doc__logo" src="${logoUrl}" alt="${logoAlt}" /></div>`
     : `<div class="offer-doc__logo-wrap"><span class="offer-doc__monogram">${monogram}</span></div>`;
   const metaValueClass = issueDate.isPlaceholder
-    ? 'offer-doc__meta-value offer-doc__meta-value--placeholder'
-    : 'offer-doc__meta-value';
+    ? 'offer-doc__meta-value offer-doc__meta-value--placeholder key-metrics__value key-metrics__value--placeholder'
+    : 'offer-doc__meta-value key-metrics__value';
+  const metaLabelClass = 'offer-doc__meta-label key-metrics__label';
 
   return `
-        <header class="offer-doc__header">
-          <div class="offer-doc__header-brand">
-            ${resolvedLogoMarkup}
-            <div class="offer-doc__header-text">
-              <div class="offer-doc__company">${company.value || companyPlaceholder}</div>
-              <h1 class="offer-doc__title">${title}</h1>
+        <header class="offer-doc__header section-card section-card--header">
+          <div class="section-card__body">
+            <div class="offer-doc__header-brand">
+              ${resolvedLogoMarkup}
+              <div class="offer-doc__header-text">
+                <div class="offer-doc__company">${company.value || companyPlaceholder}</div>
+                <h1 class="offer-doc__title">${title}</h1>
+              </div>
             </div>
           </div>
-          <div class="offer-doc__meta">
-            <span class="offer-doc__meta-label">${labels.date}</span>
-            <span class="${metaValueClass}">${issueDate.value}</span>
-          </div>
+          <dl class="offer-doc__meta key-metrics" data-offer-metrics="header">
+            <div class="key-metrics__item">
+              <dt class="${metaLabelClass}">${labels.date}</dt>
+              <dd class="${metaValueClass}">${issueDate.value}</dd>
+            </div>
+          </dl>
         </header>
   `;
 }
 
 export function partialSections(ctx: RenderCtx): string {
   return `
-        <section class="offer-doc__content">
+        <section class="offer-doc__content section-stack">
           ${ctx.offer.bodyHtml}
         </section>
   `;
 }
 
 export function partialPriceTable(ctx: RenderCtx): string {
-  const priceTable = priceTableHtml(ctx.rows, ctx.i18n);
+  const priceTable = priceTableHtml(ctx.rows, ctx.i18n, {
+    footnote: ctx.offer.pricingFootnote,
+  });
   const rowCount = countRenderablePricingRows(ctx.rows);
-  const tableClasses = ['offer-doc__table'];
+  const tableClasses = ['offer-doc__table', 'section-card', 'section-card--pricing'];
   if (rowCount > 0 && rowCount <= 3) {
     tableClasses.push('offer-doc__table--force-break');
   }
@@ -54,8 +61,10 @@ export function partialPriceTable(ctx: RenderCtx): string {
   );
   return `
         <section class="${tableClasses.join(' ')}">
-          ${pricingHeading}
-          ${priceTable}
+          <div class="section-card__body">
+            ${pricingHeading}
+            ${priceTable}
+          </div>
         </section>
   `;
 }
@@ -88,10 +97,12 @@ export function partialGallery(ctx: RenderCtx): string {
     .join('');
 
   return `
-        <section class="offer-doc__gallery offer-doc__gallery--card">
-          ${galleryHeading}
-          <div class="offer-doc__gallery-grid">
-            ${items}
+        <section class="offer-doc__gallery offer-doc__gallery--card section-card section-card--gallery">
+          <div class="section-card__body">
+            ${galleryHeading}
+            <div class="offer-doc__gallery-grid">
+              ${items}
+            </div>
           </div>
         </section>
   `;

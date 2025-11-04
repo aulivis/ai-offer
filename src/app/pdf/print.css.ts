@@ -93,6 +93,83 @@ export const PRINT_BASE_CSS = `
     font-size: 10pt;
   }
 
+  .section-card {
+    background: var(--brand-bg, #ffffff);
+    border: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
+    border-radius: 18px;
+    margin-bottom: 18px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .section-card__body {
+    display: grid;
+    gap: 18px;
+    padding: 22px 24px;
+  }
+
+  .section-card--header {
+    background: transparent;
+    border: none;
+    margin-bottom: var(--page-header-gap);
+  }
+
+  .section-card--header .section-card__body {
+    padding: 0;
+  }
+
+  .section-card--pricing .section-card__body {
+    gap: 20px;
+  }
+
+  .section-card--gallery {
+    background: transparent;
+  }
+
+  .section-card--gallery .section-card__body {
+    gap: 16px;
+    padding: 0;
+  }
+
+  .section-stack {
+    display: grid;
+    gap: 24px;
+  }
+
+  .key-metrics {
+    display: grid;
+    gap: 8px;
+  }
+
+  .key-metrics__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .key-metrics__label {
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+  }
+
+  .key-metrics__value {
+    font-weight: 600;
+  }
+
+  .key-metrics__value--placeholder {
+    font-style: italic;
+    opacity: 0.8;
+  }
+
+  .section-card--header .key-metrics {
+    justify-items: end;
+  }
+
+  .section-card--header .key-metrics__item {
+    align-items: flex-end;
+  }
+
   .offer-doc__footer {
     background: var(--brand-bg, #ffffff);
     border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));

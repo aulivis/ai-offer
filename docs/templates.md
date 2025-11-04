@@ -34,6 +34,16 @@ Because the renderer runs in a server context, avoid browser-only APIs and rely 
 ### Internationalization helpers
 All customer-facing strings must come from `ctx.i18n`. Existing copy keys cover headings like "Pricing" and "Next steps". If you need a new key, add it to the copy catalog before shipping. Do not inline English strings in templates, or they will fail localization QA.
 
+## PDF markup audit
+
+When we reviewed the legacy `partialHeader`, `partialSections`, and `partialPriceTable` implementations we found a few recurring layout issues:
+
+- **Unstructured sections.** The body renderer simply injected raw HTML into `.offer-doc__content`, so headings, cards, and spacing varied wildly between templates and were hard to restyle in CSS.【F:docs/templates.md†L69-L74】
+- **Metadata without semantics.** Header metadata relied on anonymous `<div>`/`<span>` pairs (`.offer-doc__meta`), which made it difficult to align labels, apply placeholder styling, or translate to assistive technologies.【F:docs/templates.md†L75-L78】
+- **Pricing tables as monoliths.** All pricing layout lived in an inline `<style>` block and the markup could not express zebra striping, currency totals, or contextual notes without custom rewrites per template.【F:docs/templates.md†L79-L82】
+
+These gaps drove the refactor below: we now wrap each major block in semantic `.section-card` containers, expose reusable `.key-metrics` and `.pricing-table` primitives, and move presentation into shared CSS utilities so templates stay consistent.
+
 ## Folder conventions
 
 Each template lives in `src/app/pdf/templates/<template-name>/` and must follow this structure:

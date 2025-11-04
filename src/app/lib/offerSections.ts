@@ -41,5 +41,6 @@ export function renderSectionHeading(
   const icon = SECTION_ICONS[section];
   const level = options.level ?? 'h2';
   const extraClass = options.className ? ` ${options.className}` : '';
-  return `<${level} class="offer-doc__section-title${extraClass}" data-offer-section="${section}"><span class="offer-doc__section-icon" aria-hidden="true">${icon}</span><span>${safeTitle}</span></${level}>`;
+  const headingClass = `offer-doc__section-title section-heading${extraClass}`;
+  return `<${level} class="${headingClass}" data-offer-section="${section}"><span class="offer-doc__section-icon section-heading__icon" aria-hidden="true">${icon}</span><span class="section-heading__label">${safeTitle}</span></${level}>`;
 }
