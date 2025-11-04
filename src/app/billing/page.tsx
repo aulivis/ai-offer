@@ -12,6 +12,7 @@ import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
+import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 
 type CardBrand = {
@@ -123,6 +124,14 @@ const MARKETING_SPOTLIGHT_KEYS: CopyKey[] = [
   'billing.public.spotlight.1',
   'billing.public.spotlight.2',
 ];
+
+const PLAN_ORDER: Record<'free' | 'standard' | 'pro', number> = {
+  free: 0,
+  standard: 1,
+  pro: 2,
+};
+
+type PaidPlan = 'standard' | 'pro';
 
 function parsePeriodStart(value: string | null | undefined): Date {
   if (typeof value !== 'string') {
@@ -246,6 +255,54 @@ export default function BillingPage() {
     if (plan === 'standard') return 10;
     return 3;
   }, [plan]);
+
+  type PlanCtaVariant = Extract<ButtonProps['variant'], 'primary' | 'secondary'>;
+
+  const getPlanCta = (target: PaidPlan) => {
+    const priceId = target === 'standard' ? STANDARD_PRICE : PRO_PRICE;
+    const isCurrentPlan = plan === target;
+    const isDowngrade = typeof plan === 'string' ? PLAN_ORDER[plan] > PLAN_ORDER[target] : false;
+    const isLoading = loading === priceId;
+
+    let label: string;
+    if (isLoading) {
+      label = t('billing.plans.loadingRedirect');
+    } else if (isCurrentPlan) {
+      label = t('billing.plans.currentCta');
+    } else if (isDowngrade) {
+      label = t(`billing.plans.${target}.downgradeCta`);
+    } else {
+      label = t(`billing.plans.${target}.cta`);
+    }
+
+    const variant: PlanCtaVariant = isDowngrade || isCurrentPlan ? 'secondary' : 'primary';
+
+    return {
+      label,
+      disabled: isCurrentPlan || isLoading,
+      variant,
+      onClick: isCurrentPlan || isLoading ? undefined : () => startCheckout(priceId),
+    };
+  };
+
+  const standardCta = getPlanCta('standard');
+  const proCta = getPlanCta('pro');
+
+  const isCurrentStandard = plan === 'standard';
+  const isCurrentPro = plan === 'pro';
+  const isDowngradeToStandard =
+    typeof plan === 'string' ? PLAN_ORDER[plan] > PLAN_ORDER.standard : false;
+
+  const planCtaBaseClasses = [
+    'mt-8 inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-sm transition',
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed',
+  ].join(' ');
+
+  const planCtaVariantClasses: Record<PlanCtaVariant, string> = {
+    primary: 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-400',
+    secondary:
+      'border border-border bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 disabled:bg-white disabled:text-slate-400',
+  };
 
   const offersThisMonth = usage?.offersGenerated ?? 0;
   const planLimitLabel =
@@ -377,14 +434,35 @@ export default function BillingPage() {
         )}
 
         <section className="grid gap-6 md:grid-cols-2">
-          <Card as="article" className="flex h-full flex-col">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('billing.plans.standard.badge')}
+          <Card
+            as="article"
+            className={[
+              'flex h-full flex-col',
+              isCurrentStandard
+                ? 'border-primary/60 bg-white shadow-lg ring-2 ring-primary/15'
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-current={isCurrentStandard ? 'true' : undefined}
+          >
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <span>{t('billing.plans.standard.badge')}</span>
+              {isCurrentStandard && (
+                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-primary">
+                  {t('billing.plans.currentBadge')}
+                </span>
+              )}
             </div>
             <h2 className="mt-2 text-2xl font-semibold text-slate-900">
               {t('billing.plans.standard.name')}
             </h2>
             <p className="mt-3 text-sm text-slate-500">{t('billing.plans.standard.description')}</p>
+            {isDowngradeToStandard && !isCurrentStandard && (
+              <p className="mt-2 text-xs font-medium text-amber-600">
+                {t('billing.plans.standard.downgradeHelper')}
+              </p>
+            )}
             <div className="mt-6 flex items-baseline gap-2 text-slate-900">
               <span className="text-3xl font-semibold">1 490</span>
               <span className="text-sm text-slate-500">{t('billing.plans.priceMonthly')}</span>
@@ -395,23 +473,33 @@ export default function BillingPage() {
               <li>{t('billing.plans.standard.features.2')}</li>
             </ul>
             <Button
-              onClick={() => startCheckout(STANDARD_PRICE)}
-              disabled={loading === STANDARD_PRICE}
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+              onClick={standardCta.onClick}
+              disabled={standardCta.disabled}
+              className={[planCtaBaseClasses, planCtaVariantClasses[standardCta.variant]].join(' ')}
+              aria-disabled={standardCta.disabled}
             >
-              {loading === STANDARD_PRICE
-                ? t('billing.plans.loadingRedirect')
-                : t('billing.plans.standard.cta')}
+              {standardCta.label}
             </Button>
           </Card>
 
           <Card
             as="article"
-            className="flex h-full flex-col bg-white shadow-lg ring-1 ring-slate-900/5"
+            className={[
+              'flex h-full flex-col bg-white shadow-lg ring-1 ring-slate-900/5',
+              isCurrentPro ? 'border-primary/60 ring-primary/20' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-current={isCurrentPro ? 'true' : undefined}
           >
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
               {t('billing.plans.popularBadge')}
             </div>
+            {isCurrentPro && (
+              <span className="mt-3 inline-flex w-fit items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                {t('billing.plans.currentBadge')}
+              </span>
+            )}
             <h2 className="mt-3 text-2xl font-semibold text-slate-900">
               {t('billing.plans.pro.name')}
             </h2>
@@ -426,16 +514,41 @@ export default function BillingPage() {
               <li>{t('billing.plans.pro.features.2')}</li>
             </ul>
             <Button
-              onClick={() => startCheckout(PRO_PRICE)}
-              disabled={loading === PRO_PRICE}
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
+              onClick={proCta.onClick}
+              disabled={proCta.disabled}
+              className={[planCtaBaseClasses, planCtaVariantClasses[proCta.variant]].join(' ')}
+              aria-disabled={proCta.disabled}
             >
-              {loading === PRO_PRICE
-                ? t('billing.plans.loadingRedirect')
-                : t('billing.plans.pro.cta')}
+              {proCta.label}
             </Button>
           </Card>
         </section>
+
+        <Card
+          as="section"
+          header={
+            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-700">
+                  {t('billing.invoices.title')}
+                </h2>
+                <p className="text-xs text-slate-500">{t('billing.invoices.subtitle')}</p>
+              </div>
+            </CardHeader>
+          }
+        >
+          <div className="rounded-2xl border border-dashed border-border bg-slate-50/80 p-8 text-center">
+            <h3 className="text-sm font-semibold text-slate-700">
+              {t('billing.invoices.emptyState.title')}
+            </h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {t('billing.invoices.emptyState.description')}
+            </p>
+            <Button variant="secondary" size="sm" disabled className="pointer-events-none mt-4">
+              {t('billing.invoices.emptyState.cta')}
+            </Button>
+          </div>
+        </Card>
 
         <Card
           as="section"

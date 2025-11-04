@@ -933,9 +933,12 @@ export default function SettingsPage() {
                   className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
                 />
               ) : (
-                <div className="flex h-16 w-16 flex-none items-center justify-center rounded-lg border border-border bg-white text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                  {t('settings.branding.noLogo')}
-                </div>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/images/logo-placeholder.svg"
+                  alt={t('settings.branding.logoPlaceholderAlt')}
+                  className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
+                />
               )}
               <div className="flex-1 text-sm text-slate-500">
                 <p className="font-semibold text-slate-700">
