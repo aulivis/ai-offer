@@ -37,7 +37,7 @@ import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
-import { listTemplates } from '@/app/pdf/templates/registry';
+import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import {
   emptyProjectDetails,

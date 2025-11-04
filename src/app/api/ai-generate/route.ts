@@ -8,7 +8,7 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 // live under `app/pdf/templates`.
 import { PriceRow } from '@/app/lib/pricing';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { listTemplates, loadTemplate } from '@/app/pdf/templates/registry';
+import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
 import { normalizeBranding } from '@/app/pdf/templates/theme';
 import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import { type SubscriptionPlan } from '@/app/lib/offerTemplates';

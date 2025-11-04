@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
-import { listTemplates } from '@/app/pdf/templates/registry';
+import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
 
 const DEFAULT_PREVIEW_HTML = `<p>${t('offers.wizard.preview.idle')}</p>`;

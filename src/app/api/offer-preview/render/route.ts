@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { loadTemplate } from '@/app/pdf/templates/registry';
+import { loadTemplate } from '@/app/pdf/templates/engineRegistry';
 import { normalizeBranding } from '@/app/pdf/templates/theme';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { createTranslator, resolveLocale } from '@/copy';

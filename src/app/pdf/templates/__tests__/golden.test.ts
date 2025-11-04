@@ -7,7 +7,7 @@ import type { Browser } from 'puppeteer-core';
 
 import { createTranslator } from '@/copy';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { listTemplates } from '@/app/pdf/templates/registry';
+import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { RenderCtx } from '@/app/pdf/templates/types';
 
 const translator = createTranslator('hu');
