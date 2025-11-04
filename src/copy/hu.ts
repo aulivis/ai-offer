@@ -804,6 +804,7 @@ export const hu = {
     magicLinkButton: 'Magic link küldése',
     magicLinkSent: 'Link elküldve',
     magicLinkSending: 'Küldés…',
+    magicLinkResendCountdown: 'Új link {seconds} mp múlva kérhető',
     magicLinkAria: 'Magic link küldése a megadott e-mail címre',
     divider: 'vagy',
     googleButton: 'Google Bejelentkezés',
@@ -816,6 +817,7 @@ export const hu = {
     messages: {
       magicLinkInfo:
         'Ha létezik fiók ehhez az e-mail címhez, perceken belül elküldjük a belépési linket.',
+      magicLinkResendTimer: 'Új link {seconds} másodperc múlva kérhető újra.',
     },
   },
   auth: {

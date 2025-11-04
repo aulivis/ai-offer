@@ -856,14 +856,22 @@ export default function SettingsPage() {
                 {t('settings.branding.primaryLabel')}
               </span>
               <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={primaryPreview}
-                  onChange={(e) =>
-                    setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
-                  }
-                  className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
-                />
+                <div className="relative h-11 w-16">
+                  <input
+                    type="color"
+                    value={primaryPreview}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
+                    }
+                    aria-label={t('settings.branding.primaryLabel')}
+                    className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-md opacity-0"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-md border border-border shadow-inner"
+                    style={{ backgroundColor: primaryPreview }}
+                  />
+                </div>
                 <div className="flex-1">
                   <Input
                     value={profile.brand_color_primary || ''}
@@ -883,14 +891,22 @@ export default function SettingsPage() {
                 {t('settings.branding.secondaryLabel')}
               </span>
               <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={secondaryPreview}
-                  onChange={(e) =>
-                    setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
-                  }
-                  className="h-11 w-16 cursor-pointer rounded-md border border-border bg-white"
-                />
+                <div className="relative h-11 w-16">
+                  <input
+                    type="color"
+                    value={secondaryPreview}
+                    onChange={(e) =>
+                      setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
+                    }
+                    aria-label={t('settings.branding.secondaryLabel')}
+                    className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-md opacity-0"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-md border border-border shadow-inner"
+                    style={{ backgroundColor: secondaryPreview }}
+                  />
+                </div>
                 <div className="flex-1">
                   <Input
                     value={profile.brand_color_secondary || ''}

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
 const MAGIC_LINK_MESSAGE = t('login.messages.magicLinkInfo');
+const MAGIC_LINK_COOLDOWN_SECONDS = 60;
 const GOOGLE_BUTTON_STYLES: CSSProperties = {
   '--btn-bg': '#ffffff',
   '--btn-fg': '#1f1f1f',
@@ -24,6 +25,7 @@ export default function LoginClient() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGoogleAvailable, setIsGoogleAvailable] = useState(true);
   const [googleStatusMessage, setGoogleStatusMessage] = useState<string | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -96,13 +98,49 @@ export default function LoginClient() {
       }
 
       setSent(true);
+      setCooldownRemaining(MAGIC_LINK_COOLDOWN_SECONDS);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
       setError(message);
+      setCooldownRemaining(0);
     } finally {
       setIsMagicLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (cooldownRemaining <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setCooldownRemaining((previous) => (previous > 0 ? previous - 1 : 0));
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [cooldownRemaining]);
+
+  useEffect(() => {
+    if (!sent) {
+      return;
+    }
+
+    if (cooldownRemaining === 0) {
+      setSent(false);
+    }
+  }, [cooldownRemaining, sent]);
+
+  const isCooldownActive = cooldownRemaining > 0;
+
+  const magicButtonLabel = isMagicLoading
+    ? t('login.magicLinkSending')
+    : isCooldownActive
+      ? t('login.magicLinkResendCountdown', { seconds: cooldownRemaining })
+      : sent
+        ? t('login.magicLinkSent')
+        : t('login.magicLinkButton');
 
   async function signInWithGoogle() {
     setError(null);
@@ -151,15 +189,11 @@ export default function LoginClient() {
             onClick={sendMagic}
             className="w-full"
             size="lg"
-            disabled={!email || sent || isMagicLoading}
+            disabled={!email || isCooldownActive || isMagicLoading}
             aria-busy={isMagicLoading}
             aria-label={t('login.magicLinkAria')}
           >
-            {sent
-              ? t('login.magicLinkSent')
-              : isMagicLoading
-                ? t('login.magicLinkSending')
-                : t('login.magicLinkButton')}
+            {magicButtonLabel}
           </Button>
 
           <div className="relative py-1 text-center text-xs uppercase tracking-[0.3em] text-fg-muted">
@@ -210,7 +244,12 @@ export default function LoginClient() {
                 role="status"
                 className="rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700"
               >
-                {MAGIC_LINK_MESSAGE}
+                <p>{MAGIC_LINK_MESSAGE}</p>
+                {isCooldownActive && (
+                  <p className="mt-1 text-xs font-semibold text-emerald-700">
+                    {t('login.messages.magicLinkResendTimer', { seconds: cooldownRemaining })}
+                  </p>
+                )}
               </div>
             )}
           </div>
