@@ -434,6 +434,8 @@ export const hu = {
           2: '• Alap sablonok és logófeltöltés',
         },
         cta: 'Propono Standard megrendelése',
+        downgradeCta: 'Standard csomagra váltás',
+        downgradeHelper: 'Válts Standard csomagra, ha kevesebb ajánlatra van szükséged a hónapban.',
       },
       pro: {
         name: 'Propono Pro',
@@ -446,9 +448,20 @@ export const hu = {
         },
         cta: 'Propono Pro megrendelése',
       },
+      currentBadge: 'Aktív csomag',
+      currentCta: 'Jelenlegi csomag',
       popularBadge: 'Népszerű választás',
       priceMonthly: 'Ft / hó',
       loadingRedirect: 'Átirányítás…',
+    },
+    invoices: {
+      title: 'Számlák',
+      subtitle: 'A letölthető számláid hamarosan itt jelennek meg.',
+      emptyState: {
+        title: 'Még nincsenek elérhető számlák',
+        description: 'Amint elkészülnek a számláid, itt tudod majd letölteni őket PDF formátumban.',
+        cta: 'Letöltés hamarosan',
+      },
     },
     stripeSecurity: {
       title: 'Biztonságos Stripe fizetés',
@@ -601,6 +614,7 @@ export const hu = {
         secondary: '#e2e8f0',
       },
       logoPreviewAlt: 'Feltöltött logó',
+      logoPlaceholderAlt: 'Alapértelmezett logó helyőrző',
       noLogo: 'Nincs logó',
       logoUpload: {
         title: 'Logó feltöltése',
