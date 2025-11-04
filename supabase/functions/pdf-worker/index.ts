@@ -22,6 +22,72 @@ const pdfWebhookAllowlist = createPdfWebhookAllowlist(
 
 const JOB_TIMEOUT_MS = 90_000;
 
+type PageEventHandler = (...args: unknown[]) => void;
+
+function detachPageListener(
+  page: { off?: (event: string, handler: PageEventHandler) => void; removeListener?: (event: string, handler: PageEventHandler) => void },
+  eventName: string,
+  handler: PageEventHandler,
+) {
+  if (typeof page.off === 'function') {
+    page.off(eventName, handler);
+  } else if (typeof page.removeListener === 'function') {
+    page.removeListener(eventName, handler);
+  }
+}
+
+async function setContentWithNetworkIdleLogging(page: any, html: string, context: string) {
+  const requestFailures: Array<{ url: string; errorText?: string | null }> = [];
+  const responseErrors: Array<{ url: string; status: number }> = [];
+
+  const onRequestFailed = (request: any) => {
+    const failure = request.failure?.();
+    requestFailures.push({ url: request.url?.() ?? 'unknown', errorText: failure?.errorText ?? null });
+  };
+
+  const onResponse = (response: any) => {
+    const status = typeof response.status === 'function' ? response.status() : Number(response.status ?? NaN);
+    if (Number.isFinite(status) && Number(status) >= 400) {
+      responseErrors.push({
+        url: typeof response.url === 'function' ? response.url() : String(response.url ?? 'unknown'),
+        status: Number(status),
+      });
+    }
+  };
+
+  page.on('requestfailed', onRequestFailed);
+  page.on('response', onResponse);
+
+  const startedAt = Date.now();
+
+  try {
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+  } catch (error) {
+    console.error(`[${context}] page.setContent failed while waiting for networkidle0`, error);
+    throw error;
+  } finally {
+    detachPageListener(page, 'requestfailed', onRequestFailed);
+    detachPageListener(page, 'response', onResponse);
+
+    const elapsed = Date.now() - startedAt;
+    console.info(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
+
+    if (requestFailures.length > 0) {
+      console.warn(
+        `[${context}] ${requestFailures.length} request(s) failed while loading PDF content`,
+        requestFailures,
+      );
+    }
+
+    if (responseErrors.length > 0) {
+      console.warn(
+        `[${context}] ${responseErrors.length} response(s) returned error status while loading PDF content`,
+        responseErrors,
+      );
+    }
+  }
+}
+
 serve(async (request) => {
   if (request.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -138,17 +204,14 @@ serve(async (request) => {
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
-            await page.setContent(html, { waitUntil: 'networkidle0' });
+            await setContentWithNetworkIdleLogging(page, html, 'edge-pdf');
             return await page.pdf({
-              format: 'A4',
               printBackground: true,
               preferCSSPageSize: true,
-              margin: {
-                top: '24mm',
-                right: '16mm',
-                bottom: '24mm',
-                left: '16mm',
-              },
+              displayHeaderFooter: true,
+              headerTemplate: '<div></div>',
+              footerTemplate: '<div></div>',
+              margin: { top: '0', right: '0', bottom: '0', left: '0' },
             });
           } finally {
             if (page) {
