@@ -1,5 +1,5 @@
 import type { OfferTemplate, RenderCtx, TemplateId } from './types';
-import { loadTemplate } from './registry';
+import { loadTemplate } from './engineRegistry';
 import { createThemeCssVariables, createThemeTokens } from './theme';
 import { PDF_ENGINE_META_TAG } from '@/lib/pdfHtmlSignature';
 

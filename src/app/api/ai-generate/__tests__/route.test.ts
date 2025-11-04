@@ -156,7 +156,7 @@ vi.mock('@/app/pdf/templates/engine', () => ({
   buildOfferHtml: buildOfferHtmlMock,
 }));
 
-vi.mock('@/app/pdf/templates/registry', () => ({
+vi.mock('@/app/pdf/templates/engineRegistry', () => ({
   listTemplates: listTemplatesMock,
   loadTemplate: loadTemplateMock,
 }));

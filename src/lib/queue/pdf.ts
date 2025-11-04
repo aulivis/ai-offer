@@ -8,7 +8,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { envServer } from '@/env.server';
-import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/registry';
+import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 

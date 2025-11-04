@@ -7,7 +7,7 @@ import {
   loadTemplate,
   getOfferTemplateByLegacyId,
   registerTemplate,
-} from './registry';
+} from './engineRegistry';
 
 describe('template registry', () => {
   it('filters templates by tier', () => {

@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { tokensToCssVars } from '@/app/pdf/sdk/cssVars';
 import { MOCK_SLOTS } from '@/app/pdf/sdk/mock';
 import { buildTokens } from '@/app/pdf/sdk/tokens';
-import type { RenderContext } from '@/app/pdf/sdk/types';
-import { loadTemplate, TemplateNotFoundError } from '@/app/pdf/sdk/registry';
-import '@/app/pdf/sdk/templates';
+import type { OfferTemplate, RenderContext } from '@/app/pdf/sdk/types';
+import { getTemplateMeta } from '@/app/pdf/templates/registry';
 
 export const metadata: Metadata = {
   title: 'PDF Template Preview',
@@ -87,14 +86,22 @@ export default function PdfPreviewPage({ searchParams }: { searchParams: SearchP
     return <TemplateError message="Missing templateId query parameter." />;
   }
 
-  let template;
+  const templateMeta = getTemplateMeta(templateId);
+
+  if (!templateMeta) {
+    return <TemplateError message={`Template "${templateId}" is not registered.`} />;
+  }
+
+  let template: OfferTemplate;
   try {
-    template = loadTemplate(templateId);
+    template = templateMeta.factory();
   } catch (error) {
-    if (error instanceof TemplateNotFoundError) {
-      return <TemplateError message={`Template "${templateId}" is not registered.`} />;
-    }
-    console.error('Failed to load template', error);
+    console.error('Failed to create template instance', error);
+    return <TemplateError message="Unexpected error while loading template." />;
+  }
+
+  if (!template) {
+    console.error('Template factory returned an invalid template instance');
     return <TemplateError message="Unexpected error while loading template." />;
   }
 
