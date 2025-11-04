@@ -18,12 +18,11 @@ export const PRINT_BASE_CSS = `
 
   @page {
     size: A4;
-    margin: var(--page-margin-top) var(--page-margin-right) var(--page-margin-bottom)
-      var(--page-margin-left);
+    margin: 24mm 16mm;
   }
 
   @page :first {
-    margin-top: var(--page-first-margin-top);
+    margin-top: 28mm;
   }
 
   html,
