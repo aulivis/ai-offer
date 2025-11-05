@@ -58,7 +58,7 @@ export function Textarea({
         />
         {showCounter && (
           <span className="pointer-events-none absolute bottom-3 right-4 text-xs text-fg-muted">
-            {maxLength ? `${valueLength}/${maxLength}` : valueLength}
+            {maxLength ? `${valueLength}/${maxLength}` : valueLength || '0'}
           </span>
         )}
       </div>

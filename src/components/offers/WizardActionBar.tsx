@@ -29,14 +29,9 @@ export const WizardActionBar = memo(function WizardActionBar({
   isSubmitting,
   stepLabels,
 }: WizardActionBarProps) {
-  const nextStepLabel = step < 3 ? stepLabels[(step + 1) as 2 | 3] : null;
-  const previousStepLabel = step > 1 ? stepLabels[(step - 1) as 1 | 2] : null;
-  const nextButtonLabel = nextStepLabel
-    ? `${t('offers.wizard.actions.next')}: ${nextStepLabel}`
-    : t('offers.wizard.actions.next');
-  const backButtonLabel = previousStepLabel
-    ? `${t('offers.wizard.actions.back')}: ${previousStepLabel}`
-    : t('offers.wizard.actions.back');
+  // Simplified button labels - step names shown in indicator
+  const nextButtonLabel = t('offers.wizard.actions.next');
+  const backButtonLabel = t('offers.wizard.actions.back');
   const submitLabel = isSubmitting
     ? t('offers.wizard.actions.previewInProgress')
     : t('offers.wizard.actions.save');
