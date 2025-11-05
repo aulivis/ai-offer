@@ -695,8 +695,7 @@ export const POST = withAuth(
           .maybeSingle();
 
         if (clientError) {
-          console.warn('Failed to load client for offer generation.', {
-            userId: user.id,
+          log.warn('Failed to load client for offer generation (non-blocking)', {
             clientId,
             error: clientError.message,
           });
@@ -1057,7 +1056,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     });
 
     if (offerInsertError) {
-      console.error('Offer insert error:', offerInsertError.message);
+      log.error('Offer insert error', offerInsertError);
       return NextResponse.json(
         {
           error: 'Nem sikerült elmenteni az ajánlatot.',
@@ -1084,8 +1083,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     try {
       await enqueuePdfJob(sb, pdfJobInput);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('PDF queue error (enqueue):', message);
+      log.error('PDF queue error (enqueue)', error);
       return NextResponse.json(
         {
           error: 'Nem sikerült elindítani a PDF generálását.',
@@ -1104,7 +1102,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
     } catch (dispatchError) {
       const message =
         dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
-      console.error('PDF queue error (dispatch):', message);
+      log.warn('PDF queue error (dispatch)', dispatchError);
 
       const dispatchLimitMessage = normalizeUsageLimitError(message);
       if (dispatchLimitMessage) {

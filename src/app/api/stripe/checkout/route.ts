@@ -82,12 +82,12 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     const body = await req.json();
     parsedBody = parseRequestBody(body);
   } catch (error) {
-    console.warn('Checkout request payload parse failed', { requestId, clientId, error });
+    log.warn('Checkout request payload parse failed', error);
     return buildErrorResponse('Érvénytelen kérés törzs.', 400);
   }
 
   if (!parsedBody) {
-    console.warn('Checkout request validation failed', { requestId, clientId });
+    log.warn('Checkout request validation failed');
     return buildErrorResponse('Érvénytelen kérés: hiányzó priceId vagy email.', 400);
   }
 

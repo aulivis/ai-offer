@@ -1,16 +1,21 @@
 import { NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const requestId = getRequestId(request);
+  const log = createLogger(requestId);
+  
   try {
     // Check database connectivity
     const supabase = supabaseServiceRole();
     const { error } = await supabase.from('profiles').select('id').limit(1);
 
     if (error) {
-      console.error('Health check failed: database error', error);
+      log.error('Health check failed: database error', error);
       return NextResponse.json(
         { status: 'unhealthy', error: 'Database connectivity check failed' },
         { status: 503 },
@@ -27,7 +32,7 @@ export async function GET() {
       },
     );
   } catch (error) {
-    console.error('Health check failed', error);
+    log.error('Health check failed', error);
     return NextResponse.json(
       { status: 'unhealthy', error: 'Health check failed' },
       { status: 503 },

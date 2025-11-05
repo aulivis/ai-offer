@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 interface TemplateRenderMetricRow {
   template_id: string;
@@ -43,7 +45,11 @@ function toNullableNumber(value: number | string | null | undefined): number | n
   return null;
 }
 
-async function handleGet(_req: AuthenticatedNextRequest) {
+async function handleGet(req: AuthenticatedNextRequest) {
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
+  
   const client = supabaseServiceRole();
   const { data, error } = await client
     .from('template_render_metrics')
@@ -52,7 +58,7 @@ async function handleGet(_req: AuthenticatedNextRequest) {
     .limit(50);
 
   if (error) {
-    console.error('Failed to load template render metrics.', error.message ?? error);
+    log.error('Failed to load template render metrics', error);
     return NextResponse.json({ error: 'Nem sikerült betölteni a telemetria adatokat.' }, { status: 500 });
   }
 

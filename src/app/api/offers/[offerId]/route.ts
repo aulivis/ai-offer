@@ -87,7 +87,7 @@ export const DELETE = withAuth(
         .eq('user_id', offer.user_id);
 
       if (jobError) {
-        console.error('Failed to load offer PDF job storage paths', jobError);
+        log.warn('Failed to load offer PDF job storage paths (non-blocking)', jobError);
       } else {
         jobRows?.forEach(({ storage_path }) => {
           const rawPath = typeof storage_path === 'string' ? storage_path.trim() : '';

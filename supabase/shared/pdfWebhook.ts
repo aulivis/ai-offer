@@ -1,1 +1,1 @@
-export * from '../shared/pdfWebhook.ts';
+export * from '../../shared/pdfWebhook';

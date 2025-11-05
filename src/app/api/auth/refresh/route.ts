@@ -84,12 +84,13 @@ async function refreshSupabaseTokens(refreshToken: string): Promise<RefreshRespo
 async function revokeAllSessions(
   userId: string,
   client: ReturnType<typeof supabaseServiceRole> = supabaseServiceRole(),
+  log?: ReturnType<typeof createLogger>,
 ) {
   const now = new Date().toISOString();
   const { error } = await client.from('sessions').update({ revoked_at: now }).eq('user_id', userId);
 
   if (error) {
-    console.error('Failed to revoke user sessions.', error);
+    log?.error('Failed to revoke user sessions', error);
   }
 }
 
@@ -165,13 +166,13 @@ export async function POST(request: Request) {
   }
 
   if (!activeSession) {
-    await revokeAllSessions(userId, supabase);
+    await revokeAllSessions(userId, supabase, log);
     await clearAuthCookies();
     return Response.json({ error: 'Refresh token reuse detected' }, { status: 401 });
   }
 
   if (activeSession.revoked_at) {
-    await revokeAllSessions(userId, supabase);
+    await revokeAllSessions(userId, supabase, log);
     await clearAuthCookies();
     return Response.json({ error: 'Refresh token already revoked' }, { status: 401 });
   }

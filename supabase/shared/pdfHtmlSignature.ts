@@ -1,1 +1,1 @@
-export * from '../shared/pdfHtmlSignature.ts';
+export * from '../../shared/pdfHtmlSignature';
