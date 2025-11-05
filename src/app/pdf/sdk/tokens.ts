@@ -1,19 +1,33 @@
 import { BrandInput, TemplateTokens, TokenScale } from './types';
 
+const HEX_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+function normalizeHex(input: string) {
+  const match = HEX_PATTERN.exec(input.trim());
+  if (!match) {
+    throw new Error(`Invalid hex color: ${input}`);
+  }
+
+  let value = match[1];
+  if (value.length === 3) {
+    value = value
+      .split('')
+      .map((char) => char + char)
+      .join('');
+  }
+
+  return `#${value.toUpperCase()}`;
+}
+
 // naive tint/shade derivation helper
 function clamp(n: number, min = 0, max = 255) {
   return Math.max(min, Math.min(max, n));
 }
 
 function hexToRgb(hex: string) {
-  const m = hex.replace('#', '');
-  const bigint = parseInt(m, 16);
-  if (m.length === 3) {
-    const r = parseInt(m[0] + m[0], 16);
-    const g = parseInt(m[1] + m[1], 16);
-    const b = parseInt(m[2] + m[2], 16);
-    return { r, g, b };
-  }
+  const normalized = normalizeHex(hex);
+  const value = normalized.replace('#', '');
+  const bigint = parseInt(value, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
@@ -73,14 +87,40 @@ function contrastRatio(fg: string, bg: string) {
 
 function pickTextOn(bg: string) {
   // choose black or white for minimal good contrast
-  const black = '#111111';
-  const white = '#FFFFFF';
-  return contrastRatio(black, bg) >= contrastRatio(white, bg) ? black : white;
+  const preferred = ['#111111', '#FFFFFF'];
+  let selected = preferred[0];
+  let bestContrast = contrastRatio(selected, bg);
+
+  preferred.forEach((candidate) => {
+    const ratio = contrastRatio(candidate, bg);
+    if (ratio > bestContrast) {
+      selected = candidate;
+      bestContrast = ratio;
+    }
+  });
+
+  if (bestContrast >= 4.5) {
+    return selected;
+  }
+
+  const fallbacks = ['#000000', '#FFFFFF'];
+  fallbacks.forEach((candidate) => {
+    const ratio = contrastRatio(candidate, bg);
+    if (ratio > bestContrast) {
+      selected = candidate;
+      bestContrast = ratio;
+    }
+  });
+
+  return selected;
 }
 
 export function buildTokens(brand: BrandInput): TemplateTokens {
-  const primary = buildScale(brand.primaryHex);
-  const secondary = buildScale(brand.secondaryHex);
+  const normalizedPrimary = normalizeHex(brand.primaryHex);
+  const normalizedSecondary = normalizeHex(brand.secondaryHex);
+
+  const primary = buildScale(normalizedPrimary);
+  const secondary = buildScale(normalizedSecondary);
   const brandPrimary = primary['600'];
   const brandSecondary = secondary['600'];
 
