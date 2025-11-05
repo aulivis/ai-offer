@@ -16,7 +16,7 @@ const GOOGLE_BUTTON_STYLES: CSSProperties = {
   '--btn-border': '#475569',
   '--btn-hover-border': '#4285f4',
   '--btn-hover-bg': '#f8fafc',
-};
+} as CSSProperties;
 
 export default function LoginClient() {
   const [email, setEmail] = useState('');
@@ -173,20 +173,20 @@ export default function LoginClient() {
       <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div className="hidden lg:block space-y-6">
           <h2 className="text-3xl font-bold text-[#1c274c]">
-            {t('login.benefits.title')}
+            Miért válaszd a Propono-t?
           </h2>
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
               <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
-              <span className="text-base text-fg-muted">{t('login.benefits.item1')}</span>
+              <span className="text-base text-fg-muted">AI-alapú automatikus ajánlatkészítés</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
-              <span className="text-base text-fg-muted">{t('login.benefits.item2')}</span>
+              <span className="text-base text-fg-muted">Márkázott PDF-ek professzionális megjelenéssel</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
-              <span className="text-base text-fg-muted">{t('login.benefits.item3')}</span>
+              <span className="text-base text-fg-muted">Interaktív visszajelzések és státusz követés</span>
             </li>
           </ul>
         </div>
@@ -296,6 +296,7 @@ export default function LoginClient() {
               </div>
             )}
           </div>
+        </div>
         </Card>
       </div>
     </main>
