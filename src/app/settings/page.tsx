@@ -197,6 +197,37 @@ export default function SettingsPage() {
     router.replace('/settings', { scroll: false });
   }, [router, searchParams, showToast]);
 
+  const [activeSection, setActiveSection] = useState<string>('auth');
+
+  const sections = [
+    { id: 'auth', label: t('settings.authMethods.title'), href: '#auth' },
+    { id: 'company', label: t('settings.company.title'), href: '#company' },
+    { id: 'branding', label: t('settings.branding.title'), href: '#branding' },
+    { id: 'templates', label: t('settings.templates.title'), href: '#templates' },
+    { id: 'activities', label: t('settings.activities.title'), href: '#activities' },
+  ];
+
+  useEffect(() => {
+    if (loading) return;
+    
+    const handleScroll = () => {
+      const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities'];
+      const scrollPosition = window.scrollY + 200;
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const element = document.getElementById(sectionIds[i]);
+        if (element && element.offsetTop <= scrollPosition) {
+          setActiveSection(sectionIds[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading]);
+
   const hasGeneralErrors = Object.keys(errors.general).length > 0;
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
   const hasErrors = hasGeneralErrors || hasBrandingErrors;
@@ -702,35 +733,6 @@ export default function SettingsPage() {
       </AppFrame>
     );
   }
-
-  const [activeSection, setActiveSection] = useState<string>('auth');
-
-  const sections = [
-    { id: 'auth', label: t('settings.authMethods.title'), href: '#auth' },
-    { id: 'company', label: t('settings.company.title'), href: '#company' },
-    { id: 'branding', label: t('settings.branding.title'), href: '#branding' },
-    { id: 'templates', label: t('settings.templates.title'), href: '#templates' },
-    { id: 'activities', label: t('settings.activities.title'), href: '#activities' },
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['auth', 'company', 'branding', 'templates', 'activities'];
-      const scrollPosition = window.scrollY + 200;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const element = document.getElementById(sections[i]);
-        if (element && element.offsetTop <= scrollPosition) {
-          setActiveSection(sections[i]);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   return (
     <AppFrame
