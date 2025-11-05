@@ -21,11 +21,43 @@ const pdfWebhookAllowlist = createPdfWebhookAllowlist(
 );
 
 const JOB_TIMEOUT_MS = 90_000;
+const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
 
 type PageEventHandler = (...args: unknown[]) => void;
 
+type PuppeteerRequest = {
+  failure?: () => { errorText?: string | null } | null;
+  url?: () => string | undefined;
+};
+
+type PuppeteerResponse = {
+  status?: () => number | undefined;
+  url?: () => string | undefined;
+};
+
+type PuppeteerPageLike = {
+  on: (event: string, handler: PageEventHandler) => void;
+  off?: (event: string, handler: PageEventHandler) => void;
+  removeListener?: (event: string, handler: PageEventHandler) => void;
+  setDefaultNavigationTimeout: (timeout: number) => void;
+  setDefaultTimeout: (timeout: number) => void;
+  setContent: (html: string, options: { waitUntil: 'networkidle0' }) => Promise<void>;
+  pdf: (options: {
+    printBackground: boolean;
+    preferCSSPageSize: boolean;
+    displayHeaderFooter: boolean;
+    headerTemplate: string;
+    footerTemplate: string;
+    margin: { top: string; right: string; bottom: string; left: string };
+  }) => Promise<Uint8Array | ArrayBuffer>;
+  close: () => Promise<void>;
+};
+
 function detachPageListener(
-  page: { off?: (event: string, handler: PageEventHandler) => void; removeListener?: (event: string, handler: PageEventHandler) => void },
+  page: {
+    off?: (event: string, handler: PageEventHandler) => void;
+    removeListener?: (event: string, handler: PageEventHandler) => void;
+  },
   eventName: string,
   handler: PageEventHandler,
 ) {
@@ -36,20 +68,31 @@ function detachPageListener(
   }
 }
 
-async function setContentWithNetworkIdleLogging(page: any, html: string, context: string) {
+async function setContentWithNetworkIdleLogging(
+  page: PuppeteerPageLike,
+  html: string,
+  context: string,
+) {
   const requestFailures: Array<{ url: string; errorText?: string | null }> = [];
   const responseErrors: Array<{ url: string; status: number }> = [];
 
-  const onRequestFailed = (request: any) => {
+  const onRequestFailed: PageEventHandler = (rawRequest) => {
+    const request = rawRequest as PuppeteerRequest;
     const failure = request.failure?.();
-    requestFailures.push({ url: request.url?.() ?? 'unknown', errorText: failure?.errorText ?? null });
+    requestFailures.push({
+      url: request.url?.() ?? 'unknown',
+      errorText: failure?.errorText ?? null,
+    });
   };
 
-  const onResponse = (response: any) => {
-    const status = typeof response.status === 'function' ? response.status() : Number(response.status ?? NaN);
+  const onResponse: PageEventHandler = (rawResponse) => {
+    const response = rawResponse as PuppeteerResponse;
+    const status =
+      typeof response.status === 'function' ? response.status() : Number(response.status ?? NaN);
     if (Number.isFinite(status) && Number(status) >= 400) {
       responseErrors.push({
-        url: typeof response.url === 'function' ? response.url() : String(response.url ?? 'unknown'),
+        url:
+          typeof response.url === 'function' ? response.url() : String(response.url ?? 'unknown'),
         status: Number(status),
       });
     }
@@ -104,7 +147,7 @@ serve(async (request) => {
     body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 400,
     });
   }
@@ -112,7 +155,7 @@ serve(async (request) => {
   const jobId = body.jobId;
   if (!jobId) {
     return new Response(JSON.stringify({ error: 'jobId missing' }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 400,
     });
   }
@@ -128,28 +171,24 @@ serve(async (request) => {
     .single();
   if (jobError || !job) {
     return new Response(JSON.stringify({ error: 'Job not found' }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 404,
     });
   }
 
   if (job.status !== 'pending') {
     return new Response(JSON.stringify({ error: 'Job already processed' }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 409,
     });
   }
 
-  await supabase
-    .from('pdf_jobs')
-    .update({ status: 'processing', started_at: new Date().toISOString() })
-    .eq('id', jobId);
-
   const payload = (job.payload ?? {}) as PdfJobPayload;
   const html = typeof payload.html === 'string' && payload.html ? payload.html : '';
   if (!html) {
+    await finalizeJobFailure(supabase, jobId, 'Job payload missing HTML');
     return new Response(JSON.stringify({ error: 'Job payload missing HTML' }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 400,
     });
   }
@@ -157,14 +196,29 @@ serve(async (request) => {
   try {
     assertPdfEngineHtml(html, 'PDF job payload HTML');
   } catch (error) {
-    await supabase
-      .from('pdf_jobs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
-      .eq('id', jobId);
     const message = error instanceof Error ? error.message : 'PDF job payload failed validation.';
+    await finalizeJobFailure(supabase, jobId, message);
     return new Response(JSON.stringify({ error: message }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 400,
+    });
+  }
+
+  let claimedProcessing = false;
+  try {
+    claimedProcessing = await claimJobForProcessing(supabase, jobId);
+  } catch (statusError) {
+    console.error('Failed to update PDF job status to processing:', statusError);
+    return new Response(JSON.stringify({ error: 'Failed to update job status' }), {
+      headers: JSON_HEADERS,
+      status: 500,
+    });
+  }
+
+  if (!claimedProcessing) {
+    return new Response(JSON.stringify({ error: 'Job already processed' }), {
+      headers: JSON_HEADERS,
+      status: 409,
     });
   }
 
@@ -276,20 +330,27 @@ serve(async (request) => {
       deviceUsageIncremented = true;
     }
 
-    await supabase
+    const { error: offerUpdateError } = await supabase
       .from('offers')
       .update({ pdf_url: pdfUrl })
       .eq('id', job.offer_id)
       .eq('user_id', job.user_id);
+    if (offerUpdateError) {
+      throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
+    }
 
-    await supabase
+    const { error: jobCompleteError } = await supabase
       .from('pdf_jobs')
       .update({
         status: 'completed',
         completed_at: new Date().toISOString(),
         pdf_url: pdfUrl,
+        error_message: null,
       })
       .eq('id', jobId);
+    if (jobCompleteError) {
+      throw new Error(`Failed to mark job as completed: ${jobCompleteError.message}`);
+    }
 
     if (job.callback_url && pdfUrl) {
       if (isPdfWebhookUrlAllowed(job.callback_url, pdfWebhookAllowlist)) {
@@ -320,7 +381,7 @@ serve(async (request) => {
         pdfUrl,
         downloadToken: job.download_token,
       }),
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: JSON_HEADERS },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -354,21 +415,46 @@ serve(async (request) => {
       }
     }
 
-    await supabase
-      .from('pdf_jobs')
-      .update({
-        status: 'failed',
-        completed_at: new Date().toISOString(),
-        error_message: message,
-      })
-      .eq('id', jobId);
+    await finalizeJobFailure(supabase, jobId, message);
 
     return new Response(JSON.stringify({ error: message }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       status: 500,
     });
   }
 });
+
+async function claimJobForProcessing(supabase: SupabaseClient, jobId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('pdf_jobs')
+    .update({ status: 'processing', started_at: new Date().toISOString(), error_message: null })
+    .eq('id', jobId)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to update job status: ${error.message}`);
+  }
+
+  return Boolean(data);
+}
+
+async function finalizeJobFailure(supabase: SupabaseClient, jobId: string, message: string) {
+  const { error } = await supabase
+    .from('pdf_jobs')
+    .update({
+      status: 'failed',
+      completed_at: new Date().toISOString(),
+      error_message: message,
+    })
+    .eq('id', jobId);
+
+  if (error) {
+    console.error('Failed to record PDF job failure', { jobId, error });
+  }
+}
+
 type CounterKind = 'user' | 'device';
 
 type CounterTargets = {

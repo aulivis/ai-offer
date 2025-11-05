@@ -1,4 +1,5 @@
 import type { OfferTemplate, RenderContext } from '../types';
+import { sanitizeInput } from '@/lib/sanitize';
 
 function renderHead(): string {
   return `
@@ -165,23 +166,37 @@ function renderHead(): string {
 
 function formatCurrency(value: number, currency: string) {
   const safeCurrency = /^[A-Z]{3}$/.test(currency) ? currency : 'USD';
-  return value.toLocaleString(undefined, { style: 'currency', currency: safeCurrency });
+
+  let formatted = '';
+  try {
+    formatted = value.toLocaleString(undefined, { style: 'currency', currency: safeCurrency });
+  } catch {
+    formatted = `${value.toFixed(2)} ${safeCurrency}`;
+  }
+
+  return sanitizeInput(formatted);
 }
 
 function renderItems(ctx: RenderContext) {
   const currency = ctx.slots.totals.currency;
   const rows = ctx.slots.items
     .map((item) => {
-      const note = item.note ? `<div class="offer__item-note">${item.note}</div>` : '';
+      const name = sanitizeInput(item.name);
+      const qty = sanitizeInput(String(item.qty));
+      const unitPrice = formatCurrency(item.unitPrice, currency);
+      const total = formatCurrency(item.total, currency);
+      const note = item.note
+        ? `<div class="offer__item-note">${sanitizeInput(item.note)}</div>`
+        : '';
       return `
         <tr>
           <td>
-            <div class="offer__item-name">${item.name}</div>
+            <div class="offer__item-name">${name}</div>
             ${note}
           </td>
-          <td>${item.qty}</td>
-          <td>${formatCurrency(item.unitPrice, currency)}</td>
-          <td>${formatCurrency(item.total, currency)}</td>
+          <td>${qty}</td>
+          <td>${unitPrice}</td>
+          <td>${total}</td>
         </tr>
       `;
     })
@@ -209,25 +224,28 @@ function renderItems(ctx: RenderContext) {
 
 function formatDate(value: string) {
   try {
-    return new Date(value).toLocaleDateString(undefined, {
+    const formatted = new Date(value).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
+    return sanitizeInput(formatted);
   } catch {
-    return value;
+    return sanitizeInput(value);
   }
 }
 
 function renderBody(ctx: RenderContext): string {
   const { slots } = ctx;
-  const logo = slots.brand.logoUrl
-    ? `<img src="${slots.brand.logoUrl}" alt="${slots.brand.name}" style="max-height: 48px; object-fit: contain;" />`
+  const brandName = sanitizeInput(slots.brand.name);
+  const logoUrl = slots.brand.logoUrl ? sanitizeInput(slots.brand.logoUrl) : null;
+  const logo = logoUrl
+    ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: 48px; object-fit: contain;" />`
     : '';
 
-  const customerParts = [slots.customer.name, slots.customer.address, slots.customer.taxId].filter(
-    Boolean,
-  );
+  const customerParts = [slots.customer.name, slots.customer.address, slots.customer.taxId]
+    .map((value) => sanitizeInput(value ?? ''))
+    .filter(Boolean);
   const customerLines = customerParts
     .map((value) => `<div class="offer__info-value">${value}</div>`)
     .join('');
@@ -235,17 +253,20 @@ function renderBody(ctx: RenderContext): string {
   const totals = slots.totals;
   const currency = totals.currency;
   const currencyLabel = /^[A-Z]{3}$/.test(currency) ? currency : 'USD';
+  const safeCurrencyLabel = sanitizeInput(currencyLabel);
 
   let totalsRows = '';
   for (const row of [
     { label: 'Net total', value: totals.net },
-    { label: `VAT (${currencyLabel})`, value: totals.vat },
+    { label: `VAT (${safeCurrencyLabel})`, value: totals.vat },
     { label: 'Grand total', value: totals.gross },
   ]) {
+    const label = sanitizeInput(row.label);
+    const value = formatCurrency(row.value, currency);
     totalsRows += `
       <div class="offer__totals-row">
-        <span>${row.label}</span>
-        <strong>${formatCurrency(row.value, currency)}</strong>
+        <span>${label}</span>
+        <strong>${value}</strong>
       </div>
     `;
   }
@@ -253,22 +274,27 @@ function renderBody(ctx: RenderContext): string {
   const notes = slots.notes
     ? `<div class="offer__section">
         <div class="offer__section-title">Notes</div>
-        <div class="offer__notes">${slots.notes}</div>
+        <div class="offer__notes">${sanitizeInput(slots.notes)}</div>
       </div>`
     : '';
+
+  const docTitle = sanitizeInput(slots.doc.title);
+  const docSubtitle = slots.doc.subtitle ? sanitizeInput(slots.doc.subtitle) : '';
+  const docDate = formatDate(slots.doc.date);
+  const customerName = sanitizeInput(slots.customer.name);
 
   return `
     <main class="offer">
       <header class="offer__header">
         <div class="offer__brand">
           ${logo}
-          <div class="offer__brand-name">${slots.brand.name}</div>
+          <div class="offer__brand-name">${brandName}</div>
         </div>
         <div class="offer__title">
           <span class="offer__badge">Offer</span>
-          <div class="offer__title-main">${slots.doc.title}</div>
-          <div>${slots.doc.subtitle ?? ''}</div>
-          <div>${formatDate(slots.doc.date)}</div>
+          <div class="offer__title-main">${docTitle}</div>
+          <div>${docSubtitle}</div>
+          <div>${docDate}</div>
         </div>
       </header>
 
@@ -281,7 +307,7 @@ function renderBody(ctx: RenderContext): string {
           </div>
           <div>
             <div class="offer__info-label">Contact</div>
-            <div class="offer__info-value">${slots.customer.name}</div>
+            <div class="offer__info-value">${customerName}</div>
           </div>
         </div>
       </section>
