@@ -5,6 +5,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { t } from '@/copy';
 import { type ProjectDetailKey, type ProjectDetails } from '@/lib/projectDetails';
+import { useFieldValidation } from '@/hooks/useFieldValidation';
 
 type OfferProjectDetailsSectionProps = {
   title: string;
@@ -15,6 +16,7 @@ type OfferProjectDetailsSectionProps = {
     title?: string;
     projectDetails?: Partial<Record<ProjectDetailKey, string>>;
   };
+  showInlineValidation?: boolean;
 };
 
 const MAX_LENGTHS: Record<ProjectDetailKey, number> = {
@@ -32,6 +34,7 @@ export function OfferProjectDetailsSection({
   onTitleChange,
   onProjectDetailsChange,
   errors,
+  showInlineValidation = false,
 }: OfferProjectDetailsSectionProps) {
   const [tipsOpen, setTipsOpen] = useState(false);
   const sectionId = useId();
@@ -39,6 +42,27 @@ export function OfferProjectDetailsSection({
   const tipsHeadingId = `${sectionId}-tips-heading`;
 
   const toggleTips = () => setTipsOpen((value) => !value);
+
+  // Inline validation for title
+  const titleValidation = useFieldValidation(
+    title,
+    (val) => (val.trim().length === 0 ? t('offers.wizard.validation.titleRequired') : undefined),
+  );
+
+  // Inline validation for overview (required field)
+  const overviewValidation = useFieldValidation(
+    projectDetails.overview,
+    (val) => (val.trim().length === 0 ? t('offers.wizard.validation.overviewRequired') : undefined),
+  );
+
+  // Determine which error to show (inline validation takes precedence if enabled and field is touched)
+  const titleError = showInlineValidation && titleValidation.touched
+    ? titleValidation.error || errors?.title
+    : errors?.title;
+
+  const overviewError = showInlineValidation && overviewValidation.touched
+    ? overviewValidation.error || errors?.projectDetails?.overview
+    : errors?.projectDetails?.overview;
 
   return (
     <Card
@@ -83,9 +107,10 @@ export function OfferProjectDetailsSection({
           label={t('offers.wizard.forms.details.titleLabel')}
           value={title}
           onChange={onTitleChange}
+          onBlur={titleValidation.onBlur}
           placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
           help={t('offers.wizard.forms.details.titleHelp')}
-          error={errors?.title}
+          error={titleError}
         />
 
         <div className="rounded-2xl border border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.65)] p-5">
@@ -144,20 +169,32 @@ export function OfferProjectDetailsSection({
         </div>
 
         <div className="space-y-6">
-          {fieldOrder.map((field) => (
-            <Textarea
-              key={field}
-              value={projectDetails[field]}
-              onChange={(event) => onProjectDetailsChange(field, event.target.value)}
-              label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
-              placeholder={t(`offers.wizard.forms.details.fields.${field}.placeholder` as const)}
-              help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
-              maxLength={MAX_LENGTHS[field]}
-              showCounter
-              className="min-h-[7.5rem]"
-              error={errors?.projectDetails?.[field]}
-            />
-          ))}
+          {fieldOrder.map((field) => {
+            const isRequired = field === 'overview';
+            const fieldValidation = isRequired && showInlineValidation
+              ? overviewValidation
+              : null;
+            const fieldError =
+              field === 'overview'
+                ? overviewError
+                : errors?.projectDetails?.[field];
+
+            return (
+              <Textarea
+                key={field}
+                value={projectDetails[field]}
+                onChange={(event) => onProjectDetailsChange(field, event.target.value)}
+                onBlur={fieldValidation?.onBlur}
+                label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
+                placeholder={t(`offers.wizard.forms.details.fields.${field}.placeholder` as const)}
+                help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
+                maxLength={MAX_LENGTHS[field]}
+                showCounter
+                className="min-h-[7.5rem]"
+                error={fieldError}
+              />
+            );
+          })}
         </div>
       </div>
     </Card>

@@ -882,8 +882,13 @@ export const hu = {
       steps: {
         details: 'Projekt részletek',
         pricing: 'Tételek',
-        summary: 'Összegzés',
+        summary: 'Előnézet és áttekintés',
         previewPdf: 'Előnézet & PDF',
+      },
+      validation: {
+        titleRequired: 'Adj meg egy címet az ajánlathoz.',
+        overviewRequired: 'Adj rövid projektáttekintést az AI-nak.',
+        pricingRequired: 'Adj hozzá legalább egy tételt az árlistához.',
       },
       actions: {
         back: 'Vissza',

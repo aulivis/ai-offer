@@ -13,6 +13,8 @@ import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
+import { useOfferPreview } from '@/hooks/useOfferPreview';
+import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -23,7 +25,9 @@ import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
 import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
 
-const DEFAULT_PREVIEW_HTML = `<p>${t('offers.wizard.preview.idle')}</p>`;
+const PREVIEW_DEBOUNCE_MS = 600;
+const SUCCESS_MESSAGE_TIMEOUT_MS = 4000;
+const PREVIEW_MIN_HEIGHT_PX = 720;
 
 export default function NewOfferPage() {
   const {
@@ -46,21 +50,49 @@ export default function NewOfferPage() {
   const { showToast } = useToast();
   const router = useRouter();
 
-  const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_HTML);
-  const [previewStatus, setPreviewStatus] = useState<OfferPreviewStatus>('idle');
-  const [previewError, setPreviewError] = useState<string | null>(null);
-  const [previewSummary, setPreviewSummary] = useState<string[]>([]);
-  const [previewIssues, setPreviewIssues] = useState<PreviewIssue[]>([]);
+  // Draft persistence
+  const wizardData = useMemo(
+    () => ({
+      step,
+      title,
+      projectDetails,
+      pricingRows,
+    }),
+    [step, title, projectDetails, pricingRows],
+  );
+  const { loadDraft, clearDraft } = useDraftPersistence('wizard-state', wizardData, true);
+
+  // Load draft on mount
+  useEffect(() => {
+    const saved = loadDraft();
+    if (saved) {
+      // Restore draft state if available
+      // Note: This would require exposing setters from useOfferWizard
+      // For now, we'll just use it for auto-save
+    }
+  }, [loadDraft]);
+
+  // Preview hook - enabled from Step 2 onwards
+  const previewEnabled = step >= 2;
+  const {
+    previewHtml,
+    status: previewStatus,
+    error: previewError,
+    summary: previewSummary,
+    issues: previewIssues,
+    refresh: refreshPreview,
+    abort: abortPreview,
+  } = useOfferPreview({
+    title,
+    projectDetails,
+    projectDetailsText,
+    enabled: previewEnabled,
+    debounceMs: PREVIEW_DEBOUNCE_MS,
+  });
+
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const previewAbortRef = useRef<AbortController | null>(null);
-  const previewRequestIdRef = useRef(0);
-  const previewDebounceRef = useRef<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const formEndRef = useRef<HTMLDivElement | null>(null);
-  const isNearFormEndRef = useRef(false);
-  const lastScrollYRef = useRef(0);
-  const isMobileRef = useRef(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(true);
   const templateOptions = useMemo(
     () => listTemplates() as Array<OfferTemplate & { legacyId?: string }>,
@@ -87,7 +119,7 @@ export default function NewOfferPage() {
   );
   const hasPreviewHtml = useMemo(() => {
     const trimmed = previewHtml.trim();
-    return trimmed.length > 0 && trimmed !== DEFAULT_PREVIEW_HTML;
+    return trimmed.length > 0 && trimmed !== `<p>${t('offers.wizard.preview.idle')}</p>`;
   }, [previewHtml]);
   const isSubmitDisabled =
     isSubmitting ||
@@ -217,447 +249,30 @@ export default function NewOfferPage() {
     defaultTemplateId,
   ]);
 
-  const showActionBar = useCallback(() => {
-    setIsActionBarVisible((visible) => (visible ? visible : true));
-  }, []);
-
-  const hideActionBar = useCallback(() => {
-    setIsActionBarVisible((visible) => (visible ? false : visible));
-  }, []);
-
+  // Simplified mobile action bar - always visible on mobile
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
-
     const updateIsMobile = () => {
-      isMobileRef.current = window.innerWidth < 640;
-      if (!isMobileRef.current) {
-        showActionBar();
-      }
+      const isMobile = window.innerWidth < 640;
+      // Always show action bar on mobile for better UX
+      setIsActionBarVisible(true);
     };
-
     updateIsMobile();
     window.addEventListener('resize', updateIsMobile);
     return () => {
       window.removeEventListener('resize', updateIsMobile);
     };
-  }, [showActionBar]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      if (!isMobileRef.current) {
-        lastScrollYRef.current = currentY;
-        return;
-      }
-
-      const delta = currentY - lastScrollYRef.current;
-      lastScrollYRef.current = currentY;
-
-      if (currentY < 32 || delta < -6 || isNearFormEndRef.current) {
-        showActionBar();
-        return;
-      }
-
-      if (delta > 6) {
-        hideActionBar();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [hideActionBar, showActionBar]);
-
-  useEffect(() => {
-    if (!formEndRef.current || typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isNearFormEndRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
-          showActionBar();
-        }
-      },
-      { rootMargin: '0px 0px -35% 0px' },
-    );
-
-    observer.observe(formEndRef.current);
-    return () => {
-      observer.disconnect();
-    };
-  }, [showActionBar]);
-
-  const coerceSummaryHighlights = (value: unknown): string[] => {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value
-      .map((item) => (typeof item === 'string' ? item.trim() : ''))
-      .filter((item) => item.length > 0)
-      .slice(0, 6);
-  };
-
-  const coercePreviewIssues = (value: unknown): PreviewIssue[] => {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value
-      .map((item) => {
-        if (!item || typeof item !== 'object') {
-          return null;
-        }
-
-        const severity = (item as { severity?: unknown }).severity;
-        const message = (item as { message?: unknown }).message;
-
-        if (
-          (severity === 'info' || severity === 'warning' || severity === 'error') &&
-          typeof message === 'string'
-        ) {
-          const trimmed = message.trim();
-          if (trimmed.length > 0) {
-            return { severity, message: trimmed } as PreviewIssue;
-          }
-        }
-
-        return null;
-      })
-      .filter((item): item is PreviewIssue => item !== null);
-  };
-
-  const callPreview = useCallback(async () => {
-    if (step !== 3) {
-      return;
-    }
-
-    const trimmedTitle = title.trim();
-    const normalizedDetails = Object.fromEntries(
-      Object.entries(projectDetails).map(([key, value]) => [key, value.trim()]),
-    ) as typeof projectDetails;
-    const trimmedDetails = projectDetailsText.trim();
-
-    if (!trimmedTitle || !trimmedDetails) {
-      if (previewAbortRef.current) {
-        previewRequestIdRef.current += 1;
-        const controller = previewAbortRef.current;
-        previewAbortRef.current = null;
-        controller.abort();
-      }
-      setPreviewHtml(DEFAULT_PREVIEW_HTML);
-      setPreviewStatus('idle');
-      setPreviewError(null);
-      setPreviewSummary([]);
-      setPreviewIssues([]);
-      return;
-    }
-
-    if (previewAbortRef.current) {
-      previewRequestIdRef.current += 1;
-      const activeController = previewAbortRef.current;
-      previewAbortRef.current = null;
-      activeController.abort();
-    }
-
-    const nextRequestId = previewRequestIdRef.current + 1;
-    previewRequestIdRef.current = nextRequestId;
-
-    setPreviewHtml(DEFAULT_PREVIEW_HTML);
-    setPreviewStatus('loading');
-    setPreviewError(null);
-    setPreviewSummary([]);
-    setPreviewIssues([]);
-
-    const controller = new AbortController();
-    previewAbortRef.current = controller;
-
-    try {
-      const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          industry: 'Egyedi projekt',
-          title: trimmedTitle,
-          projectDetails: normalizedDetails,
-          deadline: '',
-          language: 'hu',
-          brandVoice: 'professional',
-          style: 'detailed',
-        }),
-        signal: controller.signal,
-        authErrorMessage: t('errors.offer.saveAuth'),
-        errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
-        defaultErrorMessage: t('errors.preview.fetchUnknown'),
-      });
-
-      if (!resp.body) {
-        const message = t('errors.preview.noData');
-        if (previewRequestIdRef.current === nextRequestId) {
-          setPreviewStatus('error');
-          setPreviewError(message);
-          setPreviewHtml(DEFAULT_PREVIEW_HTML);
-          setPreviewSummary([]);
-          setPreviewIssues([{ severity: 'error', message }]);
-        }
-        showToast({
-          title: t('toasts.preview.error.title'),
-          description: message,
-          variant: 'error',
-        });
-        return;
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let latestHtml = '';
-      let hasDelta = false;
-      let streamErrorMessage: string | null = null;
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let boundary: number;
-        while ((boundary = buffer.indexOf('\n\n')) >= 0) {
-          const rawEvent = buffer.slice(0, boundary).trim();
-          buffer = buffer.slice(boundary + 2);
-          if (!rawEvent || !rawEvent.startsWith('data:')) continue;
-          const jsonPart = rawEvent.replace(/^data:\s*/, '');
-          if (!jsonPart) continue;
-
-          try {
-            const payload = JSON.parse(jsonPart) as {
-              type?: string;
-              html?: string;
-              message?: string;
-              summary?: unknown;
-              issues?: unknown;
-            };
-            if (payload.type === 'delta' || payload.type === 'done') {
-              if (!hasDelta && previewRequestIdRef.current === nextRequestId) {
-                setPreviewStatus('streaming');
-              }
-              hasDelta = true;
-              if (
-                typeof payload.html === 'string' &&
-                previewRequestIdRef.current === nextRequestId
-              ) {
-                latestHtml = payload.html;
-                setPreviewHtml(payload.html || DEFAULT_PREVIEW_HTML);
-              }
-              if (payload.type === 'done' && previewRequestIdRef.current === nextRequestId) {
-                const summary = coerceSummaryHighlights(payload.summary);
-                const parsedIssues = coercePreviewIssues(payload.issues);
-                setPreviewSummary(summary);
-                setPreviewIssues(parsedIssues);
-              }
-            } else if (payload.type === 'error') {
-              streamErrorMessage =
-                typeof payload.message === 'string'
-                  ? payload.message
-                  : t('errors.preview.streamUnknown');
-              break;
-            }
-          } catch (err) {
-            console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
-          }
-        }
-
-        if (streamErrorMessage) {
-          try {
-            await reader.cancel();
-          } catch {
-            /* ignore reader cancel errors */
-          }
-          break;
-        }
-      }
-
-      if (streamErrorMessage) {
-        if (previewRequestIdRef.current === nextRequestId) {
-          setPreviewStatus('error');
-          setPreviewError(streamErrorMessage);
-          setPreviewHtml(DEFAULT_PREVIEW_HTML);
-          setPreviewSummary([]);
-          setPreviewIssues([{ severity: 'error', message: streamErrorMessage }]);
-        }
-        showToast({
-          title: t('toasts.preview.error.title'),
-          description: streamErrorMessage,
-          variant: 'error',
-        });
-        return;
-      }
-
-      if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
-        setPreviewHtml(DEFAULT_PREVIEW_HTML);
-      }
-
-      if (previewRequestIdRef.current === nextRequestId) {
-        setPreviewStatus('success');
-        setPreviewError(null);
-      }
-    } catch (error) {
-      if (isAbortError(error)) {
-        if (previewRequestIdRef.current === nextRequestId) {
-          setPreviewStatus('aborted');
-          setPreviewError(t('errors.preview.aborted'));
-          setPreviewHtml(DEFAULT_PREVIEW_HTML);
-          setPreviewSummary([]);
-          setPreviewIssues([{ severity: 'warning', message: t('errors.preview.aborted') }]);
-        }
-        return;
-      }
-
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : error instanceof Error
-            ? error.message
-            : t('errors.preview.fetchUnknown');
-      if (previewRequestIdRef.current === nextRequestId) {
-        setPreviewStatus('error');
-        setPreviewError(message);
-        setPreviewHtml(DEFAULT_PREVIEW_HTML);
-        setPreviewSummary([]);
-        setPreviewIssues([{ severity: 'error', message }]);
-      }
-      showToast({
-        title: t('toasts.preview.error.title'),
-        description: message,
-        variant: 'error',
-      });
-    } finally {
-      if (previewAbortRef.current === controller) {
-        previewAbortRef.current = null;
-      }
-    }
-  }, [projectDetails, projectDetailsText, showToast, step, title]);
-
-  const handleManualRefresh = useCallback(() => {
-    if (previewDebounceRef.current) {
-      window.clearTimeout(previewDebounceRef.current);
-      previewDebounceRef.current = null;
-    }
-    void callPreview();
-  }, [callPreview]);
-
-  const handleAbortPreview = useCallback(() => {
-    const controller = previewAbortRef.current;
-    if (!controller) {
-      return;
-    }
-    previewAbortRef.current = null;
-    previewRequestIdRef.current += 1;
-    controller.abort();
-    setPreviewStatus('aborted');
-    setPreviewError(t('errors.preview.aborted'));
-    setPreviewHtml(DEFAULT_PREVIEW_HTML);
-    setPreviewSummary([]);
-    setPreviewIssues([{ severity: 'warning', message: t('errors.preview.aborted') }]);
   }, []);
 
-  useEffect(() => {
-    if (previewDebounceRef.current) {
-      window.clearTimeout(previewDebounceRef.current);
-      previewDebounceRef.current = null;
-    }
-
-    if (step !== 3) {
-      return;
-    }
-
-    const trimmedTitle = title.trim();
-    const trimmedDetails = projectDetailsText.trim();
-    const shouldGeneratePreview = trimmedTitle.length > 0 && trimmedDetails.length > 0;
-
-    if (shouldGeneratePreview) {
-      setPreviewStatus('loading');
-      setPreviewError(null);
-      setPreviewHtml(DEFAULT_PREVIEW_HTML);
-      setPreviewSummary([]);
-      setPreviewIssues([]);
-    }
-
-    previewDebounceRef.current = window.setTimeout(() => {
-      void callPreview();
-    }, 600);
-
-    return () => {
-      if (previewDebounceRef.current) {
-        window.clearTimeout(previewDebounceRef.current);
-        previewDebounceRef.current = null;
-      }
-    };
-  }, [callPreview, projectDetailsText, pricingRows, step, title]);
-
+  // Reset preview tab when step changes
   useEffect(() => {
     if (step !== 3) {
       setActivePreviewTab('document');
       setIsPreviewModalOpen(false);
-      setPreviewSummary([]);
-      setPreviewIssues([]);
     }
   }, [step]);
-
-  useEffect(() => {
-    if (step === 3) {
-      return;
-    }
-
-    if (previewDebounceRef.current) {
-      window.clearTimeout(previewDebounceRef.current);
-      previewDebounceRef.current = null;
-    }
-    if (previewAbortRef.current) {
-      previewAbortRef.current.abort();
-      previewAbortRef.current = null;
-    }
-    setPreviewStatus('idle');
-    setPreviewError(null);
-    setPreviewHtml(DEFAULT_PREVIEW_HTML);
-    setPreviewSummary([]);
-    setPreviewIssues([]);
-  }, [step]);
-
-  useEffect(() => {
-    if (previewStatus !== 'success') {
-      return;
-    }
-    const timeout = window.setTimeout(() => {
-      setPreviewStatus('idle');
-    }, 4000);
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [previewStatus]);
-
-  useEffect(
-    () => () => {
-      if (previewDebounceRef.current) {
-        window.clearTimeout(previewDebounceRef.current);
-        previewDebounceRef.current = null;
-      }
-      if (previewAbortRef.current) {
-        previewAbortRef.current.abort();
-        previewAbortRef.current = null;
-      }
-    },
-    [],
-  );
 
   const stepLabels = useMemo(
     () => ({
@@ -856,8 +471,6 @@ export default function NewOfferPage() {
       }
     : undefined;
   const pricingSectionError = attemptedSteps[2] ? validation.fields[2].pricing : undefined;
-  const actionBarIsHidden = !isActionBarVisible && isMobileRef.current;
-  const actionBarTabIndex = actionBarIsHidden ? -1 : undefined;
   const resolvedTemplateForControls = templateOptions.some(
     (template) => template.id === selectedTemplateId,
   )
@@ -961,6 +574,7 @@ export default function NewOfferPage() {
                 onProjectDetailsChange={(field, value) =>
                   setProjectDetails((prev) => ({ ...prev, [field]: value }))
                 }
+                showInlineValidation={true}
                 errors={detailFieldErrors}
               />
             )}
@@ -978,20 +592,13 @@ export default function NewOfferPage() {
             )}
 
             <div
-              className={`sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 ease-out sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none ${
-                actionBarIsHidden
-                  ? 'translate-y-full opacity-0 pointer-events-none'
-                  : 'translate-y-0 opacity-100'
-              } sm:translate-y-0 sm:opacity-100`}
-              aria-hidden={actionBarIsHidden || undefined}
-              onFocusCapture={showActionBar}
+              className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 ease-out sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none"
             >
               <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   onClick={goPrev}
                   disabled={step === 1}
                   className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
-                  tabIndex={actionBarTabIndex}
                 >
                   {backButtonLabel}
                 </Button>
@@ -1001,7 +608,6 @@ export default function NewOfferPage() {
                     onClick={goNext}
                     disabled={isNextDisabled}
                     className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                    tabIndex={actionBarTabIndex}
                   >
                     {nextButtonLabel}
                   </Button>
@@ -1010,20 +616,18 @@ export default function NewOfferPage() {
                     onClick={handleSubmit}
                     disabled={isSubmitDisabled}
                     className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                    tabIndex={actionBarTabIndex}
                   >
                     {submitLabel}
                   </Button>
                 )}
               </div>
             </div>
-            <div ref={formEndRef} aria-hidden="true" className="h-1 w-full" />
           </div>
         </div>
 
         <div className="flex min-h-0 flex-col gap-6 overflow-hidden md:sticky md:top-20 lg:top-24">
           <OfferPreviewCard
-            isPreviewAvailable={step === 3}
+            isPreviewAvailable={previewEnabled}
             previewMarkup={previewDocumentHtml}
             hasPreviewMarkup={hasPreviewHtml}
             statusDescriptor={statusDescriptor}
@@ -1034,8 +638,8 @@ export default function NewOfferPage() {
             issues={combinedIssues}
             activeTab={activePreviewTab}
             onTabChange={setActivePreviewTab}
-            onAbortPreview={handleAbortPreview}
-            onManualRefresh={handleManualRefresh}
+            onAbortPreview={abortPreview}
+            onManualRefresh={refreshPreview}
             onOpenFullscreen={() => setIsPreviewModalOpen(true)}
             titleId="offer-preview-card-title"
             controls={previewControls}
@@ -1048,7 +652,7 @@ export default function NewOfferPage() {
         labelledBy="preview-modal-title"
       >
         <OfferPreviewCard
-          isPreviewAvailable={step === 3}
+          isPreviewAvailable={previewEnabled}
           previewMarkup={previewDocumentHtml}
           hasPreviewMarkup={hasPreviewHtml}
           statusDescriptor={statusDescriptor}
@@ -1059,8 +663,8 @@ export default function NewOfferPage() {
           issues={combinedIssues}
           activeTab={activePreviewTab}
           onTabChange={setActivePreviewTab}
-          onAbortPreview={handleAbortPreview}
-          onManualRefresh={handleManualRefresh}
+          onAbortPreview={abortPreview}
+          onManualRefresh={refreshPreview}
           onExitFullscreen={() => setIsPreviewModalOpen(false)}
           titleId="preview-modal-title"
           variant="modal"

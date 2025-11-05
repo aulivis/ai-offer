@@ -10,6 +10,7 @@ import {
   type ProjectDetails,
 } from '@/lib/projectDetails';
 import type { PreviewIssue } from '@/types/preview';
+import { t } from '@/copy';
 
 type Step = 1 | 2 | 3;
 
@@ -61,22 +62,22 @@ function buildValidation({
   const trimmedOverview = projectDetails.overview.trim();
 
   if (!trimmedTitle) {
-    registerError(1, 'Adj meg egy címet az ajánlathoz.', () => {
-      fields[1].title = 'Adj meg egy címet az ajánlathoz.';
+    registerError(1, t('offers.wizard.validation.titleRequired'), () => {
+      fields[1].title = t('offers.wizard.validation.titleRequired');
     });
   }
 
   if (!trimmedOverview) {
-    registerError(1, 'Adj rövid projektáttekintést az AI-nak.', () => {
-      fields[1].projectDetails.overview = 'Adj rövid projektáttekintést az AI-nak.';
+    registerError(1, t('offers.wizard.validation.overviewRequired'), () => {
+      fields[1].projectDetails.overview = t('offers.wizard.validation.overviewRequired');
     });
   }
 
   const hasPricingRow = pricingRows.some((row) => row.name.trim().length > 0);
 
   if (!hasPricingRow) {
-    registerError(2, 'Adj hozzá legalább egy tételt az árlistához.', () => {
-      fields[2].pricing = 'Adj hozzá legalább egy tételt az árlistához.';
+    registerError(2, t('offers.wizard.validation.pricingRequired'), () => {
+      fields[2].pricing = t('offers.wizard.validation.pricingRequired');
     });
   }
 
