@@ -150,7 +150,10 @@ function decodeJwtPayload<T = any>(jwt: string): T | null {
 }
 
 /** PKCE token csere a Supabase GoTrue felé (JSON formátum, grant_type=pkce) */
-async function exchangeCode({ code, codeVerifier, redirectUri }: ExchangeCodeParams) {
+async function exchangeCode(
+  { code, codeVerifier, redirectUri }: ExchangeCodeParams,
+  logger: RequestLogger,
+) {
   const url = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
   url.searchParams.set('grant_type', 'pkce');
 
@@ -172,7 +175,7 @@ async function exchangeCode({ code, codeVerifier, redirectUri }: ExchangeCodePar
   const rawBody = await response.text();
 
   if (!response.ok) {
-    console.error('Supabase token exchange failed.', {
+    logger.error('Supabase token exchange failed', {
       status: response.status,
       statusText: response.statusText,
       body: sanitizeErrorBody(contentType, rawBody),
@@ -183,7 +186,7 @@ async function exchangeCode({ code, codeVerifier, redirectUri }: ExchangeCodePar
   try {
     return rawBody ? (JSON.parse(rawBody) as ExchangeCodeResult) : ({} as ExchangeCodeResult);
   } catch (error) {
-    console.error('Supabase token exchange returned invalid JSON.', error);
+    logger.error('Supabase token exchange returned invalid JSON', error);
     throw new Error('Supabase token exchange returned invalid JSON.');
   }
 }
@@ -377,18 +380,21 @@ export async function GET(request: Request) {
     const verifierCookie = cookieStore.get('sb_pkce_code_verifier')?.value ?? null;
 
     if (!verifierCookie) {
-      console.error('Missing PKCE code verifier cookie at callback.');
+      logger.error('Missing PKCE code verifier cookie at callback');
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
     const redirectUriForExchange = new URL(envServer.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI);
     redirectUriForExchange.searchParams.set('redirect_to', finalRedirect);
 
-    const exchange = await exchangeCode({
-      code,
-      codeVerifier: verifierCookie,
-      redirectUri: redirectUriForExchange.toString(),
-    });
+    const exchange = await exchangeCode(
+      {
+        code,
+        codeVerifier: verifierCookie,
+        redirectUri: redirectUriForExchange.toString(),
+      },
+      logger,
+    );
 
     // PKCE süti törlése
     cookieStore.set({
@@ -433,7 +439,7 @@ export async function GET(request: Request) {
 
     return redirectTo(finalRedirect);
   } catch (error) {
-    console.error('Failed to complete OAuth callback.', error);
+    logger.error('Failed to complete OAuth callback', error);
     await clearAuthCookies();
     return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
   }

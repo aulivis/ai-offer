@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 const BUCKET_ID = 'brand-assets';
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml'];
 
-export const POST = withAuth(async (_request: AuthenticatedNextRequest) => {
+export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
+  const requestId = getRequestId(request);
+  const log = createLogger(requestId);
+  log.setContext({ userId: request.user.id });
+  
   try {
     const sb = supabaseServiceRole();
     const { data: bucket, error: getError } = await sb.storage.getBucket(BUCKET_ID);
@@ -48,9 +54,7 @@ export const POST = withAuth(async (_request: AuthenticatedNextRequest) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Ismeretlen hiba a tárhely előkészítésekor.';
-    if (error instanceof Error) {
-      console.error('Bucket ensure failed:', error);
-    }
+    log.error('Bucket ensure failed', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 });

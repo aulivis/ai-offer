@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
@@ -18,6 +20,10 @@ function badRequest(message: string) {
 }
 
 export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: RouteParams) => {
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
+  
   const jobId = params.jobId?.trim();
   if (!jobId) {
     return badRequest('Hiányzik a PDF feladat azonosítója.');
@@ -31,7 +37,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
     .maybeSingle();
 
   if (error) {
-    console.error('PDF job lookup failed:', error.message);
+    log.error('PDF job lookup failed', error);
     return NextResponse.json({ error: 'Nem található a kért PDF feladat.' }, { status: 404 });
   }
 
@@ -75,13 +81,13 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
       try {
         responseText = await response.text();
       } catch (readError) {
-        console.error('Webhook replay response read error:', readError);
+        log.warn('Webhook replay response read error', readError);
       }
 
       const truncatedBody =
         responseText && responseText.length > 500 ? `${responseText.slice(0, 500)}…` : responseText;
 
-      console.error('Webhook replay failed:', {
+      log.error('Webhook replay failed', {
         status: response.status,
         statusText: response.statusText,
         body: truncatedBody,
@@ -90,7 +96,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
       return NextResponse.json({ error: 'A webhook hívása sikertelen volt.' }, { status: 502 });
     }
   } catch (callbackError) {
-    console.error('Webhook replay error:', callbackError);
+    log.error('Webhook replay error', callbackError);
     return NextResponse.json({ error: 'A webhook hívása sikertelen volt.' }, { status: 502 });
   } finally {
     clearTimeout(abortTimeout);

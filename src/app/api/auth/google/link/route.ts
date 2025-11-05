@@ -3,12 +3,17 @@ import { NextResponse } from 'next/server';
 
 import { createSupabaseOAuthClient } from '../createSupabaseOAuthClient';
 import { sanitizeOAuthRedirect } from '../redirectUtils';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 function buildRedirect(target: string) {
   return NextResponse.redirect(target, { status: 302 });
 }
 
 export async function GET(request: Request) {
+  const requestId = getRequestId(request);
+  const log = createLogger(requestId);
+  
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('propono_at')?.value ?? null;
   const refreshToken = cookieStore.get('propono_rt')?.value ?? null;
@@ -34,7 +39,7 @@ export async function GET(request: Request) {
   });
 
   if (sessionError) {
-    console.error('Failed to load Supabase session before linking Google identity.', sessionError);
+    log.error('Failed to load Supabase session before linking Google identity', sessionError);
     return buildRedirect(errorRedirect);
   }
 
@@ -47,7 +52,7 @@ export async function GET(request: Request) {
   });
 
   if (error || !data?.url) {
-    console.error('Failed to initiate Supabase Google link flow.', error ?? null);
+    log.error('Failed to initiate Supabase Google link flow', error ?? null);
     return buildRedirect(errorRedirect);
   }
 

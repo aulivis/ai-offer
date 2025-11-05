@@ -10,6 +10,8 @@ import {
   setPdfMetadata,
   type PdfMetadata,
 } from '@/lib/pdfConfig';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 export const runtime = 'nodejs';
 
@@ -144,6 +146,9 @@ function internalError(message: string) {
 }
 
 export async function POST(req: NextRequest) {
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  
   let json: unknown;
   try {
     json = await req.json();
@@ -177,7 +182,7 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error && /invalid hex color/i.test(error.message)) {
       return badRequest('One or more brand colors are invalid hex values.');
     }
-    console.error('Failed to render PDF HTML', error);
+    log.error('Failed to render PDF HTML', error);
     return internalError('Failed to render the requested PDF template.');
   }
 
@@ -239,18 +244,18 @@ export async function POST(req: NextRequest) {
         try {
           await page.close();
         } catch (pageError) {
-          console.warn('Failed to close Puppeteer page for pdf-export route', pageError);
+          log.warn('Failed to close Puppeteer page for pdf-export route', pageError);
         }
       }
     } finally {
       try {
         await browser.close();
       } catch (browserError) {
-        console.warn('Failed to close Puppeteer browser for pdf-export route', browserError);
+        log.warn('Failed to close Puppeteer browser for pdf-export route', browserError);
       }
     }
   } catch (error) {
-    console.error('Failed to generate PDF binary', error);
+    log.error('Failed to generate PDF binary', error);
     return internalError('Failed to render PDF.');
   }
 
