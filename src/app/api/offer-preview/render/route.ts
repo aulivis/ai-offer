@@ -15,6 +15,10 @@ import {
 } from '@/lib/observability/templateTelemetry';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { PREVIEW_CSP_DIRECTIVE, injectPreviewCspMeta } from '@/lib/previewSecurity';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
+import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
+import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 
 export const runtime = 'nodejs';
 
@@ -99,6 +103,10 @@ function normalizeRows(rows: PriceRow[] | undefined): PriceRow[] {
 }
 
 async function handlePost(req: AuthenticatedNextRequest) {
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
+  
   let rawBody = '';
   try {
     rawBody = await req.text();
@@ -106,10 +114,11 @@ async function handlePost(req: AuthenticatedNextRequest) {
     if (req.signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
       return new NextResponse(null, { status: 499 });
     }
-    console.warn('offer-preview render: failed to read request body', error);
+    log.warn('Failed to read request body', error);
     return NextResponse.json(
       {
         error: 'Érvénytelen előnézeti kérés.',
+        requestId,
         issues: {
           fieldErrors: {},
           formErrors: ['Érvénytelen JSON törzs.'],
@@ -127,6 +136,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
     return NextResponse.json(
       {
         error: 'Érvénytelen előnézeti kérés.',
+        requestId,
         issues: {
           fieldErrors: {},
           formErrors: ['Érvénytelen JSON törzs.'],
@@ -140,10 +150,11 @@ async function handlePost(req: AuthenticatedNextRequest) {
   try {
     json = JSON.parse(rawBody);
   } catch (error) {
-    console.warn('offer-preview render: failed to parse request JSON body', error);
+    log.warn('Failed to parse request JSON body', error);
     return NextResponse.json(
       {
         error: 'Érvénytelen előnézeti kérés.',
+        requestId,
         issues: {
           fieldErrors: {},
           formErrors: ['Érvénytelen JSON törzs.'],
@@ -156,13 +167,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
   const parsed = previewRequestSchema.safeParse(json);
 
   if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: 'Érvénytelen előnézeti kérés.',
-        issues: parsed.error.flatten(),
-      },
-      { status: 400 },
-    );
+    return handleValidationError(parsed.error, requestId);
   }
 
   const {
@@ -241,6 +246,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
     renderDuration = performance.now() - renderStartedAt;
   } catch (error) {
     renderDuration = performance.now() - renderStartedAt;
+    log.error('Template render failed', error, { templateId: template.id });
     await recordTemplateRenderTelemetry({
       templateId: template.id,
       renderer: 'api.offer_preview.render',
@@ -248,7 +254,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
       renderMs: renderDuration,
       errorCode: resolveTemplateRenderErrorCode(error),
     });
-    throw error;
+    return handleUnexpectedError(error, requestId, log);
   }
 
   await recordTemplateRenderTelemetry({
@@ -272,4 +278,4 @@ async function handlePost(req: AuthenticatedNextRequest) {
   });
 }
 
-export const POST = withAuth(handlePost);
+export const POST = withAuth(withRequestSizeLimit(handlePost));
