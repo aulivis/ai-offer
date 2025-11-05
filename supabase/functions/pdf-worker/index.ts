@@ -247,7 +247,15 @@ serve(async (request) => {
     const pdfBinary = await withTimeout(
       async () => {
         const browser = await puppeteer.launch({
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+          ],
           headless: true,
         });
 
@@ -258,14 +266,30 @@ serve(async (request) => {
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
+            
+            // Set viewport for consistent rendering
+            await page.setViewport({
+              width: 1200,
+              height: 1600,
+              deviceScaleFactor: 2,
+            });
+            
             await setContentWithNetworkIdleLogging(page, html, 'edge-pdf');
+            
+            // Extract document title from HTML if possible
+            const documentTitle = await page.title().catch(() => 'Offer Document');
+            if (documentTitle) {
+              await page.setTitle(documentTitle);
+            }
+            
+            // Generate PDF with professional settings (A4 with 20mm margins)
             return await page.pdf({
+              format: 'A4',
+              margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
               printBackground: true,
               preferCSSPageSize: true,
-              displayHeaderFooter: true,
-              headerTemplate: '<div></div>',
-              footerTemplate: '<div></div>',
-              margin: { top: '0', right: '0', bottom: '0', left: '0' },
+              displayHeaderFooter: false,
+              scale: 1.0,
             });
           } finally {
             if (page) {

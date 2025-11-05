@@ -4,6 +4,12 @@ import { z } from 'zod';
 import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { getTemplateMeta } from '@/app/pdf/templates/registry';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
+import {
+  createPdfOptions,
+  toPuppeteerOptions,
+  setPdfMetadata,
+  type PdfMetadata,
+} from '@/lib/pdfConfig';
 
 export const runtime = 'nodejs';
 
@@ -179,22 +185,56 @@ export async function POST(req: NextRequest) {
   try {
     const { default: puppeteer } = await import('puppeteer');
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+      ],
       headless: true,
     });
 
     try {
       const page = await browser.newPage();
       try {
-        page.setDefaultNavigationTimeout(15_000);
-        page.setDefaultTimeout(15_000);
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-        pdfBinary = await page.pdf({
-          printBackground: true,
-          preferCSSPageSize: true,
-          displayHeaderFooter: false,
-          margin: { top: '0', right: '0', bottom: '0', left: '0' },
+        page.setDefaultNavigationTimeout(30_000);
+        page.setDefaultTimeout(30_000);
+        
+        // Set viewport for consistent rendering
+        await page.setViewport({
+          width: 1200,
+          height: 1600,
+          deviceScaleFactor: 2,
         });
+
+        // Set content and wait for resources to load
+        await page.setContent(html, {
+          waitUntil: 'networkidle0',
+          timeout: 30_000,
+        });
+
+        // Extract document title for metadata
+        const documentTitle = slots.doc.title || 'Offer Document';
+
+        // Create PDF metadata
+        const pdfMetadata: PdfMetadata = {
+          title: documentTitle,
+          author: brand.name,
+          subject: `Offer: ${documentTitle}`,
+          keywords: `offer,${brand.name},${slots.doc.date}`,
+          creator: 'AI Offer Platform',
+          producer: 'AI Offer Platform',
+        };
+
+        // Set PDF metadata
+        await setPdfMetadata(page, pdfMetadata);
+
+        // Generate PDF with professional settings
+        const pdfOptions = createPdfOptions(pdfMetadata);
+        pdfBinary = await page.pdf(toPuppeteerOptions(pdfOptions));
       } finally {
         try {
           await page.close();
@@ -216,12 +256,23 @@ export async function POST(req: NextRequest) {
 
   const pdfBuffer = Buffer.isBuffer(pdfBinary) ? pdfBinary : Buffer.from(pdfBinary);
 
+  // Generate filename from document title
+  const sanitizedTitle = slots.doc.title
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+    .slice(0, 50);
+  const filename = sanitizedTitle ? `${sanitizedTitle}.pdf` : 'offer.pdf';
+
   return new NextResponse(pdfBuffer, {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'inline; filename="offer.pdf"',
-      'Cache-Control': 'no-store',
+      'Content-Disposition': `inline; filename="${filename}"`,
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 }

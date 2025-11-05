@@ -6,6 +6,12 @@ import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 import { incrementUsage, rollbackUsageIncrement } from '@/lib/usageHelpers';
+import {
+  createPdfOptions,
+  toPuppeteerOptions,
+  setPdfMetadata,
+  type PdfMetadata,
+} from '@/lib/pdfConfig';
 
 const JOB_TIMEOUT_MS = 90_000;
 
@@ -119,7 +125,15 @@ export async function processPdfJobInline(
     const pdfBinary = await withTimeout(
       async () => {
         const browser = await puppeteer.launch({
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+          ],
           headless: true,
         });
 
@@ -130,15 +144,35 @@ export async function processPdfJobInline(
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
-            await setContentWithNetworkIdleLogging(page, html, 'inline-pdf');
-            return await page.pdf({
-              printBackground: true,
-              preferCSSPageSize: true,
-              displayHeaderFooter: true,
-              headerTemplate: '<div></div>',
-              footerTemplate: '<div></div>',
-              margin: { top: '0', right: '0', bottom: '0', left: '0' },
+            
+            // Set viewport for consistent rendering
+            await page.setViewport({
+              width: 1200,
+              height: 1600,
+              deviceScaleFactor: 2,
             });
+            
+            await setContentWithNetworkIdleLogging(page, html, 'inline-pdf');
+            
+            // Extract document title for metadata
+            const documentTitle = await page.title().catch(() => 'Offer Document');
+            
+            // Create PDF metadata
+            const pdfMetadata: PdfMetadata = {
+              title: documentTitle || 'Offer Document',
+              author: 'AI Offer Platform',
+              subject: 'Business Offer',
+              keywords: 'offer,business,proposal',
+              creator: 'AI Offer Platform',
+              producer: 'AI Offer Platform',
+            };
+            
+            // Set PDF metadata
+            await setPdfMetadata(page, pdfMetadata);
+            
+            // Generate PDF with professional settings
+            const pdfOptions = createPdfOptions(pdfMetadata);
+            return await page.pdf(toPuppeteerOptions(pdfOptions));
           } finally {
             if (page) {
               try {
