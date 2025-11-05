@@ -13,8 +13,14 @@ import {
   projectDetailsSchema,
   type ProjectDetails,
 } from '@/lib/projectDetails';
-import { z } from 'zod';
-export const runtime = 'nodejs';
+import {
+  checkRateLimitMiddleware,
+  createRateLimitResponse,
+} from '@/lib/rateLimitMiddleware';
+import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
+import { createLogger } from '@/lib/logger';
+import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
+import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 
 const BASE_SYSTEM_PROMPT = `
 Te egy magyar üzleti ajánlatíró asszisztens vagy.
@@ -83,7 +89,8 @@ const previewRequestSchema = z
   })
   .strict();
 
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+export const POST = withAuth(
+  withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
@@ -364,4 +371,5 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
     return handleUnexpectedError(error, requestId, log);
   }
-});
+  }),
+);

@@ -53,8 +53,7 @@ import {
   createRateLimitResponse,
 } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
-import { createLogger } from '@/lib/logger';
-import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
+import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 import { z } from 'zod';
 import { renderSectionHeading } from '@/app/lib/offerSections';
 
@@ -616,7 +615,8 @@ function applyImageAssetsToHtml(
   return { pdfHtml, storedHtml };
 }
 
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+export const POST = withAuth(
+  withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
@@ -1172,4 +1172,5 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
   } catch (error) {
     return handleUnexpectedError(error, requestId, log);
   }
-});
+  }),
+);
