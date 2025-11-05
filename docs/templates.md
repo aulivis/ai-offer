@@ -2,6 +2,17 @@
 
 This guide walks new template authors through the core concepts, file layout, and release process for shipping an Offer template. Follow it end-to-end and you should be able to publish a compliant template in under an hour.
 
+## Architecture Overview
+
+The template system uses a **unified registry** (`engineRegistry.ts`) that:
+- Validates templates with Zod schemas
+- Caches templates for performance (1-hour TTL)
+- Provides metadata for UI and discovery
+- Supports both free and premium tiers
+- Maintains backward compatibility with legacy IDs
+
+The SDK runtime templates (`registry.ts`) provide a simplified interface for runtime PDF export and automatically bridge to the main registry.
+
 ## Engine concepts
 
 ### OfferTemplate contract
@@ -11,6 +22,7 @@ Templates export an `OfferTemplate` object from their `index.ts`. The object dec
 - `tier`: Either `free` or `premium`, which gates template visibility by customer plan.
 - `label`, `marketingHighlight`, and optional `capabilities` flags used by the app for selection UI.
 - `tokens`: A `ThemeTokens` record describing colors, typography, spacing, and radii consumed by the renderer.
+- `styles`: Print styles and template-specific CSS.
 - `renderHead(ctx)` and `renderBody(ctx)`: Functions that receive a `RenderCtx` and return HTML strings for the `<head>` and `<main>` of the PDF document respectively.
 
 See [`src/app/pdf/templates/types.ts`](../src/app/pdf/templates/types.ts) for the full interface.
@@ -38,9 +50,9 @@ All customer-facing strings must come from `ctx.i18n`. Existing copy keys cover 
 
 When we reviewed the legacy `partialHeader`, `partialSections`, and `partialPriceTable` implementations we found a few recurring layout issues:
 
-- **Unstructured sections.** The body renderer simply injected raw HTML into `.offer-doc__content`, so headings, cards, and spacing varied wildly between templates and were hard to restyle in CSS.【F:docs/templates.md†L69-L74】
-- **Metadata without semantics.** Header metadata relied on anonymous `<div>`/`<span>` pairs (`.offer-doc__meta`), which made it difficult to align labels, apply placeholder styling, or translate to assistive technologies.【F:docs/templates.md†L75-L78】
-- **Pricing tables as monoliths.** All pricing layout lived in an inline `<style>` block and the markup could not express zebra striping, currency totals, or contextual notes without custom rewrites per template.【F:docs/templates.md†L79-L82】
+- **Unstructured sections.** The body renderer simply injected raw HTML into `.offer-doc__content`, so headings, cards, and spacing varied wildly between templates and were hard to restyle in CSS.
+- **Metadata without semantics.** Header metadata relied on anonymous `<div>`/`<span>` pairs (`.offer-doc__meta`), which made it difficult to align labels, apply placeholder styling, or translate to assistive technologies.
+- **Pricing tables as monoliths.** All pricing layout lived in an inline `<style>` block and the markup could not express zebra striping, currency totals, or contextual notes without custom rewrites per template.
 
 These gaps drove the refactor below: we now wrap each major block in semantic `.section-card` containers, expose reusable `.key-metrics` and `.pricing-table` primitives, and move presentation into shared CSS utilities so templates stay consistent.
 
@@ -78,6 +90,22 @@ Update both the `id` and `version` fields in `index.ts` when bumping.
 ### Plan tiers
 Set `tier` to `free` for templates available on the free plan, or `premium` for paid tiers. Premium templates must provide a compelling `marketingHighlight` string to display in upsell modals. Free templates should avoid premium-only capabilities (for example, advanced branding options) unless explicitly approved.
 
+### Template Registration
+All templates must be registered in `engineRegistry.ts`:
+
+```typescript
+import { yourTemplate } from './your-template';
+import { registerTemplate } from './engineRegistry';
+
+registerTemplate(yourTemplate);
+```
+
+The registry automatically:
+- Validates template structure
+- Extracts metadata
+- Sets up caching
+- Handles legacy ID mapping
+
 ### Testing and linting
 Every template must pass the repository lint rules and golden tests:
 
@@ -90,14 +118,32 @@ If golden tests fail, update the snapshots intentionally (`npx vitest -u src/app
 ## Add a new template in 10 steps
 
 1. **Clone the repo & install deps** – `npm install` if you have not already.
-2. **Copy the starter folder** – Duplicate `src/app/pdf/templates/free.base/` to a new folder named after your template (e.g. `premium.skyline`).
-3. **Rename identifiers** – Update the exported constant, `id`, `label`, and `marketingHighlight` in the new `index.ts`.
-4. **Set tokens** – Tailor `tokens.ts` to your palette, fonts, and spacing. Reference existing templates for guidance.
+2. **Run the template generator** – `pnpm template:new "Your Template Name" [tier] [legacy-id]` to create the scaffold.
+3. **Customize tokens** – Edit `tokens.ts` to define your color palette, typography, and spacing.
+4. **Define styles** – Update `styles.css.ts` with template-specific CSS and print styles.
 5. **Build the head partial** – Edit `partials/head.ts` to include fonts, CSS variables, and meta tags your layout requires.
 6. **Compose the body partial** – Implement `renderBody` using `ctx.offer`, `ctx.rows`, `ctx.tokens`, and `ctx.i18n` for localized copy.
 7. **Wire optional assets** – Add any supporting images or SVGs under `assets/` and import them from your partials.
 8. **Declare capabilities** – Set the `capabilities` map in `index.ts` (e.g. `'branding.logo': true`) so the app can toggle features correctly.
-9. **Verify plan tier** – Confirm `tier` matches the go-to-market plan and add a `marketingHighlight` for premium offerings.
+9. **Register template** – Import and register your template in `engineRegistry.ts` using `registerTemplate()`.
 10. **Run quality checks** – Execute `npm run lint` and `npm run test:templates`, review diffs, and submit your PR.
 
 Following these steps keeps templates consistent with the rendering engine, meets localization requirements, and ensures QA can approve your work quickly.
+
+## Template Caching
+
+Templates are automatically cached for 1 hour to improve performance. The cache is:
+- **Automatic**: No manual cache management needed
+- **Invalidated on registration**: New template registrations clear the cache
+- **Manual control**: Use `clearTemplateCache(id)` to force refresh if needed
+
+## Template Metadata
+
+The registry automatically extracts metadata from templates:
+- `id`, `name`, `version`, `tier`, `label`
+- `marketingHighlight` (for premium templates)
+- `capabilities` (feature flags)
+- `preview` (preview image URL - optional)
+- `description`, `category`, `tags` (can be added via `updateTemplateMetadata()`)
+
+Metadata is exposed via `getTemplateMetadata()` and `listTemplateMetadata()` functions.

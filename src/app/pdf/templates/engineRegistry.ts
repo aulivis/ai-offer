@@ -59,6 +59,7 @@ const offerTemplateSchema = z
     styles: templateStylesSchema,
     tokens: themeTokensSchema,
     capabilities: z.record(z.string(), z.boolean()).optional(),
+    marketingHighlight: z.string().optional(),
   })
   .passthrough();
 
@@ -86,8 +87,42 @@ export class TemplateNotFoundError extends TemplateRegistryError {
   }
 }
 
+/**
+ * Enhanced template metadata for UI and discovery
+ */
+export interface TemplateMetadata {
+  id: TemplateId;
+  name: string;
+  version: string;
+  tier: TemplateTier;
+  label: string;
+  marketingHighlight?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  preview?: string;
+  capabilities?: Record<string, boolean>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Template cache entry with metadata
+ */
+interface TemplateCacheEntry {
+  template: OfferTemplate;
+  metadata: TemplateMetadata;
+  cachedAt: number;
+}
+
+// Template storage with caching
 const templates = new Map<TemplateId, OfferTemplate>();
 const legacyTemplates = new Map<string, OfferTemplate>();
+const templateMetadata = new Map<TemplateId, TemplateMetadata>();
+const templateCache = new Map<TemplateId, TemplateCacheEntry>();
+
+// Cache TTL: 1 hour in milliseconds
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
 function extractLegacyId(template: unknown): string | null {
   if (typeof template !== 'object' || !template) {
@@ -104,6 +139,41 @@ function formatValidationError(error: z.ZodError) {
     .join('; ');
 }
 
+/**
+ * Extract metadata from template
+ */
+function extractTemplateMetadata(template: OfferTemplate): TemplateMetadata {
+  const metadata: TemplateMetadata = {
+    id: template.id,
+    name: template.label,
+    version: template.version,
+    tier: template.tier,
+    label: template.label,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const marketingHighlight = (template as { marketingHighlight?: string }).marketingHighlight;
+  if (marketingHighlight) {
+    metadata.marketingHighlight = marketingHighlight;
+  }
+
+  if (template.capabilities) {
+    metadata.capabilities = template.capabilities;
+  }
+
+  return metadata;
+}
+
+/**
+ * Check if cache entry is still valid
+ */
+function isCacheValid(entry: TemplateCacheEntry): boolean {
+  return Date.now() - entry.cachedAt < CACHE_TTL_MS;
+}
+
+/**
+ * Register a template with validation and caching
+ */
 export function registerTemplate(templateModule: unknown): OfferTemplate {
   const result = offerTemplateSchema.safeParse(templateModule);
 
@@ -145,9 +215,19 @@ export function registerTemplate(templateModule: unknown): OfferTemplate {
 
   legacyTemplates.set(template.id, template);
 
+  // Store metadata
+  const metadata = extractTemplateMetadata(template);
+  templateMetadata.set(template.id, metadata);
+
+  // Invalidate cache
+  templateCache.delete(template.id);
+
   return template;
 }
 
+/**
+ * List all templates with optional tier filtering
+ */
 export function listTemplates({ tier }: { tier?: TemplateTier } = {}): OfferTemplate[] {
   const allTemplates = Array.from(templates.values());
 
@@ -162,16 +242,61 @@ export function listTemplates({ tier }: { tier?: TemplateTier } = {}): OfferTemp
   return allTemplates.filter((template) => template.tier === tier);
 }
 
+/**
+ * Get template metadata
+ */
+export function getTemplateMetadata(id: TemplateId): TemplateMetadata | null {
+  return templateMetadata.get(id) ?? null;
+}
+
+/**
+ * List all template metadata
+ */
+export function listTemplateMetadata({ tier }: { tier?: TemplateTier } = {}): TemplateMetadata[] {
+  const allMetadata = Array.from(templateMetadata.values());
+
+  if (!tier) {
+    return allMetadata;
+  }
+
+  if (tier === 'premium') {
+    return allMetadata;
+  }
+
+  return allMetadata.filter((meta) => meta.tier === tier);
+}
+
+/**
+ * Load template with caching support
+ */
 export function loadTemplate(id: TemplateId): OfferTemplate {
+  // Check cache first
+  const cached = templateCache.get(id);
+  if (cached && isCacheValid(cached)) {
+    return cached.template;
+  }
+
+  // Load from registry
   const template = templates.get(id);
 
   if (!template) {
     throw new TemplateNotFoundError(id);
   }
 
+  // Cache template
+  const metadata = templateMetadata.get(id) ?? extractTemplateMetadata(template);
+  templateCache.set(id, {
+    template,
+    metadata,
+    cachedAt: Date.now(),
+  });
+
   return template;
 }
 
+/**
+ * Get template by legacy ID
+ */
 export function getOfferTemplateByLegacyId(legacyId: string): OfferTemplate {
   const template = legacyTemplates.get(legacyId) ?? templates.get(legacyId as TemplateId);
 
@@ -180,6 +305,39 @@ export function getOfferTemplateByLegacyId(legacyId: string): OfferTemplate {
   }
 
   return template;
+}
+
+/**
+ * Clear template cache (useful for testing or forced refresh)
+ */
+export function clearTemplateCache(id?: TemplateId): void {
+  if (id) {
+    templateCache.delete(id);
+  } else {
+    templateCache.clear();
+  }
+}
+
+/**
+ * Update template metadata (for external metadata updates)
+ */
+export function updateTemplateMetadata(
+  id: TemplateId,
+  updates: Partial<Omit<TemplateMetadata, 'id' | 'version' | 'tier'>>,
+): void {
+  const existing = templateMetadata.get(id);
+  if (!existing) {
+    throw new TemplateNotFoundError(id);
+  }
+
+  templateMetadata.set(id, {
+    ...existing,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  });
+
+  // Invalidate cache
+  templateCache.delete(id);
 }
 
 // Register built-in templates
