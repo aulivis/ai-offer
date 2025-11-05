@@ -170,7 +170,28 @@ export default function LoginClient() {
       id="main"
       className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 pb-16 pt-12"
     >
-      <Card className="w-full max-w-md space-y-8 rounded-3xl border border-border/70 bg-bg/90 p-10 text-fg shadow-card backdrop-blur">
+      <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
+        <div className="hidden lg:block space-y-6">
+          <h2 className="text-3xl font-bold text-[#1c274c]">
+            {t('login.benefits.title')}
+          </h2>
+          <ul className="space-y-4">
+            <li className="flex items-start gap-3">
+              <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
+              <span className="text-base text-fg-muted">{t('login.benefits.item1')}</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
+              <span className="text-base text-fg-muted">{t('login.benefits.item2')}</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
+              <span className="text-base text-fg-muted">{t('login.benefits.item3')}</span>
+            </li>
+          </ul>
+        </div>
+
+        <Card className="w-full space-y-8 rounded-3xl border border-border/70 bg-bg/90 p-10 text-fg shadow-card backdrop-blur">
         <div className="space-y-4 text-center">
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg text-base font-semibold text-fg">
             P
@@ -199,13 +220,23 @@ export default function LoginClient() {
 
           <Button
             onClick={sendMagic}
-            className="w-full"
+            className="w-full group"
             size="lg"
             disabled={!email || isCooldownActive || isMagicLoading}
             aria-busy={isMagicLoading}
             aria-label={t('login.magicLinkAria')}
           >
-            {magicButtonLabel}
+            <span>{magicButtonLabel}</span>
+            {!isMagicLoading && !isCooldownActive && (
+              <svg
+                className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            )}
           </Button>
 
           <div className="relative py-1 text-center text-xs uppercase tracking-[0.3em] text-fg-muted">
@@ -265,8 +296,8 @@ export default function LoginClient() {
               </div>
             )}
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </main>
   );
 }

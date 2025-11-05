@@ -19,6 +19,7 @@ import { fetchWithSupabaseAuth } from '@/lib/api';
 import OfferCard from '@/components/dashboard/OfferCard';
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
+import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -42,15 +43,37 @@ function MetricCard({
   label,
   value,
   helper,
+  progress,
 }: {
   label: string;
   value: string;
   helper?: ReactNode;
+  progress?: { used: number; limit: number | null };
 }) {
+  const progressPercentage =
+    progress && progress.limit !== null
+      ? Math.min((progress.used / progress.limit) * 100, 100)
+      : null;
+
   return (
     <Card className="p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-fg">{value}</p>
+      {progressPercentage !== null && (
+        <div className="mt-3 h-2 w-full rounded-full bg-border/60 overflow-hidden">
+          <div
+            className={`h-full transition-all duration-500 ${
+              progressPercentage >= 90
+                ? 'bg-danger'
+                : progressPercentage >= 75
+                  ? 'bg-warning'
+                  : 'bg-primary'
+            }`}
+            style={{ width: `${progressPercentage}%` }}
+            aria-label={`${progressPercentage.toFixed(0)}% used`}
+          />
+        </div>
+      )}
       {helper ? <p className="mt-2 text-xs text-fg-muted">{helper}</p> : null}
     </Card>
   );
@@ -954,11 +977,19 @@ export default function DashboardPage() {
         }
       >
         {/* Metrikák */}
-        <section className="grid gap-4 pb-6 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 pb-8 border-b border-border/40 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label={t('dashboard.metrics.quota.label')}
             value={quotaValue}
             helper={quotaHelper}
+            progress={
+              quotaSnapshot && quotaSnapshot.limit !== null
+                ? {
+                    used: quotaSnapshot.used + quotaSnapshot.pending,
+                    limit: quotaSnapshot.limit,
+                  }
+                : undefined
+            }
           />
           <MetricCard
             label={t('dashboard.metrics.created.label')}
@@ -987,8 +1018,8 @@ export default function DashboardPage() {
         </section>
 
         {/* Szűrők */}
-        <Card as="section">
-          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
+        <Card as="section" className="mb-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end lg:justify-between">
             <div className="flex-1">
               <Input
                 label={t('dashboard.filters.search.label')}
@@ -998,6 +1029,15 @@ export default function DashboardPage() {
                 className="shadow-sm text-sm"
               />
             </div>
+
+            {filtered.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-fg-muted">
+                <span className="font-medium text-fg">
+                  {filtered.length.toLocaleString('hu-HU')}
+                </span>
+                <span>{t('dashboard.filters.results')}</span>
+              </div>
+            )}
 
             <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
               <Select
@@ -1060,6 +1100,73 @@ export default function DashboardPage() {
               </Select>
             </div>
           </div>
+
+          {/* Active Filters */}
+          {(q.trim() || statusFilter !== 'all' || industryFilter !== 'all') && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                {t('dashboard.filters.active')}:
+              </span>
+              {q.trim() && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1 text-xs font-medium text-fg">
+                  {t('dashboard.filters.search.label')}: &quot;{q}&quot;
+                  <button
+                    type="button"
+                    onClick={() => setQ('')}
+                    className="rounded-full hover:bg-border/60 p-0.5 transition"
+                    aria-label={t('dashboard.filters.remove')}
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1 text-xs font-medium text-fg">
+                  {t('dashboard.filters.status.label')}: {t(STATUS_LABEL_KEYS[statusFilter])}
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter('all')}
+                    className="rounded-full hover:bg-border/60 p-0.5 transition"
+                    aria-label={t('dashboard.filters.remove')}
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+              {industryFilter !== 'all' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1 text-xs font-medium text-fg">
+                  {t('dashboard.filters.industry.label')}: {industryFilter}
+                  <button
+                    type="button"
+                    onClick={() => setIndustryFilter('all')}
+                    className="rounded-full hover:bg-border/60 p-0.5 transition"
+                    aria-label={t('dashboard.filters.remove')}
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setQ('');
+                  setStatusFilter('all');
+                  setIndustryFilter('all');
+                }}
+                className="text-xs"
+              >
+                {t('dashboard.filters.clearAll')}
+              </Button>
+            </div>
+          )}
         </Card>
 
         {/* Skeletonok */}
@@ -1077,11 +1184,21 @@ export default function DashboardPage() {
 
         {/* Üres / nincs találat */}
         {!loading && filtered.length === 0 && (
-          <Card className="flex flex-col items-center justify-center gap-4 p-12 text-center">
-            <p className="text-sm text-fg-muted">{emptyMessage}</p>
+          <Card className="flex flex-col items-center justify-center gap-6 p-12 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+              <DocumentTextIcon className="h-10 w-10 text-primary" aria-hidden="true" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-base font-semibold text-fg">{emptyMessage}</p>
+              {noOffersLoaded && (
+                <p className="text-sm text-fg-muted">
+                  {t('dashboard.emptyStates.getStarted')}
+                </p>
+              )}
+            </div>
             <Link
               href="/new"
-              className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {t('dashboard.actions.newOffer')}
             </Link>

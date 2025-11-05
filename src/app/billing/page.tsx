@@ -399,6 +399,23 @@ export default function BillingPage() {
                 {t('billing.currentPlan.offersThisMonth.title')}
               </dt>
               <dd className="mt-2 text-lg font-semibold text-slate-900">{offersThisMonthLabel}</dd>
+              {planLimit !== null && (
+                <div className="mt-3 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${
+                      offersThisMonth >= planLimit
+                        ? 'bg-danger'
+                        : offersThisMonth >= planLimit * 0.9
+                          ? 'bg-warning'
+                          : 'bg-primary'
+                    }`}
+                    style={{
+                      width: `${Math.min((offersThisMonth / planLimit) * 100, 100)}%`,
+                    }}
+                    aria-label={`${Math.min((offersThisMonth / planLimit) * 100, 100).toFixed(0)}% used`}
+                  />
+                </div>
+              )}
               <p className="mt-1 text-xs text-slate-500">
                 {t('billing.currentPlan.offersThisMonth.helper')}
               </p>
@@ -432,6 +449,84 @@ export default function BillingPage() {
             {t('billing.status.cancel')}
           </Card>
         )}
+
+        {/* Plan Comparison Table */}
+        <Card
+          as="section"
+          header={
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {t('billing.comparison.title')}
+              </h2>
+              <p className="text-sm text-slate-500">{t('billing.comparison.subtitle')}</p>
+            </CardHeader>
+          }
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="pb-3 text-left font-semibold text-slate-900">
+                    {t('billing.comparison.feature')}
+                  </th>
+                  <th className="pb-3 text-center font-semibold text-slate-900">Free</th>
+                  <th className="pb-3 text-center font-semibold text-slate-900">Standard</th>
+                  <th className="pb-3 text-center font-semibold text-primary">Pro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                <tr>
+                  <td className="py-3 text-slate-700">{t('billing.comparison.offersPerMonth')}</td>
+                  <td className="py-3 text-center">3</td>
+                  <td className="py-3 text-center">10</td>
+                  <td className="py-3 text-center font-semibold text-primary">∞</td>
+                </tr>
+                <tr>
+                  <td className="py-3 text-slate-700">{t('billing.comparison.brandLogo')}</td>
+                  <td className="py-3 text-center">—</td>
+                  <td className="py-3 text-center">
+                    <svg className="mx-auto h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </td>
+                  <td className="py-3 text-center">
+                    <svg className="mx-auto h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3 text-slate-700">{t('billing.comparison.proTemplates')}</td>
+                  <td className="py-3 text-center">—</td>
+                  <td className="py-3 text-center">—</td>
+                  <td className="py-3 text-center">
+                    <svg className="mx-auto h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-3 text-slate-700">{t('billing.comparison.aiGeneration')}</td>
+                  <td className="py-3 text-center">
+                    <svg className="mx-auto h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </td>
+                  <td className="py-3 text-center">
+                    <svg className="mx-auto h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </td>
+                  <td className="py-3 text-center">
+                    <svg className="mx-auto h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
         <section className="grid gap-6 md:grid-cols-2">
           <Card

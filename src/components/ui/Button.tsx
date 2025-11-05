@@ -12,18 +12,18 @@ type CSSVarStyle = React.CSSProperties & Record<string, string | undefined>;
 
 const base = [
   'inline-flex items-center justify-center gap-2 rounded-full font-semibold',
-  'transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-  'disabled:cursor-not-allowed disabled:opacity-60',
+  'transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+  'disabled:cursor-not-allowed disabled:opacity-60 disabled:scale-100',
 ].join(' ');
 
 const variantClasses: Record<NonNullable<Props['variant']>, string> = {
-  primary: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110',
+  primary: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
   secondary: [
     'border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]',
-    'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)]',
+    'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
   ].join(' '),
-  ghost: 'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)]',
-  danger: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110',
+  ghost: 'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
+  danger: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
 };
 
 const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {

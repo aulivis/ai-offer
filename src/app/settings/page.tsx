@@ -321,11 +321,19 @@ export default function SettingsPage() {
       if (!user) return;
       if (scope === 'branding') {
         if (hasBrandingErrors) {
-          alert(t('errors.settings.validationRequired'));
+          showToast({
+            title: t('errors.settings.validationRequired'),
+            description: t('errors.settings.validationRequired'),
+            variant: 'error',
+          });
           return;
         }
       } else if (hasErrors) {
-        alert(t('errors.settings.validationRequired'));
+        showToast({
+          title: t('errors.settings.validationRequired'),
+          description: t('errors.settings.validationRequired'),
+          variant: 'error',
+        });
         return;
       }
       const primary = normalizeBrandHex(profile.brand_color_primary);
@@ -407,7 +415,10 @@ export default function SettingsPage() {
             plan,
           ),
         }));
-        alert(t('toasts.settings.saveSuccess'));
+        showToast({
+          title: t('toasts.settings.saveSuccess'),
+          variant: 'success',
+        });
         return;
       }
 
@@ -486,10 +497,17 @@ export default function SettingsPage() {
           plan,
         ),
       }));
-      alert(t('toasts.settings.saveSuccess'));
+      showToast({
+        title: t('toasts.settings.saveSuccess'),
+        variant: 'success',
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : t('errors.settings.saveUnknown');
-      alert(t('errors.settings.saveFailed', { message }));
+      showToast({
+        title: t('errors.settings.saveFailed', { message }),
+        description: message,
+        variant: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -582,7 +600,10 @@ export default function SettingsPage() {
 
   async function addActivity() {
     if (!newAct.name.trim()) {
-      alert(t('errors.settings.activityNameRequired'));
+      showToast({
+        title: t('errors.settings.activityNameRequired'),
+        variant: 'error',
+      });
       return;
     }
     try {

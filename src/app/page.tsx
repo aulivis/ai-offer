@@ -51,7 +51,7 @@ export default function Home() {
       {/* HERO */}
       <section className="mx-auto grid max-w-6xl gap-16 px-6 py-24 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center">
         <div className="flex flex-col gap-8 lg:max-w-none">
-          <span className="inline-flex w-fit items-center rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+          <span className="inline-flex w-fit items-center rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary animate-fade-in">
             Ajánlatkészítés újragondolva
           </span>
 
@@ -69,38 +69,53 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/new"
-              className="inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-lg transition duration-200 ease-out hover:shadow-pop"
+              className="group inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
             >
-              Próbáld ki ingyen!
+              <span>Próbáld ki ingyen!</span>
+              <svg
+                className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
             </Link>
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3 text-sm font-semibold text-fg transition duration-200 ease-out hover:border-primary hover:text-primary"
+              className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3 text-sm font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
             >
               Nézd meg a bemutatót
             </Link>
           </div>
         </div>
 
-        <div className="flex flex-col gap-6 rounded-3xl border border-border/70 bg-bg/90 p-8 shadow-card lg:ml-auto">
-          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Mit kapsz azonnal?
-          </span>
-          <p className="text-base leading-relaxed text-fg-muted">
-            A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól
-            kezdve prémium élményt kap.
-          </p>
-          <ul className="space-y-4 text-base text-fg">
-            {spotlight.map((item) => (
-              <li key={item} className="flex items-start gap-3">
-                <span
-                  className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary"
-                  aria-hidden="true"
-                />
-                <span className="text-fg-muted">{item}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="relative flex flex-col gap-6 rounded-3xl border border-border/70 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 shadow-card backdrop-blur-sm lg:ml-auto">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,229,176,0.08),transparent_70%)] rounded-3xl" />
+          <div className="relative z-10">
+            <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+              Mit kapsz azonnal?
+            </span>
+            <p className="mt-4 text-base leading-relaxed text-fg-muted">
+              A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól
+              kezdve prémium élményt kap.
+            </p>
+            <ul className="mt-6 space-y-4 text-base text-fg">
+              {spotlight.map((item, index) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-3 transition-opacity duration-300"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <span
+                    className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary animate-pulse"
+                    aria-hidden="true"
+                  />
+                  <span className="text-fg-muted">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
       {/* BENEFITS */}
@@ -176,11 +191,48 @@ export default function Home() {
         <Card className="flex flex-col justify-between gap-8 border border-border/60 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 p-8 text-base shadow-pop">
           <p className="text-lg font-semibold text-fg">
             „A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a
-            térben dolgozik designer, sales és vezető.”
+            térben dolgozik designer, sales és vezető."
           </p>
           <div className="space-y-1 text-xs font-semibold uppercase tracking-[0.32em] text-fg-muted">
             <p>Kiss Júlia</p>
             <p>Ügynökségvezető • Studio Fluo</p>
+          </div>
+        </Card>
+      </section>
+
+      {/* SOCIAL PROOF */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <Card as="section" className="p-12 text-center">
+          <div className="space-y-6">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+                Megbízhatóság
+              </span>
+              <h2 className="mt-4 text-3xl font-semibold text-fg">
+                Csatlakozz a Propono közösséghez
+              </h2>
+              <p className="mt-2 text-base text-fg-muted">
+                Több mint 500+ vállalat használja már a Propono-t az ajánlatkészítéshez
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-8 pt-8 md:grid-cols-4">
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-primary">500+</div>
+                <div className="text-sm text-fg-muted">Aktív felhasználó</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-primary">10K+</div>
+                <div className="text-sm text-fg-muted">Létrehozott ajánlat</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-primary">98%</div>
+                <div className="text-sm text-fg-muted">Elégedettségi arány</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-primary">24/7</div>
+                <div className="text-sm text-fg-muted">Támogatás</div>
+              </div>
+            </div>
           </div>
         </Card>
       </section>
