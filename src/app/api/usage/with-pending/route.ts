@@ -3,24 +3,32 @@ import { cookies } from 'next/headers';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { currentMonthStart, getUsageWithPending } from '@/lib/services/usage';
+import { addCacheHeaders, CACHE_CONFIGS } from '@/lib/cacheHeaders';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 export async function GET(request: Request) {
+  const requestId = getRequestId(request);
+  const log = createLogger(requestId);
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('propono_at')?.value ?? null;
 
   if (!accessToken) {
-    return NextResponse.json({ error: 'Nem vagy bejelentkezve.' }, { status: 401 });
+    const response = NextResponse.json({ error: 'Nem vagy bejelentkezve.' }, { status: 401 });
+    return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
   }
 
   const supabase = await supabaseServer();
   const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
 
   if (userError || !userData?.user) {
-    console.warn('Failed to resolve Supabase user while loading usage snapshot.', userError);
-    return NextResponse.json({ error: 'Nem vagy bejelentkezve.' }, { status: 401 });
+    log.warn('Failed to resolve Supabase user while loading usage snapshot', { error: userError });
+    const response = NextResponse.json({ error: 'Nem vagy bejelentkezve.' }, { status: 401 });
+    return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
   }
 
   const userId = userData.user.id;
+  log.setContext({ userId });
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   const providedPeriod = searchParams.get('period_start');
@@ -36,12 +44,14 @@ export async function GET(request: Request) {
       deviceId,
     });
 
-    return NextResponse.json(snapshot);
+    const response = NextResponse.json(snapshot);
+    return addCacheHeaders(response, CACHE_CONFIGS.USER_DATA);
   } catch (error) {
-    console.error('Failed to load usage counters with pending jobs.', { userId, error });
-    return NextResponse.json(
+    log.error('Failed to load usage counters with pending jobs', error);
+    const response = NextResponse.json(
       { error: 'Nem sikerült betölteni a használati keretet.' },
       { status: 500 },
     );
+    return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
   }
 }

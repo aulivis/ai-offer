@@ -11,6 +11,8 @@ import {
 import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
 import { CSRF_COOKIE_NAME, verifyCsrfToken } from '../../../../../lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 const REFRESH_COOKIE = 'propono_rt';
 
@@ -97,10 +99,13 @@ function isExpiredTimestamp(value: string) {
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
+  const requestId = getRequestId(request);
+  const log = createLogger(requestId);
   const csrfHeader = request.headers.get('x-csrf-token');
   const csrfCookie = cookieStore.get(CSRF_COOKIE_NAME)?.value;
 
   if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
+    log.warn('Invalid CSRF token');
     return Response.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
   }
 
@@ -116,11 +121,15 @@ export async function POST(request: Request) {
   const refreshExpiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : null;
 
   if (!userId || !refreshExpiresAt) {
+    log.warn('Invalid refresh token structure');
     await clearAuthCookies();
     return Response.json({ error: 'Invalid refresh token' }, { status: 401 });
   }
 
+  log.setContext({ userId });
+
   if (refreshExpiresAt.getTime() <= Date.now()) {
+    log.warn('Refresh token expired');
     await clearAuthCookies();
     return Response.json({ error: 'Refresh token expired' }, { status: 401 });
   }
@@ -132,7 +141,7 @@ export async function POST(request: Request) {
     .eq('user_id', userId);
 
   if (sessionsError) {
-    console.error('Failed to load sessions for user.', sessionsError);
+    log.error('Failed to load sessions for user', sessionsError);
     await clearAuthCookies();
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
@@ -140,6 +149,7 @@ export async function POST(request: Request) {
   const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
   
   if (sessionList.length === 0) {
+    log.warn('No active sessions found');
     await clearAuthCookies();
     return Response.json({ error: 'No active sessions found' }, { status: 401 });
   }
@@ -179,7 +189,7 @@ export async function POST(request: Request) {
   try {
     refreshPayload = await refreshSupabaseTokens(refreshToken);
   } catch (error) {
-    console.error('Supabase refresh failed.', error);
+    log.error('Supabase refresh failed', error);
     await supabase
       .from('sessions')
       .update({ revoked_at: new Date().toISOString() })
@@ -192,7 +202,7 @@ export async function POST(request: Request) {
   const expiresIn = (refreshPayload.expires_in ?? 0) | 0;
 
   if (!accessToken || !newRefreshToken) {
-    console.error('Supabase refresh did not return tokens.');
+    log.error('Supabase refresh did not return tokens');
     await clearAuthCookies();
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
@@ -202,7 +212,7 @@ export async function POST(request: Request) {
   const expiresAt = newDecoded?.exp ? new Date(newDecoded.exp * 1000) : null;
 
   if (!issuedAt || !expiresAt) {
-    console.error('New refresh token missing iat or exp claims.');
+    log.error('New refresh token missing iat or exp claims');
     await clearAuthCookies();
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
@@ -224,11 +234,12 @@ export async function POST(request: Request) {
   ]);
 
   if (revokeError || insertError) {
-    console.error('Failed to update session rotation.', { revokeError, insertError });
+    log.error('Failed to update session rotation', { revokeError, insertError });
     await clearAuthCookies();
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
 
+  log.info('Session refreshed successfully');
   const accessTokenMaxAgeSeconds = expiresIn > 0 ? expiresIn : 3600;
   await setAuthCookies(accessToken, newRefreshToken, { accessTokenMaxAgeSeconds });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { listTemplates } from '@/app/pdf/templates/registry';
+import { addCacheHeaders, CACHE_CONFIGS } from '@/lib/cacheHeaders';
 
 export function GET() {
   const templates = listTemplates().map((template) => {
@@ -8,5 +9,7 @@ export function GET() {
     delete meta.factory;
     return meta;
   });
-  return NextResponse.json(templates);
+  
+  const response = NextResponse.json(templates);
+  return addCacheHeaders(response, CACHE_CONFIGS.PUBLIC_STABLE);
 }

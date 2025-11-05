@@ -96,7 +96,7 @@ async function handleGet(_req: AuthenticatedNextRequest) {
     },
     {
       headers: {
-        'Cache-Control': 'no-store',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
     },
   );

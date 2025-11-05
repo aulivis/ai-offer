@@ -85,6 +85,8 @@ const previewRequestSchema = z
 
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
   
   // Rate limiting for AI preview endpoint
   const rateLimitResult = await checkRateLimitMiddleware(req, {
@@ -94,9 +96,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   });
 
   if (rateLimitResult && !rateLimitResult.allowed) {
-    console.warn('AI preview rate limit exceeded', {
-      requestId,
-      userId: req.user.id,
+    log.warn('AI preview rate limit exceeded', {
       limit: rateLimitResult.limit,
       remaining: rateLimitResult.remaining,
     });
@@ -109,13 +109,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   try {
     const parsed = previewRequestSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: 'Érvénytelen kérés.',
-          issues: parsed.error.flatten(),
-        },
-        { status: 400 },
-      );
+      return handleValidationError(parsed.error, requestId);
     }
 
     const { industry, title, projectDetails, deadline, language, brandVoice, style } = parsed.data;
@@ -178,7 +172,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
 
           stream = await openai.responses.stream(requestOptions);
           if (model !== previewModels[0] || attempt > 0) {
-            console.warn('ai-preview: using fallback model', model, lastError);
+            log.warn('Using fallback model for preview', { model, attempt, lastError });
           }
           break;
         } catch (error) {
@@ -199,7 +193,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           }
 
           if (isAbortLikeError(error) && model !== previewModels[previewModels.length - 1]) {
-            console.warn('ai-preview: aborted stream, retrying with fallback model', model, error);
+            log.warn('Aborted stream, retrying with fallback model', { model, error });
             break;
           }
 
@@ -281,14 +275,14 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         };
 
         const handleAbort = (error: unknown) => {
-          console.warn('Preview stream aborted:', error);
+          log.warn('Preview stream aborted', error);
           const message = 'Az előnézet kérése megszakadt. Próbáld újra néhány másodperc múlva.';
           push({ type: 'error', message });
           closeStream();
         };
 
         const handleError = (error: unknown) => {
-          console.error('Preview stream error:', error);
+          log.error('Preview stream error', error);
           const message =
             'Váratlan hiba történt az előnézet készítése közben. Kérjük, próbáld meg újra.';
           push({ type: 'error', message });
@@ -305,7 +299,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
               stream.abort();
             } catch (abortError) {
               if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
-                console.error('Failed to abort preview stream after timeout:', abortError);
+                log.error('Failed to abort preview stream after timeout', abortError);
               }
             }
           }
@@ -330,7 +324,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           stream.abort();
         } catch (abortError) {
           if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
-            console.error('Failed to abort preview stream on cancel:', abortError);
+            log.error('Failed to abort preview stream on cancel', abortError);
           }
         } finally {
           closeStreamRef?.();
@@ -350,14 +344,14 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (isAbortLikeError(error)) {
-      console.error('ai-preview aborted before streaming could start:', message);
+      log.error('AI preview aborted before streaming could start', error);
       return NextResponse.json(
         { error: 'Az OpenAI kapcsolat megszakadt. Próbáld újra néhány másodperc múlva.' },
         { status: 503 },
       );
     }
     if (error instanceof APIError) {
-      console.error('ai-preview API error:', message);
+      log.error('AI preview API error', error);
       const status = typeof error.status === 'number' ? error.status : 500;
       const errorMessage =
         (typeof error.message === 'string' && error.message.trim().length > 0
@@ -368,7 +362,6 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       return NextResponse.json({ error: errorMessage }, { status });
     }
 
-    console.error('ai-preview error:', message);
-    return NextResponse.json({ error: 'Preview failed' }, { status: 500 });
+    return handleUnexpectedError(error, requestId, log);
   }
 });

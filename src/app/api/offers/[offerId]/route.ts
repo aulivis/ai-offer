@@ -6,6 +6,7 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { extractOfferStoragePath } from '@/lib/offers/storage';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
 import { getRequestId } from '@/lib/requestId';
+import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const normalizeUserOwnedStoragePath = (path: string, userId: string): string | null => {
@@ -35,6 +36,8 @@ export const DELETE = withAuth(
   async (request: AuthenticatedNextRequest, context: { params: RouteParams }) => {
     const { offerId } = context.params;
     const requestId = getRequestId(request);
+    const log = createLogger(requestId);
+    log.setContext({ userId: request.user.id, offerId });
     
     if (!offerId || typeof offerId !== 'string') {
       return NextResponse.json({ error: 'Érvénytelen ajánlat azonosító.' }, { status: 400 });
@@ -49,7 +52,7 @@ export const DELETE = withAuth(
         .maybeSingle();
 
       if (loadError) {
-        console.error('Failed to load offer before deletion', loadError);
+        log.error('Failed to load offer before deletion', loadError);
         return NextResponse.json(
           { error: 'Nem sikerült betölteni az ajánlatot.' },
           { status: 500 },
@@ -61,6 +64,7 @@ export const DELETE = withAuth(
       }
 
       if (offer.user_id !== request.user.id) {
+        log.warn('Unauthorized deletion attempt');
         return NextResponse.json(
           { error: 'Nincs jogosultságod az ajánlat törléséhez.' },
           { status: 403 },
@@ -96,7 +100,7 @@ export const DELETE = withAuth(
 
       const { error: deleteError } = await adminClient.from('offers').delete().eq('id', offerId);
       if (deleteError) {
-        console.error('Failed to delete offer', deleteError);
+        log.error('Failed to delete offer', deleteError);
         return NextResponse.json({ error: 'Nem sikerült törölni az ajánlatot.' }, { status: 500 });
       }
 
@@ -110,14 +114,13 @@ export const DELETE = withAuth(
         userAgent: request.headers.get('user-agent'),
       });
 
+      log.info('Offer deleted successfully');
+
       const validatedPaths = new Set<string>();
       storagePaths.forEach((rawPath) => {
         const normalizedPath = normalizeUserOwnedStoragePath(rawPath, offer.user_id);
         if (!normalizedPath) {
-          console.warn('Skipping deletion for non-owned storage path', {
-            userId: offer.user_id,
-            path: rawPath,
-          });
+          log.warn('Skipping deletion for non-owned storage path', { path: rawPath });
           return;
         }
         validatedPaths.add(normalizedPath);
@@ -129,13 +132,13 @@ export const DELETE = withAuth(
           .from('offers')
           .remove(storageList);
         if (storageError) {
-          console.error('Failed to delete offer PDFs from storage', storageError);
+          log.error('Failed to delete offer PDFs from storage', storageError);
         }
       }
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      console.error('Unexpected error during offer deletion', error);
+      log.error('Unexpected error during offer deletion', error);
       return NextResponse.json({ error: 'Nem sikerült törölni az ajánlatot.' }, { status: 500 });
     }
   },

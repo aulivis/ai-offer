@@ -11,6 +11,7 @@ import {
   RATE_LIMIT_WINDOW_MS,
 } from '@/lib/rateLimiting';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
+import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
@@ -38,6 +39,8 @@ function parseRequestBody(payload: unknown) {
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
   const clientId = getClientIdentifier(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id, clientId });
 
   try {
     const supabase = supabaseServiceRole();
@@ -51,9 +54,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     if (!rateLimitResult.allowed) {
       const retrySeconds = Math.max(1, Math.ceil(rateLimitResult.retryAfterMs / 1000));
-      console.warn('Checkout rate limit exceeded', {
-        requestId,
-        clientId,
+      log.warn('Checkout rate limit exceeded', {
         retrySeconds,
         limit: rateLimitResult.limit,
         remaining: rateLimitResult.remaining,
@@ -72,7 +73,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       );
     }
   } catch (error) {
-    console.error('Rate limit check failed', { requestId, clientId, error });
+    log.error('Rate limit check failed', error);
     // Allow request to proceed if rate limiting fails to avoid blocking legitimate users
   }
 
@@ -96,11 +97,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     envServer.STRIPE_PRICE_ALLOWLIST.length > 0 &&
     !envServer.STRIPE_PRICE_ALLOWLIST.includes(priceId)
   ) {
-    console.warn('Checkout request rejected due to disallowed price', {
-      requestId,
-      clientId,
-      priceId,
-    });
+    log.warn('Checkout request rejected due to disallowed price', { priceId });
     return buildErrorResponse('A választott előfizetés nem érhető el.', 400);
   }
 
@@ -108,16 +105,16 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   const userId = req.user.id;
 
   if (!userEmail) {
-    console.warn('Checkout user is missing email', { requestId, clientId, userId });
+    log.warn('Checkout user is missing email');
     return buildErrorResponse('A fiókhoz nem tartozik email-cím.', 403);
   }
 
   if (userEmail.toLowerCase() !== email.toLowerCase()) {
-    console.warn('Checkout email mismatch', { requestId, clientId, userId });
+    log.warn('Checkout email mismatch');
     return buildErrorResponse('A megadott email nem egyezik a fiókod email-címével.', 403);
   }
 
-  console.info('Checkout session creation started', { requestId, clientId, priceId, userId });
+  log.info('Checkout session creation started', { priceId });
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -130,10 +127,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     });
 
     const sessionUrl = session.url;
-    console.info('Checkout session created', {
-      requestId,
-      clientId,
-      userId,
+    log.info('Checkout session created', {
       sessionId: session.id ?? 'unknown',
       sessionUrlPresent: Boolean(sessionUrl),
     });
@@ -151,12 +145,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     return NextResponse.json({ url: sessionUrl });
   } catch (error) {
-    console.error('Stripe checkout session creation failed', {
-      requestId,
-      clientId,
-      error,
-      userId,
-    });
+    log.error('Stripe checkout session creation failed', error);
     return buildErrorResponse('Nem sikerült elindítani a Stripe fizetést.', 500);
   }
 });

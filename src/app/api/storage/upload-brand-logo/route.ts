@@ -13,6 +13,8 @@ import {
   createRateLimitResponse,
 } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 
 const BUCKET_ID = 'brand-assets';
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -154,7 +156,9 @@ async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImag
 }
 
 export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = randomUUID();
+  const requestId = getRequestId(request);
+  const log = createLogger(requestId);
+  log.setContext({ userId: request.user.id });
   
   // Rate limiting for file upload endpoint
   const rateLimitResult = await checkRateLimitMiddleware(request, {
@@ -164,9 +168,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   });
 
   if (rateLimitResult && !rateLimitResult.allowed) {
-    console.warn('Upload rate limit exceeded', {
-      requestId,
-      userId: request.user.id,
+    log.warn('Upload rate limit exceeded', {
       limit: rateLimitResult.limit,
       remaining: rateLimitResult.remaining,
     });
@@ -228,9 +230,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
-    if (error instanceof Error) {
-      console.error('Brand logo upload failed:', error);
-    }
+    log.error('Brand logo upload failed', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 });

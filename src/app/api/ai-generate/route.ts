@@ -53,6 +53,8 @@ import {
   createRateLimitResponse,
 } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
+import { createLogger } from '@/lib/logger';
+import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
 import { z } from 'zod';
 import { renderSectionHeading } from '@/app/lib/offerSections';
 
@@ -616,6 +618,8 @@ function applyImageAssetsToHtml(
 
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
   
   // Rate limiting for AI generation endpoint
   const rateLimitResult = await checkRateLimitMiddleware(req, {
@@ -625,9 +629,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   });
 
   if (rateLimitResult && !rateLimitResult.allowed) {
-    console.warn('AI generate rate limit exceeded', {
-      requestId,
-      userId: req.user.id,
+    log.warn('AI generate rate limit exceeded', {
       limit: rateLimitResult.limit,
       remaining: rateLimitResult.remaining,
     });
@@ -643,13 +645,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     // our AI prompts or being persisted in the database.
     const parsed = aiGenerateRequestSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: 'Érvénytelen kérés.',
-          issues: parsed.error.flatten(),
-        },
-        { status: 400 },
-      );
+      return handleValidationError(parsed.error, requestId);
     }
 
     const {
@@ -708,7 +704,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
           clientCompanyName = clientRow.company_name;
         }
       } catch (clientLookupError) {
-        console.warn('Unexpected client lookup error during offer generation.', clientLookupError);
+        log.warn('Unexpected client lookup error during offer generation', clientLookupError);
       }
     }
 
@@ -742,7 +738,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
           usagePeriodStart,
         );
       } catch (syncError) {
-        console.warn('Failed to sync usage counter before PDF generation.', syncError);
+        log.warn('Failed to sync usage counter before PDF generation', syncError);
       }
     }
 
@@ -789,8 +785,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       }
     }
 
-    console.info('Usage quota snapshot', {
-      userId: user.id,
+    log.info('Usage quota snapshot', {
       plan,
       limit: planLimit,
       confirmed: usageSnapshot.offersGenerated,
@@ -873,7 +868,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        console.error('OpenAI structured output error:', message);
+        log.error('OpenAI structured output error', error);
         return NextResponse.json(
           { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
           { status: 502 },
@@ -1146,7 +1141,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       } catch (inlineError) {
         const inlineMessage =
           inlineError instanceof Error ? inlineError.message : String(inlineError);
-        console.error('Inline PDF fallback error:', inlineMessage);
+        log.error('Inline PDF fallback error', inlineError);
 
         const limitMessage = normalizeUsageLimitError(inlineMessage);
         if (limitMessage) {
@@ -1175,8 +1170,6 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
       sections: sectionsPayload,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error('Server error:', message);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return handleUnexpectedError(error, requestId, log);
   }
 });
