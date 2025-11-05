@@ -15,6 +15,8 @@ import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 
 const REFRESH_COOKIE = 'propono_rt';
+// Industry best practice: 30 days for "remember me" sessions
+const REMEMBER_ME_EXPIRES_IN_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 const ARGON2_OPTIONS: Argon2Options = {
   algorithm: Argon2Algorithm.Argon2id,
@@ -218,6 +220,18 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
 
+  // Determine if this is a "remember me" session by checking if the session expiration
+  // is significantly longer than a typical token expiration (e.g., > 7 days)
+  const sessionDuration = activeSession.expires_at
+    ? new Date(activeSession.expires_at).getTime() - new Date(activeSession.issued_at).getTime()
+    : 0;
+  const isRememberMeSession = sessionDuration > 7 * 24 * 60 * 60 * 1000; // > 7 days
+  
+  // Use the same expiration strategy: if remember me, extend to 30 days; otherwise use token expiration
+  const newExpiresAt = isRememberMeSession
+    ? new Date(issuedAt.getTime() + REMEMBER_ME_EXPIRES_IN_SECONDS * 1000)
+    : expiresAt;
+
   const hashedRefresh = await argon2Hash(newRefreshToken, ARGON2_OPTIONS);
 
   const nowIso = new Date().toISOString();
@@ -227,7 +241,7 @@ export async function POST(request: Request) {
       user_id: userId,
       rt_hash: hashedRefresh,
       issued_at: issuedAt.toISOString(),
-      expires_at: expiresAt.toISOString(),
+      expires_at: newExpiresAt.toISOString(),
       rotated_from: activeSession.id,
       ip: getRequestIp(request),
       ua: request.headers.get('user-agent'),
@@ -242,7 +256,10 @@ export async function POST(request: Request) {
 
   log.info('Session refreshed successfully');
   const accessTokenMaxAgeSeconds = expiresIn > 0 ? expiresIn : 3600;
-  await setAuthCookies(accessToken, newRefreshToken, { accessTokenMaxAgeSeconds });
+  await setAuthCookies(accessToken, newRefreshToken, { 
+    accessTokenMaxAgeSeconds,
+    rememberMe: isRememberMeSession,
+  });
 
   return Response.json({ success: true });
 }

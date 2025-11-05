@@ -14,7 +14,11 @@ const baseCookieOptions = {
 
 type SetAuthCookiesOptions = {
   accessTokenMaxAgeSeconds?: number;
+  rememberMe?: boolean;
 };
+
+// Industry best practice: 30 days for "remember me" sessions
+const REMEMBER_ME_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 export async function setAuthCookies(
   accessToken: string,
@@ -22,7 +26,7 @@ export async function setAuthCookies(
   options: SetAuthCookiesOptions = {},
 ) {
   const cookieStore = await cookies();
-  const { accessTokenMaxAgeSeconds } = options;
+  const { accessTokenMaxAgeSeconds, rememberMe = false } = options;
 
   cookieStore.set({
     name: 'propono_at',
@@ -35,6 +39,8 @@ export async function setAuthCookies(
     name: 'propono_rt',
     value: refreshToken,
     ...baseCookieOptions,
+    // Set maxAge only if rememberMe is true, otherwise it's a session cookie
+    ...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE_SECONDS } : {}),
   });
 
   const { value: csrfValue } = createCsrfToken();

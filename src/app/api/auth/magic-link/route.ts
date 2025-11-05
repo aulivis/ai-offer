@@ -15,6 +15,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const email = (body?.email ?? '').toString().trim().toLowerCase();
   const requestedRedirect = (body?.redirect_to ?? '').toString();
+  const rememberMe = Boolean(body?.remember_me);
 
   if (!email) {
     return NextResponse.json({ error: 'Missing email' }, { status: 400 });
@@ -34,6 +35,19 @@ export async function POST(request: Request) {
     path: '/',
     maxAge: 5 * 60,
   });
+
+  // Store remember_me preference in a cookie for the callback handler
+  if (rememberMe) {
+    jar.set({
+      name: 'remember_me',
+      value: 'true',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
+      maxAge: 5 * 60, // 5 minutes, just enough for the auth flow
+    });
+  }
 
   // A magic link a publikus /auth/callback-re mutat (nem tartalmaz query-t)
   const publicCallback = new URL('/auth/callback', envServer.APP_URL);

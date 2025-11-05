@@ -829,6 +829,8 @@ export const hu = {
     googleDisabledFallback:
       'A Google bejelentkezés jelenleg nem érhető el. Kérjük, próbáld újra később.',
     googleStatusTitle: 'Állapot',
+    rememberMe: 'Bejelentkezés megjegyzése',
+    rememberMeHelp: 'Ha bejelölöd, 30 napig bejelentkezve maradsz.',
     messages: {
       magicLinkInfo:
         'Ha létezik fiók ehhez az e-mail címhez, perceken belül elküldjük a belépési linket.',

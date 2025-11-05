@@ -4,7 +4,7 @@ import { createAuthRequestLogger } from '@/lib/observability/authLogging';
 
 export const REQUEST_ID_HEADER = 'x-request-id';
 
-export function getRequestId(req: NextRequest): string {
+export function getRequestId(req: NextRequest | Request): string {
   const existingId = req.headers.get(REQUEST_ID_HEADER);
   if (existingId) {
     return existingId;

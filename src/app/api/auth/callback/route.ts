@@ -17,6 +17,8 @@ import {
 const MAGIC_LINK_FAILURE_REDIRECT = '/login?message=Unable%20to%20authenticate';
 const MISSING_AUTH_CODE_REDIRECT = '/login?message=Missing%20auth%20code';
 const FALLBACK_EXPIRES_IN = 3600;
+// Industry best practice: 30 days for "remember me" sessions
+const REMEMBER_ME_EXPIRES_IN_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
 const ARGON2_OPTIONS: Argon2Options = {
   algorithm: Argon2Algorithm.Argon2id,
@@ -211,11 +213,14 @@ async function persistSessionOpaque(
   expiresInSec: number,
   request: Request,
   logger: RequestLogger,
+  rememberMe: boolean = false,
 ) {
   const issuedAt = new Date();
-  const expiresAt = new Date(
-    issuedAt.getTime() + Math.max(1, expiresInSec || FALLBACK_EXPIRES_IN) * 1000,
-  );
+  // If remember me is enabled, use longer expiration; otherwise use the token's expiration
+  const sessionExpiresIn = rememberMe 
+    ? REMEMBER_ME_EXPIRES_IN_SECONDS 
+    : Math.max(1, expiresInSec || FALLBACK_EXPIRES_IN);
+  const expiresAt = new Date(issuedAt.getTime() + sessionExpiresIn * 1000);
 
   const hashedRefresh = await argon2Hash(refreshToken, ARGON2_OPTIONS);
   const supabase = supabaseServiceRole();
@@ -241,11 +246,13 @@ async function handleMagicLinkTokens(
   redirectTarget: string,
   request: Request,
   logger: RequestLogger,
+  rememberMe: boolean = false,
 ) {
   try {
-    await persistSessionOpaque(userId, tokens.refreshToken, tokens.expiresIn, request, logger);
+    await persistSessionOpaque(userId, tokens.refreshToken, tokens.expiresIn, request, logger, rememberMe);
     await setAuthCookies(tokens.accessToken, tokens.refreshToken, {
       accessTokenMaxAgeSeconds: tokens.expiresIn,
+      rememberMe,
     });
   } catch (error) {
     recordMagicLinkCallback('failure', { reason: 'persist_or_cookie_failed' });
@@ -266,6 +273,10 @@ export async function GET(request: Request) {
   const cookieRedirect = cookieStore.get('post_auth_redirect')?.value ?? '';
   const queryRedirect = url.searchParams.get('redirect_to');
   const finalRedirect = sanitizeOAuthRedirect(cookieRedirect || queryRedirect || '', '/dashboard');
+
+  // Check for remember_me preference from cookie
+  const rememberMeCookie = cookieStore.get('remember_me')?.value;
+  const rememberMe = rememberMeCookie === 'true';
 
   const logger = createAuthRequestLogger();
   const supabase = supabaseAnonServer();
@@ -305,7 +316,18 @@ export async function GET(request: Request) {
       maxAge: 0,
     });
 
-    return handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger);
+    // Clean up remember_me cookie
+    cookieStore.set({
+      name: 'remember_me',
+      value: '',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: envServer.APP_URL.startsWith('https'),
+      path: '/',
+      maxAge: 0,
+    });
+
+    return handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe);
   }
 
   // Magic link verifyOtp (token_hash)
@@ -356,12 +378,24 @@ export async function GET(request: Request) {
         maxAge: 0,
       });
 
+      // Clean up remember_me cookie
+      cookieStore.set({
+        name: 'remember_me',
+        value: '',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: envServer.APP_URL.startsWith('https'),
+        path: '/',
+        maxAge: 0,
+      });
+
       return handleMagicLinkTokens(
         { accessToken, refreshToken, expiresIn },
         userId,
         finalRedirect,
         request,
         logger,
+        rememberMe,
       );
     } catch (error) {
       recordMagicLinkCallback('failure', { reason: 'verify_error' });
@@ -421,14 +455,26 @@ export async function GET(request: Request) {
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
-    await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger);
+    await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger, rememberMe);
     await setAuthCookies(accessToken, refreshToken, {
       accessTokenMaxAgeSeconds: expiresIn,
+      rememberMe,
     });
 
     // Végcél sütit töröljük
     cookieStore.set({
       name: 'post_auth_redirect',
+      value: '',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: envServer.APP_URL.startsWith('https'),
+      path: '/',
+      maxAge: 0,
+    });
+
+    // Clean up remember_me cookie
+    cookieStore.set({
+      name: 'remember_me',
       value: '',
       httpOnly: true,
       sameSite: 'lax',

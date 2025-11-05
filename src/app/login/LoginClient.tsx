@@ -6,6 +6,7 @@ import { type CSSProperties, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 const MAGIC_LINK_MESSAGE = t('login.messages.magicLinkInfo');
 const MAGIC_LINK_COOLDOWN_SECONDS = 60;
@@ -26,6 +27,7 @@ export default function LoginClient() {
   const [isGoogleAvailable, setIsGoogleAvailable] = useState(true);
   const [googleStatusMessage, setGoogleStatusMessage] = useState<string | null>(null);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -80,7 +82,7 @@ export default function LoginClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, remember_me: rememberMe }),
       });
 
       if (!response.ok && response.status !== 202) {
@@ -152,6 +154,9 @@ export default function LoginClient() {
       const redirectTo = `${location.origin}/dashboard`;
       const url = new URL('/api/auth/google', location.origin);
       url.searchParams.set('redirect_to', redirectTo);
+      if (rememberMe) {
+        url.searchParams.set('remember_me', 'true');
+      }
       window.location.assign(url.toString());
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
@@ -183,6 +188,13 @@ export default function LoginClient() {
             placeholder={t('login.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <Checkbox
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            label={t('login.rememberMe')}
+            help={t('login.rememberMeHelp')}
           />
 
           <Button

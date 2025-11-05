@@ -31,6 +31,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const requested = url.searchParams.get('redirect_to');
   const finalRedirect = sanitizeOAuthRedirect(requested, '/dashboard');
+  const rememberMe = url.searchParams.get('remember_me') === 'true';
 
   // 2) Callback URL (ezt adja vissza a Google a Supabase-en keresztül)
   const callbackUrl = new URL(envServer.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI);
@@ -53,6 +54,19 @@ export async function GET(request: Request) {
     path: '/',
     maxAge: 5 * 60,
   });
+
+  // Store remember_me preference in a cookie for the callback handler
+  if (rememberMe) {
+    jar.set({
+      name: 'remember_me',
+      value: 'true',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
+      maxAge: 5 * 60, // 5 minutes, just enough for the auth flow
+    });
+  }
 
   // 5) Supabase authorize URL — NINCS state (különben bad_oauth_state lehet)
   const authorizeUrl = new URL('/auth/v1/authorize', envServer.NEXT_PUBLIC_SUPABASE_URL);
