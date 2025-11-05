@@ -30,6 +30,7 @@ import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { getUsageWithPending } from '@/lib/services/usage';
+import { getBrandLogoUrl } from '@/lib/branding';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -536,7 +537,7 @@ export default function NewOfferWizard() {
       const { data: prof } = await sb
         .from('profiles')
         .select(
-          'industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_url, plan, offer_template',
+          'industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_path, brand_logo_url, plan, offer_template',
         )
         .eq('id', user.id)
         .maybeSingle();
@@ -550,12 +551,20 @@ export default function NewOfferWizard() {
       const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setPlan(normalizedPlan);
       setProfileCompanyName(typeof prof?.company_name === 'string' ? prof.company_name : '');
+      
+      // Generate signed URL on-demand from path (preferred) or use legacy URL
+      const logoUrl = await getBrandLogoUrl(
+        sb,
+        typeof prof?.brand_logo_path === 'string' ? prof.brand_logo_path : null,
+        typeof prof?.brand_logo_url === 'string' ? prof.brand_logo_url : null,
+      );
+      
       setPdfBranding({
         primaryColor:
           typeof prof?.brand_color_primary === 'string' ? prof.brand_color_primary : null,
         secondaryColor:
           typeof prof?.brand_color_secondary === 'string' ? prof.brand_color_secondary : null,
-        logoUrl: typeof prof?.brand_logo_url === 'string' ? prof.brand_logo_url : null,
+        logoUrl,
       });
 
       setQuotaLoading(true);

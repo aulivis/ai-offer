@@ -216,17 +216,18 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       throw new Error('Nem sikerült feltölteni a logót.');
     }
 
+    // Generate signed URL for immediate preview/display
     const { data: signedData, error: signedError } = await sb.storage
       .from(BUCKET_ID)
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
-    if (signedError || !signedData?.signedUrl) {
-      return NextResponse.json(
-        { error: 'Nem sikerült létrehozni a letöltési URL-t.' },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ signedUrl: signedData.signedUrl });
+    
+    // Return both path (for storage) and signed URL (for immediate use)
+    // The path should be stored in brand_logo_path column
+    // The signed URL is for immediate UI preview
+    return NextResponse.json({
+      path,
+      signedUrl: signedData?.signedUrl ?? null,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';

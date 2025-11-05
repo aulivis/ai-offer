@@ -19,6 +19,7 @@ import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import { listTemplates as listSDKTemplates } from '@/app/pdf/templates/registry';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { normalizeBrandHex } from '@/lib/branding';
+import { getBrandLogoUrl } from '@/lib/branding';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { Button } from '@/components/ui/Button';
@@ -35,7 +36,8 @@ type Profile = {
   company_phone?: string;
   company_email?: string;
   industries?: string[];
-  brand_logo_url?: string | null;
+  brand_logo_url?: string | null; // Legacy: deprecated, use brand_logo_path instead
+  brand_logo_path?: string | null; // Preferred: storage path for logo
   brand_color_primary?: string | null;
   brand_color_secondary?: string | null;
   offer_template?: OfferTemplateId | null;
@@ -368,7 +370,8 @@ export default function SettingsPage() {
         company_phone: prof?.company_phone ?? '',
         company_email: prof?.company_email ?? user.email ?? '',
         industries,
-        brand_logo_url: prof?.brand_logo_url ?? null,
+        brand_logo_url: prof?.brand_logo_url ?? null, // Legacy
+        brand_logo_path: prof?.brand_logo_path ?? null, // Preferred
         brand_color_primary: prof?.brand_color_primary ?? '#1c274c',
         brand_color_secondary: prof?.brand_color_secondary ?? '#e2e8f0',
         offer_template: templateId,
@@ -429,7 +432,8 @@ export default function SettingsPage() {
         });
         let brandingData:
           | {
-              brand_logo_url: string | null;
+              brand_logo_path: string | null; // Preferred
+            brand_logo_url: string | null; // Legacy
               brand_color_primary: string | null;
               brand_color_secondary: string | null;
               offer_template: string | null;
@@ -440,13 +444,14 @@ export default function SettingsPage() {
           const response = await supabase
             .from('profiles')
             .update({
-              brand_logo_url: profile.brand_logo_url ?? null,
+              brand_logo_path: profile.brand_logo_path ?? null, // Preferred
+              brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
               brand_color_primary: primary,
               brand_color_secondary: secondary,
               offer_template: templateId,
             })
             .eq('id', user.id)
-            .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
             .maybeSingle();
           if (response.error) {
             throw createSupabaseError(response.error);
@@ -465,14 +470,15 @@ export default function SettingsPage() {
                 company_email: profile.company_email?.trim() || email || '',
                 industries: sanitizedIndustries,
                 plan,
-                brand_logo_url: profile.brand_logo_url ?? null,
+                brand_logo_path: profile.brand_logo_path ?? null, // Preferred
+                brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
                 brand_color_primary: primary,
                 brand_color_secondary: secondary,
                 offer_template: templateId,
               },
               { onConflict: 'id' },
             )
-            .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
             .maybeSingle();
           if (response.error) {
             throw createSupabaseError(response.error);
@@ -483,7 +489,8 @@ export default function SettingsPage() {
         setProfileLoadError(null);
         setProfile((prev) => ({
           ...prev,
-          brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null,
+          brand_logo_path: brandingData?.brand_logo_path ?? profile.brand_logo_path ?? null, // Preferred
+          brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null, // Legacy
           brand_color_primary: brandingData?.brand_color_primary ?? primary ?? null,
           brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
           offer_template: enforceTemplateForPlan(
@@ -507,7 +514,8 @@ export default function SettingsPage() {
       });
       let profileData:
         | {
-            brand_logo_url: string | null;
+            brand_logo_path: string | null; // Preferred
+            brand_logo_url: string | null; // Legacy
             brand_color_primary: string | null;
             brand_color_secondary: string | null;
             offer_template: string | null;
@@ -524,13 +532,14 @@ export default function SettingsPage() {
             company_phone: profile.company_phone ?? '',
             company_email: profile.company_email ?? '',
             industries: sanitizedIndustries,
-            brand_logo_url: profile.brand_logo_url ?? null,
+            brand_logo_path: profile.brand_logo_path ?? null, // Preferred
+            brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
             brand_color_primary: primary,
             brand_color_secondary: secondary,
             offer_template: templateId,
           })
           .eq('id', user.id)
-          .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
         if (response.error) {
           throw createSupabaseError(response.error);
@@ -549,14 +558,15 @@ export default function SettingsPage() {
               company_email: profile.company_email ?? '',
               industries: sanitizedIndustries,
               plan,
-              brand_logo_url: profile.brand_logo_url ?? null,
+              brand_logo_path: profile.brand_logo_path ?? null, // Preferred
+              brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
               brand_color_primary: primary,
               brand_color_secondary: secondary,
               offer_template: templateId,
             },
             { onConflict: 'id' },
           )
-          .select('brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
           .maybeSingle();
         if (response.error) {
           throw createSupabaseError(response.error);
@@ -567,7 +577,8 @@ export default function SettingsPage() {
       setProfileLoadError(null);
       setProfile((prev) => ({
         ...prev,
-        brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null,
+        brand_logo_path: profileData?.brand_logo_path ?? prev.brand_logo_path ?? null, // Preferred
+        brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null, // Legacy
         brand_color_primary: profileData?.brand_color_primary ?? primary ?? null,
         brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
         industries: sanitizedIndustries,
@@ -634,22 +645,33 @@ export default function SettingsPage() {
       });
 
       const payload: unknown = await response.json();
-      let logoUrl: unknown = null;
+      let logoPath: string | null = null;
+      let logoUrl: string | null = null;
 
       if (payload && typeof payload === 'object') {
-        if ('signedUrl' in payload) {
-          logoUrl = (payload as { signedUrl?: unknown }).signedUrl ?? null;
+        const typedPayload = payload as { path?: unknown; signedUrl?: unknown; publicUrl?: unknown };
+        
+        // Extract path (preferred) and signed URL (for immediate preview)
+        if ('path' in typedPayload && typeof typedPayload.path === 'string') {
+          logoPath = typedPayload.path;
         }
-        if (!logoUrl && 'publicUrl' in payload) {
-          logoUrl = (payload as { publicUrl?: unknown }).publicUrl ?? null;
+        if ('signedUrl' in typedPayload && typeof typedPayload.signedUrl === 'string') {
+          logoUrl = typedPayload.signedUrl;
+        } else if ('publicUrl' in typedPayload && typeof typedPayload.publicUrl === 'string') {
+          logoUrl = typedPayload.publicUrl;
         }
       }
 
-      if (typeof logoUrl !== 'string' || !logoUrl) {
+      if (!logoPath) {
         throw new Error(t('errors.settings.logoUploadMissingUrl'));
       }
 
-      setProfile((prev) => ({ ...prev, brand_logo_url: logoUrl }));
+      // Store path in profile (preferred) and signed URL for immediate preview
+      setProfile((prev) => ({
+        ...prev,
+        brand_logo_path: logoPath,
+        brand_logo_url: logoUrl, // For immediate preview only
+      }));
       showToast({
         title: t('toasts.settings.logoUploaded.title'),
         description: t('toasts.settings.logoUploaded.description'),

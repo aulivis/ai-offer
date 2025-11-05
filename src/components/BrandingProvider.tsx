@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { deriveBrandMonogram, normalizeBrandHex, sanitizeBrandLogoUrl } from '@/lib/branding';
+import { deriveBrandMonogram, normalizeBrandHex, getBrandLogoUrl } from '@/lib/branding';
 
 const FALLBACK_COLORS = {
   primary: '#1c274c',
@@ -75,7 +75,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('company_name, brand_logo_url, brand_color_primary, brand_color_secondary')
+          .select('company_name, brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary')
           .eq('id', userId)
           .maybeSingle();
 
@@ -93,7 +93,17 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
           typeof data?.company_name === 'string' ? data.company_name.trim() || null : null;
         const primaryColor = normalizeBrandHex(data?.brand_color_primary ?? null);
         const secondaryColor = normalizeBrandHex(data?.brand_color_secondary ?? null);
-        const logoUrl = sanitizeBrandLogoUrl(data?.brand_logo_url ?? null);
+        
+        // Generate signed URL on-demand from path (preferred) or use legacy URL
+        const logoUrl = await getBrandLogoUrl(
+          supabase,
+          data?.brand_logo_path ?? null,
+          data?.brand_logo_url ?? null,
+        );
+
+        if (!active) {
+          return;
+        }
 
         setState({
           companyName,

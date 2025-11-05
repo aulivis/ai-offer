@@ -10,6 +10,7 @@ import { PriceRow } from '@/app/lib/pricing';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
 import { normalizeBranding } from '@/app/pdf/templates/theme';
+import { getBrandLogoUrl } from '@/lib/branding';
 import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import { type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI from 'openai';
@@ -897,7 +898,11 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
         typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
       secondaryColor:
         typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
-      logoUrl: typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
+      logoUrl: await getBrandLogoUrl(
+        sb,
+        typeof profile?.brand_logo_path === 'string' ? profile.brand_logo_path : null,
+        typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
+      ),
     });
 
     const planTier = planToTemplateTier(plan);
