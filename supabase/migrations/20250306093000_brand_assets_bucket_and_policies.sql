@@ -1,4 +1,8 @@
 -- Ensure the brand-assets bucket exists and enforce per-user access using object ownership.
+-- NOTE: This migration creates legacy policy names that are later replaced by 
+-- 20250601120000_restrict_brand_assets_access.sql with "owners" naming.
+-- The legacy policies are cleaned up in 20250627120000_cleanup_legacy_usage_artifacts.sql
+
 DO $$
 BEGIN
   INSERT INTO storage.buckets (id, name, public)
@@ -10,6 +14,7 @@ END
 $$;
 
 -- Drop obsolete policies if they exist to avoid conflicts with the new ownership model.
+-- These will be replaced by newer migrations with better naming
 DO $$
 BEGIN
   IF EXISTS (
@@ -32,7 +37,8 @@ BEGIN
 END
 $$;
 
--- Allow authenticated users to read their own objects in the brand-assets bucket.
+-- Create legacy policies (these will be replaced by newer migrations)
+-- Keeping for backward compatibility during migration transitions
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -54,7 +60,6 @@ BEGIN
 END
 $$;
 
--- Allow authenticated users to insert objects into the brand-assets bucket when they own them.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -76,7 +81,6 @@ BEGIN
 END
 $$;
 
--- Allow authenticated users to update objects they own within the brand-assets bucket.
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -103,7 +107,6 @@ BEGIN
 END
 $$;
 
--- Allow authenticated users to delete objects they own from the brand-assets bucket.
 DO $$
 BEGIN
   IF NOT EXISTS (
