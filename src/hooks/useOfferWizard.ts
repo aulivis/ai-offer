@@ -11,10 +11,9 @@ import {
 } from '@/lib/projectDetails';
 import type { PreviewIssue } from '@/types/preview';
 import { t } from '@/copy';
+import type { WizardStep } from '@/types/wizard';
 
-type Step = 1 | 2 | 3;
-
-type ValidationSteps = Partial<Record<Step, string[]>>;
+type ValidationSteps = Partial<Record<WizardStep, string[]>>;
 
 type StepFieldErrors = {
   title?: string;
@@ -27,7 +26,7 @@ type ValidationFields = {
   3: Record<string, never>;
 };
 
-type ValidationIssue = PreviewIssue & { step: Step };
+type ValidationIssue = PreviewIssue & { step: WizardStep };
 
 type ValidationResult = {
   steps: ValidationSteps;
@@ -52,7 +51,7 @@ function buildValidation({
   };
   const issues: ValidationIssue[] = [];
 
-  const registerError = (step: Step, message: string, assign?: () => void) => {
+  const registerError = (step: WizardStep, message: string, assign?: () => void) => {
     steps[step] = [...(steps[step] ?? []), message];
     issues.push({ step, severity: 'error', message });
     assign?.();
@@ -84,12 +83,30 @@ function buildValidation({
   return { steps, fields, issues };
 }
 
+/**
+ * Custom hook for managing offer wizard state and validation
+ * 
+ * @param initialRows - Initial pricing rows (defaults to one empty row)
+ * @returns Wizard state and navigation functions
+ * 
+ * @example
+ * ```tsx
+ * const {
+ *   step,
+ *   title,
+ *   setTitle,
+ *   goNext,
+ *   goPrev,
+ *   validation
+ * } = useOfferWizard();
+ * ```
+ */
 export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
-  const [step, setStep] = useState<Step>(1);
+  const [step, setStep] = useState<WizardStep>(1);
   const [title, setTitle] = useState('');
   const [projectDetails, setProjectDetails] = useState<ProjectDetails>(emptyProjectDetails);
   const [pricingRows, setPricingRows] = useState<PriceRow[]>(initialRows);
-  const [attemptedSteps, setAttemptedSteps] = useState<Record<Step, boolean>>({
+  const [attemptedSteps, setAttemptedSteps] = useState<Record<WizardStep, boolean>>({
     1: false,
     2: false,
     3: false,
@@ -113,7 +130,7 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
   }, [projectDetails]);
 
   const isStepValid = useCallback(
-    (target: Step) => (validation.steps[target]?.length ?? 0) === 0,
+    (target: WizardStep) => (validation.steps[target]?.length ?? 0) === 0,
     [validation.steps],
   );
 
@@ -126,16 +143,16 @@ export function useOfferWizard(initialRows: PriceRow[] = [createPriceRow()]) {
     }
 
     setAttemptedSteps((prev) => ({ ...prev, [step]: false }));
-    setStep((prev) => (prev < 3 ? ((prev + 1) as Step) : prev));
+    setStep((prev) => (prev < 3 ? ((prev + 1) as WizardStep) : prev));
     return true;
   }, [step, validation.steps]);
 
   const goPrev = useCallback(() => {
-    setStep((prev) => (prev > 1 ? ((prev - 1) as Step) : prev));
+    setStep((prev) => (prev > 1 ? ((prev - 1) as WizardStep) : prev));
   }, []);
 
   const goToStep = useCallback(
-    (target: Step) => {
+    (target: WizardStep) => {
       if (target >= step) {
         return;
       }

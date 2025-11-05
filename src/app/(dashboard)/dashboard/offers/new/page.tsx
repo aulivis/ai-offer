@@ -4,26 +4,28 @@ import { t } from '@/copy';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
-import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
+import { StepIndicator, type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
 import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
-import { OfferPreviewCard, type OfferPreviewStatus } from '@/components/offers/OfferPreviewCard';
 import { OfferSummarySection } from '@/components/offers/OfferSummarySection';
+import { WizardActionBar } from '@/components/offers/WizardActionBar';
+import { WizardPreviewPanel } from '@/components/offers/WizardPreviewPanel';
+import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
 import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
 import { useOfferPreview } from '@/hooks/useOfferPreview';
 import { useDraftPersistence } from '@/hooks/useDraftPersistence';
+import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
+import { trackWizardEvent } from '@/lib/analytics/wizard';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { Select } from '@/components/ui/Select';
-import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
+import type { OfferPreviewTab } from '@/types/preview';
 import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
+import type { WizardStep } from '@/types/wizard';
 
 const PREVIEW_DEBOUNCE_MS = 600;
 const SUCCESS_MESSAGE_TIMEOUT_MS = 4000;
@@ -39,7 +41,7 @@ export default function NewOfferPage() {
     projectDetailsText,
     pricingRows,
     setPricingRows,
-    goNext,
+    goNext: goNextInternal,
     goPrev,
     goToStep,
     isNextDisabled,
@@ -117,54 +119,13 @@ export default function NewOfferPage() {
     () => pricingRows.some((row) => row.name.trim().length > 0),
     [pricingRows],
   );
-  const hasPreviewHtml = useMemo(() => {
-    const trimmed = previewHtml.trim();
-    return trimmed.length > 0 && trimmed !== `<p>${t('offers.wizard.preview.idle')}</p>`;
-  }, [previewHtml]);
   const isSubmitDisabled =
     isSubmitting ||
     isStreaming ||
-    !hasPreviewHtml ||
+    !previewHtml.trim() ||
     !hasPricingRows ||
     title.trim().length === 0 ||
     projectDetailsText.trim().length === 0;
-  const statusDescriptor = useMemo<{
-    tone: 'info' | 'success' | 'error' | 'warning';
-    title: string;
-    description?: string;
-  } | null>(() => {
-    switch (previewStatus) {
-      case 'loading':
-        return {
-          tone: 'info' as const,
-          title: t('offers.wizard.preview.loading'),
-          description: t('offers.wizard.preview.loadingHint'),
-        };
-      case 'streaming':
-        return {
-          tone: 'info' as const,
-          title: t('offers.wizard.preview.streaming'),
-          description: t('offers.wizard.preview.loadingHint'),
-        };
-      case 'success':
-        return {
-          tone: 'success' as const,
-          title: t('offers.wizard.preview.success'),
-        };
-      case 'error':
-        return {
-          tone: 'error' as const,
-          title: t('offers.wizard.preview.error'),
-        };
-      case 'aborted':
-        return {
-          tone: 'warning' as const,
-          title: t('errors.preview.aborted'),
-        };
-      default:
-        return null;
-    }
-  }, [previewStatus]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -193,7 +154,7 @@ export default function NewOfferPage() {
     const payload = {
       title: title || t('offers.wizard.defaults.fallbackTitle'),
       companyName: t('offers.wizard.defaults.fallbackCompany'),
-      bodyHtml: previewHtml || DEFAULT_PREVIEW_HTML,
+      bodyHtml: previewHtml || `<p>${t('offers.wizard.preview.idle')}</p>`,
       rows: pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
         name,
         qty,
@@ -266,6 +227,52 @@ export default function NewOfferPage() {
     };
   }, []);
 
+  // Track step views
+  useEffect(() => {
+    trackWizardEvent({ type: 'wizard_step_viewed', step });
+  }, [step]);
+
+  // Track draft loading
+  useEffect(() => {
+    const saved = loadDraft();
+    if (saved) {
+      trackWizardEvent({ type: 'wizard_draft_loaded' });
+    }
+  }, [loadDraft]);
+
+  // Keyboard shortcuts
+  const goNext = useCallback(() => {
+    const success = goNextInternal();
+    if (!success && attemptedSteps[step]) {
+      // Track validation error
+      const firstErrorField = Object.keys(validation.fields[step] || {}).find(
+        (key) => validation.fields[step]?.[key as keyof typeof validation.fields[1]],
+      );
+      if (firstErrorField) {
+        trackWizardEvent({
+          type: 'wizard_validation_error',
+          step,
+          field: firstErrorField,
+        });
+      }
+      // Scroll to first error if validation fails
+      const firstError = document.querySelector('[aria-invalid="true"]');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (firstError as HTMLElement).focus();
+      }
+    } else if (success) {
+      // Track step completion
+      trackWizardEvent({ type: 'wizard_step_completed', step });
+    }
+  }, [goNextInternal, attemptedSteps, step, validation.fields]);
+
+  useWizardKeyboardShortcuts({
+    onNext: goNext,
+    onPrev: goPrev,
+    enabled: !isSubmitting && !isStreaming,
+  });
+
   // Reset preview tab when step changes
   useEffect(() => {
     if (step !== 3) {
@@ -281,7 +288,7 @@ export default function NewOfferPage() {
       3: t('offers.wizard.steps.summary'),
     }),
     [],
-  ) as Record<1 | 2 | 3, string>;
+  ) as Record<WizardStep, string>;
 
   const wizardSteps = useMemo(() => {
     const definitions: Array<{ label: string; id: 1 | 2 | 3 }> = [
@@ -336,7 +343,7 @@ export default function NewOfferPage() {
       return;
     }
 
-    if (!hasPreviewHtml) {
+    if (!previewHtml.trim()) {
       showToast({
         title: t('toasts.offers.missingPreview.title'),
         description: t('toasts.offers.missingPreview.description'),
@@ -397,6 +404,8 @@ export default function NewOfferPage() {
         variant: 'success',
       });
       router.replace('/dashboard');
+      clearDraft();
+      trackWizardEvent({ type: 'wizard_offer_submitted', success: true });
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -409,11 +418,11 @@ export default function NewOfferPage() {
         description: message || t('toasts.offers.saveFailed.description'),
         variant: 'error',
       });
+      trackWizardEvent({ type: 'wizard_offer_submitted', success: false });
     } finally {
       setIsSubmitting(false);
     }
   }, [
-    hasPreviewHtml,
     hasPricingRows,
     isSubmitting,
     previewHtml,
@@ -423,20 +432,10 @@ export default function NewOfferPage() {
     router,
     showToast,
     title,
+    clearDraft,
   ]);
 
   const columnWidthStyle: CSSProperties = { '--column-width': 'min(100%, 42rem)' };
-  const submitLabel = isSubmitting
-    ? t('offers.wizard.actions.previewInProgress')
-    : t('offers.wizard.actions.save');
-  const nextStepLabel = step < 3 ? stepLabels[(step + 1) as 2 | 3] : null;
-  const previousStepLabel = step > 1 ? stepLabels[(step - 1) as 1 | 2] : null;
-  const nextButtonLabel = nextStepLabel
-    ? `${t('offers.wizard.actions.next')}: ${nextStepLabel}`
-    : t('offers.wizard.actions.next');
-  const backButtonLabel = previousStepLabel
-    ? `${t('offers.wizard.actions.back')}: ${previousStepLabel}`
-    : t('offers.wizard.actions.back');
   const validationPreviewIssues = useMemo(
     () =>
       validation.issues
@@ -444,25 +443,6 @@ export default function NewOfferPage() {
         .map(({ severity, message }) => ({ severity, message })),
     [attemptedSteps, validation.issues],
   );
-  const combinedIssues = useMemo(
-    () => [...validationPreviewIssues, ...previewIssues],
-    [previewIssues, validationPreviewIssues],
-  );
-  const previousIssueCountRef = useRef(combinedIssues.length);
-
-  useEffect(() => {
-    if (combinedIssues.length > 0 && previousIssueCountRef.current === 0) {
-      setActivePreviewTab('issues');
-    } else if (
-      combinedIssues.length === 0 &&
-      previousIssueCountRef.current > 0 &&
-      activePreviewTab === 'issues'
-    ) {
-      setActivePreviewTab('document');
-    }
-
-    previousIssueCountRef.current = combinedIssues.length;
-  }, [activePreviewTab, combinedIssues.length]);
 
   const detailFieldErrors = attemptedSteps[1]
     ? {
@@ -471,88 +451,6 @@ export default function NewOfferPage() {
       }
     : undefined;
   const pricingSectionError = attemptedSteps[2] ? validation.fields[2].pricing : undefined;
-  const resolvedTemplateForControls = templateOptions.some(
-    (template) => template.id === selectedTemplateId,
-  )
-    ? selectedTemplateId
-    : defaultTemplateId;
-  const previewControls = (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <p className="text-sm font-semibold text-slate-700">
-          {t('offers.previewCard.controls.title')}
-        </p>
-        <p className="text-xs text-slate-500">{t('offers.previewCard.controls.helper')}</p>
-      </div>
-      {templateOptions.length > 0 ? (
-        <Select
-          label={t('offers.previewCard.controls.templateLabel')}
-          value={resolvedTemplateForControls}
-          onChange={(event) => setSelectedTemplateId(event.target.value as TemplateId)}
-        >
-          {templateOptions.map((template) => (
-            <option key={template.id} value={template.id}>
-              {template.label}
-            </option>
-          ))}
-        </Select>
-      ) : null}
-      <div className="space-y-3">
-        <p className="text-sm font-semibold text-slate-700">
-          {t('offers.previewCard.controls.brandingTitle')}
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('offers.previewCard.controls.primaryLabel')}
-            </span>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={brandingPrimary}
-                onChange={(event) => setBrandingPrimary(event.target.value)}
-                className="h-10 w-12 cursor-pointer rounded-md border border-border bg-white"
-                aria-label={t('offers.previewCard.controls.primaryLabel')}
-              />
-              <Input
-                value={brandingPrimary}
-                onChange={(event) => setBrandingPrimary(event.target.value)}
-                className="py-2 text-sm font-mono"
-                wrapperClassName="flex-1"
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('offers.previewCard.controls.secondaryLabel')}
-            </span>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={brandingSecondary}
-                onChange={(event) => setBrandingSecondary(event.target.value)}
-                className="h-10 w-12 cursor-pointer rounded-md border border-border bg-white"
-                aria-label={t('offers.previewCard.controls.secondaryLabel')}
-              />
-              <Input
-                value={brandingSecondary}
-                onChange={(event) => setBrandingSecondary(event.target.value)}
-                className="py-2 text-sm font-mono"
-                wrapperClassName="flex-1"
-              />
-            </div>
-          </div>
-        </div>
-        <Input
-          label={t('offers.previewCard.controls.logoLabel')}
-          placeholder={t('offers.previewCard.controls.logoPlaceholder')}
-          value={brandingLogoUrl}
-          onChange={(event) => setBrandingLogoUrl(event.target.value)}
-          type="url"
-        />
-      </div>
-    </div>
-  );
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
@@ -567,108 +465,108 @@ export default function NewOfferPage() {
             </Card>
 
             {step === 1 && (
-              <OfferProjectDetailsSection
-                title={title}
-                projectDetails={projectDetails}
-                onTitleChange={(event) => setTitle(event.target.value)}
-                onProjectDetailsChange={(field, value) =>
-                  setProjectDetails((prev) => ({ ...prev, [field]: value }))
-                }
-                showInlineValidation={true}
-                errors={detailFieldErrors}
-              />
+              <StepErrorBoundary stepNumber={1}>
+                <OfferProjectDetailsSection
+                  title={title}
+                  projectDetails={projectDetails}
+                  onTitleChange={(event) => setTitle(event.target.value)}
+                  onProjectDetailsChange={(field, value) =>
+                    setProjectDetails((prev) => ({ ...prev, [field]: value }))
+                  }
+                  showInlineValidation={true}
+                  errors={detailFieldErrors}
+                />
+              </StepErrorBoundary>
             )}
 
             {step === 2 && (
-              <OfferPricingSection
-                rows={pricingRows}
-                onChange={setPricingRows}
-                error={pricingSectionError}
-              />
+              <StepErrorBoundary stepNumber={2}>
+                <OfferPricingSection
+                  rows={pricingRows}
+                  onChange={setPricingRows}
+                  error={pricingSectionError}
+                />
+              </StepErrorBoundary>
             )}
 
             {step === 3 && (
-              <OfferSummarySection title={title} projectDetails={projectDetails} totals={totals} />
+              <StepErrorBoundary stepNumber={3}>
+                <OfferSummarySection title={title} projectDetails={projectDetails} totals={totals} />
+              </StepErrorBoundary>
             )}
 
-            <div
-              className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-[rgb(var(--color-bg-muted-rgb)/0.98)] px-6 py-4 shadow-[0_-8px_16px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 ease-out sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none"
-            >
-              <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Button
-                  onClick={goPrev}
-                  disabled={step === 1}
-                  className="rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
-                >
-                  {backButtonLabel}
-                </Button>
-
-                {step < 3 ? (
-                  <Button
-                    onClick={goNext}
-                    disabled={isNextDisabled}
-                    className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                  >
-                    {nextButtonLabel}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitDisabled}
-                    className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-                  >
-                    {submitLabel}
-                  </Button>
-                )}
-              </div>
-            </div>
+            <WizardActionBar
+              step={step}
+              onPrev={goPrev}
+              onNext={goNext}
+              onSubmit={handleSubmit}
+              isNextDisabled={isNextDisabled}
+              isSubmitDisabled={isSubmitDisabled}
+              isSubmitting={isSubmitting}
+              stepLabels={stepLabels}
+            />
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-col gap-6 overflow-hidden md:sticky md:top-20 lg:top-24">
-          <OfferPreviewCard
-            isPreviewAvailable={previewEnabled}
-            previewMarkup={previewDocumentHtml}
-            hasPreviewMarkup={hasPreviewHtml}
-            statusDescriptor={statusDescriptor}
-            isStreaming={isStreaming}
-            previewStatus={previewStatus}
-            previewError={previewError}
-            summaryHighlights={previewSummary}
-            issues={combinedIssues}
-            activeTab={activePreviewTab}
-            onTabChange={setActivePreviewTab}
-            onAbortPreview={abortPreview}
-            onManualRefresh={refreshPreview}
-            onOpenFullscreen={() => setIsPreviewModalOpen(true)}
-            titleId="offer-preview-card-title"
-            controls={previewControls}
-          />
-        </div>
+        <WizardPreviewPanel
+          previewEnabled={previewEnabled}
+          previewHtml={previewHtml}
+          previewDocumentHtml={previewDocumentHtml}
+          previewStatus={previewStatus}
+          previewError={previewError}
+          previewSummary={previewSummary}
+          previewIssues={previewIssues}
+          validationIssues={validationPreviewIssues}
+          attemptedSteps={attemptedSteps}
+          activeTab={activePreviewTab}
+          onTabChange={setActivePreviewTab}
+          onRefresh={refreshPreview}
+          onAbort={abortPreview}
+          onOpenFullscreen={() => setIsPreviewModalOpen(true)}
+          isStreaming={isStreaming}
+          templateOptions={templateOptions}
+          selectedTemplateId={selectedTemplateId}
+          defaultTemplateId={defaultTemplateId}
+          brandingPrimary={brandingPrimary}
+          brandingSecondary={brandingSecondary}
+          brandingLogoUrl={brandingLogoUrl}
+          onTemplateChange={setSelectedTemplateId}
+          onBrandingPrimaryChange={setBrandingPrimary}
+          onBrandingSecondaryChange={setBrandingSecondary}
+          onBrandingLogoChange={setBrandingLogoUrl}
+        />
       </div>
       <Modal
         open={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
         labelledBy="preview-modal-title"
       >
-        <OfferPreviewCard
-          isPreviewAvailable={previewEnabled}
-          previewMarkup={previewDocumentHtml}
-          hasPreviewMarkup={hasPreviewHtml}
-          statusDescriptor={statusDescriptor}
-          isStreaming={isStreaming}
+        <WizardPreviewPanel
+          previewEnabled={previewEnabled}
+          previewHtml={previewHtml}
+          previewDocumentHtml={previewDocumentHtml}
           previewStatus={previewStatus}
           previewError={previewError}
-          summaryHighlights={previewSummary}
-          issues={combinedIssues}
+          previewSummary={previewSummary}
+          previewIssues={previewIssues}
+          validationIssues={validationPreviewIssues}
+          attemptedSteps={attemptedSteps}
           activeTab={activePreviewTab}
           onTabChange={setActivePreviewTab}
-          onAbortPreview={abortPreview}
-          onManualRefresh={refreshPreview}
-          onExitFullscreen={() => setIsPreviewModalOpen(false)}
-          titleId="preview-modal-title"
-          variant="modal"
-          controls={previewControls}
+          onRefresh={refreshPreview}
+          onAbort={abortPreview}
+          onOpenFullscreen={() => setIsPreviewModalOpen(false)}
+          isStreaming={isStreaming}
+          templateOptions={templateOptions}
+          selectedTemplateId={selectedTemplateId}
+          defaultTemplateId={defaultTemplateId}
+          brandingPrimary={brandingPrimary}
+          brandingSecondary={brandingSecondary}
+          brandingLogoUrl={brandingLogoUrl}
+          onTemplateChange={setSelectedTemplateId}
+          onBrandingPrimaryChange={setBrandingPrimary}
+          onBrandingSecondaryChange={setBrandingSecondary}
+          onBrandingLogoChange={setBrandingLogoUrl}
         />
       </Modal>
     </AppFrame>

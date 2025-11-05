@@ -3,6 +3,7 @@ import type { ChangeEventHandler } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
+import { HelpIcon } from '@/components/ui/HelpIcon';
 import { t } from '@/copy';
 import { type ProjectDetailKey, type ProjectDetails } from '@/lib/projectDetails';
 import { useFieldValidation } from '@/hooks/useFieldValidation';
@@ -104,12 +105,19 @@ export function OfferProjectDetailsSection({
 
       <div className="space-y-8">
         <Input
-          label={t('offers.wizard.forms.details.titleLabel')}
+          label={
+            <span className="flex items-center gap-2">
+              {t('offers.wizard.forms.details.titleLabel')}
+              <HelpIcon
+                content={t('offers.wizard.forms.details.titleHelp')}
+                label={t('offers.wizard.forms.details.titleHelp')}
+              />
+            </span>
+          }
           value={title}
           onChange={onTitleChange}
           onBlur={titleValidation.onBlur}
           placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
-          help={t('offers.wizard.forms.details.titleHelp')}
           error={titleError}
         />
 
@@ -178,6 +186,7 @@ export function OfferProjectDetailsSection({
               field === 'overview'
                 ? overviewError
                 : errors?.projectDetails?.[field];
+            const fieldId = `field-${field}`;
 
             return (
               <Textarea
@@ -185,9 +194,16 @@ export function OfferProjectDetailsSection({
                 value={projectDetails[field]}
                 onChange={(event) => onProjectDetailsChange(field, event.target.value)}
                 onBlur={fieldValidation?.onBlur}
-                label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
+                label={
+                  <span className="flex items-center gap-2">
+                    {t(`offers.wizard.forms.details.fields.${field}.label` as const)}
+                    <HelpIcon
+                      content={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
+                      label={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
+                    />
+                  </span>
+                }
                 placeholder={t(`offers.wizard.forms.details.fields.${field}.placeholder` as const)}
-                help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
                 maxLength={MAX_LENGTHS[field]}
                 showCounter
                 className="min-h-[7.5rem]"
