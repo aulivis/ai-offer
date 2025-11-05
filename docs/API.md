@@ -254,3 +254,4 @@ GET endpoints include cache headers:
 - User data: `Cache-Control: max-age=300, stale-while-revalidate=3600`
 - Dynamic data: `Cache-Control: no-store, no-cache, must-revalidate`
 
+

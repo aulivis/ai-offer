@@ -46,3 +46,4 @@ export const CACHE_CONFIGS = {
   STATIC: { maxAge: 31536000 }, // 1 year
 } as const;
 
+

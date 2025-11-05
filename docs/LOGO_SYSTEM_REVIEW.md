@@ -275,3 +275,4 @@ The logo system is well-architected with good security practices, but has a **cr
 
 The recommended fix is to store storage paths instead of URLs and generate signed URLs on-demand when needed. This provides better security, reliability, and user experience.
 
+

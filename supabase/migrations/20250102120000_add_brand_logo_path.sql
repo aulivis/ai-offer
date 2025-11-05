@@ -75,3 +75,4 @@ comment on column public.profiles.brand_logo_path is
 -- Keep brand_logo_url column for backward compatibility during migration period
 -- It will be deprecated and removed in a future migration
 
+

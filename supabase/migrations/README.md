@@ -62,3 +62,4 @@ Migrations are executed in chronological order (by timestamp). Current order:
 4. Check that policies are created correctly
 5. Verify no duplicate indexes exist
 
+
