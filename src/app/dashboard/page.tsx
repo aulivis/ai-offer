@@ -20,6 +20,7 @@ import OfferCard from '@/components/dashboard/OfferCard';
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
+import { OfferCardSkeleton, MetricSkeleton } from '@/components/ui/Skeleton';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -978,43 +979,54 @@ export default function DashboardPage() {
       >
         {/* Metrikák */}
         <section className="grid gap-4 pb-8 border-b border-border/40 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label={t('dashboard.metrics.quota.label')}
-            value={quotaValue}
-            helper={quotaHelper}
-            progress={
-              quotaSnapshot && quotaSnapshot.limit !== null
-                ? {
-                    used: quotaSnapshot.used + quotaSnapshot.pending,
-                    limit: quotaSnapshot.limit,
-                  }
-                : undefined
-            }
-          />
-          <MetricCard
-            label={t('dashboard.metrics.created.label')}
-            value={totalOffersCount.toLocaleString('hu-HU')}
-            helper={totalHelper}
-          />
-          <MetricCard
-            label={t('dashboard.metrics.sent.label')}
-            value={stats.sent.toLocaleString('hu-HU')}
-            helper={t('dashboard.metrics.sent.helper', {
-              pending: stats.inReview.toLocaleString('hu-HU'),
-            })}
-          />
-          <MetricCard
-            label={t('dashboard.metrics.accepted.label')}
-            value={stats.accepted.toLocaleString('hu-HU')}
-            helper={t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel })}
-          />
-          <MetricCard
-            label={t('dashboard.metrics.avgDecision.label')}
-            value={avgDecisionLabel}
-            helper={t('dashboard.metrics.avgDecision.helper', {
-              drafts: stats.drafts.toLocaleString('hu-HU'),
-            })}
-          />
+          {loading ? (
+            <>
+              <MetricSkeleton />
+              <MetricSkeleton />
+              <MetricSkeleton />
+              <MetricSkeleton />
+            </>
+          ) : (
+            <>
+              <MetricCard
+                label={t('dashboard.metrics.quota.label')}
+                value={quotaValue}
+                helper={quotaHelper}
+                progress={
+                  quotaSnapshot && quotaSnapshot.limit !== null
+                    ? {
+                        used: quotaSnapshot.used + quotaSnapshot.pending,
+                        limit: quotaSnapshot.limit,
+                      }
+                    : undefined
+                }
+              />
+              <MetricCard
+                label={t('dashboard.metrics.created.label')}
+                value={totalOffersCount.toLocaleString('hu-HU')}
+                helper={totalHelper}
+              />
+              <MetricCard
+                label={t('dashboard.metrics.sent.label')}
+                value={stats.sent.toLocaleString('hu-HU')}
+                helper={t('dashboard.metrics.sent.helper', {
+                  pending: stats.inReview.toLocaleString('hu-HU'),
+                })}
+              />
+              <MetricCard
+                label={t('dashboard.metrics.accepted.label')}
+                value={stats.accepted.toLocaleString('hu-HU')}
+                helper={t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel })}
+              />
+              <MetricCard
+                label={t('dashboard.metrics.avgDecision.label')}
+                value={avgDecisionLabel}
+                helper={t('dashboard.metrics.avgDecision.helper', {
+                  drafts: stats.drafts.toLocaleString('hu-HU'),
+                })}
+              />
+            </>
+          )}
         </section>
 
         {/* Szűrők */}
@@ -1173,11 +1185,7 @@ export default function DashboardPage() {
         {loading && (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="animate-pulse p-5">
-                <div className="mb-4 h-4 w-3/5 rounded-full bg-bg" />
-                <div className="mb-6 h-3 w-2/5 rounded-full bg-bg" />
-                <div className="h-10 rounded-2xl bg-bg" />
-              </Card>
+              <OfferCardSkeleton key={i} />
             ))}
           </div>
         )}

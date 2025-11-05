@@ -24,6 +24,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
+import Link from 'next/link';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 type Profile = {
   company_name?: string;
@@ -417,6 +419,7 @@ export default function SettingsPage() {
         }));
         showToast({
           title: t('toasts.settings.saveSuccess'),
+          description: t('toasts.settings.saveSuccess'),
           variant: 'success',
         });
         return;
@@ -499,6 +502,7 @@ export default function SettingsPage() {
       }));
       showToast({
         title: t('toasts.settings.saveSuccess'),
+        description: t('toasts.settings.saveSuccess'),
         variant: 'success',
       });
     } catch (error) {
@@ -602,6 +606,7 @@ export default function SettingsPage() {
     if (!newAct.name.trim()) {
       showToast({
         title: t('errors.settings.activityNameRequired'),
+        description: t('errors.settings.activityNameRequired'),
         variant: 'error',
       });
       return;
@@ -679,10 +684,53 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <AppFrame title={t('settings.title')} description={t('settings.loadingDescription')}>
-        <Card className="text-sm text-slate-500">{t('settings.loading')}</Card>
+        <div className="space-y-8">
+          <Card className="space-y-4">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-16 w-full" />
+          </Card>
+          <Card className="space-y-4">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </Card>
+        </div>
       </AppFrame>
     );
   }
+
+  const [activeSection, setActiveSection] = useState<string>('auth');
+
+  const sections = [
+    { id: 'auth', label: t('settings.authMethods.title'), href: '#auth' },
+    { id: 'company', label: t('settings.company.title'), href: '#company' },
+    { id: 'branding', label: t('settings.branding.title'), href: '#branding' },
+    { id: 'templates', label: t('settings.templates.title'), href: '#templates' },
+    { id: 'activities', label: t('settings.activities.title'), href: '#activities' },
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['auth', 'company', 'branding', 'templates', 'activities'];
+      const scrollPosition = window.scrollY + 200;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const element = document.getElementById(sections[i]);
+        if (element && element.offsetTop <= scrollPosition) {
+          setActiveSection(sections[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <AppFrame
@@ -697,10 +745,43 @@ export default function SettingsPage() {
         ) : null
       }
     >
-      <div className="space-y-8">
+      <div className="flex flex-col gap-8 lg:flex-row">
+        {/* Sticky Sidebar Navigation */}
+        <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+          <div className="sticky top-32 space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
+              Navigáció
+            </h3>
+            <nav className="space-y-1">
+              {sections.map((section) => (
+                <Link
+                  key={section.id}
+                  href={section.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.getElementById(section.id);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    activeSection === section.id
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-fg-muted hover:bg-bg-muted hover:text-fg'
+                  }`}
+                >
+                  {section.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        <div className="flex-1 space-y-8">
         <Card
+          id="auth"
           as="section"
-          className="space-y-4"
+          className="space-y-4 scroll-mt-24"
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -739,8 +820,9 @@ export default function SettingsPage() {
         </Card>
 
         <Card
+          id="company"
           as="section"
-          className="space-y-6"
+          className="space-y-6 scroll-mt-24"
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -860,8 +942,9 @@ export default function SettingsPage() {
         </Card>
 
         <Card
+          id="branding"
           as="section"
-          className="space-y-6"
+          className="space-y-6 scroll-mt-24"
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -1020,28 +1103,19 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                {t('settings.branding.preview.title')}
-              </span>
-              <div
-                className="rounded-2xl border border-border p-4 shadow-inner"
-                style={{ background: secondaryPreview }}
-              >
-                <p
-                  className="text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: primaryPreview }}
-                >
-                  {t('settings.branding.preview.company')}
-                </p>
-                <p className="mt-2 text-base font-semibold" style={{ color: primaryPreview }}>
-                  {t('settings.branding.preview.offer')}
-                </p>
-                <p className="text-xs text-slate-600">{t('settings.branding.preview.helper')}</p>
-                <div
-                  className="mt-4 h-1.5 w-24 rounded-full"
-                  style={{ background: primaryPreview }}
-                />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Modern sablon előnézet
+                </span>
+                {renderTemplatePreview('modern')}
+              </div>
+
+              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Premium sablon előnézet
+                </span>
+                {renderTemplatePreview('premium')}
               </div>
             </div>
           </div>
@@ -1067,8 +1141,9 @@ export default function SettingsPage() {
         </Card>
 
         <Card
+          id="templates"
           as="section"
-          className="space-y-6"
+          className="space-y-6 scroll-mt-24"
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -1137,8 +1212,9 @@ export default function SettingsPage() {
         </Card>
 
         <Card
+          id="activities"
           as="section"
-          className="space-y-6"
+          className="space-y-6 scroll-mt-24"
           header={
             <CardHeader>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -1242,6 +1318,7 @@ export default function SettingsPage() {
             )}
           </div>
         </Card>
+        </div>
       </div>
     </AppFrame>
   );
