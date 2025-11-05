@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
+    "template:new": "ts-node scripts/new-template.ts",
     "test": "vitest run",
     "test:templates": "vitest run src/app/pdf/templates/__tests__/golden.test.ts",
     "prepare": "husky"
@@ -56,6 +57,7 @@
     "puppeteer-core": "^24.26.1",
     "supabase": "^2.53.6",
     "tailwindcss": "^4.1.15",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "vitest": "^3.2.4"
   }
