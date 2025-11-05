@@ -422,6 +422,15 @@ export const hu = {
       success: 'Sikeres fizetés! A csomagod néhány percen belül frissül.',
       cancel: 'A fizetés megszakadt. Próbáld újra, amikor készen állsz a váltásra.',
     },
+    comparison: {
+      title: 'Csomag összehasonlítás',
+      subtitle: 'Nézd meg, melyik csomag felel meg a legjobban az igényeidnek.',
+      feature: 'Funkció',
+      offersPerMonth: 'Ajánlat / hónap',
+      brandLogo: 'Céges logó feltöltése',
+      proTemplates: 'Prémium sablonok',
+      aiGeneration: 'AI generált szöveg',
+    },
     plans: {
       standard: {
         badge: 'Belépő csomag',

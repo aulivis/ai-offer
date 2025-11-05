@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import LandingHeader from '@/components/LandingHeader';
 import Footer from '@/components/layout/Footer';
 import { AppProviders } from '@/components/AppProviders';
+import { ScrollToTop } from '@/components/ui/ScrollToTop';
 
 import { LanguageProvider } from '@/state/LanguageProvider';
 import { withLanguage } from '@/state/lang';
@@ -49,6 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <CookieBar />
                 <PreferencesModal />
                 <AnalyticsScriptGate />
+                <ScrollToTop />
               </div>
             </ErrorBoundary>
           </AppProviders>

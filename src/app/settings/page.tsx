@@ -10,12 +10,13 @@ import { useToast } from '@/components/ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
-  OFFER_TEMPLATES,
   enforceTemplateForPlan,
-  offerTemplateRequiresPro,
   type OfferTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
+import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
+import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
+import { listTemplates as listSDKTemplates } from '@/app/pdf/templates/registry';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { normalizeBrandHex } from '@/lib/branding';
 import { resolveEffectivePlan } from '@/lib/subscription';
@@ -237,6 +238,50 @@ export default function SettingsPage() {
   const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
   const canUseProTemplates = plan === 'pro';
   const canUploadBrandLogo = plan !== 'free';
+
+  // Get all available templates from registries
+  const availableTemplates = useMemo(() => {
+    const engineTemplates = listTemplateMetadata();
+    const sdkTemplates = listSDKTemplates();
+    
+    // Combine templates from both registries
+    type CombinedTemplate = TemplateMetadata & { preview?: string };
+    const templateMap = new Map<string, CombinedTemplate>();
+    
+    // Add engine templates
+    engineTemplates.forEach((template) => {
+      const legacyId = template.id.includes('free.base') ? 'modern' :
+                      template.id.includes('premium.elegant') ? 'premium-banner' :
+                      template.id.includes('premium.modern') ? 'premium-banner' :
+                      template.id;
+      templateMap.set(legacyId, template);
+    });
+    
+    // Add SDK templates (like pro.nordic) that might not be in engine registry
+    sdkTemplates.forEach((template) => {
+      const legacyId = template.id.includes('pro.nordic') ? 'pro.nordic' : template.id;
+      if (!templateMap.has(legacyId)) {
+        const sdkTemplate: CombinedTemplate = {
+          id: template.id,
+          label: template.name,
+          tier: template.id.includes('pro.') ? ('premium' as const) : ('free' as const),
+          version: template.version,
+          name: template.name,
+        };
+        if (template.preview) {
+          sdkTemplate.preview = template.preview;
+        }
+        templateMap.set(legacyId, sdkTemplate);
+      }
+    });
+    
+    return Array.from(templateMap.values()).sort((a, b) => {
+      // Premium templates last
+      if (a.tier === 'premium' && b.tier !== 'premium') return 1;
+      if (a.tier !== 'premium' && b.tier === 'premium') return -1;
+      return a.label.localeCompare(b.label, 'hu');
+    });
+  }, []);
 
   function renderTemplatePreview(variant: 'modern' | 'premium') {
     if (variant === 'premium') {
@@ -750,7 +795,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sticky Sidebar Navigation */}
         <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="sticky top-32 space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur">
+          <div className="sticky top-24 space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
               Navigáció
             </h3>
@@ -1155,24 +1200,31 @@ export default function SettingsPage() {
             </CardHeader>
           }
         >
-          <div className="grid gap-4 md:grid-cols-2">
-            {OFFER_TEMPLATES.map((template) => {
-              const isSelected = selectedTemplateId === template.id;
-              const requiresPro = offerTemplateRequiresPro(template.id);
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {availableTemplates.map((template) => {
+              // Map template ID to legacy ID for compatibility
+              const legacyId = template.id.includes('free.base') ? 'modern' :
+                              template.id.includes('premium.elegant') ? 'premium-banner' :
+                              template.id.includes('premium.modern') ? 'premium-banner' :
+                              template.id.includes('pro.nordic') ? 'pro.nordic' :
+                              template.id;
+              const isSelected = selectedTemplateId === legacyId;
+              const requiresPro = template.tier === 'premium';
               const requiresUpgrade = requiresPro && !canUseProTemplates;
-              const cardClassNames = [
-                'flex h-full w-full flex-col gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                isSelected
-                  ? 'border-border shadow-lg ring-2 ring-slate-900/10'
-                  : 'border-border hover:border-border',
-                requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'hover:shadow-sm',
-              ].join(' ');
+              const previewVariant = template.tier === 'premium' ? 'premium' : 'modern';
+              const templateLabel = template.label;
+              const templatePreview = template.preview;
+              const templateDescription = template.description;
+              const templateHighlight = template.marketingHighlight;
+              
               return (
-                <Button
+                <div
                   key={template.id}
-                  type="button"
-                  className={cardClassNames}
-                  aria-disabled={requiresUpgrade}
+                  className={`group relative flex h-full flex-col gap-3 rounded-2xl border-2 p-5 transition-all ${
+                    isSelected
+                      ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
+                      : 'border-border bg-white hover:border-primary/50 hover:shadow-md'
+                  } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                   onClick={() => {
                     if (requiresUpgrade) {
                       openPlanUpgradeDialog({
@@ -1180,30 +1232,81 @@ export default function SettingsPage() {
                       });
                       return;
                     }
-                    setProfile((prev) => ({ ...prev, offer_template: template.id }));
+                    setProfile((prev) => ({ ...prev, offer_template: legacyId as OfferTemplateId }));
+                  }}
+                  role={requiresUpgrade ? undefined : 'button'}
+                  tabIndex={requiresUpgrade ? -1 : 0}
+                  onKeyDown={(e) => {
+                    if (!requiresUpgrade && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      setProfile((prev) => ({ ...prev, offer_template: legacyId as OfferTemplateId }));
+                    }
                   }}
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-900">{template.label}</span>
-                    {requiresPro && (
-                      <span className="rounded-full bg-slate-900/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
-                        {t('settings.templates.proBadge')}
-                      </span>
+                  {/* Preview Image */}
+                  {templatePreview ? (
+                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={templatePreview}
+                        alt={`${templateLabel} előnézet`}
+                        className="h-32 w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg">
+                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-50">
+                      <div className="h-32 w-full">
+                        {renderTemplatePreview(previewVariant)}
+                      </div>
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg">
+                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Template Info */}
+                  <div className="flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-semibold text-slate-900">{templateLabel}</h3>
+                      {requiresPro && (
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                          {t('settings.templates.proBadge')}
+                        </span>
+                      )}
+                      {isSelected && (
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          {t('settings.templates.activeBadge')}
+                        </span>
+                      )}
+                    </div>
+                    {templateDescription && (
+                      <p className="text-xs leading-relaxed text-slate-600">{templateDescription}</p>
                     )}
-                    {isSelected && (
-                      <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
-                        {t('settings.templates.activeBadge')}
-                      </span>
+                    {templateHighlight && (
+                      <p className="text-xs font-medium text-primary">{templateHighlight}</p>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">{template.description}</p>
-                  {renderTemplatePreview(template.previewVariant)}
+                  
                   {requiresUpgrade && (
-                    <p className="text-xs font-medium text-amber-600">
+                    <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-600">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
                       {t('settings.templates.proOnly')}
-                    </p>
+                    </div>
                   )}
-                </Button>
+                </div>
               );
             })}
           </div>
