@@ -21,13 +21,33 @@ import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
 import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
+import { z } from 'zod';
 
 const BASE_SYSTEM_PROMPT = `
-Te egy magyar üzleti ajánlatíró asszisztens vagy.
-Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
-Kerüld az anglicizmusokat, helyette magyar kifejezéseket használj.
-Adj vissza TISZTA HTML-RÉSZLETET (nincs <html>/<body>), csak címsorokat, bekezdéseket és felsorolásokat.
-Szerkezet: Bevezető, Projekt összefoglaló, Terjedelem, Szállítandók, Ütemezés, Feltételezések & Kizárások, Következő lépések, Zárás.
+Te egy tapasztalt magyar üzleti ajánlatíró asszisztens vagy, aki professzionális, 
+magas színvonalú ajánlatokat készít magyar vállalkozások számára.
+
+NYELVI MINŐSÉG:
+- Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
+- Kerüld az anglicizmusokat, helyette magyar kifejezéseket használj (pl. "feladat" helyett "task", "határidő" helyett "deadline").
+- Használj üzleti szakszavakat és formális, de barátságos hangvételt.
+- A szöveg legyen érthető, világos és logikusan felépített.
+- Minden bekezdés legyen jól strukturált, 2-4 mondat hosszúságú.
+
+SZERKEZET ÉS TARTALOM:
+- A bevezető köszöntse a címzettet és mutassa be az ajánlat célját.
+- A projekt összefoglaló világosan mutassa be a projekt hátterét és céljait.
+- A felsorolásokban használj rövid, lényegretörő pontokat, amelyek konkrét információkat tartalmaznak.
+- Minden szakasz legyen tartalmas és releváns a projekt kontextusához.
+- A zárás legyen udvarias és cselekvésre ösztönző.
+
+FORMÁZÁS:
+- Adj vissza TISZTA HTML-RÉSZLETET (nincs <html>/<body>), csak címsorokat, bekezdéseket és felsorolásokat.
+- Használj <h2>...</h2> szakaszcímeket a következő szerkezet szerint: Bevezető, Projekt összefoglaló, Terjedelem, Szállítandók, Ütemezés, Feltételezések & Kizárások, Következő lépések, Zárás.
+- A bekezdéseket <p>...</p> taggel jelöld.
+- A felsorolásokat <ul><li>...</li></ul> taggel jelöld.
+- Ne találj ki árakat; az árképzés külön jelenik meg az alkalmazásban.
+- A szöveg legyen professzionális, de nem túlzottan formális vagy száraz.
 `;
 
 const PREVIEW_ABORT_RETRY_ATTEMPTS = 2;
@@ -128,8 +148,8 @@ export const POST = withAuth(
 
     const styleAddon =
       style === 'compact'
-        ? 'Stílus: nagyon tömör és kártyás felépítésű. Használj <div class="offer-doc__compact"> gyökérelemet, benne <section class="offer-doc__compact-intro">, <section class="offer-doc__compact-grid"> és <section class="offer-doc__compact-bottom"> blokkokat. Minden felsorolás legfeljebb 3 rövid pontból álljon.'
-        : 'Stílus: részletes és indokolt; adj 2-3 mondatos bekezdéseket, a HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat.';
+        ? 'Stílus: nagyon tömör és kártyás felépítésű. Használj <div class="offer-doc__compact"> gyökérelemet, benne <section class="offer-doc__compact-intro">, <section class="offer-doc__compact-grid"> és <section class="offer-doc__compact-bottom"> blokkokat. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. Minden felsorolás legfeljebb 3 rövid pontból álljon, amelyek a legfontosabb információkat összegzik.'
+        : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat (4-6 pont), amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket.';
 
     const safeLanguage = sanitizeInput(language);
     const safeBrand = sanitizeInput(brandVoice);
@@ -145,15 +165,30 @@ export const POST = withAuth(
     const safeDescription = formatProjectDetailsForPrompt(sanitizedDetails);
     const safeDeadline = sanitizeInput(deadline || '—');
 
+    const toneGuidance =
+      brandVoice === 'formal'
+        ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
+        : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+
     const userPrompt = `
+Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
+
 Nyelv: ${safeLanguage}
-Hangnem: ${safeBrand}
+${toneGuidance}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
+
 Projekt leírás: ${safeDescription}
 Határidő: ${safeDeadline}
+
 ${styleAddon}
-Ne találj ki árakat, az árképzés külön jelenik meg.
+
+Különös figyelmet fordít a következőkre:
+- Használj természetes, folyékony magyar nyelvet, kerülve az anglicizmusokat
+- Minden szakasz legyen logikusan felépített és egymásra épülő
+- A felsorolások pontjai legyenek konkrétak, mérhetők és érthetők
+- A szöveg legyen meggyőző, de nem túlzottan marketinges
+- Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
 `;
 
     const encoder = new TextEncoder();
@@ -174,7 +209,7 @@ Ne találj ki árakat, az árképzés külön jelenik meg.
           };
 
           if (!model.startsWith('o4')) {
-            requestOptions.temperature = 0.4;
+            requestOptions.temperature = 0.7; // Increased for more natural, creative but still professional output
           }
 
           stream = await openai.responses.stream(requestOptions);

@@ -57,6 +57,8 @@ import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 import { z } from 'zod';
 import { renderSectionHeading } from '@/app/lib/offerSections';
+import { createLogger } from '@/lib/logger';
+import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
 
 export const runtime = 'nodejs';
 
@@ -141,12 +143,28 @@ function createOfferStoragePath(params: {
 // nyelv.  HTML-t nem kell visszaadni, azt a szerver állítja elő a
 // struktúrált mezőkből.
 const SYSTEM_PROMPT = `
-Te egy magyar üzleti ajánlatíró asszisztens vagy.
-Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
-Kerüld az anglicizmusokat, helyette magyar kifejezéseket használj.
-A megadott JSON sémát töltsd ki: minden mező magyar szöveg legyen, HTML jelölés nélkül.
-A felsorolás típusú mezők rövid, lényegretörő pontokat tartalmazzanak.
-Ne találj ki árakat; az árképzés külön jelenik meg az alkalmazásban.
+Te egy tapasztalt magyar üzleti ajánlatíró asszisztens vagy, aki professzionális, 
+magas színvonalú ajánlatokat készít magyar vállalkozások számára.
+
+NYELVI MINŐSÉG:
+- Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
+- Kerüld az anglicizmusokat, helyette magyar kifejezéseket használj (pl. "feladat" helyett "task", "határidő" helyett "deadline").
+- Használj üzleti szakszavakat és formális, de barátságos hangvételt.
+- A szöveg legyen érthető, világos és logikusan felépített.
+- Minden bekezdés legyen jól strukturált, 2-4 mondat hosszúságú.
+
+SZERKEZET ÉS TARTALOM:
+- A bevezető köszöntse a címzettet és mutassa be az ajánlat célját.
+- A projekt összefoglaló világosan mutassa be a projekt hátterét és céljait.
+- A felsorolásokban használj rövid, lényegretörő pontokat, amelyek konkrét információkat tartalmaznak.
+- Minden szakasz legyen tartalmas és releváns a projekt kontextusához.
+- A zárás legyen udvarias és cselekvésre ösztönző.
+
+FORMÁZÁS:
+- A megadott JSON sémát töltsd ki: minden mező magyar szöveg legyen, HTML jelölés nélkül.
+- A felsorolás típusú mezők mintegy 3-5, jól formázott pontot tartalmazzanak.
+- Ne találj ki árakat; az árképzés külön jelenik meg az alkalmazásban.
+- A szöveg legyen professzionális, de nem túlzottan formális vagy száraz.
 `;
 
 type OfferSections = {
@@ -163,7 +181,7 @@ type OfferSections = {
 const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
   type: 'json_schema',
   name: 'offer_sections',
-  description: 'Strukturált magyar ajánlati szekciók',
+  description: 'Strukturált magyar ajánlati szekciók - professzionális üzleti ajánlat',
   strict: true,
   schema: {
     type: 'object',
@@ -181,55 +199,76 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
     properties: {
       introduction: {
         type: 'string',
-        description: 'Rövid bevezető bekezdés a címzett köszöntésével.',
+        description: 'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely köszönti a címzettet és bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet.',
+        minLength: 50,
+        maxLength: 300,
       },
       project_summary: {
         type: 'string',
-        description: 'A projekt céljának és hátterének összefoglalása.',
+        description: 'A projekt céljának és hátterének részletes összefoglalása (3-5 mondat). Mutassa be a projekt kontextusát, céljait és jelentőségét. Legyen informatív és meggyőző.',
+        minLength: 100,
+        maxLength: 500,
       },
       scope: {
         type: 'array',
         minItems: 3,
+        maxItems: 6,
         items: {
           type: 'string',
-          description: 'Terjedelemhez tartozó kulcsfeladat.',
+          description: 'A projekt terjedelméhez tartozó kulcsfeladat vagy szolgáltatás. Minden pont legyen konkrét, mérhető és érthető (min. 20, max. 120 karakter).',
+          minLength: 20,
+          maxLength: 120,
         },
       },
       deliverables: {
         type: 'array',
         minItems: 3,
+        maxItems: 6,
         items: {
           type: 'string',
-          description: 'A szállítandó eredmények felsorolása.',
+          description: 'Egy konkrét, szállítandó eredmény vagy deliverable. Legyen specifikus és mérhető (min. 20, max. 120 karakter).',
+          minLength: 20,
+          maxLength: 120,
         },
       },
       schedule: {
         type: 'array',
         minItems: 3,
+        maxItems: 5,
         items: {
           type: 'string',
-          description: 'Kulcs mérföldkövek és céldátumok.',
+          description: 'Kulcs mérföldkő vagy ütemezési pont dátumokkal vagy időkerettel. Legyen konkrét és érthető (min. 25, max. 100 karakter).',
+          minLength: 25,
+          maxLength: 100,
         },
       },
       assumptions: {
         type: 'array',
         minItems: 3,
+        maxItems: 5,
         items: {
           type: 'string',
-          description: 'Feltételezések és kizárások.',
+          description: 'Feltételezés vagy kizárás, amely fontos a projekt értékeléséhez. Legyen világos és konkrét (min. 20, max. 120 karakter).',
+          minLength: 20,
+          maxLength: 120,
         },
       },
       next_steps: {
         type: 'array',
         minItems: 2,
+        maxItems: 4,
         items: {
           type: 'string',
-          description: 'Következő lépések, teendők.',
+          description: 'Következő lépés vagy teendő, amely cselekvésre ösztönzi a címzettet. Legyen konkrét és akcióorientált (min. 20, max. 100 karakter).',
+          minLength: 20,
+          maxLength: 100,
         },
       },
       closing: {
         type: 'string',
-        description: 'Udvarias záró bekezdés cselekvésre ösztönzéssel.',
+        description: 'Udvarias, meggyőző záró bekezdés (2-3 mondat), amely összefoglalja az ajánlat értékét és cselekvésre ösztönzi a címzettet. Legyen pozitív és együttműködésre ösztönző.',
+        minLength: 60,
+        maxLength: 250,
       },
     },
   },
@@ -330,20 +369,35 @@ function sectionsToHtml(
     return sanitizeHTML(html);
   }
 
+  // Detailed style: better spacing and structure for professional PDF
   const html = `
-    ${renderSectionHeading(labels.overview, 'overview')}
-    ${safeParagraphGroup([sections.introduction, sections.project_summary])}
-    ${renderSectionHeading(labels.scope, 'scope')}
-    ${safeList(sections.scope)}
-    ${renderSectionHeading(labels.deliverables, 'deliverables')}
-    ${safeList(sections.deliverables)}
-    ${renderSectionHeading(labels.timeline, 'timeline')}
-    ${safeList(sections.schedule)}
-    ${renderSectionHeading(labels.assumptions, 'assumptions')}
-    ${safeList(sections.assumptions)}
-    ${renderSectionHeading(labels.nextSteps, 'nextSteps')}
-    ${safeList(sections.next_steps)}
-    ${renderClosingNote(sections.closing)}
+    <div class="offer-doc__sections">
+      <section class="offer-doc__section">
+        ${renderSectionHeading(labels.overview, 'overview')}
+        ${safeParagraphGroup([sections.introduction, sections.project_summary])}
+      </section>
+      <section class="offer-doc__section">
+        ${renderSectionHeading(labels.scope, 'scope')}
+        ${safeList(sections.scope)}
+      </section>
+      <section class="offer-doc__section">
+        ${renderSectionHeading(labels.deliverables, 'deliverables')}
+        ${safeList(sections.deliverables)}
+      </section>
+      <section class="offer-doc__section">
+        ${renderSectionHeading(labels.timeline, 'timeline')}
+        ${safeList(sections.schedule)}
+      </section>
+      <section class="offer-doc__section">
+        ${renderSectionHeading(labels.assumptions, 'assumptions')}
+        ${safeList(sections.assumptions)}
+      </section>
+      <section class="offer-doc__section">
+        ${renderSectionHeading(labels.nextSteps, 'nextSteps')}
+        ${safeList(sections.next_steps)}
+        ${renderClosingNote(sections.closing)}
+      </section>
+    </div>
   `;
 
   return sanitizeHTML(html);
@@ -824,8 +878,13 @@ export const POST = withAuth(
 
       const styleAddon =
         style === 'compact'
-          ? 'Stílus: nagyon tömör, 1-2 rövid bekezdés és legfeljebb 3 pontos felsorolások szakaszonként. A hangsúly a lényegi feladatokon legyen, kerülve a töltelékszöveget.'
-          : 'Stílus: részletes és indokolt; adj 2-3 mondatos bekezdéseket és tartalmas felsorolásokat, amelyek megmagyarázzák a javasolt lépéseket.';
+          ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
+          : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
+
+      const toneGuidance =
+        brandVoice === 'formal'
+          ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
+          : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
 
       // Sanitize user inputs before passing to OpenAI
       const safeIndustry = sanitizeInput(industry);
@@ -834,21 +893,32 @@ export const POST = withAuth(
       const safeBrand = sanitizeInput(brandVoice);
 
       const userPrompt = `
+Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
+
 Nyelv: ${normalizedLanguage}
-Hangnem: ${safeBrand}
+${toneGuidance}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
+
 Projekt részletek:
 ${safeProjectDetails || '—'}
+
 Határidő: ${safeDeadline}
+
 ${styleAddon}
-Ne találj ki árakat, az árképzés külön jelenik meg.
+
+Különös figyelmet fordít a következőkre:
+- Használj természetes, folyékony magyar nyelvet, kerülve az anglicizmusokat
+- Minden szakasz legyen logikusan felépített és egymásra épülő
+- A felsorolások pontjai legyenek konkrétak, mérhetők és érthetők
+- A szöveg legyen meggyőző, de nem túlzottan marketinges
+- Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
 `;
 
       try {
         const response = await openai.responses.parse({
           model: 'gpt-4o-mini',
-          temperature: 0.4,
+          temperature: 0.7, // Increased for more natural, creative but still professional output
           input: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: userPrompt },
