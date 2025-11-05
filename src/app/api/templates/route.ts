@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 
-import { listTemplates, type TemplateMeta } from '@/app/pdf/templates/registry';
-
-type TemplateSummary = Omit<TemplateMeta, 'factory'>;
+import { listTemplates } from '@/app/pdf/templates/registry';
 
 export function GET() {
-  const templates: TemplateSummary[] = listTemplates().map((template) => {
-    const { factory: _factory, ...meta } = template;
+  const templates = listTemplates().map((template) => {
+    const meta = { ...template };
+    delete meta.factory;
     return meta;
   });
   return NextResponse.json(templates);
