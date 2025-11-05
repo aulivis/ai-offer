@@ -3,49 +3,17 @@ import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { envServer } from '@/env.server';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
+import {
+  consumeRateLimit,
+  getClientIdentifier,
+  RATE_LIMIT_MAX_REQUESTS,
+  RATE_LIMIT_WINDOW_MS,
+} from '@/lib/rateLimiting';
+import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
-
-const RATE_LIMIT_MAX_REQUESTS = 5;
-const RATE_LIMIT_WINDOW_MS = 60_000;
-
-type RateLimitEntry = {
-  count: number;
-  resetAt: number;
-};
-
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-function getClientIdentifier(req: NextRequest): string {
-  const forwardedFor = req.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0]?.trim() || 'unknown';
-  }
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
-  return (req as NextRequest & { ip?: string }).ip ?? 'unknown';
-}
-
-function checkRateLimit(key: string) {
-  const now = Date.now();
-  const entry = rateLimitStore.get(key);
-
-  if (!entry || entry.resetAt <= now) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { allowed: true as const };
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
-    const retryAfterMs = entry.resetAt - now;
-    return { allowed: false as const, retryAfterMs };
-  }
-
-  entry.count += 1;
-  return { allowed: true as const };
-}
 
 function buildErrorResponse(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
@@ -71,17 +39,41 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   const requestId = randomUUID();
   const clientId = getClientIdentifier(req);
 
-  const rateLimitResult = checkRateLimit(clientId);
-  if (!rateLimitResult.allowed) {
-    const retrySeconds = Math.max(1, Math.ceil(rateLimitResult.retryAfterMs / 1000));
-    console.warn('Checkout rate limit exceeded', { requestId, clientId, retrySeconds });
-    return NextResponse.json(
-      { error: 'Túl sok fizetési próbálkozás történt. Próbáld újra később.' },
-      {
-        status: 429,
-        headers: { 'Retry-After': retrySeconds.toString() },
-      },
+  try {
+    const supabase = supabaseServiceRole();
+    const rateLimitKey = `checkout:${clientId}`;
+    const rateLimitResult = await consumeRateLimit(
+      supabase,
+      rateLimitKey,
+      RATE_LIMIT_MAX_REQUESTS,
+      RATE_LIMIT_WINDOW_MS,
     );
+
+    if (!rateLimitResult.allowed) {
+      const retrySeconds = Math.max(1, Math.ceil(rateLimitResult.retryAfterMs / 1000));
+      console.warn('Checkout rate limit exceeded', {
+        requestId,
+        clientId,
+        retrySeconds,
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+      });
+      return NextResponse.json(
+        { error: 'Túl sok fizetési próbálkozás történt. Próbáld újra később.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retrySeconds.toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
+          },
+        },
+      );
+    }
+  } catch (error) {
+    console.error('Rate limit check failed', { requestId, clientId, error });
+    // Allow request to proceed if rate limiting fails to avoid blocking legitimate users
   }
 
   let parsedBody: { priceId: string; email: string } | null = null;
@@ -145,6 +137,18 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       sessionId: session.id ?? 'unknown',
       sessionUrlPresent: Boolean(sessionUrl),
     });
+
+    // Audit log the payment initiation
+    const supabase = supabaseServiceRole();
+    await logAuditEvent(supabase, {
+      eventType: 'payment_initiated',
+      userId,
+      metadata: { priceId, sessionId: session.id ?? null },
+      requestId,
+      ipAddress: getRequestIp(req),
+      userAgent: req.headers.get('user-agent'),
+    });
+
     return NextResponse.json({ url: sessionUrl });
   } catch (error) {
     console.error('Stripe checkout session creation failed', {
@@ -158,7 +162,5 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 });
 
 export const __test = {
-  resetRateLimiter() {
-    rateLimitStore.clear();
-  },
+  // Rate limiter is now database-backed, no reset needed for tests
 };

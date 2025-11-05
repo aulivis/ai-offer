@@ -133,10 +133,16 @@ export async function POST(request: Request) {
 
   if (sessionsError) {
     console.error('Failed to load sessions for user.', sessionsError);
+    await clearAuthCookies();
     return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
   }
 
   const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
+  
+  if (sessionList.length === 0) {
+    await clearAuthCookies();
+    return Response.json({ error: 'No active sessions found' }, { status: 401 });
+  }
 
   let activeSession: SessionRow | null = null;
   if (sessionList.length > 0) {

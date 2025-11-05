@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { extractOfferStoragePath } from '@/lib/offers/storage';
+import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
+import { getRequestId } from '@/lib/requestId';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 const normalizeUserOwnedStoragePath = (path: string, userId: string): string | null => {
@@ -31,6 +34,8 @@ type RouteParams = {
 export const DELETE = withAuth(
   async (request: AuthenticatedNextRequest, context: { params: RouteParams }) => {
     const { offerId } = context.params;
+    const requestId = getRequestId(request);
+    
     if (!offerId || typeof offerId !== 'string') {
       return NextResponse.json({ error: 'Érvénytelen ajánlat azonosító.' }, { status: 400 });
     }
@@ -39,7 +44,7 @@ export const DELETE = withAuth(
       const sessionClient = await supabaseServer();
       const { data: offer, error: loadError } = await sessionClient
         .from('offers')
-        .select('id, user_id, pdf_url')
+        .select('id, user_id, pdf_url, title')
         .eq('id', offerId)
         .maybeSingle();
 
@@ -94,6 +99,16 @@ export const DELETE = withAuth(
         console.error('Failed to delete offer', deleteError);
         return NextResponse.json({ error: 'Nem sikerült törölni az ajánlatot.' }, { status: 500 });
       }
+
+      // Audit log the deletion
+      await logAuditEvent(adminClient, {
+        eventType: 'offer_deleted',
+        userId: request.user.id,
+        metadata: { offerId, title: offer.title ?? null },
+        requestId,
+        ipAddress: getRequestIp(request),
+        userAgent: request.headers.get('user-agent'),
+      });
 
       const validatedPaths = new Set<string>();
       storagePaths.forEach((rawPath) => {

@@ -1,10 +1,13 @@
 import { cookies } from 'next/headers';
+import { randomUUID } from 'node:crypto';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { clearAuthCookies } from '../../../../../lib/auth/cookies';
 import { verifyCsrfToken } from '../../../../../lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
 import { argon2Verify } from '../../../../../lib/auth/argon2';
+import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
+import { getRequestId } from '@/lib/requestId';
 
 type SessionRow = {
   id: string;
@@ -15,6 +18,7 @@ type SessionRow = {
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
+  const requestId = getRequestId(request);
   const csrfHeader = request.headers.get('x-csrf-token');
   const csrfCookie = cookieStore.get('XSRF-TOKEN')?.value;
 
@@ -54,10 +58,12 @@ export async function POST(request: Request) {
 
   if (sessionList.length > 0) {
     const nowIso = new Date().toISOString();
+    let revokedSessionId: string | null = null;
     for (const session of sessionList) {
       try {
         const matches = await argon2Verify(session.rt_hash, refreshToken);
         if (matches) {
+          revokedSessionId = session.id;
           const { error: revokeError } = await supabase
             .from('sessions')
             .update({ revoked_at: nowIso })
@@ -70,6 +76,18 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error('Failed to verify session hash during logout.', err);
       }
+    }
+
+    // Audit log the logout
+    if (revokedSessionId) {
+      await logAuditEvent(supabase, {
+        eventType: 'auth_logout',
+        userId,
+        metadata: { sessionId: revokedSessionId },
+        requestId,
+        ipAddress: getRequestIp(request),
+        userAgent: request.headers.get('user-agent'),
+      });
     }
   }
 

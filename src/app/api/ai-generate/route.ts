@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 // Use shared pricing utilities and the pluggable PDF template engine.
@@ -48,6 +48,11 @@ import {
 } from '@/lib/projectDetails';
 import { allowCategory } from '../../../../lib/consent/server';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import {
+  checkRateLimitMiddleware,
+  createRateLimitResponse,
+} from '@/lib/rateLimitMiddleware';
+import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { z } from 'zod';
 import { renderSectionHeading } from '@/app/lib/offerSections';
 
@@ -610,6 +615,28 @@ function applyImageAssetsToHtml(
 }
 
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+  const requestId = randomUUID();
+  
+  // Rate limiting for AI generation endpoint
+  const rateLimitResult = await checkRateLimitMiddleware(req, {
+    maxRequests: 20, // Higher limit for authenticated users
+    windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
+    keyPrefix: 'ai-generate',
+  });
+
+  if (rateLimitResult && !rateLimitResult.allowed) {
+    console.warn('AI generate rate limit exceeded', {
+      requestId,
+      userId: req.user.id,
+      limit: rateLimitResult.limit,
+      remaining: rateLimitResult.remaining,
+    });
+    return createRateLimitResponse(
+      rateLimitResult,
+      'Elérted a havi AI generálási limitet. Próbáld újra később.',
+    );
+  }
+
   try {
     // Parse and sanitize the incoming JSON body.  Sanitizing early
     // prevents any malicious scripts or HTML fragments from reaching

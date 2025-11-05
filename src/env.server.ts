@@ -76,6 +76,38 @@ const serverEnvDefaults = {
 
 type RawServerEnv = z.input<typeof ServerEnvSchema>;
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Validate required environment variables in production
+if (isProduction) {
+  const requiredVars = [
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'AUTH_COOKIE_SECRET',
+    'CSRF_SECRET',
+    'MAGIC_LINK_RATE_LIMIT_SALT',
+    'OPENAI_API_KEY',
+    'STRIPE_SECRET_KEY',
+    'APP_URL',
+    'PUBLIC_CONTACT_EMAIL',
+    'SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI',
+  ] as const;
+
+  const missingVars: string[] = [];
+  for (const varName of requiredVars) {
+    if (!process.env[varName]) {
+      missingVars.push(varName);
+    }
+  }
+
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing required environment variables in production: ${missingVars.join(', ')}`,
+    );
+  }
+}
+
 const envWithDefaults: RawServerEnv = {
   NEXT_PUBLIC_SUPABASE_URL:
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? serverEnvDefaults.NEXT_PUBLIC_SUPABASE_URL,

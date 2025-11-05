@@ -84,6 +84,28 @@ const previewRequestSchema = z
   .strict();
 
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+  const requestId = randomUUID();
+  
+  // Rate limiting for AI preview endpoint
+  const rateLimitResult = await checkRateLimitMiddleware(req, {
+    maxRequests: 30, // Higher limit for previews as they're less expensive
+    windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
+    keyPrefix: 'ai-preview',
+  });
+
+  if (rateLimitResult && !rateLimitResult.allowed) {
+    console.warn('AI preview rate limit exceeded', {
+      requestId,
+      userId: req.user.id,
+      limit: rateLimitResult.limit,
+      remaining: rateLimitResult.remaining,
+    });
+    return createRateLimitResponse(
+      rateLimitResult,
+      'Elérted az AI előnézeti limitet. Próbáld újra később.',
+    );
+  }
+
   try {
     const parsed = previewRequestSchema.safeParse(await req.json());
     if (!parsed.success) {

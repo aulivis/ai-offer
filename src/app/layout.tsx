@@ -6,6 +6,7 @@ import AnnouncementBar from '@/components/AnnouncementBar';
 import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '@/components/cookies/CookieBar';
 import { PreferencesModal } from '@/components/cookies/PreferencesModal';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import LandingHeader from '@/components/LandingHeader';
 import Footer from '@/components/layout/Footer';
 import { AppProviders } from '@/components/AppProviders';
@@ -32,22 +33,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {t('app.skipToContent')}
           </a>
           <AppProviders>
-            <div className="relative min-h-screen overflow-x-hidden bg-bg text-fg">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top,_rgba(var(--color-primary-rgb),0.18),_transparent_65%)]" />
-              <div className="pointer-events-none absolute -left-32 top-72 h-80 w-80 rounded-full bg-accent/16 blur-3xl" />
-              <div className="pointer-events-none absolute -right-28 bottom-40 h-72 w-72 rounded-full bg-primary/14 blur-3xl" />
+            <ErrorBoundary>
+              <div className="relative min-h-screen overflow-x-hidden bg-bg text-fg">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top,_rgba(var(--color-primary-rgb),0.18),_transparent_65%)]" />
+                <div className="pointer-events-none absolute -left-32 top-72 h-80 w-80 rounded-full bg-accent/16 blur-3xl" />
+                <div className="pointer-events-none absolute -right-28 bottom-40 h-72 w-72 rounded-full bg-primary/14 blur-3xl" />
 
-              <div className="relative z-10 flex min-h-screen flex-col">
-                <AnnouncementBar />
-                <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
-                <div className="flex-1">{children}</div>
-                <Footer />
+                <div className="relative z-10 flex min-h-screen flex-col">
+                  <AnnouncementBar />
+                  <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
+                  <div className="flex-1">{children}</div>
+                  <Footer />
+                </div>
+
+                <CookieBar />
+                <PreferencesModal />
+                <AnalyticsScriptGate />
               </div>
-
-              <CookieBar />
-              <PreferencesModal />
-              <AnalyticsScriptGate />
-            </div>
+            </ErrorBoundary>
           </AppProviders>
         </LanguageProvider>
       </body>

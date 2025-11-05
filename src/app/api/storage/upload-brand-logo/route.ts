@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+import { randomUUID } from 'node:crypto';
 
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
@@ -7,6 +8,11 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import {
+  checkRateLimitMiddleware,
+  createRateLimitResponse,
+} from '@/lib/rateLimitMiddleware';
+import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 
 const BUCKET_ID = 'brand-assets';
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -148,6 +154,28 @@ async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImag
 }
 
 export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
+  const requestId = randomUUID();
+  
+  // Rate limiting for file upload endpoint
+  const rateLimitResult = await checkRateLimitMiddleware(request, {
+    maxRequests: 10, // Limit uploads per user
+    windowMs: RATE_LIMIT_WINDOW_MS, // 1 minute window
+    keyPrefix: 'upload-brand-logo',
+  });
+
+  if (rateLimitResult && !rateLimitResult.allowed) {
+    console.warn('Upload rate limit exceeded', {
+      requestId,
+      userId: request.user.id,
+      limit: rateLimitResult.limit,
+      remaining: rateLimitResult.remaining,
+    });
+    return createRateLimitResponse(
+      rateLimitResult,
+      'Túl sok fájlfeltöltési kísérlet történt. Próbáld újra később.',
+    );
+  }
+
   try {
     const sb = await supabaseServer();
     const userId = request.user.id;
