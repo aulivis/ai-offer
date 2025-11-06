@@ -1365,7 +1365,7 @@ export default function DashboardPage() {
         {!loading && filtered.length > 0 && (
           <>
             {viewMode === 'card' ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
                 {filtered.map((o) => (
                   <OfferCard
                     key={o.id}

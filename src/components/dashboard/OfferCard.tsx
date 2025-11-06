@@ -88,65 +88,51 @@ export function OfferCard({
           'bg-rose-400'
         }`} />
         
-        <div className="flex items-center gap-3 p-4 pt-5">
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-xl p-2 -m-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-expanded={isExpanded}
-            aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
-          >
-            <div className="relative flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-bold text-primary shadow-sm ring-2 ring-white/50">
-              {initials ? (
-                <span aria-hidden="true" title={companyName || undefined}>
-                  {initials}
-                </span>
-              ) : (
-                <BuildingOffice2Icon
-                  aria-hidden="true"
-                  className="h-5 w-5 text-primary"
-                  title={companyName || t('dashboard.offerCard.industryUnknown')}
-                />
+        <div className="flex items-start gap-2 p-4 pt-5">
+          <div className="relative flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm shrink-0">
+            {initials ? (
+              <span aria-hidden="true" title={companyName || undefined}>
+                {initials}
+              </span>
+            ) : (
+              <BuildingOffice2Icon
+                aria-hidden="true"
+                className="h-4 w-4 text-primary"
+                title={companyName || t('dashboard.offerCard.industryUnknown')}
+              />
+            )}
+          </div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="flex items-start gap-2 mb-1.5">
+              <p className="truncate text-sm font-bold text-fg leading-tight flex-1 min-w-0" title={offer.title || undefined}>
+                {offer.title || '(névtelen)'}
+              </p>
+              <StatusBadge status={offer.status} className="flex-none shrink-0 mt-0.5" />
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
+              {companyName && (
+                <>
+                  <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
+                  <span className="truncate font-medium max-w-[140px]" title={companyName}>{companyName}</span>
+                </>
+              )}
+              {offer.created_at && (
+                <>
+                  <span className="text-fg-muted/50 shrink-0">•</span>
+                  <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
+                  <span className="whitespace-nowrap shrink-0">{formatDate(offer.created_at)}</span>
+                </>
+              )}
+              {offer.industry && (
+                <>
+                  <span className="text-fg-muted/50 shrink-0">•</span>
+                  <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
+                  <span className="truncate max-w-[120px]" title={offer.industry}>{offer.industry}</span>
+                </>
               )}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-1 min-w-0">
-                <p className="truncate text-base font-bold text-fg flex-1 min-w-0">
-                  {offer.title || '(névtelen)'}
-                </p>
-                <StatusBadge status={offer.status} className="flex-none shrink-0" />
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
-                {companyName && (
-                  <>
-                    <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                    <span className="truncate font-medium max-w-[120px]">{companyName}</span>
-                  </>
-                )}
-                {offer.created_at && (
-                  <>
-                    <span className="text-fg-muted/50 shrink-0">•</span>
-                    <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                    <span className="whitespace-nowrap shrink-0">{formatDate(offer.created_at)}</span>
-                  </>
-                )}
-                {offer.industry && (
-                  <>
-                    <span className="text-fg-muted/50 shrink-0">•</span>
-                    <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                    <span className="truncate max-w-[100px]">{offer.industry}</span>
-                  </>
-                )}
-              </div>
-            </div>
-            <ChevronDownIcon
-              className={`h-5 w-5 text-fg-muted transition-transform duration-200 flex-none ${
-                isExpanded ? 'rotate-180' : ''
-              }`}
-              aria-hidden="true"
-            />
-          </button>
-          <div className="flex items-center gap-1.5">
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
             {offer.pdf_url ? (
               <>
                 <a
@@ -191,6 +177,20 @@ export function OfferCard({
                 <TrashIcon aria-hidden="true" className="h-4 w-4" />
               )}
               <span className="sr-only">{deleteLabel}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={`${actionButtonClass} hover:bg-bg-muted`}
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
+            >
+              <ChevronDownIcon
+                className={`h-4 w-4 text-fg-muted transition-transform duration-200 ${
+                  isExpanded ? 'rotate-180' : ''
+                }`}
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
