@@ -1343,7 +1343,7 @@ Különös figyelmet fordít a következőkre:
           matchesExpected: verifyOffer.pdf_url === immediatePdfUrl,
         });
         
-        // Also verify it's queryable by checking if it appears in a list query
+        // Also verify it's queryable by checking if it appears in a list query (service role)
         const { data: listCheck, error: listError, count } = await sb
           .from('offers')
           .select('id, pdf_url', { count: 'exact' })
@@ -1354,12 +1354,61 @@ Különös figyelmet fordít a következőkre:
         if (listError) {
           log.warn('Failed to verify offer in list query', { error: listError });
         } else if (listCheck) {
-          log.info('Offer is queryable in list query', {
+          log.info('Offer is queryable in list query (service role)', {
             offerId: listCheck.id,
             pdfUrl: listCheck.pdf_url,
           });
         } else {
           log.error('Offer not found in list query - possible RLS issue', { offerId });
+        }
+        
+        // Also verify using authenticated user's context (simulate dashboard query)
+        // Create a client with the user's access token to test RLS
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        const accessToken = cookieStore.get('propono_at')?.value;
+        
+        if (accessToken) {
+          const { createClient } = await import('@supabase/supabase-js');
+          const { envServer } = await import('@/env.server');
+          const userClient = createClient(
+            envServer.NEXT_PUBLIC_SUPABASE_URL,
+            envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            {
+              auth: { persistSession: false, autoRefreshToken: false },
+              global: {
+                headers: {
+                  apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              },
+            },
+          );
+          
+          const { data: userListCheck, error: userListError } = await userClient
+            .from('offers')
+            .select('id, pdf_url')
+            .eq('user_id', user.id)
+            .eq('id', offerId)
+            .maybeSingle();
+          
+          if (userListError) {
+            log.error('Offer NOT queryable with authenticated user context - RLS issue!', {
+              offerId,
+              error: userListError,
+              errorMessage: userListError.message,
+              errorCode: userListError.code,
+            });
+          } else if (userListCheck) {
+            log.info('Offer is queryable with authenticated user context', {
+              offerId: userListCheck.id,
+              pdfUrl: userListCheck.pdf_url,
+            });
+          } else {
+            log.error('Offer not found with authenticated user context - RLS blocking!', { offerId });
+          }
+        } else {
+          log.warn('No access token found in cookies, skipping authenticated user context verification');
         }
       } else {
         log.error('Offer not found after PDF generation', { offerId });
