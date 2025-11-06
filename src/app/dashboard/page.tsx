@@ -145,7 +145,7 @@ function MetricCard({
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
                       </svg>
-                    ))}
+                    )}
                     {trendValue}
                   </span>
                 )}
@@ -163,7 +163,7 @@ function MetricCard({
                   </span>
                 </div>
               )}
-              {progressPercentage !== null && (
+              {progressPercentage !== null && progress && (
                 <div className="mt-4 space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-fg-muted">Használat</span>
@@ -1197,22 +1197,26 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.quota.label')}
                     value={quotaValue}
-                    helper={quotaHelper}
-                    progress={
-                      quotaSnapshot && quotaSnapshot.limit !== null
-                        ? {
+                    {...(quotaHelper ? { helper: quotaHelper } : {})}
+                    {...(quotaSnapshot && quotaSnapshot.limit !== null
+                      ? {
+                          progress: {
                             used: quotaSnapshot.used + quotaSnapshot.pending,
                             limit: quotaSnapshot.limit,
-                          }
-                        : undefined
-                    }
+                          },
+                        }
+                      : {})}
                     icon={<ChartBarIcon className="h-7 w-7" />}
                     color="info"
-                    quickAction={totalOffersCount === 0 ? {
-                      label: 'Új ajánlat',
-                      icon: <PlusIcon className="h-4 w-4" />,
-                      onClick: () => router.push('/new'),
-                    } : undefined}
+                    {...(totalOffersCount === 0
+                      ? {
+                          quickAction: {
+                            label: 'Új ajánlat',
+                            icon: <PlusIcon className="h-4 w-4" />,
+                            onClick: () => router.push('/new'),
+                          },
+                        }
+                      : {})}
                     isEmpty={totalOffersCount === 0}
                     emptyMessage="Hozz létre első ajánlatodat a kezdéshez"
                   />
@@ -1221,12 +1225,12 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.created.label')}
                     value={totalOffersCount.toLocaleString('hu-HU')}
-                    helper={metricsViewMode === 'detailed' ? totalHelper : undefined}
+                    {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
                     icon={<DocumentTextIcon className="h-7 w-7" />}
                     color="primary"
                     trend={stats.createdThisMonth > 0 ? 'up' : stats.createdThisMonth === 0 && stats.createdLastMonth > 0 ? 'down' : 'neutral'}
-                    trendValue={stats.createdThisMonth > 0 ? `+${stats.createdThisMonth}` : undefined}
-                    comparison={createdComparison}
+                    {...(stats.createdThisMonth > 0 ? { trendValue: `+${stats.createdThisMonth}` } : {})}
+                    {...(createdComparison ? { comparison: createdComparison } : {})}
                     onClick={() => handleMetricClick('all')}
                     quickAction={{
                       label: 'Új',
@@ -1271,7 +1275,7 @@ export default function DashboardPage() {
                     icon={<DocumentCheckIcon className="h-7 w-7" />}
                     color="success"
                     trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
-                    trendValue={acceptanceLabel !== '—' ? acceptanceLabel : undefined}
+                    {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
                     onClick={() => handleMetricClick('accepted')}
                     isEmpty={stats.accepted === 0}
                     emptyMessage="Még nincs elfogadott ajánlatod"
@@ -1297,7 +1301,7 @@ export default function DashboardPage() {
                     icon={<ChartBarIcon className="h-7 w-7" />}
                     color={stats.winRate !== null && stats.winRate > 50 ? 'success' : stats.winRate !== null && stats.winRate < 30 ? 'danger' : 'warning'}
                     trend={stats.winRate !== null && stats.winRate > 50 ? 'up' : stats.winRate !== null && stats.winRate < 30 ? 'down' : 'neutral'}
-                    trendValue={winRateLabel !== '—' ? winRateLabel : undefined}
+                    {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
                     isEmpty={stats.winRate === null}
                     emptyMessage="Nincs elég adat a számításhoz"
                   />
@@ -1531,7 +1535,7 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-fg">{emptyMessage}</h3>
               {noOffersLoaded ? (
                 <p className="text-sm leading-relaxed text-fg-muted">
-                  {t('dashboard.emptyStates.getStarted')}
+                  Hozz létre első ajánlatodat, hogy elkezdhesd használni a Proponót.
                 </p>
               ) : (
                 <p className="text-sm leading-relaxed text-fg-muted">
