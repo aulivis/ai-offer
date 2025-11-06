@@ -7,6 +7,15 @@ import FAQ from '@/components/landing/FAQ';
 import TrustBadges from '@/components/landing/TrustBadges';
 import FeatureCard from '@/components/landing/FeatureCard';
 import StatCard from '@/components/landing/StatCard';
+import CustomerLogos from '@/components/landing/CustomerLogos';
+import SocialProofWidget from '@/components/landing/SocialProofWidget';
+import ComparisonTable from '@/components/landing/ComparisonTable';
+import CaseStudyCard from '@/components/landing/CaseStudyCard';
+import ROICalculator from '@/components/landing/ROICalculator';
+import GuaranteeBadge from '@/components/landing/GuaranteeBadge';
+import ProductScreenshot from '@/components/landing/ProductScreenshot';
+import ProductGif from '@/components/landing/ProductGif';
+import { LandingPageClient } from '@/components/landing/LandingPageClient';
 import { t } from '@/copy';
 
 export default function Home() {
@@ -266,6 +275,48 @@ export default function Home() {
     },
   ];
 
+  const customerLogos: Array<{ src: string; alt: string }> = [
+    // Add actual logo paths when available
+    // { src: '/images/logos/company1.svg', alt: 'Company 1' },
+  ];
+
+  const caseStudies = [
+    {
+      company: 'Studio Fluo',
+      industry: 'Kreatív ügynökség',
+      challenge:
+        'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
+      solution:
+        'A Propono bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, a drag & drop felület lehetővé tette a valós idejű együttműködést, és a márkázott PDF-ek automatikusan készültek.',
+      results: [
+        { metric: 'Időmegtakarítás', value: '70%' },
+        { metric: 'Ajánlatok/hét', value: '25+' },
+        { metric: 'Elfogadási arány', value: '+35%' },
+      ],
+      quote:
+        'A Propono megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
+      author: 'Kiss Júlia',
+      role: 'Ügynökségvezető',
+    },
+    {
+      company: 'Tech Solutions Kft.',
+      industry: 'IT szolgáltatás',
+      challenge:
+        'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
+      solution:
+        'A Propono moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
+      results: [
+        { metric: 'Ajánlatkészítési idő', value: '-65%' },
+        { metric: 'Sablonok száma', value: '50+' },
+        { metric: 'Ügyfél elégedettség', value: '98%' },
+      ],
+      quote:
+        'Az AI-alapú szöveg generálás és a moduláris rendszer lehetővé tette, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire.',
+      author: 'Nagy Péter',
+      role: 'Üzletfejlesztési vezető',
+    },
+  ];
+
   return (
     <main id="main" className="flex flex-col gap-20 pb-24 md:gap-28">
       {/* HERO SECTION - Enhanced with product demo area */}
@@ -409,7 +460,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRODUCT DEMO SECTION */}
+      {/* PRODUCT DEMO SECTION - Enhanced with screenshots/GIFs */}
       <section className="mx-auto w-full max-w-6xl px-6">
         <Card className="overflow-hidden p-8 md:p-12">
           <div className="grid gap-12 md:grid-cols-2 md:items-center">
@@ -464,6 +515,25 @@ export default function Home() {
             </div>
           </div>
         </Card>
+
+        {/* Product Screenshots/GIFs Grid */}
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <ProductGif
+            alt="AI-alapú szöveg generálás animáció"
+            caption="AI-alapú szöveg generálás"
+            // src="/images/gifs/ai-generation.gif" // Add when available
+          />
+          <ProductGif
+            alt="Drag & drop szerkesztés animáció"
+            caption="Drag & drop szerkesztés"
+            // src="/images/gifs/drag-drop.gif" // Add when available
+          />
+          <ProductScreenshot
+            alt="Márkázott PDF előnézet"
+            caption="Márkázott PDF export"
+            // src="/images/screenshots/branded-pdf.png" // Add when available
+          />
+        </div>
       </section>
 
       {/* HOW IT WORKS - Enhanced */}
@@ -535,6 +605,11 @@ export default function Home() {
           <StatCard value="24/7" label="Támogatás" />
         </div>
 
+        {/* Customer Logos */}
+        <div className="mt-12">
+          <CustomerLogos logos={customerLogos} />
+        </div>
+
         {/* Testimonials */}
         <div className="mt-16 grid gap-8 md:grid-cols-3">
           {testimonials.map((testimonial, index) => (
@@ -547,6 +622,77 @@ export default function Home() {
               rating={testimonial.rating}
             />
           ))}
+        </div>
+
+        {/* Social Proof Widget */}
+        <div className="mt-12">
+          <SocialProofWidget />
+        </div>
+      </section>
+
+      {/* COMPARISON TABLE SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Összehasonlítás
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Propono vs. versenytársak
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            Nézd meg, mi teszi a Propono-t egyedivé az ajánlatkészítés terén
+          </p>
+        </div>
+        <div className="mt-12">
+          <ComparisonTable />
+        </div>
+      </section>
+
+      {/* CASE STUDIES SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Esettanulmányok
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Valós eredmények valós ügyfelektől
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat
+          </p>
+        </div>
+        <div className="mt-12 grid gap-8 md:grid-cols-2">
+          {caseStudies.map((study, index) => (
+            <CaseStudyCard
+              key={index}
+              company={study.company}
+              industry={study.industry}
+              challenge={study.challenge}
+              solution={study.solution}
+              results={study.results}
+              quote={study.quote}
+              author={study.author}
+              role={study.role}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ROI CALCULATOR SECTION */}
+      <section className="mx-auto w-full max-w-4xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Számológép
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Mennyit takaríthatnál meg?
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            Számítsd ki, mennyi időt és pénzt takaríthatnál meg a Propono-val
+          </p>
+        </div>
+        <div className="mt-12">
+          <ROICalculator />
         </div>
       </section>
 
@@ -603,7 +749,13 @@ export default function Home() {
         </Card>
       </section>
 
+      {/* GUARANTEE BADGE SECTION */}
+      <section className="mx-auto w-full max-w-4xl px-6">
+        <GuaranteeBadge />
+      </section>
+
       <footer aria-label={t('landing.footerAria')} className="sr-only" />
+      <LandingPageClient />
     </main>
   );
 }
