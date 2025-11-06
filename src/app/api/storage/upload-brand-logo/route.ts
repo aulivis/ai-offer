@@ -245,15 +245,54 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         contentType: normalizedImage.contentType,
       });
     if (uploadError) {
-      log.error('Logo upload failed', { error: uploadError, path, userId });
+      // Serialize Supabase error properly for logging
+      const errorDetails = {
+        message: uploadError.message || 'Unknown error',
+        statusCode: uploadError.statusCode || 'unknown',
+        error: uploadError.error || 'unknown',
+        name: uploadError.name || 'StorageError',
+      };
+      
+      log.error('Logo upload failed', uploadError instanceof Error ? uploadError : new Error(uploadError.message || 'Storage upload failed'), {
+        path,
+        userId,
+        errorDetails,
+        contentType: normalizedImage.contentType,
+        fileSize: normalizedImage.buffer.length,
+      });
+      
       // Provide more specific error messages
-      if (uploadError.message?.toLowerCase().includes('not found') || 
-          uploadError.message?.toLowerCase().includes('bucket')) {
+      const errorMessage = uploadError.message?.toLowerCase() || '';
+      if (errorMessage.includes('not found') || 
+          errorMessage.includes('bucket') ||
+          errorMessage.includes('does not exist')) {
         return NextResponse.json(
           { error: 'A tárhely nem elérhető. Kérjük, próbáld újra később.' },
           { status: 503 },
         );
       }
+      
+      // Check for permission errors
+      if (errorMessage.includes('permission') || 
+          errorMessage.includes('unauthorized') ||
+          errorMessage.includes('forbidden') ||
+          uploadError.statusCode === 403) {
+        return NextResponse.json(
+          { error: 'Nincs jogosultság a fájl feltöltéséhez. Kérjük, lépj kapcsolatba az ügyfélszolgálattal.' },
+          { status: 403 },
+        );
+      }
+      
+      // Check for file size errors
+      if (errorMessage.includes('too large') || 
+          errorMessage.includes('file size') ||
+          uploadError.statusCode === 413) {
+        return NextResponse.json(
+          { error: 'A fájl mérete túl nagy. Maximum 4 MB.' },
+          { status: 413 },
+        );
+      }
+      
       return NextResponse.json(
         { error: 'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.' },
         { status: 500 },
@@ -278,9 +317,35 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       signedUrl: signedData?.signedUrl ?? null,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
-    log.error('Brand logo upload failed', error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Log full error details for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    log.error('Brand logo upload failed', error instanceof Error ? error : new Error(String(error)), {
+      errorMessage,
+      errorStack: process.env.NODE_ENV === 'production' ? undefined : errorStack,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+    });
+    
+    // Check for specific error types
+    if (error instanceof Error) {
+      // Sharp/image processing errors
+      if (error.message.includes('sharp') || error.message.includes('image')) {
+        return NextResponse.json(
+          { error: 'Nem sikerült feldolgozni a képet. Kérjük, ellenőrizd, hogy érvényes képfájl-e.' },
+          { status: 415 },
+        );
+      }
+      
+      // Buffer/array buffer errors
+      if (error.message.includes('buffer') || error.message.includes('ArrayBuffer')) {
+        return NextResponse.json(
+          { error: 'Nem sikerült beolvasni a fájlt. Kérjük, próbáld újra.' },
+          { status: 400 },
+        );
+      }
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
