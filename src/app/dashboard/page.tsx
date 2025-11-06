@@ -114,13 +114,13 @@ function MetricCard({
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2.5 sm:mb-3">
+          <div className="flex items-start gap-2 sm:gap-3 mb-2.5 sm:mb-3">
             {icon && (
-              <div className={`flex-shrink-0 ${iconColors[color]} scale-90 sm:scale-100`}>
+              <div className={`flex-shrink-0 ${iconColors[color]} scale-90 sm:scale-100 mt-0.5`}>
                 {icon}
               </div>
             )}
-            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted truncate">{label}</p>
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted leading-tight break-words min-w-0 flex-1">{label}</p>
           </div>
           {isEmptyState && emptyMessage ? (
             <div className="mt-2.5 sm:mt-3">
