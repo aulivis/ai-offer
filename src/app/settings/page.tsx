@@ -1319,7 +1319,6 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-                </div>
                   {profile.brand_logo_url && (
                     <a
                       href={profile.brand_logo_url}
