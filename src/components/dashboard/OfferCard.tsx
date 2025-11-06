@@ -79,110 +79,107 @@ export function OfferCard({
   return (
     <Card className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-200 hover:shadow-md">
       {/* Compact Header - Always Visible */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-3 p-4 text-left transition-colors hover:bg-bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        aria-expanded={isExpanded}
-        aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
-      >
-        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-semibold text-primary">
-          {initials ? (
-            <span aria-hidden="true" title={companyName || undefined}>
-              {initials}
-            </span>
-          ) : (
-            <BuildingOffice2Icon
-              aria-hidden="true"
-              className="h-5 w-5 text-primary"
-              title={companyName || t('dashboard.offerCard.industryUnknown')}
-            />
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="truncate text-base font-semibold text-fg">
-              {offer.title || '(névtelen)'}
-            </p>
-            <StatusBadge status={offer.status} className="flex-none" />
-          </div>
-          <div className="mt-1 flex items-center gap-2 text-xs text-fg-muted">
-            <UserCircleIcon aria-hidden="true" className="h-4 w-4 flex-none" />
-            <span className="truncate">{companyName || '—'}</span>
-            <span className="text-fg-muted/70">•</span>
-            <span>{formatDate(offer.created_at)}</span>
-            {offer.industry && (
-              <>
-                <span className="text-fg-muted/70">•</span>
-                <span>{offer.industry}</span>
-              </>
+      <div className="flex items-center gap-3 p-3">
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-expanded={isExpanded}
+          aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
+        >
+          <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-semibold text-primary">
+            {initials ? (
+              <span aria-hidden="true" title={companyName || undefined}>
+                {initials}
+              </span>
+            ) : (
+              <BuildingOffice2Icon
+                aria-hidden="true"
+                className="h-4 w-4 text-primary"
+                title={companyName || t('dashboard.offerCard.industryUnknown')}
+              />
             )}
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-            {offer.pdf_url ? (
-              <>
-                <a
-                  className={actionButtonClass}
-                  href={offer.pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={openLabel}
-                  title={openLabel}
-                >
-                  <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
-                  <span className="sr-only">{openLabel}</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => onDownload(offer)}
-                  disabled={isBusy}
-                  className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
-                  aria-label={downloadLabel}
-                  title={downloadLabel}
-                >
-                  {isDownloading ? (
-                    <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">{downloadLabel}</span>
-                </button>
-              </>
-            ) : null}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(offer);
-              }}
-              disabled={isBusy}
-              className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
-              aria-label={deleteLabel}
-              title={deleteLabel}
-            >
-              {isDeleting ? (
-                <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
-              ) : (
-                <TrashIcon aria-hidden="true" className="h-4 w-4 text-rose-500" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm font-semibold text-fg">
+                {offer.title || '(névtelen)'}
+              </p>
+              <StatusBadge status={offer.status} className="flex-none" />
+            </div>
+            <div className="mt-0.5 flex items-center gap-1.5 text-xs text-fg-muted">
+              <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+              <span className="truncate">{companyName || '—'}</span>
+              <span className="text-fg-muted/70">•</span>
+              <span>{formatDate(offer.created_at)}</span>
+              {offer.industry && (
+                <>
+                  <span className="text-fg-muted/70">•</span>
+                  <span>{offer.industry}</span>
+                </>
               )}
-              <span className="sr-only">{deleteLabel}</span>
-            </button>
+            </div>
           </div>
           <ChevronDownIcon
-            className={`h-5 w-5 text-fg-muted transition-transform duration-200 ${
+            className={`h-4 w-4 text-fg-muted transition-transform duration-200 flex-none ${
               isExpanded ? 'rotate-180' : ''
             }`}
             aria-hidden="true"
           />
+        </button>
+        <div className="flex items-center gap-1">
+          {offer.pdf_url ? (
+            <>
+              <a
+                className={actionButtonClass}
+                href={offer.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={openLabel}
+                title={openLabel}
+              >
+                <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
+                <span className="sr-only">{openLabel}</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => onDownload(offer)}
+                disabled={isBusy}
+                className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+                aria-label={downloadLabel}
+                title={downloadLabel}
+              >
+                {isDownloading ? (
+                  <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
+                )}
+                <span className="sr-only">{downloadLabel}</span>
+              </button>
+            </>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => onDelete(offer)}
+            disabled={isBusy}
+            className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+            aria-label={deleteLabel}
+            title={deleteLabel}
+          >
+            {isDeleting ? (
+              <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+            ) : (
+              <TrashIcon aria-hidden="true" className="h-4 w-4 text-rose-500" />
+            )}
+            <span className="sr-only">{deleteLabel}</span>
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Expanded Content - Collapsible */}
       {isExpanded && (
-        <div className="border-t border-border/60 px-4 py-5">
-          <div className="flex flex-col gap-5">
+        <div className="border-t border-border/60 px-3 py-4">
+          <div className="flex flex-col gap-4">
 
             <dl className="grid gap-3 sm:grid-cols-2">
               <MetaItem
@@ -198,7 +195,7 @@ export function OfferCard({
             </dl>
 
             <section
-              className={`flex flex-col gap-4 rounded-2xl border p-5 shadow-inner ${statusTheme.container}`}
+              className={`flex flex-col gap-3 rounded-xl border p-4 shadow-inner ${statusTheme.container}`}
             >
               <div
                 className={`flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] ${statusTheme.accentText}`}

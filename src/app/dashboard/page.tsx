@@ -1260,6 +1260,10 @@ export default function DashboardPage() {
                     isUpdating={updatingId === o.id}
                     isDownloading={downloadingId === o.id}
                     isDeleting={deletingId === o.id}
+                    onMarkSent={(offer, date) => markSent(offer, date)}
+                    onMarkDecision={(offer, decision, date) => markDecision(offer, decision, date)}
+                    onRevertToSent={(offer) => revertToSent(offer)}
+                    onRevertToDraft={(offer) => revertToDraft(offer)}
                     onDelete={(offer) => setOfferToDelete(offer)}
                     onDownload={(offer) => handleDownloadPdf(offer)}
                   />

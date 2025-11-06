@@ -823,7 +823,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sticky Sidebar Navigation */}
         <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
+          <div className="sticky top-24 space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
               Navigáció
             </h3>
@@ -1228,123 +1228,90 @@ export default function SettingsPage() {
             </CardHeader>
           }
         >
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {availableTemplates.map((template) => {
-              // Map template ID to legacy ID for compatibility
-              const legacyId = template.id === 'free.base' ? 'modern' :
-                              template.id === 'premium.elegant' ? 'premium-banner' :
-                              template.id === 'premium.modern' ? 'premium-banner' :
-                              template.id === 'pro.nordic' ? 'pro.nordic' :
-                              template.id;
-              const isSelected = selectedTemplateId === legacyId;
+              // Proper mapping: use the template.id directly, not legacy IDs
+              const templateId = template.id as OfferTemplateId;
+              
+              // Check if this template is available for the current plan
+              const templateForPlan = enforceTemplateForPlan(templateId, plan);
+              const isSelected = selectedTemplateId === templateForPlan || selectedTemplateId === templateId;
               const requiresPro = template.tier === 'premium';
               const requiresUpgrade = requiresPro && !canUseProTemplates;
-              const previewVariant = template.tier === 'premium' ? 'premium' : 'modern';
-              const templateLabel = template.label;
-              const templatePreview = template.preview;
-              const templateDescription = template.description;
-              const templateHighlight = template.marketingHighlight;
+              
+              const handleSelect = () => {
+                if (requiresUpgrade) {
+                  openPlanUpgradeDialog({
+                    description: t('app.planUpgradeModal.reasons.proTemplates'),
+                  });
+                  return;
+                }
+                // Save the actual template ID, enforceTemplateForPlan will handle plan restrictions
+                const finalId = enforceTemplateForPlan(templateId, plan);
+                setProfile((prev) => ({ ...prev, offer_template: finalId }));
+              };
               
               return (
-                <div
+                <button
                   key={template.id}
-                  className={`group relative flex h-full flex-col gap-3 rounded-2xl border-2 p-5 transition-all ${
+                  type="button"
+                  disabled={requiresUpgrade}
+                  onClick={handleSelect}
+                  className={`group relative flex h-full flex-col gap-3 rounded-xl border-2 p-4 text-left transition-all ${
                     isSelected
-                      ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
-                      : 'border-border bg-white hover:border-primary/50 hover:shadow-md'
+                      ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20'
+                      : 'border-border bg-white hover:border-primary/50 hover:shadow-sm'
                   } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-                  onClick={() => {
-                    if (requiresUpgrade) {
-                      openPlanUpgradeDialog({
-                        description: t('app.planUpgradeModal.reasons.proTemplates'),
-                      });
-                      return;
-                    }
-                    setProfile((prev) => ({ ...prev, offer_template: legacyId as OfferTemplateId }));
-                  }}
-                  role={requiresUpgrade ? undefined : 'button'}
-                  tabIndex={requiresUpgrade ? -1 : 0}
-                  onKeyDown={(e) => {
-                    if (!requiresUpgrade && (e.key === 'Enter' || e.key === ' ')) {
-                      e.preventDefault();
-                      setProfile((prev) => ({ ...prev, offer_template: legacyId as OfferTemplateId }));
-                    }
-                  }}
                 >
-                  {/* Preview Image */}
-                  {templatePreview ? (
-                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-50">
-                      <a
-                        href={templatePreview}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="block h-32 w-full"
-                      >
+                  {/* Preview */}
+                  <div className="relative overflow-hidden rounded-lg border border-border/60 bg-slate-50">
+                    {template.preview ? (
+                      <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={templatePreview}
-                          alt={`${templateLabel} előnézet`}
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          src={template.preview}
+                          alt={`${template.label} előnézet`}
+                          className="h-24 w-full object-cover transition-transform group-hover:scale-105"
                         />
-                      </a>
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg">
-                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="relative overflow-hidden rounded-xl border border-border bg-slate-50">
-                      <div className="h-32 w-full">
-                        {renderTemplatePreview(previewVariant)}
+                      </>
+                    ) : (
+                      <div className="h-24 w-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                        <span className="text-xs font-medium text-slate-400">{template.label}</span>
                       </div>
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg">
-                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-md">
+                        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Template Info */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold text-slate-900">{templateLabel}</h3>
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <h3 className="text-sm font-semibold text-slate-900">{template.label}</h3>
                       {requiresPro && (
                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                           {t('settings.templates.proBadge')}
                         </span>
                       )}
-                      {isSelected && (
-                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                          {t('settings.templates.activeBadge')}
-                        </span>
-                      )}
                     </div>
-                    {templateDescription && (
-                      <p className="text-xs leading-relaxed text-slate-600">{templateDescription}</p>
-                    )}
-                    {templateHighlight && (
-                      <p className="text-xs font-medium text-primary">{templateHighlight}</p>
+                    {template.description && (
+                      <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">{template.description}</p>
                     )}
                   </div>
                   
                   {requiresUpgrade && (
-                    <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-amber-600">
-                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
+                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
                       {t('settings.templates.proOnly')}
                     </div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>

@@ -222,6 +222,11 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       .from(BUCKET_ID)
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
     
+    if (signedError) {
+      log.warn('Failed to generate signed URL', { error: signedError, path });
+      // Still return the path even if signed URL generation fails
+    }
+    
     // Return both path (for storage) and signed URL (for immediate use)
     // The path should be stored in brand_logo_path column
     // The signed URL is for immediate UI preview
