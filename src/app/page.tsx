@@ -1,21 +1,102 @@
 import Link from 'next/link';
 import HighlightUnderline from '@/components/HighlightUnderline';
 import { Card } from '@/components/ui/Card';
+import VideoPlayer from '@/components/landing/VideoPlayer';
+import TestimonialCard from '@/components/landing/TestimonialCard';
+import FAQ from '@/components/landing/FAQ';
+import TrustBadges from '@/components/landing/TrustBadges';
+import FeatureCard from '@/components/landing/FeatureCard';
+import StatCard from '@/components/landing/StatCard';
 import { t } from '@/copy';
 
 export default function Home() {
+  // Problem-Agitate-Solve section data
+  const painPoints = [
+    {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      ),
+      text: 'Órákba telik egy professzionális ajánlat elkészítése',
+    },
+    {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      ),
+      text: 'Inkonzisztens dizájn és márkaidentitás',
+    },
+    {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      ),
+      text: 'Nehézkes együttműködés a csapat tagjai között',
+    },
+  ];
+
+  // Enhanced features with icons
   const features = [
     {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+          />
+        </svg>
+      ),
       title: 'Egyetlen esztétikus felület',
       description:
         'A Propono sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
     },
     {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+          />
+        </svg>
+      ),
       title: 'AI, ami érti a briefet',
       description:
         'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, árkalkulációt és moduláris blokkokat.',
+      highlight: true,
     },
     {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+          />
+        </svg>
+      ),
       title: 'Ügyfélközpontú megosztás',
       description:
         'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
@@ -24,255 +105,503 @@ export default function Home() {
 
   const steps = [
     {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      ),
       title: 'Brief & mood',
       description:
         'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
     },
     {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"
+          />
+        </svg>
+      ),
       title: 'Moduláris blokkok',
       description:
         'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
     },
     {
+      icon: (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      ),
       title: 'Megosztás & mérés',
       description:
         'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.',
     },
   ];
 
-  const spotlight = [
-    'Szabadszavas promptok iparági sablonokkal',
-    'Rugalmas rács, ahol minden komponens mozgatható',
-    'Automatikus költség-blokkok és összegek',
+  const testimonials = [
+    {
+      quote:
+        'A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.',
+      author: 'Kiss Júlia',
+      role: 'Ügynökségvezető',
+      company: 'Studio Fluo',
+      rating: 5,
+    },
+    {
+      quote:
+        'Az AI segítségével 70%-kal gyorsabban készítünk ajánlatokat, és mégis profibbnak tűnnek. Az ügyfeleink is észrevették a különbséget.',
+      author: 'Nagy Péter',
+      role: 'Üzletfejlesztési vezető',
+      company: 'Tech Solutions Kft.',
+      rating: 5,
+    },
+    {
+      quote:
+        'A márkázott PDF-ek automatikus generálása óriási időmegtakarítás. Most már nem kell minden alkalommal újra formázni a dokumentumokat.',
+      author: 'Szabó Anna',
+      role: 'Projektmenedzser',
+      company: 'Creative Agency',
+      rating: 5,
+    },
+  ];
+
+  const faqItems = [
+    {
+      question: 'Mennyi időbe telik megtanulni a Propono használatát?',
+      answer:
+        'A Propono intuitív felülettel rendelkezik, amelyet percek alatt elsajátíthatsz. Az első ajánlatodat 10 perc alatt elkészítheted, és az AI segítségével még gyorsabban haladsz. Részletes útmutatókat és videókat is biztosítunk.',
+    },
+    {
+      question: 'Milyen formátumokban exportálhatom az ajánlatokat?',
+      answer:
+        'Az ajánlatokat márkázott PDF formátumban exportálhatod, amely automatikusan tartalmazza a logód, színeidet és betűtípusaidat. A PDF-ek nyomtatható minőségűek és minden eszközön tökéletesen megjelennek.',
+    },
+    {
+      question: 'Működik offline is?',
+      answer:
+        'A Propono web-alapú alkalmazás, amely internetkapcsolatot igényel az AI funkciókhoz és a szinkronizációhoz. Azonban az elkészített ajánlatokat PDF-ként letöltheted, amelyeket offline is megoszthatsz.',
+    },
+    {
+      question: 'Biztonságosak az adataim?',
+      answer:
+        'Igen, az adatvédelem prioritásunk. Minden adatot titkosított kapcsolaton keresztül tárolunk, és GDPR-kompatibilis adatkezelést alkalmazunk. Az ajánlatok csak az általad megosztott személyek számára érhetők el.',
+    },
+    {
+      question: 'Van ingyenes próbaverzió?',
+      answer:
+        'Igen! Ingyenesen regisztrálhatsz és azonnal elkezdhetsz ajánlatokat készíteni. Az ingyenes csomag korlátozott funkciókkal rendelkezik, de tökéletes a kipróbáláshoz. Nincs bankkártya adat megadása szükséges.',
+    },
+    {
+      question: 'Milyen támogatást kapok?',
+      answer:
+        '24/7 email támogatást nyújtunk, valamint részletes dokumentációt és videó útmutatókat. A Pro csomag előfizetőink prioritásos támogatást kapnak, és hozzáférnek a közösségi fórumhoz is.',
+    },
+  ];
+
+  const trustBadges = [
+    {
+      icon: (
+        <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
+        </svg>
+      ),
+      text: 'GDPR-kompatibilis',
+    },
+    {
+      icon: (
+        <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+          />
+        </svg>
+      ),
+      text: 'Biztonságos adattárolás',
+    },
+    {
+      icon: (
+        <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      ),
+      text: '24/7 támogatás',
+    },
+    {
+      icon: (
+        <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      ),
+      text: 'Ingyenes próba',
+    },
   ];
 
   return (
-    <main id="main" className="flex flex-col gap-28 pb-24 md:gap-32">
-      {/* HERO */}
-      <section className="mx-auto grid max-w-6xl gap-16 px-6 py-24 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center">
-        <div className="flex flex-col gap-8 lg:max-w-none">
-          <span className="inline-flex w-fit items-center rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary animate-fade-in">
-            Ajánlatkészítés újragondolva
-          </span>
-
-          <h1 className="relative isolate group max-w-[14ch] text-5xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-6xl">
-            Készíts lenyűgöző <HighlightUnderline>ajánlatokat</HighlightUnderline>.
-            <br />
-            <span className="text-primary">Villámgyorsan.</span>
-          </h1>
-
-          <p className="max-w-[52ch] text-base leading-[1.6] text-fg-muted md:text-lg">
-            A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen
-            személyre szabva, hogy te a növekedésre koncentrálhass.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-4">
-            <Link
-              href="/new"
-              className="group inline-flex items-center justify-center rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
-            >
-              <span>Próbáld ki ingyen!</span>
-              <svg
-                className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+    <main id="main" className="flex flex-col gap-20 pb-24 md:gap-28">
+      {/* HERO SECTION - Enhanced with product demo area */}
+      <section className="relative mx-auto w-full max-w-7xl px-6 pt-12 md:pt-20">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+          <div className="flex flex-col gap-6">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-flex items-center justify-center rounded-full border border-border px-7 py-3 text-sm font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
-            >
-              Nézd meg a bemutatót
-            </Link>
-          </div>
-        </div>
-
-        <div className="relative flex flex-col gap-6 rounded-3xl border border-border/70 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 shadow-card backdrop-blur-sm lg:ml-auto">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,229,176,0.08),transparent_70%)] rounded-3xl" />
-          <div className="relative z-10">
-            <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-              Mit kapsz azonnal?
+              Ajánlatkészítés újragondolva
             </span>
-            <p className="mt-4 text-base leading-relaxed text-fg-muted">
-              A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól
-              kezdve prémium élményt kap.
+
+            <h1 className="text-4xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-5xl lg:text-6xl">
+              Készíts lenyűgöző <HighlightUnderline>ajánlatokat</HighlightUnderline>.
+              <br />
+              <span className="text-primary">Villámgyorsan.</span>
+            </h1>
+
+            <p className="max-w-[52ch] text-lg leading-[1.6] text-fg-muted md:text-xl">
+              A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen
+              személyre szabva, hogy te a növekedésre koncentrálhass.
             </p>
-            <ul className="mt-6 space-y-4 text-base text-fg">
-              {spotlight.map((item, index) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 transition-opacity duration-300"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <span
-                    className="mt-2 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-primary animate-pulse"
-                    aria-hidden="true"
-                  />
-                  <span className="text-fg-muted">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-      {/* BENEFITS */}
-      <section className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-3">
-        {features.map((feature) => (
-          <Card
-            key={feature.title}
-            className="group relative overflow-hidden p-8 transition duration-200 ease-out hover:-translate-y-1 hover:border-primary/40 hover:shadow-pop"
-          >
-            <div className="absolute -top-24 right-0 h-40 w-40 rounded-full bg-accent/20 blur-3xl transition duration-200 ease-out group-hover:scale-125" />
-            <h3 className="text-xl font-semibold text-fg">{feature.title}</h3>
-            <p className="mt-4 text-base leading-relaxed text-fg-muted">{feature.description}</p>
-          </Card>
-        ))}
-      </section>
 
-      {/* HOW IT WORKS */}
-      <div className="mx-auto w-full max-w-6xl px-6">
-        <Card as="section" className="grid gap-12 p-12 md:gap-14 lg:grid-cols-[0.55fr_1fr]">
-          <div className="space-y-7">
-            <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-              Folyamat vizuálisan
-            </span>
-            <h2 className="text-3xl font-semibold text-fg">
-              Három lépés, ahol a csapatod együtt dolgozik
-            </h2>
-            <p className="text-base leading-relaxed text-fg-muted">
-              A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz,
-              és a háttérben az AI mindig egységes arculatot tart.
-            </p>
-          </div>
-
-          <ol className="relative space-y-5 border-l border-border/60 pl-6">
-            {steps.map((step, index) => (
-              <Card as="li" key={step.title} className="relative space-y-2 bg-bg p-5">
-                <span className="absolute -left-[38px] grid h-8 w-8 place-items-center rounded-full bg-primary/10 font-mono text-xs text-primary">
-                  {index + 1}
-                </span>
-                <p className="text-base font-semibold">{step.title}</p>
-                <p className="text-base leading-relaxed text-fg-muted">{step.description}</p>
-              </Card>
-            ))}
-          </ol>
-        </Card>
-      </div>
-
-      {/* QUOTE + FEATURE GRID */}
-      <section className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-[1fr_0.55fr]">
-        <Card className="p-10">
-          <h3 className="text-2xl font-semibold text-fg">
-            Márkázott PDF, ami úgy néz ki, mintha egy design stúdió készítette volna
-          </h3>
-          <p className="mt-5 text-base leading-relaxed text-fg-muted">
-            Feltöltött logó, betűtípus és színkód – mind bekerül az ajánlat minden oldalára. Az AI
-            segít az összegzésekben, de a vizuális layout a te irányításod alatt marad.
-          </p>
-          <div className="mt-8 grid gap-4 text-base md:grid-cols-2">
-            <Card className="p-5 bg-bg shadow-none">
-              <p className="font-semibold">Dinamikus komponensek</p>
-              <p className="mt-1 text-fg-muted">
-                Drag & drop blokkok, reszponzív rács a Penpot logikájával.
-              </p>
-            </Card>
-            <Card className="p-5 bg-bg shadow-none">
-              <p className="font-semibold">Átlátható státuszok</p>
-              <p className="mt-1 text-fg-muted">
-                Megnyitási, elfogadási és komment történet – mind visszamérhető.
-              </p>
-            </Card>
-          </div>
-        </Card>
-
-        <Card className="flex flex-col justify-between gap-8 border border-border/60 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 p-8 text-base shadow-pop">
-          <p className="text-lg font-semibold text-fg">
-            „A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a
-            térben dolgozik designer, sales és vezető."
-          </p>
-          <div className="space-y-1 text-xs font-semibold uppercase tracking-[0.32em] text-fg-muted">
-            <p>Kiss Júlia</p>
-            <p>Ügynökségvezető • Studio Fluo</p>
-          </div>
-        </Card>
-      </section>
-
-      {/* SOCIAL PROOF */}
-      <section className="mx-auto w-full max-w-6xl px-6">
-        <Card as="section" className="p-12 text-center">
-          <div className="space-y-6">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                Megbízhatóság
-              </span>
-              <h2 className="mt-4 text-3xl font-semibold text-fg">
-                Csatlakozz a Propono közösséghez
-              </h2>
-              <p className="mt-2 text-base text-fg-muted">
-                Több mint 500+ vállalat használja már a Propono-t az ajánlatkészítéshez
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-8 pt-8 md:grid-cols-4">
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-primary">500+</div>
-                <div className="text-sm text-fg-muted">Aktív felhasználó</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-primary">10K+</div>
-                <div className="text-sm text-fg-muted">Létrehozott ajánlat</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-primary">98%</div>
-                <div className="text-sm text-fg-muted">Elégedettségi arány</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-primary">24/7</div>
-                <div className="text-sm text-fg-muted">Támogatás</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </section>
-
-      {/* CTA STRIP */}
-      <div className="mx-auto w-full max-w-6xl px-6">
-        <Card
-          as="section"
-          className="overflow-hidden border border-primary/40 bg-gradient-to-r from-primary/12 via-transparent to-accent/12 p-12 shadow-pop"
-        >
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl space-y-4">
-              <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                Ajánlatkészítés újrafogalmazva
-              </span>
-              <h2 className="text-3xl font-semibold text-fg">
-                Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
-              </h2>
-              <p className="text-base leading-relaxed text-fg-muted">
-                Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi
-                ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/new"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-7 py-3 text-sm font-semibold text-primary-ink transition duration-200 ease-out hover:brightness-110"
+                className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
               >
-                Indítsd el ingyen
+                <span>Próbáld ki ingyen!</span>
+                <svg
+                  className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link
+                href="/demo"
+                className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
+              >
+                <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Nézd meg a bemutatót
+              </Link>
+            </div>
+
+            {/* Trust badges in hero */}
+            <TrustBadges badges={trustBadges} className="mt-4" />
+          </div>
+
+          {/* Product Demo Area */}
+          <div className="relative lg:order-last">
+            <VideoPlayer
+              title="Propono Product Demo"
+              className="w-full"
+              // Add videoUrl and thumbnailUrl props when available
+            />
+            {/* Decorative elements */}
+            <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
+          </div>
+        </div>
+      </section>
+
+      {/* PROBLEM-AGITATE-SOLVE SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            A probléma
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Túl sok időt töltesz az ajánlatkészítéssel?
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            A hagyományos ajánlatkészítés lassú, hibára hajlamos és nem skálázható. Minden projektnél
+            újra kell kezdened a nulláról.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {painPoints.map((point, index) => (
+            <Card
+              key={index}
+              className="flex items-start gap-4 p-6 transition-all duration-200 hover:border-primary/40"
+            >
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                {point.icon}
+              </div>
+              <p className="text-base font-medium text-fg">{point.text}</p>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-12 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 md:p-12">
+          <div className="mx-auto max-w-3xl text-center">
+            <h3 className="text-2xl font-semibold text-fg md:text-3xl">
+              A megoldás: Propono AI-alapú ajánlatkészítő
+            </h3>
+            <p className="mt-4 text-lg text-fg-muted">
+              Automatizáld az ajánlatkészítést, spórolj órákat, és növeld az üzleti eredményeidet.
+              Mindezt egyetlen, könnyen használható eszközzel.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ENHANCED FEATURES SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Funkciók
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Minden, amire szükséged van egy helyen
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            A Propono minden eszközt biztosít, amire szükséged van a professzionális ajánlatkészítéshez
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
+          {features.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              highlight={feature.highlight}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* PRODUCT DEMO SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <Card className="overflow-hidden p-8 md:p-12">
+          <div className="grid gap-12 md:grid-cols-2 md:items-center">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+                Látogasd meg
+              </span>
+              <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+                Nézd meg, hogyan működik
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-fg-muted">
+                Tekintsd meg a Propono működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz
+                professzionális ajánlatokat percek alatt.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  'AI-alapú szöveg generálás',
+                  'Drag & drop szerkesztés',
+                  'Automatikus márkázás',
+                  'Valós idejű együttműködés',
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3 text-base text-fg-muted">
+                    <svg className="h-5 w-5 flex-shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8">
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:shadow-pop hover:scale-105"
+                >
+                  Teljes bemutató megtekintése
+                  <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+            <div className="relative">
+              <VideoPlayer
+                title="Propono Product Demo"
+                className="w-full"
+                // Add videoUrl and thumbnailUrl props when available
+              />
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      {/* HOW IT WORKS - Enhanced */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Folyamat
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Három egyszerű lépés a sikerhez
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és
+            a háttérben az AI mindig egységes arculatot tart.
+          </p>
+        </div>
+
+        <div className="mt-12">
+          <div className="grid gap-8 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <div key={index} className="relative">
+                <Card className="relative h-full p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-pop">
+                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    {step.icon}
+                  </div>
+                  <div className="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-mono text-sm font-semibold text-primary">
+                    {index + 1}
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold text-fg">{step.title}</h3>
+                  <p className="text-base leading-relaxed text-fg-muted">{step.description}</p>
+                </Card>
+                {index < steps.length - 1 && (
+                  <div className="hidden items-center justify-center md:flex">
+                    <svg
+                      className="absolute right-0 top-1/2 h-6 w-6 -translate-y-1/2 translate-x-1/2 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SOCIAL PROOF - Enhanced with testimonials */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Ügyfeleink véleménye
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Csatlakozz a Propono közösséghez
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            Több mint 500+ vállalat bízik bennünk az ajánlatkészítéshez
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4">
+          <StatCard value="500+" label="Aktív felhasználó" />
+          <StatCard value="10K+" label="Létrehozott ajánlat" />
+          <StatCard value="98%" label="Elégedettségi arány" />
+          <StatCard value="24/7" label="Támogatás" />
+        </div>
+
+        {/* Testimonials */}
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard
+              key={index}
+              quote={testimonial.quote}
+              author={testimonial.author}
+              role={testimonial.role}
+              company={testimonial.company}
+              rating={testimonial.rating}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ SECTION */}
+      <section className="mx-auto w-full max-w-4xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            Gyakran ismételt kérdések
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Válaszok a leggyakoribb kérdésekre
+          </h2>
+        </div>
+        <div className="mt-12">
+          <FAQ items={faqItems} />
+        </div>
+      </section>
+
+      {/* FINAL CTA SECTION */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <Card className="overflow-hidden border-2 border-primary/40 bg-gradient-to-r from-primary/12 via-transparent to-accent/12 p-8 shadow-pop md:p-12">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+              Kezdj el még ma
+            </span>
+            <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+              Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-fg-muted">
+              Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi
+              ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href="/new"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:scale-105 hover:shadow-xl"
+              >
+                <span>Indítsd el ingyen</span>
+                <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </Link>
               <Link
                 href="/billing"
-                className="inline-flex items-center justify-center rounded-full border border-primary/60 px-7 py-3 text-sm font-semibold text-primary transition duration-200 ease-out hover:border-primary hover:bg-primary/10"
+                className="inline-flex items-center justify-center rounded-full border-2 border-primary/60 px-8 py-4 text-base font-semibold text-primary transition-all duration-200 ease-out hover:border-primary hover:bg-primary/10"
               >
-                Csomagok
+                Csomagok megtekintése
               </Link>
             </div>
+            <p className="mt-6 text-sm text-fg-muted">
+              Nincs bankkártya szükséges • Azonnali hozzáférés • Bármikor lemondható
+            </p>
           </div>
         </Card>
-      </div>
+      </section>
 
       <footer aria-label={t('landing.footerAria')} className="sr-only" />
     </main>
