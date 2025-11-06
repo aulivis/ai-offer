@@ -827,7 +827,23 @@ export const POST = withAuth(
     }
 
     const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
-    if (deviceLimit !== null) {
+    if (deviceLimit !== null && deviceId) {
+      // Recalculate device usage from actual successful PDFs before checking
+      try {
+        const { recalculateDeviceUsageFromPdfs } = await import('@/lib/services/usage');
+        await recalculateDeviceUsageFromPdfs(sb, user.id, deviceId, usagePeriodStart).catch(
+          (err) => {
+            log.warn('Failed to recalculate device usage from PDFs, continuing with counter value', {
+              error: err,
+            });
+          },
+        );
+      } catch (recalcError) {
+        log.warn('Failed to recalculate device usage from PDFs, continuing with counter value', {
+          error: recalcError,
+        });
+      }
+
       const deviceQuotaCheck = await checkDeviceQuotaWithPending(
         sb,
         user.id,

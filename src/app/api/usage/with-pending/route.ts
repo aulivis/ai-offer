@@ -53,12 +53,28 @@ export async function GET(request: Request) {
     // First, try to recalculate usage from actual PDFs to ensure accuracy
     // This fixes cases where quota was incremented but PDF generation failed
     try {
-      const { recalculateUsageFromPdfs } = await import('@/lib/services/usage');
+      const { recalculateUsageFromPdfs, recalculateDeviceUsageFromPdfs } = await import(
+        '@/lib/services/usage',
+      );
       await recalculateUsageFromPdfs(supabase, userId, normalizedPeriod).catch((err) => {
         log.warn('Failed to recalculate usage from PDFs, continuing with counter value', {
           error: err,
         });
       });
+
+      // Also recalculate device usage if device_id is provided
+      if (deviceId) {
+        await recalculateDeviceUsageFromPdfs(supabase, userId, deviceId, normalizedPeriod).catch(
+          (err) => {
+            log.warn(
+              'Failed to recalculate device usage from PDFs, continuing with counter value',
+              {
+                error: err,
+              },
+            );
+          },
+        );
+      }
     } catch (recalcError) {
       log.warn('Failed to recalculate usage from PDFs, continuing with counter value', {
         error: recalcError,
