@@ -3,23 +3,26 @@ import type { OfferTemplate } from '../types';
 import { renderBody } from './partials/body';
 import { renderHead } from './partials/head';
 import { pdfStyles, templateStyles } from './styles.css';
-import { freeBaseTokens } from './tokens';
+import { premiumExecutiveTokens } from './tokens';
 
-export const legacyFreeBaseTemplate: OfferTemplate = {
-  id: 'free.base@1.1.0',
-  tier: 'free',
-  label: 'Modern minimal',
-  version: '1.1.0',
+export const premiumExecutiveTemplate: OfferTemplate = {
+  id: 'premium.executive@1.0.0',
+  tier: 'premium',
+  label: 'Executive',
+  version: '1.0.0',
+  marketingHighlight: 'Prémium dizájn logóval, dekoratív elemekkel és elegáns tipográfiával a legprofesszionálisabb ajánlatokhoz.',
   styles: {
     print: pdfStyles,
     template: templateStyles,
   },
-  tokens: freeBaseTokens,
+  tokens: premiumExecutiveTokens,
   capabilities: {
     'branding.logo': true,
     'branding.colors': true,
     'pricing.table': true,
+    'gallery': true,
   },
   renderHead,
   renderBody,
 };
+

@@ -65,7 +65,7 @@ export const runtime = 'nodejs';
 const USER_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást a csomagban.';
 const DEVICE_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást ezen az eszközön.';
 
-const DEFAULT_TEMPLATE_ID: TemplateId = 'free.base@1.1.0';
+const DEFAULT_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
 
 function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';

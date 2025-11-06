@@ -10,7 +10,6 @@ import { minimalRuntimeTemplate } from '@/app/pdf/sdk/templates/minimal';
 import { getTemplateMetadata as getEngineTemplateMetadata } from './engineRegistry';
 import { loadTemplate as loadEngineTemplate } from './engineRegistry';
 import type { TemplateId as EngineTemplateId } from './types';
-import freeBaseTemplate from './free.base';
 import { Template_pro_nordic } from './pro.nordic';
 
 export type TemplateMeta = {
@@ -47,17 +46,7 @@ const minimalTemplateMeta: TemplateMeta = {
   factory: () => ({ ...minimalRuntimeTemplate }),
 };
 
-const freeBaseTemplateMeta: TemplateMeta = {
-  id: freeBaseTemplate.id,
-  name: freeBaseTemplate.name,
-  version: freeBaseTemplate.version,
-  ...(freeBaseTemplate.capabilities && freeBaseTemplate.capabilities.length > 0
-    ? { capabilities: freeBaseTemplate.capabilities }
-    : {}),
-  factory: () => ({ ...freeBaseTemplate }),
-};
-
-export const TEMPLATE_REGISTRY: TemplateMeta[] = [freeBaseTemplateMeta, minimalTemplateMeta];
+export const TEMPLATE_REGISTRY: TemplateMeta[] = [minimalTemplateMeta];
 
 TEMPLATE_REGISTRY.push({
   id: 'pro.nordic',

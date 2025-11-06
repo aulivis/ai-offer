@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { premiumElegantTemplate } from './premium.elegant';
-import { premiumModernTemplate } from './premium.modern';
+import { freeMinimalTemplate } from './free.minimal';
+import { premiumExecutiveTemplate } from './premium.executive';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
 
 const renderFunctionSchema = z.custom<OfferTemplate['renderHead']>(
@@ -332,8 +332,7 @@ export function updateTemplateMetadata(
 }
 
 // Register built-in templates
-// Note: legacyFreeBaseTemplate is removed as it doesn't respect the new header/footer system
-const builtinTemplates = [premiumElegantTemplate, premiumModernTemplate];
+const builtinTemplates = [freeMinimalTemplate, premiumExecutiveTemplate];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);

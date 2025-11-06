@@ -40,7 +40,7 @@ export interface PdfJobInput {
   metadata?: PdfJobMetadata;
 }
 
-const FALLBACK_TEMPLATE_ID: TemplateId = 'free.base@1.1.0';
+const FALLBACK_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
 
 type PlanTier = 'free' | 'premium';
 
