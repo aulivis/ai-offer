@@ -37,7 +37,10 @@ import {
   PhotoIcon,
   EyeIcon,
   LockClosedIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
+import { TemplateSelector } from '@/components/templates/TemplateSelector';
+import type { TemplateId } from '@/app/pdf/templates/types';
 
 type Profile = {
   company_name?: string;
@@ -50,7 +53,7 @@ type Profile = {
   brand_logo_path?: string | null;
   brand_color_primary?: string | null;
   brand_color_secondary?: string | null;
-  offer_template?: TemplateId | null;
+  offer_template?: string | null;
 };
 
 type ActivityRow = {
@@ -366,6 +369,12 @@ export default function SettingsPage() {
       href: '#branding',
     },
     {
+      id: 'templates',
+      label: t('settings.templates.title'),
+      icon: <DocumentTextIcon className="h-5 w-5" />,
+      href: '#templates',
+    },
+    {
       id: 'activities',
       label: t('settings.activities.title'),
       icon: <CubeIcon className="h-5 w-5" />,
@@ -401,6 +410,15 @@ export default function SettingsPage() {
   const primaryPreview = normalizeBrandHex(profile.brand_color_primary) ?? '#1c274c';
   const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
   const canUploadBrandLogo = plan !== 'free';
+  const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
+
+  const handleTemplateSelect = useCallback(
+    async (templateId: TemplateId) => {
+      setProfile((prev) => ({ ...prev, offer_template: templateId }));
+      await saveProfile('branding');
+    },
+    [saveProfile],
+  );
 
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
@@ -1401,6 +1419,35 @@ export default function SettingsPage() {
             </div>
           </Card>
 
+          {/* Templates Section */}
+          <Card
+            id="templates"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <DocumentTextIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{t('settings.templates.title')}</h2>
+                    <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
+                  </div>
+                </div>
+              </CardHeader>
+            }
+          >
+            <div className="space-y-6">
+              <TemplateSelector
+                selectedTemplateId={selectedTemplateId}
+                plan={plan}
+                onTemplateSelect={handleTemplateSelect}
+                gridCols={3}
+                showDescription={true}
+              />
+            </div>
+          </Card>
 
           {/* Activities Section */}
           <Card
