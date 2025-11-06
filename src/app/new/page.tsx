@@ -55,6 +55,8 @@ import {
   type ProjectDetails,
 } from '@/lib/projectDetails';
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { WIZARD_CONFIG, MAX_IMAGE_SIZE_MB } from '@/constants/wizard';
 
 type Step1Form = {
   industry: string;
@@ -173,10 +175,9 @@ const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
   timeline: 400,
   constraints: 400,
 };
-const MAX_PREVIEW_TIMEOUT_RETRIES = 2;
-const MAX_IMAGE_COUNT = 3;
-const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
-const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10) / 10;
+const MAX_PREVIEW_TIMEOUT_RETRIES = WIZARD_CONFIG.MAX_PREVIEW_RETRIES;
+const MAX_IMAGE_COUNT = WIZARD_CONFIG.MAX_IMAGE_COUNT;
+const MAX_IMAGE_SIZE_BYTES = WIZARD_CONFIG.MAX_IMAGE_SIZE_BYTES;
 
 
 type PreparedImagePayload = { key: string; dataUrl: string; alt: string };
@@ -1739,9 +1740,14 @@ export default function NewOfferWizard() {
   ];
 
   return (
-    <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
-      <div className="space-y-6">
-        <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error('Wizard error:', error, errorInfo);
+      }}
+    >
+      <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
+        <div className="space-y-6">
+          <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
           <StepIndicator steps={wizardSteps} />
         </Card>
 
@@ -2512,6 +2518,7 @@ export default function NewOfferWizard() {
           </div>
         </form>
       </Modal>
-    </AppFrame>
+      </AppFrame>
+    </ErrorBoundary>
   );
 }
