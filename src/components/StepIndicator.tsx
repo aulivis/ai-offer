@@ -97,29 +97,36 @@ export default function StepIndicator({ steps }: Props) {
   const currentStepNumber = Math.min(activeIndex + 1, total);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="navigation" aria-label="Wizard steps">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
           <span className="inline-flex items-center gap-2 rounded-full bg-slate-900/5 px-3 py-1 text-[11px] font-semibold text-slate-800">
             {t('offers.wizard.progressLabel', { current: currentStepNumber, total })}
           </span>
-          {currentLabel ? <span className="text-slate-600 normal-case">{currentLabel}</span> : null}
+          {currentLabel ? (
+            <span className="text-slate-600 normal-case" aria-current="step">
+              {currentLabel}
+            </span>
+          ) : null}
         </div>
         <div className="flex w-full items-center gap-3 lg:w-auto">
           <div
-            className="h-2 w-full overflow-hidden rounded-full bg-slate-200 lg:w-64"
+            className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 lg:w-64"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(progress)}
+            aria-label={`Progress: ${Math.round(progress)}%`}
           >
             <div
-              className="h-full rounded-full bg-slate-900 transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-slate-700 to-slate-900 transition-all duration-500 ease-out"
               style={{ width: `${Math.round(progress)}%` }}
               aria-hidden="true"
             />
           </div>
-          <span className="text-xs font-medium text-slate-500">{Math.round(progress)}%</span>
+          <span className="text-xs font-medium text-slate-500" aria-hidden="true">
+            {Math.round(progress)}%
+          </span>
         </div>
       </div>
 
@@ -127,56 +134,72 @@ export default function StepIndicator({ steps }: Props) {
         {steps.map((step, index) => {
           const tone = step.tone ?? 'default';
           const clickable = step.status === 'completed' && typeof step.onSelect === 'function';
+          const isCurrent = step.status === 'current';
+          const isCompleted = step.status === 'completed';
+          const isUpcoming = step.status === 'upcoming';
 
           const circleClasses = classNames(
-            'grid h-9 w-9 flex-shrink-0 place-items-center rounded-full border text-xs font-semibold transition duration-200',
+            'grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border-2 text-xs font-semibold transition-all duration-200',
             tone === 'error'
-              ? 'border-rose-200 bg-rose-50 text-rose-600'
-              : step.status === 'completed'
-                ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
-                : step.status === 'current'
-                  ? 'border-slate-900/20 bg-slate-900/10 text-slate-900 shadow-sm'
-                  : 'border-border/70 bg-white text-slate-500',
+              ? 'border-rose-300 bg-rose-50 text-rose-600 ring-2 ring-rose-200'
+              : isCompleted
+                ? 'border-emerald-500 bg-emerald-500 text-white shadow-md ring-2 ring-emerald-200'
+                : isCurrent
+                  ? 'border-slate-900 bg-slate-900 text-white shadow-lg ring-4 ring-slate-200 animate-pulse'
+                  : 'border-slate-300 bg-white text-slate-400',
           );
 
           const labelClasses = classNames(
             'text-sm font-medium transition-colors',
             tone === 'error'
               ? 'text-rose-600'
-              : step.status === 'current'
-                ? 'text-slate-900'
-                : step.status === 'completed'
+              : isCurrent
+                ? 'text-slate-900 font-semibold'
+                : isCompleted
                   ? 'text-slate-700'
                   : 'text-slate-500',
           );
 
           const cardClasses = classNames(
-            'group flex h-full w-full flex-col items-start gap-3 rounded-2xl border border-border/60 bg-white/95 px-4 py-4 text-left shadow-sm transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:flex-row sm:items-center sm:gap-4',
+            'group relative flex h-full w-full flex-col items-start gap-3 rounded-2xl border-2 px-4 py-4 text-left shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-4',
             clickable
-              ? 'cursor-pointer hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg active:translate-y-0'
+              ? 'cursor-pointer border-slate-300 bg-white hover:-translate-y-1 hover:border-slate-400 hover:shadow-lg active:translate-y-0 focus-visible:ring-primary'
               : 'cursor-default',
-            !clickable && step.status !== 'current'
-              ? 'opacity-75'
+            !clickable && !isCurrent
+              ? 'opacity-60'
               : undefined,
             tone === 'error'
-              ? 'border-rose-200 bg-rose-50/80'
-              : step.status === 'current'
-                ? 'border-slate-900/30 bg-slate-900/5 shadow-md ring-1 ring-slate-900/10'
-                : step.status === 'completed'
+              ? 'border-rose-200 bg-rose-50/80 ring-2 ring-rose-100'
+              : isCurrent
+                ? 'border-slate-900 bg-slate-50 shadow-md ring-2 ring-slate-200'
+                : isCompleted
                   ? 'border-emerald-200 bg-emerald-50/80'
-                  : undefined,
+                  : 'border-slate-200 bg-white/50',
           );
 
           const indicatorContent: ReactNode = (() => {
-            if (tone === 'error' && step.status !== 'completed') {
-              return <ExclamationIcon className="h-5 w-5" />;
+            if (tone === 'error' && !isCompleted) {
+              return <ExclamationIcon className="h-5 w-5" aria-hidden="true" />;
             }
 
-            if (step.status === 'completed') {
-              return <CheckIcon className="h-4 w-4" />;
+            if (isCompleted) {
+              return <CheckIcon className="h-5 w-5" aria-hidden="true" />;
             }
 
-            return index + 1;
+            return <span aria-hidden="true">{index + 1}</span>;
+          })();
+
+          const stepDescription = (() => {
+            if (tone === 'error') {
+              return 'This step has errors that need to be fixed';
+            }
+            if (isCompleted) {
+              return `Step ${index + 1} completed: ${step.label}`;
+            }
+            if (isCurrent) {
+              return `Current step ${index + 1}: ${step.label}`;
+            }
+            return `Upcoming step ${index + 1}: ${step.label}`;
           })();
 
           return (
@@ -184,16 +207,25 @@ export default function StepIndicator({ steps }: Props) {
               <button
                 type="button"
                 onClick={clickable ? step.onSelect : undefined}
-                tabIndex={clickable ? 0 : -1}
-                aria-disabled={!clickable}
-                aria-current={step.status === 'current' ? 'step' : undefined}
+                tabIndex={clickable || isCurrent ? 0 : -1}
+                aria-disabled={!clickable && !isCurrent}
+                aria-current={isCurrent ? 'step' : undefined}
+                aria-label={stepDescription}
+                aria-describedby={tone === 'error' ? `step-${index}-error` : undefined}
                 className={cardClasses}
               >
-                <span className={circleClasses}>{indicatorContent}</span>
+                <span className={circleClasses} aria-hidden="true">
+                  {indicatorContent}
+                </span>
                 <span className="flex flex-col items-start gap-1">
                   <span className={labelClasses}>{step.label}</span>
                   {renderBadge(step)}
                 </span>
+                {tone === 'error' && (
+                  <span id={`step-${index}-error`} className="sr-only">
+                    This step contains validation errors
+                  </span>
+                )}
               </button>
             </li>
           );

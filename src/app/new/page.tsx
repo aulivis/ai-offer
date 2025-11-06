@@ -18,7 +18,9 @@ import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/Edita
 import AppFrame from '@/components/AppFrame';
 import { WizardStep1Details } from '@/components/offers/WizardStep1Details';
 import { WizardStep2Pricing } from '@/components/offers/WizardStep2Pricing';
+import { WizardActionBar } from '@/components/offers/WizardActionBar';
 import { useWizardValidation } from '@/hooks/useWizardValidation';
+import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
 import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
@@ -26,6 +28,7 @@ import {
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
 import type { TemplateId } from '@/app/pdf/templates/types';
+import type { WizardStep } from '@/types/wizard';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -2413,6 +2416,17 @@ export default function NewOfferWizard() {
             )}
           </div>
         </div>
+        <WizardActionBar
+          step={step as WizardStep}
+          onPrev={() => goToStep(Math.max(1, step - 1))}
+          onNext={() => goToStep(Math.min(3, step + 1))}
+          onSubmit={generate}
+          isNextDisabled={isQuotaExhausted || quotaLoading}
+          isSubmitDisabled={loading || isQuotaExhausted || quotaLoading}
+          isSubmitting={loading}
+          isQuotaExhausted={isQuotaExhausted}
+          isQuotaLoading={quotaLoading}
+        />
       </div>
       <Modal
         open={isTemplateModalOpen}
