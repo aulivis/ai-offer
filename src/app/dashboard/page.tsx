@@ -17,6 +17,8 @@ import { currentMonthStart } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import OfferCard from '@/components/dashboard/OfferCard';
+import { OfferListItem } from '@/components/dashboard/OfferListItem';
+import { ViewSwitcher, type ViewMode } from '@/components/dashboard/ViewSwitcher';
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
@@ -335,6 +337,19 @@ export default function DashboardPage() {
   const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard-view-mode');
+      return (saved === 'list' || saved === 'card' ? saved : 'card') as ViewMode;
+    }
+    return 'card';
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard-view-mode', viewMode);
+    }
+  }, [viewMode]);
 
   const isAdmin = useMemo(() => {
     if (!user) {
@@ -1051,6 +1066,8 @@ export default function DashboardPage() {
               </div>
             )}
 
+            <ViewSwitcher value={viewMode} onChange={setViewMode} />
+
             <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
               <Select
                 label={t('dashboard.filters.status.label')}
@@ -1216,23 +1233,39 @@ export default function DashboardPage() {
         {/* Lista */}
         {!loading && filtered.length > 0 && (
           <>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {filtered.map((o) => (
-                <OfferCard
-                  key={o.id}
-                  offer={o}
-                  isUpdating={updatingId === o.id}
-                  isDownloading={downloadingId === o.id}
-                  isDeleting={deletingId === o.id}
-                  onMarkSent={(offer, date) => markSent(offer, date)}
-                  onMarkDecision={(offer, decision, date) => markDecision(offer, decision, date)}
-                  onRevertToSent={(offer) => revertToSent(offer)}
-                  onRevertToDraft={(offer) => revertToDraft(offer)}
-                  onDelete={(offer) => setOfferToDelete(offer)}
-                  onDownload={(offer) => handleDownloadPdf(offer)}
-                />
-              ))}
-            </div>
+            {viewMode === 'card' ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((o) => (
+                  <OfferCard
+                    key={o.id}
+                    offer={o}
+                    isUpdating={updatingId === o.id}
+                    isDownloading={downloadingId === o.id}
+                    isDeleting={deletingId === o.id}
+                    onMarkSent={(offer, date) => markSent(offer, date)}
+                    onMarkDecision={(offer, decision, date) => markDecision(offer, decision, date)}
+                    onRevertToSent={(offer) => revertToSent(offer)}
+                    onRevertToDraft={(offer) => revertToDraft(offer)}
+                    onDelete={(offer) => setOfferToDelete(offer)}
+                    onDownload={(offer) => handleDownloadPdf(offer)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {filtered.map((o) => (
+                  <OfferListItem
+                    key={o.id}
+                    offer={o}
+                    isUpdating={updatingId === o.id}
+                    isDownloading={downloadingId === o.id}
+                    isDeleting={deletingId === o.id}
+                    onDelete={(offer) => setOfferToDelete(offer)}
+                    onDownload={(offer) => handleDownloadPdf(offer)}
+                  />
+                ))}
+              </div>
+            )}
 
             <div className="mt-6 flex flex-col items-center gap-3 text-center">
               {paginationSummary ? (

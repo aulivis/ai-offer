@@ -17,6 +17,7 @@ import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import { ComponentType, ReactNode, SVGProps, useEffect, useMemo, useState } from 'react';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
+import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 
 export interface OfferCardProps {
   offer: Offer;
@@ -51,6 +52,7 @@ export function OfferCard({
   const companyName = (offer.recipient?.company_name ?? '').trim();
   const initials = useMemo(() => getInitials(companyName), [companyName]);
   const [decisionDate, setDecisionDate] = useState<string>(() => isoDateInput(offer.decided_at));
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const timelineStates: Record<TimelineKey, TimelineStatus> = {
     draft: getTimelineStatus('draft', offer.status),
@@ -71,263 +73,285 @@ export function OfferCard({
   }, [offer.decided_at]);
 
   const actionButtonClass =
-    'inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+    'inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
   const actionButtonDisabledClass = 'cursor-not-allowed opacity-60';
 
   return (
-    <Card className="group relative flex flex-col gap-6 overflow-hidden rounded-3xl border border-border/60 bg-white/90 p-6 shadow-sm backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-6">
-          <header className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-semibold text-primary">
-                  {initials ? (
-                    <span aria-hidden="true" title={companyName || undefined}>
-                      {initials}
-                    </span>
-                  ) : (
-                    <BuildingOffice2Icon
-                      aria-hidden="true"
-                      className="h-6 w-6 text-primary"
-                      title={companyName || t('dashboard.offerCard.industryUnknown')}
-                    />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-lg font-semibold text-fg">
-                    {offer.title || '(névtelen)'}
-                  </p>
-                </div>
-              </div>
-              <StatusBadge status={offer.status} className="flex-none" />
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2 text-sm text-fg-muted">
-                <UserCircleIcon
-                  aria-hidden="true"
-                  className="h-5 w-5 flex-none text-primary/80"
-                  title={companyName || '—'}
-                />
-                <span className="truncate font-medium text-fg">{companyName || '—'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {offer.pdf_url ? (
-                  <>
-                    <a
-                      className={actionButtonClass}
-                      href={offer.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={openLabel}
-                      title={openLabel}
-                    >
-                      <DocumentTextIcon aria-hidden="true" className="h-5 w-5" />
-                      <span className="sr-only">{openLabel}</span>
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => onDownload(offer)}
-                      disabled={isBusy}
-                      className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
-                      aria-label={downloadLabel}
-                      title={downloadLabel}
-                    >
-                      {isDownloading ? (
-                        <ArrowPathIcon aria-hidden="true" className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <ArrowDownTrayIcon aria-hidden="true" className="h-5 w-5" />
-                      )}
-                      <span className="sr-only">{downloadLabel}</span>
-                    </button>
-                  </>
-                ) : null}
+    <Card className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-200 hover:shadow-md">
+      {/* Compact Header - Always Visible */}
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-3 p-4 text-left transition-colors hover:bg-bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
+      >
+        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-semibold text-primary">
+          {initials ? (
+            <span aria-hidden="true" title={companyName || undefined}>
+              {initials}
+            </span>
+          ) : (
+            <BuildingOffice2Icon
+              aria-hidden="true"
+              className="h-5 w-5 text-primary"
+              title={companyName || t('dashboard.offerCard.industryUnknown')}
+            />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="truncate text-base font-semibold text-fg">
+              {offer.title || '(névtelen)'}
+            </p>
+            <StatusBadge status={offer.status} className="flex-none" />
+          </div>
+          <div className="mt-1 flex items-center gap-2 text-xs text-fg-muted">
+            <UserCircleIcon aria-hidden="true" className="h-4 w-4 flex-none" />
+            <span className="truncate">{companyName || '—'}</span>
+            <span className="text-fg-muted/70">•</span>
+            <span>{formatDate(offer.created_at)}</span>
+            {offer.industry && (
+              <>
+                <span className="text-fg-muted/70">•</span>
+                <span>{offer.industry}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            {offer.pdf_url ? (
+              <>
+                <a
+                  className={actionButtonClass}
+                  href={offer.pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={openLabel}
+                  title={openLabel}
+                >
+                  <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
+                  <span className="sr-only">{openLabel}</span>
+                </a>
                 <button
                   type="button"
-                  onClick={() => onDelete(offer)}
+                  onClick={() => onDownload(offer)}
                   disabled={isBusy}
                   className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
-                  aria-label={deleteLabel}
-                  title={deleteLabel}
+                  aria-label={downloadLabel}
+                  title={downloadLabel}
                 >
-                  {isDeleting ? (
-                    <ArrowPathIcon aria-hidden="true" className="h-5 w-5 animate-spin" />
+                  {isDownloading ? (
+                    <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
                   ) : (
-                    <TrashIcon aria-hidden="true" className="h-5 w-5 text-rose-500" />
+                    <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
                   )}
-                  <span className="sr-only">{deleteLabel}</span>
+                  <span className="sr-only">{downloadLabel}</span>
                 </button>
-              </div>
-            </div>
-          </header>
-
-          <dl className="grid gap-3 sm:grid-cols-2">
-            <MetaItem
-              icon={CalendarDaysIcon}
-              label={t('dashboard.offerCard.created')}
-              value={formatDate(offer.created_at)}
-            />
-            <MetaItem
-              icon={Squares2X2Icon}
-              label={t('dashboard.offerCard.industry')}
-              value={offer.industry || t('dashboard.offerCard.industryUnknown')}
-            />
-          </dl>
+              </>
+            ) : null}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(offer);
+              }}
+              disabled={isBusy}
+              className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+              aria-label={deleteLabel}
+              title={deleteLabel}
+            >
+              {isDeleting ? (
+                <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+              ) : (
+                <TrashIcon aria-hidden="true" className="h-4 w-4 text-rose-500" />
+              )}
+              <span className="sr-only">{deleteLabel}</span>
+            </button>
+          </div>
+          <ChevronDownIcon
+            className={`h-5 w-5 text-fg-muted transition-transform duration-200 ${
+              isExpanded ? 'rotate-180' : ''
+            }`}
+            aria-hidden="true"
+          />
         </div>
+      </button>
 
-        <section
-          className={`flex flex-col gap-5 rounded-3xl border p-6 shadow-inner ${statusTheme.container}`}
-        >
-          <div
-            className={`flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] ${statusTheme.accentText}`}
-          >
-            <ClockIcon
-              aria-hidden="true"
-              className={`h-4 w-4 ${statusTheme.accentIcon}`}
-              title={t('dashboard.filters.sortBy.options.status')}
-            />
-            <span>{t('dashboard.filters.sortBy.options.status')}</span>
-          </div>
+      {/* Expanded Content - Collapsible */}
+      {isExpanded && (
+        <div className="border-t border-border/60 px-4 py-5">
+          <div className="flex flex-col gap-5">
 
-          <ol className="relative">
-            <TimelineStep
-              title={t(STATUS_LABEL_KEYS.draft)}
-              description={t('dashboard.offerCard.created')}
-              dateLabel={formatDate(offer.created_at)}
-              status={timelineStates.draft}
-              isLast={false}
-            />
-            <TimelineStep
-              title={t('dashboard.statusSteps.sent.title')}
-              description={t('dashboard.statusSteps.sent.description')}
-              dateLabel={formatDate(offer.sent_at)}
-              status={timelineStates.sent}
-              isLast={false}
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <MetaItem
+                icon={CalendarDaysIcon}
+                label={t('dashboard.offerCard.created')}
+                value={formatDate(offer.created_at)}
+              />
+              <MetaItem
+                icon={Squares2X2Icon}
+                label={t('dashboard.offerCard.industry')}
+                value={offer.industry || t('dashboard.offerCard.industryUnknown')}
+              />
+            </dl>
+
+            <section
+              className={`flex flex-col gap-4 rounded-2xl border p-5 shadow-inner ${statusTheme.container}`}
             >
-              {offer.sent_at ? (
-                <CompactDatePicker
-                  label={t('dashboard.statusSteps.sent.editDate')}
-                  value={isoDateInput(offer.sent_at)}
-                  onChange={(value) => onMarkSent(offer, value)}
-                  disabled={isBusy}
+              <div
+                className={`flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] ${statusTheme.accentText}`}
+              >
+                <ClockIcon
+                  aria-hidden="true"
+                  className={`h-4 w-4 ${statusTheme.accentIcon}`}
+                  title={t('dashboard.filters.sortBy.options.status')}
                 />
-              ) : (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    onClick={() => onMarkSent(offer)}
-                    disabled={isBusy}
-                    variant="secondary"
-                    size="sm"
-                    className="h-9 rounded-xl"
-                    title={t('dashboard.statusSteps.sent.markToday')}
-                  >
-                    {t('dashboard.statusSteps.sent.markToday')}
-                  </Button>
-                  <CompactDatePicker
-                    label={t('dashboard.statusSteps.sent.chooseDate')}
-                    value=""
-                    onChange={(value) => onMarkSent(offer, value)}
-                    disabled={isBusy}
-                  />
-                </div>
-              )}
-            </TimelineStep>
-            <TimelineStep
-              title={t('dashboard.statusSteps.decision.title')}
-              description={t('dashboard.statusSteps.decision.description')}
-              dateLabel={isDecided ? formatDate(offer.decided_at) : '—'}
-              status={timelineStates.decision}
-              isLast
-            >
-              {isDecided ? (
-                <>
-                  <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                      offer.status === 'accepted'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-rose-50 text-rose-700'
-                    }`}
-                  >
-                    {offer.status === 'accepted'
-                      ? t(DECISION_LABEL_KEYS.accepted)
-                      : t(DECISION_LABEL_KEYS.lost)}
-                  </span>
-                  <CompactDatePicker
-                    label={t('dashboard.statusSteps.decision.dateLabel')}
-                    value={isoDateInput(offer.decided_at)}
-                    onChange={(value) =>
-                      onMarkDecision(offer, offer.status as 'accepted' | 'lost', value)
-                    }
-                    disabled={isBusy}
-                  />
-                </>
-              ) : (
-                <div className="flex flex-wrap items-center gap-2">
-                  <CompactDatePicker
-                    label={t('dashboard.statusSteps.decision.chooseDate')}
-                    value={decisionDate}
-                    onChange={setDecisionDate}
-                    disabled={isBusy}
-                  />
-                  <Button
-                    onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
-                    disabled={isBusy}
-                    variant="secondary"
-                    size="sm"
-                    className="h-9 w-9 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                    aria-label={t('dashboard.statusSteps.decision.markAccepted')}
-                    title={t('dashboard.statusSteps.decision.markAccepted')}
-                  >
-                    <CheckIcon aria-hidden="true" className="h-5 w-5" />
-                    <span className="sr-only">
-                      {t('dashboard.statusSteps.decision.markAccepted')}
-                    </span>
-                  </Button>
-                  <Button
-                    onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
-                    disabled={isBusy}
-                    variant="secondary"
-                    size="sm"
-                    className="h-9 w-9 rounded-xl border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
-                    aria-label={t('dashboard.statusSteps.decision.markLost')}
-                    title={t('dashboard.statusSteps.decision.markLost')}
-                  >
-                    <XMarkIcon aria-hidden="true" className="h-5 w-5" />
-                    <span className="sr-only">{t('dashboard.statusSteps.decision.markLost')}</span>
-                  </Button>
-                </div>
-              )}
-            </TimelineStep>
-          </ol>
-        </section>
+                <span>{t('dashboard.filters.sortBy.options.status')}</span>
+              </div>
 
-        {showRevertToDraft || showRevertDecision ? (
-          <div className="flex flex-wrap gap-2 text-xs text-fg">
-            {showRevertToDraft ? (
-              <Button
-                onClick={() => onRevertToDraft(offer)}
-                disabled={isBusy}
-                variant="secondary"
-                size="sm"
-                className="rounded-xl"
-              >
-                {t('dashboard.actions.revertToDraft')}
-              </Button>
-            ) : null}
-            {showRevertDecision ? (
-              <Button
-                onClick={() => onRevertToSent(offer)}
-                disabled={isBusy}
-                variant="secondary"
-                size="sm"
-                className="rounded-xl"
-              >
-                {t('dashboard.actions.revertDecision')}
-              </Button>
+              <ol className="relative">
+                <TimelineStep
+                  title={t(STATUS_LABEL_KEYS.draft)}
+                  description={t('dashboard.offerCard.created')}
+                  dateLabel={formatDate(offer.created_at)}
+                  status={timelineStates.draft}
+                  isLast={false}
+                />
+                <TimelineStep
+                  title={t('dashboard.statusSteps.sent.title')}
+                  description={t('dashboard.statusSteps.sent.description')}
+                  dateLabel={formatDate(offer.sent_at)}
+                  status={timelineStates.sent}
+                  isLast={false}
+                >
+                  {offer.sent_at ? (
+                    <CompactDatePicker
+                      label={t('dashboard.statusSteps.sent.editDate')}
+                      value={isoDateInput(offer.sent_at)}
+                      onChange={(value) => onMarkSent(offer, value)}
+                      disabled={isBusy}
+                    />
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        onClick={() => onMarkSent(offer)}
+                        disabled={isBusy}
+                        variant="secondary"
+                        size="sm"
+                        className="h-9 rounded-xl"
+                        title={t('dashboard.statusSteps.sent.markToday')}
+                      >
+                        {t('dashboard.statusSteps.sent.markToday')}
+                      </Button>
+                      <CompactDatePicker
+                        label={t('dashboard.statusSteps.sent.chooseDate')}
+                        value=""
+                        onChange={(value) => onMarkSent(offer, value)}
+                        disabled={isBusy}
+                      />
+                    </div>
+                  )}
+                </TimelineStep>
+                <TimelineStep
+                  title={t('dashboard.statusSteps.decision.title')}
+                  description={t('dashboard.statusSteps.decision.description')}
+                  dateLabel={isDecided ? formatDate(offer.decided_at) : '—'}
+                  status={timelineStates.decision}
+                  isLast
+                >
+                  {isDecided ? (
+                    <>
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                          offer.status === 'accepted'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-rose-50 text-rose-700'
+                        }`}
+                      >
+                        {offer.status === 'accepted'
+                          ? t(DECISION_LABEL_KEYS.accepted)
+                          : t(DECISION_LABEL_KEYS.lost)}
+                      </span>
+                      <CompactDatePicker
+                        label={t('dashboard.statusSteps.decision.dateLabel')}
+                        value={isoDateInput(offer.decided_at)}
+                        onChange={(value) =>
+                          onMarkDecision(offer, offer.status as 'accepted' | 'lost', value)
+                        }
+                        disabled={isBusy}
+                      />
+                    </>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <CompactDatePicker
+                        label={t('dashboard.statusSteps.decision.chooseDate')}
+                        value={decisionDate}
+                        onChange={setDecisionDate}
+                        disabled={isBusy}
+                      />
+                      <Button
+                        onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
+                        disabled={isBusy}
+                        variant="secondary"
+                        size="sm"
+                        className="h-9 w-9 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                        aria-label={t('dashboard.statusSteps.decision.markAccepted')}
+                        title={t('dashboard.statusSteps.decision.markAccepted')}
+                      >
+                        <CheckIcon aria-hidden="true" className="h-5 w-5" />
+                        <span className="sr-only">
+                          {t('dashboard.statusSteps.decision.markAccepted')}
+                        </span>
+                      </Button>
+                      <Button
+                        onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
+                        disabled={isBusy}
+                        variant="secondary"
+                        size="sm"
+                        className="h-9 w-9 rounded-xl border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                        aria-label={t('dashboard.statusSteps.decision.markLost')}
+                        title={t('dashboard.statusSteps.decision.markLost')}
+                      >
+                        <XMarkIcon aria-hidden="true" className="h-5 w-5" />
+                        <span className="sr-only">{t('dashboard.statusSteps.decision.markLost')}</span>
+                      </Button>
+                    </div>
+                  )}
+                </TimelineStep>
+              </ol>
+            </section>
+
+            {showRevertToDraft || showRevertDecision ? (
+              <div className="flex flex-wrap gap-2 text-xs text-fg">
+                {showRevertToDraft ? (
+                  <Button
+                    onClick={() => onRevertToDraft(offer)}
+                    disabled={isBusy}
+                    variant="secondary"
+                    size="sm"
+                    className="rounded-xl"
+                  >
+                    {t('dashboard.actions.revertToDraft')}
+                  </Button>
+                ) : null}
+                {showRevertDecision ? (
+                  <Button
+                    onClick={() => onRevertToSent(offer)}
+                    disabled={isBusy}
+                    variant="secondary"
+                    size="sm"
+                    className="rounded-xl"
+                  >
+                    {t('dashboard.actions.revertDecision')}
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
           </div>
-        ) : null}
-      </div>
+        </div>
+      )}
     </Card>
   );
 }
@@ -344,12 +368,12 @@ function MetaItem({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-white/80 px-3 py-2 shadow-sm">
+    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white/80 px-3 py-2 shadow-sm">
       <span
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary"
         title={label}
       >
-        <Icon aria-hidden="true" className="h-5 w-5" />
+        <Icon aria-hidden="true" className="h-4 w-4" />
       </span>
       <div className="min-w-0">
         <dt className="text-[11px] font-medium uppercase tracking-[0.2em] text-fg-muted">
@@ -371,7 +395,7 @@ function StatusBadge({ status, className }: { status: Offer['status']; className
 
   return (
     <span
-      className={`flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur text-center ${map[status]} ${className ?? ''}`}
+      className={`flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] backdrop-blur text-center ${map[status]} ${className ?? ''}`}
     >
       {t(STATUS_LABEL_KEYS[status])}
     </span>

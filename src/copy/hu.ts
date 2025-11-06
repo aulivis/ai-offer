@@ -259,6 +259,11 @@ export const hu = {
         helper: '{drafts} vázlat készül',
       },
     },
+    viewSwitcher: {
+      label: 'Nézet váltása',
+      cardView: 'Kártya nézet',
+      listView: 'Lista nézet',
+    },
     filters: {
       search: {
         label: 'Keresés',
@@ -293,6 +298,10 @@ export const hu = {
           asc: 'Növekvő',
         },
       },
+      results: 'eredmény',
+      active: 'Aktív szűrők',
+      remove: 'Szűrő eltávolítása',
+      clearAll: 'Összes törlése',
     },
     pagination: {
       summary: 'Megjelenítve {displayed} / {total} ajánlat',
@@ -318,6 +327,8 @@ export const hu = {
       openPdf: 'PDF megnyitása',
       savePdf: 'PDF mentése',
       savePdfLoading: 'Mentés…',
+      expand: 'Részletek megjelenítése',
+      collapse: 'Részletek elrejtése',
     },
     statusSteps: {
       sent: {
