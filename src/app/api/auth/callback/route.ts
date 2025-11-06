@@ -135,7 +135,7 @@ function sanitizeErrorBody(contentType: string, rawBody: string): unknown {
 }
 
 /** Gyors JWT payload decode (csak ACCESS tokenhez; REFRESH tokent nem dekódoljuk) */
-function decodeJwtPayload<T = any>(jwt: string): T | null {
+function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
   const parts = jwt.split('.');
   if (parts.length !== 3) {
     return null;
@@ -194,15 +194,26 @@ async function exchangeCode(
 }
 
 type VerifyEmailTokenHashParams = { token_hash: string; type: EmailOtpTypeOnly };
-type VerifyEmailTokenHashResponse = Promise<{ data: any; error: any }>;
+type SupabaseAuthSession = {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  user?: { id: string };
+};
+type VerifyEmailTokenHashResponse = Promise<{
+  data: { session: SupabaseAuthSession } | null;
+  error: { message?: string } | null;
+}>;
 
 function verifyEmailTokenHash(
   supabase: ReturnType<typeof supabaseAnonServer>,
   params: VerifyEmailTokenHashParams,
 ): VerifyEmailTokenHashResponse {
+  // Supabase types don't expose verifyOtp properly, so we need to cast
+  // but we can use a more specific type than 'any'
   const fn = supabase.auth.verifyOtp as unknown as (
     p: VerifyEmailTokenHashParams,
-  ) => Promise<{ data: any; error: any }>;
+  ) => VerifyEmailTokenHashResponse;
   return fn(params);
 }
 
