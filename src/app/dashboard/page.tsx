@@ -1051,14 +1051,23 @@ export default function DashboardPage() {
     }
     // For unlimited plans, show only the plan info
     if (quotaSnapshot.limit === null) {
-      return 'Pro előfizetés — nincs limit.';
+      return t('dashboard.metrics.quota.helperUnlimited', {
+        confirmed: quotaSnapshot.used.toLocaleString('hu-HU'),
+        pending: quotaSnapshot.pending.toLocaleString('hu-HU'),
+      });
     }
     // For limited plans, show reset date if available
     if (quotaResetLabel) {
-      return `Következő frissítés: ${quotaResetLabel}.`;
+      const remaining = quotaSnapshot.limit - quotaSnapshot.used - quotaSnapshot.pending;
+      return t('dashboard.metrics.quota.helperLimitedWithReset', {
+        confirmed: quotaSnapshot.used.toLocaleString('hu-HU'),
+        pending: quotaSnapshot.pending.toLocaleString('hu-HU'),
+        remaining: remaining.toLocaleString('hu-HU'),
+        resetDate: quotaResetLabel,
+      });
     }
     return undefined;
-  }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
+  }, [isQuotaLoading, quotaResetLabel, quotaSnapshot, t]);
 
   /** Derived UI szövegek */
   const acceptanceLabel =

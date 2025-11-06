@@ -21,7 +21,7 @@ export const hu = {
   },
   app: {
     title: 'AI Ajánlatkészítő',
-    description: 'AI által támogatott, professzionális ajánlatok kis- és középvállalkozásoknak.',
+    description: 'Professzionális ajánlatok percek alatt AI segítségével. Ideális kis- és középvállalkozásoknak.',
     skipToContent: 'Ugrás a tartalomra',
     authErrorTitle: 'Hitelesítés sikertelen',
     authErrorFallback: 'Nem sikerült hitelesíteni a felhasználói állapotot.',
@@ -33,7 +33,7 @@ export const hu = {
     footer: {
       brand: 'Propono',
       description:
-        'AI által támogatott, professzionális ajánlatok kis- és középvállalkozások számára.',
+        'Professzionális ajánlatok percek alatt AI segítségével. Ideális kis- és középvállalkozásoknak.',
       contactHeading: 'Kapcsolat',
       legalNavLabel: 'Jogi információk',
       legalLinks: {
@@ -234,9 +234,9 @@ export const hu = {
         unlimitedValue: 'Korlátlan',
         value: '{remaining} / {limit}',
         helperUnlimited:
-          'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Pro előfizetés — nincs limit.',
+          'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Korlátlan ajánlatok – csak Pro csomaggal.',
         helperLimitedWithReset:
-          'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Következő frissítés: {resetDate}.',
+          'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. {remaining} ajánlat maradt. Következő frissítés: {resetDate}.',
         helperLimited: 'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban.',
         pendingNote:
           'A függőben lévő PDF-ek is számítanak. Ha egy generálás hibára fut, a számláló automatikusan visszaáll.',
@@ -447,13 +447,13 @@ export const hu = {
         badge: 'Belépő csomag',
         name: 'Propono Standard',
         description:
-          '10 automatikusan generált, professzionális AI-ajánlat havonta. Letisztult PDF és tételes árkalkuláció kis csapatoknak.',
+          '10 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
         features: {
           0: '• 10 ajánlat / hónap',
-          1: '• PDF export',
-          2: '• Alap sablonok és logófeltöltés',
+          1: '• Márkázott PDF export',
+          2: '• Alap sablonok + logó feltöltés',
         },
-        cta: 'Propono Standard megrendelése',
+        cta: 'Standard csomag aktiválása',
         downgradeCta: 'Standard csomagra váltás',
         downgradeHelper: 'Válts Standard csomagra, ha kevesebb ajánlatra van szükséged a hónapban.',
       },
@@ -466,7 +466,7 @@ export const hu = {
           1: '• Márkázott PDF & sablonkönyvtár',
           2: '• Prioritásos AI-szöveg finomhangolás',
         },
-        cta: 'Propono Pro megrendelése',
+        cta: 'Pro csomag aktiválása',
       },
       currentBadge: 'Aktív csomag',
       currentCta: 'Jelenlegi csomag',
@@ -504,8 +504,8 @@ export const hu = {
         title: 'Nyisd meg a Propono prémium élményét és zárj több projektet.',
         description:
           'Fedezd fel, hogyan készíthetsz AI által támogatott, márkázott ajánlatokat percek alatt. Válaszd ki a csomagot, és lépj tovább az értékesítés következő szintjére.',
-        ctaPrimary: 'Lépj be és válassz csomagot',
-        ctaSecondary: 'Nézd meg a bemutatót',
+        ctaPrimary: 'Csomag kiválasztása',
+        ctaSecondary: 'Bemutató megtekintése',
       },
       spotlight: {
         0: 'Szabadszavas promptok iparági sablonokkal',
@@ -514,7 +514,7 @@ export const hu = {
       },
       standard: {
         description:
-          '10 automatikus, professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval.',
+          '10 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
         cta: 'Standard csomag aktiválása',
       },
       pro: {
@@ -524,7 +524,7 @@ export const hu = {
       },
       marketingFeatures: {
         0: {
-          title: 'Egyetlen esztétikus felület',
+          title: 'Egységes, professzionális megjelenés',
           description:
             'A Propono témái igazodnak a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
         },
@@ -534,7 +534,7 @@ export const hu = {
             'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, az árkalkulációt és a moduláris blokkokat.',
         },
         2: {
-          title: 'Ügyfélközpontú megosztás',
+          title: 'Egyszerű megosztás és követés',
           description:
             'Élő link, interaktív visszajelzések és aláírás – minden egy irányítópulton, automatikus státuszokkal.',
         },
@@ -567,8 +567,8 @@ export const hu = {
         title: 'Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton',
         description:
           'Próbáld ki demóban, majd lépj be, hogy azonnal aktiválhasd a Standard vagy Pro csomagot.',
-        primary: 'Belépés és előfizetés',
-        secondary: 'Ingyenes generálás indítása',
+        primary: 'Előfizetés indítása',
+        secondary: 'Kezdés ingyen',
       },
     },
   },
@@ -735,25 +735,25 @@ export const hu = {
   landing: {
     announcement: 'Ajánlatkészítés újragondolva',
     hero: {
-      titleLine1: 'Készíts lenyűgöző',
+      titleLine1: 'Készíts professzionális',
       highlighted: 'ajánlatokat',
-      titleLine2: 'Villámgyorsan.',
+      titleLine2: 'percek alatt.',
       description:
-        'A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen személyre szabva, hogy te a növekedésre koncentrálhass.',
-      primaryCta: 'Próbáld ki ingyen!',
-      secondaryCta: 'Nézd meg a bemutatót',
+        'A Propono AI segítségével automatikusan generálja az ajánlataidat, így több időd marad az üzletfejlesztésre.',
+      primaryCta: 'Kezdés ingyen',
+      secondaryCta: 'Bemutató megtekintése',
       spotlightHeading: 'Mit kapsz azonnal?',
       spotlightDescription:
         'A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól kezdve prémium élményt kap.',
       spotlightItems: [
         'Szabadszavas promptok iparági sablonokkal',
         'Rugalmas rács, ahol minden komponens mozgatható',
-        'Automatikus költség-blokkok és összegek',
+        'Automatikus árkalkuláció és összegek',
       ],
     },
     benefits: [
       {
-        title: 'Egyetlen esztétikus felület',
+        title: 'Egységes, professzionális megjelenés',
         description:
           'A Propono sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
       },
@@ -763,7 +763,7 @@ export const hu = {
           'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, árkalkulációt és moduláris blokkokat.',
       },
       {
-        title: 'Ügyfélközpontú megosztás',
+        title: 'Egyszerű megosztás és követés',
         description:
           'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
       },
@@ -817,8 +817,8 @@ export const hu = {
       title: 'Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton',
       description:
         'Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.',
-      primaryCta: 'Indítsd el ingyen',
-      secondaryCta: 'Csomagok',
+      primaryCta: 'Kezdj el most – ingyen',
+      secondaryCta: 'Árak és csomagok',
     },
     footerAria: 'Oldal lábléc',
   },
@@ -836,7 +836,7 @@ export const hu = {
       'Írd be az e-mail címed, és küldünk egy biztonságos belépési linket, mely 5 percig érvényes. Csak kattints rá, és automatikusan bejelentkezhetsz – jelszó nélkül.',
     emailLabel: 'E-mail cím',
     emailPlaceholder: 'email@cimed.hu',
-    magicLinkButton: 'Magic link küldése',
+    magicLinkButton: 'Belépési link küldése',
     magicLinkSent: 'Link elküldve',
     magicLinkSending: 'Küldés…',
     magicLinkResendCountdown: 'Új link {seconds} mp múlva kérhető',
@@ -903,25 +903,25 @@ export const hu = {
       },
       actions: {
         back: 'Vissza',
-        next: 'Tovább',
-        save: 'PDF generálása és mentés',
-        generatePreview: 'AI előnézet generálása',
+        next: 'Következő lépés',
+        save: 'Ajánlat mentése',
+        generatePreview: 'Előnézet készítése',
         previewReady: 'Előnézet kész',
         previewInProgress: 'Generálás…',
-        previewButtonIdle: 'AI előnézet generálása',
+        previewButtonIdle: 'Előnézet készítése',
         previewDisabledTooltip: 'Add meg a címet és a projekt áttekintést az előnézethez.',
         generatePreviewAgain: 'Újra generálás',
         abortPreview: 'Megszakítás',
         goToSummaryReminder:
           'A továbblépéshez előbb generáld le az AI előnézetet az első lépésben.',
       },
-      preview: {
+        preview: {
         idle: 'Írd be fent a projekt részleteit, és megjelenik az előnézet.',
         loading: 'Kapcsolódás az AI szolgáltatáshoz…',
         streaming: 'Az AI most készíti az előnézetet…',
         countdown: 'Kb. {seconds} mp van hátra…',
         success: 'Előnézet frissítve.',
-        error: 'Nem sikerült frissíteni az előnézetet.',
+        error: 'Az előnézet generálása nem sikerült. Próbáld újra vagy ellenőrizd a kapcsolatot.',
         locked: 'Előnézet kész',
         singleUseNotice:
           'Az AI előnézet egyszer kérhető le. A végső módosításokat a PDF szerkesztő lépésében végezheted el.',
@@ -934,12 +934,12 @@ export const hu = {
         availableDescription: 'Az ajánlat generálása a havi keretedből foglal.',
         exhaustedTitle: 'Elfogyott a havi kvótád',
         exhaustedDescription:
-          'A jelenlegi csomagban már nincs több generálható ajánlat. Frissíts a csomagod vagy várd meg a következő hónapot.',
+          'A jelenlegi csomagban már nincs több generálható ajánlat. Frissíts Pro csomagra korlátlan ajánlatokért, vagy várd meg a következő hónapot.',
         exhaustedToastTitle: 'Nincs több ajánlatkvótád',
         exhaustedToastDescription:
-          'Frissíts a csomagod vagy várd meg a következő hónapot az új ajánlatokhoz.',
+          'Frissíts Pro csomagra korlátlan ajánlatokért, vagy várd meg a következő hónapot.',
         remainingLabel: 'Hátralévő kvóta: {remaining} / {limit}',
-        unlimited: 'Pro előfizetéssel nincs havi limit.',
+        unlimited: 'Korlátlan ajánlatok – csak Pro csomaggal.',
         pendingInfo: '{count} ajánlat generálása még folyamatban van, és beleszámít a keretbe.',
         loading: 'Kvóta ellenőrzése…',
         loadFailed:
@@ -988,7 +988,7 @@ export const hu = {
               help: 'Foglalj össze 2-3 mondatban a projekt célját és a kiinduló helyzetet.',
             },
             deliverables: {
-              label: 'Kulcs szállítandók',
+              label: 'Szállítandók',
               placeholder: 'Sorold fel pontokban vagy bekezdésben a várható eredményeket.',
               help: 'Mit kap pontosan az ügyfél? Adj meg konkrét példákat vagy mérhető kimeneteket.',
             },
@@ -1102,19 +1102,19 @@ export const hu = {
           },
         },
       },
-      statuses: {
+        statuses: {
         previewRequired: 'Generáld le az AI előnézetet a továbblépéshez.',
         notLoggedIn: 'Nem vagy bejelentkezve.',
         previewMissing: 'Írd be fent a projekt részleteit, és megjelenik az előnézet.',
-        aiNoData: 'Az AI nem küldött adatot az előnézethez.',
-        aiUnknownError: 'Ismeretlen hiba történt az AI előnézet frissítése közben.',
-        aiTimeout: 'Az AI előnézet lekérése lejárt. Próbáld újra.',
-        aiStreamingError: 'Ismeretlen hiba történt az AI előnézet frissítése közben.',
-        aiPreviewError: 'Hiba az előnézet betöltésekor ({status}).',
-        authError: 'Nem sikerült hitelesíteni az előnézet lekérését.',
-        generateError: 'Ismeretlen hiba történt az ajánlat generálása közben.',
-        generateStatusError: 'Hiba a generálásnál ({status}).',
-        structuredResponseMissing: 'A struktúrált AI válasz hiányos, próbáld újra a generálást.',
+        aiNoData: 'Az AI nem küldött adatot az előnézethez. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+        aiUnknownError: 'Hiba történt az előnézet generálása során. Próbáld újra vagy frissítsd az oldalt.',
+        aiTimeout: 'Az előnézet generálása túl sokáig tartott. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+        aiStreamingError: 'Hiba történt az előnézet generálása során. Próbáld újra vagy frissítsd az oldalt.',
+        aiPreviewError: 'Hiba az előnézet betöltésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
+        authError: 'Nem sikerült hitelesíteni az előnézet lekérését. Jelentkezz be újra.',
+        generateError: 'Hiba történt az ajánlat generálása során. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+        generateStatusError: 'Hiba a generálásnál ({status}). Próbáld újra vagy frissítsd az oldalt.',
+        structuredResponseMissing: 'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
       },
       summarySidebar: {
         priceTotals: {
@@ -1186,7 +1186,7 @@ export const hu = {
           title: 'Előnézet frissítve.',
         },
         error: {
-          title: 'Nem sikerült frissíteni az előnézetet.',
+          title: 'Az előnézet generálása nem sikerült. Próbáld újra vagy ellenőrizd a kapcsolatot.',
         },
       },
       controls: {
@@ -1423,21 +1423,21 @@ export const hu = {
         'Többszöri próbálkozás után sem sikerült befejezni az előnézetet. Próbáld meg később.',
     },
   },
-  errors: {
-    unauthorized: 'Nincs jogosultságod ehhez a művelethez.',
-    network: 'Hálózati hiba történt. Kérlek, próbáld újra.',
-    unknown: 'Ismeretlen hiba történt.',
-    requestFailed: 'Ismeretlen hiba történt a kérés során.',
-    requestStatus: 'Hiba a kérés során ({status})',
+    errors: {
+    unauthorized: 'Nincs jogosultságod ehhez a művelethez. Jelentkezz be újra.',
+    network: 'Hálózati hiba történt. Ellenőrizd az internetkapcsolatot és próbáld újra.',
+    unknown: 'Hiba történt. Próbáld újra vagy frissítsd az oldalt.',
+    requestFailed: 'Hiba történt a kérés során. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+    requestStatus: 'Hiba a kérés során ({status}). Próbáld újra vagy frissítsd az oldalt.',
     auth: {
-      requestFailed: 'Nem sikerült hitelesíteni a kérést.',
-      sessionInvalid: 'A bejelentkezés lejárt vagy érvénytelen.',
-      sessionCheckFailed: 'Nem sikerült ellenőrizni a bejelentkezést.',
-      verificationUnknown: 'Ismeretlen hiba történt a hitelesítés során.',
-      notLoggedIn: 'Nem vagy bejelentkezve.',
+      requestFailed: 'Nem sikerült hitelesíteni a kérést. Próbáld újra vagy jelentkezz be újra.',
+      sessionInvalid: 'A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra.',
+      sessionCheckFailed: 'Nem sikerült ellenőrizni a bejelentkezést. Próbáld újra vagy frissítsd az oldalt.',
+      verificationUnknown: 'Hiba történt a hitelesítés során. Próbáld újra vagy jelentkezz be újra.',
+      notLoggedIn: 'Nem vagy bejelentkezve. Jelentkezz be a folytatáshoz.',
       logoutMissingCsrf: 'Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.',
-      logoutFailed: 'Nem sikerült kijelentkezni.',
-      logoutUnknown: 'Ismeretlen hiba történt kijelentkezés közben.',
+      logoutFailed: 'Nem sikerült kijelentkezni. Próbáld újra vagy frissítsd az oldalt.',
+      logoutUnknown: 'Hiba történt kijelentkezés közben. Próbáld újra vagy frissítsd az oldalt.',
     },
     settings: {
       validationRequired: 'Kérjük, javítsd a piros mezőket.',
@@ -1448,22 +1448,22 @@ export const hu = {
       activityNameRequired: 'Add meg a tevékenység nevét.',
     },
     preview: {
-      authError: 'Nem sikerült hitelesíteni az előnézet lekérését.',
-      fetchStatus: 'Hiba az előnézet betöltésekor ({status})',
-      fetchUnknown: 'Ismeretlen hiba történt az előnézet lekérése közben.',
-      streamUnknown: 'Ismeretlen hiba történt az AI előnézet frissítése közben.',
-      noData: 'Az AI nem küldött adatot az előnézethez.',
-      aborted: 'Az előnézet frissítése megszakadt.',
-      timeout: 'Az előnézet kérése időtúllépés miatt megszakadt.',
+      authError: 'Nem sikerült hitelesíteni az előnézet lekérését. Jelentkezz be újra.',
+      fetchStatus: 'Hiba az előnézet betöltésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
+      fetchUnknown: 'Hiba történt az előnézet lekérése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      streamUnknown: 'Hiba történt az AI előnézet frissítése közben. Próbáld újra vagy frissítsd az oldalt.',
+      noData: 'Az AI nem küldött adatot az előnézethez. Próbáld újra vagy ellenőrizd a projekt adatokat.',
+      aborted: 'Az előnézet frissítése megszakadt. Próbáld újra.',
+      timeout: 'Az előnézet generálása túl sokáig tartott. Próbáld újra vagy ellenőrizd a kapcsolatot.',
     },
     offer: {
-      generateStatus: 'Hiba a generálásnál ({status})',
-      generateUnknown: 'Ismeretlen hiba történt az ajánlat generálása közben.',
-      saveStatus: 'Hiba az ajánlat mentésekor ({status})',
-      saveAuth: 'Nem sikerült hitelesíteni az ajánlat mentését.',
-      saveUnknown: 'Ismeretlen hiba történt az ajánlat mentése közben.',
-      saveFailed: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.',
-      missingStructure: 'A struktúrált AI válasz hiányos, próbáld újra a generálást.',
+      generateStatus: 'Hiba a generálásnál ({status}). Próbáld újra vagy frissítsd az oldalt.',
+      generateUnknown: 'Hiba történt az ajánlat generálása közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      saveStatus: 'Hiba az ajánlat mentésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
+      saveAuth: 'Nem sikerült hitelesíteni az ajánlat mentését. Jelentkezz be újra.',
+      saveUnknown: 'Hiba történt az ajánlat mentése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      saveFailed: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      missingStructure: 'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
     },
   },
   pdf: {

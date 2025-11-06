@@ -331,14 +331,13 @@ export default function Home() {
             </span>
 
             <h1 className="text-4xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-5xl lg:text-6xl">
-              Készíts lenyűgöző <HighlightUnderline>ajánlatokat</HighlightUnderline>.
+              {t('landing.hero.titleLine1')} <HighlightUnderline>{t('landing.hero.highlighted')}</HighlightUnderline>.
               <br />
-              <span className="text-primary">Villámgyorsan.</span>
+              <span className="text-primary">{t('landing.hero.titleLine2')}</span>
             </h1>
 
             <p className="max-w-[52ch] text-lg leading-[1.6] text-fg-muted md:text-xl">
-              A Propono AI-alapú ajánlatkészítő automatizálja az árajánlatok létrehozását teljesen
-              személyre szabva, hogy te a növekedésre koncentrálhass.
+              {t('landing.hero.description')}
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
@@ -346,7 +345,7 @@ export default function Home() {
                 href="/new"
                 className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
               >
-                <span>Próbáld ki ingyen!</span>
+                <span>{t('landing.hero.primaryCta')}</span>
                 <svg
                   className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
                   fill="none"
@@ -369,7 +368,7 @@ export default function Home() {
                   />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Nézd meg a bemutatót
+                {t('landing.hero.secondaryCta')}
               </Link>
             </div>
 
@@ -730,7 +729,7 @@ export default function Home() {
                 href="/new"
                 className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:scale-105 hover:shadow-xl"
               >
-                <span>Indítsd el ingyen</span>
+                <span>{t('landing.cta.primaryCta')}</span>
                 <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -739,7 +738,7 @@ export default function Home() {
                 href="/billing"
                 className="inline-flex items-center justify-center rounded-full border-2 border-primary/60 px-8 py-4 text-base font-semibold text-primary transition-all duration-200 ease-out hover:border-primary hover:bg-primary/10"
               >
-                Csomagok megtekintése
+                {t('landing.cta.secondaryCta')}
               </Link>
             </div>
             <p className="mt-6 text-sm text-fg-muted">
