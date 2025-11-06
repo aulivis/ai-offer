@@ -1,16 +1,16 @@
 export const PRINT_BASE_CSS = `
   :root {
-    --page-margin-top: 15mm;
+    --page-margin-top: 0mm;
     --page-margin-right: 15mm;
-    --page-margin-bottom: 15mm;
+    --page-margin-bottom: 0mm;
     --page-margin-left: 15mm;
-    --page-header-height: 20mm;
-    --page-footer-height: 20mm;
+    --page-header-height: 12mm;
+    --page-footer-height: 12mm;
     --page-header-gap: 8mm;
     --page-header-padding: 4mm;
     --page-footer-margin: 12mm;
     --page-footer-padding: 4mm;
-    --page-safe-inset: 3mm;
+    --page-safe-inset: 2mm;
     --page-header-offset: 0mm;
     --page-footer-offset: 0mm;
   }
@@ -56,17 +56,22 @@ export const PRINT_BASE_CSS = `
     border-radius: 0;
     box-shadow: none;
     padding: 0;
+    margin-top: 0;
   }
 
   .offer-doc__header {
     background: var(--brand-bg, #ffffff);
+    margin-top: 0;
     margin-bottom: var(--page-header-gap);
+    padding-top: 0;
     padding-bottom: var(--page-header-padding);
     position: static;
   }
   
   .offer-doc__header.first-page-only {
+    margin-top: 0;
     margin-bottom: var(--page-header-gap);
+    padding-top: 0;
   }
 
   .offer-doc__header-brand {
@@ -285,6 +290,11 @@ export const PRINT_BASE_CSS = `
     min-height: 12mm;
   }
   
+  .slim-header,
+  .slim-footer {
+    position: fixed;
+  }
+  
   .slim-header__company {
     font-weight: 600;
     color: var(--text, #0f172a);
@@ -329,37 +339,40 @@ export const PRINT_BASE_CSS = `
     .offer-doc {
       padding: 0;
       background: #ffffff;
+      margin-top: 0;
     }
 
-    .offer-doc__slim-bar {
+    .offer-doc__slim-bar,
+    .slim-header,
+    .slim-footer {
       display: flex !important;
     }
-
+    
     .slim-header,
     .slim-footer {
       background: #ffffff !important;
       color: var(--muted, #1f2937);
-      display: flex !important;
       justify-content: space-between;
       padding: var(--page-safe-inset) 0;
-      position: fixed;
-      left: var(--page-margin-left);
-      right: var(--page-margin-right);
+      position: fixed !important;
+      left: var(--page-margin-left) !important;
+      right: var(--page-margin-right) !important;
+      width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
       z-index: 1000;
       pointer-events: none;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       color-adjust: exact;
     }
-
+    
     .slim-header {
-      top: 0;
+      top: 0 !important;
       border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
       padding-bottom: var(--page-header-padding);
     }
-
+    
     .slim-footer {
-      bottom: 0;
+      bottom: 0 !important;
       border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
       padding-top: var(--page-footer-padding);
     }
@@ -370,6 +383,16 @@ export const PRINT_BASE_CSS = `
     
     .first-page-only {
       display: block;
+    }
+    
+    .offer-doc__header.first-page-only {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+    
+    .offer-doc__content {
+      margin-top: 0;
+      padding-top: 0;
     }
     
     .section-card {

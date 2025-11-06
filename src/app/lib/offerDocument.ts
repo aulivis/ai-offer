@@ -84,8 +84,15 @@ export const OFFER_DOCUMENT_STYLES = `
     display: flex;
     gap: var(--space-lg, 1.5rem);
     justify-content: space-between;
+    margin-top: 0;
     margin-bottom: var(--space-xl, 2.75rem);
+    padding-top: 0;
     padding-bottom: var(--space-lg, 1.5rem);
+  }
+  
+  .offer-doc__header.first-page-only {
+    margin-top: 0;
+    padding-top: 0;
   }
   .offer-doc__header-brand {
     align-items: center;
@@ -858,7 +865,7 @@ export function offerBodyMarkup({
   const pageLabel = 'Oldal';
 
   const slimHeaderMarkup = `
-    <div class="offer-doc__slim-bar slim-header not-first-page" aria-hidden="true">
+    <div class="offer-doc__slim-bar slim-header" aria-hidden="true">
       <div style="display: flex; align-items: center; gap: 1rem;">
         ${logoUrl ? `<img src="${sanitizeInput(logoUrl)}" alt="Logo" style="height: 16px; max-width: 60px; object-fit: contain;" />` : `<span style="font-weight: 600; font-size: 0.75rem;">${monogram}</span>`}
         <span class="slim-header__company">${safeCompany || 'Vállalat neve'}</span>
@@ -869,7 +876,7 @@ export function offerBodyMarkup({
   `;
 
   const slimFooterMarkup = `
-    <div class="offer-doc__slim-bar slim-footer not-first-page" aria-hidden="true">
+    <div class="offer-doc__slim-bar slim-footer" aria-hidden="true">
       <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.7rem;">
         <span style="font-weight: 600;">${safeCompany || 'Vállalat neve'}</span>
         ${safeCompanyAddress ? `<span>${safeCompanyAddress}</span>` : ''}
@@ -907,7 +914,7 @@ export function offerBodyMarkup({
     const markup = `
       <article class="offer-doc offer-doc--premium" style="${safeStyleAttr}">
         ${slimHeaderMarkup}
-        <header class="offer-doc__header offer-doc__header--premium first-page-only">
+        <header class="offer-doc__header offer-doc__header--premium first-page-only" style="margin-top: 0; padding-top: 0;">
           <div class="offer-doc__premium-banner">
             ${logoSlot}
             <div class="offer-doc__premium-text">
@@ -971,7 +978,7 @@ export function offerBodyMarkup({
   const markup = `
     <article class="offer-doc offer-doc--modern" style="${safeStyleAttr}">
       ${slimHeaderMarkup}
-      <header class="offer-doc__header first-page-only">
+      <header class="offer-doc__header first-page-only" style="margin-top: 0; padding-top: 0;">
         <div class="offer-doc__header-brand">
           ${logoMarkup}
           <div class="offer-doc__header-text">
