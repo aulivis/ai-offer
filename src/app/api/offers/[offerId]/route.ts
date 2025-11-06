@@ -33,8 +33,8 @@ type RouteParams = {
 };
 
 export const DELETE = withAuth(
-  async (request: AuthenticatedNextRequest, context: { params: RouteParams }) => {
-    const { offerId } = context.params;
+  async (request: AuthenticatedNextRequest, context: { params: Promise<RouteParams> }) => {
+    const { offerId } = await context.params;
     const requestId = getRequestId(request);
     const log = createLogger(requestId);
     log.setContext({ userId: request.user.id, offerId });
