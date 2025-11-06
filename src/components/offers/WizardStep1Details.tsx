@@ -8,12 +8,19 @@ import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { HelpIcon } from '@/components/ui/HelpIcon';
-import type { ProjectDetails, ProjectDetailKey } from '@/lib/projectDetails';
 import {
-  PROJECT_DETAIL_FIELDS,
-  PROJECT_DETAIL_LIMITS,
+  projectDetailFields,
   emptyProjectDetails,
+  type ProjectDetails,
+  type ProjectDetailKey,
 } from '@/lib/projectDetails';
+
+const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
+  overview: 600,
+  deliverables: 400,
+  timeline: 400,
+  constraints: 400,
+};
 
 type Step1Form = {
   industry: string;
@@ -296,7 +303,7 @@ export function WizardStep1Details({
                 )}
               </div>
 
-              {PROJECT_DETAIL_FIELDS.filter((field) => field !== 'overview').map((field) => (
+              {projectDetailFields.filter((field) => field !== 'overview').map((field) => (
                 <Textarea
                   key={field}
                   value={form.projectDetails[field]}
