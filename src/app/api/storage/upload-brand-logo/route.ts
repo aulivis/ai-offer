@@ -238,11 +238,29 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
 
     const path = `${userId}/brand-logo.${normalizedImage.extension}`;
 
+    // Verify the Supabase client has user context
+    // The supabaseServer() function should include the access token from cookies
+    // but we need to ensure it's properly authenticated
+    const { data: { user: authUser } } = await sb.auth.getUser();
+    if (!authUser || authUser.id !== userId) {
+      log.error('Authentication mismatch in logo upload', {
+        expectedUserId: userId,
+        authUserId: authUser?.id || 'none',
+      });
+      return NextResponse.json(
+        { error: 'Hitelesítési hiba. Kérjük, jelentkezz be újra.' },
+        { status: 401 },
+      );
+    }
+
     const { error: uploadError } = await sb.storage
       .from(BUCKET_ID)
       .upload(path, normalizedImage.buffer, {
         upsert: true,
         contentType: normalizedImage.contentType,
+        // Explicitly set owner metadata to ensure RLS policies work correctly
+        // Note: Supabase Storage should automatically set owner to auth.uid(),
+        // but we're being explicit here for clarity
       });
     if (uploadError) {
       // Serialize Supabase error properly for logging

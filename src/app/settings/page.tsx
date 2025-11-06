@@ -1,7 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { ChangeEvent, SVGProps } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
@@ -108,6 +108,127 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
     }
   }
   return new Error(t('errors.settings.saveUnknown'));
+}
+
+// Logo preview component that generates fresh signed URLs on-demand
+function LogoPreview({ logoPath }: { logoPath: string | null | undefined }) {
+  const supabase = useSupabase();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+
+    (async () => {
+      if (!logoPath) {
+        if (active) {
+          setLogoUrl(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const url = await getBrandLogoUrl(supabase, logoPath, null);
+        if (active) {
+          setLogoUrl(url);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.debug('Failed to load logo preview:', error);
+        if (active) {
+          setLogoUrl(null);
+          setIsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [supabase, logoPath]);
+
+  if (isLoading) {
+    return (
+      <div className="h-16 w-16 flex-none animate-pulse rounded-lg border border-border bg-slate-200" />
+    );
+  }
+
+  if (logoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt={t('settings.branding.logoPreviewAlt')}
+        className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
+        onError={() => {
+          // If signed URL fails to load, try to regenerate
+          setLogoUrl(null);
+        }}
+      />
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/images/logo-placeholder.svg"
+      alt={t('settings.branding.logoPlaceholderAlt')}
+      className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
+    />
+  );
+}
+
+// Button to open logo in new tab with fresh signed URL
+function OpenLogoButton({ logoPath }: { logoPath: string | null | undefined }) {
+  const supabase = useSupabase();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleOpenLogo = useCallback(async () => {
+    if (!logoPath) {
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const url = await getBrandLogoUrl(supabase, logoPath, null);
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        console.warn('Failed to generate signed URL for logo');
+      }
+    } catch (error) {
+      console.error('Failed to open logo:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [supabase, logoPath]);
+
+  if (!logoPath) {
+    return null;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleOpenLogo}
+      disabled={isGenerating}
+      className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {isGenerating ? (
+        <>
+          <svg className="mr-2 h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          {t('settings.branding.logoUpload.opening') || 'Megnyitás...'}
+        </>
+      ) : (
+        t('settings.branding.logoUpload.openInNewTab')
+      )}
+    </button>
+  );
 }
 
 export default function SettingsPage() {
@@ -1231,22 +1352,7 @@ export default function SettingsPage() {
 
           <div className="flex flex-col gap-4 lg:flex-row">
             <div className="flex flex-1 items-start gap-4 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
-              {profile.brand_logo_url ? (
-                // A kis méretű előnézethez nem szükséges képtömörítés, ezért marad a sima <img> elem.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={profile.brand_logo_url}
-                  alt={t('settings.branding.logoPreviewAlt')}
-                  className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/images/logo-placeholder.svg"
-                  alt={t('settings.branding.logoPlaceholderAlt')}
-                  className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
-                />
-              )}
+              <LogoPreview logoPath={profile.brand_logo_path} />
               <div className="flex-1 text-sm text-slate-500">
                 <p className="font-semibold text-slate-700">
                   {t('settings.branding.logoUpload.title')}
@@ -1319,16 +1425,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-                  {profile.brand_logo_url && (
-                    <a
-                      href={profile.brand_logo_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      {t('settings.branding.logoUpload.openInNewTab')}
-                    </a>
-                  )}
+                  <OpenLogoButton logoPath={profile.brand_logo_path} />
                 </div>
                 {!canUploadBrandLogo && (
                   <p className="mt-2 flex items-center gap-2 text-xs font-medium text-amber-600">
