@@ -410,14 +410,121 @@ export default function SettingsPage() {
   const primaryPreview = normalizeBrandHex(profile.brand_color_primary) ?? '#1c274c';
   const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
   const canUploadBrandLogo = plan !== 'free';
-  const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
+  // Use the template ID directly from profile for display (enforcement happens on save)
+  const selectedTemplateId = (profile.offer_template as TemplateId | null) ?? DEFAULT_OFFER_TEMPLATE_ID;
 
   const handleTemplateSelect = useCallback(
     async (templateId: TemplateId) => {
+      // Update profile state immediately for UI feedback
       setProfile((prev) => ({ ...prev, offer_template: templateId }));
-      await saveProfile('branding');
+      
+      // Save directly with the selected template ID
+      try {
+        setSaving(true);
+        if (!user) return;
+        
+        const primary = normalizeBrandHex(profile.brand_color_primary);
+        const secondary = normalizeBrandHex(profile.brand_color_secondary);
+        // Use the selected templateId directly, but still enforce plan restrictions
+        const templateIdToSave = enforceTemplateForPlan(templateId, plan);
+        
+        const mutationAction = resolveProfileMutationAction({
+          hasProfile,
+          loadError: profileLoadError,
+        });
+        
+        let brandingData:
+          | {
+              brand_logo_path: string | null;
+              brand_logo_url: string | null;
+              brand_color_primary: string | null;
+              brand_color_secondary: string | null;
+              offer_template: string | null;
+            }
+          | null
+          | undefined;
+          
+        if (mutationAction === 'update') {
+          const response = await supabase
+            .from('profiles')
+            .update({
+              brand_logo_path: profile.brand_logo_path ?? null,
+              brand_logo_url: profile.brand_logo_url ?? null,
+              brand_color_primary: primary,
+              brand_color_secondary: secondary,
+              offer_template: templateIdToSave,
+            })
+            .eq('id', user.id)
+            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .maybeSingle();
+          if (response.error) {
+            throw createSupabaseError(response.error);
+          }
+          brandingData = response.data;
+        } else {
+          const response = await supabase
+            .from('profiles')
+            .upsert(
+              {
+                id: user.id,
+                company_name: profile.company_name ?? '',
+                company_address: profile.company_address ?? '',
+                company_tax_id: profile.company_tax_id ?? '',
+                company_phone: profile.company_phone ?? '',
+                company_email: profile.company_email?.trim() || email || '',
+                industries: Array.isArray(profile.industries)
+                  ? profile.industries
+                      .map((industry) => industry.trim())
+                      .filter((industry) => industry.length > 0)
+                  : [],
+                plan,
+                brand_logo_path: profile.brand_logo_path ?? null,
+                brand_logo_url: profile.brand_logo_url ?? null,
+                brand_color_primary: primary,
+                brand_color_secondary: secondary,
+                offer_template: templateIdToSave,
+              },
+              { onConflict: 'id' },
+            )
+            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .maybeSingle();
+          if (response.error) {
+            throw createSupabaseError(response.error);
+          }
+          brandingData = response.data;
+        }
+        
+        setHasProfile(true);
+        setProfileLoadError(null);
+        // Update profile with the saved template ID (use what was actually saved)
+        setProfile((prev) => ({
+          ...prev,
+          brand_logo_path: brandingData?.brand_logo_path ?? prev.brand_logo_path ?? null,
+          brand_logo_url: brandingData?.brand_logo_url ?? prev.brand_logo_url ?? null,
+          brand_color_primary: brandingData?.brand_color_primary ?? primary ?? null,
+          brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
+          offer_template: brandingData?.offer_template ?? templateIdToSave,
+        }));
+        
+        showToast({
+          title: t('toasts.settings.saveSuccess'),
+          description: t('toasts.settings.saveSuccess'),
+          variant: 'success',
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : t('errors.settings.saveUnknown');
+        showToast({
+          title: t('errors.settings.saveFailed', { message }),
+          description: message,
+          variant: 'error',
+        });
+        // Revert to previous template on error
+        setProfile((prev) => ({ ...prev, offer_template: selectedTemplateId }));
+      } finally {
+        setSaving(false);
+      }
     },
-    [saveProfile],
+    [user, plan, profile, hasProfile, profileLoadError, email, selectedTemplateId, supabase, showToast],
   );
 
   useEffect(() => {
@@ -589,10 +696,7 @@ export default function SettingsPage() {
           brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null,
           brand_color_primary: brandingData?.brand_color_primary ?? primary ?? null,
           brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
-          offer_template: enforceTemplateForPlan(
-            typeof brandingData?.offer_template === 'string' ? brandingData.offer_template : templateId,
-            plan,
-          ),
+          offer_template: brandingData?.offer_template ?? templateId,
         }));
         showToast({
           title: t('toasts.settings.saveSuccess'),
@@ -676,10 +780,7 @@ export default function SettingsPage() {
         brand_color_primary: profileData?.brand_color_primary ?? primary ?? null,
         brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
         industries: sanitizedIndustries,
-        offer_template: enforceTemplateForPlan(
-          typeof profileData?.offer_template === 'string' ? profileData.offer_template : templateId,
-          plan,
-        ),
+        offer_template: profileData?.offer_template ?? templateId,
       }));
       showToast({
         title: t('toasts.settings.saveSuccess'),
