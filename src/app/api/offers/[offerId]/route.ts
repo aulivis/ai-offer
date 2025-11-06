@@ -9,6 +9,13 @@ import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 import { t } from '@/copy';
+import { z } from 'zod';
+import { uuidSchema } from '@/lib/validation/schemas';
+import { handleValidationError } from '@/lib/errorHandling';
+
+const offerIdParamsSchema = z.object({
+  offerId: uuidSchema,
+});
 
 const normalizeUserOwnedStoragePath = (path: string, userId: string): string | null => {
   const trimmed = path.trim();
@@ -30,19 +37,26 @@ const normalizeUserOwnedStoragePath = (path: string, userId: string): string | n
 };
 
 type RouteParams = {
-  offerId?: string;
+  params: Promise<{
+    offerId?: string;
+  }>;
 };
 
 export const DELETE = withAuth(
-  async (request: AuthenticatedNextRequest, context: { params: Promise<RouteParams> }) => {
-    const { offerId } = await context.params;
+  async (request: AuthenticatedNextRequest, context: RouteParams) => {
     const requestId = getRequestId(request);
     const log = createLogger(requestId);
-    log.setContext({ userId: request.user.id, offerId });
+    log.setContext({ userId: request.user.id });
     
-    if (!offerId || typeof offerId !== 'string') {
-      return NextResponse.json({ error: 'Érvénytelen ajánlat azonosító.' }, { status: 400 });
+    // Validate route parameters
+    const resolvedParams = await context.params;
+    const parsed = offerIdParamsSchema.safeParse(resolvedParams);
+    if (!parsed.success) {
+      return handleValidationError(parsed.error, requestId);
     }
+    
+    const offerId = parsed.data.offerId;
+    log.setContext({ userId: request.user.id, offerId });
 
     try {
       const sessionClient = await supabaseServer();

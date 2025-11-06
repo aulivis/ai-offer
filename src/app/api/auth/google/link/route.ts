@@ -1,10 +1,16 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { createSupabaseOAuthClient } from '../createSupabaseOAuthClient';
 import { sanitizeOAuthRedirect } from '../redirectUtils';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
+import { oauthRedirectSchema } from '@/lib/validation/schemas';
+
+const googleLinkQuerySchema = z.object({
+  redirect_to: oauthRedirectSchema,
+});
 
 function buildRedirect(target: string) {
   return NextResponse.redirect(target, { status: 302 });
@@ -25,8 +31,23 @@ export async function GET(request: Request) {
     );
   }
 
+  // Validate query parameters
+  const url = new URL(request.url);
+  const queryParams = {
+    redirect_to: url.searchParams.get('redirect_to') || undefined,
+  };
+  
+  const parsed = googleLinkQuerySchema.safeParse(queryParams);
+  if (!parsed.success) {
+    // Invalid redirect URL - use default
+    log.warn('Invalid redirect_to parameter in Google link request', {
+      error: parsed.error,
+      providedRedirect: queryParams.redirect_to,
+    });
+  }
+
   const successRedirect = sanitizeOAuthRedirect(
-    new URL(request.url).searchParams.get('redirect_to'),
+    parsed.success ? parsed.data.redirect_to : null,
     '/settings?link=google_success',
   );
   const errorRedirect = sanitizeOAuthRedirect(null, '/settings?link=google_error');

@@ -1,19 +1,26 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
+import { uuidSchema } from '@/lib/validation/schemas';
+import { handleValidationError } from '@/lib/errorHandling';
 
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 
 export const runtime = 'nodejs';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     jobId: string;
-  };
+  }>;
 };
+
+const pdfJobIdParamsSchema = z.object({
+  jobId: uuidSchema,
+});
 
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
@@ -24,10 +31,14 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
   
-  const jobId = params.jobId?.trim();
-  if (!jobId) {
-    return badRequest('Hiányzik a PDF feladat azonosítója.');
+  // Validate route parameters
+  const resolvedParams = await params;
+  const parsed = pdfJobIdParamsSchema.safeParse(resolvedParams);
+  if (!parsed.success) {
+    return handleValidationError(parsed.error, requestId);
   }
+  
+  const jobId = parsed.data.jobId;
 
   const sb = await supabaseServer();
   const { data: job, error } = await sb
