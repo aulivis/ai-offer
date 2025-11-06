@@ -1740,8 +1740,8 @@ export default function NewOfferWizard() {
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
-      <div className="space-y-10">
-        <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
+      <div className="space-y-6">
+        <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
           <StepIndicator steps={wizardSteps} />
         </Card>
 
@@ -2132,22 +2132,29 @@ export default function NewOfferWizard() {
             activities={activities}
             industry={form.industry}
             {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
+            client={client}
+            onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+            clientList={clientList}
+            onClientSelect={pickClient}
+            showClientDropdown={showClientDrop}
+            onClientDropdownToggle={setShowClientDrop}
+            filteredClients={filteredClients}
           />
         )}
 
         {step === 3 && (
-          <section className="space-y-6">
-            <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <section className="space-y-4">
+            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-5">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-base font-semibold text-slate-900">
                     {t('offers.wizard.steps.summary')}
                   </h2>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-xs text-slate-600">
                     Ez a tartalom kerül a PDF-be – finomhangold bátran.
                   </p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
                   Élő előnézet
                 </span>
               </div>
@@ -2172,37 +2179,37 @@ export default function NewOfferWizard() {
                   ))}
                 </Select>
                 {showLockedTemplates ? (
-                  <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
-                        <LockBadgeIcon className="h-4 w-4" />
+                  <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-slate-50/80 p-3">
+                    <div className="flex items-start gap-2.5">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                        <LockBadgeIcon className="h-3.5 w-3.5" />
                       </span>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-700">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-semibold text-slate-700">
                             {t('offers.wizard.previewTemplates.lockedTitle')}
                           </p>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
                             Pro
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-[11px] text-slate-500">
                           {t('offers.wizard.previewTemplates.lockedDescription')}
                         </p>
                       </div>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-2 sm:grid-cols-2">
                       {lockedTemplateSummaries.map((template) => (
                         <div
                           key={template.label}
-                          className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm"
+                          className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm"
                         >
-                          <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                            <LockBadgeIcon className="h-3.5 w-3.5" />
+                          <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                            <LockBadgeIcon className="h-3 w-3" />
                           </span>
-                          <div className="space-y-1">
-                            <p className="text-sm font-semibold text-slate-700">{template.label}</p>
-                            <p className="text-xs text-slate-500">{template.highlight}</p>
+                          <div className="space-y-0.5">
+                            <p className="text-xs font-semibold text-slate-700">{template.label}</p>
+                            <p className="text-[11px] text-slate-500">{template.highlight}</p>
                           </div>
                         </div>
                       ))}
@@ -2230,48 +2237,50 @@ export default function NewOfferWizard() {
                   placeholder={t('richTextEditor.placeholderHint')}
                 />
                 {previewLoading ? (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/80 backdrop-blur">
-                    <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
-                    <div className="space-y-1 text-center">
-                      <p className="text-sm font-medium text-slate-700">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
+                    <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
+                    <div className="space-y-0.5 text-center">
+                      <p className="text-xs font-medium text-slate-700">
                         {t('offers.wizard.preview.loading')}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-[11px] text-slate-500">
                         {t('offers.wizard.preview.loadingHint')}
                       </p>
                     </div>
                   </div>
                 ) : null}
               </div>
-              <p className="text-xs text-slate-500">{t('richTextEditor.placeholderReminder')}</p>
-              <div className="space-y-3">
+              <p className="text-[11px] text-slate-500">{t('richTextEditor.placeholderReminder')}</p>
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                     {t('offers.wizard.previewTemplates.previewHeading')}
                   </p>
                   {selectedPdfTemplate ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
                       {selectedPdfTemplate.label}
                     </span>
                   ) : null}
                 </div>
-                <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-inner">
-                  <iframe
-                    ref={previewFrameRef}
-                    className="offer-template-preview block w-full"
-                    sandbox="allow-same-origin"
-                    srcDoc={previewDocumentHtml}
-                    style={{
-                      border: '0',
-                      width: '100%',
-                      height: `${previewFrameHeight}px`,
-                      minHeight: '720px',
-                      backgroundColor: 'transparent',
-                    }}
-                    title={t('offers.wizard.previewTemplates.previewHeading')}
-                  />
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3">
+                  <div className="mx-auto bg-white shadow-lg" style={{ width: '210mm', maxWidth: '100%', aspectRatio: '210/297' }}>
+                    <iframe
+                      ref={previewFrameRef}
+                      className="offer-template-preview block w-full h-full"
+                      sandbox="allow-same-origin"
+                      srcDoc={previewDocumentHtml}
+                      style={{
+                        border: '0',
+                        width: '100%',
+                        height: `${previewFrameHeight}px`,
+                        minHeight: '720px',
+                        backgroundColor: 'white',
+                      }}
+                      title={t('offers.wizard.previewTemplates.previewHeading')}
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-[11px] text-slate-500">
                   {t('offers.wizard.previewTemplates.previewHint')}
                 </p>
               </div>
@@ -2303,25 +2312,25 @@ export default function NewOfferWizard() {
                     onChange={handleImageInputChange}
                   />
                   {!previewLocked ? (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-[11px] text-slate-500">
                       Előbb generáld le az AI előnézetet, utána adhatod hozzá a képeket.
                     </p>
                   ) : null}
                   {imageAssets.length > 0 ? (
-                    <ul className="grid gap-3 sm:grid-cols-2">
+                    <ul className="grid gap-2 sm:grid-cols-2">
                       {imageAssets.map((asset) => {
                         const sizeKb = Math.max(1, Math.ceil(asset.size / 1024));
                         return (
                           <li
                             key={asset.key}
-                            className="flex gap-3 rounded-2xl border border-border/70 bg-white p-3 shadow-sm"
+                            className="flex gap-2 rounded-xl border border-border/70 bg-white p-2 shadow-sm"
                           >
                             <img
                               src={asset.dataUrl}
                               alt={asset.alt}
-                              className="h-16 w-16 rounded-lg object-cover shadow-sm"
+                              className="h-12 w-12 rounded-lg object-cover shadow-sm"
                             />
-                            <div className="flex flex-1 flex-col justify-between text-xs text-slate-500">
+                            <div className="flex flex-1 flex-col justify-between text-[11px] text-slate-500">
                               <div>
                                 <p className="font-semibold text-slate-700">{asset.name}</p>
                                 <p className="mt-0.5">
@@ -2331,7 +2340,7 @@ export default function NewOfferWizard() {
                               <Button
                                 type="button"
                                 onClick={() => handleRemoveImage(asset.key)}
-                                className="self-start text-xs font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                className="self-start text-[11px] font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                               >
                                 Eltávolítás
                               </Button>
@@ -2341,14 +2350,14 @@ export default function NewOfferWizard() {
                       })}
                     </ul>
                   ) : (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-[11px] text-slate-500">
                       Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek meg.
                     </p>
                   )}
                 </div>
               ) : (
-                <div className="space-y-3 rounded-2xl border border-dashed border-border/70 bg-slate-50/60 p-5">
-                  <p className="text-xs text-slate-500">
+                <div className="space-y-2 rounded-xl border border-dashed border-border/70 bg-slate-50/60 p-3">
+                  <p className="text-[11px] text-slate-500">
                     {t('richTextEditor.imageSection.proUpsell')}
                   </p>
                   <Button

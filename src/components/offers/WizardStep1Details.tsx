@@ -122,45 +122,45 @@ export function WizardStep1Details({
   };
 
   return (
-    <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
+    <Card className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
       {/* Header */}
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold text-slate-900">
+      <div className="space-y-1.5">
+        <h2 className="text-lg font-semibold text-slate-900">
           {t('offers.wizard.steps.details')}
         </h2>
-        <p className="text-sm text-slate-600">
+        <p className="text-xs text-slate-600">
           {t('offers.wizard.forms.details.sections.overviewHint')}
         </p>
       </div>
 
       {/* Quota Info */}
       <div
-        className={`rounded-2xl border p-4 transition ${
+        className={`rounded-xl border p-3 transition ${
           quotaInfo.isExhausted
             ? 'border-rose-200 bg-rose-50/90 text-rose-700'
             : 'border-slate-200 bg-slate-50/90 text-slate-700'
         }`}
       >
-        <div className="space-y-1">
-          <p className="text-sm font-semibold">{quotaInfo.title}</p>
-          <p className="text-xs text-current/80">{quotaInfo.description}</p>
+        <div className="space-y-0.5">
+          <p className="text-xs font-semibold">{quotaInfo.title}</p>
+          <p className="text-[11px] text-current/80">{quotaInfo.description}</p>
           {quotaInfo.remainingText ? (
-            <p className="text-xs font-semibold text-current">{quotaInfo.remainingText}</p>
+            <p className="text-[11px] font-semibold text-current">{quotaInfo.remainingText}</p>
           ) : null}
           {quotaInfo.pendingText ? (
-            <p className="text-[11px] text-current/70">{quotaInfo.pendingText}</p>
+            <p className="text-[10px] text-current/70">{quotaInfo.pendingText}</p>
           ) : null}
         </div>
       </div>
 
       {/* Text Templates */}
       {textTemplates.length > 0 && (
-        <section className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-white/70 p-5">
-          <div className="space-y-1">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <section className="space-y-3 rounded-xl border border-dashed border-border/70 bg-white/70 p-3">
+          <div className="space-y-0.5">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
               {t('offers.wizard.forms.details.templates.heading')}
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-[11px] text-slate-500">
               {t('offers.wizard.forms.details.templates.helper')}
             </p>
           </div>
@@ -182,9 +182,9 @@ export function WizardStep1Details({
       )}
 
       {/* Style Selection */}
-      <section className="space-y-4">
+      <section className="space-y-2.5">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
             {t('offers.wizard.forms.details.sections.style')}
           </h3>
           <HelpIcon
@@ -192,7 +192,7 @@ export function WizardStep1Details({
             label={t('offers.wizard.forms.details.sections.style')}
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           {[
             {
               value: 'compact' as const,
@@ -211,14 +211,14 @@ export function WizardStep1Details({
                 key={option.value}
                 type="button"
                 onClick={() => handleFieldChange('style', option.value)}
-                className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`flex h-full w-full flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                   active
-                    ? 'border-slate-900 bg-slate-900 text-white shadow-lg'
+                    ? 'border-slate-900 bg-slate-900 text-white shadow-md'
                     : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
                 }`}
               >
-                <span className="text-sm font-semibold">{option.label}</span>
-                <span className="text-xs text-current/80">{option.description}</span>
+                <span className="text-xs font-semibold">{option.label}</span>
+                <span className="text-[11px] text-current/80">{option.description}</span>
               </Button>
             );
           })}
@@ -226,9 +226,9 @@ export function WizardStep1Details({
       </section>
 
       {/* Project Details */}
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
             {t('offers.wizard.forms.details.sections.overview')}
           </h3>
           <HelpIcon
@@ -236,7 +236,7 @@ export function WizardStep1Details({
             label={t('offers.wizard.forms.details.sections.overview')}
           />
         </div>
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {form.style === 'detailed' && (
             <Select
               label={t('offers.wizard.forms.details.industryLabel')}
@@ -272,21 +272,21 @@ export function WizardStep1Details({
           />
 
           {form.style === 'detailed' && (
-            <div className="space-y-4">
-              <div className="space-y-4 rounded-2xl border border-border/70 bg-white/70 p-4">
-                <div className="flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <div className="space-y-2.5 rounded-xl border border-border/70 bg-white/70 p-3">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-fg">
+                    <p className="text-xs font-semibold text-fg">
                       {t('offers.wizard.forms.details.tips.title')}
                     </p>
-                    <p className="text-xs text-fg-muted">
+                    <p className="text-[11px] text-fg-muted">
                       {t('offers.wizard.forms.details.tips.subtitle')}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setDetailsTipsOpen((value) => !value)}
-                    className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-fg transition hover:border-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold text-fg transition hover:border-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     {detailsTipsOpen
                       ? t('offers.wizard.forms.details.tips.hide')
@@ -294,7 +294,7 @@ export function WizardStep1Details({
                   </button>
                 </div>
                 {detailsTipsOpen && (
-                  <ul className="list-disc space-y-2 pl-5 text-xs text-fg-muted">
+                  <ul className="list-disc space-y-1 pl-4 text-[11px] text-fg-muted">
                     <li>{t('offers.wizard.forms.details.tips.items.overview')}</li>
                     <li>{t('offers.wizard.forms.details.tips.items.deliverables')}</li>
                     <li>{t('offers.wizard.forms.details.tips.items.timeline')}</li>
@@ -316,7 +316,7 @@ export function WizardStep1Details({
                   maxLength={PROJECT_DETAIL_LIMITS[field]}
                   error={validationErrors?.projectDetails?.[field]}
                   showCounter
-                  className="min-h-[7.5rem]"
+                  className="min-h-[6rem]"
                 />
               ))}
             </div>
@@ -326,9 +326,9 @@ export function WizardStep1Details({
 
       {/* Additional Settings (Detailed Mode) */}
       {form.style === 'detailed' && (
-        <section className="space-y-4">
+        <section className="space-y-3">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
               {t('offers.wizard.forms.details.sections.scope')}
             </h3>
             <HelpIcon
@@ -336,7 +336,7 @@ export function WizardStep1Details({
               label={t('offers.wizard.forms.details.sections.scope')}
             />
           </div>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Input
               label={t('offers.wizard.forms.details.deadlineLabel')}
               value={form.deadline}
@@ -366,80 +366,6 @@ export function WizardStep1Details({
         </section>
       )}
 
-      {/* Client Information */}
-      <section className="space-y-5 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-slate-700">
-              {t('offers.wizard.forms.details.sections.client')}
-            </p>
-            <p className="text-xs text-slate-500">
-              {t('offers.wizard.forms.details.sections.clientHelper')}
-            </p>
-          </div>
-        </div>
-        <div className="relative">
-          <Input
-            label={t('offers.wizard.forms.details.clientLookupLabel')}
-            placeholder={t('offers.wizard.forms.details.clientLookupPlaceholder')}
-            value={client.company_name}
-            onChange={(e) => {
-              handleClientFieldChange('company_name', e.target.value);
-              onClientDropdownToggle(true);
-            }}
-            onFocus={() => onClientDropdownToggle(true)}
-          />
-          {showClientDropdown && filteredClients.length > 0 && (
-            <div className="absolute z-10 mt-2 max-h-52 w-full overflow-auto rounded-2xl border border-border/70 bg-white shadow-xl">
-              {filteredClients.map((c) => (
-                <Button
-                  key={c.id}
-                  type="button"
-                  className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onMouseDown={() => pickClient(c)}
-                >
-                  <span className="font-medium text-slate-700">{c.company_name}</span>
-                  {c.email ? <span className="text-xs text-slate-500">{c.email}</span> : null}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Input
-            label={t('offers.wizard.forms.details.clientFieldAddress')}
-            placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
-            value={client.address || ''}
-            onChange={(e) => handleClientFieldChange('address', e.target.value)}
-          />
-          <Input
-            label={t('offers.wizard.forms.details.clientFieldTax')}
-            placeholder={t('offers.wizard.forms.details.clientFieldTax')}
-            value={client.tax_id || ''}
-            onChange={(e) => handleClientFieldChange('tax_id', e.target.value)}
-          />
-          <Input
-            label={t('offers.wizard.forms.details.clientFieldRepresentative')}
-            placeholder={t('offers.wizard.forms.details.clientFieldRepresentative')}
-            value={client.representative || ''}
-            onChange={(e) => handleClientFieldChange('representative', e.target.value)}
-          />
-          <Input
-            label={t('offers.wizard.forms.details.clientFieldPhone')}
-            placeholder={t('offers.wizard.forms.details.clientFieldPhone')}
-            value={client.phone || ''}
-            onChange={(e) => handleClientFieldChange('phone', e.target.value)}
-          />
-          <div className="sm:col-span-2">
-            <Input
-              label={t('offers.wizard.forms.details.clientFieldEmail')}
-              placeholder={t('offers.wizard.forms.details.clientFieldEmail')}
-              value={client.email || ''}
-              onChange={(e) => handleClientFieldChange('email', e.target.value)}
-            />
-          </div>
-        </div>
-      </section>
     </Card>
   );
 }
