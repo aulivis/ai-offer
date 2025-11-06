@@ -256,6 +256,20 @@ export async function processPdfJobInline(
     const { data: publicUrlData } = supabase.storage.from('offers').getPublicUrl(job.storagePath);
     const pdfUrl = publicUrlData?.publicUrl ?? null;
 
+    // Update offer FIRST, then increment quota
+    // This ensures quota is only incremented if offer update succeeds
+    // Reduces window for quota leaks if offer update fails
+    const { error: offerUpdateError } = await supabase
+      .from('offers')
+      .update({ pdf_url: pdfUrl })
+      .eq('id', job.offerId)
+      .eq('user_id', job.userId);
+    if (offerUpdateError) {
+      throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
+    }
+
+    // Increment quota AFTER offer update succeeds
+    // If this fails, we can rollback the offer update if needed
     const usageResult = await incrementUsage(
       supabase,
       'user',
@@ -264,6 +278,12 @@ export async function processPdfJobInline(
       job.usagePeriodStart,
     );
     if (!usageResult.allowed) {
+      // Rollback offer update if quota check fails
+      await supabase
+        .from('offers')
+        .update({ pdf_url: null })
+        .eq('id', job.offerId)
+        .eq('user_id', job.userId);
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
     userUsageIncremented = true;
@@ -277,18 +297,16 @@ export async function processPdfJobInline(
         job.usagePeriodStart,
       );
       if (!deviceResult.allowed) {
+        // Rollback user quota and offer update if device quota check fails
+        await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart);
+        await supabase
+          .from('offers')
+          .update({ pdf_url: null })
+          .eq('id', job.offerId)
+          .eq('user_id', job.userId);
         throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
       }
       deviceUsageIncremented = true;
-    }
-
-    const { error: offerUpdateError } = await supabase
-      .from('offers')
-      .update({ pdf_url: pdfUrl })
-      .eq('id', job.offerId)
-      .eq('user_id', job.userId);
-    if (offerUpdateError) {
-      throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
     }
 
     const { error: jobCompleteError } = await supabase
@@ -336,6 +354,20 @@ export async function processPdfJobInline(
         await supabase.storage.from('offers').remove([job.storagePath]);
       } catch (cleanupError) {
         console.error('Failed to remove uploaded PDF after inline worker error:', cleanupError);
+      }
+    }
+
+    // Rollback quota increments if error occurred after quota was incremented
+    if (userUsageIncremented || deviceUsageIncremented) {
+      // Also rollback offer update since quota was incremented but job failed
+      try {
+        await supabase
+          .from('offers')
+          .update({ pdf_url: null })
+          .eq('id', job.offerId)
+          .eq('user_id', job.userId);
+      } catch (offerRollbackError) {
+        console.error('Failed to rollback offer update (inline worker):', offerRollbackError);
       }
     }
 

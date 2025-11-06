@@ -16,6 +16,8 @@ import {
 import {
   checkRateLimitMiddleware,
   createRateLimitResponse,
+  addRateLimitHeaders,
+  createRateLimitHeaders,
 } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
@@ -200,7 +202,12 @@ export const POST = withAuth(
     const { industry, title, projectDetails, deadline, language, brandVoice, style } = parsed.data;
 
     if (!envServer.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OPENAI_API_KEY missing' }, { status: 500 });
+      const errorResponse = NextResponse.json({ error: 'OPENAI_API_KEY missing' }, { status: 500 });
+      errorResponse.headers.set('x-request-id', requestId);
+      if (rateLimitResult) {
+        addRateLimitHeaders(errorResponse, rateLimitResult);
+      }
+      return errorResponse;
     }
     const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
 
@@ -589,13 +596,22 @@ Különös figyelmet fordít a következőkre:
     });
 
     // Create response promise and cache it for deduplication
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'x-request-id': requestId,
+    };
+    
+    // Add rate limit headers if available
+    if (rateLimitResult) {
+      const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
+      Object.assign(responseHeaders, rateLimitHeaders);
+    }
+    
     const responsePromise = Promise.resolve(
       new Response(readable, {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache, no-transform',
-          Connection: 'keep-alive',
-        },
+        headers: responseHeaders,
       })
     );
 
@@ -619,10 +635,15 @@ Különös figyelmet fordít a következőkre:
     const message = error instanceof Error ? error.message : String(error);
     if (isAbortLikeError(error)) {
       log.error('AI preview aborted before streaming could start', error);
-      return NextResponse.json(
+      const abortResponse = NextResponse.json(
         { error: 'Az OpenAI kapcsolat megszakadt. Próbáld újra néhány másodperc múlva.' },
         { status: 503 },
       );
+      abortResponse.headers.set('x-request-id', requestId);
+      if (rateLimitResult) {
+        addRateLimitHeaders(abortResponse, rateLimitResult);
+      }
+      return abortResponse;
     }
     if (error instanceof APIError) {
       log.error('AI preview API error', error);
@@ -633,10 +654,19 @@ Különös figyelmet fordít a következőkre:
           : error.error && typeof error.error === 'object'
             ? String((error.error as { message?: unknown }).message ?? 'Preview failed')
             : 'Preview failed') || 'Preview failed';
-      return NextResponse.json({ error: errorMessage }, { status });
+      const errorResponse = NextResponse.json({ error: errorMessage }, { status });
+      errorResponse.headers.set('x-request-id', requestId);
+      if (rateLimitResult) {
+        addRateLimitHeaders(errorResponse, rateLimitResult);
+      }
+      return errorResponse;
     }
 
-    return handleUnexpectedError(error, requestId, log);
+    const errorResponse = handleUnexpectedError(error, requestId, log);
+    if (rateLimitResult) {
+      addRateLimitHeaders(errorResponse, rateLimitResult);
+    }
+    return errorResponse;
   }
   }),
 );

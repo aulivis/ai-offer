@@ -44,6 +44,23 @@ export function createRateLimitHeaders(result: RateLimitResult): Record<string, 
   };
 }
 
+/**
+ * Adds rate limit headers to an existing NextResponse.
+ * Use this to add rate limit information to successful responses.
+ */
+export function addRateLimitHeaders(
+  response: NextResponse,
+  result: RateLimitResult | null,
+): NextResponse {
+  if (result) {
+    const headers = createRateLimitHeaders(result);
+    Object.entries(headers).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+  }
+  return response;
+}
+
 export function createRateLimitResponse(
   result: RateLimitResult,
   errorMessage: string,

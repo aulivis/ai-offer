@@ -1266,7 +1266,7 @@ Különös figyelmet fordít a következőkre:
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ok: true,
       id: offerId,
       pdfUrl: immediatePdfUrl,
@@ -1275,6 +1275,17 @@ Különös figyelmet fordít a következőkre:
       note: responseNote,
       sections: sectionsPayload,
     });
+    
+    // Add rate limit headers to response
+    if (rateLimitResult) {
+      const { addRateLimitHeaders } = await import('@/lib/rateLimitMiddleware');
+      addRateLimitHeaders(response, rateLimitResult);
+    }
+    
+    // Add request ID to response headers
+    response.headers.set('x-request-id', requestId);
+    
+    return response;
   } catch (error) {
     return handleUnexpectedError(error, requestId, log);
   }
