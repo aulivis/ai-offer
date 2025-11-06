@@ -112,16 +112,30 @@ const previewRequestSchema = z
 
 // Request deduplication cache - stores request hash -> promise mapping
 // Prevents duplicate requests within short time window
+// Uses LRU-style eviction to prevent memory leaks
 const requestCache = new Map<string, { promise: Promise<Response>; timestamp: number }>();
 const REQUEST_CACHE_TTL_MS = 5000; // 5 seconds
-const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 60000; // Cleanup every minute
+const REQUEST_CACHE_MAX_SIZE = 1000; // Maximum cache entries
+const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 30000; // Cleanup every 30 seconds
 
-// Cleanup old cache entries periodically
+// Cleanup old cache entries periodically and enforce size limit
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now();
+    
+    // Remove expired entries
     for (const [key, value] of requestCache.entries()) {
       if (now - value.timestamp > REQUEST_CACHE_TTL_MS) {
+        requestCache.delete(key);
+      }
+    }
+    
+    // If still over limit, remove oldest entries (LRU eviction)
+    if (requestCache.size > REQUEST_CACHE_MAX_SIZE) {
+      const entries = Array.from(requestCache.entries());
+      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+      const toRemove = entries.slice(0, requestCache.size - REQUEST_CACHE_MAX_SIZE);
+      for (const [key] of toRemove) {
         requestCache.delete(key);
       }
     }

@@ -25,6 +25,8 @@ import {
   getDeviceUsageSnapshot,
   getUsageSnapshot,
   syncUsageCounter,
+  checkQuotaWithPending,
+  checkDeviceQuotaWithPending,
 } from '@/lib/services/usage';
 import {
   countPendingPdfJobs,
@@ -795,31 +797,30 @@ export const POST = withAuth(
       throw error;
     }
 
-    let pendingCount = 0;
+    // Atomically check quota including pending jobs to prevent race conditions
+    // This ensures accurate quota checking even under concurrent load
     if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
-      pendingCount = await countPendingPdfJobs(sb, {
-        userId: user.id,
-        periodStart: usagePeriodStart,
-      });
-      const projectedUsage = usageSnapshot.offersGenerated + pendingCount;
-      if (projectedUsage >= planLimit) {
+      const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
+      if (!quotaCheck.allowed) {
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
           { status: 402 },
         );
       }
+      // Update usageSnapshot with atomic values for logging
+      usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
     }
 
     const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
     if (deviceLimit !== null) {
-      const deviceSnapshot = await getDeviceUsageSnapshot(sb, user.id, deviceId, usagePeriodStart);
-      const devicePending = await countPendingPdfJobs(sb, {
-        userId: user.id,
-        periodStart: usagePeriodStart,
+      const deviceQuotaCheck = await checkDeviceQuotaWithPending(
+        sb,
+        user.id,
         deviceId,
-      });
-      const projectedDeviceUsage = deviceSnapshot.offersGenerated + devicePending;
-      if (projectedDeviceUsage >= deviceLimit) {
+        deviceLimit,
+        usagePeriodStart,
+      );
+      if (!deviceQuotaCheck.allowed) {
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást ezen az eszközön.' },
           { status: 402 },
@@ -827,6 +828,11 @@ export const POST = withAuth(
       }
     }
 
+    // Get pending count for logging (non-atomic, but only for logging)
+    const pendingCount = await countPendingPdfJobs(sb, {
+      userId: user.id,
+      periodStart: usagePeriodStart,
+    });
     log.info('Usage quota snapshot', {
       plan,
       limit: planLimit,

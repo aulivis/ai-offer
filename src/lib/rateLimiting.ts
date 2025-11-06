@@ -14,7 +14,7 @@ type RateLimitRow = {
 type SupabaseServerClient = ReturnType<typeof supabaseServiceRole>;
 type RateLimitTable = ReturnType<SupabaseServerClient['from']>;
 
-type RateLimitClient = Pick<SupabaseServerClient, 'from'>;
+type RateLimitClient = Pick<SupabaseServerClient, 'from' | 'rpc'>;
 
 export type RateLimitResult = {
   allowed: boolean;
@@ -51,6 +51,46 @@ async function upsertFresh(
     .single();
 }
 
+/**
+ * Atomically increment rate limit count using database function.
+ * This prevents race conditions where multiple requests read the same count
+ * and increment it, bypassing rate limits.
+ */
+async function incrementExistingAtomic(
+  client: RateLimitClient,
+  key: string,
+  maxRequests: number,
+  windowMs: number,
+): Promise<{ data: RateLimitRow | null; error: PostgrestError | null }> {
+  const { data, error } = await client.rpc('increment_rate_limit', {
+    p_key: key,
+    p_max_requests: maxRequests,
+    p_window_ms: windowMs,
+  });
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  const result = Array.isArray(data) ? data[0] : data;
+  if (!result || typeof result !== 'object') {
+    return { data: null, error: null };
+  }
+
+  const row = result as { count: number; expires_at: string };
+  return {
+    data: {
+      key,
+      count: row.count,
+      expires_at: row.expires_at,
+    },
+    error: null,
+  };
+}
+
+/**
+ * @deprecated Use incrementExistingAtomic instead to prevent race conditions
+ */
 async function incrementExisting(
   table: RateLimitTable,
   key: string,
@@ -90,12 +130,24 @@ export async function consumeRateLimit(
     }
     result = data;
   } else {
-    const currentCount = existing?.count ?? 0;
-    const { data, error } = await incrementExisting(table, key, currentCount);
+    // Use atomic increment function to prevent race conditions
+    const { data, error } = await incrementExistingAtomic(
+      client,
+      key,
+      maxRequests,
+      windowMs,
+    );
     if (error) {
-      throw error;
+      // Fallback to non-atomic increment if function doesn't exist (backward compatibility)
+      const currentCount = existing?.count ?? 0;
+      const fallbackResult = await incrementExisting(table, key, currentCount);
+      if (fallbackResult.error) {
+        throw fallbackResult.error;
+      }
+      result = fallbackResult.data;
+    } else {
+      result = data;
     }
-    result = data;
   }
 
   const resetAt = parseExpiresAt(result?.expires_at);

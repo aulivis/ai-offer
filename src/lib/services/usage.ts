@@ -407,5 +407,97 @@ export async function checkAndIncrementDeviceUsage(
   };
 }
 
+/**
+ * Atomically check quota including pending jobs to prevent race conditions.
+ * This function locks the usage counter and counts pending jobs within the same transaction,
+ * ensuring accurate quota checking even under concurrent load.
+ */
+export async function checkQuotaWithPending(
+  sb: SupabaseClient,
+  userId: string,
+  limit: number | null,
+  periodStartOverride?: string,
+): Promise<{ allowed: boolean; confirmedCount: number; pendingCount: number; totalCount: number }> {
+  const { iso: defaultPeriod } = currentMonthStart();
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, defaultPeriod)
+      : defaultPeriod;
+
+  const rpcPayload = {
+    p_user_id: userId,
+    p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+    p_period_start: periodStart,
+  } as const;
+
+  const { data, error } = await sb.rpc('check_quota_with_pending', rpcPayload);
+  if (error) {
+    // Fallback to non-atomic check if function doesn't exist
+    const snapshot = await getUsageSnapshot(sb, userId, periodStart);
+    const pending = await countPendingPdfJobs(sb, { userId, periodStart });
+    const total = snapshot.offersGenerated + pending;
+    return {
+      allowed: limit === null || total < limit,
+      confirmedCount: snapshot.offersGenerated,
+      pendingCount: pending,
+      totalCount: total,
+    };
+  }
+
+  const [result] = Array.isArray(data) ? data : [data];
+  return {
+    allowed: Boolean(result?.allowed),
+    confirmedCount: Number(result?.confirmed_count ?? 0),
+    pendingCount: Number(result?.pending_count ?? 0),
+    totalCount: Number(result?.total_count ?? 0),
+  };
+}
+
+/**
+ * Atomically check device quota including pending jobs to prevent race conditions.
+ */
+export async function checkDeviceQuotaWithPending(
+  sb: SupabaseClient,
+  userId: string,
+  deviceId: string,
+  limit: number | null,
+  periodStartOverride?: string,
+): Promise<{ allowed: boolean; confirmedCount: number; pendingCount: number; totalCount: number }> {
+  const { iso: defaultPeriod } = currentMonthStart();
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, defaultPeriod)
+      : defaultPeriod;
+
+  const rpcPayload = {
+    p_user_id: userId,
+    p_device_id: deviceId,
+    p_limit: Number.isFinite(limit ?? NaN) ? limit : null,
+    p_period_start: periodStart,
+  } as const;
+
+  const { data, error } = await sb.rpc('check_device_quota_with_pending', rpcPayload);
+  if (error) {
+    // Fallback to non-atomic check if function doesn't exist
+    const snapshot = await getDeviceUsageSnapshot(sb, userId, deviceId, periodStart);
+    const pending = await countPendingPdfJobs(sb, { userId, periodStart, deviceId });
+    const total = snapshot.offersGenerated + pending;
+    return {
+      allowed: limit === null || total < limit,
+      confirmedCount: snapshot.offersGenerated,
+      pendingCount: pending,
+      totalCount: total,
+    };
+  }
+
+  const [result] = Array.isArray(data) ? data : [data];
+  return {
+    allowed: Boolean(result?.allowed),
+    confirmedCount: Number(result?.confirmed_count ?? 0),
+    pendingCount: Number(result?.pending_count ?? 0),
+    totalCount: Number(result?.total_count ?? 0),
+  };
+}
+
 export { rollbackUsageIncrement };
 export type { RollbackOptions };
