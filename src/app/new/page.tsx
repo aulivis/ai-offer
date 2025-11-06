@@ -16,6 +16,9 @@ import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
+import { WizardStep1Details } from '@/components/offers/WizardStep1Details';
+import { WizardStep2Pricing } from '@/components/offers/WizardStep2Pricing';
+import { useWizardValidation } from '@/hooks/useWizardValidation';
 import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
@@ -40,7 +43,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import { listTemplates } from '@/app/pdf/templates/engineRegistry';
-import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
+import type { OfferTemplate, TemplateTier } from '@/app/pdf/templates/types';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -336,8 +339,14 @@ export default function NewOfferWizard() {
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
+  const { validateStep1, validateStep2 } = useWizardValidation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{
+    title?: string;
+    projectDetails: Partial<Record<ProjectDetailKey, string>>;
+    pricing?: string;
+  }>({ projectDetails: {} });
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
   const [profileCompanyName, setProfileCompanyName] = useState('');
   const [pdfBranding, setPdfBranding] = useState<{
@@ -1604,10 +1613,23 @@ export default function NewOfferWizard() {
     }
   }
 
+  // Real-time validation
+  useEffect(() => {
+    if (step === 1) {
+      const errors = validateStep1(form.title, form.projectDetails);
+      setValidationErrors(errors);
+    } else if (step === 2) {
+      const errors = validateStep2(rows);
+      setValidationErrors(errors);
+    }
+  }, [step, form.title, form.projectDetails, rows, validateStep1, validateStep2]);
+
   const goToStep = useCallback(
     (nextStep: number) => {
       const clampedStep = Math.max(1, Math.min(3, nextStep));
       const movingForward = clampedStep > step;
+      
+      // Validate before moving forward
       if (movingForward) {
         if (quotaLoading) {
           showToast({
@@ -1625,13 +1647,39 @@ export default function NewOfferWizard() {
           });
           return;
         }
+        
+        // Validate current step before proceeding
+        if (step === 1) {
+          const errors = validateStep1(form.title, form.projectDetails);
+          if (errors.title || errors.projectDetails.overview) {
+            setValidationErrors(errors);
+            showToast({
+              title: t('offers.wizard.validation.titleRequired'),
+              description: t('offers.wizard.validation.overviewRequired'),
+              variant: 'warning',
+            });
+            return;
+          }
+        } else if (step === 2) {
+          const errors = validateStep2(rows);
+          if (errors.pricing) {
+            setValidationErrors(errors);
+            showToast({
+              title: t('offers.wizard.validation.pricingRequired'),
+              description: errors.pricing,
+              variant: 'warning',
+            });
+            return;
+          }
+        }
       }
+      
       if (step === 1 && clampedStep > 1) {
         handleGeneratePreview();
       }
       setStep(clampedStep);
     },
-    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, t],
+    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, t, form, rows, validateStep1, validateStep2],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
@@ -1646,7 +1694,7 @@ export default function NewOfferWizard() {
       onSelect: () => goToStep(2),
     },
     {
-      label: t('offers.wizard.steps.previewPdf'),
+      label: t('offers.wizard.steps.summary'),
       status: step === 3 ? 'current' : 'upcoming',
       onSelect: () => goToStep(3),
     },
@@ -1660,6 +1708,36 @@ export default function NewOfferWizard() {
         </Card>
 
         {step === 1 && (
+          <section className="space-y-6">
+            <WizardStep1Details
+              form={form}
+              onFormChange={(updates) => setForm((prev) => ({ ...prev, ...updates }))}
+              client={client}
+              onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+              clientList={clientList}
+              onClientSelect={pickClient}
+              availableIndustries={availableIndustries}
+              validationErrors={validationErrors}
+              showClientDropdown={showClientDrop}
+              onClientDropdownToggle={setShowClientDrop}
+              filteredClients={filteredClients}
+              textTemplates={textTemplates.map((t) => ({ id: t.id, name: t.name }))}
+              selectedTemplateId={selectedTemplateId}
+              onTemplateSelect={(templateId) => {
+                const event = { target: { value: templateId } } as ChangeEvent<HTMLSelectElement>;
+                handleTemplateSelect(event);
+              }}
+              quotaInfo={{
+                title: quotaTitle,
+                description: quotaDescription,
+                remainingText: quotaRemainingText,
+                pendingText: quotaPendingText,
+                isExhausted: isQuotaExhausted,
+              }}
+            />
+          </section>
+        )}
+        {step === 1 && false && (
           <section className="space-y-6">
             <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
               <div className="space-y-3">
@@ -2010,50 +2088,13 @@ export default function NewOfferWizard() {
           </section>
         )}
         {step === 2 && (
-          <section className="space-y-6">
-            {filteredActivities.length > 0 && (
-              <Card className="space-y-4 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-900">
-                      {t('offers.wizard.forms.details.quickInsertTitle')}
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.quickInsertIndustryLabel')}: {form.industry}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                    {filteredActivities.length} tétel
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {filteredActivities.map((a) => (
-                    <Button
-                      key={a.id}
-                      type="button"
-                      onClick={() =>
-                        setRows((r) => [
-                          createPriceRow({
-                            name: a.name,
-                            qty: 1,
-                            unit: a.unit || 'db',
-                            unitPrice: Number(a.default_unit_price || 0),
-                            vat: Number(a.default_vat || 27),
-                          }),
-                          ...r,
-                        ])
-                      }
-                      className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                    >
-                      + {a.name}
-                    </Button>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            <EditablePriceTable rows={rows} onChange={setRows} />
-          </section>
+          <WizardStep2Pricing
+            rows={rows}
+            onRowsChange={setRows}
+            activities={activities}
+            industry={form.industry}
+            {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
+          />
         )}
 
         {step === 3 && (
@@ -2061,8 +2102,10 @@ export default function NewOfferWizard() {
             <Card className="space-y-6 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-900">AI-szöveg szerkesztése</h2>
-                  <p className="text-xs text-slate-500">
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    {t('offers.wizard.steps.summary')}
+                  </h2>
+                  <p className="text-sm text-slate-600">
                     Ez a tartalom kerül a PDF-be – finomhangold bátran.
                   </p>
                 </div>
