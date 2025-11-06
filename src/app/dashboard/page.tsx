@@ -531,7 +531,18 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
         .range(from, to);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Dashboard fetch error', error);
+        throw error;
+      }
+
+      console.log('Dashboard fetched offers', {
+        userId: user,
+        pageNumber,
+        count,
+        itemsCount: Array.isArray(data) ? data.length : 0,
+        offersWithPdf: Array.isArray(data) ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length : 0,
+      });
 
       const rawItems = Array.isArray(data) ? data : [];
       const items: Offer[] = rawItems.map((entry) => {

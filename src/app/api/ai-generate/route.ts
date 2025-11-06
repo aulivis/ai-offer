@@ -1323,6 +1323,29 @@ Különös figyelmet fordít a következőkre:
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
 
+    // Verify offer exists with PDF URL in database
+    if (immediatePdfUrl) {
+      const { data: verifyOffer, error: verifyError } = await sb
+        .from('offers')
+        .select('id, title, pdf_url')
+        .eq('id', offerId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (verifyError) {
+        log.warn('Failed to verify offer after PDF generation', { error: verifyError });
+      } else if (verifyOffer) {
+        log.info('Offer verification after PDF generation', {
+          offerId: verifyOffer.id,
+          title: verifyOffer.title,
+          pdfUrl: verifyOffer.pdf_url,
+          matchesExpected: verifyOffer.pdf_url === immediatePdfUrl,
+        });
+      } else {
+        log.error('Offer not found after PDF generation', { offerId });
+      }
+    }
+
     // Log final response state for debugging
     log.info('PDF generation response', {
       offerId,
