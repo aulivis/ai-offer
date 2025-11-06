@@ -215,7 +215,14 @@ export async function getUsageWithPending(
   }
 
   const plan = resolveEffectivePlan((profile?.plan as string | null) ?? null);
-  const limit = getMonthlyOfferLimit(plan);
+  let limit = getMonthlyOfferLimit(plan);
+  
+  // Defensive check: ensure limit is never null for free/standard plans
+  // This prevents displaying "unlimited" for limited plans
+  if (limit === null && (plan === 'free' || plan === 'standard')) {
+    // Fallback to free plan limit if somehow limit is null
+    limit = plan === 'standard' ? 10 : 3;
+  }
 
   const confirmed = Number.isFinite(usageState.offersGenerated) ? usageState.offersGenerated : 0;
 

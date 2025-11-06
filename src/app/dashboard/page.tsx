@@ -1034,14 +1034,20 @@ export default function DashboardPage() {
     if (!quotaSnapshot) {
       return '—';
     }
-    if (quotaSnapshot.limit === null) {
+    // Defensive check: free/standard plans should never have null limit
+    // If limit is null but plan is not pro, fallback to free plan limit
+    let displayLimit = quotaSnapshot.limit;
+    if (displayLimit === null && quotaSnapshot.plan !== 'pro') {
+      displayLimit = quotaSnapshot.plan === 'standard' ? 10 : 3;
+    }
+    if (displayLimit === null) {
       return t('dashboard.metrics.quota.unlimitedValue');
     }
     const pendingTotal = Math.max(0, quotaSnapshot.pending);
-    const remaining = Math.max(quotaSnapshot.limit - (quotaSnapshot.used + pendingTotal), 0);
+    const remaining = Math.max(displayLimit - (quotaSnapshot.used + pendingTotal), 0);
     return t('dashboard.metrics.quota.value', {
       remaining: remaining.toLocaleString('hu-HU'),
-      limit: quotaSnapshot.limit.toLocaleString('hu-HU'),
+      limit: displayLimit.toLocaleString('hu-HU'),
     });
   }, [isQuotaLoading, quotaSnapshot]);
 
@@ -1049,8 +1055,13 @@ export default function DashboardPage() {
     if (isQuotaLoading || !quotaSnapshot) {
       return undefined;
     }
+    // Defensive check: free/standard plans should never have null limit
+    let displayLimit = quotaSnapshot.limit;
+    if (displayLimit === null && quotaSnapshot.plan !== 'pro') {
+      displayLimit = quotaSnapshot.plan === 'standard' ? 10 : 3;
+    }
     // For unlimited plans, show only the plan info
-    if (quotaSnapshot.limit === null) {
+    if (displayLimit === null) {
       return t('dashboard.metrics.quota.helperUnlimited', {
         confirmed: quotaSnapshot.used.toLocaleString('hu-HU'),
         pending: quotaSnapshot.pending.toLocaleString('hu-HU'),
@@ -1058,7 +1069,7 @@ export default function DashboardPage() {
     }
     // For limited plans, show reset date if available
     if (quotaResetLabel) {
-      const remaining = quotaSnapshot.limit - quotaSnapshot.used - quotaSnapshot.pending;
+      const remaining = displayLimit - quotaSnapshot.used - quotaSnapshot.pending;
       return t('dashboard.metrics.quota.helperLimitedWithReset', {
         confirmed: quotaSnapshot.used.toLocaleString('hu-HU'),
         pending: quotaSnapshot.pending.toLocaleString('hu-HU'),

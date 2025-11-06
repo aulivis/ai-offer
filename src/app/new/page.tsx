@@ -36,7 +36,7 @@ import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
-import { getUsageWithPending } from '@/lib/services/usage';
+import { currentMonthStart } from '@/lib/services/usage';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -178,11 +178,6 @@ const MAX_IMAGE_COUNT = 3;
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_SIZE_MB = Math.round((MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10) / 10;
 
-function getCurrentPeriodStartIso(): string {
-  const now = new Date();
-  const utcStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  return utcStart.toISOString().slice(0, 10);
-}
 
 type PreparedImagePayload = { key: string; dataUrl: string; alt: string };
 
@@ -569,20 +564,60 @@ export default function NewOfferWizard() {
 
       setQuotaLoading(true);
       try {
-        const usageSnapshot = await getUsageWithPending(sb, {
-          userId: user.id,
-          periodStart: getCurrentPeriodStartIso(),
-        });
+        const { iso: expectedPeriod } = currentMonthStart();
+        const params = new URLSearchParams({ period_start: expectedPeriod });
+
+        const response = await fetchWithSupabaseAuth(
+          `/api/usage/with-pending?${params.toString()}`,
+          { method: 'GET', defaultErrorMessage: t('errors.requestFailed') },
+        );
 
         if (!active) {
           return;
         }
 
+        const payload = (await response.json().catch(() => null)) as unknown;
+        
+        // Parse the response similar to dashboard
+        if (!payload || typeof payload !== 'object') {
+          throw new Error('Invalid usage response payload.');
+        }
+
+        const record = payload as Record<string, unknown>;
+        const planValue = record.plan;
+        if (planValue !== 'free' && planValue !== 'standard' && planValue !== 'pro') {
+          throw new Error('Invalid plan in usage response.');
+        }
+
+        let limit: number | null = null;
+        if (record.limit === null) {
+          limit = null;
+        } else if (record.limit !== undefined) {
+          const numericLimit = Number(record.limit);
+          if (Number.isFinite(numericLimit)) {
+            limit = numericLimit;
+          } else {
+            throw new Error('Invalid limit in usage response.');
+          }
+        }
+
+        const confirmedValue = Number(record.confirmed);
+        const confirmed = Number.isFinite(confirmedValue) ? confirmedValue : 0;
+
+        const pendingUserValue = Number(record.pendingUser);
+        const pendingUser = Number.isFinite(pendingUserValue) ? pendingUserValue : 0;
+
+        const periodStart = typeof record.periodStart === 'string' ? record.periodStart : '';
+
+        if (!periodStart) {
+          throw new Error('Missing periodStart in usage response.');
+        }
+
         setQuotaSnapshot({
-          limit: usageSnapshot.limit,
-          used: Number.isFinite(usageSnapshot.confirmed) ? usageSnapshot.confirmed : 0,
-          pending: Number.isFinite(usageSnapshot.pendingUser) ? usageSnapshot.pendingUser : 0,
-          periodStart: usageSnapshot.periodStart,
+          limit,
+          used: confirmed,
+          pending: pendingUser,
+          periodStart,
         });
         setQuotaError(null);
       } catch (quotaLoadError) {
