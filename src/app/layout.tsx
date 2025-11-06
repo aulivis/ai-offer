@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { t } from '@/copy';
 
 import AnnouncementBar from '@/components/AnnouncementBar';
+import QuotaWarningBar from '@/components/QuotaWarningBar';
 import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '@/components/cookies/CookieBar';
 import { PreferencesModal } from '@/components/cookies/PreferencesModal';
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
                 <div className="relative z-10 flex min-h-screen flex-col">
                   <AnnouncementBar />
+                  <QuotaWarningBar />
                   <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
                   <div className="flex-1">{children}</div>
                   <Footer />

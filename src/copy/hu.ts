@@ -81,6 +81,14 @@ export const hu = {
     cta: 'Próbáld ki most',
     ctaHref: '/demo',
   },
+  quotaWarningBar: {
+    message: {
+      user: 'Elérted a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
+      device: 'Elérted az eszközön a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
+      both: 'Elérted a havi ajánlatlimitálást és az eszközön is. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
+    },
+    cta: 'Frissíts most',
+  },
   header: {
     brand: 'Propono',
     nav: {

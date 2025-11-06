@@ -193,6 +193,7 @@ export type UsageWithPendingSnapshot = {
   confirmed: number;
   pendingUser: number;
   pendingDevice: number | null;
+  confirmedDevice: number | null;
   remaining: number | null;
   periodStart: string;
 };
@@ -228,6 +229,7 @@ export async function getUsageWithPending(
 
   let pendingUser = 0;
   let pendingDevice: number | null = null;
+  let confirmedDevice: number | null = null;
 
   pendingUser = await countPendingPdfJobs(sb, {
     userId,
@@ -240,6 +242,12 @@ export async function getUsageWithPending(
       periodStart: usageState.periodStart,
       deviceId,
     });
+
+    // Get device confirmed count
+    const deviceUsageState = await getDeviceUsageSnapshot(sb, userId, deviceId, normalizedPeriod);
+    confirmedDevice = Number.isFinite(deviceUsageState.offersGenerated)
+      ? deviceUsageState.offersGenerated
+      : 0;
   }
 
   const remaining =
@@ -253,6 +261,7 @@ export async function getUsageWithPending(
     confirmed,
     pendingUser,
     pendingDevice,
+    confirmedDevice,
     remaining,
     periodStart: usageState.periodStart,
   };
