@@ -288,6 +288,30 @@ export async function processPdfJobInline(
       offerId: job.offerId,
       pdfUrl,
     });
+    
+    // Double-check the update persisted by querying again
+    const { data: doubleCheck, error: doubleCheckError } = await supabase
+      .from('offers')
+      .select('id, pdf_url')
+      .eq('id', job.offerId)
+      .eq('user_id', job.userId)
+      .maybeSingle();
+    
+    if (doubleCheckError) {
+      console.error('Double-check query failed', { error: doubleCheckError });
+    } else if (!doubleCheck || doubleCheck.pdf_url !== pdfUrl) {
+      console.error('CRITICAL: Offer update did not persist!', {
+        offerId: job.offerId,
+        expectedPdfUrl: pdfUrl,
+        actualPdfUrl: doubleCheck?.pdf_url,
+      });
+      throw new Error('Offer update did not persist in database');
+    } else {
+      console.log('Verified: Offer update persisted correctly', {
+        offerId: job.offerId,
+        pdfUrl: doubleCheck.pdf_url,
+      });
+    }
 
     // Increment quota AFTER offer update succeeds
     // If this fails, we can rollback the offer update if needed
