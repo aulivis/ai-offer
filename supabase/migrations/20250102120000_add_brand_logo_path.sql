@@ -76,3 +76,4 @@ comment on column public.profiles.brand_logo_path is
 -- It will be deprecated and removed in a future migration
 
 
+

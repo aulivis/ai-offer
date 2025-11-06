@@ -255,3 +255,4 @@ GET endpoints include cache headers:
 - Dynamic data: `Cache-Control: no-store, no-cache, must-revalidate`
 
 
+
