@@ -10,7 +10,6 @@ import { minimalRuntimeTemplate } from '@/app/pdf/sdk/templates/minimal';
 import { getTemplateMetadata as getEngineTemplateMetadata } from './engineRegistry';
 import { loadTemplate as loadEngineTemplate } from './engineRegistry';
 import type { TemplateId as EngineTemplateId } from './types';
-import { Template_pro_nordic } from './pro.nordic';
 
 export type TemplateMeta = {
   id: string;
@@ -47,15 +46,6 @@ const minimalTemplateMeta: TemplateMeta = {
 };
 
 export const TEMPLATE_REGISTRY: TemplateMeta[] = [minimalTemplateMeta];
-
-TEMPLATE_REGISTRY.push({
-  id: 'pro.nordic',
-  name: 'Nordic Professional',
-  version: '1.0.0',
-  capabilities: ['gallery', 'long-items'],
-  preview: '/pdf/preview?templateId=pro.nordic&brandPrimary=%230EA5E9&brandSecondary=%23111827',
-  factory: () => Template_pro_nordic,
-});
 
 /**
  * Get template metadata by ID
