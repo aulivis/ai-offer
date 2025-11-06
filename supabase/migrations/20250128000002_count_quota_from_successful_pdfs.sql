@@ -15,12 +15,14 @@ declare
 begin
   -- Count offers with pdf_url not null created in the period
   -- This represents actual successful PDF generations
+  -- Use >= and < to handle timezone correctly
   select count(*)
     into v_count
     from offers
    where user_id = p_user_id
      and pdf_url is not null
-     and date(timezone('utc', created_at)) = p_period_start;
+     and created_at >= (p_period_start::timestamp with time zone)
+     and created_at < (p_period_start::timestamp with time zone + interval '1 day');
   
   return coalesce(v_count, 0);
 end;
@@ -97,13 +99,15 @@ declare
 begin
   -- Count offers with pdf_url not null created in the period
   -- Join with pdf_jobs to filter by device_id from the completed job
+  -- Use >= and < to handle timezone correctly
   select count(distinct o.id)
     into v_count
     from offers o
     inner join pdf_jobs pj on pj.offer_id = o.id
    where o.user_id = p_user_id
      and o.pdf_url is not null
-     and date(timezone('utc', o.created_at)) = p_period_start
+     and o.created_at >= (p_period_start::timestamp with time zone)
+     and o.created_at < (p_period_start::timestamp with time zone + interval '1 day')
      and pj.status = 'completed'
      and (pj.payload->>'deviceId') = p_device_id;
   
