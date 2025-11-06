@@ -574,6 +574,7 @@ export const hu = {
   },
   settings: {
     title: 'Beállítások',
+    sidebarTitle: 'Beállítások',
     description:
       'Az itt megadott információk automatikusan megjelennek az ajánlatokban és a generált PDF-ekben.',
     loadingDescription:
@@ -620,6 +621,7 @@ export const hu = {
         addPlaceholder: 'Pl. Nonprofit',
         addButton: 'Hozzáadás',
         empty: 'Még nincs kiválasztott iparág.',
+        removeAriaLabel: '{industry} eltávolítása',
       },
       saving: 'Mentés…',
       save: 'Mentés',
@@ -641,6 +643,8 @@ export const hu = {
         helper: 'PNG, JPG vagy SVG formátum támogatott. Maximum 4 MB.',
         button: 'Logó feltöltése',
         uploading: 'Feltöltés…',
+        cancel: 'Mégse',
+        progress: 'Feltöltés...',
         openInNewTab: 'Megnyitás új lapon',
         lockedButton: 'Pro funkció',
         lockedMessage:
@@ -671,6 +675,8 @@ export const hu = {
       title: 'Tevékenység-sablonok',
       subtitle:
         'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
+      addNewHeading: 'Új tevékenység hozzáadása',
+      deleteAriaLabel: '{name} törlése',
       fields: {
         name: 'Megnevezés',
         unit: 'Mértékegység',
@@ -690,6 +696,7 @@ export const hu = {
       delete: 'Törlés',
       assignedIndustries: 'Iparágak: {list}',
       empty: 'Még nincs sablon. Adj hozzá legalább egy gyakran használt tételt.',
+      emptyHelper: 'Adjon hozzá tevékenységeket a gyorsabb ajánlatkészítéshez',
     },
     validation: {
       phone: 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).',
@@ -1296,6 +1303,10 @@ export const hu = {
         title: 'Nem sikerült betölteni a profilod',
         description: 'Kérjük, próbáld újra egy kicsit később.',
       },
+      logoInvalidType: {
+        title: 'Érvénytelen fájltípus',
+        description: 'Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+      },
       logoTooLarge: {
         title: 'Túl nagy fájl',
         description: 'A logó mérete legfeljebb 4 MB lehet.',
@@ -1445,6 +1456,11 @@ export const hu = {
       saveUnknown: 'Ismeretlen hiba történt a mentés közben.',
       logoUploadFailed: 'Nem sikerült feltölteni a logót. Próbáld újra.',
       logoUploadMissingUrl: 'A Supabase nem adott vissza használható URL-t a logóhoz.',
+      logoInvalidType: 'Csak {types} fájl tölthető fel.',
+      logoInvalidExtension: 'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+      logoTooLarge: 'A fájl mérete túl nagy. Maximum 4 MB.',
+      logoStorageUnavailable: 'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.',
+      autoSaveFailed: 'Nem sikerült automatikusan menteni.',
       activityNameRequired: 'Add meg a tevékenység nevét.',
     },
     preview: {
@@ -1462,8 +1478,17 @@ export const hu = {
       saveStatus: 'Hiba az ajánlat mentésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
       saveAuth: 'Nem sikerült hitelesíteni az ajánlat mentését. Jelentkezz be újra.',
       saveUnknown: 'Hiba történt az ajánlat mentése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
-      saveFailed: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      saveFailed: 'Nem sikerült elmenteni az ajánlatot.',
+      savePdfFailed: 'Nem sikerült elindítani a PDF generálását.',
+      loadFailed: 'Nem sikerült betölteni az ajánlatot.',
+      deleteFailed: 'Nem sikerült törölni az ajánlatot.',
+      notFound: 'Az ajánlat nem található.',
+      unauthorizedDelete: 'Nincs jogosultságod az ajánlat törléséhez.',
       missingStructure: 'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
+      imageBase64Only: 'Csak base64-es képek tölthetők fel.',
+      imageFormatUnsupported: 'A kép formátuma nem támogatott (PNG, JPEG vagy WEBP szükséges).',
+      imageDataCorrupted: 'A kép base64 adat sérült.',
+      imageMissing: 'Hiányzik a kép tartalma.',
     },
   },
   pdf: {

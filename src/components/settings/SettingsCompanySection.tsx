@@ -155,7 +155,7 @@ export function SettingsCompanySection({
                     type="button"
                     onClick={() => onToggleIndustry(ind)}
                     className="rounded-full hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    aria-label={`${ind} eltávolítása`}
+                    aria-label={t('settings.company.industries.removeAriaLabel', { industry: ind })}
                   >
                     <XMarkIcon className="h-3 w-3" />
                   </button>

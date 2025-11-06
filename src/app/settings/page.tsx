@@ -623,9 +623,7 @@ export default function SettingsPage() {
     if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
       return {
         valid: false,
-        error:
-          t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) ||
-          'Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+          error: t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }),
       };
     }
 
@@ -634,9 +632,7 @@ export default function SettingsPage() {
     if (!hasValidExtension) {
       return {
         valid: false,
-        error:
-          t('errors.settings.logoInvalidExtension') ||
-          'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+        error: t('errors.settings.logoInvalidExtension'),
       };
     }
 
@@ -668,7 +664,7 @@ export default function SettingsPage() {
       const typeValidation = validateFileType(file);
       if (!typeValidation.valid) {
         showToast({
-          title: t('toasts.settings.logoInvalidType.title') || 'Érvénytelen fájltípus',
+          title: t('toasts.settings.logoInvalidType.title'),
           description: typeValidation.error || t('toasts.settings.logoInvalidType.description'),
           variant: 'error',
         });
@@ -698,17 +694,13 @@ export default function SettingsPage() {
         if (error instanceof ApiError) {
           let errorMessage = error.message;
           if (error.status === 413) {
-            errorMessage = t('errors.settings.logoTooLarge') || 'A fájl mérete túl nagy. Maximum 4 MB.';
+            errorMessage = t('errors.settings.logoTooLarge');
           } else if (error.status === 415) {
-            errorMessage =
-              t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) ||
-              'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.';
+            errorMessage = t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' });
           } else if (error.status === 503) {
-            errorMessage =
-              t('errors.settings.logoStorageUnavailable') ||
-              'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.';
+            errorMessage = t('errors.settings.logoStorageUnavailable');
           } else if (error.status === 500) {
-            errorMessage = t('errors.settings.logoUploadFailed') || 'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.';
+            errorMessage = t('errors.settings.logoUploadFailed');
           }
           throw new Error(errorMessage);
         }
@@ -760,14 +752,10 @@ export default function SettingsPage() {
           console.error('Failed to cleanup uploaded logo after save failure', cleanupError);
         }
 
-        const saveErrorMessage =
-          saveError instanceof Error ? saveError.message : t('errors.settings.saveFailed', { message: '' });
         showToast({
           title: t('toasts.settings.logoUploaded.title'),
           description:
-            t('toasts.settings.logoUploaded.description') +
-            ' ' +
-            (t('errors.settings.autoSaveFailed') || t('errors.settings.saveFailed', { message: saveErrorMessage })),
+            t('toasts.settings.logoUploaded.description') + ' ' + t('errors.settings.autoSaveFailed'),
           variant: 'error',
         });
       }
@@ -928,7 +916,9 @@ export default function SettingsPage() {
         {/* Enhanced Sidebar Navigation */}
         <aside className="hidden lg:block lg:w-72 lg:flex-shrink-0">
           <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-border/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-200">
-            <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Beállítások</h2>
+            <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+              {t('settings.sidebarTitle')}
+            </h2>
             <SectionNav sections={sections} activeSection={activeSection} onSectionChange={handleSectionChange} />
           </div>
         </aside>

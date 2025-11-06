@@ -56,7 +56,9 @@ export function SettingsActivitiesSection({
     >
       <div className="space-y-6">
         <div className="rounded-xl border border-border/60 bg-slate-50/50 p-6">
-          <h3 className="mb-4 text-sm font-semibold text-slate-900">Új tevékenység hozzáadása</h3>
+          <h3 className="mb-4 text-sm font-semibold text-slate-900">
+            {t('settings.activities.addNewHeading')}
+          </h3>
           <div className="grid gap-4 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <Input
@@ -160,7 +162,7 @@ export function SettingsActivitiesSection({
                     type="button"
                     onClick={() => onDeleteActivity(a.id)}
                     className="flex-shrink-0 rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                    aria-label={`${a.name} törlése`}
+                    aria-label={t('settings.activities.deleteAriaLabel', { name: a.name })}
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
@@ -172,9 +174,7 @@ export function SettingsActivitiesSection({
           <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
             <CubeIcon className="mx-auto h-12 w-12 text-slate-400" />
             <p className="mt-4 text-sm font-medium text-slate-600">{t('settings.activities.empty')}</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Adjon hozzá tevékenységeket a gyorsabb ajánlatkészítéshez
-            </p>
+            <p className="mt-1 text-xs text-slate-500">{t('settings.activities.emptyHelper')}</p>
           </div>
         )}
       </div>

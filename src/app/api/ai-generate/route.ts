@@ -478,17 +478,17 @@ function normalizeImageAssets(
         ? (raw as { dataUrl: string }).dataUrl.trim()
         : '';
     if (!dataUrl) {
-      throw new ImageAssetError('Hiányzik a kép tartalma.');
+      throw new ImageAssetError(t('errors.offer.imageMissing'));
     }
 
     const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,/.exec(dataUrl);
     if (!match) {
-      throw new ImageAssetError('Csak base64-es képek tölthetők fel.');
+      throw new ImageAssetError(t('errors.offer.imageBase64Only'));
     }
 
     const mime = match[1].toLowerCase();
     if (!ALLOWED_IMAGE_MIME_TYPES.has(mime)) {
-      throw new ImageAssetError('A kép formátuma nem támogatott (PNG, JPEG vagy WEBP szükséges).');
+      throw new ImageAssetError(t('errors.offer.imageFormatUnsupported'));
     }
 
     const base64 = dataUrl.slice(match[0].length);
@@ -496,7 +496,7 @@ function normalizeImageAssets(
     try {
       buffer = Buffer.from(base64, 'base64');
     } catch {
-      throw new ImageAssetError('A kép base64 adat sérült.');
+      throw new ImageAssetError(t('errors.offer.imageDataCorrupted'));
     }
 
     if (!buffer.length || buffer.length > MAX_IMAGE_SIZE_BYTES) {
@@ -1130,7 +1130,7 @@ Különös figyelmet fordít a következőkre:
       log.error('Offer insert error', offerInsertError);
       return NextResponse.json(
         {
-          error: 'Nem sikerült elmenteni az ajánlatot.',
+          error: t('errors.offer.saveFailed'),
         },
         { status: 500 },
       );
@@ -1157,7 +1157,7 @@ Különös figyelmet fordít a következőkre:
       log.error('PDF queue error (enqueue)', error);
       return NextResponse.json(
         {
-          error: 'Nem sikerült elindítani a PDF generálását.',
+          error: t('errors.offer.savePdfFailed'),
           offerId,
         },
         { status: 502 },
@@ -1255,7 +1255,7 @@ Különös figyelmet fordít a következőkre:
 
           return NextResponse.json(
             {
-              error: 'Nem sikerült elindítani a PDF generálását.',
+              error: t('errors.offer.savePdfFailed'),
               offerId,
             },
             { status: 502 },

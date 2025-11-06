@@ -134,7 +134,7 @@ export function SettingsBrandingSection({
                   {logoUploading && (
                     <Button type="button" onClick={onCancelLogoUpload} variant="ghost" size="sm">
                       <XMarkIcon className="h-4 w-4" />
-                      {t('settings.branding.logoUpload.cancel') || 'Mégse'}
+                      {t('settings.branding.logoUpload.cancel')}
                     </Button>
                   )}
                   {profile.brand_logo_path && (
@@ -160,7 +160,7 @@ export function SettingsBrandingSection({
                 {logoUploading && logoUploadProgress !== null && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs text-slate-600">
-                      <span>{t('settings.branding.logoUpload.progress') || 'Feltöltés...'}</span>
+                      <span>{t('settings.branding.logoUpload.progress')}</span>
                       <span className="font-semibold">{logoUploadProgress}%</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">

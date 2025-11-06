@@ -8,6 +8,7 @@ import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
 import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { t } from '@/copy';
 
 const normalizeUserOwnedStoragePath = (path: string, userId: string): string | null => {
   const trimmed = path.trim();
@@ -54,19 +55,19 @@ export const DELETE = withAuth(
       if (loadError) {
         log.error('Failed to load offer before deletion', loadError);
         return NextResponse.json(
-          { error: 'Nem sikerült betölteni az ajánlatot.' },
+          { error: t('errors.offer.loadFailed') },
           { status: 500 },
         );
       }
 
       if (!offer) {
-        return NextResponse.json({ error: 'Az ajánlat nem található.' }, { status: 404 });
+        return NextResponse.json({ error: t('errors.offer.notFound') }, { status: 404 });
       }
 
       if (offer.user_id !== request.user.id) {
         log.warn('Unauthorized deletion attempt');
         return NextResponse.json(
-          { error: 'Nincs jogosultságod az ajánlat törléséhez.' },
+          { error: t('errors.offer.unauthorizedDelete') },
           { status: 403 },
         );
       }
@@ -101,7 +102,7 @@ export const DELETE = withAuth(
       const { error: deleteError } = await adminClient.from('offers').delete().eq('id', offerId);
       if (deleteError) {
         log.error('Failed to delete offer', deleteError);
-        return NextResponse.json({ error: 'Nem sikerült törölni az ajánlatot.' }, { status: 500 });
+        return NextResponse.json({ error: t('errors.offer.deleteFailed') }, { status: 500 });
       }
 
       // Audit log the deletion
@@ -139,7 +140,7 @@ export const DELETE = withAuth(
       return NextResponse.json({ success: true });
     } catch (error) {
       log.error('Unexpected error during offer deletion', error);
-      return NextResponse.json({ error: 'Nem sikerült törölni az ajánlatot.' }, { status: 500 });
+      return NextResponse.json({ error: t('errors.offer.deleteFailed') }, { status: 500 });
     }
   },
 );
