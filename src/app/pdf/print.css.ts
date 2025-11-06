@@ -33,7 +33,10 @@ export const PRINT_BASE_CSS = `
     margin: 0;
     background: var(--bg, #f8fafc);
     color: var(--text, #0f172a);
-    font: 400 11pt/1.5 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font: 400 11pt/1.6 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
   }
 
   .offer-doc {
@@ -106,11 +109,16 @@ export const PRINT_BASE_CSS = `
     background: var(--brand-bg, #ffffff);
     border: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
     border-radius: 18px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     break-inside: avoid;
     page-break-inside: avoid;
     break-after: auto;
     page-break-after: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  
+  .section-card--pricing {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   }
   
   .section-card--header {
@@ -149,9 +157,13 @@ export const PRINT_BASE_CSS = `
 
   .section-stack {
     display: grid;
-    gap: 24px;
+    gap: 28px;
     break-inside: auto;
     page-break-inside: auto;
+  }
+  
+  .section-stack > * + * {
+    margin-top: 0;
   }
 
   .key-metrics {
@@ -198,18 +210,34 @@ export const PRINT_BASE_CSS = `
 
   .offer-doc__footer-grid {
     gap: 12mm;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 
   .offer-doc__footer-column {
     gap: 4mm;
+    display: flex;
+    flex-direction: column;
   }
 
   .offer-doc__footer-label {
     font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted, #64748b);
+    margin-bottom: 2px;
   }
 
   .offer-doc__footer-value {
     font-size: 9.5pt;
+    line-height: 1.5;
+    color: var(--text, #0f172a);
+  }
+  
+  .offer-doc__footer-value--placeholder {
+    color: var(--muted, #94a3b8);
+    font-style: italic;
   }
 
   .offer-doc__slim-bar {
@@ -220,7 +248,18 @@ export const PRINT_BASE_CSS = `
     font-size: 8pt;
     font-weight: 500;
     justify-content: space-between;
-    line-height: 1.3;
+    line-height: 1.4;
+    min-height: 12mm;
+  }
+  
+  .slim-header__company {
+    font-weight: 600;
+    color: var(--text, #0f172a);
+  }
+  
+  .slim-header__meta {
+    font-size: 7.5pt;
+    color: var(--muted, #64748b);
   }
 
 
@@ -243,8 +282,20 @@ export const PRINT_BASE_CSS = `
   }
 
   @media print {
+    * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
+    }
+    
+    body {
+      background: #ffffff;
+      color: #000000;
+    }
+    
     .offer-doc {
       padding: 0;
+      background: #ffffff;
     }
 
     .offer-doc__slim-bar {
@@ -253,7 +304,7 @@ export const PRINT_BASE_CSS = `
 
     .slim-header,
     .slim-footer {
-      background: var(--brand-bg, #ffffff);
+      background: #ffffff !important;
       color: var(--muted, #1f2937);
       display: flex !important;
       justify-content: space-between;
@@ -263,6 +314,9 @@ export const PRINT_BASE_CSS = `
       right: var(--page-margin-right);
       z-index: 1000;
       pointer-events: none;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
     }
 
     .slim-header {
@@ -284,10 +338,45 @@ export const PRINT_BASE_CSS = `
     .first-page-only {
       display: block;
     }
+    
+    .section-card {
+      background: #ffffff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
+    }
+    
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
+    }
+    
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    
+    a[href^="http"]:after {
+      content: " (" attr(href) ")";
+      font-size: 0.85em;
+      color: var(--muted, #64748b);
+      word-break: break-all;
+    }
   }
 
   p {
-    margin: 0 0 1em;
+    margin: 0 0 1.1em;
+    orphans: 3;
+    widows: 3;
+    text-align: justify;
+    text-justify: inter-word;
+  }
+  
+  p:last-child {
+    margin-bottom: 0;
   }
 
   table,
@@ -295,23 +384,97 @@ export const PRINT_BASE_CSS = `
   td {
     font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: 9.5pt;
-    line-height: 1.4;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  th {
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
   ul,
-  ol,
+  ol {
+    widows: 2;
+    orphans: 2;
+    padding-left: 1.5em;
+  }
+  
+  li {
+    margin-bottom: 0.5em;
+    orphans: 2;
+    widows: 2;
+  }
+  
+  li:last-child {
+    margin-bottom: 0;
+  }
+  
   table {
     widows: 2;
     orphans: 2;
   }
-  .offer-doc__content h1,
-  .offer-doc__content h2,
-  .offer-doc__content h3,
-  .offer-doc__content h4,
-  .offer-doc__section-title {
+  .offer-doc__content h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 1.8rem;
+    margin-bottom: 0.8rem;
+    color: var(--brand-primary, #1c274c);
     break-after: avoid;
     break-inside: avoid;
     page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  .offer-doc__content h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-top: 1.6rem;
+    margin-bottom: 0.7rem;
+    color: var(--brand-primary, #1c274c);
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  .offer-doc__content h3,
+  .offer-doc__content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 1.4rem;
+    margin-bottom: 0.6rem;
+    color: var(--brand-primary, #1c274c);
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  .offer-doc__section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 1.4rem;
+    margin-bottom: 0.6rem;
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .offer-doc__content h1:first-child,
+  .offer-doc__content h2:first-child,
+  .offer-doc__content h3:first-child,
+  .offer-doc__content h4:first-child {
+    margin-top: 0;
   }
   .offer-doc__content .section,
   .offer-doc__content .pricing-summary,
@@ -323,15 +486,52 @@ export const PRINT_BASE_CSS = `
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .offer-doc__pricing-table,
+  .offer-doc__pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 9.5pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .offer-doc__pricing-table thead {
+    display: table-header-group;
+  }
+  
+  .offer-doc__pricing-table tfoot {
+    display: table-footer-group;
+  }
+  
   .offer-doc__pricing-table thead,
   .offer-doc__pricing-table tbody,
-  .offer-doc__pricing-table tfoot,
-  .offer-doc__pricing-table tr,
+  .offer-doc__pricing-table tfoot {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .offer-doc__pricing-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
   .offer-doc__pricing-table th,
   .offer-doc__pricing-table td {
     break-inside: avoid;
     page-break-inside: avoid;
+    padding: 0.65rem 0.75rem;
+    vertical-align: top;
+  }
+  
+  .offer-doc__pricing-table th {
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  
+  .offer-doc__pricing-table tbody tr:last-child td {
+    border-bottom: none;
   }
   .offer-doc__table--force-break {
     break-before: page;

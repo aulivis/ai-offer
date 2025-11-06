@@ -198,7 +198,11 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .section-stack {
     display: grid;
-    gap: var(--space-lg, 1.75rem);
+    gap: var(--space-xl, 2rem);
+  }
+  
+  .section-stack > * + * {
+    margin-top: 0;
   }
   .key-metrics {
     display: grid;
@@ -342,12 +346,18 @@ export const OFFER_DOCUMENT_STYLES = `
     margin-top: 0;
   }
   .offer-doc__content p {
-    margin: 0 0 1rem;
+    margin: 0 0 1.1rem;
     hyphens: auto;
     overflow-wrap: anywhere;
     text-wrap: balance;
-    widows: 2;
-    orphans: 2;
+    widows: 3;
+    orphans: 3;
+    text-align: justify;
+    text-justify: inter-word;
+  }
+  
+  .offer-doc__content p:last-child {
+    margin-bottom: 0;
   }
   @supports (text-wrap: pretty) {
     .offer-doc__content p {
@@ -384,9 +394,20 @@ export const OFFER_DOCUMENT_STYLES = `
     list-style-type: lower-alpha;
   }
   .offer-doc__content li {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.5rem;
     break-inside: avoid;
     page-break-inside: avoid;
+    widows: 2;
+    orphans: 2;
+  }
+  
+  .offer-doc__content li:last-child {
+    margin-bottom: 0;
+  }
+  
+  .offer-doc__content ul,
+  .offer-doc__content ol {
+    padding-left: 1.5em;
   }
   .offer-doc__compact {
     display: flex;
@@ -494,10 +515,19 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__pricing-table {
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     width: 100%;
     break-inside: avoid;
     page-break-inside: avoid;
+    margin: 0;
+  }
+  
+  .offer-doc__pricing-table thead {
+    display: table-header-group;
+  }
+  
+  .offer-doc__pricing-table tfoot {
+    display: table-footer-group;
   }
   .offer-doc__pricing-table thead,
   .offer-doc__pricing-table tbody,
@@ -510,25 +540,33 @@ export const OFFER_DOCUMENT_STYLES = `
   }
   .offer-doc__pricing-table thead th {
     background: var(--brand-secondary);
-    border-bottom: 1px solid var(--brand-secondary-border);
+    border-bottom: 2px solid var(--brand-secondary-border);
     color: var(--brand-secondary-text);
-    font: var(--font-table, 600 0.72rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
-    letter-spacing: 0.08em;
-    padding: 0.65rem 0.75rem;
+    font: var(--font-table, 600 0.75rem/1.3 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
+    letter-spacing: 0.05em;
+    padding: 0.75rem 0.85rem;
     text-transform: uppercase;
+    text-align: left;
+    font-weight: 600;
   }
   .offer-doc__pricing-table tbody td {
     border-bottom: 1px solid var(--brand-secondary-border);
     color: var(--brand-text, #0f172a);
-    padding: 0.6rem 0.75rem;
+    padding: 0.7rem 0.85rem;
     vertical-align: top;
+    line-height: 1.5;
+  }
+  
+  .offer-doc__pricing-table tbody tr:hover {
+    background: rgba(15, 23, 42, 0.02);
   }
   .offer-doc__pricing-table tbody tr:last-child td {
     border-bottom: 1px solid var(--brand-secondary-border);
   }
   .offer-doc__pricing-table tfoot td {
     font-weight: 600;
-    padding: 0.75rem 0.75rem;
+    padding: 0.85rem 0.85rem;
+    line-height: 1.5;
   }
   .offer-doc__pricing-table tfoot tr:first-child td {
     border-top: 2px solid var(--brand-primary);
