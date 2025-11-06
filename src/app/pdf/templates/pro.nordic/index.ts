@@ -8,13 +8,13 @@ function renderHead(ctx: RenderContext): string {
     ${tokensToCssVars(ctx.tokens)}
     ${BASE_STYLES}
     main.offer{max-width:56rem;margin:0 auto;padding:3.5rem 3rem;display:flex;flex-direction:column;gap:2.5rem;background:var(--bg-canvas)}
-    header.hero{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:2.5rem;border-radius:18px;background:linear-gradient(135deg,var(--brand-primary),var(--primary-400));color:var(--text-onPrimary)}
+    header.hero{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;padding:2.5rem;border-radius:0;background:linear-gradient(135deg,var(--brand-primary),var(--primary-400));color:var(--text-onPrimary)}
     .hero__brand{display:flex;align-items:center;gap:1.25rem}
     .hero__identity{display:flex;flex-direction:column;gap:0.35rem}
     .hero__title{margin:0;font-size:2.4rem;font-weight:700}
     .hero__subtitle{margin:0;font-size:1rem;opacity:0.85}
     .hero__date{font-size:0.9rem;margin-top:0.5rem;opacity:0.8}
-    .brand-card{background:#fff;color:var(--brand-secondary);padding:1rem 1.5rem;border-radius:12px;box-shadow:0 12px 30px rgba(17,24,39,0.12);display:flex;flex-direction:column;gap:0.5rem;min-width:220px}
+    .brand-card{background:#fff;color:var(--brand-secondary);padding:1rem 1.5rem;border-radius:0;box-shadow:none;display:flex;flex-direction:column;gap:0.5rem;min-width:220px;border:1px solid rgba(0,0,0,0.08)}
     .brand-card__name{font-size:1.05rem;font-weight:600;margin:0}
     .brand-card__tag{font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-default);opacity:0.6}
     .section.card{display:flex;flex-direction:column;gap:1.25rem}
@@ -27,7 +27,7 @@ function renderHead(ctx: RenderContext): string {
     .table tbody tr:last-child td{border-bottom:none}
     .item-name{font-weight:600;color:var(--text-default)}
     .item-note{margin-top:0.25rem;font-size:0.82rem;color:var(--text-default);opacity:0.7}
-    .totals.section.card{padding:24px 28px;gap:1rem;background:linear-gradient(180deg,#fff,rgba(14,165,233,0.08));border:1px solid var(--primary-200)}
+    .totals.section.card{padding:24px 28px;gap:1rem;background:rgba(14,165,233,0.04);border:1px solid rgba(14,165,233,0.15);border-radius:8px}
     .totals__row{display:flex;justify-content:space-between;gap:2rem;font-weight:600;color:var(--text-default)}
     .totals__label{opacity:0.7;font-weight:500}
     .totals__highlight{font-size:1.15rem;color:var(--brand-secondary)}

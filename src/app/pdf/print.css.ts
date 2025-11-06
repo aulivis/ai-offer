@@ -111,36 +111,38 @@ export const PRINT_BASE_CSS = `
   }
 
   .section-card {
-    background: var(--brand-bg, #ffffff);
-    border: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
-    border-radius: 18px;
-    margin-bottom: 20px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 0;
     break-inside: avoid;
     page-break-inside: avoid;
     break-after: auto;
     page-break-after: auto;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
   }
   
   .section-card--pricing {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    background: rgba(15, 23, 42, 0.02);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
   
   .section-card--header {
     break-after: auto;
     page-break-after: auto;
+    background: transparent;
+    border: none;
+    margin-bottom: var(--page-header-gap);
   }
 
   .section-card__body {
     display: grid;
     gap: 18px;
-    padding: 22px 24px;
-  }
-
-  .section-card--header {
-    background: transparent;
-    border: none;
-    margin-bottom: var(--page-header-gap);
+    padding: 0;
   }
 
   .section-card--header .section-card__body {
@@ -149,10 +151,12 @@ export const PRINT_BASE_CSS = `
 
   .section-card--pricing .section-card__body {
     gap: 20px;
+    padding: 0;
   }
 
   .section-card--gallery {
     background: transparent;
+    border: none;
   }
 
   .section-card--gallery .section-card__body {

@@ -13,8 +13,15 @@ export const templateStyles = `
     color: #ffffff;
     padding: 2.5rem 3rem;
     margin-bottom: 2rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  @media print {
+    .offer-doc__header--modern {
+      border-radius: 0;
+      box-shadow: none;
+    }
   }
 
   .offer-doc__header-content--modern {
@@ -95,21 +102,21 @@ export const templateStyles = `
   }
 
   .section-card--modern {
-    background: #ffffff;
-    border: 1px solid var(--border, #e2e8f0);
-    border-radius: 0.75rem;
-    padding: 1.75rem 2rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 0;
+    box-shadow: none;
   }
 
   .section-card__title--modern {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--primary, #2563eb);
-    margin: 0 0 1.25rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--border, #e2e8f0);
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border, #e2e8f0);
   }
 
   .offer-doc__content--modern {
@@ -181,8 +188,9 @@ export const templateStyles = `
   /* Pricing table styling */
   .pricing-table__table-wrapper {
     border: 1px solid var(--border, #e2e8f0);
-    border-radius: 0.75rem;
+    border-radius: 8px;
     overflow: hidden;
+    background: rgba(15, 23, 42, 0.02);
   }
 
   .pricing-table__header {
@@ -217,7 +225,7 @@ export const templateStyles = `
   .offer-doc__footer--modern {
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 2px solid var(--border, #e2e8f0);
+    border-top: 1px solid var(--border, #e2e8f0);
   }
 
   .offer-doc__footer-grid--modern {

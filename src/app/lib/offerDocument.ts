@@ -177,16 +177,20 @@ export const OFFER_DOCUMENT_STYLES = `
     font-style: italic;
   }
   .section-card {
-    background: rgba(15, 23, 42, 0.02);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: var(--radius-lg, 2rem);
+    background: transparent;
+    border: none;
+    border-radius: 0;
     break-inside: avoid;
     page-break-inside: avoid;
   }
   .section-card__body {
     display: grid;
     gap: var(--space-md, 1rem);
-    padding: var(--space-lg, 1.5rem);
+    padding: 0;
+  }
+  
+  .section-card--pricing .section-card__body {
+    padding: 0;
   }
   .section-card--header {
     background: transparent;
@@ -195,8 +199,15 @@ export const OFFER_DOCUMENT_STYLES = `
   .section-card--header .section-card__body {
     padding: 0;
   }
+  .section-card--pricing {
+    background: rgba(15, 23, 42, 0.02);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: var(--radius-md, 1.25rem);
+    padding: var(--space-lg, 1.5rem);
+  }
   .section-card--pricing .section-card__body {
     gap: var(--space-md, 1.25rem);
+    padding: 0;
   }
   .section-card--gallery {
     background: transparent;
