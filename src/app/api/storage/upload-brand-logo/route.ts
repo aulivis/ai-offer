@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer';
-import { randomUUID } from 'node:crypto';
 
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
@@ -21,6 +20,11 @@ const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
 const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml'] as const;
 
+// Cache bucket existence check per server instance
+// Cache expires after 1 hour to handle bucket deletion scenarios
+let bucketExistsCache: { exists: boolean; timestamp: number } | null = null;
+const BUCKET_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const JPEG_SIGNATURE = Buffer.from([0xff, 0xd8, 0xff]);
 
@@ -33,9 +37,23 @@ type NormalizedImage = {
 };
 
 async function ensureBucketExists() {
+  // Check cache first
+  const now = Date.now();
+  if (bucketExistsCache && (now - bucketExistsCache.timestamp) < BUCKET_CACHE_TTL_MS) {
+    if (!bucketExistsCache.exists) {
+      // If cache says bucket doesn't exist, still try to create it
+      // (bucket might have been created by another instance)
+    } else {
+      // Cache says bucket exists, skip check
+      return;
+    }
+  }
+
   const adminClient = supabaseServiceRole();
   const { data: bucket, error } = await adminClient.storage.getBucket(BUCKET_ID);
+  
   if (error && !error.message?.toLowerCase().includes('not found')) {
+    // Don't cache errors - retry next time
     throw new Error('Nem sikerült lekérni a tárhely beállításait.');
   }
 
@@ -46,8 +64,11 @@ async function ensureBucketExists() {
       allowedMimeTypes: [...ALLOWED_MIME_TYPES],
     });
     if (createError) {
+      // Don't cache creation errors
       throw new Error('Nem sikerült létrehozni a tárhelyet.');
     }
+    // Cache successful creation
+    bucketExistsCache = { exists: true, timestamp: now };
     return;
   }
 
@@ -67,6 +88,9 @@ async function ensureBucketExists() {
       throw new Error('Nem sikerült frissíteni a tárhely beállításait.');
     }
   }
+
+  // Cache successful check
+  bucketExistsCache = { exists: true, timestamp: now };
 }
 
 function detectPng(buffer: Buffer): NormalizedImage | null {

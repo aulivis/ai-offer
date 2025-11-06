@@ -18,6 +18,7 @@ import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import { listTemplates as listSDKTemplates } from '@/app/pdf/templates/registry';
 import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
+import { uploadWithProgress } from '@/lib/uploadWithProgress';
 import { normalizeBrandHex } from '@/lib/branding';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { resolveEffectivePlan } from '@/lib/subscription';
@@ -138,8 +139,10 @@ export default function SettingsPage() {
   const [actSaving, setActSaving] = useState(false);
   const [newIndustry, setNewIndustry] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadProgress, setLogoUploadProgress] = useState<number | null>(null);
   const [linkingGoogle, setLinkingGoogle] = useState(false);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const logoUploadAbortControllerRef = useRef<AbortController | null>(null);
 
   const googleLinked =
     user?.identities?.some((identity) => identity.provider === 'google') ?? false;
@@ -628,8 +631,47 @@ export default function SettingsPage() {
     logoInputRef.current?.click();
   }
 
+  // Client-side file type validation
+  const ALLOWED_FILE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'] as const;
+  const ALLOWED_FILE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.svg'] as const;
+
+  function validateFileType(file: File): { valid: boolean; error?: string } {
+    // Check MIME type
+    if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
+      return {
+        valid: false,
+        error: t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) || 
+               'Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+      };
+    }
+
+    // Check file extension as secondary validation
+    const fileName = file.name.toLowerCase();
+    const hasValidExtension = ALLOWED_FILE_EXTENSIONS.some((ext) => fileName.endsWith(ext));
+    if (!hasValidExtension) {
+      return {
+        valid: false,
+        error: t('errors.settings.logoInvalidExtension') || 
+               'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+      };
+    }
+
+    return { valid: true };
+  }
+
   async function uploadLogo(file: File) {
+    // Cancel any existing upload
+    if (logoUploadAbortControllerRef.current) {
+      logoUploadAbortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this upload
+    const abortController = new AbortController();
+    logoUploadAbortControllerRef.current = abortController;
+
     setLogoUploading(true);
+    setLogoUploadProgress(0);
+
     try {
       const maxSize = 4 * 1024 * 1024;
       if (file.size > maxSize) {
@@ -640,22 +682,56 @@ export default function SettingsPage() {
         });
         return;
       }
+
+      // Client-side file type validation
+      const typeValidation = validateFileType(file);
+      if (!typeValidation.valid) {
+        showToast({
+          title: t('toasts.settings.logoInvalidType.title') || 'Érvénytelen fájltípus',
+          description: typeValidation.error || t('toasts.settings.logoInvalidType.description'),
+          variant: 'error',
+        });
+        return;
+      }
+
       if (!user) return;
       const formData = new FormData();
       formData.append('file', file);
 
       let response: Response;
       try {
-        response = await fetchWithSupabaseAuth('/api/storage/upload-brand-logo', {
+        response = await uploadWithProgress('/api/storage/upload-brand-logo', {
           method: 'POST',
           body: formData,
+          signal: abortController.signal,
           defaultErrorMessage: t('errors.settings.logoUploadFailed'),
+          onProgress: (progress) => {
+            setLogoUploadProgress(progress.percentage);
+          },
         });
       } catch (error) {
-        // fetchWithSupabaseAuth throws ApiError on non-200 status codes
-        // Extract the error message from the ApiError
+        // Check if upload was aborted
+        if (abortController.signal.aborted) {
+          return; // Silently return if aborted
+        }
+
+        // uploadWithProgress throws ApiError on non-200 status codes
         if (error instanceof ApiError) {
-          throw new Error(error.message);
+          // Map specific error codes to user-friendly messages
+          let errorMessage = error.message;
+          if (error.status === 413) {
+            errorMessage = t('errors.settings.logoTooLarge') || 'A fájl mérete túl nagy. Maximum 4 MB.';
+          } else if (error.status === 415) {
+            errorMessage = t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) || 
+                          'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.';
+          } else if (error.status === 503) {
+            errorMessage = t('errors.settings.logoStorageUnavailable') || 
+                          'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.';
+          } else if (error.status === 500) {
+            errorMessage = t('errors.settings.logoUploadFailed') || 
+                          'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.';
+          }
+          throw new Error(errorMessage);
         }
         throw error;
       }
@@ -688,12 +764,41 @@ export default function SettingsPage() {
         brand_logo_path: logoPath,
         brand_logo_url: logoUrl, // For immediate preview only
       }));
-      showToast({
-        title: t('toasts.settings.logoUploaded.title'),
-        description: t('toasts.settings.logoUploaded.description'),
-        variant: 'success',
-      });
+      
+      // Auto-save logo path to database immediately after successful upload
+      // This prevents data loss if user navigates away before manual save
+      try {
+        await saveProfile('branding');
+        showToast({
+          title: t('toasts.settings.logoUploaded.title'),
+          description: t('toasts.settings.logoUploaded.description'),
+          variant: 'success',
+        });
+      } catch (saveError) {
+        // If save fails, cleanup uploaded file to prevent orphaned storage
+        console.error('Failed to auto-save logo path', saveError);
+        try {
+          await fetchWithSupabaseAuth('/api/storage/delete-brand-logo', {
+            method: 'DELETE',
+            defaultErrorMessage: 'Failed to cleanup uploaded logo',
+          });
+        } catch (cleanupError) {
+          console.error('Failed to cleanup uploaded logo after save failure', cleanupError);
+        }
+
+        const saveErrorMessage = saveError instanceof Error ? saveError.message : t('errors.settings.saveFailed', { message: '' });
+        showToast({
+          title: t('toasts.settings.logoUploaded.title'),
+          description: t('toasts.settings.logoUploaded.description') + ' ' + (t('errors.settings.autoSaveFailed') || t('errors.settings.saveFailed', { message: saveErrorMessage })),
+          variant: 'error',
+        });
+      }
     } catch (error) {
+      // Don't show error if upload was aborted
+      if (abortController.signal.aborted) {
+        return;
+      }
+
       console.error('Logo upload error', error);
       const message =
         error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
@@ -704,6 +809,8 @@ export default function SettingsPage() {
       });
     } finally {
       setLogoUploading(false);
+      setLogoUploadProgress(null);
+      logoUploadAbortControllerRef.current = null;
     }
   }
 
@@ -1145,40 +1252,74 @@ export default function SettingsPage() {
                   {t('settings.branding.logoUpload.title')}
                 </p>
                 <p className="text-xs text-slate-400">{t('settings.branding.logoUpload.helper')}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      if (!canUploadBrandLogo) {
-                        openPlanUpgradeDialog({
-                          description: t('app.planUpgradeModal.reasons.brandingLogo'),
-                        });
-                        return;
-                      }
-                      triggerLogoUpload();
-                    }}
-                    disabled={logoUploading && canUploadBrandLogo}
-                    aria-disabled={!canUploadBrandLogo}
-                    className={[
-                      'inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed',
-                      canUploadBrandLogo
-                        ? 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-400'
-                        : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
-                    ].join(' ')}
-                  >
-                    {canUploadBrandLogo ? (
-                      logoUploading ? (
-                        t('settings.branding.logoUpload.uploading')
+                <div className="mt-3 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (!canUploadBrandLogo) {
+                          openPlanUpgradeDialog({
+                            description: t('app.planUpgradeModal.reasons.brandingLogo'),
+                          });
+                          return;
+                        }
+                        triggerLogoUpload();
+                      }}
+                      disabled={logoUploading}
+                      aria-disabled={!canUploadBrandLogo}
+                      className={[
+                        'inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed',
+                        canUploadBrandLogo
+                          ? 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-400'
+                          : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
+                      ].join(' ')}
+                    >
+                      {canUploadBrandLogo ? (
+                        logoUploading ? (
+                          <>
+                            <svg className="mr-2 h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            {t('settings.branding.logoUpload.uploading')}
+                          </>
+                        ) : (
+                          t('settings.branding.logoUpload.button')
+                        )
                       ) : (
-                        t('settings.branding.logoUpload.button')
-                      )
-                    ) : (
-                      <>
-                        <LockIcon className="h-4 w-4" />
-                        {t('settings.branding.logoUpload.lockedButton')}
-                      </>
+                        <>
+                          <LockIcon className="h-4 w-4" />
+                          {t('settings.branding.logoUpload.lockedButton')}
+                        </>
+                      )}
+                    </Button>
+                    {logoUploading && logoUploadAbortControllerRef.current && (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          logoUploadAbortControllerRef.current?.abort();
+                        }}
+                        className="inline-flex items-center justify-center rounded-full border border-border bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        {t('settings.branding.logoUpload.cancel') || 'Mégse'}
+                      </Button>
                     )}
-                  </Button>
+                  </div>
+                  {logoUploading && logoUploadProgress !== null && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs text-slate-600">
+                        <span>{t('settings.branding.logoUpload.progress') || 'Feltöltés...'}</span>
+                        <span>{logoUploadProgress}%</span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                        <div
+                          className="h-full bg-primary transition-all duration-300 ease-out"
+                          style={{ width: `${logoUploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
                   {profile.brand_logo_url && (
                     <a
                       href={profile.brand_logo_url}

@@ -52,7 +52,7 @@ const REFRESH_ENDPOINT = '/api/auth/refresh';
 
 let refreshPromise: Promise<boolean> | null = null;
 
-async function refreshSession(signal?: AbortSignal): Promise<boolean> {
+export async function refreshSession(signal?: AbortSignal): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
       const csrfToken = getCsrfToken();

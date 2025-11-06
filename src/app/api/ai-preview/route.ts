@@ -110,6 +110,36 @@ const previewRequestSchema = z
   })
   .strict();
 
+// Request deduplication cache - stores request hash -> promise mapping
+// Prevents duplicate requests within short time window
+const requestCache = new Map<string, { promise: Promise<Response>; timestamp: number }>();
+const REQUEST_CACHE_TTL_MS = 5000; // 5 seconds
+const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 60000; // Cleanup every minute
+
+// Cleanup old cache entries periodically
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of requestCache.entries()) {
+      if (now - value.timestamp > REQUEST_CACHE_TTL_MS) {
+        requestCache.delete(key);
+      }
+    }
+  }, REQUEST_CACHE_CLEANUP_INTERVAL_MS);
+}
+
+function hashRequest(data: unknown): string {
+  // Simple hash function for request deduplication
+  const str = JSON.stringify(data);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash.toString(36);
+}
+
 export const POST = withAuth(
   withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
   const requestId = getRequestId(req);
@@ -134,8 +164,21 @@ export const POST = withAuth(
     );
   }
 
+  let requestBody: unknown;
+  let requestHash: string;
+  
   try {
-    const parsed = previewRequestSchema.safeParse(await req.json());
+    requestBody = await req.json();
+    requestHash = hashRequest(requestBody);
+    
+    // Request deduplication - check if identical request is already in progress
+    const cachedRequest = requestCache.get(requestHash);
+    if (cachedRequest && (Date.now() - cachedRequest.timestamp) < REQUEST_CACHE_TTL_MS) {
+      log.info('Deduplicating AI preview request', { requestHash });
+      return cachedRequest.promise;
+    }
+
+    const parsed = previewRequestSchema.safeParse(requestBody);
     if (!parsed.success) {
       return handleValidationError(parsed.error, requestId);
     }
@@ -194,12 +237,25 @@ Különös figyelmet fordít a következőkre:
 
     const encoder = new TextEncoder();
     const previewModels = ['o4-mini', 'gpt-4o-mini'] as const;
+    const MAX_RETRIES = 3; // Increased retries for better error recovery
+    const RETRY_DELAY_BASE_MS = 500; // Base delay for exponential backoff
+
+    // Check if request was aborted before starting
+    if (req.signal?.aborted) {
+      return new NextResponse(null, { status: 499 }); // Client Closed Request
+    }
 
     let stream: Awaited<ReturnType<typeof openai.responses.stream>> | null = null;
     let lastError: unknown = null;
 
+    // Improved error recovery with retries and better fallback logic
     for (const model of previewModels) {
-      for (let attempt = 0; attempt < PREVIEW_ABORT_RETRY_ATTEMPTS; attempt += 1) {
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
+        // Check abort signal before each attempt
+        if (req.signal?.aborted) {
+          return new NextResponse(null, { status: 499 });
+        }
+
         try {
           const requestOptions: Parameters<typeof openai.responses.stream>[0] = {
             model,
@@ -210,7 +266,7 @@ Különös figyelmet fordít a következőkre:
           };
 
           if (!model.startsWith('o4')) {
-            requestOptions.temperature = 0.7; // Increased for more natural, creative but still professional output
+            requestOptions.temperature = 0.7;
           }
 
           stream = await openai.responses.stream(requestOptions);
@@ -220,24 +276,74 @@ Különös figyelmet fordít a következőkre:
           break;
         } catch (error) {
           lastError = error;
-          const isModelMissing =
-            error instanceof APIError &&
-            (error.status === 404 ||
+          
+          // Check if request was aborted
+          if (req.signal?.aborted || isAbortLikeError(error)) {
+            if (req.signal?.aborted) {
+              return new NextResponse(null, { status: 499 });
+            }
+            // Retry abort errors with exponential backoff
+            if (attempt < MAX_RETRIES - 1) {
+              const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
+              await wait(delay);
+              continue;
+            }
+            // If last attempt and not last model, try next model
+            if (model !== previewModels[previewModels.length - 1]) {
+              log.warn('Aborted stream, retrying with fallback model', { model, error });
+              break;
+            }
+            throw error;
+          }
+
+          // Handle API errors - retry on transient errors, fallback on model errors
+          if (error instanceof APIError) {
+            const isModelMissing =
+              error.status === 404 ||
               error.code === 'model_not_found' ||
-              error.code === 'model_not_found_error');
+              error.code === 'model_not_found_error';
 
-          if (isAbortLikeError(error) && attempt < PREVIEW_ABORT_RETRY_ATTEMPTS - 1) {
-            await wait(PREVIEW_ABORT_RETRY_DELAY_MS);
+            if (isModelMissing) {
+              // Try next model
+              break;
+            }
+
+            // Retry on rate limit or server errors (5xx)
+            const isRetryable =
+              error.status === 429 || // Rate limit
+              error.status === 500 || // Server error
+              error.status === 502 || // Bad gateway
+              error.status === 503 || // Service unavailable
+              error.status === 504; // Gateway timeout
+
+            if (isRetryable && attempt < MAX_RETRIES - 1) {
+              const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
+              log.warn('Retrying AI preview request after error', {
+                status: error.status,
+                attempt: attempt + 1,
+                delay,
+              });
+              await wait(delay);
+              continue;
+            }
+
+            // If last model and last attempt, throw error
+            if (model === previewModels[previewModels.length - 1] && attempt === MAX_RETRIES - 1) {
+              throw error;
+            }
+
+            // Try next model on non-retryable errors
+            if (!isRetryable && model !== previewModels[previewModels.length - 1]) {
+              log.warn('API error, trying fallback model', { status: error.status, model, error });
+              break;
+            }
+          }
+
+          // For other errors, retry with exponential backoff
+          if (attempt < MAX_RETRIES - 1) {
+            const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
+            await wait(delay);
             continue;
-          }
-
-          if (isModelMissing) {
-            break;
-          }
-
-          if (isAbortLikeError(error) && model !== previewModels[previewModels.length - 1]) {
-            log.warn('Aborted stream, retrying with fallback model', { model, error });
-            break;
           }
 
           throw error;
@@ -253,11 +359,25 @@ Különös figyelmet fordít a következőkre:
       throw lastError instanceof Error ? lastError : new Error('Failed to start preview stream');
     }
 
+    // Check abort signal after stream creation
+    if (req.signal?.aborted) {
+      try {
+        stream.abort();
+      } catch {
+        // ignore abort errors
+      }
+      return new NextResponse(null, { status: 499 });
+    }
+
     let removeStreamListeners: (() => void) | null = null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let closeStreamRef: (() => void) | null = null;
+    let isCleanedUp = false;
 
     const cleanup = () => {
+      if (isCleanedUp) return; // Prevent double cleanup
+      isCleanedUp = true;
+      
       if (timeoutId) {
         clearTimeout(timeoutId);
         timeoutId = null;
@@ -272,10 +392,25 @@ Különös figyelmet fordít a következőkre:
       start(controller) {
         let accumulated = '';
         let closed = false;
+        const MAX_ACCUMULATED_SIZE = 10 * 1024 * 1024; // 10MB limit to prevent memory issues
+
+        // Set up abort signal listener
+        const abortHandler = () => {
+          if (!closed) {
+            try {
+              stream.abort();
+            } catch {
+              // ignore abort errors
+            }
+            closeStream();
+          }
+        };
+        req.signal?.addEventListener('abort', abortHandler);
 
         const closeStream = () => {
           if (closed) return;
           closed = true;
+          req.signal?.removeEventListener('abort', abortHandler);
           try {
             controller.close();
           } catch (closeError) {
@@ -290,21 +425,83 @@ Különös figyelmet fordít a következőkre:
 
         closeStreamRef = closeStream;
 
-        const push = (payload: Record<string, unknown>) => {
-          if (closed) return;
-          try {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
-          } catch (enqueueError) {
-            if (enqueueError instanceof TypeError && enqueueError.message.includes('closed')) {
-              closeStream();
-            } else {
-              throw enqueueError;
+        // Queue for backpressure handling
+        const payloadQueue: Array<Record<string, unknown>> = [];
+        let isProcessingQueue = false;
+        let isPaused = false;
+
+        const processQueue = () => {
+          if (isProcessingQueue || closed || payloadQueue.length === 0) {
+            return;
+          }
+
+          isProcessingQueue = true;
+          while (payloadQueue.length > 0 && !closed) {
+            const desiredSize = controller.desiredSize;
+            // If buffer is full, stop processing and wait
+            if (desiredSize !== null && desiredSize <= 0) {
+              isPaused = true;
+              isProcessingQueue = false;
+              // Resume processing after a short delay
+              setTimeout(() => {
+                if (!closed) {
+                  processQueue();
+                }
+              }, 50);
+              return;
+            }
+
+            if (isPaused) {
+              isPaused = false;
+            }
+
+            const payload = payloadQueue.shift();
+            if (!payload) break;
+
+            try {
+              const data = encoder.encode(`data: ${JSON.stringify(payload)}\n\n`);
+              controller.enqueue(data);
+            } catch (enqueueError) {
+              if (enqueueError instanceof TypeError && enqueueError.message.includes('closed')) {
+                closeStream();
+                return;
+              }
+              // If enqueue fails due to backpressure, re-queue and retry
+              payloadQueue.unshift(payload);
+              isProcessingQueue = false;
+              setTimeout(() => {
+                if (!closed) {
+                  processQueue();
+                }
+              }, 50);
+              return;
             }
           }
+          isProcessingQueue = false;
+        };
+
+        const push = (payload: Record<string, unknown>) => {
+          if (closed) return;
+          
+          payloadQueue.push(payload);
+          processQueue();
         };
 
         const handleDelta = (event: { delta?: string }) => {
           if (!event.delta) return;
+          
+          // Prevent unbounded memory growth
+          if (accumulated.length + event.delta.length > MAX_ACCUMULATED_SIZE) {
+            log.warn('Accumulated HTML size limit reached, truncating', {
+              currentSize: accumulated.length,
+              deltaSize: event.delta.length,
+              maxSize: MAX_ACCUMULATED_SIZE,
+            });
+            // Truncate accumulated to make room, keeping last portion
+            const keepSize = Math.floor(MAX_ACCUMULATED_SIZE * 0.9); // Keep 90%
+            accumulated = accumulated.slice(-keepSize);
+          }
+          
           accumulated += event.delta;
           push({ type: 'delta', html: sanitizeHTML(accumulated) });
         };
@@ -377,14 +574,34 @@ Különös figyelmet fordít a következőkre:
       },
     });
 
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-      },
+    // Create response promise and cache it for deduplication
+    const responsePromise = Promise.resolve(
+      new Response(readable, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+        },
+      })
+    );
+
+    // Cache the request for deduplication (only cache for short time)
+    requestCache.set(requestHash, {
+      promise: responsePromise,
+      timestamp: Date.now(),
     });
+
+    // Clean up cache entry after TTL
+    setTimeout(() => {
+      requestCache.delete(requestHash);
+    }, REQUEST_CACHE_TTL_MS);
+
+    return responsePromise;
   } catch (error) {
+    // Remove from cache on error
+    if (requestHash) {
+      requestCache.delete(requestHash);
+    }
     const message = error instanceof Error ? error.message : String(error);
     if (isAbortLikeError(error)) {
       log.error('AI preview aborted before streaming could start', error);
