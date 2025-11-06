@@ -21,6 +21,10 @@ import { WizardStep2Pricing } from '@/components/offers/WizardStep2Pricing';
 import { WizardActionBar } from '@/components/offers/WizardActionBar';
 import { useWizardValidation } from '@/hooks/useWizardValidation';
 import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
+import { useRealTimeValidation } from '@/hooks/useRealTimeValidation';
+import { useOfferForm } from '@/hooks/useOfferForm';
+import { useClientAutocomplete } from '@/hooks/useClientAutocomplete';
+import { useQuotaManagement } from '@/hooks/useQuotaManagement';
 import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
@@ -341,11 +345,6 @@ export default function NewOfferWizard() {
   const { validateStep1, validateStep2 } = useWizardValidation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{
-    title?: string;
-    projectDetails: Partial<Record<ProjectDetailKey, string>>;
-    pricing?: string;
-  }>({ projectDetails: {} });
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
   const [profileCompanyName, setProfileCompanyName] = useState('');
   const [pdfBranding, setPdfBranding] = useState<{
@@ -417,6 +416,17 @@ export default function NewOfferWizard() {
   const [rows, setRows] = useState<PriceRow[]>([
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
+
+  // Real-time validation with debouncing (must be after form and rows declarations)
+  const { errors: validationErrors, isValid: isStepValid } = useRealTimeValidation({
+    step,
+    title: form.title,
+    projectDetails: form.projectDetails,
+    pricingRows: rows,
+    onValidationChange: () => {
+      // Validation errors are automatically updated by the hook
+    },
+  });
 
   // preview
   const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
@@ -1652,16 +1662,7 @@ export default function NewOfferWizard() {
     }
   }
 
-  // Real-time validation
-  useEffect(() => {
-    if (step === 1) {
-      const errors = validateStep1(form.title, form.projectDetails);
-      setValidationErrors(errors);
-    } else if (step === 2) {
-      const errors = validateStep2(rows);
-      setValidationErrors(errors);
-    }
-  }, [step, form.title, form.projectDetails, rows, validateStep1, validateStep2]);
+  // Real-time validation is handled by useRealTimeValidation hook
 
   const goToStep = useCallback(
     (nextStep: number) => {
@@ -1687,11 +1688,9 @@ export default function NewOfferWizard() {
           return;
         }
         
-        // Validate current step before proceeding
+        // Validate current step before proceeding (using real-time validation)
         if (step === 1) {
-          const errors = validateStep1(form.title, form.projectDetails);
-          if (errors.title || errors.projectDetails.overview) {
-            setValidationErrors(errors);
+          if (validationErrors.title || validationErrors.projectDetails.overview) {
             showToast({
               title: t('offers.wizard.validation.titleRequired'),
               description: t('offers.wizard.validation.overviewRequired'),
@@ -1700,12 +1699,10 @@ export default function NewOfferWizard() {
             return;
           }
         } else if (step === 2) {
-          const errors = validateStep2(rows);
-          if (errors.pricing) {
-            setValidationErrors(errors);
+          if (validationErrors.pricing) {
             showToast({
               title: t('offers.wizard.validation.pricingRequired'),
-              description: errors.pricing,
+              description: validationErrors.pricing,
               variant: 'warning',
             });
             return;
@@ -1718,7 +1715,7 @@ export default function NewOfferWizard() {
       }
       setStep(clampedStep);
     },
-    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, t, form, rows, validateStep1, validateStep2],
+    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, t, validationErrors],
   );
 
   const wizardSteps: StepIndicatorStep[] = [

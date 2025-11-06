@@ -1,59 +1,87 @@
-import * as React from 'react';
+'use client';
 
-export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function cn(...classes: (string | undefined | null | false)[]): string {
+  return classes.filter(Boolean).join(' ');
+}
+
+type SkeletonProps = {
+  className?: string;
+  variant?: 'text' | 'circular' | 'rectangular';
+  width?: string | number;
+  height?: string | number;
+  animate?: boolean;
+};
+
+/**
+ * Skeleton loader component for loading states
+ */
+export function Skeleton({
+  className,
+  variant = 'rectangular',
+  width,
+  height,
+  animate = true,
+}: SkeletonProps) {
+  const baseClasses = 'bg-slate-200';
+  const variantClasses = {
+    text: 'rounded',
+    circular: 'rounded-full',
+    rectangular: 'rounded-lg',
+  };
+
+  const style: React.CSSProperties = {};
+  if (width) style.width = typeof width === 'number' ? `${width}px` : width;
+  if (height) style.height = typeof height === 'number' ? `${height}px` : height;
+
   return (
     <div
-      className={`animate-pulse rounded-md bg-border/60 ${className || ''}`}
-      {...props}
+      className={cn(
+        baseClasses,
+        variantClasses[variant],
+        animate && 'animate-pulse',
+        className,
+      )}
+      style={style}
+      aria-busy="true"
+      aria-label="Loading..."
     />
   );
 }
 
-export function SkeletonCard({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+/**
+ * Text skeleton - multiple lines
+ */
+export function SkeletonText({
+  lines = 3,
+  className,
+  lineHeight = '1rem',
+}: {
+  lines?: number;
+  className?: string;
+  lineHeight?: string;
+}) {
   return (
-    <div
-      className={`rounded-2xl border border-border bg-bg-muted p-6 ${className || ''}`}
-      {...props}
-    >
-      <Skeleton className="mb-4 h-4 w-3/5" />
-      <Skeleton className="mb-2 h-3 w-2/5" />
-      <Skeleton className="h-10 w-full" />
+    <div className={cn('space-y-2', className)}>
+      {Array.from({ length: lines }).map((_, i) => (
+        <Skeleton
+          key={i}
+          variant="text"
+          height={lineHeight}
+          width={i === lines - 1 ? '75%' : '100%'}
+        />
+      ))}
     </div>
   );
 }
 
-export function MetricSkeleton() {
+/**
+ * Card skeleton
+ */
+export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-bg-muted p-5">
-      <Skeleton className="mb-3 h-3 w-2/3" />
-      <Skeleton className="mb-3 h-8 w-1/2" />
-      <Skeleton className="h-2 w-full" />
+    <div className={cn('rounded-xl border border-slate-200 bg-white p-4', className)}>
+      <Skeleton height="1.5rem" width="60%" className="mb-3" />
+      <SkeletonText lines={3} />
     </div>
   );
 }
-
-export function OfferCardSkeleton() {
-  return (
-    <div className="rounded-3xl border border-border/60 bg-white/90 p-6 shadow-sm">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4 flex-1">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <div className="flex-1">
-            <Skeleton className="mb-2 h-5 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-        <Skeleton className="h-6 w-20 rounded-full" />
-      </div>
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-        <Skeleton className="h-4 w-4/6" />
-      </div>
-    </div>
-  );
-}
-
-
-
-
