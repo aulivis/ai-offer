@@ -14,9 +14,20 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
 
   useEffect(() => {
     if (show) {
+      // Double-check sessionStorage before showing
+      if (typeof window !== 'undefined') {
+        const popupShown = sessionStorage.getItem('exitIntentPopupShown');
+        if (popupShown === 'true') {
+          // Already shown, don't show again
+          onClose();
+          return;
+        }
+      }
       setIsVisible(true);
+    } else {
+      setIsVisible(false);
     }
-  }, [show]);
+  }, [show, onClose]);
 
   if (!show || !isVisible) return null;
 
