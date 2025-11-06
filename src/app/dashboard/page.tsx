@@ -1217,7 +1217,7 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.quota.label')}
                     value={quotaValue}
-                    {...(quotaHelper ? { helper: quotaHelper } : {})}
+                    {...(quotaHelper && metricsViewMode === 'detailed' ? { helper: quotaHelper } : {})}
                     {...(quotaSnapshot && quotaSnapshot.limit !== null
                       ? {
                           progress: {
@@ -1228,15 +1228,6 @@ export default function DashboardPage() {
                       : {})}
                     icon={<ChartBarIcon className="h-7 w-7" />}
                     color="info"
-                    {...(totalOffersCount === 0
-                      ? {
-                          quickAction: {
-                            label: 'Új ajánlat',
-                            icon: <PlusIcon className="h-4 w-4" />,
-                            onClick: () => router.push('/new'),
-                          },
-                        }
-                      : {})}
                     isEmpty={totalOffersCount === 0}
                     emptyMessage="Hozz létre első ajánlatodat a kezdéshez"
                   />
@@ -1252,11 +1243,6 @@ export default function DashboardPage() {
                     {...(stats.createdThisMonth > 0 ? { trendValue: `+${stats.createdThisMonth}` } : {})}
                     {...(createdComparison ? { comparison: createdComparison } : {})}
                     onClick={() => handleMetricClick('all')}
-                    quickAction={{
-                      label: 'Új',
-                      icon: <PlusIcon className="h-4 w-4" />,
-                      onClick: () => router.push('/new'),
-                    }}
                     isEmpty={totalOffersCount === 0}
                     emptyMessage="Még nincs ajánlatod"
                   />

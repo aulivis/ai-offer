@@ -133,24 +133,78 @@ export function WizardStep1Details({
         </p>
       </div>
 
-      {/* Quota Info */}
-      <div
-        className={`rounded-xl border p-3 transition ${
-          quotaInfo.isExhausted
-            ? 'border-rose-200 bg-rose-50/90 text-rose-700'
-            : 'border-slate-200 bg-slate-50/90 text-slate-700'
-        }`}
-      >
-        <div className="space-y-0.5">
-          <p className="text-xs font-semibold">{quotaInfo.title}</p>
-          <p className="text-[11px] text-current/80">{quotaInfo.description}</p>
-          {quotaInfo.remainingText ? (
-            <p className="text-[11px] font-semibold text-current">{quotaInfo.remainingText}</p>
-          ) : null}
-          {quotaInfo.pendingText ? (
-            <p className="text-[10px] text-current/70">{quotaInfo.pendingText}</p>
-          ) : null}
+      {/* Quota Info and Style Selection - Same Row */}
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] items-start">
+        {/* Quota Info - Enhanced */}
+        <div
+          className={`rounded-xl border-2 p-4 transition-all shadow-sm ${
+            quotaInfo.isExhausted
+              ? 'border-rose-300 bg-gradient-to-br from-rose-50 to-rose-100/50 text-rose-800 shadow-rose-100'
+              : 'border-primary/30 bg-gradient-to-br from-primary/5 via-primary/3 to-slate-50 text-slate-800 shadow-primary/10'
+          }`}
+        >
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold tracking-tight">{quotaInfo.title}</p>
+              {quotaInfo.isExhausted && (
+                <span className="inline-flex items-center rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-900">
+                  KVÓTA TELJES
+                </span>
+              )}
+            </div>
+            <p className="text-xs font-medium text-current/90 leading-relaxed">{quotaInfo.description}</p>
+            {quotaInfo.remainingText ? (
+              <p className="text-sm font-bold text-current">{quotaInfo.remainingText}</p>
+            ) : null}
+            {quotaInfo.pendingText ? (
+              <p className="text-[11px] font-medium text-current/80">{quotaInfo.pendingText}</p>
+            ) : null}
+          </div>
         </div>
+
+        {/* Style Selection */}
+        <section className="space-y-2.5 min-w-[200px]">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              {t('offers.wizard.forms.details.sections.style')}
+            </h3>
+            <HelpIcon
+              content={t('offers.wizard.forms.details.sections.styleHelper')}
+              label={t('offers.wizard.forms.details.sections.style')}
+            />
+          </div>
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-1">
+            {[
+              {
+                value: 'compact' as const,
+                label: t('offers.wizard.forms.details.styleOptions.compact.label'),
+                description: t('offers.wizard.forms.details.styleOptions.compact.description'),
+              },
+              {
+                value: 'detailed' as const,
+                label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
+                description: t('offers.wizard.forms.details.styleOptions.detailed.description'),
+              },
+            ].map((option) => {
+              const active = form.style === option.value;
+              return (
+                <Button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleFieldChange('style', option.value)}
+                  className={`flex h-full w-full flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                    active
+                      ? 'border-slate-900 bg-slate-900 text-white shadow-md'
+                      : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
+                  }`}
+                >
+                  <span className="text-xs font-semibold">{option.label}</span>
+                  <span className="text-[11px] text-current/80">{option.description}</span>
+                </Button>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
       {/* Text Templates */}
@@ -180,50 +234,6 @@ export function WizardStep1Details({
           </Select>
         </section>
       )}
-
-      {/* Style Selection */}
-      <section className="space-y-2.5">
-        <div className="flex items-center gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-            {t('offers.wizard.forms.details.sections.style')}
-          </h3>
-          <HelpIcon
-            content={t('offers.wizard.forms.details.sections.styleHelper')}
-            label={t('offers.wizard.forms.details.sections.style')}
-          />
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {[
-            {
-              value: 'compact' as const,
-              label: t('offers.wizard.forms.details.styleOptions.compact.label'),
-              description: t('offers.wizard.forms.details.styleOptions.compact.description'),
-            },
-            {
-              value: 'detailed' as const,
-              label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
-              description: t('offers.wizard.forms.details.styleOptions.detailed.description'),
-            },
-          ].map((option) => {
-            const active = form.style === option.value;
-            return (
-              <Button
-                key={option.value}
-                type="button"
-                onClick={() => handleFieldChange('style', option.value)}
-                className={`flex h-full w-full flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                  active
-                    ? 'border-slate-900 bg-slate-900 text-white shadow-md'
-                    : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
-                }`}
-              >
-                <span className="text-xs font-semibold">{option.label}</span>
-                <span className="text-[11px] text-current/80">{option.description}</span>
-              </Button>
-            );
-          })}
-        </div>
-      </section>
 
       {/* Project Details */}
       <section className="space-y-3">

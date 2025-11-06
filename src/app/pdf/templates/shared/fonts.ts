@@ -11,14 +11,13 @@ export const FONT_FALLBACKS = {
 
 /**
  * Generate font preload links for critical fonts
+ * Note: Google Fonts loading is disabled for PDF generation to avoid network errors.
+ * System fonts are used via fallbacks defined in FONT_FALLBACKS.
  */
 export function generateFontPreloads(): string {
-  return `
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" as="style" />
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  `;
+  // Return empty string - we rely on system fonts via CSS fallbacks
+  // This prevents ERR_NAME_NOT_RESOLVED errors in PDF generation environments
+  return '';
 }
 
 /**
