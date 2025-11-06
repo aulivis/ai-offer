@@ -33,10 +33,44 @@ export const PRINT_BASE_CSS = `
     margin: 0;
     background: var(--bg, #f8fafc);
     color: var(--text, #0f172a);
-    font: 400 11pt/1.6 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font: 400 11pt/1.6 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     color-adjust: exact;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Enhanced typography for print */
+  h1, h2, h3, h4, h5, h6 {
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    text-rendering: optimizeLegibility;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Ensure sufficient contrast for print */
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
+    /* Ensure text is readable in grayscale */
+    body {
+      color: #000000 !important;
+      background: #ffffff !important;
+    }
+    
+    /* Darken borders for better visibility in print */
+    .offer-doc__header,
+    .offer-doc__footer,
+    .section-card--pricing {
+      border-color: rgba(0, 0, 0, 0.2) !important;
+    }
   }
 
   .offer-doc {
@@ -433,10 +467,32 @@ export const PRINT_BASE_CSS = `
     widows: 3;
     text-align: justify;
     text-justify: inter-word;
+    line-height: 1.65;
+    font-feature-settings: 'kern' 1, 'liga' 1;
   }
   
   p:last-child {
     margin-bottom: 0;
+  }
+  
+  /* Enhanced orphans/widows control */
+  p, li, td, th {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Prevent single lines at page start/end */
+  h1, h2, h3, h4, h5, h6 {
+    orphans: 3;
+    widows: 3;
+    page-break-after: avoid;
+  }
+  
+  /* Keep related content together */
+  p + h2,
+  p + h3,
+  p + h4 {
+    page-break-before: avoid;
   }
 
   table,
@@ -536,6 +592,8 @@ export const PRINT_BASE_CSS = `
   .offer-doc__content h4:first-child {
     margin-top: 0;
   }
+  
+  /* Enhanced page break control */
   .offer-doc__content .section,
   .offer-doc__content .pricing-summary,
   .section,
@@ -545,6 +603,100 @@ export const PRINT_BASE_CSS = `
     break-after: avoid;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+  
+  /* Keep headings with following content */
+  h1 + p,
+  h2 + p,
+  h3 + p,
+  h4 + p {
+    page-break-before: avoid;
+  }
+  
+  /* Table of Contents styling */
+  .offer-toc {
+    break-after: page;
+    page-break-after: always;
+    margin-bottom: 2rem;
+  }
+  
+  .offer-toc__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--brand-primary, #1c274c);
+  }
+  
+  .offer-toc__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .offer-toc__item {
+    margin-bottom: 0.5rem;
+    break-inside: avoid;
+  }
+  
+  .offer-toc__item a {
+    color: var(--brand-text, #0f172a);
+    text-decoration: none;
+    display: block;
+    padding: 0.25rem 0;
+  }
+  
+  .offer-toc__item a:hover {
+    text-decoration: underline;
+  }
+  
+  .offer-toc__item--level-2 {
+    padding-left: 1.5rem;
+  }
+  
+  .offer-toc__item--level-3 {
+    padding-left: 3rem;
+  }
+  
+  /* Skip links for accessibility */
+  .offer-skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 999;
+  }
+  
+  .offer-skip-link:focus {
+    position: static;
+    left: auto;
+    display: block;
+    padding: 0.5rem 1rem;
+    background: var(--brand-primary, #1c274c);
+    color: var(--brand-primary-contrast, #ffffff);
+    text-decoration: none;
+  }
+  
+  /* Watermark styles */
+  .offer-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--brand-primary, #1c274c);
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 1;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  @media print {
+    .offer-watermark {
+      opacity: 0.08;
+    }
   }
   .offer-doc__pricing-table {
     width: 100%;

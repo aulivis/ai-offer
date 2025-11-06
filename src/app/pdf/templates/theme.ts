@@ -28,6 +28,10 @@ export function createThemeTokens(baseTokens: ThemeTokens, branding?: Branding):
 
 export function createThemeCssVariables(tokens: ThemeTokens): string {
   const primaryContrast = contrastColor(tokens.color.primary);
+  
+  // Ensure print-safe colors
+  const printSafeText = ensurePrintSafeColor(tokens.color.text, tokens.color.bg);
+  const printSafePrimary = ensurePrintSafeColor(tokens.color.primary, tokens.color.bg);
 
   const css = `
     .offer-doc {
@@ -40,7 +44,7 @@ export function createThemeCssVariables(tokens: ThemeTokens): string {
       --brand-text: ${tokens.color.text};
       --brand-bg: ${tokens.color.bg};
       --brand-border: ${tokens.color.border};
-      --text: ${tokens.color.text};
+      --text: ${printSafeText};
       --muted: ${tokens.color.muted};
       --border: ${tokens.color.border};
       --bg: ${tokens.color.bg};
@@ -58,9 +62,49 @@ export function createThemeCssVariables(tokens: ThemeTokens): string {
       --radius-md: ${tokens.radius.md};
       --radius-lg: ${tokens.radius.lg};
     }
+    
+    @media print {
+      .offer-doc {
+        --text: ${printSafeText};
+        --brand-primary: ${printSafePrimary};
+      }
+    }
   `;
 
   return css.trim();
+}
+
+/**
+ * Ensure color is print-safe (simplified version)
+ */
+function ensurePrintSafeColor(color: string, background: string = '#ffffff'): string {
+  try {
+    // Basic check - if color is too light, darken it
+    let hex = color.replace('#', '');
+    
+    // Handle 3-character hex codes
+    if (hex.length === 3) {
+      hex = hex.split('').map(char => char + char).join('');
+    }
+    
+    if (hex.length !== 6) {
+      return color; // Return original if invalid
+    }
+    
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    // If too light, return darker version
+    if (brightness > 200) {
+      return '#000000';
+    }
+    
+    return color;
+  } catch {
+    return color; // Return original on error
+  }
 }
 
 export function normalizeBranding(branding?: Branding): Branding | undefined {

@@ -103,6 +103,27 @@ export const OFFER_DOCUMENT_STYLES = `
     hyphens: auto;
     overflow-wrap: anywhere;
   }
+  
+  /* Accessibility improvements */
+  .offer-doc img:not([alt]) {
+    border: 2px dashed #dc2626;
+  }
+  
+  /* Ensure sufficient color contrast */
+  .offer-doc a {
+    color: var(--brand-primary, #1c274c);
+    text-decoration: underline;
+  }
+  
+  .offer-doc a:focus {
+    outline: 2px solid var(--brand-primary, #1c274c);
+    outline-offset: 2px;
+  }
+  
+  /* Ensure images are accessible */
+  .offer-doc img[alt=""] {
+    border: 2px dashed #f59e0b;
+  }
   .offer-doc__logo-wrap {
     align-items: center;
     background: var(--brand-secondary, #e2e8f0);

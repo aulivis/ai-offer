@@ -66,6 +66,11 @@ export interface OfferData {
   companyTaxId?: string | null;
   pricingFootnote?: string | null;
   images?: TemplateImageAsset[] | null;
+  watermark?: {
+    type?: 'draft' | 'preview' | 'confidential' | 'custom';
+    text?: string;
+  };
+  includeTOC?: boolean;
 }
 
 export interface TemplateImageAsset {

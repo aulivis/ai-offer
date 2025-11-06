@@ -1,4 +1,5 @@
 import { sanitizeInput } from '@/lib/sanitize';
+import { generateFontPreloads } from '../../shared/fonts';
 
 import type { RenderCtx } from '../../types';
 
@@ -11,5 +12,6 @@ export function renderHead(ctx: RenderCtx): string {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${safeTitle}</title>
+    ${generateFontPreloads()}
   `;
 }
