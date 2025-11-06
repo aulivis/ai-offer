@@ -2,17 +2,24 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createLogger } from './logger';
 import { getRequestId } from './requestId';
+import type { AuthenticatedNextRequest } from '../../middleware/auth';
 
 const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
 
 /**
  * Middleware to enforce request size limits.
  * Checks Content-Length header and rejects oversized requests early.
+ * 
+ * Works with both NextRequest and AuthenticatedNextRequest.
+ * When used with withAuth, the handler receives AuthenticatedNextRequest.
  */
-export async function withRequestSizeLimit<T extends unknown[]>(
-  handler: (req: NextRequest, ...args: T) => Promise<NextResponse>,
-) {
-  return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
+export function withRequestSizeLimit<
+  Args extends unknown[],
+  RequestType extends NextRequest | AuthenticatedNextRequest = NextRequest,
+>(
+  handler: (req: RequestType, ...args: Args) => Promise<NextResponse>,
+): (req: RequestType, ...args: Args) => Promise<NextResponse> {
+  return async (req: RequestType, ...args: Args): Promise<NextResponse> => {
     const contentLength = req.headers.get('content-length');
 
     if (contentLength) {
@@ -29,6 +36,17 @@ export async function withRequestSizeLimit<T extends unknown[]>(
           { status: 413 },
         );
       }
+    }
+
+    // Ensure handler is a function before calling
+    if (typeof handler !== 'function') {
+      const requestId = getRequestId(req);
+      const log = createLogger(requestId);
+      log.error('withRequestSizeLimit: handler is not a function', { handler, type: typeof handler });
+      return NextResponse.json(
+        { error: 'Belső szerver hiba: érvénytelen kéréskezelő.' },
+        { status: 500 },
+      );
     }
 
     return handler(req, ...args);

@@ -192,7 +192,15 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       return NextResponse.json({ error: 'A fájl mérete legfeljebb 4 MB lehet.' }, { status: 413 });
     }
 
-    await ensureBucketExists();
+    try {
+      await ensureBucketExists();
+    } catch (bucketError) {
+      log.error('Failed to ensure bucket exists', { error: bucketError });
+      return NextResponse.json(
+        { error: 'Nem sikerült inicializálni a tárhelyet. Próbáld újra később.' },
+        { status: 500 },
+      );
+    }
 
     const arrayBuffer = await fileEntry.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -213,8 +221,19 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         contentType: normalizedImage.contentType,
       });
     if (uploadError) {
-      log.error('Logo upload failed', { error: uploadError, path });
-      throw new Error('Nem sikerült feltölteni a logót.');
+      log.error('Logo upload failed', { error: uploadError, path, userId });
+      // Provide more specific error messages
+      if (uploadError.message?.toLowerCase().includes('not found') || 
+          uploadError.message?.toLowerCase().includes('bucket')) {
+        return NextResponse.json(
+          { error: 'A tárhely nem elérhető. Kérjük, próbáld újra később.' },
+          { status: 503 },
+        );
+      }
+      return NextResponse.json(
+        { error: 'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.' },
+        { status: 500 },
+      );
     }
 
     // Generate signed URL for immediate preview/display
@@ -224,7 +243,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     
     if (signedError) {
       log.warn('Failed to generate signed URL', { error: signedError, path });
-      // Still return the path even if signed URL generation fails
+      // Still return the path even if signed URL generation fails - upload was successful
     }
     
     // Return both path (for storage) and signed URL (for immediate use)

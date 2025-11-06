@@ -110,13 +110,27 @@ export async function getBrandLogoSignedUrl(
       .createSignedUrl(sanitizedPath, ttlSeconds);
 
     if (error || !data?.signedUrl) {
-      console.error('Failed to generate signed URL for logo:', error);
+      // Storage errors (like "Object not found") are expected when no logo exists
+      // Use debug level instead of error to avoid console pollution on landing page
+      if (error?.message?.toLowerCase().includes('not found')) {
+        // Silent handling for missing files - this is normal
+        return null;
+      }
+      console.debug('Failed to generate signed URL for logo:', error?.message || error);
       return null;
     }
 
     return data.signedUrl;
   } catch (error) {
-    console.error('Error generating signed URL for logo:', error);
+    // Catch all storage-related errors gracefully (bucket doesn't exist, network issues, etc.)
+    // These are expected scenarios and shouldn't pollute error logs
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.toLowerCase().includes('not found') || 
+        errorMessage.toLowerCase().includes('does not exist')) {
+      // Silent handling for expected cases
+      return null;
+    }
+    console.debug('Error generating signed URL for logo:', errorMessage);
     return null;
   }
 }

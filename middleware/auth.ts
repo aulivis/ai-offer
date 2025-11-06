@@ -145,6 +145,15 @@ export function withAuth<Args extends unknown[], Result>(handler: Handler<Args, 
 
     const language = resolveRequestLanguage(req);
 
+    // Ensure handler is actually a function before calling
+    if (typeof handler !== 'function') {
+      console.error('withAuth: handler is not a function', { handler, type: typeof handler });
+      return NextResponse.json(
+        { error: 'Belső szerver hiba: érvénytelen kéréskezelő.' },
+        { status: 500 },
+      ) as unknown as Result;
+    }
+
     return withLanguage(language, () => handler(authenticatedReq, ...args));
   };
 }

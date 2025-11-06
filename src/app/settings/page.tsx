@@ -821,9 +821,9 @@ export default function SettingsPage() {
       }
     >
       <div className="flex flex-col gap-8 lg:flex-row">
-        {/* Sticky Sidebar Navigation */}
+        {/* Sticky Sidebar Navigation - Scrolls with user */}
         <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="sticky top-24 space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
+          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
               Navigáció
             </h3>
@@ -836,12 +836,23 @@ export default function SettingsPage() {
                     e.preventDefault();
                     const element = document.getElementById(section.id);
                     if (element) {
-                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      // Scroll with offset for sticky header
+                      const headerOffset = 96; // top-24 = 6rem = 96px
+                      const elementPosition = element.getBoundingClientRect().top;
+                      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                      
+                      window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth',
+                      });
+                      
+                      // Update active section immediately for better UX
+                      setActiveSection(section.id);
                     }
                   }}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     activeSection === section.id
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-primary/10 text-primary font-semibold'
                       : 'text-fg-muted hover:bg-bg-muted hover:text-fg'
                   }`}
                 >
@@ -1228,16 +1239,15 @@ export default function SettingsPage() {
             </CardHeader>
           }
         >
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {availableTemplates.map((template) => {
-              // Proper mapping: use the template.id directly, not legacy IDs
               const templateId = template.id as OfferTemplateId;
-              
-              // Check if this template is available for the current plan
-              const templateForPlan = enforceTemplateForPlan(templateId, plan);
-              const isSelected = selectedTemplateId === templateForPlan || selectedTemplateId === templateId;
               const requiresPro = template.tier === 'premium';
               const requiresUpgrade = requiresPro && !canUseProTemplates;
+              
+              // Fix: Only match exact template ID for selection, not the enforced ID
+              // This prevents multiple templates from appearing selected
+              const isSelected = selectedTemplateId === templateId;
               
               const handleSelect = () => {
                 if (requiresUpgrade) {
@@ -1246,9 +1256,12 @@ export default function SettingsPage() {
                   });
                   return;
                 }
-                // Save the actual template ID, enforceTemplateForPlan will handle plan restrictions
-                const finalId = enforceTemplateForPlan(templateId, plan);
-                setProfile((prev) => ({ ...prev, offer_template: finalId }));
+                
+                // Only set the template ID if it's actually different from current selection
+                // This prevents unnecessary re-renders and ensures single selection
+                if (selectedTemplateId !== templateId) {
+                  setProfile((prev) => ({ ...prev, offer_template: templateId }));
+                }
               };
               
               return (
@@ -1257,33 +1270,61 @@ export default function SettingsPage() {
                   type="button"
                   disabled={requiresUpgrade}
                   onClick={handleSelect}
+                  aria-pressed={isSelected}
+                  aria-label={`Válassza ki a ${template.label} sablont`}
                   className={`group relative flex h-full flex-col gap-3 rounded-xl border-2 p-4 text-left transition-all ${
                     isSelected
-                      ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20'
-                      : 'border-border bg-white hover:border-primary/50 hover:shadow-sm'
-                  } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                      ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/30'
+                      : 'border-border bg-white hover:border-primary/50 hover:shadow-md'
+                  } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer active:scale-[0.98]'}`}
                 >
-                  {/* Preview */}
-                  <div className="relative overflow-hidden rounded-lg border border-border/60 bg-slate-50">
+                  {/* Preview Image - Always Visible */}
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm">
                     {template.preview ? (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={template.preview}
                           alt={`${template.label} előnézet`}
-                          className="h-24 w-full object-cover transition-transform group-hover:scale-105"
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.classList.add('flex', 'items-center', 'justify-center');
+                              parent.innerHTML = `<span class="text-xs font-medium text-slate-400">${template.label}</span>`;
+                            }
+                          }}
                         />
                       </>
                     ) : (
-                      <div className="h-24 w-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                        <span className="text-xs font-medium text-slate-400">{template.label}</span>
+                      <div className="flex h-full w-full items-center justify-center">
+                        <div className="text-center">
+                          <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
+                          <span className="text-xs font-medium text-slate-400">{template.label}</span>
+                        </div>
                       </div>
                     )}
+                    
+                    {/* Selection Indicator */}
                     {isSelected && (
-                      <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-md">
-                        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
+                      <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-[1px]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-2 ring-white">
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Pro Badge Overlay */}
+                    {requiresPro && (
+                      <div className="absolute top-2 left-2">
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                          PRO
+                        </span>
                       </div>
                     )}
                   </div>
@@ -1292,32 +1333,37 @@ export default function SettingsPage() {
                   <div className="flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <h3 className="text-sm font-semibold text-slate-900">{template.label}</h3>
-                      {requiresPro && (
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                          {t('settings.templates.proBadge')}
-                        </span>
-                      )}
                     </div>
-                    {template.description && (
-                      <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">{template.description}</p>
+                    {template.description ? (
+                      <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
+                        {template.description}
+                      </p>
+                    ) : template.marketingHighlight ? (
+                      <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
+                        {template.marketingHighlight}
+                      </p>
+                    ) : null}
+                    
+                    {requiresUpgrade && (
+                      <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-amber-600">
+                        <svg className="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span>{t('settings.templates.proOnly')}</span>
+                      </div>
                     )}
                   </div>
-                  
-                  {requiresUpgrade && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
-                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      {t('settings.templates.proOnly')}
-                    </div>
-                  )}
                 </button>
               );
             })}
           </div>
 
           {!canUseProTemplates && (
-            <p className="text-xs text-slate-500">{t('settings.templates.upgradeHint')}</p>
+            <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
+              <p className="text-xs text-amber-800">
+                {t('settings.templates.upgradeHint')}
+              </p>
+            </div>
           )}
         </Card>
 
