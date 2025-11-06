@@ -256,17 +256,38 @@ export async function processPdfJobInline(
     const { data: publicUrlData } = supabase.storage.from('offers').getPublicUrl(job.storagePath);
     const pdfUrl = publicUrlData?.publicUrl ?? null;
 
+    if (!pdfUrl) {
+      throw new Error('Failed to get public URL for generated PDF');
+    }
+
     // Update offer FIRST, then increment quota
     // This ensures quota is only incremented if offer update succeeds
     // Reduces window for quota leaks if offer update fails
-    const { error: offerUpdateError } = await supabase
+    const { data: updatedOffer, error: offerUpdateError } = await supabase
       .from('offers')
       .update({ pdf_url: pdfUrl })
       .eq('id', job.offerId)
-      .eq('user_id', job.userId);
+      .eq('user_id', job.userId)
+      .select('id, pdf_url')
+      .single();
+    
     if (offerUpdateError) {
       throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
     }
+    
+    if (!updatedOffer || updatedOffer.pdf_url !== pdfUrl) {
+      console.error('Offer update verification failed', {
+        offerId: job.offerId,
+        expectedPdfUrl: pdfUrl,
+        actualPdfUrl: updatedOffer?.pdf_url,
+      });
+      throw new Error('Offer update verification failed - PDF URL was not set correctly');
+    }
+    
+    console.log('Offer updated successfully with PDF URL', {
+      offerId: job.offerId,
+      pdfUrl,
+    });
 
     // Increment quota AFTER offer update succeeds
     // If this fails, we can rollback the offer update if needed

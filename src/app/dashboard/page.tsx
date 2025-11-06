@@ -970,6 +970,16 @@ export default function DashboardPage() {
         (payload) => {
           const updated = payload.new as Partial<Offer> & { id?: string };
           if (!updated || typeof updated.id !== 'string') return;
+          
+          // Log PDF URL updates for debugging
+          if (updated.pdf_url && payload.old && (payload.old as { pdf_url?: string | null }).pdf_url !== updated.pdf_url) {
+            console.log('Offer PDF URL updated via realtime', {
+              offerId: updated.id,
+              oldPdfUrl: (payload.old as { pdf_url?: string | null }).pdf_url,
+              newPdfUrl: updated.pdf_url,
+            });
+          }
+          
           setOffers((prev) => {
             let didChange = false;
             const next = prev.map((item) => {
@@ -985,6 +995,53 @@ export default function DashboardPage() {
               return { ...item, ...updated, recipient: recipientValue };
             });
             return didChange ? next : prev;
+          });
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'offers', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const inserted = payload.new as Partial<Offer> & { id?: string };
+          if (!inserted || typeof inserted.id !== 'string') return;
+          
+          console.log('New offer inserted via realtime', {
+            offerId: inserted.id,
+            pdfUrl: inserted.pdf_url,
+          });
+          
+          // Add new offer to the beginning of the list if it's not already there
+          setOffers((prev) => {
+            const exists = prev.some((item) => item.id === inserted.id);
+            if (exists) return prev;
+            
+            const recipientValue =
+              inserted.recipient !== undefined
+                ? Array.isArray(inserted.recipient)
+                  ? (inserted.recipient[0] ?? null)
+                  : (inserted.recipient ?? null)
+                : null;
+            
+            const newOffer: Offer = {
+              id: String(inserted.id),
+              title: typeof inserted.title === 'string' ? inserted.title : '',
+              industry: typeof inserted.industry === 'string' ? inserted.industry : '',
+              status: (inserted.status ?? 'draft') as Offer['status'],
+              created_at: inserted.created_at ?? null,
+              sent_at: inserted.sent_at ?? null,
+              decided_at: inserted.decided_at ?? null,
+              decision: (inserted.decision ?? null) as Offer['decision'],
+              pdf_url: inserted.pdf_url ?? null,
+              recipient_id: inserted.recipient_id ?? null,
+              recipient: recipientValue,
+            };
+            
+            // Add to beginning and update count
+            setTotalCount((prevCount) =>
+              typeof prevCount === 'number' ? prevCount + 1 : null,
+            );
+            
+            return [newOffer, ...prev];
           });
         },
       )
