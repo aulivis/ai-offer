@@ -1173,7 +1173,12 @@ Különös figyelmet fordít a következőkre:
     } catch (dispatchError) {
       const message =
         dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
-      log.warn('PDF queue error (dispatch)', dispatchError);
+      log.warn('PDF queue error (dispatch)', {
+        error: dispatchError,
+        message,
+        errorName: dispatchError instanceof Error ? dispatchError.name : undefined,
+        stack: dispatchError instanceof Error ? dispatchError.stack : undefined,
+      });
 
       const dispatchLimitMessage = normalizeUsageLimitError(message);
       if (dispatchLimitMessage) {

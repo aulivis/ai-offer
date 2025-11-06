@@ -328,13 +328,21 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
 
 export async function dispatchPdfJob(sb: SupabaseClient, jobId: string): Promise<void> {
   try {
-    const { error } = await sb.functions.invoke('pdf-worker', {
+    const { data, error } = await sb.functions.invoke('pdf-worker', {
       body: { jobId },
     });
 
     if (error) {
-      const message = error.message || 'Failed to dispatch PDF job';
-      throw new Error(message);
+      // Extract error message from Supabase function error response
+      const errorMessage = error.message || 'Failed to dispatch PDF job';
+      const errorContext = error.context ? ` (${JSON.stringify(error.context)})` : '';
+      throw new Error(`${errorMessage}${errorContext}`);
+    }
+
+    // Check if the function returned an error in the response body
+    if (data && typeof data === 'object' && 'error' in data) {
+      const errorMessage = typeof data.error === 'string' ? data.error : 'PDF worker returned an error';
+      throw new Error(errorMessage);
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -346,6 +354,7 @@ export async function dispatchPdfJob(sb: SupabaseClient, jobId: string): Promise
         throw new Error('PDF worker dispatch was aborted. Please try again.');
       }
 
+      // Preserve the original error message for better debugging
       throw error;
     }
 
