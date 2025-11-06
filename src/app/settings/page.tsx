@@ -29,6 +29,20 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/Skeleton';
+import {
+  KeyIcon,
+  BuildingOfficeIcon,
+  PaintBrushIcon,
+  DocumentTextIcon,
+  CubeIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  PlusIcon,
+  TrashIcon,
+  PhotoIcon,
+  EyeIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline';
 
 type Profile = {
   company_name?: string;
@@ -37,8 +51,8 @@ type Profile = {
   company_phone?: string;
   company_email?: string;
   industries?: string[];
-  brand_logo_url?: string | null; // Legacy: deprecated, use brand_logo_path instead
-  brand_logo_path?: string | null; // Preferred: storage path for logo
+  brand_logo_url?: string | null;
+  brand_logo_path?: string | null;
   brand_color_primary?: string | null;
   brand_color_secondary?: string | null;
   offer_template?: OfferTemplateId | null;
@@ -52,19 +66,6 @@ type ActivityRow = {
   default_vat: number;
   industries: string[];
 };
-
-function LockIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
 
 const ALL_INDUSTRIES_HU = [
   'Marketing',
@@ -85,7 +86,6 @@ function validatePhoneHU(v: string) {
   return /^\+?\d{9,16}$/.test(cleaned);
 }
 function validateTaxHU(v: string) {
-  // 12345678-1-12
   return /^\d{8}-\d-\d{2}$/.test(v.trim());
 }
 function validateAddress(v: string) {
@@ -110,7 +110,7 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
   return new Error(t('errors.settings.saveUnknown'));
 }
 
-// Logo preview component that generates fresh signed URLs on-demand
+// Enhanced Logo Preview Component
 function LogoPreview({ logoPath }: { logoPath: string | null | undefined }) {
   const supabase = useSupabase();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -151,83 +151,112 @@ function LogoPreview({ logoPath }: { logoPath: string | null | undefined }) {
 
   if (isLoading) {
     return (
-      <div className="h-16 w-16 flex-none animate-pulse rounded-lg border border-border bg-slate-200" />
+      <div className="flex h-24 w-24 flex-none items-center justify-center animate-pulse rounded-xl border-2 border-dashed border-border bg-slate-100">
+        <PhotoIcon className="h-8 w-8 text-slate-400" />
+      </div>
     );
   }
 
   if (logoUrl) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={logoUrl}
-        alt={t('settings.branding.logoPreviewAlt')}
-        className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
-        onError={() => {
-          // If signed URL fails to load, try to regenerate
-          setLogoUrl(null);
-        }}
-      />
+      <div className="group relative h-24 w-24 flex-none overflow-hidden rounded-xl border-2 border-border bg-white shadow-sm transition-all hover:shadow-md">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={logoUrl}
+          alt={t('settings.branding.logoPreviewAlt')}
+          className="h-full w-full object-contain p-2"
+          onError={() => setLogoUrl(null)}
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/5" />
+      </div>
     );
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/images/logo-placeholder.svg"
-      alt={t('settings.branding.logoPlaceholderAlt')}
-      className="h-16 w-16 flex-none rounded-lg border border-border bg-white object-contain p-1"
-    />
+    <div className="flex h-24 w-24 flex-none items-center justify-center rounded-xl border-2 border-dashed border-border bg-slate-50">
+      <PhotoIcon className="h-8 w-8 text-slate-400" />
+    </div>
   );
 }
 
-// Button to open logo in new tab with fresh signed URL
-function OpenLogoButton({ logoPath }: { logoPath: string | null | undefined }) {
-  const supabase = useSupabase();
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleOpenLogo = useCallback(async () => {
-    if (!logoPath) {
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const url = await getBrandLogoUrl(supabase, logoPath, null);
-      if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      } else {
-        console.warn('Failed to generate signed URL for logo');
-      }
-    } catch (error) {
-      console.error('Failed to open logo:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [supabase, logoPath]);
-
-  if (!logoPath) {
-    return null;
-  }
-
+// Enhanced Color Picker Component
+function ColorPicker({
+  label,
+  value,
+  onChange,
+  error,
+  previewColor,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  previewColor: string;
+}) {
   return (
-    <button
-      type="button"
-      onClick={handleOpenLogo}
-      disabled={isGenerating}
-      className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {isGenerating ? (
-        <>
-          <svg className="mr-2 h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          {t('settings.branding.logoUpload.opening') || 'Megnyitás...'}
-        </>
-      ) : (
-        t('settings.branding.logoUpload.openInNewTab')
-      )}
-    </button>
+    <div className="space-y-2">
+      <label className="block text-sm font-semibold text-slate-900">{label}</label>
+      <div className="flex items-center gap-3">
+        <div className="group relative h-14 w-20 flex-shrink-0">
+          <input
+            type="color"
+            value={previewColor}
+            onChange={(e) => onChange(e.target.value)}
+            aria-label={label}
+            className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-xl border-2 border-border opacity-0 transition-all hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-xl border-2 border-border shadow-inner transition-all group-hover:shadow-md"
+            style={{ backgroundColor: previewColor }}
+          />
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/0 transition-all group-hover:bg-white/10" />
+        </div>
+        <div className="flex-1">
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="#1c274c"
+            className="font-mono text-sm"
+            error={error}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Section Navigation Component
+function SectionNav({
+  sections,
+  activeSection,
+  onSectionChange,
+}: {
+  sections: Array<{ id: string; label: string; icon: React.ReactNode }>;
+  activeSection: string;
+  onSectionChange: (id: string) => void;
+}) {
+  return (
+    <nav className="space-y-1" aria-label="Settings sections">
+      {sections.map((section) => (
+        <button
+          key={section.id}
+          type="button"
+          onClick={() => onSectionChange(section.id)}
+          className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-all ${
+            activeSection === section.id
+              ? 'bg-primary/10 text-primary shadow-sm'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+          aria-current={activeSection === section.id ? 'page' : undefined}
+        >
+          <span className={`flex-shrink-0 ${activeSection === section.id ? 'text-primary' : 'text-slate-400'}`}>
+            {section.icon}
+          </span>
+          <span>{section.label}</span>
+        </button>
+      ))}
+    </nav>
   );
 }
 
@@ -298,14 +327,10 @@ export default function SettingsPage() {
   }, [profile]);
 
   useEffect(() => {
-    if (!searchParams) {
-      return;
-    }
+    if (!searchParams) return;
 
     const linkStatus = searchParams.get('link');
-    if (!linkStatus) {
-      return;
-    }
+    if (!linkStatus) return;
 
     if (linkStatus === 'google_success') {
       showToast({
@@ -327,16 +352,41 @@ export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState<string>('auth');
 
   const sections = [
-    { id: 'auth', label: t('settings.authMethods.title'), href: '#auth' },
-    { id: 'company', label: t('settings.company.title'), href: '#company' },
-    { id: 'branding', label: t('settings.branding.title'), href: '#branding' },
-    { id: 'templates', label: t('settings.templates.title'), href: '#templates' },
-    { id: 'activities', label: t('settings.activities.title'), href: '#activities' },
+    {
+      id: 'auth',
+      label: t('settings.authMethods.title'),
+      icon: <KeyIcon className="h-5 w-5" />,
+      href: '#auth',
+    },
+    {
+      id: 'company',
+      label: t('settings.company.title'),
+      icon: <BuildingOfficeIcon className="h-5 w-5" />,
+      href: '#company',
+    },
+    {
+      id: 'branding',
+      label: t('settings.branding.title'),
+      icon: <PaintBrushIcon className="h-5 w-5" />,
+      href: '#branding',
+    },
+    {
+      id: 'templates',
+      label: t('settings.templates.title'),
+      icon: <DocumentTextIcon className="h-5 w-5" />,
+      href: '#templates',
+    },
+    {
+      id: 'activities',
+      label: t('settings.activities.title'),
+      icon: <CubeIcon className="h-5 w-5" />,
+      href: '#activities',
+    },
   ];
 
   useEffect(() => {
     if (loading) return;
-    
+
     const handleScroll = () => {
       const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities'];
       const scrollPosition = window.scrollY + 200;
@@ -365,21 +415,21 @@ export default function SettingsPage() {
   const canUseProTemplates = plan === 'pro';
   const canUploadBrandLogo = plan !== 'free';
 
-  // Get all available templates from registries
   const availableTemplates = useMemo(() => {
     const engineTemplates = listTemplateMetadata();
     const sdkTemplates = listSDKTemplates();
-    
-    // Combine templates from both registries, deduplicating by legacy ID
+
     type CombinedTemplate = TemplateMetadata & { preview?: string };
     const templateMap = new Map<string, CombinedTemplate>();
     const usedEngineIds = new Set<string>();
-    
-    // Process SDK templates first (they take precedence)
+
     sdkTemplates.forEach((template) => {
-      const legacyId = template.id === 'pro.nordic' ? 'pro.nordic' : 
-                      template.id === 'free.base' ? 'modern' :
-                      template.id;
+      const legacyId =
+        template.id === 'pro.nordic'
+          ? 'pro.nordic'
+          : template.id === 'free.base'
+            ? 'modern'
+            : template.id;
       const sdkTemplate: CombinedTemplate = {
         id: template.id,
         label: template.name,
@@ -392,23 +442,24 @@ export default function SettingsPage() {
       }
       templateMap.set(legacyId, sdkTemplate);
     });
-    
-    // Add engine templates that don't conflict with SDK templates
+
     engineTemplates.forEach((template) => {
-      const legacyId = template.id === 'free.base' ? 'modern' :
-                      template.id === 'premium.elegant' ? 'premium-banner' :
-                      template.id === 'premium.modern' ? 'premium-banner' :
-                      template.id;
-      
-      // Skip if already added by SDK registry or if this exact template was already processed
+      const legacyId =
+        template.id === 'free.base'
+          ? 'modern'
+          : template.id === 'premium.elegant'
+            ? 'premium-banner'
+            : template.id === 'premium.modern'
+              ? 'premium-banner'
+              : template.id;
+
       if (!templateMap.has(legacyId) && !usedEngineIds.has(template.id)) {
         templateMap.set(legacyId, template);
         usedEngineIds.add(template.id);
       }
     });
-    
+
     return Array.from(templateMap.values()).sort((a, b) => {
-      // Premium templates last
       if (a.tier === 'premium' && b.tier !== 'premium') return 1;
       if (a.tier !== 'premium' && b.tier === 'premium') return -1;
       return a.label.localeCompare(b.label, 'hu');
@@ -418,15 +469,15 @@ export default function SettingsPage() {
   function renderTemplatePreview(variant: 'modern' | 'premium') {
     if (variant === 'premium') {
       return (
-        <div className="flex h-28 flex-col overflow-hidden rounded-2xl border border-border bg-white">
+        <div className="flex h-32 flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm">
           <div
-            className="h-16 w-full"
+            className="h-20 w-full"
             style={{
               background: `linear-gradient(135deg, ${primaryPreview}, ${secondaryPreview})`,
             }}
           />
           <div className="flex flex-1 items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
-            <div className="h-9 w-9 rounded-2xl border border-border bg-white/80 shadow-sm" />
+            <div className="h-10 w-10 rounded-xl border border-border bg-white/80 shadow-sm" />
             <div className="flex-1 rounded-lg border border-border/70 bg-white px-2 py-1">
               {t('settings.branding.preview.tableLabel')}
             </div>
@@ -436,8 +487,8 @@ export default function SettingsPage() {
     }
 
     return (
-      <div className="flex h-28 flex-col justify-between overflow-hidden rounded-2xl border border-border bg-white">
-        <div className="h-1.5 w-full" style={{ backgroundColor: primaryPreview }} />
+      <div className="flex h-32 flex-col justify-between overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+        <div className="h-2 w-full" style={{ backgroundColor: primaryPreview }} />
         <div className="px-3 py-2 text-[10px] text-slate-500">
           <div className="h-3 w-2/5 rounded-full" style={{ backgroundColor: primaryPreview }} />
           <div className="mt-3 grid grid-cols-4 gap-1">
@@ -500,8 +551,8 @@ export default function SettingsPage() {
         company_phone: prof?.company_phone ?? '',
         company_email: prof?.company_email ?? user.email ?? '',
         industries,
-        brand_logo_url: prof?.brand_logo_url ?? null, // Legacy
-        brand_logo_path: prof?.brand_logo_path ?? null, // Preferred
+        brand_logo_url: prof?.brand_logo_url ?? null,
+        brand_logo_path: prof?.brand_logo_path ?? null,
         brand_color_primary: prof?.brand_color_primary ?? '#1c274c',
         brand_color_secondary: prof?.brand_color_secondary ?? '#e2e8f0',
         offer_template: templateId,
@@ -562,8 +613,8 @@ export default function SettingsPage() {
         });
         let brandingData:
           | {
-              brand_logo_path: string | null; // Preferred
-            brand_logo_url: string | null; // Legacy
+              brand_logo_path: string | null;
+              brand_logo_url: string | null;
               brand_color_primary: string | null;
               brand_color_secondary: string | null;
               offer_template: string | null;
@@ -574,8 +625,8 @@ export default function SettingsPage() {
           const response = await supabase
             .from('profiles')
             .update({
-              brand_logo_path: profile.brand_logo_path ?? null, // Preferred
-              brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
+              brand_logo_path: profile.brand_logo_path ?? null,
+              brand_logo_url: profile.brand_logo_url ?? null,
               brand_color_primary: primary,
               brand_color_secondary: secondary,
               offer_template: templateId,
@@ -600,8 +651,8 @@ export default function SettingsPage() {
                 company_email: profile.company_email?.trim() || email || '',
                 industries: sanitizedIndustries,
                 plan,
-                brand_logo_path: profile.brand_logo_path ?? null, // Preferred
-                brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
+                brand_logo_path: profile.brand_logo_path ?? null,
+                brand_logo_url: profile.brand_logo_url ?? null,
                 brand_color_primary: primary,
                 brand_color_secondary: secondary,
                 offer_template: templateId,
@@ -619,14 +670,12 @@ export default function SettingsPage() {
         setProfileLoadError(null);
         setProfile((prev) => ({
           ...prev,
-          brand_logo_path: brandingData?.brand_logo_path ?? profile.brand_logo_path ?? null, // Preferred
-          brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null, // Legacy
+          brand_logo_path: brandingData?.brand_logo_path ?? profile.brand_logo_path ?? null,
+          brand_logo_url: brandingData?.brand_logo_url ?? profile.brand_logo_url ?? null,
           brand_color_primary: brandingData?.brand_color_primary ?? primary ?? null,
           brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
           offer_template: enforceTemplateForPlan(
-            typeof brandingData?.offer_template === 'string'
-              ? brandingData.offer_template
-              : templateId,
+            typeof brandingData?.offer_template === 'string' ? brandingData.offer_template : templateId,
             plan,
           ),
         }));
@@ -644,8 +693,8 @@ export default function SettingsPage() {
       });
       let profileData:
         | {
-            brand_logo_path: string | null; // Preferred
-            brand_logo_url: string | null; // Legacy
+            brand_logo_path: string | null;
+            brand_logo_url: string | null;
             brand_color_primary: string | null;
             brand_color_secondary: string | null;
             offer_template: string | null;
@@ -662,8 +711,8 @@ export default function SettingsPage() {
             company_phone: profile.company_phone ?? '',
             company_email: profile.company_email ?? '',
             industries: sanitizedIndustries,
-            brand_logo_path: profile.brand_logo_path ?? null, // Preferred
-            brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
+            brand_logo_path: profile.brand_logo_path ?? null,
+            brand_logo_url: profile.brand_logo_url ?? null,
             brand_color_primary: primary,
             brand_color_secondary: secondary,
             offer_template: templateId,
@@ -688,8 +737,8 @@ export default function SettingsPage() {
               company_email: profile.company_email ?? '',
               industries: sanitizedIndustries,
               plan,
-              brand_logo_path: profile.brand_logo_path ?? null, // Preferred
-              brand_logo_url: profile.brand_logo_url ?? null, // Legacy (for backward compatibility)
+              brand_logo_path: profile.brand_logo_path ?? null,
+              brand_logo_url: profile.brand_logo_url ?? null,
               brand_color_primary: primary,
               brand_color_secondary: secondary,
               offer_template: templateId,
@@ -707,8 +756,8 @@ export default function SettingsPage() {
       setProfileLoadError(null);
       setProfile((prev) => ({
         ...prev,
-        brand_logo_path: profileData?.brand_logo_path ?? prev.brand_logo_path ?? null, // Preferred
-        brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null, // Legacy
+        brand_logo_path: profileData?.brand_logo_path ?? prev.brand_logo_path ?? null,
+        brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null,
         brand_color_primary: profileData?.brand_color_primary ?? primary ?? null,
         brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
         industries: sanitizedIndustries,
@@ -752,28 +801,27 @@ export default function SettingsPage() {
     logoInputRef.current?.click();
   }
 
-  // Client-side file type validation
   const ALLOWED_FILE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'] as const;
   const ALLOWED_FILE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.svg'] as const;
 
   function validateFileType(file: File): { valid: boolean; error?: string } {
-    // Check MIME type
     if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
       return {
         valid: false,
-        error: t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) || 
-               'Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+        error:
+          t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) ||
+          'Csak PNG, JPEG vagy SVG fájl tölthető fel.',
       };
     }
 
-    // Check file extension as secondary validation
     const fileName = file.name.toLowerCase();
     const hasValidExtension = ALLOWED_FILE_EXTENSIONS.some((ext) => fileName.endsWith(ext));
     if (!hasValidExtension) {
       return {
         valid: false,
-        error: t('errors.settings.logoInvalidExtension') || 
-               'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+        error:
+          t('errors.settings.logoInvalidExtension') ||
+          'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
       };
     }
 
@@ -781,12 +829,10 @@ export default function SettingsPage() {
   }
 
   async function uploadLogo(file: File) {
-    // Cancel any existing upload
     if (logoUploadAbortControllerRef.current) {
       logoUploadAbortControllerRef.current.abort();
     }
 
-    // Create new AbortController for this upload
     const abortController = new AbortController();
     logoUploadAbortControllerRef.current = abortController;
 
@@ -804,7 +850,6 @@ export default function SettingsPage() {
         return;
       }
 
-      // Client-side file type validation
       const typeValidation = validateFileType(file);
       if (!typeValidation.valid) {
         showToast({
@@ -831,26 +876,24 @@ export default function SettingsPage() {
           },
         });
       } catch (error) {
-        // Check if upload was aborted
         if (abortController.signal.aborted) {
-          return; // Silently return if aborted
+          return;
         }
 
-        // uploadWithProgress throws ApiError on non-200 status codes
         if (error instanceof ApiError) {
-          // Map specific error codes to user-friendly messages
           let errorMessage = error.message;
           if (error.status === 413) {
             errorMessage = t('errors.settings.logoTooLarge') || 'A fájl mérete túl nagy. Maximum 4 MB.';
           } else if (error.status === 415) {
-            errorMessage = t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) || 
-                          'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.';
+            errorMessage =
+              t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }) ||
+              'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.';
           } else if (error.status === 503) {
-            errorMessage = t('errors.settings.logoStorageUnavailable') || 
-                          'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.';
+            errorMessage =
+              t('errors.settings.logoStorageUnavailable') ||
+              'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.';
           } else if (error.status === 500) {
-            errorMessage = t('errors.settings.logoUploadFailed') || 
-                          'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.';
+            errorMessage = t('errors.settings.logoUploadFailed') || 'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.';
           }
           throw new Error(errorMessage);
         }
@@ -863,8 +906,7 @@ export default function SettingsPage() {
 
       if (payload && typeof payload === 'object') {
         const typedPayload = payload as { path?: unknown; signedUrl?: unknown; publicUrl?: unknown };
-        
-        // Extract path (preferred) and signed URL (for immediate preview)
+
         if ('path' in typedPayload && typeof typedPayload.path === 'string') {
           logoPath = typedPayload.path;
         }
@@ -879,15 +921,12 @@ export default function SettingsPage() {
         throw new Error(t('errors.settings.logoUploadMissingUrl'));
       }
 
-      // Store path in profile (preferred) and signed URL for immediate preview
       setProfile((prev) => ({
         ...prev,
         brand_logo_path: logoPath,
-        brand_logo_url: logoUrl, // For immediate preview only
+        brand_logo_url: logoUrl,
       }));
-      
-      // Auto-save logo path to database immediately after successful upload
-      // This prevents data loss if user navigates away before manual save
+
       try {
         await saveProfile('branding');
         showToast({
@@ -896,7 +935,6 @@ export default function SettingsPage() {
           variant: 'success',
         });
       } catch (saveError) {
-        // If save fails, cleanup uploaded file to prevent orphaned storage
         console.error('Failed to auto-save logo path', saveError);
         try {
           await fetchWithSupabaseAuth('/api/storage/delete-brand-logo', {
@@ -907,22 +945,24 @@ export default function SettingsPage() {
           console.error('Failed to cleanup uploaded logo after save failure', cleanupError);
         }
 
-        const saveErrorMessage = saveError instanceof Error ? saveError.message : t('errors.settings.saveFailed', { message: '' });
+        const saveErrorMessage =
+          saveError instanceof Error ? saveError.message : t('errors.settings.saveFailed', { message: '' });
         showToast({
           title: t('toasts.settings.logoUploaded.title'),
-          description: t('toasts.settings.logoUploaded.description') + ' ' + (t('errors.settings.autoSaveFailed') || t('errors.settings.saveFailed', { message: saveErrorMessage })),
+          description:
+            t('toasts.settings.logoUploaded.description') +
+            ' ' +
+            (t('errors.settings.autoSaveFailed') || t('errors.settings.saveFailed', { message: saveErrorMessage })),
           variant: 'error',
         });
       }
     } catch (error) {
-      // Don't show error if upload was aborted
       if (abortController.signal.aborted) {
         return;
       }
 
       console.error('Logo upload error', error);
-      const message =
-        error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
+      const message = error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
       showToast({
         title: t('toasts.settings.logoUploadFailed.title'),
         description: message || t('toasts.settings.logoUploadFailed.description'),
@@ -968,9 +1008,7 @@ export default function SettingsPage() {
         })
         .select();
       setActs((prev) =>
-        [...prev, ...((ins.data as ActivityRow[]) || [])].sort((a, b) =>
-          a.name.localeCompare(b.name),
-        ),
+        [...prev, ...((ins.data as ActivityRow[]) || [])].sort((a, b) => a.name.localeCompare(b.name)),
       );
       setNewAct({ name: '', unit: 'db', price: 0, vat: 27, industries: profile.industries || [] });
     } finally {
@@ -1023,23 +1061,36 @@ export default function SettingsPage() {
     setNewIndustry('');
   }
 
+  const handleSectionChange = useCallback((id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 96;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+
+      setActiveSection(id);
+    }
+  }, []);
+
   if (loading) {
     return (
       <AppFrame title={t('settings.title')} description={t('settings.loadingDescription')}>
         <div className="space-y-8">
-          <Card className="space-y-4">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-64" />
-            <Skeleton className="h-16 w-full" />
-          </Card>
-          <Card className="space-y-4">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-64" />
-            <div className="grid gap-4 md:grid-cols-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          </Card>
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="space-y-4">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            </Card>
+          ))}
         </div>
       </AppFrame>
     );
@@ -1051,676 +1102,696 @@ export default function SettingsPage() {
       description={t('settings.description')}
       actions={
         email ? (
-          <span className="text-sm text-slate-400">
-            {t('settings.actions.loggedInAs')}{' '}
-            <span className="font-medium text-slate-600">{email}</span>
-          </span>
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <span>{t('settings.actions.loggedInAs')}</span>
+            <span className="font-semibold text-slate-700">{email}</span>
+          </div>
         ) : null
       }
     >
       <div className="flex flex-col gap-8 lg:flex-row">
-        {/* Sticky Sidebar Navigation - Scrolls with user */}
-        <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
-              Navigáció
-            </h3>
-            <nav className="space-y-1">
-              {sections.map((section) => (
-                <Link
-                  key={section.id}
-                  href={section.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const element = document.getElementById(section.id);
-                    if (element) {
-                      // Scroll with offset for sticky header
-                      const headerOffset = 96; // top-24 = 6rem = 96px
-                      const elementPosition = element.getBoundingClientRect().top;
-                      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                      
-                      window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth',
-                      });
-                      
-                      // Update active section immediately for better UX
-                      setActiveSection(section.id);
-                    }
-                  }}
-                  className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    activeSection === section.id
-                      ? 'bg-primary/10 text-primary font-semibold'
-                      : 'text-fg-muted hover:bg-bg-muted hover:text-fg'
-                  }`}
-                >
-                  {section.label}
-                </Link>
-              ))}
-            </nav>
+        {/* Enhanced Sidebar Navigation */}
+        <aside className="hidden lg:block lg:w-72 lg:flex-shrink-0">
+          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-border/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-200">
+            <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Beállítások</h2>
+            <SectionNav sections={sections} activeSection={activeSection} onSectionChange={handleSectionChange} />
           </div>
         </aside>
 
+        {/* Main Content */}
         <div className="flex-1 space-y-8">
-        <Card
-          id="auth"
-          as="section"
-          className="space-y-4 scroll-mt-24"
-          header={
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {t('settings.authMethods.title')}
-              </h2>
-              <p className="text-sm text-slate-500">{t('settings.authMethods.subtitle')}</p>
-            </CardHeader>
-          }
-        >
-          <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-white p-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-800">
-                {googleLinked
-                  ? t('settings.authMethods.googleLinked.title')
-                  : t('settings.authMethods.googleNotLinked.title')}
-              </p>
-              <p className="text-xs text-slate-500">
-                {googleLinked
-                  ? t('settings.authMethods.googleLinked.description')
-                  : t('settings.authMethods.googleNotLinked.description')}
-              </p>
-            </div>
-            <Button
-              type="button"
-              onClick={startGoogleLink}
-              disabled={googleLinked || linkingGoogle}
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              {googleLinked
-                ? t('settings.authMethods.googleLinked.button')
-                : linkingGoogle
-                  ? t('settings.authMethods.googleLinking')
-                  : t('settings.authMethods.connectGoogle')}
-            </Button>
-          </div>
-        </Card>
-
-        <Card
-          id="company"
-          as="section"
-          className="space-y-6 scroll-mt-24"
-          header={
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {t('settings.company.title')}
-              </h2>
-              <p className="text-sm text-slate-500">{t('settings.company.subtitle')}</p>
-            </CardHeader>
-          }
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <Input
-              label={t('settings.company.fields.name')}
-              value={profile.company_name || ''}
-              onChange={(e) => setProfile((p) => ({ ...p, company_name: e.target.value }))}
-            />
-            <Input
-              label={t('settings.company.fields.taxId')}
-              placeholder={t('settings.company.placeholders.taxId')}
-              value={profile.company_tax_id || ''}
-              onChange={(e) => setProfile((p) => ({ ...p, company_tax_id: e.target.value }))}
-              error={errors.general.tax}
-            />
-            <div className="md:col-span-2">
-              <Input
-                label={t('settings.company.fields.address')}
-                placeholder={t('settings.company.placeholders.address')}
-                value={profile.company_address || ''}
-                onChange={(e) => setProfile((p) => ({ ...p, company_address: e.target.value }))}
-                error={errors.general.address}
-              />
-            </div>
-            <Input
-              label={t('settings.company.fields.phone')}
-              placeholder={t('settings.company.placeholders.phone')}
-              value={profile.company_phone || ''}
-              onChange={(e) => setProfile((p) => ({ ...p, company_phone: e.target.value }))}
-              error={errors.general.phone}
-            />
-            <Input
-              label={t('settings.company.fields.email')}
-              value={profile.company_email || ''}
-              onChange={(e) => setProfile((p) => ({ ...p, company_email: e.target.value }))}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                {t('settings.company.industries.heading')}
-              </span>
-              <p className="text-xs text-slate-400">{t('settings.company.industries.helper')}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {ALL_INDUSTRIES_HU.map((ind) => {
-                const active = profile.industries?.includes(ind);
-                return (
-                  <Button
-                    key={ind}
-                    type="button"
-                    onClick={() => toggleIndustry(ind)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
-                  >
-                    {ind}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="sm:flex-1">
-                <Input
-                  label={t('settings.company.industries.addLabel')}
-                  placeholder={t('settings.company.industries.addPlaceholder')}
-                  value={newIndustry}
-                  onChange={(e) => setNewIndustry(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleManualIndustry(newIndustry);
-                    }
-                  }}
-                />
+          {/* Authentication Methods Section */}
+          <Card
+            id="auth"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <KeyIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{t('settings.authMethods.title')}</h2>
+                    <p className="text-sm text-slate-500">{t('settings.authMethods.subtitle')}</p>
+                  </div>
+                </div>
+              </CardHeader>
+            }
+          >
+            <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-gradient-to-br from-slate-50 to-white p-6 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {googleLinked
+                        ? t('settings.authMethods.googleLinked.title')
+                        : t('settings.authMethods.googleNotLinked.title')}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {googleLinked
+                        ? t('settings.authMethods.googleLinked.description')
+                        : t('settings.authMethods.googleNotLinked.description')}
+                    </p>
+                  </div>
+                </div>
               </div>
               <Button
-                className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                onClick={() => handleManualIndustry(newIndustry)}
+                type="button"
+                onClick={startGoogleLink}
+                disabled={googleLinked || linkingGoogle}
+                variant={googleLinked ? 'secondary' : 'primary'}
+                className="w-full md:w-auto"
               >
-                {t('settings.company.industries.addButton')}
+                {googleLinked ? (
+                  <>
+                    <CheckCircleIcon className="h-4 w-4" />
+                    {t('settings.authMethods.googleLinked.button')}
+                  </>
+                ) : linkingGoogle ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    {t('settings.authMethods.googleLinking')}
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    </svg>
+                    {t('settings.authMethods.connectGoogle')}
+                  </>
+                )}
               </Button>
             </div>
+          </Card>
 
-            <div className="flex flex-wrap gap-2">
-              {(profile.industries || []).map((ind) => (
-                <span
-                  key={ind}
-                  className="rounded-full border border-border bg-white px-3 py-1 text-xs font-medium text-slate-600"
-                >
-                  {ind}
-                </span>
-              ))}
-              {(profile.industries || []).length === 0 && (
-                <span className="text-xs text-slate-400">
-                  {t('settings.company.industries.empty')}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            onClick={() => saveProfile('all')}
-            disabled={saving || hasErrors}
-            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-          >
-            {saving ? t('settings.company.saving') : t('settings.company.save')}
-          </Button>
-        </Card>
-
-        <Card
-          id="branding"
-          as="section"
-          className="space-y-6 scroll-mt-24"
-          header={
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {t('settings.branding.title')}
-              </h2>
-              <p className="text-sm text-slate-500">{t('settings.branding.subtitle')}</p>
-            </CardHeader>
-          }
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <span className="text-sm font-medium text-fg">
-                {t('settings.branding.primaryLabel')}
-              </span>
-              <div className="flex items-center gap-3">
-                <div className="relative h-11 w-16">
-                  <input
-                    type="color"
-                    value={primaryPreview}
-                    onChange={(e) =>
-                      setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
-                    }
-                    aria-label={t('settings.branding.primaryLabel')}
-                    className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-md opacity-0"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 rounded-md border border-border shadow-inner"
-                    style={{ backgroundColor: primaryPreview }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Input
-                    value={profile.brand_color_primary || ''}
-                    onChange={(e) =>
-                      setProfile((p) => ({ ...p, brand_color_primary: e.target.value }))
-                    }
-                    placeholder={t('settings.branding.placeholders.primary')}
-                    className="py-2 text-sm font-mono"
-                    error={errors.branding.brandPrimary}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-sm font-medium text-fg">
-                {t('settings.branding.secondaryLabel')}
-              </span>
-              <div className="flex items-center gap-3">
-                <div className="relative h-11 w-16">
-                  <input
-                    type="color"
-                    value={secondaryPreview}
-                    onChange={(e) =>
-                      setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
-                    }
-                    aria-label={t('settings.branding.secondaryLabel')}
-                    className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-md opacity-0"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 rounded-md border border-border shadow-inner"
-                    style={{ backgroundColor: secondaryPreview }}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Input
-                    value={profile.brand_color_secondary || ''}
-                    onChange={(e) =>
-                      setProfile((p) => ({ ...p, brand_color_secondary: e.target.value }))
-                    }
-                    placeholder={t('settings.branding.placeholders.secondary')}
-                    className="py-2 text-sm font-mono"
-                    error={errors.branding.brandSecondary}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 lg:flex-row">
-            <div className="flex flex-1 items-start gap-4 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
-              <LogoPreview logoPath={profile.brand_logo_path} />
-              <div className="flex-1 text-sm text-slate-500">
-                <p className="font-semibold text-slate-700">
-                  {t('settings.branding.logoUpload.title')}
-                </p>
-                <p className="text-xs text-slate-400">{t('settings.branding.logoUpload.helper')}</p>
-                <div className="mt-3 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        if (!canUploadBrandLogo) {
-                          openPlanUpgradeDialog({
-                            description: t('app.planUpgradeModal.reasons.brandingLogo'),
-                          });
-                          return;
-                        }
-                        triggerLogoUpload();
-                      }}
-                      disabled={logoUploading}
-                      aria-disabled={!canUploadBrandLogo}
-                      className={[
-                        'inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed',
-                        canUploadBrandLogo
-                          ? 'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-400'
-                          : 'cursor-not-allowed bg-slate-200 text-slate-500 hover:bg-slate-200',
-                      ].join(' ')}
-                    >
-                      {canUploadBrandLogo ? (
-                        logoUploading ? (
-                          <>
-                            <svg className="mr-2 h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            {t('settings.branding.logoUpload.uploading')}
-                          </>
-                        ) : (
-                          t('settings.branding.logoUpload.button')
-                        )
-                      ) : (
-                        <>
-                          <LockIcon className="h-4 w-4" />
-                          {t('settings.branding.logoUpload.lockedButton')}
-                        </>
-                      )}
-                    </Button>
-                    {logoUploading && logoUploadAbortControllerRef.current && (
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          logoUploadAbortControllerRef.current?.abort();
-                        }}
-                        className="inline-flex items-center justify-center rounded-full border border-border bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        {t('settings.branding.logoUpload.cancel') || 'Mégse'}
-                      </Button>
-                    )}
+          {/* Company Information Section */}
+          <Card
+            id="company"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <BuildingOfficeIcon className="h-5 w-5 text-primary" />
                   </div>
-                  {logoUploading && logoUploadProgress !== null && (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-slate-600">
-                        <span>{t('settings.branding.logoUpload.progress') || 'Feltöltés...'}</span>
-                        <span>{logoUploadProgress}%</span>
-                      </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                        <div
-                          className="h-full bg-primary transition-all duration-300 ease-out"
-                          style={{ width: `${logoUploadProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  <OpenLogoButton logoPath={profile.brand_logo_path} />
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{t('settings.company.title')}</h2>
+                    <p className="text-sm text-slate-500">{t('settings.company.subtitle')}</p>
+                  </div>
                 </div>
-                {!canUploadBrandLogo && (
-                  <p className="mt-2 flex items-center gap-2 text-xs font-medium text-amber-600">
-                    <LockIcon className="h-3.5 w-3.5" />
-                    {t('settings.branding.logoUpload.lockedMessage')}
-                  </p>
+              </CardHeader>
+            }
+          >
+            <div className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <Input
+                  label={t('settings.company.fields.name')}
+                  value={profile.company_name || ''}
+                  onChange={(e) => setProfile((p) => ({ ...p, company_name: e.target.value }))}
+                />
+                <Input
+                  label={t('settings.company.fields.taxId')}
+                  placeholder={t('settings.company.placeholders.taxId')}
+                  value={profile.company_tax_id || ''}
+                  onChange={(e) => setProfile((p) => ({ ...p, company_tax_id: e.target.value }))}
+                  error={errors.general.tax}
+                />
+                <div className="md:col-span-2">
+                  <Input
+                    label={t('settings.company.fields.address')}
+                    placeholder={t('settings.company.placeholders.address')}
+                    value={profile.company_address || ''}
+                    onChange={(e) => setProfile((p) => ({ ...p, company_address: e.target.value }))}
+                    error={errors.general.address}
+                  />
+                </div>
+                <Input
+                  label={t('settings.company.fields.phone')}
+                  placeholder={t('settings.company.placeholders.phone')}
+                  value={profile.company_phone || ''}
+                  onChange={(e) => setProfile((p) => ({ ...p, company_phone: e.target.value }))}
+                  error={errors.general.phone}
+                />
+                <Input
+                  label={t('settings.company.fields.email')}
+                  type="email"
+                  value={profile.company_email || ''}
+                  onChange={(e) => setProfile((p) => ({ ...p, company_email: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-4 rounded-xl border border-border/60 bg-slate-50/50 p-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900">
+                    {t('settings.company.industries.heading')}
+                  </label>
+                  <p className="mt-1 text-xs text-slate-500">{t('settings.company.industries.helper')}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {ALL_INDUSTRIES_HU.map((ind) => {
+                    const active = profile.industries?.includes(ind);
+                    return (
+                      <button
+                        key={ind}
+                        type="button"
+                        onClick={() => toggleIndustry(ind)}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                          active
+                            ? 'border-primary bg-primary text-white shadow-sm'
+                            : 'border-border bg-white text-slate-700 hover:border-primary/50 hover:bg-slate-50'
+                        }`}
+                      >
+                        {active && <CheckCircleIcon className="h-3.5 w-3.5" />}
+                        {ind}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex-1">
+                    <Input
+                      label={t('settings.company.industries.addLabel')}
+                      placeholder={t('settings.company.industries.addPlaceholder')}
+                      value={newIndustry}
+                      onChange={(e) => setNewIndustry(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleManualIndustry(newIndustry);
+                        }
+                      }}
+                    />
+                  </div>
+                  <Button variant="secondary" onClick={() => handleManualIndustry(newIndustry)} className="sm:w-auto">
+                    <PlusIcon className="h-4 w-4" />
+                    {t('settings.company.industries.addButton')}
+                  </Button>
+                </div>
+
+                {(profile.industries || []).length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {(profile.industries || []).map((ind) => (
+                      <span
+                        key={ind}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm"
+                      >
+                        {ind}
+                        <button
+                          type="button"
+                          onClick={() => toggleIndustry(ind)}
+                          className="rounded-full hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          aria-label={`${ind} eltávolítása`}
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Modern sablon előnézet
-                </span>
-                {renderTemplatePreview('modern')}
-              </div>
-
-              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-border bg-slate-50/60 p-4">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Premium sablon előnézet
-                </span>
-                {renderTemplatePreview('premium')}
-              </div>
-            </div>
-          </div>
-
-          <input
-            ref={logoInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/svg+xml"
-            className="hidden"
-            onChange={handleLogoChange}
-          />
-
-          <div className="flex items-center justify-end pt-2">
-            <Button
-              type="button"
-              onClick={() => saveProfile('branding')}
-              disabled={saving || hasBrandingErrors}
-              className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400"
-            >
-              {saving ? t('settings.branding.saving') : t('settings.branding.save')}
-            </Button>
-          </div>
-        </Card>
-
-        <Card
-          id="templates"
-          as="section"
-          className="space-y-6 scroll-mt-24"
-          header={
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {t('settings.templates.title')}
-              </h2>
-              <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
-            </CardHeader>
-          }
-        >
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {availableTemplates.map((template) => {
-              const templateId = template.id as OfferTemplateId;
-              const requiresPro = template.tier === 'premium';
-              const requiresUpgrade = requiresPro && !canUseProTemplates;
-              
-              // Fix: Only match exact template ID for selection, not the enforced ID
-              // This prevents multiple templates from appearing selected
-              const isSelected = selectedTemplateId === templateId;
-              
-              const handleSelect = () => {
-                if (requiresUpgrade) {
-                  openPlanUpgradeDialog({
-                    description: t('app.planUpgradeModal.reasons.proTemplates'),
-                  });
-                  return;
-                }
-                
-                // Only set the template ID if it's actually different from current selection
-                // This prevents unnecessary re-renders and ensures single selection
-                if (selectedTemplateId !== templateId) {
-                  setProfile((prev) => ({ ...prev, offer_template: templateId }));
-                }
-              };
-              
-              return (
-                <button
-                  key={template.id}
+              <div className="flex items-center justify-end border-t border-border pt-6">
+                <Button
                   type="button"
-                  disabled={requiresUpgrade}
-                  onClick={handleSelect}
-                  aria-pressed={isSelected}
-                  aria-label={`Válassza ki a ${template.label} sablont`}
-                  className={`group relative flex h-full flex-col gap-3 rounded-xl border-2 p-4 text-left transition-all ${
-                    isSelected
-                      ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/30'
-                      : 'border-border bg-white hover:border-primary/50 hover:shadow-md'
-                  } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer active:scale-[0.98]'}`}
+                  onClick={() => saveProfile('all')}
+                  disabled={saving || hasErrors}
+                  loading={saving}
+                  size="lg"
                 >
-                  {/* Preview Image - Always Visible */}
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm">
-                    {template.preview ? (
-                      <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={template.preview}
-                          alt={`${template.label} előnézet`}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.classList.add('flex', 'items-center', 'justify-center');
-                              parent.innerHTML = `<span class="text-xs font-medium text-slate-400">${template.label}</span>`;
+                  {saving ? t('settings.company.saving') : t('settings.company.save')}
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Branding Section */}
+          <Card
+            id="branding"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <PaintBrushIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{t('settings.branding.title')}</h2>
+                    <p className="text-sm text-slate-500">{t('settings.branding.subtitle')}</p>
+                  </div>
+                </div>
+              </CardHeader>
+            }
+          >
+            <div className="space-y-8">
+              <div className="grid gap-6 md:grid-cols-2">
+                <ColorPicker
+                  label={t('settings.branding.primaryLabel')}
+                  value={profile.brand_color_primary || ''}
+                  onChange={(value) => setProfile((p) => ({ ...p, brand_color_primary: value }))}
+                  error={errors.branding.brandPrimary}
+                  previewColor={primaryPreview}
+                />
+                <ColorPicker
+                  label={t('settings.branding.secondaryLabel')}
+                  value={profile.brand_color_secondary || ''}
+                  onChange={(value) => setProfile((p) => ({ ...p, brand_color_secondary: value }))}
+                  error={errors.branding.brandSecondary}
+                  previewColor={secondaryPreview}
+                />
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                <div className="space-y-4 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-slate-50 to-white p-6">
+                  <div className="flex items-start gap-4">
+                    <LogoPreview logoPath={profile.brand_logo_path} />
+                    <div className="flex-1 space-y-2">
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                          {t('settings.branding.logoUpload.title')}
+                        </h3>
+                        <p className="text-xs text-slate-500">{t('settings.branding.logoUpload.helper')}</p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (!canUploadBrandLogo) {
+                              openPlanUpgradeDialog({
+                                description: t('app.planUpgradeModal.reasons.brandingLogo'),
+                              });
+                              return;
                             }
+                            triggerLogoUpload();
                           }}
-                        />
-                      </>
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <div className="text-center">
-                          <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
-                          <span className="text-xs font-medium text-slate-400">{template.label}</span>
+                          disabled={logoUploading || !canUploadBrandLogo}
+                          variant={canUploadBrandLogo ? 'primary' : 'secondary'}
+                          size="sm"
+                        >
+                          {logoUploading ? (
+                            <>
+                              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              {t('settings.branding.logoUpload.uploading')}
+                            </>
+                          ) : canUploadBrandLogo ? (
+                            <>
+                              <PhotoIcon className="h-4 w-4" />
+                              {t('settings.branding.logoUpload.button')}
+                            </>
+                          ) : (
+                            <>
+                              <LockClosedIcon className="h-4 w-4" />
+                              {t('settings.branding.logoUpload.lockedButton')}
+                            </>
+                          )}
+                        </Button>
+                        {logoUploading && logoUploadAbortControllerRef.current && (
+                          <Button
+                            type="button"
+                            onClick={() => logoUploadAbortControllerRef.current?.abort()}
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <XMarkIcon className="h-4 w-4" />
+                            {t('settings.branding.logoUpload.cancel') || 'Mégse'}
+                          </Button>
+                        )}
+                        {profile.brand_logo_path && (
+                          <Button
+                            type="button"
+                            onClick={async () => {
+                              if (!profile.brand_logo_path) return;
+                              try {
+                                const url = await getBrandLogoUrl(supabase, profile.brand_logo_path, null);
+                                if (url) window.open(url, '_blank', 'noopener,noreferrer');
+                              } catch (error) {
+                                console.error('Failed to open logo:', error);
+                              }
+                            }}
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            {t('settings.branding.logoUpload.openInNewTab')}
+                          </Button>
+                        )}
+                      </div>
+                      {logoUploading && logoUploadProgress !== null && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-xs text-slate-600">
+                            <span>{t('settings.branding.logoUpload.progress') || 'Feltöltés...'}</span>
+                            <span className="font-semibold">{logoUploadProgress}%</span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                            <div
+                              className="h-full bg-primary transition-all duration-300 ease-out"
+                              style={{ width: `${logoUploadProgress}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-[1px]">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-2 ring-white">
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Pro Badge Overlay */}
-                    {requiresPro && (
-                      <div className="absolute top-2 left-2">
-                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
-                          PRO
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Template Info */}
-                  <div className="flex-1 space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <h3 className="text-sm font-semibold text-slate-900">{template.label}</h3>
+                      )}
+                      {!canUploadBrandLogo && (
+                        <p className="flex items-center gap-2 text-xs font-medium text-amber-600">
+                          <LockClosedIcon className="h-3.5 w-3.5" />
+                          {t('settings.branding.logoUpload.lockedMessage')}
+                        </p>
+                      )}
                     </div>
-                    {template.description ? (
-                      <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
-                        {template.description}
-                      </p>
-                    ) : template.marketingHighlight ? (
-                      <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
-                        {template.marketingHighlight}
-                      </p>
-                    ) : null}
-                    
-                    {requiresUpgrade && (
-                      <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-amber-600">
-                        <svg className="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <span>{t('settings.templates.proOnly')}</span>
-                      </div>
-                    )}
                   </div>
-                </button>
-              );
-            })}
-          </div>
+                </div>
 
-          {!canUseProTemplates && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
-              <p className="text-xs text-amber-800">
-                {t('settings.templates.upgradeHint')}
-              </p>
-            </div>
-          )}
-        </Card>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+                  <div className="space-y-3 rounded-xl border border-border/60 bg-white p-4 shadow-sm">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Modern sablon előnézet
+                    </span>
+                    {renderTemplatePreview('modern')}
+                  </div>
+                  <div className="space-y-3 rounded-xl border border-border/60 bg-white p-4 shadow-sm">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Premium sablon előnézet
+                    </span>
+                    {renderTemplatePreview('premium')}
+                  </div>
+                </div>
+              </div>
 
-        <Card
-          id="activities"
-          as="section"
-          className="space-y-6 scroll-mt-24"
-          header={
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {t('settings.activities.title')}
-              </h2>
-              <p className="text-sm text-slate-500">{t('settings.activities.subtitle')}</p>
-            </CardHeader>
-          }
-        >
-          <div className="grid items-end gap-4 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <Input
-                label={t('settings.activities.fields.name')}
-                placeholder={t('settings.activities.placeholders.name')}
-                value={newAct.name}
-                onChange={(e) => setNewAct((a) => ({ ...a, name: e.target.value }))}
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                className="hidden"
+                onChange={handleLogoChange}
               />
+
+              <div className="flex items-center justify-end border-t border-border pt-6">
+                <Button
+                  type="button"
+                  onClick={() => saveProfile('branding')}
+                  disabled={saving || hasBrandingErrors}
+                  loading={saving}
+                  size="lg"
+                >
+                  {saving ? t('settings.branding.saving') : t('settings.branding.save')}
+                </Button>
+              </div>
             </div>
-            <Input
-              label={t('settings.activities.fields.unit')}
-              placeholder={t('settings.activities.placeholders.unit')}
-              value={newAct.unit}
-              onChange={(e) => setNewAct((a) => ({ ...a, unit: e.target.value }))}
-            />
-            <Input
-              label={t('settings.activities.fields.price')}
-              type="number"
-              min={0}
-              value={newAct.price}
-              onChange={(e) => setNewAct((a) => ({ ...a, price: Number(e.target.value) }))}
-            />
-            <Input
-              label={t('settings.activities.fields.vat')}
-              type="number"
-              min={0}
-              value={newAct.vat}
-              onChange={(e) => setNewAct((a) => ({ ...a, vat: Number(e.target.value) }))}
-            />
-            <div className="lg:col-span-5">
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                {t('settings.activities.industries.heading')}
-              </span>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {ALL_INDUSTRIES_HU.map((ind) => {
-                  const active = newAct.industries.includes(ind);
+          </Card>
+
+          {/* Templates Section */}
+          <Card
+            id="templates"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <DocumentTextIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{t('settings.templates.title')}</h2>
+                    <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
+                  </div>
+                </div>
+              </CardHeader>
+            }
+          >
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {availableTemplates.map((template) => {
+                  const templateId = template.id as OfferTemplateId;
+                  const requiresPro = template.tier === 'premium';
+                  const requiresUpgrade = requiresPro && !canUseProTemplates;
+                  const isSelected = selectedTemplateId === templateId;
+
+                  const handleSelect = () => {
+                    if (requiresUpgrade) {
+                      openPlanUpgradeDialog({
+                        description: t('app.planUpgradeModal.reasons.proTemplates'),
+                      });
+                      return;
+                    }
+
+                    if (selectedTemplateId !== templateId) {
+                      setProfile((prev) => ({ ...prev, offer_template: templateId }));
+                      saveProfile('branding');
+                    }
+                  };
+
                   return (
-                    <Button
-                      key={ind}
+                    <button
+                      key={template.id}
                       type="button"
-                      onClick={() => toggleNewActIndustry(ind)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-border bg-slate-900 text-white' : 'border-border text-slate-600 hover:border-border hover:text-slate-900'}`}
+                      disabled={requiresUpgrade}
+                      onClick={handleSelect}
+                      aria-pressed={isSelected}
+                      aria-label={`Válassza ki a ${template.label} sablont`}
+                      className={`group relative flex h-full flex-col gap-3 rounded-xl border-2 p-4 text-left transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/30'
+                          : 'border-border bg-white hover:border-primary/50 hover:shadow-md'
+                      } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer active:scale-[0.98]'}`}
                     >
-                      {ind}
-                    </Button>
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm">
+                        {template.preview ? (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={template.preview}
+                              alt={`${template.label} előnézet`}
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.classList.add('flex', 'items-center', 'justify-center');
+                                  parent.innerHTML = `<span class="text-xs font-medium text-slate-400">${template.label}</span>`;
+                                }
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <div className="text-center">
+                              <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
+                              <span className="text-xs font-medium text-slate-400">{template.label}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {isSelected && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-[1px]">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-2 ring-white">
+                              <CheckCircleIcon className="h-6 w-6" />
+                            </div>
+                          </div>
+                        )}
+
+                        {requiresPro && (
+                          <div className="absolute top-2 right-2">
+                            <span className="rounded-full bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                              PRO
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h3 className="text-sm font-semibold text-slate-900">{template.label}</h3>
+                        </div>
+                        {(template.description || template.marketingHighlight) && (
+                          <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
+                            {template.description || template.marketingHighlight}
+                          </p>
+                        )}
+
+                        {requiresUpgrade && (
+                          <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-amber-600">
+                            <LockClosedIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                            <span>{t('settings.templates.proOnly')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </button>
                   );
                 })}
               </div>
+
+              {!canUseProTemplates && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+                  <p className="text-sm text-amber-800">{t('settings.templates.upgradeHint')}</p>
+                </div>
+              )}
             </div>
-          </div>
+          </Card>
 
-          <Button
-            onClick={addActivity}
-            disabled={actSaving}
-            className="inline-flex items-center justify-center rounded-full border border-border bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {actSaving ? t('settings.activities.saving') : t('settings.activities.add')}
-          </Button>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            {acts.map((a) => (
-              <div key={a.id} className="rounded-2xl border border-border bg-slate-50/80 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-800">{a.name}</h3>
-                    <p className="text-xs text-slate-500">
-                      {t('settings.activities.summary', {
-                        unit: a.unit,
-                        price: Number(a.default_unit_price || 0).toLocaleString('hu-HU'),
-                        vat: a.default_vat,
-                      })}
-                    </p>
+          {/* Activities Section */}
+          <Card
+            id="activities"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <CubeIcon className="h-5 w-5 text-primary" />
                   </div>
-                  <Button
-                    onClick={() => deleteActivity(a.id)}
-                    className="text-xs font-semibold text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    {t('settings.activities.delete')}
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">{t('settings.activities.title')}</h2>
+                    <p className="text-sm text-slate-500">{t('settings.activities.subtitle')}</p>
+                  </div>
+                </div>
+              </CardHeader>
+            }
+          >
+            <div className="space-y-6">
+              <div className="rounded-xl border border-border/60 bg-slate-50/50 p-6">
+                <h3 className="mb-4 text-sm font-semibold text-slate-900">Új tevékenység hozzáadása</h3>
+                <div className="grid gap-4 lg:grid-cols-5">
+                  <div className="lg:col-span-2">
+                    <Input
+                      label={t('settings.activities.fields.name')}
+                      placeholder={t('settings.activities.placeholders.name')}
+                      value={newAct.name}
+                      onChange={(e) => setNewAct((a) => ({ ...a, name: e.target.value }))}
+                    />
+                  </div>
+                  <Input
+                    label={t('settings.activities.fields.unit')}
+                    placeholder={t('settings.activities.placeholders.unit')}
+                    value={newAct.unit}
+                    onChange={(e) => setNewAct((a) => ({ ...a, unit: e.target.value }))}
+                  />
+                  <Input
+                    label={t('settings.activities.fields.price')}
+                    type="number"
+                    min={0}
+                    value={newAct.price}
+                    onChange={(e) => setNewAct((a) => ({ ...a, price: Number(e.target.value) }))}
+                  />
+                  <Input
+                    label={t('settings.activities.fields.vat')}
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={newAct.vat}
+                    onChange={(e) => setNewAct((a) => ({ ...a, vat: Number(e.target.value) }))}
+                  />
+                </div>
+                <div className="mt-4 space-y-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('settings.activities.industries.heading')}
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {ALL_INDUSTRIES_HU.map((ind) => {
+                      const active = newAct.industries.includes(ind);
+                      return (
+                        <button
+                          key={ind}
+                          type="button"
+                          onClick={() => toggleNewActIndustry(ind)}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                            active
+                              ? 'border-primary bg-primary text-white shadow-sm'
+                              : 'border-border bg-white text-slate-700 hover:border-primary/50 hover:bg-slate-50'
+                          }`}
+                        >
+                          {active && <CheckCircleIcon className="h-3 w-3" />}
+                          {ind}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <Button onClick={addActivity} disabled={actSaving} loading={actSaving} variant="secondary">
+                    <PlusIcon className="h-4 w-4" />
+                    {actSaving ? t('settings.activities.saving') : t('settings.activities.add')}
                   </Button>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">
-                  {t('settings.activities.assignedIndustries', {
-                    list: (a.industries || []).join(', ') || '—',
-                  })}
-                </p>
               </div>
-            ))}
-            {acts.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-border bg-white/70 p-6 text-sm text-slate-500">
-                {t('settings.activities.empty')}
-              </div>
-            )}
-          </div>
-        </Card>
+
+              {acts.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {acts.map((a) => (
+                    <div
+                      key={a.id}
+                      className="group relative rounded-xl border border-border bg-white p-5 shadow-sm transition-all hover:shadow-md"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <h3 className="text-sm font-semibold text-slate-900">{a.name}</h3>
+                          <p className="text-xs text-slate-600">
+                            {t('settings.activities.summary', {
+                              unit: a.unit,
+                              price: Number(a.default_unit_price || 0).toLocaleString('hu-HU'),
+                              vat: a.default_vat,
+                            })}
+                          </p>
+                          {(a.industries || []).length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {(a.industries || []).slice(0, 3).map((ind) => (
+                                <span
+                                  key={ind}
+                                  className="inline-flex items-center rounded-full border border-border bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+                                >
+                                  {ind}
+                                </span>
+                              ))}
+                              {(a.industries || []).length > 3 && (
+                                <span className="inline-flex items-center rounded-full border border-border bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                                  +{(a.industries || []).length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => deleteActivity(a.id)}
+                          className="flex-shrink-0 rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                          aria-label={`${a.name} törlése`}
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
+                  <CubeIcon className="mx-auto h-12 w-12 text-slate-400" />
+                  <p className="mt-4 text-sm font-medium text-slate-600">{t('settings.activities.empty')}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Adjon hozzá tevékenységeket a gyorsabb ajánlatkészítéshez
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
     </AppFrame>
