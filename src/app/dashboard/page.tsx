@@ -521,6 +521,25 @@ export default function DashboardPage() {
     async (user: string, pageNumber: number): Promise<{ items: Offer[]; count: number | null }> => {
       const from = pageNumber * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
+      
+      // First, try a simple query without the join to see if that's the issue
+      const { data: simpleData, error: simpleError, count: simpleCount } = await sb
+        .from('offers')
+        .select('id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id', { count: 'exact' })
+        .eq('user_id', user)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      
+      console.log('Dashboard simple query (no join)', {
+        userId: user,
+        pageNumber,
+        count: simpleCount,
+        itemsCount: Array.isArray(simpleData) ? simpleData.length : 0,
+        error: simpleError,
+        offerIds: Array.isArray(simpleData) ? simpleData.map((item: { id?: string }) => item.id).slice(0, 5) : [],
+      });
+      
+      // Now try with the join
       const { data, error, count } = await sb
         .from('offers')
         .select(
@@ -532,8 +551,43 @@ export default function DashboardPage() {
         .range(from, to);
 
       if (error) {
-        console.error('Dashboard fetch error', error);
-        throw error;
+        console.error('Dashboard fetch error (with join)', {
+          error,
+          errorMessage: error.message,
+          errorCode: error.code,
+          errorDetails: error.details,
+          errorHint: error.hint,
+        });
+        // If join fails, fall back to simple query
+        if (simpleError) {
+          throw simpleError;
+        }
+        // Use simple data if join failed but simple query succeeded
+        const finalData = simpleData;
+        const finalCount = simpleCount;
+        console.log('Using simple query results due to join error', {
+          itemsCount: Array.isArray(finalData) ? finalData.length : 0,
+        });
+        
+        const rawItems = Array.isArray(finalData) ? finalData : [];
+        const items: Offer[] = rawItems.map((entry) => ({
+          id: String(entry.id),
+          title: typeof entry.title === 'string' ? entry.title : '',
+          industry: typeof entry.industry === 'string' ? entry.industry : '',
+          status: (entry.status ?? 'draft') as Offer['status'],
+          created_at: entry.created_at ?? null,
+          sent_at: entry.sent_at ?? null,
+          decided_at: entry.decided_at ?? null,
+          decision: (entry.decision ?? null) as Offer['decision'],
+          pdf_url: entry.pdf_url ?? null,
+          recipient_id: entry.recipient_id ?? null,
+          recipient: null, // No recipient data due to join failure
+        }));
+        
+        return {
+          items,
+          count: typeof finalCount === 'number' ? finalCount : null,
+        };
       }
 
       console.log('Dashboard fetched offers', {
