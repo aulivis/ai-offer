@@ -748,7 +748,10 @@ export const POST = withAuth(
           clientCompanyName = clientRow.company_name;
         }
       } catch (clientLookupError) {
-        log.warn('Unexpected client lookup error during offer generation', clientLookupError);
+        log.warn('Unexpected client lookup error during offer generation', {
+          error: clientLookupError,
+          message: clientLookupError instanceof Error ? clientLookupError.message : String(clientLookupError),
+        });
       }
     }
 
@@ -782,7 +785,10 @@ export const POST = withAuth(
           usagePeriodStart,
         );
       } catch (syncError) {
-        log.warn('Failed to sync usage counter before PDF generation', syncError);
+        log.warn('Failed to sync usage counter before PDF generation', {
+          error: syncError,
+          message: syncError instanceof Error ? syncError.message : String(syncError),
+        });
       }
     }
 
@@ -802,6 +808,15 @@ export const POST = withAuth(
     if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
       const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
       if (!quotaCheck.allowed) {
+        log.warn('Quota limit exceeded', {
+          userId: user.id,
+          plan,
+          limit: planLimit,
+          confirmed: quotaCheck.confirmedCount,
+          pending: quotaCheck.pendingCount,
+          total: quotaCheck.totalCount,
+          periodStart: usagePeriodStart,
+        });
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
           { status: 402 },
@@ -821,6 +836,16 @@ export const POST = withAuth(
         usagePeriodStart,
       );
       if (!deviceQuotaCheck.allowed) {
+        log.warn('Device quota limit exceeded', {
+          userId: user.id,
+          deviceId,
+          plan,
+          limit: deviceLimit,
+          confirmed: deviceQuotaCheck.confirmedCount,
+          pending: deviceQuotaCheck.pendingCount,
+          total: deviceQuotaCheck.totalCount,
+          periodStart: usagePeriodStart,
+        });
         return NextResponse.json(
           { error: 'Elérted a havi ajánlatlimitálást ezen az eszközön.' },
           { status: 402 },
