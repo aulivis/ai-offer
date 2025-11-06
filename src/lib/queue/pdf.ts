@@ -333,10 +333,51 @@ export async function dispatchPdfJob(sb: SupabaseClient, jobId: string): Promise
     });
 
     if (error) {
-      // Extract error message from Supabase function error response
+      // Extract detailed error information from Supabase function error response
       const errorMessage = error.message || 'Failed to dispatch PDF job';
-      const errorContext = error.context ? ` (${JSON.stringify(error.context)})` : '';
-      throw new Error(`${errorMessage}${errorContext}`);
+      
+      // Try to extract status code and context from error object
+      const errorDetails: string[] = [];
+      
+      // Log the full error object for debugging
+      const errorObj = error as Record<string, unknown>;
+      const errorKeys = Object.keys(errorObj);
+      if (errorKeys.length > 0) {
+        errorDetails.push(`error keys: ${errorKeys.join(', ')}`);
+      }
+      
+      // Check for status code in various possible properties
+      const statusCode = errorObj.status 
+        ?? errorObj.statusCode
+        ?? errorObj.code
+        ?? (errorObj as { response?: { status?: number } }).response?.status;
+      
+      if (statusCode !== undefined) {
+        errorDetails.push(`status: ${statusCode}`);
+      }
+      
+      if (error.context) {
+        errorDetails.push(`context: ${JSON.stringify(error.context)}`);
+      }
+      
+      // Try to get response body if available
+      const responseBody = (errorObj as { response?: { data?: unknown } }).response?.data;
+      if (responseBody) {
+        try {
+          const bodyStr = typeof responseBody === 'string' 
+            ? responseBody 
+            : JSON.stringify(responseBody);
+          errorDetails.push(`response: ${bodyStr.substring(0, 200)}`);
+        } catch {
+          // ignore JSON stringify errors
+        }
+      }
+      
+      const fullMessage = errorDetails.length > 0
+        ? `${errorMessage} (${errorDetails.join(', ')})`
+        : errorMessage;
+      
+      throw new Error(fullMessage);
     }
 
     // Check if the function returned an error in the response body

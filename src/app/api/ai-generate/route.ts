@@ -1287,8 +1287,19 @@ Különös figyelmet fordít a következőkre:
 
           const serviceClient = supabaseServiceRole();
           immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
-          responseStatus = 'completed';
-          responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
+          if (immediatePdfUrl) {
+            responseStatus = 'completed';
+            responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
+            log.info('Inline PDF fallback completed successfully', {
+              jobId: downloadToken,
+              pdfUrl: immediatePdfUrl,
+            });
+          } else {
+            log.error('Inline PDF fallback returned null PDF URL', {
+              jobId: downloadToken,
+            });
+            throw new Error('PDF generation completed but no PDF URL was returned');
+          }
         } catch (inlineError) {
           const inlineMessage =
             inlineError instanceof Error ? inlineError.message : String(inlineError);
@@ -1311,6 +1322,15 @@ Különös figyelmet fordít a következőkre:
     }
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
+
+    // Log final response state for debugging
+    log.info('PDF generation response', {
+      offerId,
+      pdfUrl: immediatePdfUrl,
+      status: responseStatus,
+      note: responseNote,
+      hasPdfUrl: !!immediatePdfUrl,
+    });
 
     const response = NextResponse.json({
       ok: true,
