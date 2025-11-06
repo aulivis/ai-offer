@@ -45,7 +45,15 @@ type BrandingContextValue = {
   companyName: string | null;
   logoUrl: string | null;
   monogram: string;
-  colors: typeof FALLBACK_COLORS;
+  colors: {
+    primary: string;
+    secondary: string;
+    text: string;
+    muted: string;
+    border: string;
+    bg: string;
+    primaryContrast: string;
+  };
   hasBranding: boolean;
   isLoading: boolean;
 };
@@ -95,11 +103,19 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
         const secondaryColor = normalizeBrandHex(data?.brand_color_secondary ?? null);
         
         // Generate signed URL on-demand from path (preferred) or use legacy URL
-        const logoUrl = await getBrandLogoUrl(
-          supabase,
-          data?.brand_logo_path ?? null,
-          data?.brand_logo_url ?? null,
-        );
+        let logoUrl: string | null = null;
+        try {
+          logoUrl = await getBrandLogoUrl(
+            supabase,
+            data?.brand_logo_path ?? null,
+            data?.brand_logo_url ?? null,
+          );
+        } catch (error) {
+          // Silently handle storage errors (e.g., bucket doesn't exist, file not found)
+          // This prevents errors on landing page when user is not authenticated
+          console.debug('Could not load brand logo URL:', error);
+          logoUrl = null;
+        }
 
         if (!active) {
           return;
@@ -170,7 +186,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
     };
   }, [colors]);
 
-  const value = useMemo<BrandingContextValue>(() => {
+  const value: BrandingContextValue = useMemo(() => {
     const companyName = state.companyName;
     const logoUrl = state.logoUrl;
     const monogram = deriveBrandMonogram(companyName);

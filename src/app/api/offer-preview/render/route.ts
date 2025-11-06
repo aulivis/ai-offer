@@ -278,4 +278,11 @@ async function handlePost(req: AuthenticatedNextRequest) {
   });
 }
 
-export const POST = withAuth(withRequestSizeLimit(handlePost));
+async function wrappedHandler(req: AuthenticatedNextRequest) {
+  const handler = withRequestSizeLimit(async (request: AuthenticatedNextRequest) => {
+    return handlePost(request);
+  });
+  return handler(req);
+}
+
+export const POST = withAuth(wrappedHandler);

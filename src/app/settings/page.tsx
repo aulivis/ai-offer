@@ -246,34 +246,40 @@ export default function SettingsPage() {
     const engineTemplates = listTemplateMetadata();
     const sdkTemplates = listSDKTemplates();
     
-    // Combine templates from both registries
+    // Combine templates from both registries, deduplicating by legacy ID
     type CombinedTemplate = TemplateMetadata & { preview?: string };
     const templateMap = new Map<string, CombinedTemplate>();
+    const usedEngineIds = new Set<string>();
     
-    // Add engine templates
-    engineTemplates.forEach((template) => {
-      const legacyId = template.id.includes('free.base') ? 'modern' :
-                      template.id.includes('premium.elegant') ? 'premium-banner' :
-                      template.id.includes('premium.modern') ? 'premium-banner' :
+    // Process SDK templates first (they take precedence)
+    sdkTemplates.forEach((template) => {
+      const legacyId = template.id === 'pro.nordic' ? 'pro.nordic' : 
+                      template.id === 'free.base' ? 'modern' :
                       template.id;
-      templateMap.set(legacyId, template);
+      const sdkTemplate: CombinedTemplate = {
+        id: template.id,
+        label: template.name,
+        tier: template.id.includes('pro.') ? ('premium' as const) : ('free' as const),
+        version: template.version,
+        name: template.name,
+      };
+      if (template.preview) {
+        sdkTemplate.preview = template.preview;
+      }
+      templateMap.set(legacyId, sdkTemplate);
     });
     
-    // Add SDK templates (like pro.nordic) that might not be in engine registry
-    sdkTemplates.forEach((template) => {
-      const legacyId = template.id.includes('pro.nordic') ? 'pro.nordic' : template.id;
-      if (!templateMap.has(legacyId)) {
-        const sdkTemplate: CombinedTemplate = {
-          id: template.id,
-          label: template.name,
-          tier: template.id.includes('pro.') ? ('premium' as const) : ('free' as const),
-          version: template.version,
-          name: template.name,
-        };
-        if (template.preview) {
-          sdkTemplate.preview = template.preview;
-        }
-        templateMap.set(legacyId, sdkTemplate);
+    // Add engine templates that don't conflict with SDK templates
+    engineTemplates.forEach((template) => {
+      const legacyId = template.id === 'free.base' ? 'modern' :
+                      template.id === 'premium.elegant' ? 'premium-banner' :
+                      template.id === 'premium.modern' ? 'premium-banner' :
+                      template.id;
+      
+      // Skip if already added by SDK registry or if this exact template was already processed
+      if (!templateMap.has(legacyId) && !usedEngineIds.has(template.id)) {
+        templateMap.set(legacyId, template);
+        usedEngineIds.add(template.id);
       }
     });
     
@@ -817,7 +823,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sticky Sidebar Navigation */}
         <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="sticky top-24 space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
+          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto space-y-2 rounded-2xl border border-border/60 bg-bg/80 p-4 shadow-sm backdrop-blur transition-all duration-200">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
               Navigáció
             </h3>
@@ -1225,10 +1231,10 @@ export default function SettingsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {availableTemplates.map((template) => {
               // Map template ID to legacy ID for compatibility
-              const legacyId = template.id.includes('free.base') ? 'modern' :
-                              template.id.includes('premium.elegant') ? 'premium-banner' :
-                              template.id.includes('premium.modern') ? 'premium-banner' :
-                              template.id.includes('pro.nordic') ? 'pro.nordic' :
+              const legacyId = template.id === 'free.base' ? 'modern' :
+                              template.id === 'premium.elegant' ? 'premium-banner' :
+                              template.id === 'premium.modern' ? 'premium-banner' :
+                              template.id === 'pro.nordic' ? 'pro.nordic' :
                               template.id;
               const isSelected = selectedTemplateId === legacyId;
               const requiresPro = template.tier === 'premium';
@@ -1268,12 +1274,22 @@ export default function SettingsPage() {
                   {/* Preview Image */}
                   {templatePreview ? (
                     <div className="relative overflow-hidden rounded-xl border border-border bg-slate-50">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={templatePreview}
-                        alt={`${templateLabel} előnézet`}
-                        className="h-32 w-full object-cover transition-transform group-hover:scale-105"
-                      />
+                      <a
+                        href={templatePreview}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className="block h-32 w-full"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={templatePreview}
+                          alt={`${templateLabel} előnézet`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      </a>
                       {isSelected && (
                         <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-lg">
                           <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">

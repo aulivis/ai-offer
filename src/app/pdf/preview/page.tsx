@@ -80,8 +80,9 @@ function TemplateError({ message }: { message: string }) {
   );
 }
 
-export default function PdfPreviewPage({ searchParams }: { searchParams: SearchParams }) {
-  const templateId = getFirst(searchParams.templateId);
+export default async function PdfPreviewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const resolvedSearchParams = await searchParams;
+  const templateId = getFirst(resolvedSearchParams.templateId);
 
   if (!templateId) {
     return <TemplateError message="Missing templateId query parameter." />;
@@ -106,9 +107,9 @@ export default function PdfPreviewPage({ searchParams }: { searchParams: SearchP
     return <TemplateError message="Unexpected error while loading template." />;
   }
 
-  const primaryHex = normalizeHex(getFirst(searchParams.brandPrimary), '#2563EB');
-  const secondaryHex = normalizeHex(getFirst(searchParams.brandSecondary), '#7C3AED');
-  const logoUrl = normalizeLogo(getFirst(searchParams.logo));
+  const primaryHex = normalizeHex(getFirst(resolvedSearchParams.brandPrimary), '#2563EB');
+  const secondaryHex = normalizeHex(getFirst(resolvedSearchParams.brandSecondary), '#7C3AED');
+  const logoUrl = normalizeLogo(getFirst(resolvedSearchParams.logo));
 
   const slots = cloneSlots();
   slots.brand.logoUrl = logoUrl ?? (slots.brand.logoUrl || undefined);
@@ -120,7 +121,7 @@ export default function PdfPreviewPage({ searchParams }: { searchParams: SearchP
     secondaryHex,
   });
 
-  const locale = getFirst(searchParams.locale);
+  const locale = getFirst(resolvedSearchParams.locale);
   const i18n = createTranslator(locale);
 
   const ctx: RenderContext = { slots, tokens, i18n };

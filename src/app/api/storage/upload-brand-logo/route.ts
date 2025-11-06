@@ -213,6 +213,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         contentType: normalizedImage.contentType,
       });
     if (uploadError) {
+      log.error('Logo upload failed', { error: uploadError, path });
       throw new Error('Nem sikerült feltölteni a logót.');
     }
 
