@@ -2443,26 +2443,6 @@ export default function NewOfferWizard() {
           </section>
         )}
 
-        <div className="sticky bottom-0 left-0 right-0 z-30 -mx-6 -mb-6 border-t border-border/70 bg-white/95 px-6 py-4 shadow-[0_-12px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              onClick={() => setStep((s) => Math.max(1, s - 1))}
-              disabled={step === 1}
-              className="rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:border-border disabled:text-slate-300"
-            >
-              Vissza
-            </Button>
-            {step < 3 && (
-              <Button
-                onClick={() => goToStep(step + 1)}
-                disabled={isQuotaExhausted || quotaLoading}
-                className="rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-200"
-              >
-                Tovább
-              </Button>
-            )}
-          </div>
-        </div>
         <WizardActionBar
           step={step as WizardStep}
           onPrev={() => goToStep(Math.max(1, step - 1))}
