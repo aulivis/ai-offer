@@ -107,14 +107,14 @@ function MetricCard({
 
   return (
     <Card 
-      className={`group relative overflow-hidden p-4 sm:p-6 transition-all duration-200 ${
+      className={`group relative overflow-hidden p-5 sm:p-6 transition-all duration-200 ${
         onClick ? 'cursor-pointer hover:shadow-lg hover:border-primary/30' : 'hover:shadow-lg'
       } ${isEmptyState ? 'opacity-75' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2.5 sm:mb-3">
             {icon && (
               <div className={`flex-shrink-0 ${iconColors[color]} scale-90 sm:scale-100`}>
                 {icon}
@@ -123,16 +123,16 @@ function MetricCard({
             <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted truncate">{label}</p>
           </div>
           {isEmptyState && emptyMessage ? (
-            <div className="mt-2 sm:mt-3">
+            <div className="mt-2.5 sm:mt-3">
               <p className="text-base sm:text-lg font-semibold text-fg-muted">{value}</p>
-              <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs leading-relaxed text-fg-muted">{emptyMessage}</p>
+              <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs leading-relaxed text-fg-muted break-words">{emptyMessage}</p>
             </div>
           ) : (
             <>
-              <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2 sm:mt-3 flex-wrap">
-                <p className="text-2xl sm:text-3xl font-bold text-fg">{value}</p>
+              <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 flex-wrap">
+                <p className="text-2xl sm:text-3xl font-bold text-fg break-words">{value}</p>
                 {trend && trendValue && (
-                  <span className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 ${trendColors[trend]}`}>
+                  <span className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ${trendColors[trend]}`}>
                     {trend === 'up' ? (
                       <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -151,7 +151,7 @@ function MetricCard({
                 )}
               </div>
               {comparison && (
-                <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
+                <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs flex-wrap">
                   <span className="text-fg-muted">{comparison.label}:</span>
                   <span className={`font-semibold flex items-center gap-0.5 sm:gap-1 ${
                     comparison.trend === 'up' ? 'text-emerald-600' :
@@ -167,7 +167,7 @@ function MetricCard({
                 <div className="mt-3 sm:mt-4 space-y-1">
                   <div className="flex items-center justify-between text-[10px] sm:text-xs">
                     <span className="text-fg-muted">Használat</span>
-                    <span className="font-semibold text-fg">
+                    <span className="font-semibold text-fg break-words">
                       {progress.used.toLocaleString('hu-HU')} / {progress.limit?.toLocaleString('hu-HU')}
                     </span>
                   </div>
@@ -186,7 +186,7 @@ function MetricCard({
                   </div>
                 </div>
               )}
-              {helper && <p className="mt-2 sm:mt-3 text-[10px] sm:text-xs leading-relaxed text-fg-muted">{helper}</p>}
+              {helper && <p className="mt-2.5 sm:mt-3 text-[11px] sm:text-xs leading-relaxed text-fg-muted break-words hyphens-auto">{helper}</p>}
             </>
           )}
         </div>
@@ -1182,8 +1182,8 @@ export default function DashboardPage() {
             
             <div className={`grid gap-3 sm:gap-4 ${
               metricsViewMode === 'compact' 
-                ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7' 
-                : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7'
+                ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' 
+                : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
             }`}>
               {loading ? (
                 <>
@@ -1245,7 +1245,7 @@ export default function DashboardPage() {
                   <MetricCard
                     label="Döntésre vár"
                     value={stats.inReview.toLocaleString('hu-HU')}
-                    helper={metricsViewMode === 'detailed' ? `${stats.inReview} ajánlat döntésre vár` : undefined}
+                    {...(metricsViewMode === 'detailed' ? { helper: `${stats.inReview} ajánlat döntésre vár` } : {})}
                     icon={<EyeIcon className="h-7 w-7" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
@@ -1257,9 +1257,9 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.sent.label')}
                     value={stats.sent.toLocaleString('hu-HU')}
-                    helper={metricsViewMode === 'detailed' ? t('dashboard.metrics.sent.helper', {
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.sent.helper', {
                       pending: stats.inReview.toLocaleString('hu-HU'),
-                    }) : undefined}
+                    }) } : {})}
                     icon={<PaperAirplaneIcon className="h-7 w-7" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
@@ -1271,7 +1271,7 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.accepted.label')}
                     value={stats.accepted.toLocaleString('hu-HU')}
-                    helper={metricsViewMode === 'detailed' ? t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel }) : undefined}
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel }) } : {})}
                     icon={<DocumentCheckIcon className="h-7 w-7" />}
                     color="success"
                     trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
@@ -1285,7 +1285,7 @@ export default function DashboardPage() {
                   <MetricCard
                     label="Elutasított ajánlatok"
                     value={stats.lost.toLocaleString('hu-HU')}
-                    helper={metricsViewMode === 'detailed' ? `${stats.lost} ajánlat elutasítva` : undefined}
+                    {...(metricsViewMode === 'detailed' ? { helper: `${stats.lost} ajánlat elutasítva` } : {})}
                     icon={<XCircleIcon className="h-7 w-7" />}
                     color="danger"
                     onClick={() => handleMetricClick('lost')}
@@ -1297,7 +1297,7 @@ export default function DashboardPage() {
                   <MetricCard
                     label="Sikeres arány"
                     value={winRateLabel}
-                    helper={metricsViewMode === 'detailed' ? `Elfogadott / (Elfogadott + Elutasított)` : undefined}
+                    {...(metricsViewMode === 'detailed' ? { helper: `Elfogadott / (Elfogadott + Elutasított)` } : {})}
                     icon={<ChartBarIcon className="h-7 w-7" />}
                     color={stats.winRate !== null && stats.winRate > 50 ? 'success' : stats.winRate !== null && stats.winRate < 30 ? 'danger' : 'warning'}
                     trend={stats.winRate !== null && stats.winRate > 50 ? 'up' : stats.winRate !== null && stats.winRate < 30 ? 'down' : 'neutral'}
@@ -1310,9 +1310,9 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.avgDecision.label')}
                     value={avgDecisionLabel}
-                    helper={metricsViewMode === 'detailed' ? t('dashboard.metrics.avgDecision.helper', {
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.avgDecision.helper', {
                       drafts: stats.drafts.toLocaleString('hu-HU'),
-                    }) : undefined}
+                    }) } : {})}
                     icon={<ClockIcon className="h-7 w-7" />}
                     color="warning"
                     isEmpty={stats.avgDecisionDays === null}
