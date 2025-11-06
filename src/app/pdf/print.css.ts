@@ -239,6 +239,39 @@ export const PRINT_BASE_CSS = `
     color: var(--muted, #94a3b8);
     font-style: italic;
   }
+  
+  .offer-doc__marketing-footer {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    margin-top: 12mm;
+    padding-top: 4mm;
+    text-align: center;
+  }
+  
+  .offer-doc__marketing-text {
+    color: var(--muted, #64748b);
+    font-size: 7.5pt;
+    line-height: 1.5;
+    margin: 0;
+  }
+  
+  .offer-doc__marketing-link {
+    color: var(--brand-primary, #1c274c);
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  
+  @media print {
+    .offer-doc__marketing-link {
+      color: var(--brand-primary, #1c274c);
+    }
+    
+    .offer-doc__marketing-link::after {
+      content: ' (' attr(href) ')';
+      font-size: 0.9em;
+      color: var(--muted, #64748b);
+      word-break: break-all;
+    }
+  }
 
   .offer-doc__slim-bar {
     align-items: center;

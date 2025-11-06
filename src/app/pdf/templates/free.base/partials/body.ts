@@ -4,6 +4,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
+import { renderMarketingFooter } from '../../shared/marketingFooter';
 
 export function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -164,6 +165,7 @@ export function partialFooter(ctx: RenderCtx): string {
               <span class="${taxClass}">${companyTaxId.value}</span>
             </div>
           </div>
+          ${renderMarketingFooter()}
         </footer>
   `;
 }

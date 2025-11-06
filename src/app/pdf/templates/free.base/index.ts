@@ -2,6 +2,7 @@ import { BASE_STYLES } from '@/app/pdf/sdk/baseStyles';
 import { tokensToCssVars } from '@/app/pdf/sdk/cssVars';
 import type { OfferTemplate, RenderContext } from '@/app/pdf/sdk/types';
 import { sanitizeInput } from '@/lib/sanitize';
+import { renderMarketingFooter } from '../shared/marketingFooter';
 
 function renderHead(ctx: RenderContext): string {
   const styles = `
@@ -27,6 +28,9 @@ function renderHead(ctx: RenderContext): string {
     .totals__row{display:flex;gap:2rem;min-width:16rem;justify-content:space-between;font-weight:600;color:var(--text-default)}
     .totals__label{opacity:0.7;font-weight:500}
     .notes{font-size:0.85rem;line-height:1.5;color:var(--text-default);opacity:0.85}
+    .offer-doc__marketing-footer{border-top:1px solid rgba(0,0,0,0.1);margin-top:1.5rem;padding-top:1rem;text-align:center}
+    .offer-doc__marketing-text{color:var(--text-default);opacity:0.7;font-size:0.75rem;line-height:1.5;margin:0}
+    .offer-doc__marketing-link{color:var(--brand-primary);text-decoration:underline;font-weight:500}
     @media print{main.offer{padding:2.5rem 2rem}}
   `;
 
@@ -214,6 +218,9 @@ function renderBody(ctx: RenderContext): string {
       ${renderItems(ctx)}
       ${renderTotals(ctx)}
       ${renderNotes(ctx)}
+      <footer class="offer-doc__footer">
+        ${renderMarketingFooter()}
+      </footer>
     </main>
   `;
 }

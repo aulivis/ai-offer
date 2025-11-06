@@ -7,6 +7,8 @@ import { renderSectionHeading } from './offerSections';
 import { PRINT_BASE_CSS } from '@/app/pdf/print.css';
 import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 import { deriveBrandMonogram, normalizeBrandHex, sanitizeBrandLogoUrl } from '@/lib/branding';
+import { renderMarketingFooter } from '@/app/pdf/templates/shared/marketingFooter';
+import { templateRequiresPro } from './offerTemplates';
 
 /**
  * Shared CSS for the rendered offer document.  The rules only target the
@@ -286,6 +288,26 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__footer-value--placeholder {
     color: var(--brand-muted, #334155);
     font-style: italic;
+  }
+  .offer-doc__marketing-footer {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    margin-top: var(--space-lg, 1.5rem);
+    padding-top: var(--space-md, 1rem);
+    text-align: center;
+  }
+  .offer-doc__marketing-text {
+    color: var(--brand-muted, #64748b);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .offer-doc__marketing-link {
+    color: var(--brand-primary, #1c274c);
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  .offer-doc__marketing-link:hover {
+    text-decoration: none;
   }
   .offer-doc__content {
     font-size: 0.95rem;
@@ -933,6 +955,7 @@ export function offerBodyMarkup({
               <span class="${taxClass}">${resolvedCompanyTaxId}</span>
             </div>
           </div>
+          ${!templateRequiresPro(normalizedTemplate) ? renderMarketingFooter() : ''}
         </footer>
         ${slimFooterMarkup}
       </article>
@@ -994,6 +1017,7 @@ export function offerBodyMarkup({
             <span class="${taxClass}">${resolvedCompanyTaxId}</span>
           </div>
         </div>
+        ${!templateRequiresPro(normalizedTemplate) ? renderMarketingFooter() : ''}
       </footer>
       ${slimFooterMarkup}
     </article>
