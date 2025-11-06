@@ -304,6 +304,75 @@ export async function syncUsageCounter(
   });
 }
 
+/**
+ * Recalculate usage counter based on actual successful PDFs (offers with pdf_url not null).
+ * This ensures quota reflects only successful PDF generations.
+ */
+export async function recalculateUsageFromPdfs(
+  sb: SupabaseClient,
+  userId: string,
+  periodStartOverride?: string,
+): Promise<{ oldCount: number; newCount: number; updated: boolean }> {
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+      : currentMonthStart().iso;
+
+  const { data, error } = await sb.rpc('recalculate_usage_from_pdfs', {
+    p_user_id: userId,
+    p_period_start: periodStart,
+  });
+
+  if (error) {
+    throw new Error(`Failed to recalculate usage from PDFs: ${error.message}`);
+  }
+
+  const [result] = Array.isArray(data) ? data : [data];
+  return {
+    oldCount: Number(result?.old_count ?? 0),
+    newCount: Number(result?.new_count ?? 0),
+    updated: Boolean(result?.updated ?? false),
+  };
+}
+
+/**
+ * Get actual count of successful PDFs (offers with pdf_url not null) for a period.
+ */
+export async function countSuccessfulPdfs(
+  sb: SupabaseClient,
+  userId: string,
+  periodStartOverride?: string,
+): Promise<number> {
+  const periodStart =
+    typeof periodStartOverride === 'string' && periodStartOverride
+      ? normalizeDate(periodStartOverride, currentMonthStart().iso)
+      : currentMonthStart().iso;
+
+  const { data, error } = await sb.rpc('count_successful_pdfs', {
+    p_user_id: userId,
+    p_period_start: periodStart,
+  });
+
+  if (error) {
+    // Fallback to direct query if function doesn't exist
+    const { count, error: countError } = await sb
+      .from('offers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .not('pdf_url', 'is', null)
+      .gte('created_at', `${periodStart}T00:00:00Z`)
+      .lt('created_at', `${periodStart}T23:59:59Z`);
+
+    if (countError) {
+      throw new Error(`Failed to count successful PDFs: ${countError.message}`);
+    }
+
+    return count ?? 0;
+  }
+
+  return Number(data ?? 0);
+}
+
 export async function getDeviceUsageSnapshot(
   sb: SupabaseClient,
   userId: string,

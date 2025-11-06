@@ -400,6 +400,8 @@ export default function BillingPage() {
 
     (async () => {
       try {
+        const { currentMonthStart } = await import('@/lib/services/usage');
+        const { iso: currentPeriod } = currentMonthStart();
         const [{ data: profile }, { data: usageRow }] = await Promise.all([
           supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
           supabase
@@ -414,10 +416,29 @@ export default function BillingPage() {
         }
 
         const effectivePlan = resolveEffectivePlan(profile?.plan ?? null);
+        
+        // Recalculate usage based on actual successful PDFs to ensure accuracy
+        // This fixes cases where quota was incremented but PDF generation failed
+        let actualCount = Number(usageRow?.offers_generated ?? 0);
+        try {
+          const { countSuccessfulPdfs } = await import('@/lib/services/usage');
+          actualCount = await countSuccessfulPdfs(supabase, user.id, currentPeriod);
+          
+          // If count differs, sync it (but don't block UI if sync fails)
+          if (actualCount !== Number(usageRow?.offers_generated ?? 0)) {
+            const { recalculateUsageFromPdfs } = await import('@/lib/services/usage');
+            await recalculateUsageFromPdfs(supabase, user.id, currentPeriod).catch((err) => {
+              console.warn('Failed to sync usage counter:', err);
+            });
+          }
+        } catch (recalcError) {
+          console.warn('Failed to recalculate usage from PDFs, using counter value:', recalcError);
+        }
+        
         setPlan(effectivePlan);
         setUsage({
-          offersGenerated: Number(usageRow?.offers_generated ?? 0),
-          periodStart: usageRow?.period_start ?? null,
+          offersGenerated: actualCount,
+          periodStart: usageRow?.period_start ?? currentPeriod,
         });
         setIsLoadingData(false);
       } catch (error) {

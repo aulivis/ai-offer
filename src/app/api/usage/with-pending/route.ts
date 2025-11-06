@@ -50,6 +50,21 @@ export async function GET(request: Request) {
   const deviceId = parsed.data.device_id;
 
   try {
+    // First, try to recalculate usage from actual PDFs to ensure accuracy
+    // This fixes cases where quota was incremented but PDF generation failed
+    try {
+      const { recalculateUsageFromPdfs } = await import('@/lib/services/usage');
+      await recalculateUsageFromPdfs(supabase, userId, normalizedPeriod).catch((err) => {
+        log.warn('Failed to recalculate usage from PDFs, continuing with counter value', {
+          error: err,
+        });
+      });
+    } catch (recalcError) {
+      log.warn('Failed to recalculate usage from PDFs, continuing with counter value', {
+        error: recalcError,
+      });
+    }
+
     const snapshot = await getUsageWithPending(supabase, {
       userId,
       periodStart: normalizedPeriod,
