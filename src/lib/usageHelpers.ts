@@ -315,7 +315,45 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
       expectedPeriod: normalizedExpected,
       error: updateError,
     });
+    throw updateError; // Re-throw to allow retry logic
   }
+}
+
+/**
+ * Retry rollback operation with exponential backoff
+ */
+async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
+  supabase: SupabaseClient,
+  kind: K,
+  target: CounterTargets[K],
+  expectedPeriod: string,
+  maxRetries: number = 3,
+): Promise<void> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      await rollbackUsageIncrementForKind(supabase, kind, target, expectedPeriod);
+      return; // Success
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      if (attempt < maxRetries - 1) {
+        // Exponential backoff: 100ms, 200ms, 400ms
+        const delayMs = 100 * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        continue;
+      }
+    }
+  }
+  
+  // All retries failed - log but don't throw to prevent cascading failures
+  console.error(`Failed to rollback usage increment after ${maxRetries} attempts`, {
+    kind,
+    target,
+    expectedPeriod,
+    error: lastError,
+  });
 }
 
 export async function rollbackUsageIncrement(
@@ -325,10 +363,10 @@ export async function rollbackUsageIncrement(
   options: RollbackOptions = {},
 ): Promise<void> {
   if (typeof options.deviceId === 'string' && options.deviceId.length > 0) {
-    return rollbackUsageIncrementForKind(supabase, 'device', { userId, deviceId: options.deviceId }, expectedPeriod);
+    return rollbackUsageIncrementWithRetry(supabase, 'device', { userId, deviceId: options.deviceId }, expectedPeriod);
   }
 
-  return rollbackUsageIncrementForKind(supabase, 'user', { userId }, expectedPeriod);
+  return rollbackUsageIncrementWithRetry(supabase, 'user', { userId }, expectedPeriod);
 }
 
 export type { CounterKind, CounterTargets };

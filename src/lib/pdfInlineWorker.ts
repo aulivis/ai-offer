@@ -101,15 +101,59 @@ async function setContentWithNetworkIdleLogging(page: Page, html: string, contex
   }
 }
 
+/**
+ * Atomically claim a job for processing, similar to edge worker's claimJobForProcessing.
+ * Returns true if job was successfully claimed, false if already claimed by another worker.
+ */
+async function claimJobForInlineProcessing(
+  supabase: SupabaseClient,
+  jobId: string,
+): Promise<boolean> {
+  const startedAt = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('pdf_jobs')
+    .update({ status: 'processing', started_at: startedAt, error_message: null })
+    .eq('id', jobId)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to claim job for inline processing: ${error.message}`);
+  }
+
+  return Boolean(data);
+}
+
 export async function processPdfJobInline(
   supabase: SupabaseClient,
   job: PdfJobInput,
 ): Promise<string | null> {
-  const startedAt = new Date().toISOString();
-  await supabase
-    .from('pdf_jobs')
-    .update({ status: 'processing', started_at: startedAt })
-    .eq('id', job.jobId);
+  // Atomically claim the job - prevents double processing if edge worker already claimed it
+  const claimed = await claimJobForInlineProcessing(supabase, job.jobId);
+  if (!claimed) {
+    // Job was already claimed by edge worker or another process
+    // Check if it's already completed or failed
+    const { data: existingJob } = await supabase
+      .from('pdf_jobs')
+      .select('status, pdf_url')
+      .eq('id', job.jobId)
+      .maybeSingle();
+
+    if (existingJob?.status === 'completed' && existingJob.pdf_url) {
+      // Job already completed by edge worker
+      return existingJob.pdf_url;
+    }
+
+    if (existingJob?.status === 'failed') {
+      // Job already failed, throw error to trigger retry or proper error handling
+      throw new Error('PDF job was already processed and failed by another worker');
+    }
+
+    // Job is being processed by edge worker, wait a bit and check again
+    // This handles the case where edge worker is still processing
+    throw new Error('PDF job is already being processed by edge worker');
+  }
 
   let uploadedToStorage = false;
   let userUsageIncremented = false;

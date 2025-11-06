@@ -1174,50 +1174,87 @@ Különös figyelmet fordít a következőkre:
         return NextResponse.json({ error: dispatchLimitMessage }, { status: 402 });
       }
 
-      try {
-        const inlineJob: PdfJobInput = {
-          jobId: pdfJobInput.jobId,
-          offerId: pdfJobInput.offerId,
-          userId: pdfJobInput.userId,
-          storagePath: pdfJobInput.storagePath,
-          html: pdfJobInput.html,
-          usagePeriodStart: pdfJobInput.usagePeriodStart,
-          userLimit: pdfJobInput.userLimit,
-          ...(pdfJobInput.callbackUrl !== undefined
-            ? { callbackUrl: pdfJobInput.callbackUrl }
-            : {}),
-          ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
-          ...(pdfJobInput.deviceLimit !== undefined
-            ? { deviceLimit: pdfJobInput.deviceLimit }
-            : {}),
-          ...(pdfJobInput.templateId !== undefined ? { templateId: pdfJobInput.templateId } : {}),
-          ...(pdfJobInput.requestedTemplateId !== undefined
-            ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
-            : {}),
-          ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
-        };
+      // Before falling back to inline processing, check if edge worker already claimed the job
+      // This prevents double processing and quota double-increment
+      const { data: jobStatus } = await sb
+        .from('pdf_jobs')
+        .select('status, pdf_url')
+        .eq('id', downloadToken)
+        .maybeSingle();
 
-        const serviceClient = supabaseServiceRole();
-        immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
+      if (jobStatus?.status === 'completed' && jobStatus.pdf_url) {
+        // Edge worker already completed the job successfully
+        log.info('PDF job already completed by edge worker', { jobId: downloadToken });
+        immediatePdfUrl = jobStatus.pdf_url;
         responseStatus = 'completed';
-        responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
-      } catch (inlineError) {
-        const inlineMessage =
-          inlineError instanceof Error ? inlineError.message : String(inlineError);
-        log.error('Inline PDF fallback error', inlineError);
+        responseNote = 'A PDF generálása elkészült.';
+      } else if (jobStatus?.status === 'processing') {
+        // Edge worker is currently processing - don't start inline fallback
+        // The edge worker will complete or fail, and the user can check status later
+        log.info('PDF job already being processed by edge worker', { jobId: downloadToken });
+        responseStatus = 'pending';
+        responseNote = 'A PDF generálása folyamatban van az edge worker által. Frissíts később.';
+      } else if (jobStatus?.status === 'failed') {
+        // Job already failed - try inline fallback as last resort
+        log.warn('PDF job failed in edge worker, attempting inline fallback', {
+          jobId: downloadToken,
+        });
+        // Continue to inline fallback below
+      } else {
+        // Job is still pending or status unknown - safe to try inline fallback
+        log.info('Attempting inline PDF fallback after dispatch failure', {
+          jobId: downloadToken,
+          currentStatus: jobStatus?.status,
+        });
+      }
 
-        const limitMessage = normalizeUsageLimitError(inlineMessage);
-        if (limitMessage) {
-          return NextResponse.json({ error: limitMessage }, { status: 402 });
+      // Only attempt inline fallback if job is not already completed or being processed
+      if (!immediatePdfUrl && jobStatus?.status !== 'processing') {
+        try {
+          const inlineJob: PdfJobInput = {
+            jobId: pdfJobInput.jobId,
+            offerId: pdfJobInput.offerId,
+            userId: pdfJobInput.userId,
+            storagePath: pdfJobInput.storagePath,
+            html: pdfJobInput.html,
+            usagePeriodStart: pdfJobInput.usagePeriodStart,
+            userLimit: pdfJobInput.userLimit,
+            ...(pdfJobInput.callbackUrl !== undefined
+              ? { callbackUrl: pdfJobInput.callbackUrl }
+              : {}),
+            ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
+            ...(pdfJobInput.deviceLimit !== undefined
+              ? { deviceLimit: pdfJobInput.deviceLimit }
+              : {}),
+            ...(pdfJobInput.templateId !== undefined ? { templateId: pdfJobInput.templateId } : {}),
+            ...(pdfJobInput.requestedTemplateId !== undefined
+              ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
+              : {}),
+            ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
+          };
+
+          const serviceClient = supabaseServiceRole();
+          immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
+          responseStatus = 'completed';
+          responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
+        } catch (inlineError) {
+          const inlineMessage =
+            inlineError instanceof Error ? inlineError.message : String(inlineError);
+          log.error('Inline PDF fallback error', inlineError);
+
+          const limitMessage = normalizeUsageLimitError(inlineMessage);
+          if (limitMessage) {
+            return NextResponse.json({ error: limitMessage }, { status: 402 });
+          }
+
+          return NextResponse.json(
+            {
+              error: 'Nem sikerült elindítani a PDF generálását.',
+              offerId,
+            },
+            { status: 502 },
+          );
         }
-
-        return NextResponse.json(
-          {
-            error: 'Nem sikerült elindítani a PDF generálását.',
-            offerId,
-          },
-          { status: 502 },
-        );
       }
     }
 
