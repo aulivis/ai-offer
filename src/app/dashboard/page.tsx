@@ -107,42 +107,42 @@ function MetricCard({
 
   return (
     <Card 
-      className={`group relative overflow-hidden p-6 transition-all duration-200 ${
+      className={`group relative overflow-hidden p-4 sm:p-6 transition-all duration-200 ${
         onClick ? 'cursor-pointer hover:shadow-lg hover:border-primary/30' : 'hover:shadow-lg'
       } ${isEmptyState ? 'opacity-75' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
             {icon && (
-              <div className={`flex-shrink-0 ${iconColors[color]}`}>
+              <div className={`flex-shrink-0 ${iconColors[color]} scale-90 sm:scale-100`}>
                 {icon}
               </div>
             )}
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted truncate">{label}</p>
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted truncate">{label}</p>
           </div>
           {isEmptyState && emptyMessage ? (
-            <div className="mt-3">
-              <p className="text-lg font-semibold text-fg-muted">{value}</p>
-              <p className="mt-2 text-xs leading-relaxed text-fg-muted">{emptyMessage}</p>
+            <div className="mt-2 sm:mt-3">
+              <p className="text-base sm:text-lg font-semibold text-fg-muted">{value}</p>
+              <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs leading-relaxed text-fg-muted">{emptyMessage}</p>
             </div>
           ) : (
             <>
-              <div className="flex items-baseline gap-2 mt-3 flex-wrap">
-                <p className="text-3xl font-bold text-fg">{value}</p>
+              <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2 sm:mt-3 flex-wrap">
+                <p className="text-2xl sm:text-3xl font-bold text-fg">{value}</p>
                 {trend && trendValue && (
-                  <span className={`text-sm font-semibold flex items-center gap-1 ${trendColors[trend]}`}>
+                  <span className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 ${trendColors[trend]}`}>
                     {trend === 'up' ? (
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
                     ) : trend === 'down' ? (
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                       </svg>
                     ) : (
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
                       </svg>
                     )}
@@ -151,9 +151,9 @@ function MetricCard({
                 )}
               </div>
               {comparison && (
-                <div className="mt-2 flex items-center gap-2 text-xs">
+                <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
                   <span className="text-fg-muted">{comparison.label}:</span>
-                  <span className={`font-semibold flex items-center gap-1 ${
+                  <span className={`font-semibold flex items-center gap-0.5 sm:gap-1 ${
                     comparison.trend === 'up' ? 'text-emerald-600' :
                     comparison.trend === 'down' ? 'text-rose-600' :
                     'text-fg-muted'
@@ -164,14 +164,14 @@ function MetricCard({
                 </div>
               )}
               {progressPercentage !== null && progress && (
-                <div className="mt-4 space-y-1">
-                  <div className="flex items-center justify-between text-xs">
+                <div className="mt-3 sm:mt-4 space-y-1">
+                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
                     <span className="text-fg-muted">Használat</span>
                     <span className="font-semibold text-fg">
                       {progress.used.toLocaleString('hu-HU')} / {progress.limit?.toLocaleString('hu-HU')}
                     </span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-border/60 overflow-hidden">
+                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-border/60 overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 ${
                         progressPercentage >= 90
@@ -186,19 +186,19 @@ function MetricCard({
                   </div>
                 </div>
               )}
-              {helper && <p className="mt-3 text-xs leading-relaxed text-fg-muted">{helper}</p>}
+              {helper && <p className="mt-2 sm:mt-3 text-[10px] sm:text-xs leading-relaxed text-fg-muted">{helper}</p>}
             </>
           )}
         </div>
         {quickAction && (
-          <div className="flex-shrink-0 ml-2">
+          <div className="flex-shrink-0 ml-1 sm:ml-2">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 quickAction.onClick();
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-white/90 px-2.5 py-1.5 text-xs font-semibold text-fg shadow-sm transition-colors hover:bg-primary/10 hover:border-primary/60 hover:text-primary"
+              className="inline-flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border/60 bg-white/90 px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-fg shadow-sm transition-colors hover:bg-primary/10 hover:border-primary/60 hover:text-primary"
               title={quickAction.label}
             >
               {quickAction.icon}
@@ -1180,10 +1180,10 @@ export default function DashboardPage() {
             {/* Funnel visualization line */}
             <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent hidden lg:block" />
             
-            <div className={`grid gap-4 ${
+            <div className={`grid gap-3 sm:gap-4 ${
               metricsViewMode === 'compact' 
-                ? 'sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7' 
-                : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7'
+                ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7' 
+                : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7'
             }`}>
               {loading ? (
                 <>
