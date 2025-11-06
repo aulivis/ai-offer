@@ -1323,11 +1323,11 @@ Különös figyelmet fordít a következőkre:
 
     const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
 
-    // Verify offer exists with PDF URL in database
+    // Verify offer exists with PDF URL in database (using service role)
     if (immediatePdfUrl) {
       const { data: verifyOffer, error: verifyError } = await sb
         .from('offers')
-        .select('id, title, pdf_url')
+        .select('id, title, pdf_url, created_at')
         .eq('id', offerId)
         .eq('user_id', user.id)
         .maybeSingle();
@@ -1339,8 +1339,28 @@ Különös figyelmet fordít a következőkre:
           offerId: verifyOffer.id,
           title: verifyOffer.title,
           pdfUrl: verifyOffer.pdf_url,
+          created_at: verifyOffer.created_at,
           matchesExpected: verifyOffer.pdf_url === immediatePdfUrl,
         });
+        
+        // Also verify it's queryable by checking if it appears in a list query
+        const { data: listCheck, error: listError, count } = await sb
+          .from('offers')
+          .select('id, pdf_url', { count: 'exact' })
+          .eq('user_id', user.id)
+          .eq('id', offerId)
+          .maybeSingle();
+        
+        if (listError) {
+          log.warn('Failed to verify offer in list query', { error: listError });
+        } else if (listCheck) {
+          log.info('Offer is queryable in list query', {
+            offerId: listCheck.id,
+            pdfUrl: listCheck.pdf_url,
+          });
+        } else {
+          log.error('Offer not found in list query - possible RLS issue', { offerId });
+        }
       } else {
         log.error('Offer not found after PDF generation', { offerId });
       }

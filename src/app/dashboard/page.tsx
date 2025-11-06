@@ -542,6 +542,10 @@ export default function DashboardPage() {
         count,
         itemsCount: Array.isArray(data) ? data.length : 0,
         offersWithPdf: Array.isArray(data) ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length : 0,
+        offerIds: Array.isArray(data) ? data.map((item: { id?: string }) => item.id).slice(0, 5) : [],
+        offersWithPdfIds: Array.isArray(data) 
+          ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).map((item: { id?: string }) => item.id)
+          : [],
       });
 
       const rawItems = Array.isArray(data) ? data : [];
@@ -1046,6 +1050,8 @@ export default function DashboardPage() {
           console.log('New offer inserted via realtime', {
             offerId: inserted.id,
             pdfUrl: inserted.pdf_url,
+            title: inserted.title,
+            fullPayload: payload,
           });
           
           // Add new offer to the beginning of the list if it's not already there
