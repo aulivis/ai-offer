@@ -238,13 +238,16 @@ export async function processPdfJobInline(
       deviceUsageIncremented = true;
     }
 
-    await supabase
+    const { error: offerUpdateError } = await supabase
       .from('offers')
       .update({ pdf_url: pdfUrl })
       .eq('id', job.offerId)
       .eq('user_id', job.userId);
+    if (offerUpdateError) {
+      throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
+    }
 
-    await supabase
+    const { error: jobCompleteError } = await supabase
       .from('pdf_jobs')
       .update({
         status: 'completed',
@@ -252,6 +255,9 @@ export async function processPdfJobInline(
         pdf_url: pdfUrl,
       })
       .eq('id', job.jobId);
+    if (jobCompleteError) {
+      throw new Error(`Failed to mark job as completed: ${jobCompleteError.message}`);
+    }
 
     if (job.callbackUrl && pdfUrl) {
       if (isPdfWebhookUrlAllowed(job.callbackUrl)) {

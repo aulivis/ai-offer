@@ -116,7 +116,7 @@ export function WizardStep2Pricing({
                 key={a.id}
                 type="button"
                 onClick={() => handleActivityClick(a)}
-                className="rounded-full border border-border/70 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                className="rounded-full border border-border/70 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               >
                 + {a.name}
               </Button>

@@ -134,7 +134,7 @@ export function WizardStep1Details({
       </div>
 
       {/* Quota Info and Style Selection - Same Row */}
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto] items-start">
+      <div className="grid gap-4 sm:grid-cols-[1fr_2fr] items-start">
         {/* Quota Info - Enhanced */}
         <div
           className={`rounded-xl border-2 p-4 transition-all shadow-sm ${
@@ -195,7 +195,7 @@ export function WizardStep1Details({
                   className={`flex h-full w-full flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     active
                       ? 'border-slate-900 bg-slate-900 text-white shadow-md'
-                      : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
+                      : 'border-border/70 bg-white text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:shadow-sm'
                   }`}
                 >
                   <span className="text-xs font-semibold">{option.label}</span>
