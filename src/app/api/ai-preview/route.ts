@@ -22,6 +22,7 @@ import { createLogger } from '@/lib/logger';
 import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 import { z } from 'zod';
+import { getRequestId } from '@/lib/requestId';
 
 const BASE_SYSTEM_PROMPT = `
 Te egy tapasztalt magyar üzleti ajánlatíró asszisztens vagy, aki professzionális, 
@@ -111,7 +112,7 @@ const previewRequestSchema = z
 
 export const POST = withAuth(
   withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
-  const requestId = randomUUID();
+  const requestId = getRequestId(req);
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
   

@@ -17,7 +17,7 @@ import {
 import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import { listTemplates as listSDKTemplates } from '@/app/pdf/templates/registry';
-import { fetchWithSupabaseAuth } from '@/lib/api';
+import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
 import { normalizeBrandHex } from '@/lib/branding';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { resolveEffectivePlan } from '@/lib/subscription';
@@ -644,11 +644,21 @@ export default function SettingsPage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetchWithSupabaseAuth('/api/storage/upload-brand-logo', {
-        method: 'POST',
-        body: formData,
-        defaultErrorMessage: t('errors.settings.logoUploadFailed'),
-      });
+      let response: Response;
+      try {
+        response = await fetchWithSupabaseAuth('/api/storage/upload-brand-logo', {
+          method: 'POST',
+          body: formData,
+          defaultErrorMessage: t('errors.settings.logoUploadFailed'),
+        });
+      } catch (error) {
+        // fetchWithSupabaseAuth throws ApiError on non-200 status codes
+        // Extract the error message from the ApiError
+        if (error instanceof ApiError) {
+          throw new Error(error.message);
+        }
+        throw error;
+      }
 
       const payload: unknown = await response.json();
       let logoPath: string | null = null;
