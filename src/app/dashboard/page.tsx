@@ -8,6 +8,7 @@ import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -30,6 +31,11 @@ import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import MagnifyingGlassIcon from '@heroicons/react/24/outline/MagnifyingGlassIcon';
 import FunnelIcon from '@heroicons/react/24/outline/FunnelIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
+import XCircleIcon from '@heroicons/react/24/outline/XCircleIcon';
+import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
+import ArrowsPointingOutIcon from '@heroicons/react/24/outline/ArrowsPointingOutIcon';
+import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIcon';
+import PlusIcon from '@heroicons/react/24/outline/PlusIcon';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -58,6 +64,11 @@ function MetricCard({
   trend,
   trendValue,
   color = 'primary',
+  onClick,
+  quickAction,
+  comparison,
+  isEmpty = false,
+  emptyMessage,
 }: {
   label: string;
   value: string;
@@ -67,18 +78,23 @@ function MetricCard({
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
   color?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  onClick?: () => void;
+  quickAction?: { label: string; onClick: () => void; icon?: ReactNode };
+  comparison?: { label: string; value: string; trend: 'up' | 'down' | 'neutral' };
+  isEmpty?: boolean;
+  emptyMessage?: string;
 }) {
   const progressPercentage =
     progress && progress.limit !== null
       ? Math.min((progress.used / progress.limit) * 100, 100)
       : null;
 
-  const colorClasses = {
-    primary: 'bg-primary/10 text-primary border-primary/20',
-    success: 'bg-emerald-50 text-emerald-600 border-emerald-200',
-    warning: 'bg-amber-50 text-amber-600 border-amber-200',
-    danger: 'bg-rose-50 text-rose-600 border-rose-200',
-    info: 'bg-blue-50 text-blue-600 border-blue-200',
+  const iconColors = {
+    primary: 'text-primary',
+    success: 'text-emerald-600',
+    warning: 'text-amber-600',
+    danger: 'text-rose-600',
+    info: 'text-blue-600',
   };
 
   const trendColors = {
@@ -87,55 +103,115 @@ function MetricCard({
     neutral: 'text-fg-muted',
   };
 
+  const isEmptyState = isEmpty && (value === '—' || value === '0' || !value);
+
   return (
-    <Card className="group relative overflow-hidden p-6 transition-all duration-200 hover:shadow-lg">
+    <Card 
+      className={`group relative overflow-hidden p-6 transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:shadow-lg hover:border-primary/30' : 'hover:shadow-lg'
+      } ${isEmptyState ? 'opacity-75' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-3">
             {icon && (
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${colorClasses[color]}`}>
+              <div className={`flex-shrink-0 ${iconColors[color]}`}>
                 {icon}
               </div>
             )}
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted truncate">{label}</p>
           </div>
-          <div className="flex items-baseline gap-2 mt-3">
-            <p className="text-3xl font-bold text-fg">{value}</p>
-            {trend && trendValue && (
-              <span className={`text-sm font-semibold flex items-center gap-1 ${trendColors[trend]}`}>
-                {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
-                {trendValue}
-              </span>
-            )}
-          </div>
-          {progressPercentage !== null && (
-            <div className="mt-4 space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-fg-muted">Használat</span>
-                <span className="font-semibold text-fg">
-                  {progress.used.toLocaleString('hu-HU')} / {progress.limit?.toLocaleString('hu-HU')}
-                </span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-border/60 overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-500 ${
-                    progressPercentage >= 90
-                      ? 'bg-danger'
-                      : progressPercentage >= 75
-                        ? 'bg-warning'
-                        : 'bg-primary'
-                  }`}
-                  style={{ width: `${progressPercentage}%` }}
-                  aria-label={`${progressPercentage.toFixed(0)}% used`}
-                />
-              </div>
+          {isEmptyState && emptyMessage ? (
+            <div className="mt-3">
+              <p className="text-lg font-semibold text-fg-muted">{value}</p>
+              <p className="mt-2 text-xs leading-relaxed text-fg-muted">{emptyMessage}</p>
             </div>
+          ) : (
+            <>
+              <div className="flex items-baseline gap-2 mt-3 flex-wrap">
+                <p className="text-3xl font-bold text-fg">{value}</p>
+                {trend && trendValue && (
+                  <span className={`text-sm font-semibold flex items-center gap-1 ${trendColors[trend]}`}>
+                    {trend === 'up' ? (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    ) : trend === 'down' ? (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                      </svg>
+                    ) : (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
+                      </svg>
+                    ))}
+                    {trendValue}
+                  </span>
+                )}
+              </div>
+              {comparison && (
+                <div className="mt-2 flex items-center gap-2 text-xs">
+                  <span className="text-fg-muted">{comparison.label}:</span>
+                  <span className={`font-semibold flex items-center gap-1 ${
+                    comparison.trend === 'up' ? 'text-emerald-600' :
+                    comparison.trend === 'down' ? 'text-rose-600' :
+                    'text-fg-muted'
+                  }`}>
+                    {comparison.trend === 'up' ? '↑' : comparison.trend === 'down' ? '↓' : '→'}
+                    {comparison.value}
+                  </span>
+                </div>
+              )}
+              {progressPercentage !== null && (
+                <div className="mt-4 space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-fg-muted">Használat</span>
+                    <span className="font-semibold text-fg">
+                      {progress.used.toLocaleString('hu-HU')} / {progress.limit?.toLocaleString('hu-HU')}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-border/60 overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        progressPercentage >= 90
+                          ? 'bg-danger'
+                          : progressPercentage >= 75
+                            ? 'bg-warning'
+                            : 'bg-primary'
+                      }`}
+                      style={{ width: `${progressPercentage}%` }}
+                      aria-label={`${progressPercentage.toFixed(0)}% used`}
+                    />
+                  </div>
+                </div>
+              )}
+              {helper && <p className="mt-3 text-xs leading-relaxed text-fg-muted">{helper}</p>}
+            </>
           )}
-          {helper && <p className="mt-3 text-xs leading-relaxed text-fg-muted">{helper}</p>}
         </div>
+        {quickAction && (
+          <div className="flex-shrink-0 ml-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                quickAction.onClick();
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-white/90 px-2.5 py-1.5 text-xs font-semibold text-fg shadow-sm transition-colors hover:bg-primary/10 hover:border-primary/60 hover:text-primary"
+              title={quickAction.label}
+            >
+              {quickAction.icon}
+              <span className="hidden sm:inline">{quickAction.label}</span>
+            </button>
+          </div>
+        )}
       </div>
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+      {onClick && (
+        <div className="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-primary/5 pointer-events-none" />
+      )}
     </Card>
   );
 }
@@ -374,6 +450,7 @@ function DeleteConfirmationDialog({
 export default function DashboardPage() {
   const { showToast } = useToast();
   const sb = useSupabase();
+  const router = useRouter();
   const { status: authStatus, user } = useRequireAuth();
 
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -402,12 +479,25 @@ export default function DashboardPage() {
     }
     return 'card';
   });
+  const [metricsViewMode, setMetricsViewMode] = useState<'detailed' | 'compact'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard-metrics-view-mode');
+      return (saved === 'compact' || saved === 'detailed' ? saved : 'detailed') as 'detailed' | 'compact';
+    }
+    return 'detailed';
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('dashboard-view-mode', viewMode);
     }
   }, [viewMode]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard-metrics-view-mode', metricsViewMode);
+    }
+  }, [metricsViewMode]);
 
   const isAdmin = useMemo(() => {
     if (!user) {
@@ -804,24 +894,37 @@ export default function DashboardPage() {
     return list;
   }, [offers, q, statusFilter, industryFilter, sortBy, sortDir]);
 
-  /** Metrikák (változatlan logika) */
+  /** Metrikák (enhanced with previous period comparison) */
   const stats = useMemo(() => {
     const total = offers.length;
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+    const lastMonthEnd = monthStart - 1;
+
+    // Current period stats
     const createdThisMonth = offers.filter((offer) => {
       if (!offer.created_at) return false;
       const created = new Date(offer.created_at).getTime();
       return Number.isFinite(created) && created >= monthStart;
     }).length;
 
+    // Previous period stats
+    const createdLastMonth = offers.filter((offer) => {
+      if (!offer.created_at) return false;
+      const created = new Date(offer.created_at).getTime();
+      return Number.isFinite(created) && created >= lastMonthStart && created < monthStart;
+    }).length;
+
     const sentStatuses: Offer['status'][] = ['sent', 'accepted', 'lost'];
     const sent = offers.filter((offer) => sentStatuses.includes(offer.status)).length;
     const accepted = offers.filter((offer) => offer.status === 'accepted').length;
+    const lost = offers.filter((offer) => offer.status === 'lost').length;
     const inReview = offers.filter((offer) => offer.status === 'sent').length;
     const drafts = offers.filter((offer) => offer.status === 'draft').length;
 
     const acceptanceRate = sent > 0 ? (accepted / sent) * 100 : null;
+    const winRate = (accepted + lost) > 0 ? (accepted / (accepted + lost)) * 100 : null;
 
     const decisionDurations: number[] = [];
     offers.forEach((offer) => {
@@ -844,11 +947,14 @@ export default function DashboardPage() {
       total,
       sent,
       accepted,
+      lost,
       inReview,
       drafts,
       acceptanceRate,
+      winRate,
       avgDecisionDays,
       createdThisMonth,
+      createdLastMonth,
     };
   }, [offers]);
 
@@ -943,57 +1049,25 @@ export default function DashboardPage() {
     if (isQuotaLoading || !quotaSnapshot) {
       return undefined;
     }
-    const confirmedLabel = quotaSnapshot.used.toLocaleString('hu-HU');
-    const pendingLabel = quotaSnapshot.pending.toLocaleString('hu-HU');
-    let helperText: string;
+    // For unlimited plans, show only the plan info
     if (quotaSnapshot.limit === null) {
-      helperText = t('dashboard.metrics.quota.helperUnlimited', {
-        confirmed: confirmedLabel,
-        pending: pendingLabel,
-      });
-    } else if (quotaResetLabel) {
-      helperText = t('dashboard.metrics.quota.helperLimitedWithReset', {
-        confirmed: confirmedLabel,
-        pending: pendingLabel,
-        resetDate: quotaResetLabel,
-      });
-    } else {
-      helperText = t('dashboard.metrics.quota.helperLimited', {
-        confirmed: confirmedLabel,
-        pending: pendingLabel,
-      });
+      return 'Pro előfizetés — nincs limit.';
     }
-
-    const helperContent =
-      quotaSnapshot.devicePending !== null ? (
-        <span>
-          {helperText}{' '}
-          <sup
-            aria-label="includes device-level pending"
-            className="cursor-help text-[0.65rem] text-fg-muted"
-            title="includes device-level pending"
-          >
-            *
-          </sup>
-        </span>
-      ) : (
-        helperText
-      );
-
-    const pendingNote = t('dashboard.metrics.quota.pendingNote');
-
-    return (
-      <span className="flex flex-col gap-1">
-        {typeof helperContent === 'string' ? <span>{helperContent}</span> : helperContent}
-        <span className="text-[0.65rem] leading-snug text-fg-muted">{pendingNote}</span>
-      </span>
-    );
+    // For limited plans, show reset date if available
+    if (quotaResetLabel) {
+      return `Következő frissítés: ${quotaResetLabel}.`;
+    }
+    return undefined;
   }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
 
   /** Derived UI szövegek */
   const acceptanceLabel =
     stats.acceptanceRate !== null
       ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
+      : '—';
+  const winRateLabel =
+    stats.winRate !== null
+      ? `${stats.winRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
       : '—';
   const avgDecisionLabel =
     stats.avgDecisionDays !== null
@@ -1012,6 +1086,29 @@ export default function DashboardPage() {
           monthly: monthlyHelper,
         })
       : monthlyHelper;
+
+  // Comparison calculations
+  const createdComparison = stats.createdLastMonth > 0
+    ? {
+        label: 'Előző hónap',
+        value: stats.createdLastMonth.toLocaleString('hu-HU'),
+        trend: stats.createdThisMonth > stats.createdLastMonth ? 'up' as const :
+               stats.createdThisMonth < stats.createdLastMonth ? 'down' as const : 'neutral' as const,
+      }
+    : undefined;
+
+  // Click handlers for filtering
+  const handleMetricClick = useCallback((filterStatus: StatusFilterOption) => {
+    setStatusFilter(filterStatus);
+    // Scroll to offers section
+    setTimeout(() => {
+      const offersSection = document.querySelector('[data-offers-section]');
+      if (offersSection) {
+        offersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }, []);
+
   const paginationSummary =
     totalCount !== null
       ? t('dashboard.pagination.summary', {
@@ -1050,72 +1147,178 @@ export default function DashboardPage() {
           </div>
         }
       >
-        {/* Enhanced KPI Dashboard */}
-        <section className="grid gap-4 pb-8 border-b border-border/40 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {loading ? (
-            <>
-              <MetricSkeleton />
-              <MetricSkeleton />
-              <MetricSkeleton />
-              <MetricSkeleton />
-              <MetricSkeleton />
-            </>
-          ) : (
-            <>
-              <MetricCard
-                label={t('dashboard.metrics.quota.label')}
-                value={quotaValue}
-                helper={quotaHelper}
-                progress={
-                  quotaSnapshot && quotaSnapshot.limit !== null
-                    ? {
-                        used: quotaSnapshot.used + quotaSnapshot.pending,
-                        limit: quotaSnapshot.limit,
-                      }
-                    : undefined
-                }
-                icon={<ChartBarIcon className="h-5 w-5" />}
-                color="info"
-              />
-              <MetricCard
-                label={t('dashboard.metrics.created.label')}
-                value={totalOffersCount.toLocaleString('hu-HU')}
-                helper={totalHelper}
-                icon={<DocumentTextIcon className="h-5 w-5" />}
-                color="primary"
-                trend={stats.createdThisMonth > 0 ? 'up' : 'neutral'}
-                trendValue={stats.createdThisMonth > 0 ? `+${stats.createdThisMonth}` : undefined}
-              />
-              <MetricCard
-                label={t('dashboard.metrics.sent.label')}
-                value={stats.sent.toLocaleString('hu-HU')}
-                helper={t('dashboard.metrics.sent.helper', {
-                  pending: stats.inReview.toLocaleString('hu-HU'),
-                })}
-                icon={<PaperAirplaneIcon className="h-5 w-5" />}
-                color="info"
-              />
-              <MetricCard
-                label={t('dashboard.metrics.accepted.label')}
-                value={stats.accepted.toLocaleString('hu-HU')}
-                helper={t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel })}
-                icon={<DocumentCheckIcon className="h-5 w-5" />}
-                color="success"
-                trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
-                trendValue={acceptanceLabel !== '—' ? acceptanceLabel : undefined}
-              />
-              <MetricCard
-                label={t('dashboard.metrics.avgDecision.label')}
-                value={avgDecisionLabel}
-                helper={t('dashboard.metrics.avgDecision.helper', {
-                  drafts: stats.drafts.toLocaleString('hu-HU'),
-                })}
-                icon={<ClockIcon className="h-5 w-5" />}
-                color="warning"
-              />
-            </>
-          )}
-        </section>
+        {/* Enhanced KPI Dashboard with Visual Funnel */}
+        <div className="space-y-6 pb-8 border-b border-border/40">
+          {/* Header with View Toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-fg">Teljesítmény mutatók</h2>
+              <p className="text-sm text-fg-muted mt-1">Kattints egy metrikára a szűréshez</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
+              title={metricsViewMode === 'compact' ? 'Részletes nézet' : 'Kompakt nézet'}
+            >
+              {metricsViewMode === 'compact' ? (
+                <>
+                  <ArrowsPointingOutIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Részletes</span>
+                </>
+              ) : (
+                <>
+                  <ArrowsPointingInIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Kompakt</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Conversion Funnel Group */}
+          <div className="relative">
+            {/* Funnel visualization line */}
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent hidden lg:block" />
+            
+            <div className={`grid gap-4 ${
+              metricsViewMode === 'compact' 
+                ? 'sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7' 
+                : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7'
+            }`}>
+              {loading ? (
+                <>
+                  {Array.from({ length: metricsViewMode === 'compact' ? 7 : 7 }).map((_, i) => (
+                    <MetricSkeleton key={i} />
+                  ))}
+                </>
+              ) : (
+                <>
+                  {/* Quota Card */}
+                  <MetricCard
+                    label={t('dashboard.metrics.quota.label')}
+                    value={quotaValue}
+                    helper={quotaHelper}
+                    progress={
+                      quotaSnapshot && quotaSnapshot.limit !== null
+                        ? {
+                            used: quotaSnapshot.used + quotaSnapshot.pending,
+                            limit: quotaSnapshot.limit,
+                          }
+                        : undefined
+                    }
+                    icon={<ChartBarIcon className="h-7 w-7" />}
+                    color="info"
+                    quickAction={totalOffersCount === 0 ? {
+                      label: 'Új ajánlat',
+                      icon: <PlusIcon className="h-4 w-4" />,
+                      onClick: () => router.push('/new'),
+                    } : undefined}
+                    isEmpty={totalOffersCount === 0}
+                    emptyMessage="Hozz létre első ajánlatodat a kezdéshez"
+                  />
+
+                  {/* Created Offers - Funnel Start */}
+                  <MetricCard
+                    label={t('dashboard.metrics.created.label')}
+                    value={totalOffersCount.toLocaleString('hu-HU')}
+                    helper={metricsViewMode === 'detailed' ? totalHelper : undefined}
+                    icon={<DocumentTextIcon className="h-7 w-7" />}
+                    color="primary"
+                    trend={stats.createdThisMonth > 0 ? 'up' : stats.createdThisMonth === 0 && stats.createdLastMonth > 0 ? 'down' : 'neutral'}
+                    trendValue={stats.createdThisMonth > 0 ? `+${stats.createdThisMonth}` : undefined}
+                    comparison={createdComparison}
+                    onClick={() => handleMetricClick('all')}
+                    quickAction={{
+                      label: 'Új',
+                      icon: <PlusIcon className="h-4 w-4" />,
+                      onClick: () => router.push('/new'),
+                    }}
+                    isEmpty={totalOffersCount === 0}
+                    emptyMessage="Még nincs ajánlatod"
+                  />
+
+                  {/* Active Offers (In Review) */}
+                  <MetricCard
+                    label="Döntésre vár"
+                    value={stats.inReview.toLocaleString('hu-HU')}
+                    helper={metricsViewMode === 'detailed' ? `${stats.inReview} ajánlat döntésre vár` : undefined}
+                    icon={<EyeIcon className="h-7 w-7" />}
+                    color="info"
+                    onClick={() => handleMetricClick('sent')}
+                    isEmpty={stats.inReview === 0}
+                    emptyMessage="Nincs döntésre váró ajánlat"
+                  />
+
+                  {/* Sent Offers */}
+                  <MetricCard
+                    label={t('dashboard.metrics.sent.label')}
+                    value={stats.sent.toLocaleString('hu-HU')}
+                    helper={metricsViewMode === 'detailed' ? t('dashboard.metrics.sent.helper', {
+                      pending: stats.inReview.toLocaleString('hu-HU'),
+                    }) : undefined}
+                    icon={<PaperAirplaneIcon className="h-7 w-7" />}
+                    color="info"
+                    onClick={() => handleMetricClick('sent')}
+                    isEmpty={stats.sent === 0}
+                    emptyMessage="Még nem küldtél el ajánlatot"
+                  />
+
+                  {/* Accepted Offers */}
+                  <MetricCard
+                    label={t('dashboard.metrics.accepted.label')}
+                    value={stats.accepted.toLocaleString('hu-HU')}
+                    helper={metricsViewMode === 'detailed' ? t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel }) : undefined}
+                    icon={<DocumentCheckIcon className="h-7 w-7" />}
+                    color="success"
+                    trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
+                    trendValue={acceptanceLabel !== '—' ? acceptanceLabel : undefined}
+                    onClick={() => handleMetricClick('accepted')}
+                    isEmpty={stats.accepted === 0}
+                    emptyMessage="Még nincs elfogadott ajánlatod"
+                  />
+
+                  {/* Lost Offers - NEW */}
+                  <MetricCard
+                    label="Elutasított ajánlatok"
+                    value={stats.lost.toLocaleString('hu-HU')}
+                    helper={metricsViewMode === 'detailed' ? `${stats.lost} ajánlat elutasítva` : undefined}
+                    icon={<XCircleIcon className="h-7 w-7" />}
+                    color="danger"
+                    onClick={() => handleMetricClick('lost')}
+                    isEmpty={stats.lost === 0}
+                    emptyMessage="Nincs elutasított ajánlat"
+                  />
+
+                  {/* Win Rate - NEW */}
+                  <MetricCard
+                    label="Sikeres arány"
+                    value={winRateLabel}
+                    helper={metricsViewMode === 'detailed' ? `Elfogadott / (Elfogadott + Elutasított)` : undefined}
+                    icon={<ChartBarIcon className="h-7 w-7" />}
+                    color={stats.winRate !== null && stats.winRate > 50 ? 'success' : stats.winRate !== null && stats.winRate < 30 ? 'danger' : 'warning'}
+                    trend={stats.winRate !== null && stats.winRate > 50 ? 'up' : stats.winRate !== null && stats.winRate < 30 ? 'down' : 'neutral'}
+                    trendValue={winRateLabel !== '—' ? winRateLabel : undefined}
+                    isEmpty={stats.winRate === null}
+                    emptyMessage="Nincs elég adat a számításhoz"
+                  />
+
+                  {/* Average Decision Time */}
+                  <MetricCard
+                    label={t('dashboard.metrics.avgDecision.label')}
+                    value={avgDecisionLabel}
+                    helper={metricsViewMode === 'detailed' ? t('dashboard.metrics.avgDecision.helper', {
+                      drafts: stats.drafts.toLocaleString('hu-HU'),
+                    }) : undefined}
+                    icon={<ClockIcon className="h-7 w-7" />}
+                    color="warning"
+                    isEmpty={stats.avgDecisionDays === null}
+                    emptyMessage="Nincs elég adat a számításhoz"
+                  />
+                </>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Enhanced Search & Filters */}
         <Card as="section" className="mb-8">
@@ -1365,7 +1568,7 @@ export default function DashboardPage() {
         {!loading && filtered.length > 0 && (
           <>
             {viewMode === 'card' ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start" data-offers-section>
                 {filtered.map((o) => (
                   <OfferCard
                     key={o.id}
