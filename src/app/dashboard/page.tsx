@@ -522,6 +522,15 @@ export default function DashboardPage() {
       const from = pageNumber * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       
+      // Ensure session is initialized from cookies before querying
+      // This is critical for custom cookie-based auth (propono_at, propono_rt)
+      try {
+        const { ensureSession } = await import('@/lib/supabaseClient');
+        await ensureSession();
+      } catch (error) {
+        console.warn('Failed to ensure Supabase session', error);
+      }
+      
       // Check auth session before querying
       const { data: { session }, error: sessionError } = await sb.auth.getSession();
       console.log('Dashboard auth session check', {
