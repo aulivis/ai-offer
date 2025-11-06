@@ -522,6 +522,16 @@ export default function DashboardPage() {
       const from = pageNumber * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       
+      // Check auth session before querying
+      const { data: { session }, error: sessionError } = await sb.auth.getSession();
+      console.log('Dashboard auth session check', {
+        userId: user,
+        hasSession: !!session,
+        sessionUserId: session?.user?.id,
+        sessionError,
+        matchesUserId: session?.user?.id === user,
+      });
+      
       // First, try a simple query without the join to see if that's the issue
       const { data: simpleData, error: simpleError, count: simpleCount } = await sb
         .from('offers')
@@ -536,6 +546,9 @@ export default function DashboardPage() {
         count: simpleCount,
         itemsCount: Array.isArray(simpleData) ? simpleData.length : 0,
         error: simpleError,
+        errorMessage: simpleError?.message,
+        errorCode: simpleError?.code,
+        errorDetails: simpleError?.details,
         offerIds: Array.isArray(simpleData) ? simpleData.map((item: { id?: string }) => item.id).slice(0, 5) : [],
       });
       
