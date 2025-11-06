@@ -44,10 +44,10 @@ export const OFFER_DOCUMENT_STYLES = `
     max-width: 760px;
   }
   .offer-doc--modern {
-    border: 1px solid var(--brand-border, #475569);
-    border-radius: var(--radius-lg, 32px);
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
-    padding: var(--space-xl, 44px);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
   }
   .offer-doc__slim-bar {
     display: none;
@@ -366,7 +366,7 @@ export const OFFER_DOCUMENT_STYLES = `
   .offer-doc__content .pricing-summary,
   .section,
   .pricing-summary {
-    break-after: avoid;
+    break-after: auto;
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -638,11 +638,11 @@ export const OFFER_DOCUMENT_STYLES = `
     padding: 40px 48px 48px;
   }
   .offer-doc__content--card {
-    background: #ffffff;
-    border: 1px solid var(--brand-secondary-border);
-    border-radius: var(--radius-lg, 28px);
-    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-    padding: 32px 36px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
   }
   .offer-doc__table--card {
     background: #ffffff;
@@ -799,15 +799,22 @@ export function offerBodyMarkup({
 
   const slimHeaderMarkup = `
     <div class="offer-doc__slim-bar slim-header not-first-page" aria-hidden="true">
-      <span class="slim-header__company">${safeCompany || 'Vállalat neve'}</span>
-      <span class="slim-header__title">${safeTitle}</span>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        ${logoUrl ? `<img src="${sanitizeInput(logoUrl)}" alt="Logo" style="height: 16px; max-width: 60px; object-fit: contain;" />` : `<span style="font-weight: 600; font-size: 0.75rem;">${monogram}</span>`}
+        <span class="slim-header__company">${safeCompany || 'Vállalat neve'}</span>
+        <span class="slim-header__title">${safeTitle}</span>
+      </div>
       <span class="slim-header__meta">${dateLabel}: ${resolvedIssueDate}</span>
     </div>
   `;
 
   const slimFooterMarkup = `
     <div class="offer-doc__slim-bar slim-footer not-first-page" aria-hidden="true">
-      <span class="slim-footer__meta">${dateLabel}: ${resolvedIssueDate}</span>
+      <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.7rem;">
+        <span style="font-weight: 600;">${safeCompany || 'Vállalat neve'}</span>
+        ${safeCompanyAddress ? `<span>${safeCompanyAddress}</span>` : ''}
+        ${safeCompanyTaxId ? `<span>${taxLabel}: ${safeCompanyTaxId}</span>` : ''}
+      </div>
       <span class="slim-footer__page-number">${pageLabel}</span>
     </div>
   `;
@@ -854,7 +861,7 @@ export function offerBodyMarkup({
           </div>
         </header>
         <div class="offer-doc__premium-body">
-          <section class="offer-doc__content offer-doc__content--card section-stack">
+          <section class="offer-doc__content section-stack">
             ${aiBodyHtml}
           </section>
           <section class="${premiumTableClasses.join(' ')}">

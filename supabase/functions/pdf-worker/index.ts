@@ -282,10 +282,10 @@ serve(async (request) => {
               await page.setTitle(documentTitle);
             }
             
-            // Generate PDF with professional settings (A4 with 20mm margins)
+            // Generate PDF with professional settings (A4 with 15mm side margins, 20mm top/bottom for headers/footers)
             return await page.pdf({
               format: 'A4',
-              margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
+              margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' },
               printBackground: true,
               preferCSSPageSize: true,
               displayHeaderFooter: false,

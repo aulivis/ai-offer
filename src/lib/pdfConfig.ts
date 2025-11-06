@@ -31,14 +31,14 @@ export interface PdfGenerationOptions {
 }
 
 /**
- * Standard A4 page margins (20mm all around) for professional documents
- * Following ISO 216 standard recommendations
+ * Standard A4 page margins (15mm all around with 20mm header/footer space) for professional documents
+ * Following ISO 216 standard recommendations with space for repeating headers/footers
  */
 export const STANDARD_A4_MARGINS = {
   top: '20mm',
-  right: '20mm',
+  right: '15mm',
   bottom: '20mm',
-  left: '20mm',
+  left: '15mm',
 } as const;
 
 /**

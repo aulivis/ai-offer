@@ -179,7 +179,7 @@ export function renderBody(ctx: RenderCtx): string {
 
   const html = `
     <main class="offer-template offer-template--modern">
-      <article class="offer-doc offer-doc--modern">
+      <article class="offer-doc">
 ${content}
       </article>
     </main>

@@ -1,28 +1,27 @@
 export const PRINT_BASE_CSS = `
   :root {
-    --page-margin-top: 24mm;
-    --page-margin-right: 16mm;
-    --page-margin-bottom: 24mm;
-    --page-margin-left: 16mm;
-    --page-first-margin-top: 28mm;
-    --page-header-clearance: 34mm;
-    --page-footer-clearance: 28mm;
-    --page-header-gap: 12mm;
-    --page-header-padding: 6mm;
-    --page-footer-margin: 18mm;
-    --page-footer-padding: 6mm;
-    --page-safe-inset: 4mm;
-    --page-header-offset: 10mm;
-    --page-footer-offset: 12mm;
+    --page-margin-top: 15mm;
+    --page-margin-right: 15mm;
+    --page-margin-bottom: 15mm;
+    --page-margin-left: 15mm;
+    --page-header-height: 20mm;
+    --page-footer-height: 20mm;
+    --page-header-gap: 8mm;
+    --page-header-padding: 4mm;
+    --page-footer-margin: 12mm;
+    --page-footer-padding: 4mm;
+    --page-safe-inset: 3mm;
+    --page-header-offset: 0mm;
+    --page-footer-offset: 0mm;
   }
 
   @page {
     size: A4;
-    margin: 24mm 16mm;
+    margin: var(--page-header-height) var(--page-margin-right) var(--page-footer-height) var(--page-margin-left);
   }
 
   @page :first {
-    margin-top: 28mm;
+    margin-top: var(--page-header-height);
   }
 
   html,
@@ -45,9 +44,15 @@ export const PRINT_BASE_CSS = `
     background: var(--brand-bg, #ffffff);
     border: none;
     box-shadow: none;
-    padding-top: var(--page-header-clearance);
-    padding-bottom: var(--page-footer-clearance);
+    padding: 0;
     position: relative;
+  }
+  
+  .offer-doc--modern {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
   }
 
   .offer-doc__header {
@@ -55,6 +60,10 @@ export const PRINT_BASE_CSS = `
     margin-bottom: var(--page-header-gap);
     padding-bottom: var(--page-header-padding);
     position: static;
+  }
+  
+  .offer-doc__header.first-page-only {
+    margin-bottom: var(--page-header-gap);
   }
 
   .offer-doc__header-brand {
@@ -100,6 +109,13 @@ export const PRINT_BASE_CSS = `
     margin-bottom: 18px;
     break-inside: avoid;
     page-break-inside: avoid;
+    break-after: auto;
+    page-break-after: auto;
+  }
+  
+  .section-card--header {
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .section-card__body {
@@ -134,6 +150,8 @@ export const PRINT_BASE_CSS = `
   .section-stack {
     display: grid;
     gap: 24px;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   .key-metrics {
@@ -197,13 +215,14 @@ export const PRINT_BASE_CSS = `
   .offer-doc__slim-bar {
     align-items: center;
     color: var(--muted, #1f2937);
-    column-gap: 10mm;
+    column-gap: 8mm;
     display: none;
-    font-size: 9pt;
+    font-size: 8pt;
     font-weight: 500;
     justify-content: space-between;
     line-height: 1.3;
   }
+
 
   .slim-header__title {
     font-weight: 600;
@@ -211,7 +230,7 @@ export const PRINT_BASE_CSS = `
 
   .slim-footer__page-number {
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
@@ -225,47 +244,45 @@ export const PRINT_BASE_CSS = `
 
   @media print {
     .offer-doc {
-      padding-top: var(--page-header-clearance);
-      padding-bottom: var(--page-footer-clearance);
+      padding: 0;
     }
 
-    .not-first-page {
-      display: flex;
+    .offer-doc__slim-bar {
+      display: flex !important;
     }
 
     .slim-header,
     .slim-footer {
-      background: rgba(255, 255, 255, 0.96);
-      background: color-mix(in srgb, var(--brand-bg, #ffffff) 96%, transparent);
-      border: none;
+      background: var(--brand-bg, #ffffff);
       color: var(--muted, #1f2937);
-      display: flex;
+      display: flex !important;
       justify-content: space-between;
-      left: var(--page-margin-left);
-      pointer-events: none;
-      right: var(--page-margin-right);
       padding: var(--page-safe-inset) 0;
       position: fixed;
-      z-index: 40;
+      left: var(--page-margin-left);
+      right: var(--page-margin-right);
+      z-index: 1000;
+      pointer-events: none;
     }
 
     .slim-header {
-      top: var(--page-header-offset);
+      top: 0;
       border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
+      padding-bottom: var(--page-header-padding);
     }
 
     .slim-footer {
-      bottom: var(--page-footer-offset);
+      bottom: 0;
       border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
+      padding-top: var(--page-footer-padding);
     }
 
     .slim-footer__page-number::after {
       content: ' ' counter(page) ' / ' counter(pages);
     }
-
-    body.printing .slim-footer,
-    body.printing .slim-header {
-      position: fixed;
+    
+    .first-page-only {
+      display: block;
     }
   }
 
@@ -316,10 +333,26 @@ export const PRINT_BASE_CSS = `
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  .offer-doc__table--force-break,
+  .offer-doc__table--force-break {
+    break-before: page;
+    page-break-before: always;
+  }
+  
   .page-break-before {
     break-before: page;
     page-break-before: always;
+  }
+  
+  .page-break-after {
+    break-after: page;
+    page-break-after: always;
+  }
+  
+  .no-page-break {
+    break-before: avoid;
+    break-after: avoid;
+    page-break-before: avoid;
+    page-break-after: avoid;
   }
   .page-avoid-break {
     break-before: avoid;
