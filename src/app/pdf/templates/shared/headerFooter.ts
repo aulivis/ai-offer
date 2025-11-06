@@ -86,6 +86,7 @@ export function buildHeaderFooterCtx(ctx: RenderCtx) {
     company: sanitizeInput(ctx.i18n.t('pdf.templates.common.companyDetailsLabel')),
     address: sanitizeInput(ctx.i18n.t('pdf.templates.common.addressLabel')),
     taxId: sanitizeInput(ctx.i18n.t('pdf.templates.common.taxIdLabel')),
+    page: sanitizeInput(ctx.i18n.t('pdf.templates.common.pageLabel', { default: 'Oldal' })),
   } as const;
 
   const monogramSource =

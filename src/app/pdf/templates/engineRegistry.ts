@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { legacyFreeBaseTemplate } from './free.base/legacy';
 import { premiumElegantTemplate } from './premium.elegant';
 import { premiumModernTemplate } from './premium.modern';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
@@ -333,7 +332,8 @@ export function updateTemplateMetadata(
 }
 
 // Register built-in templates
-const builtinTemplates = [legacyFreeBaseTemplate, premiumElegantTemplate, premiumModernTemplate];
+// Note: legacyFreeBaseTemplate is removed as it doesn't respect the new header/footer system
+const builtinTemplates = [premiumElegantTemplate, premiumModernTemplate];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);

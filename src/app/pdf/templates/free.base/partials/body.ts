@@ -5,6 +5,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
 import { renderMarketingFooter } from '../../shared/marketingFooter';
+import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
 
 export function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -19,7 +20,7 @@ export function partialHeader(ctx: RenderCtx): string {
   const metaLabelClass = 'offer-doc__meta-label key-metrics__label';
 
   return `
-        <header class="offer-doc__header section-card section-card--header">
+        <header class="offer-doc__header section-card section-card--header first-page-only" style="margin-top: 0; padding-top: 0;">
           <div class="section-card__body">
             <div class="offer-doc__header-brand">
               ${resolvedLogoMarkup}
@@ -171,13 +172,16 @@ export function partialFooter(ctx: RenderCtx): string {
 }
 
 export function renderBody(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const slimHeader = renderSlimHeader(safeCtx);
+  const slimFooter = renderSlimFooter(safeCtx);
   const header = partialHeader(ctx);
   const sections = partialSections(ctx);
   const priceTable = partialPriceTable(ctx);
   const gallery = partialGallery(ctx);
   const footer = partialFooter(ctx);
 
-  const content = [header, sections, priceTable, gallery, footer].join('');
+  const content = [slimHeader, slimFooter, header, sections, priceTable, gallery, footer].join('');
 
   const html = `
     <main class="offer-template offer-template--modern">

@@ -4,6 +4,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
+import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
 
 function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -15,7 +16,7 @@ function partialHeader(ctx: RenderCtx): string {
     : `<div class="offer-doc__logo-wrap--modern"><span class="offer-doc__monogram--modern">${monogram}</span></div>`;
 
   return `
-    <header class="offer-doc__header--modern section-card--modern">
+    <header class="offer-doc__header--modern section-card--modern first-page-only" style="margin-top: 0; padding-top: 0;">
       <div class="offer-doc__header-content--modern">
         ${logoSlot}
         <div class="offer-doc__header-text--modern">
@@ -169,13 +170,16 @@ function partialFooter(ctx: RenderCtx): string {
 }
 
 export function renderBody(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const slimHeader = renderSlimHeader(safeCtx);
+  const slimFooter = renderSlimFooter(safeCtx);
   const header = partialHeader(ctx);
   const sections = partialSections(ctx);
   const priceTable = partialPriceTable(ctx);
   const gallery = partialGallery(ctx);
   const footer = partialFooter(ctx);
 
-  const content = [header, sections, priceTable, gallery, footer].filter(Boolean).join('\n');
+  const content = [slimHeader, slimFooter, header, sections, priceTable, gallery, footer].filter(Boolean).join('\n');
 
   const html = `
     <main class="offer-template offer-template--modern">

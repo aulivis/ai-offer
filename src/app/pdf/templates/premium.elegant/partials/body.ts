@@ -4,6 +4,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
+import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
 
 export function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -19,7 +20,7 @@ export function partialHeader(ctx: RenderCtx): string {
     'offer-doc__meta-label offer-doc__meta-label--premium key-metrics__label';
 
   return `
-        <header class="offer-doc__header offer-doc__header--premium section-card section-card--header">
+        <header class="offer-doc__header offer-doc__header--premium section-card section-card--header first-page-only" style="margin-top: 0; padding-top: 0;">
           <div class="section-card__body">
             <div class="offer-doc__premium-banner">
               ${logoSlot}
@@ -170,6 +171,9 @@ export function partialFooter(ctx: RenderCtx): string {
 }
 
 export function renderBody(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const slimHeader = renderSlimHeader(safeCtx);
+  const slimFooter = renderSlimFooter(safeCtx);
   const header = partialHeader(ctx);
   const sections = partialSections(ctx);
   const priceTable = partialPriceTable(ctx);
@@ -177,6 +181,8 @@ export function renderBody(ctx: RenderCtx): string {
   const footer = partialFooter(ctx);
 
   const content = [
+    slimHeader,
+    slimFooter,
     header,
     '        <div class="offer-doc__premium-body">\n',
     sections,
