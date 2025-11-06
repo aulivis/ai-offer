@@ -71,13 +71,25 @@ export async function refreshSession(signal?: AbortSignal): Promise<boolean> {
         const response = await fetch(REFRESH_ENDPOINT, requestInit);
 
         if (response.ok) {
+          // Small delay to ensure cookies are propagated before subsequent requests
+          // This helps prevent race conditions where the browser hasn't processed Set-Cookie headers yet
+          await new Promise((resolve) => setTimeout(resolve, 0));
           return true;
         }
 
+        // 401: Unauthorized - refresh token invalid/expired
         if (response.status === 401) {
           return false;
         }
 
+        // 403: Forbidden - CSRF token invalid
+        // This can happen if CSRF cookie is missing or expired
+        // Return false to indicate refresh failed
+        if (response.status === 403) {
+          return false;
+        }
+
+        // Other errors - refresh failed
         return false;
       } catch (error) {
         if (isAbortError(error)) {
@@ -140,6 +152,19 @@ export async function fetchWithSupabaseAuth(
 
   async function attemptFetch(): Promise<Response> {
     try {
+      // Re-read CSRF token on each attempt to ensure we have the latest value
+      // This is critical after a refresh when the CSRF cookie is updated
+      const method = (restInit.method ?? 'GET').toString().toUpperCase();
+      if (method !== 'GET' && method !== 'HEAD') {
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+          finalHeaders.set('x-csrf-token', csrfToken);
+        } else if (!finalHeaders.has('x-csrf-token')) {
+          // Only set empty if not already set (preserve explicit empty values)
+          finalHeaders.set('x-csrf-token', '');
+        }
+      }
+
       const requestInit: RequestInit = {
         ...restInit,
         credentials: restInit.credentials ?? 'include',
@@ -168,6 +193,9 @@ export async function fetchWithSupabaseAuth(
   if (response.status === 401) {
     const refreshed = await refreshSession(requestSignal);
     if (refreshed) {
+      // Small delay to ensure cookies are propagated after refresh
+      // This helps prevent race conditions where the browser hasn't processed Set-Cookie headers yet
+      await new Promise((resolve) => setTimeout(resolve, 0));
       response = await attemptFetch();
     }
   }
@@ -179,6 +207,30 @@ export async function fetchWithSupabaseAuth(
   if (response.status === 401) {
     const message = authErrorMessage ?? defaultErrorMessage ?? t(DEFAULT_AUTH_ERROR_KEY);
     throw new ApiError(message, { status: 401 });
+  }
+
+  // 403 typically indicates CSRF token failure
+  // This is not recoverable via refresh since refresh itself requires CSRF
+  if (response.status === 403) {
+    let message: string | undefined;
+    const contentType = response.headers.get('Content-Type') ?? '';
+    if (contentType.includes('application/json')) {
+      try {
+        const payload = await response.clone().json();
+        if (payload && typeof payload === 'object') {
+          const record = payload as Record<string, unknown>;
+          if (typeof record.error === 'string') {
+            message = record.error;
+          }
+        }
+      } catch {
+        // ignore JSON parse errors
+      }
+    }
+    throw new ApiError(
+      message ?? errorMessageBuilder?.(403) ?? t('errors.requestStatus', { status: 403 }),
+      { status: 403 },
+    );
   }
 
   let message: string | undefined;

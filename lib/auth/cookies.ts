@@ -45,11 +45,20 @@ export async function setAuthCookies(
 
   const { value: csrfValue } = createCsrfToken();
 
+  // CSRF cookie should match the session lifetime
+  // If rememberMe, use 30 days; otherwise use access token expiration or default to 7 days
+  const csrfMaxAge = rememberMe
+    ? REMEMBER_ME_MAX_AGE_SECONDS
+    : accessTokenMaxAgeSeconds
+      ? Math.max(accessTokenMaxAgeSeconds, 7 * 24 * 60 * 60) // At least 7 days for session cookies
+      : 7 * 24 * 60 * 60; // Default 7 days
+
   cookieStore.set({
     name: CSRF_COOKIE_NAME,
     value: csrfValue,
     ...baseCookieOptions,
     httpOnly: false,
+    maxAge: csrfMaxAge,
   });
 }
 
