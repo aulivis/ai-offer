@@ -15,6 +15,7 @@ import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
+import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import { useMemo, useState, useEffect } from 'react';
@@ -68,16 +69,24 @@ export function OfferListItem({
   const statusTheme = STATUS_CARD_THEMES[offer.status];
 
   return (
-    <Card className="group flex flex-col overflow-hidden rounded-xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-200 hover:shadow-md">
-      <div className="flex items-center gap-3 p-3">
+    <Card className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:shadow-md hover:border-primary/20">
+      {/* Status indicator bar */}
+      <div className={`absolute top-0 left-0 right-0 h-0.5 ${
+        offer.status === 'draft' ? 'bg-amber-400' :
+        offer.status === 'sent' ? 'bg-blue-400' :
+        offer.status === 'accepted' ? 'bg-emerald-400' :
+        'bg-rose-400'
+      }`} />
+      
+      <div className="flex items-center gap-3 p-4 pt-5">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-2 -m-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-expanded={isExpanded}
           aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
         >
-          <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-semibold text-primary">
+          <div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm">
             {initials ? (
               <span aria-hidden="true" title={companyName || undefined}>
                 {initials}
@@ -90,23 +99,49 @@ export function OfferListItem({
               />
             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold text-fg">
-                {offer.title || '(névtelen)'}
-              </p>
-              <StatusBadge status={offer.status} className="flex-none" />
+          <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="truncate text-sm font-bold text-fg">
+                  {offer.title || '(névtelen)'}
+                </p>
+                <StatusBadge status={offer.status} className="flex-none" />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+                {companyName && (
+                  <>
+                    <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+                    <span className="truncate font-medium">{companyName}</span>
+                  </>
+                )}
+                {offer.created_at && (
+                  <>
+                    <span className="text-fg-muted/50">•</span>
+                    <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+                    <span>{formatDate(offer.created_at)}</span>
+                  </>
+                )}
+                {offer.industry && (
+                  <>
+                    <span className="text-fg-muted/50">•</span>
+                    <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+                    <span>{offer.industry}</span>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
-              <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-              <span className="truncate">{companyName || '—'}</span>
-              <span className="text-fg-muted/70">•</span>
-              <span>{formatDate(offer.created_at)}</span>
-              {offer.industry && (
-                <>
-                  <span className="text-fg-muted/70">•</span>
-                  <span>{offer.industry}</span>
-                </>
+            <div className="hidden sm:flex items-center gap-3 text-xs text-fg-muted">
+              {offer.sent_at && (
+                <div className="flex items-center gap-1.5">
+                  <PaperAirplaneIcon className="h-3.5 w-3.5" />
+                  <span>{formatDate(offer.sent_at)}</span>
+                </div>
+              )}
+              {offer.decided_at && (
+                <div className="flex items-center gap-1.5">
+                  <ClockIcon className="h-3.5 w-3.5" />
+                  <span>{formatDate(offer.decided_at)}</span>
+                </div>
               )}
             </div>
           </div>
@@ -121,7 +156,7 @@ export function OfferListItem({
           {offer.pdf_url ? (
             <>
               <a
-                className={actionButtonClass}
+                className={`${actionButtonClass} hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600`}
                 href={offer.pdf_url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -135,7 +170,7 @@ export function OfferListItem({
                 type="button"
                 onClick={() => onDownload(offer)}
                 disabled={isBusy}
-                className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+                className={`${actionButtonClass} hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-600 ${isBusy ? actionButtonDisabledClass : ''}`}
                 aria-label={downloadLabel}
                 title={downloadLabel}
               >
@@ -152,14 +187,14 @@ export function OfferListItem({
             type="button"
             onClick={() => onDelete(offer)}
             disabled={isBusy}
-            className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
+            className={`${actionButtonClass} hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 ${isBusy ? actionButtonDisabledClass : ''}`}
             aria-label={deleteLabel}
             title={deleteLabel}
           >
             {isDeleting ? (
               <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
             ) : (
-              <TrashIcon aria-hidden="true" className="h-4 w-4 text-rose-500" />
+              <TrashIcon aria-hidden="true" className="h-4 w-4" />
             )}
             <span className="sr-only">{deleteLabel}</span>
           </button>

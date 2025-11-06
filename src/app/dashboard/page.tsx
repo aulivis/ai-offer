@@ -23,6 +23,13 @@ import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 import { OfferCardSkeleton, MetricSkeleton } from '@/components/ui/Skeleton';
+import ChartBarIcon from '@heroicons/react/24/outline/ChartBarIcon';
+import DocumentCheckIcon from '@heroicons/react/24/outline/DocumentCheckIcon';
+import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
+import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
+import MagnifyingGlassIcon from '@heroicons/react/24/outline/MagnifyingGlassIcon';
+import FunnelIcon from '@heroicons/react/24/outline/FunnelIcon';
+import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -41,43 +48,94 @@ function isSortDirectionValue(value: string): value is SortDirectionOption {
   return (SORT_DIRECTION_OPTIONS as readonly string[]).includes(value);
 }
 
-/** Egyszerű metrika kártya semantic tokenekkel */
+/** Enhanced KPI Card with modern design */
 function MetricCard({
   label,
   value,
   helper,
   progress,
+  icon,
+  trend,
+  trendValue,
+  color = 'primary',
 }: {
   label: string;
   value: string;
   helper?: ReactNode;
   progress?: { used: number; limit: number | null };
+  icon?: ReactNode;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  color?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
 }) {
   const progressPercentage =
     progress && progress.limit !== null
       ? Math.min((progress.used / progress.limit) * 100, 100)
       : null;
 
+  const colorClasses = {
+    primary: 'bg-primary/10 text-primary border-primary/20',
+    success: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+    warning: 'bg-amber-50 text-amber-600 border-amber-200',
+    danger: 'bg-rose-50 text-rose-600 border-rose-200',
+    info: 'bg-blue-50 text-blue-600 border-blue-200',
+  };
+
+  const trendColors = {
+    up: 'text-emerald-600',
+    down: 'text-rose-600',
+    neutral: 'text-fg-muted',
+  };
+
   return (
-    <Card className="p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-fg">{value}</p>
-      {progressPercentage !== null && (
-        <div className="mt-3 h-2 w-full rounded-full bg-border/60 overflow-hidden">
-          <div
-            className={`h-full transition-all duration-500 ${
-              progressPercentage >= 90
-                ? 'bg-danger'
-                : progressPercentage >= 75
-                  ? 'bg-warning'
-                  : 'bg-primary'
-            }`}
-            style={{ width: `${progressPercentage}%` }}
-            aria-label={`${progressPercentage.toFixed(0)}% used`}
-          />
+    <Card className="group relative overflow-hidden p-6 transition-all duration-200 hover:shadow-lg">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            {icon && (
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${colorClasses[color]}`}>
+                {icon}
+              </div>
+            )}
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
+          </div>
+          <div className="flex items-baseline gap-2 mt-3">
+            <p className="text-3xl font-bold text-fg">{value}</p>
+            {trend && trendValue && (
+              <span className={`text-sm font-semibold flex items-center gap-1 ${trendColors[trend]}`}>
+                {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
+                {trendValue}
+              </span>
+            )}
+          </div>
+          {progressPercentage !== null && (
+            <div className="mt-4 space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-fg-muted">Használat</span>
+                <span className="font-semibold text-fg">
+                  {progress.used.toLocaleString('hu-HU')} / {progress.limit?.toLocaleString('hu-HU')}
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-border/60 overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    progressPercentage >= 90
+                      ? 'bg-danger'
+                      : progressPercentage >= 75
+                        ? 'bg-warning'
+                        : 'bg-primary'
+                  }`}
+                  style={{ width: `${progressPercentage}%` }}
+                  aria-label={`${progressPercentage.toFixed(0)}% used`}
+                />
+              </div>
+            </div>
+          )}
+          {helper && <p className="mt-3 text-xs leading-relaxed text-fg-muted">{helper}</p>}
         </div>
-      )}
-      {helper ? <p className="mt-2 text-xs text-fg-muted">{helper}</p> : null}
+      </div>
+      {/* Decorative gradient overlay */}
+      <div className="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
     </Card>
   );
 }
@@ -992,10 +1050,11 @@ export default function DashboardPage() {
           </div>
         }
       >
-        {/* Metrikák */}
-        <section className="grid gap-4 pb-8 border-b border-border/40 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Enhanced KPI Dashboard */}
+        <section className="grid gap-4 pb-8 border-b border-border/40 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {loading ? (
             <>
+              <MetricSkeleton />
               <MetricSkeleton />
               <MetricSkeleton />
               <MetricSkeleton />
@@ -1015,11 +1074,17 @@ export default function DashboardPage() {
                       }
                     : undefined
                 }
+                icon={<ChartBarIcon className="h-5 w-5" />}
+                color="info"
               />
               <MetricCard
                 label={t('dashboard.metrics.created.label')}
                 value={totalOffersCount.toLocaleString('hu-HU')}
                 helper={totalHelper}
+                icon={<DocumentTextIcon className="h-5 w-5" />}
+                color="primary"
+                trend={stats.createdThisMonth > 0 ? 'up' : 'neutral'}
+                trendValue={stats.createdThisMonth > 0 ? `+${stats.createdThisMonth}` : undefined}
               />
               <MetricCard
                 label={t('dashboard.metrics.sent.label')}
@@ -1027,11 +1092,17 @@ export default function DashboardPage() {
                 helper={t('dashboard.metrics.sent.helper', {
                   pending: stats.inReview.toLocaleString('hu-HU'),
                 })}
+                icon={<PaperAirplaneIcon className="h-5 w-5" />}
+                color="info"
               />
               <MetricCard
                 label={t('dashboard.metrics.accepted.label')}
                 value={stats.accepted.toLocaleString('hu-HU')}
                 helper={t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel })}
+                icon={<DocumentCheckIcon className="h-5 w-5" />}
+                color="success"
+                trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
+                trendValue={acceptanceLabel !== '—' ? acceptanceLabel : undefined}
               />
               <MetricCard
                 label={t('dashboard.metrics.avgDecision.label')}
@@ -1039,163 +1110,198 @@ export default function DashboardPage() {
                 helper={t('dashboard.metrics.avgDecision.helper', {
                   drafts: stats.drafts.toLocaleString('hu-HU'),
                 })}
+                icon={<ClockIcon className="h-5 w-5" />}
+                color="warning"
               />
             </>
           )}
         </section>
 
-        {/* Szűrők */}
+        {/* Enhanced Search & Filters */}
         <Card as="section" className="mb-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end lg:justify-between">
-            <div className="flex-1">
+          <div className="space-y-6">
+            {/* Search Bar */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-fg-muted" aria-hidden="true" />
+              </div>
               <Input
-                label={t('dashboard.filters.search.label')}
                 placeholder={t('dashboard.filters.search.placeholder')}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="shadow-sm text-sm"
+                className="pl-11 pr-4 py-3 text-base shadow-sm"
+                wrapperClassName=""
               />
+              {q.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setQ('')}
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-fg-muted hover:text-fg transition-colors"
+                  aria-label={t('dashboard.filters.remove')}
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              )}
             </div>
 
-            {filtered.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-fg-muted">
-                <span className="font-medium text-fg">
-                  {filtered.length.toLocaleString('hu-HU')}
+            {/* Quick Filter Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted flex items-center gap-2">
+                <FunnelIcon className="h-4 w-4" />
+                {t('dashboard.filters.status.label')}:
+              </span>
+              {STATUS_FILTER_OPTIONS.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                    statusFilter === status
+                      ? 'bg-primary text-primary-ink shadow-md scale-105'
+                      : 'bg-bg-muted text-fg-muted hover:bg-bg hover:text-fg border border-border/60'
+                  }`}
+                >
+                  {status === 'all' ? (
+                    t('dashboard.filters.status.options.all')
+                  ) : (
+                    <>
+                      <span className={`h-2 w-2 rounded-full ${
+                        status === 'draft' ? 'bg-amber-500' :
+                        status === 'sent' ? 'bg-blue-500' :
+                        status === 'accepted' ? 'bg-emerald-500' :
+                        'bg-rose-500'
+                      }`} />
+                      {t(STATUS_LABEL_KEYS[status])}
+                    </>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Advanced Filters & Controls */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
+              <div className="flex flex-wrap items-end gap-3 flex-1">
+                {industries.length > 0 && (
+                  <Select
+                    label={t('dashboard.filters.industry.label')}
+                    value={industryFilter}
+                    onChange={(e) => setIndustryFilter(e.target.value)}
+                    className="min-w-[180px]"
+                    wrapperClassName="flex-1 sm:flex-none"
+                  >
+                    <option value="all">{t('dashboard.filters.industry.options.all')}</option>
+                    {industries.map((ind) => (
+                      <option key={ind} value={ind}>
+                        {ind}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+                <Select
+                  label={t('dashboard.filters.sortBy.label')}
+                  value={sortBy}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (isSortByValue(value)) setSortBy(value);
+                  }}
+                  className="min-w-[160px]"
+                  wrapperClassName="flex-1 sm:flex-none"
+                >
+                  <option value="created">{t('dashboard.filters.sortBy.options.created')}</option>
+                  <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
+                  <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
+                  <option value="recipient">{t('dashboard.filters.sortBy.options.recipient')}</option>
+                  <option value="industry">{t('dashboard.filters.sortBy.options.industry')}</option>
+                </Select>
+                <Select
+                  label={t('dashboard.filters.sortDir.label')}
+                  value={sortDir}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (isSortDirectionValue(value)) setSortDir(value);
+                  }}
+                  className="min-w-[140px]"
+                  wrapperClassName="flex-1 sm:flex-none"
+                >
+                  <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
+                  <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {filtered.length > 0 && (
+                  <div className="hidden sm:flex items-center gap-2 text-sm">
+                    <span className="font-semibold text-fg">
+                      {filtered.length.toLocaleString('hu-HU')}
+                    </span>
+                    <span className="text-fg-muted">{t('dashboard.filters.results')}</span>
+                  </div>
+                )}
+                <ViewSwitcher value={viewMode} onChange={setViewMode} />
+              </div>
+            </div>
+
+            {/* Active Filters Summary */}
+            {(q.trim() || statusFilter !== 'all' || industryFilter !== 'all') && (
+              <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                  {t('dashboard.filters.active')}:
                 </span>
-                <span>{t('dashboard.filters.results')}</span>
+                {q.trim() && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                    {t('dashboard.filters.search.label')}: &quot;{q}&quot;
+                    <button
+                      type="button"
+                      onClick={() => setQ('')}
+                      className="rounded-full hover:bg-border/60 p-0.5 transition"
+                      aria-label={t('dashboard.filters.remove')}
+                    >
+                      <XMarkIcon className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {statusFilter !== 'all' && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                    {t('dashboard.filters.status.label')}: {t(STATUS_LABEL_KEYS[statusFilter])}
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter('all')}
+                      className="rounded-full hover:bg-border/60 p-0.5 transition"
+                      aria-label={t('dashboard.filters.remove')}
+                    >
+                      <XMarkIcon className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {industryFilter !== 'all' && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                    {t('dashboard.filters.industry.label')}: {industryFilter}
+                    <button
+                      type="button"
+                      onClick={() => setIndustryFilter('all')}
+                      className="rounded-full hover:bg-border/60 p-0.5 transition"
+                      aria-label={t('dashboard.filters.remove')}
+                    >
+                      <XMarkIcon className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setQ('');
+                    setStatusFilter('all');
+                    setIndustryFilter('all');
+                  }}
+                  className="text-xs"
+                >
+                  {t('dashboard.filters.clearAll')}
+                </Button>
               </div>
             )}
-
-            <ViewSwitcher value={viewMode} onChange={setViewMode} />
-
-            <div className="grid flex-none grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
-              <Select
-                label={t('dashboard.filters.status.label')}
-                value={statusFilter}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (isStatusFilterValue(value)) setStatusFilter(value);
-                }}
-                className="shadow-sm text-sm"
-              >
-                <option value="all">{t('dashboard.filters.status.options.all')}</option>
-                <option value="draft">{t(STATUS_LABEL_KEYS.draft)}</option>
-                <option value="sent">{t(STATUS_LABEL_KEYS.sent)}</option>
-                <option value="accepted">{t(STATUS_LABEL_KEYS.accepted)}</option>
-                <option value="lost">{t(STATUS_LABEL_KEYS.lost)}</option>
-              </Select>
-
-              <Select
-                label={t('dashboard.filters.industry.label')}
-                value={industryFilter}
-                onChange={(e) => setIndustryFilter(e.target.value)}
-                className="shadow-sm text-sm"
-              >
-                <option value="all">{t('dashboard.filters.industry.options.all')}</option>
-                {industries.map((ind) => (
-                  <option key={ind} value={ind}>
-                    {ind}
-                  </option>
-                ))}
-              </Select>
-
-              <Select
-                label={t('dashboard.filters.sortBy.label')}
-                value={sortBy}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (isSortByValue(value)) setSortBy(value);
-                }}
-                className="shadow-sm text-sm"
-              >
-                <option value="created">{t('dashboard.filters.sortBy.options.created')}</option>
-                <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
-                <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
-                <option value="recipient">{t('dashboard.filters.sortBy.options.recipient')}</option>
-                <option value="industry">{t('dashboard.filters.sortBy.options.industry')}</option>
-              </Select>
-
-              <Select
-                label={t('dashboard.filters.sortDir.label')}
-                value={sortDir}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (isSortDirectionValue(value)) setSortDir(value);
-                }}
-                className="shadow-sm text-sm"
-              >
-                <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
-                <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
-              </Select>
-            </div>
           </div>
-
-          {/* Active Filters */}
-          {(q.trim() || statusFilter !== 'all' || industryFilter !== 'all') && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
-                {t('dashboard.filters.active')}:
-              </span>
-              {q.trim() && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1 text-xs font-medium text-fg">
-                  {t('dashboard.filters.search.label')}: &quot;{q}&quot;
-                  <button
-                    type="button"
-                    onClick={() => setQ('')}
-                    className="rounded-full hover:bg-border/60 p-0.5 transition"
-                    aria-label={t('dashboard.filters.remove')}
-                  >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-              {statusFilter !== 'all' && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1 text-xs font-medium text-fg">
-                  {t('dashboard.filters.status.label')}: {t(STATUS_LABEL_KEYS[statusFilter])}
-                  <button
-                    type="button"
-                    onClick={() => setStatusFilter('all')}
-                    className="rounded-full hover:bg-border/60 p-0.5 transition"
-                    aria-label={t('dashboard.filters.remove')}
-                  >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-              {industryFilter !== 'all' && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1 text-xs font-medium text-fg">
-                  {t('dashboard.filters.industry.label')}: {industryFilter}
-                  <button
-                    type="button"
-                    onClick={() => setIndustryFilter('all')}
-                    className="rounded-full hover:bg-border/60 p-0.5 transition"
-                    aria-label={t('dashboard.filters.remove')}
-                  >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setQ('');
-                  setStatusFilter('all');
-                  setIndustryFilter('all');
-                }}
-                className="text-xs"
-              >
-                {t('dashboard.filters.clearAll')}
-              </Button>
-            </div>
-          )}
         </Card>
 
         {/* Skeletonok */}
@@ -1207,26 +1313,51 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Üres / nincs találat */}
+        {/* Enhanced Empty State */}
         {!loading && filtered.length === 0 && (
-          <Card className="flex flex-col items-center justify-center gap-6 p-12 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-              <DocumentTextIcon className="h-10 w-10 text-primary" aria-hidden="true" />
+          <Card className="flex flex-col items-center justify-center gap-8 p-16 text-center">
+            <div className="relative">
+              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+                <DocumentTextIcon className="h-12 w-12 text-primary" aria-hidden="true" />
+              </div>
+              <div className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
+                <MagnifyingGlassIcon className="h-4 w-4 text-primary" aria-hidden="true" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-base font-semibold text-fg">{emptyMessage}</p>
-              {noOffersLoaded && (
-                <p className="text-sm text-fg-muted">
+            <div className="space-y-3 max-w-md">
+              <h3 className="text-xl font-bold text-fg">{emptyMessage}</h3>
+              {noOffersLoaded ? (
+                <p className="text-sm leading-relaxed text-fg-muted">
                   {t('dashboard.emptyStates.getStarted')}
+                </p>
+              ) : (
+                <p className="text-sm leading-relaxed text-fg-muted">
+                  Próbálj meg más keresési feltételeket vagy szűrőket használni.
                 </p>
               )}
             </div>
-            <Link
-              href="/new"
-              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {t('dashboard.actions.newOffer')}
-            </Link>
+            {noOffersLoaded && (
+              <Link
+                href="/new"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <DocumentTextIcon className="h-5 w-5" />
+                {t('dashboard.actions.newOffer')}
+              </Link>
+            )}
+            {!noOffersLoaded && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setQ('');
+                  setStatusFilter('all');
+                  setIndustryFilter('all');
+                }}
+              >
+                Szűrők törlése
+              </Button>
+            )}
           </Card>
         )}
 

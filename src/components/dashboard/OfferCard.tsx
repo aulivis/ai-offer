@@ -77,102 +77,122 @@ export function OfferCard({
   const actionButtonDisabledClass = 'cursor-not-allowed opacity-60';
 
   return (
-    <Card className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-200 hover:shadow-md">
-      {/* Compact Header - Always Visible */}
-      <div className="flex items-center gap-3 p-3">
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
-        >
-          <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-semibold text-primary">
-            {initials ? (
-              <span aria-hidden="true" title={companyName || undefined}>
-                {initials}
-              </span>
-            ) : (
-              <BuildingOffice2Icon
-                aria-hidden="true"
-                className="h-4 w-4 text-primary"
-                title={companyName || t('dashboard.offerCard.industryUnknown')}
-              />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold text-fg">
-                {offer.title || '(névtelen)'}
-              </p>
-              <StatusBadge status={offer.status} className="flex-none" />
-            </div>
-            <div className="mt-0.5 flex items-center gap-1.5 text-xs text-fg-muted">
-              <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-              <span className="truncate">{companyName || '—'}</span>
-              <span className="text-fg-muted/70">•</span>
-              <span>{formatDate(offer.created_at)}</span>
-              {offer.industry && (
-                <>
-                  <span className="text-fg-muted/70">•</span>
-                  <span>{offer.industry}</span>
-                </>
-              )}
-            </div>
-          </div>
-          <ChevronDownIcon
-            className={`h-4 w-4 text-fg-muted transition-transform duration-200 flex-none ${
-              isExpanded ? 'rotate-180' : ''
-            }`}
-            aria-hidden="true"
-          />
-        </button>
-        <div className="flex items-center gap-1">
-          {offer.pdf_url ? (
-            <>
-              <a
-                className={actionButtonClass}
-                href={offer.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={openLabel}
-                title={openLabel}
-              >
-                <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
-                <span className="sr-only">{openLabel}</span>
-              </a>
-              <button
-                type="button"
-                onClick={() => onDownload(offer)}
-                disabled={isBusy}
-                className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
-                aria-label={downloadLabel}
-                title={downloadLabel}
-              >
-                {isDownloading ? (
-                  <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
-                )}
-                <span className="sr-only">{downloadLabel}</span>
-              </button>
-            </>
-          ) : null}
+    <Card className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:shadow-lg hover:border-primary/30">
+      {/* Enhanced Header with Status Indicator */}
+      <div className="relative">
+        {/* Status indicator bar */}
+        <div className={`absolute top-0 left-0 right-0 h-1 ${
+          offer.status === 'draft' ? 'bg-amber-400' :
+          offer.status === 'sent' ? 'bg-blue-400' :
+          offer.status === 'accepted' ? 'bg-emerald-400' :
+          'bg-rose-400'
+        }`} />
+        
+        <div className="flex items-center gap-3 p-4 pt-5">
           <button
             type="button"
-            onClick={() => onDelete(offer)}
-            disabled={isBusy}
-            className={`${actionButtonClass} ${isBusy ? actionButtonDisabledClass : ''}`}
-            aria-label={deleteLabel}
-            title={deleteLabel}
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-xl p-2 -m-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
           >
-            {isDeleting ? (
-              <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
-            ) : (
-              <TrashIcon aria-hidden="true" className="h-4 w-4 text-rose-500" />
-            )}
-            <span className="sr-only">{deleteLabel}</span>
+            <div className="relative flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-bold text-primary shadow-sm ring-2 ring-white/50">
+              {initials ? (
+                <span aria-hidden="true" title={companyName || undefined}>
+                  {initials}
+                </span>
+              ) : (
+                <BuildingOffice2Icon
+                  aria-hidden="true"
+                  className="h-5 w-5 text-primary"
+                  title={companyName || t('dashboard.offerCard.industryUnknown')}
+                />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="truncate text-base font-bold text-fg">
+                  {offer.title || '(névtelen)'}
+                </p>
+                <StatusBadge status={offer.status} className="flex-none" />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+                {companyName && (
+                  <>
+                    <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+                    <span className="truncate font-medium">{companyName}</span>
+                  </>
+                )}
+                {offer.created_at && (
+                  <>
+                    <span className="text-fg-muted/50">•</span>
+                    <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+                    <span>{formatDate(offer.created_at)}</span>
+                  </>
+                )}
+                {offer.industry && (
+                  <>
+                    <span className="text-fg-muted/50">•</span>
+                    <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+                    <span>{offer.industry}</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <ChevronDownIcon
+              className={`h-5 w-5 text-fg-muted transition-transform duration-200 flex-none ${
+                isExpanded ? 'rotate-180' : ''
+              }`}
+              aria-hidden="true"
+            />
           </button>
+          <div className="flex items-center gap-1.5">
+            {offer.pdf_url ? (
+              <>
+                <a
+                  className={`${actionButtonClass} hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600`}
+                  href={offer.pdf_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={openLabel}
+                  title={openLabel}
+                >
+                  <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
+                  <span className="sr-only">{openLabel}</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => onDownload(offer)}
+                  disabled={isBusy}
+                  className={`${actionButtonClass} hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+                  aria-label={downloadLabel}
+                  title={downloadLabel}
+                >
+                  {isDownloading ? (
+                    <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">{downloadLabel}</span>
+                </button>
+              </>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => onDelete(offer)}
+              disabled={isBusy}
+              className={`${actionButtonClass} hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+              aria-label={deleteLabel}
+              title={deleteLabel}
+            >
+              {isDeleting ? (
+                <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+              ) : (
+                <TrashIcon aria-hidden="true" className="h-4 w-4" />
+              )}
+              <span className="sr-only">{deleteLabel}</span>
+            </button>
+          </div>
         </div>
       </div>
 
