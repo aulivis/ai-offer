@@ -110,31 +110,31 @@ export function OfferCard({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="truncate text-base font-bold text-fg">
+              <div className="flex items-center gap-2 mb-1 min-w-0">
+                <p className="truncate text-base font-bold text-fg flex-1 min-w-0">
                   {offer.title || '(névtelen)'}
                 </p>
-                <StatusBadge status={offer.status} className="flex-none" />
+                <StatusBadge status={offer.status} className="flex-none shrink-0" />
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
                 {companyName && (
                   <>
-                    <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-                    <span className="truncate font-medium">{companyName}</span>
+                    <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
+                    <span className="truncate font-medium max-w-[120px]">{companyName}</span>
                   </>
                 )}
                 {offer.created_at && (
                   <>
-                    <span className="text-fg-muted/50">•</span>
-                    <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-                    <span>{formatDate(offer.created_at)}</span>
+                    <span className="text-fg-muted/50 shrink-0">•</span>
+                    <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
+                    <span className="whitespace-nowrap shrink-0">{formatDate(offer.created_at)}</span>
                   </>
                 )}
                 {offer.industry && (
                   <>
-                    <span className="text-fg-muted/50">•</span>
-                    <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-                    <span>{offer.industry}</span>
+                    <span className="text-fg-muted/50 shrink-0">•</span>
+                    <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
+                    <span className="truncate max-w-[100px]">{offer.industry}</span>
                   </>
                 )}
               </div>
@@ -196,176 +196,208 @@ export function OfferCard({
         </div>
       </div>
 
-      {/* Expanded Content - Collapsible */}
+      {/* Expanded Content - Collapsible - Compact Design */}
       {isExpanded && (
-        <div className="border-t border-border/60 px-3 py-4">
-          <div className="flex flex-col gap-4">
+        <div className="border-t border-border/60 px-4 py-3">
+          <div className="flex flex-col gap-3">
+            {/* Compact Status Timeline */}
+            <section className={`rounded-lg border p-3 ${statusTheme.container}`}>
+              <div className="space-y-2">
+                {/* Draft Status - Always shown */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                      timelineStates.draft === 'complete' ? 'bg-primary' :
+                      timelineStates.draft === 'current' ? 'bg-primary ring-2 ring-primary/30' :
+                      'bg-border/60'
+                    }`} />
+                    <span className="text-xs font-semibold text-fg truncate">
+                      {t(STATUS_LABEL_KEYS.draft)}
+                    </span>
+                  </div>
+                  <span className="text-xs text-fg-muted whitespace-nowrap">
+                    {formatDate(offer.created_at)}
+                  </span>
+                </div>
 
-            <dl className="grid gap-3 sm:grid-cols-2">
-              <MetaItem
-                icon={CalendarDaysIcon}
-                label={t('dashboard.offerCard.created')}
-                value={formatDate(offer.created_at)}
-              />
-              <MetaItem
-                icon={Squares2X2Icon}
-                label={t('dashboard.offerCard.industry')}
-                value={offer.industry || t('dashboard.offerCard.industryUnknown')}
-              />
-            </dl>
-
-            <section
-              className={`flex flex-col gap-3 rounded-xl border p-4 shadow-inner ${statusTheme.container}`}
-            >
-              <div
-                className={`flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] ${statusTheme.accentText}`}
-              >
-                <ClockIcon
-                  aria-hidden="true"
-                  className={`h-4 w-4 ${statusTheme.accentIcon}`}
-                  title={t('dashboard.filters.sortBy.options.status')}
-                />
-                <span>{t('dashboard.filters.sortBy.options.status')}</span>
-              </div>
-
-              <ol className="relative">
-                <TimelineStep
-                  title={t(STATUS_LABEL_KEYS.draft)}
-                  description={t('dashboard.offerCard.created')}
-                  dateLabel={formatDate(offer.created_at)}
-                  status={timelineStates.draft}
-                  isLast={false}
-                />
-                <TimelineStep
-                  title={t('dashboard.statusSteps.sent.title')}
-                  description={t('dashboard.statusSteps.sent.description')}
-                  dateLabel={formatDate(offer.sent_at)}
-                  status={timelineStates.sent}
-                  isLast={false}
-                >
-                  {offer.sent_at ? (
-                    <CompactDatePicker
-                      label={t('dashboard.statusSteps.sent.editDate')}
-                      value={isoDateInput(offer.sent_at)}
-                      onChange={(value) => onMarkSent(offer, value)}
-                      disabled={isBusy}
-                    />
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        onClick={() => onMarkSent(offer)}
-                        disabled={isBusy}
-                        variant="secondary"
-                        size="sm"
-                        className="h-9 rounded-xl"
-                        title={t('dashboard.statusSteps.sent.markToday')}
-                      >
-                        {t('dashboard.statusSteps.sent.markToday')}
-                      </Button>
-                      <CompactDatePicker
-                        label={t('dashboard.statusSteps.sent.chooseDate')}
-                        value=""
-                        onChange={(value) => onMarkSent(offer, value)}
-                        disabled={isBusy}
-                      />
-                    </div>
-                  )}
-                </TimelineStep>
-                <TimelineStep
-                  title={t('dashboard.statusSteps.decision.title')}
-                  description={t('dashboard.statusSteps.decision.description')}
-                  dateLabel={isDecided ? formatDate(offer.decided_at) : '—'}
-                  status={timelineStates.decision}
-                  isLast
-                >
-                  {isDecided ? (
-                    <>
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                          offer.status === 'accepted'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-rose-50 text-rose-700'
-                        }`}
-                      >
-                        {offer.status === 'accepted'
-                          ? t(DECISION_LABEL_KEYS.accepted)
-                          : t(DECISION_LABEL_KEYS.lost)}
-                      </span>
-                      <CompactDatePicker
-                        label={t('dashboard.statusSteps.decision.dateLabel')}
-                        value={isoDateInput(offer.decided_at)}
-                        onChange={(value) =>
-                          onMarkDecision(offer, offer.status as 'accepted' | 'lost', value)
-                        }
-                        disabled={isBusy}
-                      />
-                    </>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <CompactDatePicker
-                        label={t('dashboard.statusSteps.decision.chooseDate')}
-                        value={decisionDate}
-                        onChange={setDecisionDate}
-                        disabled={isBusy}
-                      />
-                      <Button
-                        onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
-                        disabled={isBusy}
-                        variant="secondary"
-                        size="sm"
-                        className="h-9 w-9 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                        aria-label={t('dashboard.statusSteps.decision.markAccepted')}
-                        title={t('dashboard.statusSteps.decision.markAccepted')}
-                      >
-                        <CheckIcon aria-hidden="true" className="h-5 w-5" />
-                        <span className="sr-only">
-                          {t('dashboard.statusSteps.decision.markAccepted')}
+                {/* Sent Status */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                      timelineStates.sent === 'complete' ? 'bg-primary' :
+                      timelineStates.sent === 'current' ? 'bg-primary ring-2 ring-primary/30' :
+                      'bg-border/60'
+                    }`} />
+                    <span className="text-xs font-semibold text-fg truncate">
+                      {t('dashboard.statusSteps.sent.title')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {offer.sent_at ? (
+                      <>
+                        <span className="text-xs text-fg-muted whitespace-nowrap">
+                          {formatDate(offer.sent_at)}
                         </span>
-                      </Button>
-                      <Button
-                        onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
-                        disabled={isBusy}
-                        variant="secondary"
-                        size="sm"
-                        className="h-9 w-9 rounded-xl border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
-                        aria-label={t('dashboard.statusSteps.decision.markLost')}
-                        title={t('dashboard.statusSteps.decision.markLost')}
-                      >
-                        <XMarkIcon aria-hidden="true" className="h-5 w-5" />
-                        <span className="sr-only">{t('dashboard.statusSteps.decision.markLost')}</span>
-                      </Button>
-                    </div>
-                  )}
-                </TimelineStep>
-              </ol>
+                        <CompactDatePicker
+                          label=""
+                          value={isoDateInput(offer.sent_at)}
+                          onChange={(value) => onMarkSent(offer, value)}
+                          disabled={isBusy}
+                        />
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          onClick={() => onMarkSent(offer)}
+                          disabled={isBusy}
+                          variant="secondary"
+                          size="sm"
+                          className="h-7 px-2 text-xs rounded-lg"
+                          title={t('dashboard.statusSteps.sent.markToday')}
+                        >
+                          {t('dashboard.statusSteps.sent.markToday')}
+                        </Button>
+                        <CompactDatePicker
+                          label=""
+                          value=""
+                          onChange={(value) => onMarkSent(offer, value)}
+                          disabled={isBusy}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Decision Status */}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                      timelineStates.decision === 'complete' ? 'bg-primary' :
+                      timelineStates.decision === 'current' ? 'bg-primary ring-2 ring-primary/30' :
+                      'bg-border/60'
+                    }`} />
+                    <span className="text-xs font-semibold text-fg truncate">
+                      {t('dashboard.statusSteps.decision.title')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {isDecided ? (
+                      <>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
+                            offer.status === 'accepted'
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-rose-50 text-rose-700'
+                          }`}
+                        >
+                          {offer.status === 'accepted'
+                            ? t(DECISION_LABEL_KEYS.accepted)
+                            : t(DECISION_LABEL_KEYS.lost)}
+                        </span>
+                        <span className="text-xs text-fg-muted whitespace-nowrap">
+                          {formatDate(offer.decided_at)}
+                        </span>
+                        <CompactDatePicker
+                          label=""
+                          value={isoDateInput(offer.decided_at)}
+                          onChange={(value) =>
+                            onMarkDecision(offer, offer.status as 'accepted' | 'lost', value)
+                          }
+                          disabled={isBusy}
+                        />
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <CompactDatePicker
+                          label=""
+                          value={decisionDate}
+                          onChange={setDecisionDate}
+                          disabled={isBusy}
+                        />
+                        <Button
+                          onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
+                          disabled={isBusy}
+                          variant="secondary"
+                          size="sm"
+                          className="h-7 w-7 rounded-lg border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 p-0"
+                          aria-label={t('dashboard.statusSteps.decision.markAccepted')}
+                          title={t('dashboard.statusSteps.decision.markAccepted')}
+                        >
+                          <CheckIcon aria-hidden="true" className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
+                          disabled={isBusy}
+                          variant="secondary"
+                          size="sm"
+                          className="h-7 w-7 rounded-lg border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 p-0"
+                          aria-label={t('dashboard.statusSteps.decision.markLost')}
+                          title={t('dashboard.statusSteps.decision.markLost')}
+                        >
+                          <XMarkIcon aria-hidden="true" className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </section>
 
-            {showRevertToDraft || showRevertDecision ? (
-              <div className="flex flex-wrap gap-2 text-xs text-fg">
-                {showRevertToDraft ? (
+            {/* Additional Info - Compact */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-2 py-1.5">
+                <CalendarDaysIcon className="h-3.5 w-3.5 text-fg-muted flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
+                    {t('dashboard.offerCard.created')}
+                  </p>
+                  <p className="text-xs font-semibold text-fg truncate">
+                    {formatDate(offer.created_at)}
+                  </p>
+                </div>
+              </div>
+              {offer.industry && (
+                <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-2 py-1.5">
+                  <Squares2X2Icon className="h-3.5 w-3.5 text-fg-muted flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
+                      {t('dashboard.offerCard.industry')}
+                    </p>
+                    <p className="text-xs font-semibold text-fg truncate">
+                      {offer.industry}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons - Compact */}
+            {(showRevertToDraft || showRevertDecision) && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {showRevertToDraft && (
                   <Button
                     onClick={() => onRevertToDraft(offer)}
                     disabled={isBusy}
                     variant="secondary"
                     size="sm"
-                    className="rounded-xl"
+                    className="h-7 px-3 text-xs rounded-lg"
                   >
                     {t('dashboard.actions.revertToDraft')}
                   </Button>
-                ) : null}
-                {showRevertDecision ? (
+                )}
+                {showRevertDecision && (
                   <Button
                     onClick={() => onRevertToSent(offer)}
                     disabled={isBusy}
                     variant="secondary"
                     size="sm"
-                    className="rounded-xl"
+                    className="h-7 px-3 text-xs rounded-lg"
                   >
                     {t('dashboard.actions.revertDecision')}
                   </Button>
-                ) : null}
+                )}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       )}
@@ -527,8 +559,8 @@ function CompactDatePicker({
   disabled?: boolean;
 }) {
   return (
-    <label className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 bg-white/90 px-3 text-xs font-semibold text-fg shadow-sm">
-      <span>{label}</span>
+    <label className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border/60 bg-white/90 px-2 text-xs font-medium text-fg shadow-sm hover:border-primary/60 transition-colors">
+      {label && <span className="text-[10px] text-fg-muted">{label}</span>}
       <input
         type="date"
         value={value}
@@ -538,7 +570,8 @@ function CompactDatePicker({
           onChange(next);
         }}
         disabled={disabled}
-        className="w-auto border-none bg-transparent p-0 text-xs font-semibold text-fg outline-none focus-visible:outline-none"
+        className="w-auto min-w-[100px] border-none bg-transparent p-0 text-xs font-semibold text-fg outline-none focus-visible:outline-none"
+        title={value || 'Válassz dátumot'}
       />
     </label>
   );
