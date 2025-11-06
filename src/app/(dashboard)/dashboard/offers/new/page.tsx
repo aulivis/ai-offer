@@ -4,7 +4,7 @@ import { t } from '@/copy';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
-import { StepIndicator, type StepIndicatorStep } from '@/components/StepIndicator';
+import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
 import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
 import { OfferSummarySection } from '@/components/offers/OfferSummarySection';
