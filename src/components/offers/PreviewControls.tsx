@@ -7,7 +7,7 @@ import { t } from '@/copy';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
 
 type PreviewControlsProps = {
-  templateOptions: Array<OfferTemplate & { legacyId?: string }>;
+  templateOptions: Array<OfferTemplate>;
   selectedTemplateId: TemplateId;
   defaultTemplateId: TemplateId;
   brandingPrimary: string;

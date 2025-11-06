@@ -25,7 +25,7 @@ type WizardPreviewPanelProps = {
   onAbort: () => void;
   onOpenFullscreen: () => void;
   isStreaming: boolean;
-  templateOptions: Array<OfferTemplate & { legacyId?: string }>;
+  templateOptions: Array<OfferTemplate>;
   selectedTemplateId: TemplateId;
   defaultTemplateId: TemplateId;
   brandingPrimary: string;

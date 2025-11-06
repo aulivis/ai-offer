@@ -19,9 +19,10 @@ import AppFrame from '@/components/AppFrame';
 import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
-  type OfferTemplateId,
+  normalizeTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
+import type { TemplateId } from '@/app/pdf/templates/types';
 import { useSupabase } from '@/components/SupabaseProvider';
 import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -293,19 +294,6 @@ function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';
 }
 
-function findTemplateIdByLegacyId(
-  templates: Array<OfferTemplate & { legacyId?: string }>,
-  legacyId: string | null | undefined,
-): TemplateId | null {
-  if (typeof legacyId !== 'string' || legacyId.trim().length === 0) {
-    return null;
-  }
-
-  const normalized = legacyId.trim();
-  const match = templates.find((template) => template.legacyId === normalized);
-  return match ? match.id : null;
-}
-
 function parseTemplateRow(row: {
   id?: unknown;
   name?: unknown;
@@ -376,7 +364,7 @@ export default function NewOfferWizard() {
   }, [allPdfTemplates, userTemplateTier]);
   const lockedPdfTemplates = useMemo(() => {
     if (userTemplateTier === 'premium') {
-      return [] as Array<OfferTemplate & { legacyId?: string }>;
+      return [] as Array<OfferTemplate>;
     }
     return allPdfTemplates.filter((template) => template.tier === 'premium');
   }, [allPdfTemplates, userTemplateTier]);
@@ -608,8 +596,7 @@ export default function NewOfferWizard() {
         planTierForTemplates === 'premium'
           ? allPdfTemplates
           : allPdfTemplates.filter((template) => template.tier === 'free');
-      const preferredTemplateId = findTemplateIdByLegacyId(
-        allPdfTemplates,
+      const preferredTemplateId = normalizeTemplateId(
         typeof prof?.offer_template === 'string' ? prof.offer_template : null,
       );
       const initialTemplateId =
@@ -715,11 +702,9 @@ export default function NewOfferWizard() {
     }
     return trimmed;
   }, [editedHtml, previewHtml]);
-  const selectedLegacyTemplateId = useMemo<OfferTemplateId>(() => {
-    if (selectedPdfTemplate && typeof selectedPdfTemplate.legacyId === 'string') {
-      return selectedPdfTemplate.legacyId as OfferTemplateId;
-    }
-    return DEFAULT_OFFER_TEMPLATE_ID;
+  const selectedLegacyTemplateId = useMemo<TemplateId>(() => {
+    // Use the template ID directly (no longer need legacy ID)
+    return selectedPdfTemplate?.id ?? DEFAULT_OFFER_TEMPLATE_ID;
   }, [selectedPdfTemplate]);
 
   useEffect(() => {

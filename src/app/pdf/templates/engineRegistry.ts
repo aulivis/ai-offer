@@ -204,16 +204,7 @@ export function registerTemplate(templateModule: unknown): OfferTemplate {
 
   templates.set(template.id, template);
 
-  const legacyId = extractLegacyId(template);
-  if (legacyId) {
-    if (legacyTemplates.has(legacyId)) {
-      throw new TemplateRegistrationError(
-        `Failed to register template "${template.id}": legacy id "${legacyId}" already registered.`,
-      );
-    }
-    legacyTemplates.set(legacyId, template);
-  }
-
+  // Store template ID in legacy map for backward compatibility (allows lookup by template ID)
   legacyTemplates.set(template.id, template);
 
   // Store metadata

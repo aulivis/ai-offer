@@ -12,7 +12,7 @@ import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry'
 import { normalizeBranding } from '@/app/pdf/templates/theme';
 import { getBrandLogoUrl } from '@/lib/branding';
 import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
-import { type SubscriptionPlan } from '@/app/lib/offerTemplates';
+import { normalizeTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import { v4 as uuid } from 'uuid';
@@ -71,18 +71,6 @@ function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';
 }
 
-function findTemplateIdByLegacyId(
-  templates: Array<OfferTemplate & { legacyId?: string }>,
-  legacyId: string | null | undefined,
-): TemplateId | null {
-  if (typeof legacyId !== 'string' || legacyId.trim().length === 0) {
-    return null;
-  }
-
-  const normalized = legacyId.trim();
-  const match = templates.find((template) => template.legacyId === normalized);
-  return match ? match.id : null;
-}
 
 function normalizeUsageLimitError(message: string | undefined): string | null {
   if (!message) return null;
@@ -976,10 +964,10 @@ Különös figyelmet fordít a következőkre:
     });
 
     const planTier = planToTemplateTier(plan);
-    const allTemplates = listTemplates() as Array<OfferTemplate & { legacyId?: string }>;
+    const allTemplates = listTemplates() as Array<OfferTemplate>;
     const fallbackTemplate =
       allTemplates.find((tpl) => tpl.id === DEFAULT_TEMPLATE_ID) ||
-      (loadTemplate(DEFAULT_TEMPLATE_ID) as OfferTemplate & { legacyId?: string });
+      loadTemplate(DEFAULT_TEMPLATE_ID);
 
     const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
     const defaultTemplateForPlan =
@@ -1005,8 +993,7 @@ Különös figyelmet fordít a következőkre:
       );
     }
 
-    const profileTemplateId = findTemplateIdByLegacyId(
-      allTemplates,
+    const profileTemplateId = normalizeTemplateId(
       typeof profile?.offer_template === 'string' ? profile.offer_template : null,
     );
     const profileTemplate = profileTemplateId
@@ -1030,7 +1017,10 @@ Különös figyelmet fordít a következőkre:
     }
 
     const resolvedTemplateId = template.id;
-    const resolvedLegacyTemplateId = (template as { legacyId?: string }).legacyId ?? 'modern';
+    // Use template ID directly (no legacy ID needed)
+    const resolvedLegacyTemplateId = template.id.includes('@') 
+      ? template.id.split('@')[0] 
+      : template.id;
 
     const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 

@@ -1,8 +1,8 @@
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
-  isOfferTemplateId,
-  type OfferTemplateId,
+  normalizeTemplateId,
 } from './offerTemplates';
+import type { TemplateId } from '@/app/pdf/templates/types';
 import { renderSectionHeading } from './offerSections';
 import { PRINT_BASE_CSS } from '@/app/pdf/print.css';
 import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
@@ -687,7 +687,7 @@ export interface OfferDocumentMarkupProps {
   aiBodyHtml: string;
   priceTableHtml: string;
   branding?: OfferBrandingOptions;
-  templateId?: OfferTemplateId | null;
+  templateId?: TemplateId | null;
   issueDate?: string | null;
   contactName?: string | null;
   contactEmail?: string | null;
@@ -749,7 +749,7 @@ export function offerBodyMarkup({
   const logoUrl = sanitizeBrandLogoUrl(branding?.logoUrl);
   const styleAttr = `--brand-primary: ${primaryColor}; --brand-primary-contrast: ${primaryContrast}; --brand-secondary: ${secondaryColor}; --brand-secondary-border: ${borderColor}; --brand-secondary-text: ${mutedColor}; --brand-muted: ${mutedColor}; --brand-text: ${textColor}; --brand-bg: ${backgroundColor}; --brand-border: ${borderColor}; --text: ${textColor}; --muted: ${mutedColor}; --border: ${borderColor}; --bg: ${backgroundColor};`;
   const safeStyleAttr = sanitizeInput(styleAttr);
-  const normalizedTemplate = isOfferTemplateId(templateId) ? templateId : DEFAULT_OFFER_TEMPLATE_ID;
+  const normalizedTemplate = normalizeTemplateId(templateId);
   const fallbackValue = '—';
   const safeIssueDate = sanitizeInput(issueDate || '');
   const resolvedIssueDate = safeIssueDate || fallbackValue;

@@ -1,14 +1,12 @@
 import type { OfferTemplate } from '../types';
-import type { OfferTemplateId as LegacyOfferTemplateId } from '@/app/lib/offerTemplates';
 
 import { renderBody } from './partials/body';
 import { renderHead } from './partials/head';
 import { pdfStyles, templateStyles } from './styles.css';
 import { premiumModernTokens } from './tokens';
 
-export const premiumModernTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId } = {
+export const premiumModernTemplate: OfferTemplate = {
   id: 'premium.modern@1.0.0',
-  legacyId: 'premium-modern',
   tier: 'premium',
   label: 'Modern Professional',
   version: '1.0.0',

@@ -97,14 +97,15 @@ export default function NewOfferPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(true);
   const templateOptions = useMemo(
-    () => listTemplates() as Array<OfferTemplate & { legacyId?: string }>,
+    () => listTemplates() as Array<OfferTemplate>,
     [],
   );
   const defaultTemplateId = useMemo<TemplateId>(() => {
-    const legacyMatch = templateOptions.find(
-      (template) => template.legacyId === DEFAULT_OFFER_TEMPLATE_ID,
+    // Find template matching default ID, or use first available
+    const defaultMatch = templateOptions.find(
+      (template) => template.id === DEFAULT_OFFER_TEMPLATE_ID,
     );
-    return (legacyMatch ?? templateOptions[0])?.id ?? DEFAULT_OFFER_TEMPLATE_ID;
+    return (defaultMatch ?? templateOptions[0])?.id ?? DEFAULT_OFFER_TEMPLATE_ID;
   }, [templateOptions]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateId>(defaultTemplateId);
   const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');

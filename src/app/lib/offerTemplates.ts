@@ -1,53 +1,79 @@
+import type { TemplateId, TemplateTier } from '@/app/pdf/templates/types';
+import { listTemplateMetadata, getOfferTemplateByLegacyId, loadTemplate } from '@/app/pdf/templates/engineRegistry';
+
 export type SubscriptionPlan = 'free' | 'standard' | 'pro';
 
-export const OFFER_TEMPLATES = [
-  {
-    id: 'modern',
-    label: 'Modern minimal',
-    description: 'Letisztult, jól olvasható struktúra finom színkiemeléssel.',
-    access: 'all' as const,
-    previewVariant: 'modern',
-  },
-  {
-    id: 'premium-banner',
-    label: 'Prémium szalagos',
-    description: 'Színes fejléccel és kártyás elrendezéssel emeli ki a márkádat.',
-    access: 'pro' as const,
-    previewVariant: 'premium',
-  },
-] as const;
+// Default template ID using the new template system
+export const DEFAULT_OFFER_TEMPLATE_ID: TemplateId = 'free.base@1.1.0';
 
-export type OfferTemplateDefinition = (typeof OFFER_TEMPLATES)[number];
-export type OfferTemplateId = OfferTemplateDefinition['id'];
+// Legacy ID mappings for backward compatibility during migration
+const LEGACY_ID_MAP: Record<string, TemplateId> = {
+  'modern': 'free.base@1.1.0',
+  'premium-banner': 'premium.elegant@1.1.0',
+  'premium': 'premium.elegant@1.1.0',
+  'premium_banner': 'premium.elegant@1.1.0',
+};
 
-export const DEFAULT_OFFER_TEMPLATE_ID: OfferTemplateId = 'modern';
-
-export function isOfferTemplateId(value: unknown): value is OfferTemplateId {
-  return OFFER_TEMPLATES.some((template) => template.id === value);
+/**
+ * Convert legacy template ID to new template ID
+ */
+export function normalizeTemplateId(id: string | null | undefined): TemplateId {
+  if (!id) {
+    return DEFAULT_OFFER_TEMPLATE_ID;
+  }
+  
+  // Check if it's already a new template ID (contains @)
+  if (id.includes('@')) {
+    return id as TemplateId;
+  }
+  
+  // Check legacy ID mapping
+  if (LEGACY_ID_MAP[id]) {
+    return LEGACY_ID_MAP[id];
+  }
+  
+  // Try to load by legacy ID (for templates that still have legacyId property)
+  try {
+    const template = getOfferTemplateByLegacyId(id);
+    return template.id;
+  } catch {
+    // Fallback to default
+    return DEFAULT_OFFER_TEMPLATE_ID;
+  }
 }
 
-export function offerTemplateRequiresPro(id: OfferTemplateId): boolean {
-  const template = OFFER_TEMPLATES.find((item) => item.id === id);
-  return template?.access === 'pro';
+/**
+ * Check if a template requires pro plan
+ */
+export function templateRequiresPro(templateId: TemplateId): boolean {
+  try {
+    const template = loadTemplate(templateId);
+    return template.tier === 'premium';
+  } catch {
+    return false;
+  }
 }
 
+/**
+ * Enforce template access based on plan
+ */
 export function enforceTemplateForPlan(
   requested: string | null | undefined,
   plan: SubscriptionPlan,
-): OfferTemplateId {
-  if (!isOfferTemplateId(requested)) {
+): TemplateId {
+  const normalizedId = normalizeTemplateId(requested);
+  
+  // If template requires pro and user doesn't have pro plan, use default
+  if (templateRequiresPro(normalizedId) && plan !== 'pro') {
     return DEFAULT_OFFER_TEMPLATE_ID;
   }
-  if (offerTemplateRequiresPro(requested) && plan !== 'pro') {
-    return DEFAULT_OFFER_TEMPLATE_ID;
-  }
-  return requested;
+  
+  return normalizedId;
 }
 
-export function getOfferTemplateDefinition(id: OfferTemplateId): OfferTemplateDefinition {
-  const template = OFFER_TEMPLATES.find((item) => item.id === id);
-  if (!template) {
-    return OFFER_TEMPLATES[0];
-  }
-  return template;
+/**
+ * Get template tier for a given plan
+ */
+export function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+  return plan === 'pro' ? 'premium' : 'free';
 }

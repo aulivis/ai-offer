@@ -11,12 +11,8 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
   enforceTemplateForPlan,
-  type OfferTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
-import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
-import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
-import { listTemplates as listSDKTemplates } from '@/app/pdf/templates/registry';
 import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
 import { uploadWithProgress } from '@/lib/uploadWithProgress';
 import { normalizeBrandHex } from '@/lib/branding';
@@ -33,7 +29,6 @@ import {
   KeyIcon,
   BuildingOfficeIcon,
   PaintBrushIcon,
-  DocumentTextIcon,
   CubeIcon,
   CheckCircleIcon,
   XMarkIcon,
@@ -55,7 +50,7 @@ type Profile = {
   brand_logo_path?: string | null;
   brand_color_primary?: string | null;
   brand_color_secondary?: string | null;
-  offer_template?: OfferTemplateId | null;
+  offer_template?: TemplateId | null;
 };
 
 type ActivityRow = {
@@ -371,12 +366,6 @@ export default function SettingsPage() {
       href: '#branding',
     },
     {
-      id: 'templates',
-      label: t('settings.templates.title'),
-      icon: <DocumentTextIcon className="h-5 w-5" />,
-      href: '#templates',
-    },
-    {
       id: 'activities',
       label: t('settings.activities.title'),
       icon: <CubeIcon className="h-5 w-5" />,
@@ -411,99 +400,7 @@ export default function SettingsPage() {
 
   const primaryPreview = normalizeBrandHex(profile.brand_color_primary) ?? '#1c274c';
   const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
-  const selectedTemplateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
-  const canUseProTemplates = plan === 'pro';
   const canUploadBrandLogo = plan !== 'free';
-
-  const availableTemplates = useMemo(() => {
-    const engineTemplates = listTemplateMetadata();
-    const sdkTemplates = listSDKTemplates();
-
-    type CombinedTemplate = TemplateMetadata & { preview?: string };
-    const templateMap = new Map<string, CombinedTemplate>();
-    const usedEngineIds = new Set<string>();
-
-    sdkTemplates.forEach((template) => {
-      const legacyId =
-        template.id === 'pro.nordic'
-          ? 'pro.nordic'
-          : template.id === 'free.base'
-            ? 'modern'
-            : template.id;
-      const sdkTemplate: CombinedTemplate = {
-        id: template.id,
-        label: template.name,
-        tier: template.id.includes('pro.') ? ('premium' as const) : ('free' as const),
-        version: template.version,
-        name: template.name,
-      };
-      if (template.preview) {
-        sdkTemplate.preview = template.preview;
-      }
-      templateMap.set(legacyId, sdkTemplate);
-    });
-
-    engineTemplates.forEach((template) => {
-      const legacyId =
-        template.id === 'free.base'
-          ? 'modern'
-          : template.id === 'premium.elegant'
-            ? 'premium-banner'
-            : template.id === 'premium.modern'
-              ? 'premium-banner'
-              : template.id;
-
-      if (!templateMap.has(legacyId) && !usedEngineIds.has(template.id)) {
-        templateMap.set(legacyId, template);
-        usedEngineIds.add(template.id);
-      }
-    });
-
-    return Array.from(templateMap.values()).sort((a, b) => {
-      if (a.tier === 'premium' && b.tier !== 'premium') return 1;
-      if (a.tier !== 'premium' && b.tier === 'premium') return -1;
-      return a.label.localeCompare(b.label, 'hu');
-    });
-  }, []);
-
-  function renderTemplatePreview(variant: 'modern' | 'premium') {
-    if (variant === 'premium') {
-      return (
-        <div className="flex h-32 flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm">
-          <div
-            className="h-20 w-full"
-            style={{
-              background: `linear-gradient(135deg, ${primaryPreview}, ${secondaryPreview})`,
-            }}
-          />
-          <div className="flex flex-1 items-center gap-2 px-3 py-2 text-[10px] text-slate-500">
-            <div className="h-10 w-10 rounded-xl border border-border bg-white/80 shadow-sm" />
-            <div className="flex-1 rounded-lg border border-border/70 bg-white px-2 py-1">
-              {t('settings.branding.preview.tableLabel')}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex h-32 flex-col justify-between overflow-hidden rounded-xl border border-border bg-white shadow-sm">
-        <div className="h-2 w-full" style={{ backgroundColor: primaryPreview }} />
-        <div className="px-3 py-2 text-[10px] text-slate-500">
-          <div className="h-3 w-2/5 rounded-full" style={{ backgroundColor: primaryPreview }} />
-          <div className="mt-3 grid grid-cols-4 gap-1">
-            <div
-              className="col-span-3 rounded-md border border-border/80 bg-white px-2 py-1 shadow-sm"
-              style={{ borderTopColor: primaryPreview }}
-            >
-              {t('settings.branding.preview.detailsLabel')}
-            </div>
-            <div className="col-span-1 rounded-md border border-border bg-slate-50" />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
@@ -1480,20 +1377,6 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
-                  <div className="space-y-3 rounded-xl border border-border/60 bg-white p-4 shadow-sm">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Modern sablon előnézet
-                    </span>
-                    {renderTemplatePreview('modern')}
-                  </div>
-                  <div className="space-y-3 rounded-xl border border-border/60 bg-white p-4 shadow-sm">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Premium sablon előnézet
-                    </span>
-                    {renderTemplatePreview('premium')}
-                  </div>
-                </div>
               </div>
 
               <input
@@ -1518,135 +1401,6 @@ export default function SettingsPage() {
             </div>
           </Card>
 
-          {/* Templates Section */}
-          <Card
-            id="templates"
-            as="section"
-            className="scroll-mt-24"
-            header={
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <DocumentTextIcon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">{t('settings.templates.title')}</h2>
-                    <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
-                  </div>
-                </div>
-              </CardHeader>
-            }
-          >
-            <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {availableTemplates.map((template) => {
-                  const templateId = template.id as OfferTemplateId;
-                  const requiresPro = template.tier === 'premium';
-                  const requiresUpgrade = requiresPro && !canUseProTemplates;
-                  const isSelected = selectedTemplateId === templateId;
-
-                  const handleSelect = () => {
-                    if (requiresUpgrade) {
-                      openPlanUpgradeDialog({
-                        description: t('app.planUpgradeModal.reasons.proTemplates'),
-                      });
-                      return;
-                    }
-
-                    if (selectedTemplateId !== templateId) {
-                      setProfile((prev) => ({ ...prev, offer_template: templateId }));
-                      saveProfile('branding');
-                    }
-                  };
-
-                  return (
-                    <button
-                      key={template.id}
-                      type="button"
-                      disabled={requiresUpgrade}
-                      onClick={handleSelect}
-                      aria-pressed={isSelected}
-                      aria-label={`Válassza ki a ${template.label} sablont`}
-                      className={`group relative flex h-full flex-col gap-3 rounded-xl border-2 p-4 text-left transition-all ${
-                        isSelected
-                          ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/30'
-                          : 'border-border bg-white hover:border-primary/50 hover:shadow-md'
-                      } ${requiresUpgrade ? 'cursor-not-allowed opacity-60' : 'cursor-pointer active:scale-[0.98]'}`}
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm">
-                        {template.preview ? (
-                          <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={template.preview}
-                              alt={`${template.label} előnézet`}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                const parent = target.parentElement;
-                                if (parent) {
-                                  parent.classList.add('flex', 'items-center', 'justify-center');
-                                  parent.innerHTML = `<span class="text-xs font-medium text-slate-400">${template.label}</span>`;
-                                }
-                              }}
-                            />
-                          </>
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <div className="text-center">
-                              <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
-                              <span className="text-xs font-medium text-slate-400">{template.label}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {isSelected && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-[1px]">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-2 ring-white">
-                              <CheckCircleIcon className="h-6 w-6" />
-                            </div>
-                          </div>
-                        )}
-
-                        {requiresPro && (
-                          <div className="absolute top-2 right-2">
-                            <span className="rounded-full bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-                              PRO
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <h3 className="text-sm font-semibold text-slate-900">{template.label}</h3>
-                        </div>
-                        {(template.description || template.marketingHighlight) && (
-                          <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
-                            {template.description || template.marketingHighlight}
-                          </p>
-                        )}
-
-                        {requiresUpgrade && (
-                          <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-amber-600">
-                            <LockClosedIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                            <span>{t('settings.templates.proOnly')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {!canUseProTemplates && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4">
-                  <p className="text-sm text-amber-800">{t('settings.templates.upgradeHint')}</p>
-                </div>
-              )}
-            </div>
-          </Card>
 
           {/* Activities Section */}
           <Card

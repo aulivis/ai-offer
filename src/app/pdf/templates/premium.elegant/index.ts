@@ -1,14 +1,12 @@
 import type { OfferTemplate } from '../types';
-import type { OfferTemplateId as LegacyOfferTemplateId } from '@/app/lib/offerTemplates';
 
 import { renderBody } from './partials/body';
 import { renderHead } from './partials/head';
 import { pdfStyles, templateStyles } from './styles.css';
 import { premiumElegantTokens } from './tokens';
 
-export const premiumElegantTemplate: OfferTemplate & { legacyId: LegacyOfferTemplateId } = {
+export const premiumElegantTemplate: OfferTemplate = {
   id: 'premium.elegant@1.1.0',
-  legacyId: 'premium-banner',
   tier: 'premium',
   label: 'Prémium szalagos',
   version: '1.1.0',
