@@ -594,8 +594,27 @@ export default function DashboardPage() {
     };
 
     loadInitialPage();
+    
+    // Refresh offers when page becomes visible (e.g., after redirect from offer creation)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && active) {
+        loadInitialPage();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Also refresh after a short delay to catch any updates that happened during redirect
+    const refreshTimeout = setTimeout(() => {
+      if (active) {
+        loadInitialPage();
+      }
+    }, 2000);
+    
     return () => {
       active = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(refreshTimeout);
     };
   }, [authStatus, fetchPage, showToast, sb, user]);
 
@@ -971,7 +990,15 @@ export default function DashboardPage() {
           const updated = payload.new as Partial<Offer> & { id?: string };
           if (!updated || typeof updated.id !== 'string') return;
           
-          // Log PDF URL updates for debugging
+          // Log all updates for debugging
+          console.log('Offer updated via realtime subscription', {
+            offerId: updated.id,
+            updatedFields: Object.keys(updated),
+            pdfUrl: updated.pdf_url,
+            oldPdfUrl: payload.old ? (payload.old as { pdf_url?: string | null }).pdf_url : null,
+          });
+          
+          // Log PDF URL updates specifically
           if (updated.pdf_url && payload.old && (payload.old as { pdf_url?: string | null }).pdf_url !== updated.pdf_url) {
             console.log('Offer PDF URL updated via realtime', {
               offerId: updated.id,

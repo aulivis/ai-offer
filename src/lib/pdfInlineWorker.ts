@@ -291,6 +291,12 @@ export async function processPdfJobInline(
 
     // Increment quota AFTER offer update succeeds
     // If this fails, we can rollback the offer update if needed
+    console.log('Attempting to increment user quota', {
+      userId: job.userId,
+      limit: job.userLimit,
+      periodStart: job.usagePeriodStart,
+    });
+    
     const usageResult = await incrementUsage(
       supabase,
       'user',
@@ -298,7 +304,19 @@ export async function processPdfJobInline(
       job.userLimit,
       job.usagePeriodStart,
     );
+    
+    console.log('User quota increment result', {
+      allowed: usageResult.allowed,
+      offersGenerated: usageResult.offersGenerated,
+      periodStart: usageResult.periodStart,
+    });
+    
     if (!usageResult.allowed) {
+      console.error('User quota increment not allowed, rolling back offer update', {
+        userId: job.userId,
+        offersGenerated: usageResult.offersGenerated,
+        limit: job.userLimit,
+      });
       // Rollback offer update if quota check fails
       await supabase
         .from('offers')
@@ -308,8 +326,19 @@ export async function processPdfJobInline(
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
     userUsageIncremented = true;
+    console.log('User quota incremented successfully', {
+      userId: job.userId,
+      newUsage: usageResult.offersGenerated,
+    });
 
     if (job.deviceId && job.deviceLimit != null) {
+      console.log('Attempting to increment device quota', {
+        userId: job.userId,
+        deviceId: job.deviceId,
+        limit: job.deviceLimit,
+        periodStart: job.usagePeriodStart,
+      });
+      
       const deviceResult = await incrementUsage(
         supabase,
         'device',
@@ -317,7 +346,20 @@ export async function processPdfJobInline(
         job.deviceLimit ?? null,
         job.usagePeriodStart,
       );
+      
+      console.log('Device quota increment result', {
+        allowed: deviceResult.allowed,
+        offersGenerated: deviceResult.offersGenerated,
+        periodStart: deviceResult.periodStart,
+      });
+      
       if (!deviceResult.allowed) {
+        console.error('Device quota increment not allowed, rolling back', {
+          userId: job.userId,
+          deviceId: job.deviceId,
+          offersGenerated: deviceResult.offersGenerated,
+          limit: job.deviceLimit,
+        });
         // Rollback user quota and offer update if device quota check fails
         await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart);
         await supabase
@@ -328,6 +370,11 @@ export async function processPdfJobInline(
         throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
       }
       deviceUsageIncremented = true;
+      console.log('Device quota incremented successfully', {
+        userId: job.userId,
+        deviceId: job.deviceId,
+        newUsage: deviceResult.offersGenerated,
+      });
     }
 
     const { error: jobCompleteError } = await supabase
@@ -366,6 +413,14 @@ export async function processPdfJobInline(
       }
     }
 
+    console.log('PDF job completed successfully', {
+      jobId: job.jobId,
+      offerId: job.offerId,
+      pdfUrl,
+      userUsageIncremented,
+      deviceUsageIncremented,
+    });
+    
     return pdfUrl;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
