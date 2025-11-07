@@ -21,7 +21,6 @@ type NavItem = {
 };
 
 const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
-  { href: '/demo', labelKey: 'nav.demo' },
   { href: '/#case-studies', labelKey: 'nav.caseStudies' },
   { href: '/billing', labelKey: 'nav.billing' },
 ];
@@ -167,7 +166,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {t('nav.login')}
               </Link>
               <Link
-                href="/demo"
+                href="/login"
                 className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
               >
                 {t('nav.freeTrial')}
@@ -246,7 +245,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   {t('nav.login')}
                 </Link>
                 <Link
-                  href="/demo"
+                  href="/login"
                   className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
                   onClick={closeMenu}
                 >

@@ -145,7 +145,7 @@ export default function QuotaWarningBar() {
       limit !== null && typeof limit === 'number' && confirmed + pendingUser >= limit;
 
     // Check device quota exhaustion (only for free plan)
-    const deviceLimit = plan === 'free' && typeof limit === 'number' ? 3 : null;
+    const deviceLimit = plan === 'free' && typeof limit === 'number' ? 2 : null;
     const deviceConfirmed = confirmedDevice ?? 0;
     const devicePending = pendingDevice ?? 0;
     const deviceQuotaExhausted =

@@ -1029,7 +1029,7 @@ function PublicBillingLanding() {
                 </svg>
               </Link>
               <Link
-                href="/demo"
+                href="/login"
                 className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-white px-8 py-4 text-base font-semibold text-slate-700 transition-all duration-200 hover:border-primary hover:text-primary hover:shadow-md"
               >
                 {t('billing.public.hero.ctaSecondary')}

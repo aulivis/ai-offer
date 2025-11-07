@@ -20,7 +20,7 @@ export function getMonthlyOfferLimit(plan: SubscriptionPlan): number | null {
     return null;
   }
   if (plan === 'standard') {
-    return 10;
+    return 5;
   }
-  return 3;
+  return 2;
 }

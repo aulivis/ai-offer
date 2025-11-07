@@ -79,7 +79,7 @@ export const hu = {
   announcementBar: {
     message: 'Új ajánlat sablonok a Vyndiben',
     cta: 'Próbáld ki most',
-    ctaHref: '/demo',
+    ctaHref: '/login',
   },
   quotaWarningBar: {
     message: {
@@ -457,9 +457,9 @@ export const hu = {
         badge: 'Belépő csomag',
         name: 'Vyndi Standard',
         description:
-          '10 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
+          '5 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
         features: {
-          0: '• 10 ajánlat / hónap',
+          0: '• 5 ajánlat / hónap',
           1: '• Márkázott PDF export',
           2: '• Alap sablonok + logó feltöltés',
         },
@@ -524,7 +524,7 @@ export const hu = {
       },
       standard: {
         description:
-          '10 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
+          '5 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
         cta: 'Standard csomag aktiválása',
       },
       pro: {

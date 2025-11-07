@@ -1217,9 +1217,9 @@ export default function DashboardPage() {
     if (quotaSnapshot.plan === 'pro') {
       displayLimit = null; // Unlimited for pro
     } else if (quotaSnapshot.plan === 'standard') {
-      displayLimit = 10;
+      displayLimit = 5;
     } else {
-      displayLimit = 3; // Free plan
+      displayLimit = 2; // Free plan
     }
     
     if (displayLimit === null) {
@@ -1242,9 +1242,9 @@ export default function DashboardPage() {
     if (quotaSnapshot.plan === 'pro') {
       displayLimit = null; // Unlimited for pro
     } else if (quotaSnapshot.plan === 'standard') {
-      displayLimit = 10;
+      displayLimit = 5;
     } else {
-      displayLimit = 3; // Free plan
+      displayLimit = 2; // Free plan
     }
     // For unlimited plans, show only the plan info
     if (displayLimit === null) {
@@ -1408,7 +1408,7 @@ export default function DashboardPage() {
                       ? {
                           progress: {
                             used: quotaSnapshot.used + quotaSnapshot.pending,
-                            limit: quotaSnapshot.plan === 'standard' ? 10 : 3,
+                            limit: quotaSnapshot.plan === 'standard' ? 5 : 2,
                           },
                         }
                       : {})}

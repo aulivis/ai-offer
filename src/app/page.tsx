@@ -356,7 +356,7 @@ export default function Home() {
                 </svg>
               </Link>
               <Link
-                href="/demo"
+                href="/login"
                 className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
               >
                 <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -495,10 +495,10 @@ export default function Home() {
               </ul>
               <div className="mt-8">
                 <Link
-                  href="/demo"
+                  href="/new"
                   className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:shadow-pop hover:scale-105"
                 >
-                  Teljes bemutató megtekintése
+                  Kezdj el ajánlatot készíteni
                   <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -647,7 +647,7 @@ export default function Home() {
       </section>
 
       {/* CASE STUDIES SECTION */}
-      <section className="mx-auto w-full max-w-6xl px-6">
+      <section id="case-studies" className="mx-auto w-full max-w-6xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
             Esettanulmányok
