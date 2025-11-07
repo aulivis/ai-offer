@@ -356,7 +356,7 @@ export default function Home() {
   return (
     <main id="main" className="flex flex-col gap-20 pb-24 md:gap-28">
       {/* HERO SECTION - Cleaner design */}
-      <section className="relative mx-auto w-full max-w-7xl px-6 pt-12 md:pt-20">
+      <section className="relative mx-auto w-full max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="mx-auto max-w-4xl text-center">
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">

@@ -1002,7 +1002,7 @@ function PublicBillingLanding() {
   return (
     <main id="main" className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary/5 pb-16 pt-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary/5 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
         <div className="mx-auto w-full max-w-7xl px-6">
           <div className="mx-auto max-w-4xl text-center">

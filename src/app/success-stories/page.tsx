@@ -64,8 +64,9 @@ const caseStudies = [
 
 export default function SuccessStoriesPage() {
   return (
-    <main id="main" className="mx-auto w-full max-w-7xl px-6 py-12 md:py-20">
-      <div className="mx-auto max-w-3xl text-center">
+    <main id="main" className="mx-auto w-full max-w-7xl px-6">
+      {/* Hero Section */}
+      <section className="mx-auto max-w-3xl pt-16 pb-20 text-center md:pt-24 md:pb-28">
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
           Sikertörténetek
         </span>
@@ -76,7 +77,7 @@ export default function SuccessStoriesPage() {
           Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat és
           javítani az üzleti eredményeiket.
         </p>
-      </div>
+      </section>
 
       <div className="mt-16 grid gap-12 md:grid-cols-2 lg:grid-cols-3">
         {caseStudies.map((study, index) => (

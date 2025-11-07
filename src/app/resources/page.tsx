@@ -108,9 +108,9 @@ const resources = [
 
 export default function ResourcesPage() {
   return (
-    <main id="main" className="mx-auto w-full max-w-7xl px-6 py-12 md:py-20">
+    <main id="main" className="mx-auto w-full max-w-7xl px-6">
       {/* Hero Section */}
-      <div className="relative mx-auto max-w-4xl text-center">
+      <section className="relative mx-auto max-w-4xl pt-16 pb-20 text-center md:pt-24 md:pb-28">
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-3xl opacity-30" />
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-gradient-to-r from-primary/10 to-accent/10 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-primary shadow-sm">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +124,7 @@ export default function ResourcesPage() {
         <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-fg-muted">
           Hozzáférhetsz útmutatókhoz, sablonokhoz, cikkekhez és videókhoz az ajánlatkészítésről.
         </p>
-      </div>
+      </section>
 
       {/* Resources Grid */}
       <div className="mt-20 space-y-16">
