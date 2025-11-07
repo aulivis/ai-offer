@@ -206,9 +206,8 @@ export async function getUsageWithPending(
   const { iso: defaultPeriod } = currentMonthStart();
   const normalizedPeriod = normalizeDate(periodStart, defaultPeriod);
 
-  const [{ data: profile, error: profileError }, usageState] = await Promise.all([
+  const [{ data: profile, error: profileError }] = await Promise.all([
     sb.from('profiles').select('plan').eq('id', userId).maybeSingle(),
-    ensureUsageCounter(sb, 'user', { userId }, normalizedPeriod),
   ]);
 
   if (profileError) {
@@ -225,30 +224,32 @@ export async function getUsageWithPending(
     limit = plan === 'standard' ? 5 : 2;
   }
 
-  const confirmed = Number.isFinite(usageState.offersGenerated) ? usageState.offersGenerated : 0;
+  // Use checkQuotaWithPending to get the same quota values that PDF generation uses
+  // This ensures consistency between display and enforcement
+  const quotaCheck = await checkQuotaWithPending(sb, userId, limit, normalizedPeriod);
+  const confirmed = quotaCheck.confirmedCount;
+  const pendingUser = quotaCheck.pendingCount;
 
-  let pendingUser = 0;
   let pendingDevice: number | null = null;
   let confirmedDevice: number | null = null;
 
-  pendingUser = await countPendingPdfJobs(sb, {
-    userId,
-    periodStart: usageState.periodStart,
-  });
-
   if (deviceId) {
-    pendingDevice = await countPendingPdfJobs(sb, {
+    // Use checkDeviceQuotaWithPending for device quota as well
+    const deviceQuotaCheck = await checkDeviceQuotaWithPending(
+      sb,
       userId,
-      periodStart: usageState.periodStart,
       deviceId,
-    });
-
-    // Get device confirmed count
-    const deviceUsageState = await getDeviceUsageSnapshot(sb, userId, deviceId, normalizedPeriod);
-    confirmedDevice = Number.isFinite(deviceUsageState.offersGenerated)
-      ? deviceUsageState.offersGenerated
-      : 0;
+      plan === 'free' && typeof limit === 'number' ? 3 : null,
+      normalizedPeriod,
+    );
+    pendingDevice = deviceQuotaCheck.pendingCount;
+    confirmedDevice = deviceQuotaCheck.confirmedCount;
   }
+
+  // Get period start from usage counter to ensure consistency
+  // Even though we used checkQuotaWithPending, we need the actual period start
+  // for the return value. The period should match normalizedPeriod, but we'll verify
+  const usageState = await ensureUsageCounter(sb, 'user', { userId }, normalizedPeriod);
 
   const remaining =
     typeof limit === 'number' && Number.isFinite(limit)
