@@ -1748,6 +1748,12 @@ export default function NewOfferWizard() {
       }
 
       clearDraft();
+      
+      // Wait a moment for quota to be updated on the backend before redirecting
+      // This gives the PDF worker time to increment the quota counter
+      // The delay ensures the dashboard will show the updated quota
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       router.replace('/dashboard');
     } finally {
       setLoading(false);
@@ -2493,11 +2499,36 @@ export default function NewOfferWizard() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                     {t('offers.wizard.previewTemplates.previewHeading')}
                   </p>
-                  {selectedPdfTemplate ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                      {selectedPdfTemplate.label}
-                    </span>
-                  ) : null}
+                  <div className="flex items-center gap-2">
+                    {selectedPdfTemplate ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                        {selectedPdfTemplate.label}
+                      </span>
+                    ) : null}
+                    {previewDocumentHtml && (
+                      <button
+                        type="button"
+                        onClick={() => setIsPreviewFullscreen(true)}
+                        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                        aria-label={t('wizard.preview.fullscreenButton')}
+                        title={t('wizard.preview.fullscreenButton')}
+                      >
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3">
                   {/* Preview container matching A4 dimensions with proper scaling */}
@@ -2769,8 +2800,19 @@ export default function NewOfferWizard() {
         onClose={() => setIsPreviewFullscreen(false)}
         previewHtml={previewDocumentHtml}
         zoom={fullscreenZoom}
+        onZoomChange={(newZoom) => {
+          setFullscreenZoom(newZoom);
+          setPreviewZoom(newZoom);
+        }}
         showMarginGuides={showMarginGuides}
+        onToggleMarginGuides={setShowMarginGuides}
         title={t('wizard.preview.fullscreenTitle')}
+        templateOptions={availablePdfTemplates}
+        selectedTemplateId={selectedPdfTemplateId ?? availablePdfTemplates[0]?.id}
+        defaultTemplateId={availablePdfTemplates[0]?.id}
+        onTemplateChange={(templateId) => {
+          setSelectedPdfTemplateId(templateId);
+        }}
       />
       </AppFrame>
     </ErrorBoundary>

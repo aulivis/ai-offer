@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ensureSession, resetSessionState } from '@/lib/supabaseClient';
+import { t } from '@/copy';
 
 /**
  * Client-side session initialization page.
@@ -65,15 +66,15 @@ export default function InitSessionPage() {
             });
             
             if (!errorData.hasCookies) {
-              throw new Error('Authentication cookies not found. Please try logging in again.');
+              throw new Error(t('errors.auth.cookiesNotFound'));
             }
             
-            throw new Error(errorData.error || 'Failed to initialize session');
+            throw new Error(errorData.error || t('errors.initSession.error'));
           }
           
           const verifyData = await verifyResponse.json();
           if (!verifyData.success || !verifyData.accessToken || !verifyData.refreshToken) {
-            throw new Error('Invalid response from server');
+            throw new Error(t('errors.initSession.error'));
           }
           
           accessToken = verifyData.accessToken;
@@ -90,7 +91,7 @@ export default function InitSessionPage() {
           if (fetchError instanceof Error) {
             throw fetchError;
           }
-          throw new Error('Failed to initialize session: Could not retrieve authentication tokens');
+          throw new Error(t('errors.initSession.error'));
         }
         
         // Now initialize Supabase client session with the tokens
@@ -158,7 +159,7 @@ export default function InitSessionPage() {
         }
         
         if (!sessionInitialized || !verifiedUserId) {
-          throw lastError || new Error('Failed to initialize session after multiple attempts');
+          throw lastError || new Error(t('errors.initSession.error'));
         }
         
         // Success!
@@ -175,7 +176,7 @@ export default function InitSessionPage() {
       } catch (err) {
         if (!mounted) return;
         
-        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize session';
+        const errorMessage = err instanceof Error ? err.message : t('errors.initSession.error');
         console.error('Session initialization failed:', err);
         setError(errorMessage);
         setStatus('error');
@@ -219,14 +220,34 @@ export default function InitSessionPage() {
         textAlign: 'center'
       }}>
         <div style={{ maxWidth: '500px' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-            Session Initialization Failed
+          <div style={{ 
+            marginBottom: '1.5rem',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              backgroundColor: '#fee2e2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <svg style={{ width: '24px', height: '24px', color: '#ef4444' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+          </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#111827' }}>
+            {t('errors.initSession.error')}
           </h1>
           <p style={{ color: '#ef4444', marginBottom: '1rem' }}>
-            {error || 'An error occurred while initializing your session.'}
+            {error || t('errors.initSession.errorDescription')}
           </p>
           <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
-            Redirecting to login page...
+            {t('errors.initSession.redirectingToLogin')}
           </p>
         </div>
       </div>
@@ -239,18 +260,19 @@ export default function InitSessionPage() {
       placeItems: 'center', 
       minHeight: '100vh',
       padding: '2rem',
-      textAlign: 'center'
+      textAlign: 'center',
+      backgroundColor: '#f9fafb'
     }}>
       <div style={{ maxWidth: '500px' }}>
         <div style={{ 
-          marginBottom: '1rem',
+          marginBottom: '1.5rem',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center'
         }}>
           <div style={{
-            width: '48px',
-            height: '48px',
+            width: '56px',
+            height: '56px',
             border: '4px solid #e5e7eb',
             borderTopColor: '#3b82f6',
             borderRadius: '50%',
@@ -262,18 +284,31 @@ export default function InitSessionPage() {
             }
           `}</style>
         </div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-          {status === 'success' ? 'Session Ready' : 'Initializing Session...'}
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.75rem', color: '#111827' }}>
+          {status === 'success' ? t('errors.initSession.success') : t('errors.initSession.initializing')}
         </h1>
-        <p style={{ color: '#6b7280' }}>
+        <p style={{ color: '#6b7280', fontSize: '0.9375rem', lineHeight: '1.6' }}>
           {status === 'success' 
-            ? `Welcome! Redirecting to dashboard...`
-            : 'Please wait while we set up your session.'}
+            ? t('errors.initSession.redirectingToDashboard')
+            : t('errors.initSession.pleaseWait')}
         </p>
-        {userId && (
-          <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-            User ID: {userId.slice(0, 8)}...
-          </p>
+        {status === 'success' && (
+          <div style={{ 
+            marginTop: '1.5rem',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#d1fae5',
+            borderRadius: '0.5rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            color: '#065f46',
+            fontSize: '0.875rem'
+          }}>
+            <svg style={{ width: '16px', height: '16px' }} fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span>{t('errors.initSession.redirecting')}</span>
+          </div>
         )}
       </div>
     </div>

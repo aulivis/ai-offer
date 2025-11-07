@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { fetchWithSupabaseAuth } from '@/lib/api';
@@ -26,6 +26,7 @@ export function useQuotaManagement() {
   const [quotaLoading, setQuotaLoading] = useState(false);
   const [quotaError, setQuotaError] = useState<string | null>(null);
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const quotaLimit = quotaSnapshot?.limit ?? null;
   const quotaUsed = quotaSnapshot?.used ?? 0;
@@ -180,7 +181,11 @@ export function useQuotaManagement() {
     return () => {
       active = false;
     };
-  }, [authStatus, sb, t, user]);
+  }, [authStatus, sb, t, user, refreshTrigger]);
+
+  const refreshQuota = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
 
   return {
     plan,
@@ -196,6 +201,7 @@ export function useQuotaManagement() {
     quotaDescription,
     quotaRemainingText,
     quotaPendingText,
+    refreshQuota,
   };
 }
 

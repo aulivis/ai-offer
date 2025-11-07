@@ -222,7 +222,7 @@ export async function getUsageWithPending(
   // This prevents displaying "unlimited" for limited plans
   if (limit === null && (plan === 'free' || plan === 'standard')) {
     // Fallback to free plan limit if somehow limit is null
-    limit = plan === 'standard' ? 10 : 3;
+    limit = plan === 'standard' ? 5 : 2;
   }
 
   const confirmed = Number.isFinite(usageState.offersGenerated) ? usageState.offersGenerated : 0;

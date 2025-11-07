@@ -763,8 +763,8 @@ export default function BillingPage() {
                   <td className="py-4 font-medium text-slate-700">
                     {t('billing.comparison.offersPerMonth')}
                   </td>
-                  <td className="py-4 text-center text-slate-600">3</td>
-                  <td className="py-4 text-center text-slate-600">10</td>
+                  <td className="py-4 text-center text-slate-600">2</td>
+                  <td className="py-4 text-center text-slate-600">5</td>
                   <td className="py-4 text-center font-bold text-primary">∞</td>
                 </tr>
                 <tr className="transition-colors hover:bg-slate-50/50">
