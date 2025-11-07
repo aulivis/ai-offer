@@ -195,27 +195,76 @@ export async function incrementUsage<K extends CounterKind>(
           p_period_start: periodStart,
         };
 
+  console.log('Calling quota increment RPC', {
+    rpc: config.rpc,
+    kind,
+    target,
+    limit: normalizedLimit,
+    periodStart,
+    payload: rpcPayload,
+  });
+
   const { data, error } = await supabase.rpc(config.rpc, rpcPayload as Record<string, unknown>);
   if (error) {
     const message = error.message ?? '';
     const details = (error as { details?: string }).details ?? '';
     const combined = `${message} ${details}`.toLowerCase();
+    
+    console.error('Quota increment RPC error', {
+      rpc: config.rpc,
+      kind,
+      target,
+      limit: normalizedLimit,
+      periodStart,
+      error: {
+        message,
+        details,
+        code: (error as { code?: string }).code,
+        hint: (error as { hint?: string }).hint,
+      },
+    });
+    
     if (
       combined.includes(config.rpc) ||
       combined.includes('multiple function variants') ||
       combined.includes('could not find function')
     ) {
+      console.warn('Falling back to non-RPC increment due to RPC function error', {
+        rpc: config.rpc,
+        kind,
+        target,
+      });
       return fallbackIncrement(supabase, kind, target, normalizedLimit, periodStart);
     }
     throw new Error(`Failed to update usage counter: ${message}`);
   }
 
   const [result] = Array.isArray(data) ? data : [data];
-  return {
+  const incrementResult = {
     allowed: Boolean(result?.allowed),
     offersGenerated: Number(result?.offers_generated ?? 0),
     periodStart: String(result?.period_start ?? periodStart),
   };
+  
+  console.log('Quota increment RPC result', {
+    rpc: config.rpc,
+    kind,
+    target,
+    result: incrementResult,
+  });
+  
+  if (!incrementResult.allowed) {
+    console.warn('Quota increment not allowed', {
+      rpc: config.rpc,
+      kind,
+      target,
+      limit: normalizedLimit,
+      currentUsage: incrementResult.offersGenerated,
+      periodStart: incrementResult.periodStart,
+    });
+  }
+  
+  return incrementResult;
 }
 
 async function rollbackUsageIncrementForKind<K extends CounterKind>(

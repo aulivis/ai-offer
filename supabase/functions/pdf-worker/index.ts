@@ -342,6 +342,13 @@ serve(async (request) => {
 
     // Increment quota AFTER offer update succeeds
     // If this fails, we can rollback the offer update if needed
+    console.log('Attempting to increment user quota (edge worker)', {
+      userId: job.user_id,
+      limit: userLimit,
+      periodStart: usagePeriodStart,
+      offerId: job.offer_id,
+    });
+    
     const usageResult = await incrementUsage(
       supabase,
       'user',
@@ -349,7 +356,22 @@ serve(async (request) => {
       userLimit,
       usagePeriodStart,
     );
+    
+    console.log('User quota increment result (edge worker)', {
+      userId: job.user_id,
+      allowed: usageResult.allowed,
+      offersGenerated: usageResult.offersGenerated,
+      periodStart: usageResult.periodStart,
+      limit: userLimit,
+    });
+    
     if (!usageResult.allowed) {
+      console.error('User quota increment not allowed (edge worker), rolling back offer update', {
+        userId: job.user_id,
+        offersGenerated: usageResult.offersGenerated,
+        limit: userLimit,
+        offerId: job.offer_id,
+      });
       // Rollback offer update if quota check fails
       await supabase
         .from('offers')
@@ -359,8 +381,21 @@ serve(async (request) => {
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
     userUsageIncremented = true;
+    console.log('User quota incremented successfully (edge worker)', {
+      userId: job.user_id,
+      newUsage: usageResult.offersGenerated,
+      offerId: job.offer_id,
+    });
 
     if (deviceId && deviceLimit !== null) {
+      console.log('Attempting to increment device quota (edge worker)', {
+        userId: job.user_id,
+        deviceId,
+        limit: deviceLimit,
+        periodStart: usagePeriodStart,
+        offerId: job.offer_id,
+      });
+      
       const deviceResult = await incrementUsage(
         supabase,
         'device',
@@ -368,7 +403,24 @@ serve(async (request) => {
         deviceLimit,
         usagePeriodStart,
       );
+      
+      console.log('Device quota increment result (edge worker)', {
+        userId: job.user_id,
+        deviceId,
+        allowed: deviceResult.allowed,
+        offersGenerated: deviceResult.offersGenerated,
+        periodStart: deviceResult.periodStart,
+        limit: deviceLimit,
+      });
+      
       if (!deviceResult.allowed) {
+        console.error('Device quota increment not allowed (edge worker), rolling back', {
+          userId: job.user_id,
+          deviceId,
+          offersGenerated: deviceResult.offersGenerated,
+          limit: deviceLimit,
+          offerId: job.offer_id,
+        });
         // Rollback user quota and offer update if device quota check fails
         await rollbackUsageIncrement(supabase, 'user', { userId: job.user_id }, usagePeriodStart);
         await supabase
@@ -379,6 +431,12 @@ serve(async (request) => {
         throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
       }
       deviceUsageIncremented = true;
+      console.log('Device quota incremented successfully (edge worker)', {
+        userId: job.user_id,
+        deviceId,
+        newUsage: deviceResult.offersGenerated,
+        offerId: job.offer_id,
+      });
     }
 
     const { error: jobCompleteError } = await supabase
@@ -532,12 +590,12 @@ const COUNTER_CONFIG: { [K in CounterKind]: UsageConfig<K> } = {
   },
 };
 
-export async function rollbackUsageIncrement<K extends CounterKind>(
+async function rollbackUsageIncrementForKind<K extends CounterKind>(
   supabase: SupabaseClient,
   kind: K,
   target: CounterTargets[K],
   expectedPeriod: string,
-) {
+): Promise<void> {
   const config = COUNTER_CONFIG[kind];
   const normalizedExpected = normalizeDate(expectedPeriod, expectedPeriod);
 
@@ -553,8 +611,7 @@ export async function rollbackUsageIncrement<K extends CounterKind>(
 
   const { data: existing, error } = await buildQuery().maybeSingle();
   if (error) {
-    console.warn('Failed to load usage counter for rollback', { kind, target, error });
-    return;
+    throw new Error(`Failed to load usage counter for rollback: ${error.message}`);
   }
 
   if (!existing) {
@@ -575,13 +632,7 @@ export async function rollbackUsageIncrement<K extends CounterKind>(
     const { data: normalizedRow, error: normalizedError } = await normalizedQuery.maybeSingle();
 
     if (normalizedError) {
-      console.warn('Failed to load normalized usage counter for rollback', {
-        kind,
-        target,
-        expectedPeriod: normalizedExpected,
-        error: normalizedError,
-      });
-      return;
+      throw new Error(`Failed to load normalized usage counter for rollback: ${normalizedError.message}`);
     }
 
     if (!normalizedRow) {
@@ -632,13 +683,60 @@ export async function rollbackUsageIncrement<K extends CounterKind>(
 
   const { error: updateError } = await updateBuilder;
   if (updateError) {
-    console.warn('Failed to rollback usage counter increment', {
-      kind,
-      target,
-      expectedPeriod: normalizedExpected,
-      error: updateError,
-    });
+    throw new Error(`Failed to rollback usage counter increment: ${updateError.message}`);
   }
+}
+
+async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
+  supabase: SupabaseClient,
+  kind: K,
+  target: CounterTargets[K],
+  expectedPeriod: string,
+  maxRetries: number = 3,
+): Promise<void> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      await rollbackUsageIncrementForKind(supabase, kind, target, expectedPeriod);
+      if (attempt > 0) {
+        console.log(`Rollback succeeded on attempt ${attempt + 1}`, { kind, target, expectedPeriod });
+      }
+      return; // Success
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      if (attempt < maxRetries - 1) {
+        // Exponential backoff: 100ms, 200ms, 400ms
+        const delayMs = 100 * Math.pow(2, attempt);
+        console.warn(`Rollback attempt ${attempt + 1} failed, retrying in ${delayMs}ms`, {
+          kind,
+          target,
+          expectedPeriod,
+          error: lastError.message,
+        });
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        continue;
+      }
+    }
+  }
+  
+  // All retries failed - log but don't throw to prevent cascading failures
+  console.error(`Failed to rollback usage increment after ${maxRetries} attempts`, {
+    kind,
+    target,
+    expectedPeriod,
+    error: lastError?.message,
+  });
+}
+
+export async function rollbackUsageIncrement<K extends CounterKind>(
+  supabase: SupabaseClient,
+  kind: K,
+  target: CounterTargets[K],
+  expectedPeriod: string,
+) {
+  return rollbackUsageIncrementWithRetry(supabase, kind, target, expectedPeriod);
 }
 
 async function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, message: string) {
@@ -787,32 +885,81 @@ export async function incrementUsage<K extends CounterKind>(
         }
       : {
           p_user_id: target.userId,
-          p_device_id: target.deviceId,
+          p_device_id: (target as CounterTargets['device']).deviceId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
         };
+
+  console.log('Calling quota increment RPC (edge worker)', {
+    rpc: config.rpc,
+    kind,
+    target,
+    limit: normalizedLimit,
+    periodStart,
+    payload: rpcPayload,
+  });
 
   const { data, error } = await supabase.rpc(config.rpc, rpcPayload as Record<string, unknown>);
   if (error) {
     const message = error.message ?? '';
     const details = error.details ?? '';
     const combined = `${message} ${details}`.toLowerCase();
+    
+    console.error('Quota increment RPC error (edge worker)', {
+      rpc: config.rpc,
+      kind,
+      target,
+      limit: normalizedLimit,
+      periodStart,
+      error: {
+        message,
+        details,
+        code: (error as { code?: string }).code,
+        hint: (error as { hint?: string }).hint,
+      },
+    });
+    
     if (
       combined.includes(config.rpc) ||
       combined.includes('multiple function variants') ||
       combined.includes('could not find function')
     ) {
+      console.warn('Falling back to non-RPC increment due to RPC function error (edge worker)', {
+        rpc: config.rpc,
+        kind,
+        target,
+      });
       return fallbackIncrement(supabase, kind, target, normalizedLimit, periodStart);
     }
     throw new Error(`Failed to update usage counter: ${message}`);
   }
 
   const [result] = Array.isArray(data) ? data : [data];
-  return {
+  const incrementResult = {
     allowed: Boolean(result?.allowed),
     offersGenerated: Number(result?.offers_generated ?? 0),
     periodStart: String(result?.period_start ?? periodStart),
   };
+  
+  console.log('Quota increment RPC result (edge worker)', {
+    rpc: config.rpc,
+    kind,
+    target,
+    result: incrementResult,
+  });
+  
+  if (!incrementResult.allowed) {
+    console.warn('Quota increment not allowed (edge worker)', {
+      rpc: config.rpc,
+      kind,
+      target,
+      limit: normalizedLimit,
+      currentUsage: incrementResult.offersGenerated,
+      periodStart: incrementResult.periodStart,
+    });
+  }
+  
+  return incrementResult;
 }
 
 type PdfJobPayload = {
