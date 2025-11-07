@@ -5,6 +5,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
 import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
+import { validateImageAssets } from '../../shared/urlValidation';
 
 function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -77,9 +78,8 @@ function partialGallery(ctx: RenderCtx): string {
     : Array.isArray(ctx.images)
       ? ctx.images
       : [];
-  const images = availableImages
-    .filter((image) => typeof image?.src === 'string' && image.src.trim().length > 0)
-    .slice(0, 3);
+  // Use centralized URL validation to ensure all images have absolute URLs
+  const images = validateImageAssets(availableImages).slice(0, 3);
 
   if (images.length === 0) {
     return '';

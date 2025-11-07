@@ -1,8 +1,10 @@
 export const PRINT_BASE_CSS = `
   :root {
-    --page-margin-top: 0mm;
+    /* Industry standard margins: 15mm all sides for A4 */
+    /* Using 5mm top/bottom for safety buffer with fixed headers/footers */
+    --page-margin-top: 5mm;
     --page-margin-right: 15mm;
-    --page-margin-bottom: 0mm;
+    --page-margin-bottom: 5mm;
     --page-margin-left: 15mm;
     --page-header-height: 12mm;
     --page-footer-height: 12mm;
@@ -10,18 +12,21 @@ export const PRINT_BASE_CSS = `
     --page-header-padding: 4mm;
     --page-footer-margin: 12mm;
     --page-footer-padding: 4mm;
-    --page-safe-inset: 2mm;
+    /* Industry standard safe area: minimum 5mm from edges */
+    --page-safe-inset: 5mm;
     --page-header-offset: 0mm;
     --page-footer-offset: 0mm;
   }
 
   @page {
     size: A4;
-    margin: var(--page-header-height) var(--page-margin-right) var(--page-footer-height) var(--page-margin-left);
+    /* Use standard margins: 5mm top/bottom for safety, 15mm left/right */
+    margin: var(--page-margin-top) var(--page-margin-right) var(--page-margin-bottom) var(--page-margin-left);
   }
 
   @page :first {
-    margin-top: var(--page-header-height);
+    /* First page uses same margins as other pages for consistency */
+    margin-top: var(--page-margin-top);
   }
 
   html,
