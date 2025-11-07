@@ -824,7 +824,7 @@ export default function DashboardPage() {
 
         setQuotaSnapshot({
           plan: snapshot.plan as SubscriptionPlan,
-          limit: snapshot.limit,
+          limit: snapshot.quota_limit,
           used: Number(snapshot.confirmed) || 0,
           pending: Number(snapshot.pending_user) || 0,
           devicePending: normalizedDevicePending,

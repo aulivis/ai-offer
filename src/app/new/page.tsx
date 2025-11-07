@@ -675,7 +675,7 @@ export default function NewOfferWizard() {
           throw new Error('Invalid plan in quota snapshot');
         }
 
-        const limit = snapshot.limit !== null && snapshot.limit !== undefined ? Number(snapshot.limit) : null;
+        const limit = snapshot.quota_limit !== null && snapshot.quota_limit !== undefined ? Number(snapshot.quota_limit) : null;
         const confirmed = Number.isFinite(snapshot.confirmed) ? Number(snapshot.confirmed) : 0;
         const pendingUser = Number.isFinite(snapshot.pending_user) ? Number(snapshot.pending_user) : 0;
         const periodStart = typeof snapshot.period_start === 'string' ? snapshot.period_start : expectedPeriod;

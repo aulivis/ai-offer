@@ -68,7 +68,7 @@ export default function QuotaWarningBar() {
         // Map database response to UsageResponse format
         const usageData: UsageResponse = {
           plan: snapshot.plan as 'free' | 'standard' | 'pro',
-          limit: snapshot.limit,
+          limit: snapshot.quota_limit,
           confirmed: Number(snapshot.confirmed) || 0,
           pendingUser: Number(snapshot.pending_user) || 0,
           pendingDevice: snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : null,

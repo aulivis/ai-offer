@@ -9,7 +9,7 @@ create or replace function public.get_quota_snapshot(
 )
 returns table (
   plan text,
-  limit integer,
+  quota_limit integer,
   confirmed integer,
   pending_user integer,
   pending_device integer,
@@ -120,7 +120,7 @@ begin
 
   -- Return the snapshot
   plan := v_plan;
-  limit := v_limit;
+  quota_limit := v_limit;
   confirmed := coalesce(v_confirmed, 0);
   pending_user := coalesce(v_pending_user, 0);
   pending_device := v_pending_device;
