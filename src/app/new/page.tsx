@@ -1752,9 +1752,12 @@ export default function NewOfferWizard() {
       // Wait a moment for quota to be updated on the backend before redirecting
       // This gives the PDF worker time to increment the quota counter
       // The delay ensures the dashboard will show the updated quota
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Also trigger quota recalculation on dashboard by adding a refresh parameter
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      router.replace('/dashboard');
+      // Add a timestamp query parameter to force dashboard to refresh quota
+      const refreshParam = new URLSearchParams({ refresh: Date.now().toString() });
+      router.replace(`/dashboard?${refreshParam.toString()}`);
     } finally {
       setLoading(false);
     }

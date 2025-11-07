@@ -750,6 +750,26 @@ export default function DashboardPage() {
     };
   }, [authStatus, fetchPage, showToast, sb, user]);
 
+  // Track URL search params to detect refresh requests
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    // Check if there's a refresh parameter in the URL
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('refresh')) {
+        // Remove the refresh parameter from URL without reload
+        params.delete('refresh');
+        const newUrl = params.toString() 
+          ? `${window.location.pathname}?${params.toString()}`
+          : window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+        // Trigger quota refresh
+        setRefreshKey((prev) => prev + 1);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
       setQuotaSnapshot(null);
@@ -762,6 +782,19 @@ export default function DashboardPage() {
 
     (async () => {
       try {
+        // First, try to recalculate usage from actual PDFs to ensure accuracy
+        // This fixes cases where quota was incremented but PDF generation failed
+        // or where quota wasn't properly incremented
+        try {
+          const { recalculateUsageFromPdfs } = await import('@/lib/services/usage');
+          const { iso: expectedPeriod } = currentMonthStart();
+          await recalculateUsageFromPdfs(sb, user.id, expectedPeriod).catch((err) => {
+            console.warn('Failed to recalculate usage from PDFs, continuing with counter value:', err);
+          });
+        } catch (recalcError) {
+          console.warn('Failed to recalculate usage from PDFs, continuing with counter value:', recalcError);
+        }
+
         const deviceId = getDeviceIdFromCookie();
         const { iso: expectedPeriod } = currentMonthStart();
         const params = new URLSearchParams({ period_start: expectedPeriod });
@@ -815,7 +848,7 @@ export default function DashboardPage() {
     return () => {
       active = false;
     };
-  }, [authStatus, user]);
+  }, [authStatus, user, sb, refreshKey]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 
