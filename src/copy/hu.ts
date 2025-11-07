@@ -1835,6 +1835,8 @@ export const hu = {
       primaryColor: 'Elsődleges szín',
       secondaryColor: 'Másodlagos szín',
       afterGeneration: 'A PDF generálása után az ajánlat megjelenik a listádban.',
+      openPreview: 'PDF előnézet megnyitása',
+      noPreview: 'Nincs előnézet',
     },
     quota: {
       exhaustedBadge: 'KVÓTA TELJES',

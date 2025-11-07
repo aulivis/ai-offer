@@ -727,26 +727,34 @@ export default function DashboardPage() {
 
     loadInitialPage();
     
-    // Refresh offers when page becomes visible (e.g., after redirect from offer creation)
+    // Only refresh on visibility change if we're coming back from a hidden state
+    // and enough time has passed (to avoid refreshing on quick tab switches)
+    let wasHidden = false;
+    let hiddenTimestamp = 0;
+    const VISIBILITY_REFRESH_THRESHOLD_MS = 5000; // Only refresh if hidden for >5 seconds
+    
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && active) {
-        loadInitialPage();
+      if (!active) return;
+      
+      if (document.visibilityState === 'hidden') {
+        wasHidden = true;
+        hiddenTimestamp = Date.now();
+      } else if (document.visibilityState === 'visible' && wasHidden) {
+        const hiddenDuration = Date.now() - hiddenTimestamp;
+        // Only refresh if page was hidden for a significant amount of time
+        // This prevents unnecessary refreshes on quick tab switches
+        if (hiddenDuration > VISIBILITY_REFRESH_THRESHOLD_MS) {
+          loadInitialPage();
+        }
+        wasHidden = false;
       }
     };
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // Also refresh after a short delay to catch any updates that happened during redirect
-    const refreshTimeout = setTimeout(() => {
-      if (active) {
-        loadInitialPage();
-      }
-    }, 2000);
-    
     return () => {
       active = false;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearTimeout(refreshTimeout);
     };
   }, [authStatus, fetchPage, showToast, sb, user]);
 

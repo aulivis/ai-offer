@@ -493,6 +493,11 @@ export default function NewOfferWizard() {
     height: previewFrameHeight,
     updateHeight: updatePreviewFrameHeight,
   } = useIframeAutoHeight({ minHeight: 720 });
+  const {
+    frameRef: modalPreviewFrameRef,
+    height: modalPreviewFrameHeight,
+    updateHeight: updateModalPreviewFrameHeight,
+  } = useIframeAutoHeight({ minHeight: 720 });
 
   // edit on step 3 (state moved above for draft persistence)
   const richTextEditorRef = useRef<RichTextEditorHandle | null>(null);
@@ -504,6 +509,18 @@ export default function NewOfferWizard() {
   const [showMarginGuides, setShowMarginGuides] = useState(false);
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
   const [fullscreenZoom, setFullscreenZoom] = useState(100);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  
+  // Update modal iframe height when modal opens or preview content changes
+  useEffect(() => {
+    if (isPreviewModalOpen && previewDocumentHtml) {
+      // Small delay to ensure iframe is rendered
+      const timer = setTimeout(() => {
+        updateModalPreviewFrameHeight();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isPreviewModalOpen, previewDocumentHtml, updateModalPreviewFrameHeight]);
   const [textTemplates, setTextTemplates] = useState<OfferTextTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
@@ -2502,81 +2519,29 @@ export default function NewOfferWizard() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                     {t('offers.wizard.previewTemplates.previewHeading')}
                   </p>
-                  <div className="flex items-center gap-2">
-                    {selectedPdfTemplate ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                        {selectedPdfTemplate.label}
-                      </span>
-                    ) : null}
-                    {previewDocumentHtml && (
-                      <button
-                        type="button"
-                        onClick={() => setIsPreviewFullscreen(true)}
-                        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                        aria-label={t('wizard.preview.fullscreenButton')}
-                        title={t('wizard.preview.fullscreenButton')}
-                      >
-                        <svg
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                          />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
+                  {selectedPdfTemplate && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                      {selectedPdfTemplate.label}
+                    </span>
+                  )}
                 </div>
-                <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3">
-                  {/* Preview container matching A4 dimensions with proper scaling */}
-                  {/* PDF uses 20mm top/bottom and 15mm left/right margins - shown via @page rules in CSS */}
-                  <div 
-                    className="mx-auto bg-white shadow-lg relative"
-                    style={{ 
-                      width: '210mm', 
-                      maxWidth: '100%', 
-                      aspectRatio: '210/297',
-                      position: 'relative',
-                      transform: `scale(${previewZoom / 100})`,
-                      transformOrigin: 'top center',
-                      marginBottom: `${((previewZoom - 100) * 2)}px`,
-                    }}
-                  >
-                    {/* Margin guides overlay */}
-                    {showMarginGuides && <PreviewMarginGuides enabled={showMarginGuides} />}
-                    
-                    {previewLoading && !previewDocumentHtml ? (
-                      <div className="flex h-full min-h-[720px] items-center justify-center p-8">
-                        <PreviewSkeletonLoader />
-                      </div>
-                    ) : (
-                      <iframe
-                        ref={previewFrameRef}
-                        className="offer-template-preview block w-full h-full"
-                        sandbox="allow-same-origin"
-                        srcDoc={previewDocumentHtml}
-                        style={{
-                          border: '0',
-                          width: '100%',
-                          height: `${previewFrameHeight}px`,
-                          minHeight: '720px',
-                          backgroundColor: 'white',
-                          display: 'block',
-                          margin: 0,
-                          padding: 0,
-                        }}
-                        title={t('offers.wizard.previewTemplates.previewHeading')}
-                        aria-label={t('offers.wizard.previewTemplates.previewHeading')}
-                      />
-                    )}
-                  </div>
-                </div>
+                <Button
+                  type="button"
+                  onClick={() => setIsPreviewModalOpen(true)}
+                  disabled={!previewDocumentHtml && !previewLoading}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                >
+                  {previewLoading && !previewDocumentHtml ? (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      {t('offers.wizard.preview.loading')}
+                    </span>
+                  ) : previewDocumentHtml ? (
+                    t('wizard.preview.openPreview')
+                  ) : (
+                    t('wizard.preview.noPreview')
+                  )}
+                </Button>
                 <p className="text-[11px] text-slate-500">
                   {t('offers.wizard.previewTemplates.previewHint')}
                 </p>
@@ -2795,6 +2760,151 @@ export default function NewOfferWizard() {
             </Button>
           </div>
         </form>
+      </Modal>
+      
+      {/* PDF Preview Modal */}
+      <Modal
+        open={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        labelledBy="preview-modal-title"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 id="preview-modal-title" className="text-lg font-semibold text-slate-900">
+              {t('offers.wizard.previewTemplates.previewHeading')}
+            </h2>
+            {selectedPdfTemplate && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                {selectedPdfTemplate.label}
+              </span>
+            )}
+          </div>
+          
+          {/* Preview controls */}
+          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+            <div className="flex items-center gap-2">
+              <label htmlFor="modal-preview-zoom" className="text-xs font-medium text-slate-600">
+                {t('wizard.preview.zoom')}
+              </label>
+              <input
+                id="modal-preview-zoom"
+                type="range"
+                min="50"
+                max="200"
+                step="25"
+                value={previewZoom}
+                onChange={(e) => setPreviewZoom(Number(e.target.value))}
+                className="h-2 w-24 rounded-lg bg-slate-200"
+                aria-label={t('wizard.preview.zoomAria')}
+              />
+              <span className="min-w-[3rem] text-xs font-medium text-slate-700">
+                {previewZoom}%
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewZoom(100)}
+                className="rounded px-2 py-1 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
+                aria-label={t('wizard.preview.zoomResetAria')}
+              >
+                {t('wizard.preview.zoomReset')}
+              </button>
+            </div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showMarginGuides}
+                onChange={(e) => setShowMarginGuides(e.target.checked)}
+                className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                aria-label={t('wizard.preview.showMarginsAria')}
+              />
+              <span className="text-xs text-slate-600">{t('wizard.preview.showMargins')}</span>
+            </label>
+            {previewDocumentHtml && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsPreviewModalOpen(false);
+                  setIsPreviewFullscreen(true);
+                }}
+                className="ml-auto inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                aria-label={t('wizard.preview.fullscreenButton')}
+                title={t('wizard.preview.fullscreenButton')}
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {/* Preview container */}
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 max-h-[80vh] overflow-y-auto">
+            <div 
+              className="mx-auto bg-white shadow-lg relative"
+              style={{ 
+                width: '210mm', 
+                maxWidth: '100%', 
+                aspectRatio: '210/297',
+                position: 'relative',
+                transform: `scale(${previewZoom / 100})`,
+                transformOrigin: 'top center',
+                marginBottom: `${((previewZoom - 100) * 2)}px`,
+              }}
+            >
+              {/* Margin guides overlay */}
+              {showMarginGuides && <PreviewMarginGuides enabled={showMarginGuides} />}
+              
+              {previewLoading && !previewDocumentHtml ? (
+                <div className="flex h-full min-h-[720px] items-center justify-center p-8">
+                  <PreviewSkeletonLoader />
+                </div>
+              ) : (
+                <iframe
+                  ref={modalPreviewFrameRef}
+                  className="offer-template-preview block w-full h-full"
+                  sandbox="allow-same-origin"
+                  srcDoc={previewDocumentHtml}
+                  style={{
+                    border: '0',
+                    width: '100%',
+                    height: `${modalPreviewFrameHeight}px`,
+                    minHeight: '720px',
+                    backgroundColor: 'white',
+                    display: 'block',
+                    margin: 0,
+                    padding: 0,
+                  }}
+                  title={t('offers.wizard.previewTemplates.previewHeading')}
+                  aria-label={t('offers.wizard.previewTemplates.previewHeading')}
+                />
+              )}
+            </div>
+          </div>
+          
+          <p className="text-[11px] text-slate-500">
+            {t('offers.wizard.previewTemplates.previewHint')}
+          </p>
+          
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsPreviewModalOpen(false)}
+            >
+              {t('common.close')}
+            </Button>
+          </div>
+        </div>
       </Modal>
       
       {/* Fullscreen preview modal */}
