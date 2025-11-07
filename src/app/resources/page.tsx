@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 export const metadata = {
   title: 'Erőforrások - Vyndi',

@@ -548,9 +548,9 @@ export const hu = {
             'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
         },
         2: {
-          title: 'Egyszerű megosztás és követés',
+          title: 'Egyszerű megosztás és státuszkezelés',
           description:
-            'Élő link, interaktív visszajelzések és aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+            'Márkázott PDF export, státusz követés az irányítópulton – jelöld meg, hogy küldött, elfogadott vagy elutasított az ajánlat. Szűrés és keresés az ajánlatok között.',
         },
       },
       marketingSteps: {
@@ -567,7 +567,7 @@ export const hu = {
         2: {
           title: 'Megosztás & mérés',
           description:
-            'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.',
+            'Egy kattintással készül a márkázott PDF ajánlat. Letöltheted vagy megoszthatod. Az irányítópulton követheted az ajánlatok státuszát és szűrhetsz státusz szerint.',
         },
       },
       steps: {
@@ -762,7 +762,7 @@ export const hu = {
       titleLine2: 'percek alatt AI-val',
       description:
         'A Vyndi mesterséges intelligencia segítségével automatikusan generálja a márkázott PDF ajánlataidat tételes árkalkulációval. Spórolj órákat, növeld az üzleti eredményeidet – kezdj el még ma, ingyen és bankkártya nélkül.',
-      primaryCta: 'Kezdj el most – ingyen',
+      primaryCta: 'Kezdd el most – ingyen',
       secondaryCta: 'Bemutató megtekintése',
       spotlightHeading: 'Mit kapsz azonnal?',
       spotlightDescription:
@@ -790,9 +790,9 @@ export const hu = {
           'Magyar nyelvű mesterséges intelligencia, amely lépésről lépésre állítja össze a szöveget, strukturált részeket készít, és automatikusan generálja az árkalkulációt. Minél részletesebb a brief, annál pontosabb az ajánlat.',
       },
       {
-        title: 'Zökkenőmentes megosztás és valós idejű követés',
+        title: 'Egyszerű megosztás és státuszkezelés',
         description:
-          'Egy kattintással oszd meg az ajánlatot élő linkkel. Kövesd, mikor nyitotta meg az ügyfél, hol tart a felülvizsgálatban. Interaktív visszajelzések és aláírás – minden egy átlátható irányítópulton.',
+          'Egy kattintással készül a márkázott PDF ajánlat. Az irányítópulton kövesd az ajánlatok státuszát, szűrj vázlat, küldött, elfogadott vagy elutasított állapot szerint. Minden ajánlatod egy helyen, átláthatóan.',
       },
     ],
     howItWorks: {
@@ -811,12 +811,12 @@ export const hu = {
         {
           title: 'AI-szöveg generálás és testreszabás',
           description:
-            'Az AI másodpercek alatt előállítja az ajánlat szövegét. Válaszd ki a sablont, szerkeszd a szekciókat, adj hozzá tételeket az árlistához. Minden valós időben frissül.',
+            'Az AI másodpercek alatt előállítja az ajánlat szövegét. Válaszd ki a sablont, szerkeszd a szekciókat, adj hozzá tételeket az árlistához. Minden azonnal frissül, amikor módosítod.',
         },
         {
           title: 'Márkázott PDF készítése és megosztás',
           description:
-            'Egy kattintással készül a professzionális, márkázott PDF ajánlat. Oszd meg élő linkkel, és kövesd valós időben, hogy az ügyfél hol tart az áttekintésben.',
+            'Egy kattintással készül a professzionális, márkázott PDF ajánlat. Letöltheted vagy megoszthatod. Az irányítópulton követheted az ajánlatok státuszát és szűrhetsz státusz szerint.',
         },
       ],
     },
@@ -842,11 +842,11 @@ export const hu = {
       },
     },
     cta: {
-      label: 'Kezdj el még ma',
-      title: 'Spórolj órákat minden ajánlaton – kezdj el most, ingyen',
+      label: 'Kezdd el még ma',
+      title: 'Spórolj órákat minden ajánlaton – kezdd el most, ingyen',
       description:
         'Regisztrálj ingyen, bankkártya nélkül. Azonnal hozzáférsz az AI-alapú ajánlatkészítőhöz. A Vyndi az eddigi ajánlataidból tanul, így minden új dokumentum egyre pontosabb, esztétikusabb és márkahűbb lesz.',
-      primaryCta: 'Kezdj el most – ingyen',
+      primaryCta: 'Kezdd el most – ingyen',
       secondaryCta: 'Árak és csomagok',
     },
     productVideo: {
@@ -855,9 +855,9 @@ export const hu = {
       description: 'Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével.',
       features: {
         0: 'Magyar nyelvű AI-alapú szöveg generálás',
-        1: 'Reszponzív szerkesztés valós időben',
+        1: 'Reszponzív szerkesztés azonnali frissítéssel',
         2: 'Automatikus márkázás logóval és színekkel',
-        3: 'Valós idejű együttműködés és megosztás',
+        3: 'Státuszkezelés és szűrés az irányítópulton',
       },
       cta: 'Kezdj el ajánlatot készíteni most',
     },
@@ -866,11 +866,11 @@ export const hu = {
       description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat akár 70%-kal. Valós sikertörténetek, valós számok.',
       cta: 'Sikertörténetek megtekintése',
       ctaTitle: 'Készen állsz, hogy te is ilyen eredményeket érj el?',
-      ctaDescription: 'Kezdj el ingyen még ma, bankkártya nélkül, és tapasztald meg, hogyan növelheted az ajánlatkészítési hatékonyságodat és az elfogadási arányt.',
+      ctaDescription: 'Kezdd el ingyen még ma, bankkártya nélkül, és tapasztald meg, hogyan növelheted az ajánlatkészítési hatékonyságodat és az elfogadási arányt.',
     },
     stickyBar: {
       title: 'Készen állsz, hogy profibb ajánlatokat készíts percek alatt?',
-      ctaPrimary: 'Kezdj el most – ingyen',
+      ctaPrimary: 'Kezdd el most – ingyen',
       ctaSecondary: 'Csomagok megtekintése',
       closeAria: 'Bezárás',
     },
@@ -909,10 +909,10 @@ export const hu = {
       title: 'Válaszok a leggyakoribb kérdésekre',
     },
     finalCta: {
-      badge: 'Kezdj el még ma',
-      title: 'Spórolj órákat minden ajánlaton – kezdj el most, ingyen',
+      badge: 'Kezdd el még ma',
+      title: 'Spórolj órákat minden ajánlaton – kezdd el most, ingyen',
       description: 'Regisztrálj ingyen, bankkártya nélkül. Azonnal hozzáférsz az AI-alapú ajánlatkészítőhöz. A Vyndi az eddigi ajánlataidból tanul, így minden új dokumentum egyre pontosabb, esztétikusabb és márkahűbb lesz.',
-      noCreditCard: 'Nincs bankkártya szükséges • Azonnali hozzáférés • Bármikor lemondható',
+      noCreditCard: 'Nem szükséges bankkártya • Azonnali hozzáférés • Bármikor lemondható',
     },
     stats: {
       activeUsers: 'Aktív felhasználó',
@@ -973,7 +973,7 @@ export const hu = {
       viewAll: 'Összes erőforrás megtekintése',
       open: 'Megnyitás',
       ctaTitle: 'Készen állsz a kezdésre?',
-      ctaDescription: 'Kezdj el ingyen ajánlatokat készíteni még ma, bankkártya nélkül.',
+      ctaDescription: 'Kezdd el ingyen ajánlatokat készíteni még ma, bankkártya nélkül.',
       items: {
         0: {
           title: 'Ajánlatkészítési útmutató',
@@ -1042,7 +1042,7 @@ export const hu = {
     backHome: 'Vissza a főoldalra',
   },
   login: {
-    title: 'Kezdj el ingyen ajánlatokat készíteni',
+    title: 'Kezdd el ingyen ajánlatokat készíteni',
     description:
       'Írd be az e-mail címed, és azonnal elkezdheted a professzionális ajánlatok készítését. Jelszó nélkül, gyorsan és biztonságosan. Bankkártya nincs szükséges.',
     accountCreationNotice: '✨ Nincs még fiókod? Automatikusan létrehozunk egyet, amikor bejelentkezel. Teljesen ingyenes, bankkártya nélkül. Azonnal hozzáférsz 2 ingyenes ajánlathoz.',
@@ -1074,7 +1074,7 @@ export const hu = {
       },
     },
     trust: {
-      noCreditCard: 'Nincs bankkártya szükséges',
+      noCreditCard: 'Nem szükséges bankkártya',
       instantAccess: 'Azonnali hozzáférés',
       cancelAnytime: 'Bármikor lemondható',
     },

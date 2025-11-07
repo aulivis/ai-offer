@@ -307,7 +307,7 @@ export default function Home() {
           />
         </svg>
       ),
-      text: 'Nincs bankkártya szükséges',
+      text: 'Nem szükséges bankkártya',
     },
   ];
 
@@ -399,8 +399,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
-            <Link
-              href="/login"
+            <a
+              href="#product-demo"
               className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
             >
               <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -413,7 +413,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {t('landing.hero.secondaryCta')}
-            </Link>
+            </a>
           </div>
 
           {/* Trust badges in hero */}
@@ -424,30 +424,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRODUCT VIDEO SECTION - Moved below hero */}
-      <section className="mx-auto w-full max-w-6xl px-6">
-        <div className="text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            {t('landing.productVideo.badge')}
-          </span>
-          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            {t('landing.productVideo.title')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            {t('landing.productVideo.description')}
-          </p>
-        </div>
-        <div className="relative mt-12">
-          <VideoPlayer
-            title="Vyndi Product Demo"
-            className="mx-auto w-full max-w-4xl"
-            // Add videoUrl and thumbnailUrl props when available
-          />
-          {/* Decorative elements */}
-          <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
-        </div>
-      </section>
 
       {/* PROBLEM-AGITATE-SOLVE SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6">
@@ -517,7 +493,7 @@ export default function Home() {
       </section>
 
       {/* PRODUCT DEMO SECTION - Enhanced with screenshots/GIFs */}
-      <section className="mx-auto w-full max-w-6xl px-6">
+      <section id="product-demo" className="mx-auto w-full max-w-6xl px-6 scroll-mt-20">
         <Card className="overflow-hidden p-8 md:p-12">
           <div className="grid gap-12 md:grid-cols-2 md:items-center">
             <div>
@@ -678,13 +654,8 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Social Proof Widget */}
-        <div className="mt-12">
-          <SocialProofWidget />
-        </div>
-        
         {/* Recently Joined Widget */}
-        <div className="mt-8 max-w-md mx-auto">
+        <div className="mt-12 max-w-md mx-auto">
           <RecentlyJoinedWidget />
         </div>
       </section>
