@@ -22,17 +22,47 @@ export default function Chatbot({
   title = 'Ask me anything about Propono',
   placeholder = 'Type your question here...',
 }: ChatbotProps) {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+  const [input, setInput] = useState('');
+  // Type assertion needed because ChatInit types don't fully expose api option
+  // but it's accepted at runtime via HttpChatTransportInitOptions
+  const { messages, sendMessage, status, error } = useChat({
     api: '/api/chatbot',
-  });
+  } as Parameters<typeof useChat>[0]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const isLoading = status === 'streaming' || status === 'submitted';
   
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+  
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    
+    // sendMessage accepts { text: string } for simple text messages
+    sendMessage({ text: input.trim() });
+    setInput('');
+  };
+  
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+  
+  // Helper to extract text content from message parts
+  const getMessageText = (message: typeof messages[0]): string => {
+    if (!message.parts || message.parts.length === 0) {
+      return '';
+    }
+    return message.parts
+      .filter((part: any) => part.type === 'text')
+      .map((part: any) => part.text || '')
+      .join('');
+  };
   
   return (
     <Card className={`flex flex-col ${className}`}>
@@ -106,10 +136,12 @@ export default function Chatbot({
                       : 'bg-bg-muted text-fg'
                   }`}
                 >
-                  <div className="whitespace-pre-wrap break-words">{message.content}</div>
-                  {message.role === 'assistant' && message.content && (
+                  <div className="whitespace-pre-wrap break-words">
+                    {getMessageText(message)}
+                  </div>
+                  {message.role === 'assistant' && (
                     <div className="mt-2 text-xs text-fg-muted">
-                      {new Date(message.createdAt ?? Date.now()).toLocaleTimeString()}
+                      {new Date().toLocaleTimeString()}
                     </div>
                   )}
                 </div>

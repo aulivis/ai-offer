@@ -23,18 +23,8 @@ import UseCasesSection from '@/components/landing/UseCasesSection';
 import ResourcesSection from '@/components/landing/ResourcesSection';
 import EnterpriseCTA from '@/components/landing/EnterpriseCTA';
 import EmailCapture from '@/components/landing/EmailCapture';
-import dynamic from 'next/dynamic';
+import ChatbotSection from '@/components/chatbot/ChatbotSection';
 import { t } from '@/copy';
-
-// Dynamically import Chatbot to avoid SSR issues with ai/react
-const Chatbot = dynamic(() => import('@/components/chatbot/Chatbot'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-[400px] items-center justify-center rounded-2xl border border-border bg-bg-muted">
-      <p className="text-fg-muted">Loading chatbot...</p>
-    </div>
-  ),
-});
 
 export default function Home() {
   // Problem-Agitate-Solve section data
@@ -750,22 +740,7 @@ export default function Home() {
       </section>
 
       {/* CHATBOT SECTION */}
-      <section className="mx-auto w-full max-w-4xl px-6">
-        <div className="text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            AI Assistant
-          </span>
-          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Have questions? Ask our AI assistant
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Get instant answers about Propono's features, API, templates, and more. Powered by AI and our documentation.
-          </p>
-        </div>
-        <div className="mt-12">
-          <Chatbot />
-        </div>
-      </section>
+      <ChatbotSection />
 
       {/* FINAL CTA SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6">
