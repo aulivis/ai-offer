@@ -1566,6 +1566,10 @@ export const hu = {
         title: 'Ajánlat mentve',
         description: 'A PDF generálása folyamatban van, hamarosan elérhető lesz.',
       },
+      textSaved: {
+        title: 'Szöveg mentve, PDF generálás sikertelen',
+        description: 'Az ajánlat szövege elmentve, de a PDF generálása nem sikerült. Később újra megpróbálhatod a PDF generálását.',
+      },
       saveFailed: {
         title: 'Ajánlat mentése sikertelen',
         description: 'Nem sikerült elmenteni az ajánlatot. Próbáld újra később.',

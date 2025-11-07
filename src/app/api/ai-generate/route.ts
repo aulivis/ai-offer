@@ -1209,13 +1209,17 @@ Különös figyelmet fordít a következőkre:
       await enqueuePdfJob(sb, pdfJobInput);
     } catch (error) {
       log.error('PDF queue error (enqueue)', error);
-      return NextResponse.json(
-        {
-          error: t('errors.offer.savePdfFailed'),
-          offerId,
-        },
-        { status: 502 },
-      );
+      // Offer text is already saved, return success with PDF failure indication
+      return NextResponse.json({
+        ok: true,
+        id: offerId,
+        pdfUrl: null,
+        downloadToken,
+        status: 'failed' as const,
+        note: translator.t('errors.offer.savePdfFailed'),
+        sections: structuredSections ? sanitizeSectionsOutput(structuredSections) : null,
+        textSaved: true, // Indicate that the text was saved even though PDF failed
+      });
     }
 
     let immediatePdfUrl: string | null = null;
@@ -1323,13 +1327,18 @@ Különös figyelmet fordít a következőkre:
             return NextResponse.json({ error: limitMessage }, { status: 402 });
           }
 
-          return NextResponse.json(
-            {
-              error: t('errors.offer.savePdfFailed'),
-              offerId,
-            },
-            { status: 502 },
-          );
+          // Offer text is already saved, return success with PDF failure indication
+          const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
+          return NextResponse.json({
+            ok: true,
+            id: offerId,
+            pdfUrl: null,
+            downloadToken,
+            status: 'failed' as const,
+            note: translator.t('errors.offer.savePdfFailed'),
+            sections: sectionsPayload,
+            textSaved: true, // Indicate that the text was saved even though PDF failed
+          });
         }
       }
     }

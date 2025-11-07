@@ -1713,6 +1713,9 @@ export default function NewOfferWizard() {
           ? (payloadObj.error as string)
           : undefined;
       const sectionsData = payloadObj ? (payloadObj.sections as unknown) : null;
+      const responseStatus = payloadObj && typeof payloadObj.status === 'string' ? payloadObj.status : undefined;
+      const textSaved = payloadObj && typeof payloadObj.textSaved === 'boolean' ? payloadObj.textSaved : false;
+      const responseNote = payloadObj && typeof payloadObj.note === 'string' ? payloadObj.note : undefined;
 
       if (okFlag === false) {
         const msg = errorMessage || t('errors.offer.generateStatus', { status: resp.status });
@@ -1733,6 +1736,15 @@ export default function NewOfferWizard() {
           });
           return;
         }
+      }
+
+      // If PDF generation failed but text was saved, show a warning
+      if (okFlag === true && responseStatus === 'failed' && textSaved) {
+        showToast({
+          title: t('toasts.offers.textSaved.title'),
+          description: responseNote || t('toasts.offers.textSaved.description'),
+          variant: 'warning',
+        });
       }
 
       clearDraft();
