@@ -23,7 +23,6 @@ import UseCasesSection from '@/components/landing/UseCasesSection';
 import ResourcesSection from '@/components/landing/ResourcesSection';
 import EnterpriseCTA from '@/components/landing/EnterpriseCTA';
 import EmailCapture from '@/components/landing/EmailCapture';
-import ChatbotSection from '@/components/chatbot/ChatbotSection';
 import { t } from '@/copy';
 
 export default function Home() {
@@ -739,8 +738,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CHATBOT SECTION */}
-      <ChatbotSection />
+      {/* CHATBOT SECTION - Removed in favor of floating widget */}
 
       {/* FINAL CTA SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6">

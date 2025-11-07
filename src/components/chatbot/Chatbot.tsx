@@ -10,6 +10,7 @@
 import { useChat } from '@ai-sdk/react';
 import { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 interface ChatbotProps {
   className?: string;
@@ -19,9 +20,11 @@ interface ChatbotProps {
 
 export default function Chatbot({
   className = '',
-  title = 'Ask me anything about Propono',
-  placeholder = 'Type your question here...',
+  title,
+  placeholder,
 }: ChatbotProps) {
+  const defaultTitle = title || t('chatbot.title');
+  const defaultPlaceholder = placeholder || t('chatbot.placeholder');
   const [input, setInput] = useState('');
   // Type assertion needed because ChatInit types don't fully expose api option
   // but it's accepted at runtime via HttpChatTransportInitOptions
@@ -85,16 +88,16 @@ export default function Chatbot({
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-fg">{title}</h3>
+            <h3 className="text-lg font-semibold text-fg">{defaultTitle}</h3>
             <p className="text-sm text-fg-muted">
-              {isLoading ? 'Thinking...' : 'Powered by AI'}
+              {isLoading ? t('chatbot.thinking') : t('chatbot.poweredBy')}
             </p>
           </div>
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="rounded-lg p-2 text-fg-muted hover:bg-bg-muted hover:text-fg"
-          aria-label={isExpanded ? 'Minimize chat' : 'Expand chat'}
+          aria-label={isExpanded ? t('chatbot.minimize') : t('chatbot.expand')}
         >
           <svg
             className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -115,10 +118,10 @@ export default function Chatbot({
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               <p className="text-fg-muted">
-                👋 Hi! I'm here to help you learn about Propono.
+                {t('chatbot.emptyState.greeting')}
               </p>
               <p className="mt-2 text-sm text-fg-muted">
-                Ask me anything about features, API, templates, or how to use the platform.
+                {t('chatbot.emptyState.description')}
               </p>
             </div>
           </div>
@@ -151,6 +154,7 @@ export default function Chatbot({
               <div className="flex justify-start">
                 <div className="rounded-2xl bg-bg-muted px-4 py-2">
                   <div className="flex items-center gap-2">
+                    <span className="text-sm text-fg-muted">{t('chatbot.typing')}</span>
                     <div className="h-2 w-2 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.3s]" />
                     <div className="h-2 w-2 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.15s]" />
                     <div className="h-2 w-2 animate-bounce rounded-full bg-fg-muted" />
@@ -164,8 +168,8 @@ export default function Chatbot({
         
         {error && (
           <div className="rounded-lg border border-danger bg-danger/10 p-3 text-sm text-danger">
-            <p className="font-medium">Error</p>
-            <p className="mt-1">{error.message || 'An error occurred. Please try again.'}</p>
+            <p className="font-medium">{t('chatbot.error')}</p>
+            <p className="mt-1">{error.message || t('common.status.error')}</p>
           </div>
         )}
       </div>
@@ -176,7 +180,7 @@ export default function Chatbot({
           <input
             value={input}
             onChange={handleInputChange}
-            placeholder={placeholder}
+            placeholder={defaultPlaceholder}
             disabled={isLoading}
             className="flex-1 rounded-2xl border border-border bg-bg px-4 py-2 text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
@@ -206,12 +210,12 @@ export default function Chatbot({
                 />
               </svg>
             ) : (
-              'Send'
+              t('chatbot.send')
             )}
           </button>
         </div>
         <p className="mt-2 text-xs text-fg-muted">
-          AI responses are based on Propono documentation. May include inaccuracies.
+          {t('chatbot.disclaimer')}
         </p>
       </form>
     </Card>

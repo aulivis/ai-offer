@@ -8,13 +8,14 @@
  */
 
 import dynamic from 'next/dynamic';
+import { t } from '@/copy';
 
 // Dynamically import Chatbot to avoid SSR issues with @ai-sdk/react
 const Chatbot = dynamic(() => import('./Chatbot'), {
   ssr: false,
   loading: () => (
     <div className="flex h-[400px] items-center justify-center rounded-2xl border border-border bg-bg-muted">
-      <p className="text-fg-muted">Loading chatbot...</p>
+      <p className="text-fg-muted">{t('common.loading')}</p>
     </div>
   ),
 });
@@ -28,13 +29,13 @@ export default function ChatbotSection({ className = '' }: ChatbotSectionProps) 
     <section className={`mx-auto w-full max-w-4xl px-6 ${className}`}>
       <div className="text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-          AI Assistant
+          {t('chatbot.title')}
         </span>
         <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-          Have questions? Ask our AI assistant
+          {t('chatbot.welcomeTitle')}
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-          Get instant answers about Propono's features, API, templates, and more. Powered by AI and our documentation.
+          {t('chatbot.welcomeDescription')}
         </p>
       </div>
       <div className="mt-12">

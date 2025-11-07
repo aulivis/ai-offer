@@ -12,6 +12,7 @@ import LandingHeader from '@/components/LandingHeader';
 import Footer from '@/components/layout/Footer';
 import { AppProviders } from '@/components/AppProviders';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
+import ChatbotWidget from '@/components/chatbot/ChatbotWidget';
 
 import { LanguageProvider } from '@/state/LanguageProvider';
 import { withLanguage } from '@/state/lang';
@@ -58,6 +59,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <PreferencesModal />
                 <AnalyticsScriptGate />
                 <ScrollToTop />
+                <ChatbotWidget />
               </div>
             </ErrorBoundary>
           </AppProviders>
