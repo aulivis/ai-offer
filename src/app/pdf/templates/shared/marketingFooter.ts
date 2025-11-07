@@ -24,3 +24,4 @@ export function renderMarketingFooter(homepageUrl: string = 'https://propono.ai'
 
 
 
+
