@@ -64,7 +64,7 @@ const caseStudies = [
 
 export default function SuccessStoriesPage() {
   return (
-    <main id="main" className="mx-auto w-full max-w-7xl px-6">
+    <main id="main" className="mx-auto w-full max-w-7xl px-6 pb-24">
       {/* Hero Section */}
       <section className="mx-auto max-w-3xl pt-16 pb-20 text-center md:pt-24 md:pb-28">
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-primary">

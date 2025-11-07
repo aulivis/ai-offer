@@ -354,7 +354,7 @@ export default function Home() {
   ];
 
   return (
-    <main id="main" className="flex flex-col gap-20 pb-24 md:gap-28">
+    <main id="main" className="flex flex-col gap-20 pb-32 md:gap-28 md:pb-40">
       {/* HERO SECTION - Cleaner design */}
       <section className="relative mx-auto w-full max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="mx-auto max-w-4xl text-center">

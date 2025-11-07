@@ -1,11 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { t } from '@/copy';
-
-export const metadata = {
-  title: 'Erőforrások - Vyndi',
-  description: 'Hasznos útmutatók, sablonok és cikkek az ajánlatkészítésről',
-};
+import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 
 const resources = [
   {
@@ -107,8 +105,11 @@ const resources = [
 ];
 
 export default function ResourcesPage() {
+  const { status } = useOptionalAuth();
+  const isAuthenticated = status === 'authenticated';
+
   return (
-    <main id="main" className="mx-auto w-full max-w-7xl px-6">
+    <main id="main" className="mx-auto w-full max-w-7xl px-6 pb-24">
       {/* Hero Section */}
       <section className="relative mx-auto max-w-4xl pt-16 pb-20 text-center md:pt-24 md:pb-28">
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-3xl opacity-30" />
@@ -182,7 +183,8 @@ export default function ResourcesPage() {
         ))}
       </div>
 
-      {/* Enhanced CTA Section */}
+      {/* Enhanced CTA Section - Only show for non-authenticated users */}
+      {!isAuthenticated && (
       <div className="mt-24">
         <Card className="relative overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 p-8 md:p-12 shadow-2xl">
           {/* Decorative elements */}
@@ -237,6 +239,7 @@ export default function ResourcesPage() {
           </div>
         </Card>
       </div>
+      )}
     </main>
   );
 }

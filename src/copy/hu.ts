@@ -273,15 +273,27 @@ export const hu = {
       },
       sent: {
         label: 'Kiküldött ajánlatok',
-        helper: '{pending} ajánlat döntésre vár',
+        helper: '{sent} ajánlat kiküldve • {pending} döntésre vár. A kiküldött ajánlatok azon ajánlatok száma, amelyeket már elküldtél az ügyfeleidnek.',
       },
       accepted: {
         label: 'Elfogadott ajánlatok',
-        helper: 'Elfogadási arány: {rate}',
+        helper: '{accepted} elfogadott ajánlat • Elfogadási arány: {rate}. Ez az összes kiküldött ajánlatodhoz képest az elfogadottak százalékos aránya.',
       },
       avgDecision: {
         label: 'Átlagos döntési idő',
-        helper: '{drafts} vázlat készül',
+        helper: 'Átlagosan {days} nap alatt döntöttek az ajánlataidról. {drafts} vázlat még nem küldött el. Ez az időmutató segít megbecsülni, mikor várható válasz az ügyfelektől.',
+      },
+      inReview: {
+        label: 'Döntésre vár',
+        helper: '{count} ajánlat vár ügyfeleid döntésére. Ezek az ajánlatok már kiküldve lettek, de még nincs rájuk válasz.',
+      },
+      lost: {
+        label: 'Elutasított ajánlatok',
+        helper: '{count} ajánlat lett elutasítva. Fontos visszajelzés az ajánlataidra, segíthet a jövőbeli ajánlatok javításában.',
+      },
+      winRate: {
+        label: 'Sikeres arány',
+        helper: 'A sikeres arány = Elfogadott / (Elfogadott + Elutasított). Jelenleg {rate}. Átlagosan 40-60% között jó eredménynek számít. Ez a mutató azt mutatja, hogy az elfogadott és elutasított ajánlatok közül hány százalékot fogadnak el.',
       },
     },
     viewSwitcher: {

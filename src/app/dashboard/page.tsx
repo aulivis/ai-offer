@@ -1566,9 +1566,11 @@ export default function DashboardPage() {
 
                   {/* Active Offers (In Review) */}
                   <MetricCard
-                    label="Döntésre vár"
+                    label={t('dashboard.metrics.inReview.label')}
                     value={stats.inReview.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: `${stats.inReview} ajánlat döntésre vár` } : {})}
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.inReview.helper', {
+                      count: stats.inReview.toLocaleString('hu-HU'),
+                    }) } : {})}
                     icon={<EyeIcon className="h-7 w-7" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
@@ -1581,6 +1583,7 @@ export default function DashboardPage() {
                     label={t('dashboard.metrics.sent.label')}
                     value={stats.sent.toLocaleString('hu-HU')}
                     {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.sent.helper', {
+                      sent: stats.sent.toLocaleString('hu-HU'),
                       pending: stats.inReview.toLocaleString('hu-HU'),
                     }) } : {})}
                     icon={<PaperAirplaneIcon className="h-7 w-7" />}
@@ -1594,7 +1597,10 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.accepted.label')}
                     value={stats.accepted.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.accepted.helper', { rate: acceptanceLabel }) } : {})}
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.accepted.helper', {
+                      accepted: stats.accepted.toLocaleString('hu-HU'),
+                      rate: acceptanceLabel,
+                    }) } : {})}
                     icon={<DocumentCheckIcon className="h-7 w-7" />}
                     color="success"
                     trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
@@ -1606,9 +1612,11 @@ export default function DashboardPage() {
 
                   {/* Lost Offers - NEW */}
                   <MetricCard
-                    label="Elutasított ajánlatok"
+                    label={t('dashboard.metrics.lost.label')}
                     value={stats.lost.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: `${stats.lost} ajánlat elutasítva` } : {})}
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.lost.helper', {
+                      count: stats.lost.toLocaleString('hu-HU'),
+                    }) } : {})}
                     icon={<XCircleIcon className="h-7 w-7" />}
                     color="danger"
                     onClick={() => handleMetricClick('lost')}
@@ -1618,9 +1626,11 @@ export default function DashboardPage() {
 
                   {/* Win Rate - NEW */}
                   <MetricCard
-                    label="Sikeres arány"
+                    label={t('dashboard.metrics.winRate.label')}
                     value={winRateLabel}
-                    {...(metricsViewMode === 'detailed' ? { helper: `Elfogadott / (Elfogadott + Elutasított)` } : {})}
+                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.winRate.helper', {
+                      rate: winRateLabel !== '—' ? winRateLabel : '—',
+                    }) } : {})}
                     icon={<ChartBarIcon className="h-7 w-7" />}
                     color={stats.winRate !== null && stats.winRate > 50 ? 'success' : stats.winRate !== null && stats.winRate < 30 ? 'danger' : 'warning'}
                     trend={stats.winRate !== null && stats.winRate > 50 ? 'up' : stats.winRate !== null && stats.winRate < 30 ? 'down' : 'neutral'}
@@ -1634,6 +1644,7 @@ export default function DashboardPage() {
                     label={t('dashboard.metrics.avgDecision.label')}
                     value={avgDecisionLabel}
                     {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.avgDecision.helper', {
+                      days: stats.avgDecisionDays !== null ? stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 }) : '—',
                       drafts: stats.drafts.toLocaleString('hu-HU'),
                     }) } : {})}
                     icon={<ClockIcon className="h-7 w-7" />}
