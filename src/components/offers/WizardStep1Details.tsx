@@ -2,6 +2,7 @@
 
 import { t } from '@/copy';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -97,6 +98,7 @@ export function WizardStep1Details({
   onTemplateSelect,
   quotaInfo,
 }: WizardStep1DetailsProps) {
+  const router = useRouter();
   const [detailsTipsOpen, setDetailsTipsOpen] = useState(false);
 
   const handleFieldChange = (field: keyof Step1Form, value: unknown) => {
@@ -159,6 +161,15 @@ export function WizardStep1Details({
             {quotaInfo.pendingText ? (
               <p className="text-[11px] font-medium text-current/80">{quotaInfo.pendingText}</p>
             ) : null}
+            {quotaInfo.isExhausted && (
+              <Button
+                type="button"
+                onClick={() => router.push('/billing')}
+                className="mt-3 w-full rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+              >
+                Frissítés az előfizetésben →
+              </Button>
+            )}
           </div>
         </div>
 

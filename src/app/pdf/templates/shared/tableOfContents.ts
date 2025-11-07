@@ -66,3 +66,6 @@ export function extractHeadings(html: string): TOCEntry[] {
   return entries;
 }
 
+
+
+

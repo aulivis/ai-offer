@@ -70,3 +70,6 @@ $$;
 grant execute on function public.increment_rate_limit(text, integer, bigint) to authenticated;
 grant execute on function public.increment_rate_limit(text, integer, bigint) to service_role;
 
+
+
+

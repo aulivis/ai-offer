@@ -60,3 +60,6 @@ export function addColorIndicators(html: string): string {
     .replace(/<span[^>]*class="[^"]*warning[^"]*"[^>]*>/gi, '<span class="$&" aria-label="Warning">');
 }
 
+
+
+

@@ -80,3 +80,6 @@ $$;
 -- Ensure service_role has full access
 grant all on table public.offers to service_role;
 
+
+
+

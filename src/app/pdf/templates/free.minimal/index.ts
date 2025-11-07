@@ -23,3 +23,6 @@ export const freeMinimalTemplate: OfferTemplate = {
   renderBody,
 };
 
+
+
+

@@ -2232,6 +2232,21 @@ export default function NewOfferWizard() {
                   </div>
                 ) : null}
               </div>
+              {/* Tips for text editing */}
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-primary text-sm">💡</span>
+                  <p className="text-xs font-semibold text-slate-700">Tippek a jobb formázáshoz</p>
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 ml-4">
+                  <li>{t('richTextEditor.placeholderReminder')}</li>
+                  <li>Használj felsorolásokat és számozott listákat a strukturáláshoz</li>
+                  <li>Kiemeld a fontos információkat félkövérrel vagy dőlt betűvel</li>
+                  <li>Tartsd a szöveget rövid és tömören, könnyen olvasható részekre bontva</li>
+                  <li>Használj alcímeket a tartalom szervezéséhez</li>
+                </ul>
+              </div>
+              
               <div className="relative">
                 <RichTextEditor
                   ref={richTextEditorRef}
@@ -2253,7 +2268,6 @@ export default function NewOfferWizard() {
                   </div>
                 ) : null}
               </div>
-              <p className="text-[11px] text-slate-500">{t('richTextEditor.placeholderReminder')}</p>
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -2266,7 +2280,17 @@ export default function NewOfferWizard() {
                   ) : null}
                 </div>
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3">
-                  <div className="mx-auto bg-white shadow-lg" style={{ width: '210mm', maxWidth: '100%', aspectRatio: '210/297' }}>
+                  {/* Preview container matching A4 dimensions with proper scaling */}
+                  {/* PDF uses 20mm top/bottom and 15mm left/right margins - shown via @page rules in CSS */}
+                  <div 
+                    className="mx-auto bg-white shadow-lg"
+                    style={{ 
+                      width: '210mm', 
+                      maxWidth: '100%', 
+                      aspectRatio: '210/297',
+                      position: 'relative'
+                    }}
+                  >
                     <iframe
                       ref={previewFrameRef}
                       className="offer-template-preview block w-full h-full"
@@ -2278,6 +2302,9 @@ export default function NewOfferWizard() {
                         height: `${previewFrameHeight}px`,
                         minHeight: '720px',
                         backgroundColor: 'white',
+                        display: 'block',
+                        margin: 0,
+                        padding: 0,
                       }}
                       title={t('offers.wizard.previewTemplates.previewHeading')}
                     />
@@ -2433,11 +2460,16 @@ export default function NewOfferWizard() {
                 </Button>
                 <Button
                   onClick={generate}
-                  disabled={loading || isQuotaExhausted || quotaLoading}
+                  disabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
                   className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   {loading ? 'Generálás…' : 'PDF generálása és mentés'}
                 </Button>
+                {!previewLocked && !previewLoading && (
+                  <p className="text-[11px] text-slate-500 text-center">
+                    Az AI előnézet betöltése után lesz elérhető a PDF generálás.
+                  </p>
+                )}
               </div>
             </Card>
           </section>
@@ -2449,7 +2481,7 @@ export default function NewOfferWizard() {
           onNext={() => goToStep(Math.min(3, step + 1))}
           onSubmit={generate}
           isNextDisabled={isQuotaExhausted || quotaLoading}
-          isSubmitDisabled={loading || isQuotaExhausted || quotaLoading}
+          isSubmitDisabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
           isSubmitting={loading}
           isQuotaExhausted={isQuotaExhausted}
           isQuotaLoading={quotaLoading}
