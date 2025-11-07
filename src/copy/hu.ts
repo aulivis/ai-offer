@@ -26,6 +26,21 @@ export const hu = {
     authErrorTitle: 'Hitelesítés sikertelen',
     authErrorFallback: 'Nem sikerült hitelesíteni a felhasználói állapotot.',
     loading: 'Betöltés…',
+    notFound: {
+      title: '404 - Az oldal nem található',
+      heading: 'Hoppá! Ez az oldal nem létezik',
+      description: 'A keresett oldal áthelyeződhetett, törölve lett, vagy soha nem létezett.',
+      ctaHome: 'Vissza a főoldalra',
+      ctaDashboard: 'Vissza az irányítópulthoz',
+      suggestions: {
+        title: 'Mit tehetsz?',
+        items: {
+          0: 'Ellenőrizd az URL-t gépelési hibákért',
+          1: 'Használd a navigációs menüt az oldalak közötti váltáshoz',
+          2: 'Térj vissza a főoldalra',
+        },
+      },
+    },
     sidebar: {
       open: 'Oldalsáv megnyitása',
       close: 'Oldalsáv elrejtése',
@@ -974,6 +989,12 @@ export const hu = {
       open: 'Megnyitás',
       ctaTitle: 'Készen állsz a kezdésre?',
       ctaDescription: 'Kezdd el ingyen ajánlatokat készíteni még ma, bankkártya nélkül.',
+      types: {
+        guide: 'Útmutató',
+        template: 'Sablon',
+        article: 'Cikk',
+        video: 'Videó',
+      },
       items: {
         0: {
           title: 'Ajánlatkészítési útmutató',
