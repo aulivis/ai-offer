@@ -130,7 +130,9 @@ export async function consumeMagicLinkRateLimit(
   now = Date.now(),
   legacyKeys: string[] = [],
 ): Promise<RateLimitResult> {
-  const table = client.from('magic_link_rate_limits') as RateLimitTable;
+  // Use api_rate_limits table instead of magic_link_rate_limits
+  // Magic link rate limits are namespaced with the 'email:' prefix to avoid conflicts
+  const table = client.from('api_rate_limits') as RateLimitTable;
 
   const {
     data: existing,
