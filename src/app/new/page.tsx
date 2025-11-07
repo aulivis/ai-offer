@@ -1669,7 +1669,11 @@ export default function NewOfferWizard() {
         });
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          alert(t('errors.auth.notLoggedIn'));
+          showToast({
+            title: t('errors.auth.notLoggedIn'),
+            description: t('errors.auth.notLoggedIn'),
+            variant: 'error',
+          });
           router.replace('/login');
           return;
         }
@@ -1680,7 +1684,11 @@ export default function NewOfferWizard() {
             : error instanceof Error
               ? error.message
               : t('errors.offer.generateUnknown');
-        alert(message);
+        showToast({
+          title: t('toasts.offers.saveFailed.title'),
+          description: message,
+          variant: 'error',
+        });
         return;
       }
 
@@ -1706,13 +1714,21 @@ export default function NewOfferWizard() {
 
       if (okFlag === false) {
         const msg = errorMessage || t('errors.offer.generateStatus', { status: resp.status });
-        alert(msg);
+        showToast({
+          title: t('toasts.offers.saveFailed.title'),
+          description: msg,
+          variant: 'error',
+        });
         return;
       }
 
       if (sectionsData) {
         if (!isOfferSections(sectionsData)) {
-          alert(t('errors.offer.missingStructure'));
+          showToast({
+            title: t('toasts.offers.saveFailed.title'),
+            description: t('errors.offer.missingStructure'),
+            variant: 'error',
+          });
           return;
         }
       }

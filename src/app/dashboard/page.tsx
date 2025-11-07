@@ -1211,12 +1211,17 @@ export default function DashboardPage() {
     if (!quotaSnapshot) {
       return '—';
     }
-    // Defensive check: free/standard plans should never have null limit
-    // If limit is null but plan is not pro, fallback to free plan limit
-    let displayLimit = quotaSnapshot.limit;
-    if (displayLimit === null && quotaSnapshot.plan !== 'pro') {
-      displayLimit = quotaSnapshot.plan === 'standard' ? 10 : 3;
+    // Always determine limit based on plan, not API response
+    // This ensures correct display even if API returns wrong limit value
+    let displayLimit: number | null = null;
+    if (quotaSnapshot.plan === 'pro') {
+      displayLimit = null; // Unlimited for pro
+    } else if (quotaSnapshot.plan === 'standard') {
+      displayLimit = 10;
+    } else {
+      displayLimit = 3; // Free plan
     }
+    
     if (displayLimit === null) {
       return t('dashboard.metrics.quota.unlimitedValue');
     }
@@ -1232,10 +1237,14 @@ export default function DashboardPage() {
     if (isQuotaLoading || !quotaSnapshot) {
       return undefined;
     }
-    // Defensive check: free/standard plans should never have null limit
-    let displayLimit = quotaSnapshot.limit;
-    if (displayLimit === null && quotaSnapshot.plan !== 'pro') {
-      displayLimit = quotaSnapshot.plan === 'standard' ? 10 : 3;
+    // Always determine limit based on plan, not API response
+    let displayLimit: number | null = null;
+    if (quotaSnapshot.plan === 'pro') {
+      displayLimit = null; // Unlimited for pro
+    } else if (quotaSnapshot.plan === 'standard') {
+      displayLimit = 10;
+    } else {
+      displayLimit = 3; // Free plan
     }
     // For unlimited plans, show only the plan info
     if (displayLimit === null) {
@@ -1395,11 +1404,11 @@ export default function DashboardPage() {
                     label={t('dashboard.metrics.quota.label')}
                     value={quotaValue}
                     {...(quotaHelper && metricsViewMode === 'detailed' ? { helper: quotaHelper } : {})}
-                    {...(quotaSnapshot && quotaSnapshot.limit !== null
+                    {...(quotaSnapshot && quotaSnapshot.plan !== 'pro'
                       ? {
                           progress: {
                             used: quotaSnapshot.used + quotaSnapshot.pending,
-                            limit: quotaSnapshot.limit,
+                            limit: quotaSnapshot.plan === 'standard' ? 10 : 3,
                           },
                         }
                       : {})}

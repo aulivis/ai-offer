@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useToast } from '@/components/ToastProvider';
 
 type CardBrand = {
   name: string;
@@ -366,6 +367,7 @@ export default function BillingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status: authStatus, user } = useOptionalAuth();
+  const { showToast } = useToast();
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
@@ -474,7 +476,11 @@ export default function BillingPage() {
         e instanceof ApiError && typeof e.message === 'string' && e.message.trim()
           ? e.message
           : t('billing.checkout.unexpected');
-      alert(message);
+      showToast({
+        title: t('billing.checkout.error'),
+        description: message,
+        variant: 'error',
+      });
       setLoading(null);
     }
   }
