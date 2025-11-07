@@ -355,86 +355,97 @@ export default function Home() {
 
   return (
     <main id="main" className="flex flex-col gap-20 pb-24 md:gap-28">
-      {/* HERO SECTION - Enhanced with product demo area */}
+      {/* HERO SECTION - Cleaner design */}
       <section className="relative mx-auto w-full max-w-7xl px-6 pt-12 md:pt-20">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
-          <div className="flex flex-col gap-6">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        <div className="mx-auto max-w-4xl text-center">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary bg-primary/10 px-5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            {t('landing.hero.badge')}
+          </span>
+
+          <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-5xl lg:text-6xl">
+            {t('landing.hero.titleLine1')} <HighlightUnderline>{t('landing.hero.highlighted')}</HighlightUnderline>.
+            <br />
+            <span className="text-primary">{t('landing.hero.titleLine2')}</span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-[1.6] text-fg-muted md:text-xl">
+            {t('landing.hero.description')}
+          </p>
+
+          {/* Pricing Display */}
+          <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-fg-muted">
+            <span className="text-xl font-bold text-primary md:text-2xl">{t('landing.hero.pricing.starting')}</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="text-base md:text-sm">{t('landing.hero.pricing.standard')}</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="text-base md:text-sm">{t('landing.hero.pricing.pro')}</span>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/new"
+              className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
+            >
+              <span>{t('landing.hero.primaryCta')}</span>
+              <svg
+                className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
-              Ajánlatkészítés újragondolva
-            </span>
-
-            <h1 className="text-4xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-5xl lg:text-6xl">
-              {t('landing.hero.titleLine1')} <HighlightUnderline>{t('landing.hero.highlighted')}</HighlightUnderline>.
-              <br />
-              <span className="text-primary">{t('landing.hero.titleLine2')}</span>
-            </h1>
-
-            <p className="max-w-[52ch] text-lg leading-[1.6] text-fg-muted md:text-xl">
-              {t('landing.hero.description')}
-            </p>
-
-            {/* Pricing Display */}
-            <div className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
-              <span className="text-xl font-bold text-primary md:text-2xl">Innen indul: Ingyenes</span>
-              <span className="hidden sm:inline">•</span>
-              <span className="text-base md:text-sm">Standard: 1 490 Ft/hó</span>
-              <span className="hidden sm:inline">•</span>
-              <span className="text-base md:text-sm">Pro: 6 990 Ft/hó</span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href="/new"
-                className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
-              >
-                <span>{t('landing.hero.primaryCta')}</span>
-                <svg
-                  className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
-              >
-                <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                  />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {t('landing.hero.secondaryCta')}
-              </Link>
-            </div>
-
-            {/* Trust badges in hero */}
-            <TrustBadges badges={trustBadges} className="mt-4" />
-            
-            {/* Customer ticker */}
-            <CustomerTicker className="mt-6" />
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
+            >
+              <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {t('landing.hero.secondaryCta')}
+            </Link>
           </div>
 
-          {/* Product Demo Area */}
-          <div className="relative lg:order-last">
-            <VideoPlayer
-              title="Vyndi Product Demo"
-              className="w-full"
-              // Add videoUrl and thumbnailUrl props when available
-            />
-            {/* Decorative elements */}
-            <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
-          </div>
+          {/* Trust badges in hero */}
+          <TrustBadges badges={trustBadges} className="mt-8" />
+          
+          {/* Customer ticker */}
+          <CustomerTicker className="mt-6" />
+        </div>
+      </section>
+
+      {/* PRODUCT VIDEO SECTION - Moved below hero */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            {t('landing.productVideo.badge')}
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            {t('landing.productVideo.title')}
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            {t('landing.productVideo.description')}
+          </p>
+        </div>
+        <div className="relative mt-12">
+          <VideoPlayer
+            title="Vyndi Product Demo"
+            className="mx-auto w-full max-w-4xl"
+            // Add videoUrl and thumbnailUrl props when available
+          />
+          {/* Decorative elements */}
+          <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
         </div>
       </section>
 
@@ -442,14 +453,13 @@ export default function Home() {
       <section className="mx-auto w-full max-w-6xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            A probléma
+            {t('landing.problemSection.badge')}
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Túl sok időt töltesz az ajánlatkészítéssel?
+            {t('landing.problemSection.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            A hagyományos ajánlatkészítés lassú, hibára hajlamos és nem skálázható. Minden projektnél
-            újra kell kezdened a nulláról.
+            {t('landing.problemSection.description')}
           </p>
         </div>
 
@@ -470,11 +480,10 @@ export default function Home() {
         <div className="mt-12 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 md:p-12">
           <div className="mx-auto max-w-3xl text-center">
             <h3 className="text-2xl font-semibold text-fg md:text-3xl">
-              A megoldás: Vyndi AI-alapú ajánlatkészítő
+              {t('landing.problemSection.solutionTitle')}
             </h3>
             <p className="mt-4 text-lg text-fg-muted">
-              Automatizáld az ajánlatkészítést, spórolj órákat, és növeld az üzleti eredményeidet.
-              Mindezt egyetlen, könnyen használható eszközzel.
+              {t('landing.problemSection.solutionDescription')}
             </p>
           </div>
         </div>
@@ -484,13 +493,13 @@ export default function Home() {
       <section className="mx-auto w-full max-w-6xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Funkciók
+            {t('landing.featuresSection.badge')}
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Minden, amire szükséged van egy helyen
+            {t('landing.featuresSection.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            A Vyndi minden eszközt biztosít, amire szükséged van a professzionális ajánlatkészítéshez
+            {t('landing.featuresSection.description')}
           </p>
         </div>
 
@@ -513,21 +522,20 @@ export default function Home() {
           <div className="grid gap-12 md:grid-cols-2 md:items-center">
             <div>
               <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                Látogasd meg
+                {t('landing.demoSection.badge')}
               </span>
               <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-                Nézd meg, hogyan működik
+                {t('landing.demoSection.title')}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-fg-muted">
-                Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz
-                professzionális ajánlatokat percek alatt.
+                {t('landing.demoSection.description')}
               </p>
               <ul className="mt-6 space-y-3">
                 {[
-                  'AI-alapú szöveg generálás',
-                  'Reszponzív szerkesztés',
-                  'Automatikus márkázás',
-                  'Valós idejű együttműködés',
+                  t('landing.productVideo.features.0'),
+                  t('landing.productVideo.features.1'),
+                  t('landing.productVideo.features.2'),
+                  t('landing.productVideo.features.3'),
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-base text-fg-muted">
                     <svg className="h-5 w-5 flex-shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -546,7 +554,7 @@ export default function Home() {
                   href="/new"
                   className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:shadow-pop hover:scale-105"
                 >
-                  Kezdj el ajánlatot készíteni
+                  {t('landing.productVideo.cta')}
                   <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -633,22 +641,22 @@ export default function Home() {
       <section className="mx-auto w-full max-w-6xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Ügyfeleink véleménye
+            {t('landing.testimonials.badge')}
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Csatlakozz a Vyndi közösséghez
+            {t('landing.testimonials.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Több mint 500+ vállalat bízik bennünk az ajánlatkészítéshez
+            {t('landing.testimonials.description')}
           </p>
         </div>
 
         {/* Stats */}
         <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4">
-          <StatCard value="500+" label="Aktív felhasználó" />
-          <StatCard value="10K+" label="Létrehozott ajánlat" />
-          <StatCard value="98%" label="Elégedettségi arány" />
-          <StatCard value="24/7" label="Támogatás" />
+          <StatCard value="500+" label={t('landing.stats.activeUsers')} />
+          <StatCard value="10K+" label={t('landing.stats.createdOffers')} />
+          <StatCard value="98%" label={t('landing.stats.satisfaction')} />
+          <StatCard value="24/7" label={t('landing.stats.support')} />
         </div>
 
         {/* Customer Logos */}
@@ -705,33 +713,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CASE STUDIES SECTION */}
-      <section id="case-studies" className="mx-auto w-full max-w-6xl px-6">
-        <div className="text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Esettanulmányok
-          </span>
-          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Valós eredmények valós ügyfelektől
+      {/* SUCCESS STORIES LINK SECTION - Replaced case studies */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <div className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 md:p-12 text-center">
+          <h2 className="text-3xl font-semibold text-fg md:text-4xl">
+            {t('landing.successStories.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat
+            {t('landing.successStories.description')}
           </p>
-        </div>
-        <div className="mt-12 grid gap-8 md:grid-cols-2">
-          {caseStudies.map((study, index) => (
-            <CaseStudyCard
-              key={index}
-              company={study.company}
-              industry={study.industry}
-              challenge={study.challenge}
-              solution={study.solution}
-              results={study.results}
-              quote={study.quote}
-              author={study.author}
-              role={study.role}
-            />
-          ))}
+          <Link
+            href="/success-stories"
+            className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
+          >
+            {t('landing.successStories.cta')}
+            <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
         </div>
       </section>
 
@@ -739,13 +738,13 @@ export default function Home() {
       <section className="mx-auto w-full max-w-4xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Számológép
+            {t('landing.roiCalculator.badge')}
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Mennyit takaríthatnál meg?
+            {t('landing.roiCalculator.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Számítsd ki, mennyi időt és pénzt takaríthatnál meg a Vyndi-val
+            {t('landing.roiCalculator.description')}
           </p>
         </div>
         <div className="mt-12">
@@ -757,10 +756,10 @@ export default function Home() {
       <section className="mx-auto w-full max-w-4xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Gyakran ismételt kérdések
+            {t('landing.faq.badge')}
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Válaszok a leggyakoribb kérdésekre
+            {t('landing.faq.title')}
           </h2>
         </div>
         <div className="mt-12">
@@ -773,14 +772,13 @@ export default function Home() {
         <Card className="overflow-hidden border-2 border-primary/40 bg-gradient-to-r from-primary/12 via-transparent to-accent/12 p-8 shadow-pop md:p-12">
           <div className="mx-auto max-w-3xl text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-              Kezdj el még ma
+              {t('landing.finalCta.badge')}
             </span>
             <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-              Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
+              {t('landing.finalCta.title')}
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-fg-muted">
-              Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Vyndi AI az eddigi
-              ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
+              {t('landing.finalCta.description')}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link
@@ -800,7 +798,7 @@ export default function Home() {
               </Link>
             </div>
             <p className="mt-6 text-sm text-fg-muted">
-              Nincs bankkártya szükséges • Azonnali hozzáférés • Bármikor lemondható
+              {t('landing.finalCta.noCreditCard')}
             </p>
           </div>
         </Card>
@@ -814,10 +812,10 @@ export default function Home() {
       {/* EMAIL CAPTURE SECTION */}
       <section className="mx-auto w-full max-w-4xl px-6">
         <EmailCapture
-          title="Kapj ingyenes tippeket az ajánlatkészítéshez"
-          description="Iratkozz fel hírlevelünkre és kapd meg az ingyenes útmutatót: '10 tipp a tökéletes ajánlathoz'"
-          leadMagnet="10 tipp a tökéletes ajánlathoz"
-          placeholder="email@example.com"
+          title={t('landing.emailCapture.title')}
+          description={t('landing.emailCapture.description')}
+          leadMagnet={t('landing.emailCapture.leadMagnet')}
+          placeholder={t('landing.emailCapture.placeholder')}
         />
       </section>
 

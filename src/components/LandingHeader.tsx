@@ -21,7 +21,6 @@ type NavItem = {
 };
 
 const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
-  { href: '/#case-studies', labelKey: 'nav.caseStudies' },
   { href: '/success-stories', labelKey: 'nav.successStories' },
   { href: '/resources', labelKey: 'nav.resources' },
   { href: '/billing', labelKey: 'nav.billing' },

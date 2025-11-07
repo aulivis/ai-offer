@@ -130,10 +130,10 @@ export default function ResourcesPage() {
         <Card className="overflow-hidden border-2 border-primary/40 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 p-8 md:p-12">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold text-fg md:text-4xl">
-              Készen állsz a kezdésre?
+              {t('landing.resources.ctaTitle')}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-fg-muted">
-              Kezdj el ingyen ajánlatokat készíteni még ma.
+              {t('landing.resources.ctaDescription')}
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link

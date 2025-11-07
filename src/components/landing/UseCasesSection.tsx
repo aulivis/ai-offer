@@ -2,82 +2,92 @@
 
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
+import { t } from '@/copy';
 
-interface UseCase {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  features: string[];
-  cta: string;
-  href: string;
-}
-
-const useCases: UseCase[] = [
-  {
-    title: 'Kreatív ügynökségek',
-    description: 'Gyors, professzionális ajánlatok ügyfeleknek egységes márkaidentitással.',
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-        />
-      </svg>
-    ),
-    features: ['Márkázott PDF export', 'AI-alapú szöveg generálás', 'Gyors sablonváltás'],
-    cta: 'Próbáld ki ügynökségeknek',
-    href: '/new',
-  },
-  {
-    title: 'IT szolgáltatók',
-    description: 'Technikai ajánlatok és részletes árkalkulációk komplex projektekhez.',
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-        />
-      </svg>
-    ),
-    features: ['Moduláris blokkrendszer', 'Tételes árkalkuláció', 'Technikai leírások'],
-    cta: 'Kezdd el IT projektekhez',
-    href: '/new',
-  },
-  {
-    title: 'Konzultánsok és freelancerek',
-    description: 'Egyszerű, hatékony ajánlatkészítés egyedülálló projektekhez.',
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-        />
-      </svg>
-    ),
-    features: ['Gyors ajánlatkészítés', 'Professzionális megjelenés', 'Könnyű megosztás'],
-    cta: 'Próbáld ki freelancerként',
-    href: '/new',
-  },
+const useCaseIcons = [
+  (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" key="0">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+      />
+    </svg>
+  ),
+  (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" key="1">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+      />
+    </svg>
+  ),
+  (
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" key="2">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  ),
 ];
 
 export default function UseCasesSection() {
+  const useCases = [
+    {
+      title: t('landing.useCases.items.0.title'),
+      description: t('landing.useCases.items.0.description'),
+      icon: useCaseIcons[0],
+      features: [
+        t('landing.useCases.items.0.features.0'),
+        t('landing.useCases.items.0.features.1'),
+        t('landing.useCases.items.0.features.2'),
+      ],
+      cta: t('landing.useCases.items.0.cta'),
+      href: '/new',
+    },
+    {
+      title: t('landing.useCases.items.1.title'),
+      description: t('landing.useCases.items.1.description'),
+      icon: useCaseIcons[1],
+      features: [
+        t('landing.useCases.items.1.features.0'),
+        t('landing.useCases.items.1.features.1'),
+        t('landing.useCases.items.1.features.2'),
+      ],
+      cta: t('landing.useCases.items.1.cta'),
+      href: '/new',
+    },
+    {
+      title: t('landing.useCases.items.2.title'),
+      description: t('landing.useCases.items.2.description'),
+      icon: useCaseIcons[2],
+      features: [
+        t('landing.useCases.items.2.features.0'),
+        t('landing.useCases.items.2.features.1'),
+        t('landing.useCases.items.2.features.2'),
+      ],
+      cta: t('landing.useCases.items.2.cta'),
+      href: '/new',
+    },
+  ];
+
   return (
     <section className="mx-auto w-full max-w-6xl px-6">
       <div className="text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-          Használati esetek
+          {t('landing.useCases.badge')}
         </span>
         <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-          Minden iparághoz megfelelő megoldás
+          {t('landing.useCases.title')}
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-          A Vyndi-t különböző iparágakban használják a hatékony ajánlatkészítéshez
+          {t('landing.useCases.description')}
         </p>
       </div>
 

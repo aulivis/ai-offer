@@ -754,6 +754,7 @@ export const hu = {
   landing: {
     announcement: 'Ajánlatkészítés újragondolva',
     hero: {
+      badge: 'Ajánlatkészítés újragondolva',
       titleLine1: 'Készíts professzionális',
       highlighted: 'ajánlatokat',
       titleLine2: 'percek alatt.',
@@ -769,6 +770,11 @@ export const hu = {
         'Rugalmas rács, ahol minden komponens mozgatható',
         'Automatikus árkalkuláció és összegek',
       ],
+      pricing: {
+        starting: 'Innen indul: Ingyenes',
+        standard: 'Standard: 1 490 Ft/hó',
+        pro: 'Pro: 6 990 Ft/hó',
+      },
     },
     benefits: [
       {
@@ -838,6 +844,162 @@ export const hu = {
         'Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Vyndi AI az eddigi ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.',
       primaryCta: 'Kezdj el most – ingyen',
       secondaryCta: 'Árak és csomagok',
+    },
+    productVideo: {
+      badge: 'Bemutató',
+      title: 'Nézd meg, hogyan működik',
+      description: 'Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz professzionális ajánlatokat percek alatt.',
+      features: {
+        0: 'AI-alapú szöveg generálás',
+        1: 'Reszponzív szerkesztés',
+        2: 'Automatikus márkázás',
+        3: 'Valós idejű együttműködés',
+      },
+      cta: 'Kezdj el ajánlatot készíteni',
+    },
+    successStories: {
+      title: 'Valós eredmények valós ügyfelektől',
+      description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat',
+      cta: 'Sikertörténetek megtekintése',
+      ctaTitle: 'Készen állsz, hogy te is ilyen eredményeket érj el?',
+      ctaDescription: 'Kezdj el ingyen még ma, és tapasztald meg, hogyan növelheted az ajánlatkészítési hatékonyságodat.',
+    },
+    stickyBar: {
+      title: 'Készen állsz, hogy profibb ajánlatokat készíts?',
+      ctaPrimary: 'Ingyenes próba',
+      ctaSecondary: 'Csomagok',
+      closeAria: 'Bezárás',
+    },
+    emailCapture: {
+      title: 'Kapj ingyenes tippeket az ajánlatkészítéshez',
+      description: "Iratkozz fel hírlevelünkre és kapd meg az ingyenes útmutatót: '10 tipp a tökéletes ajánlathoz'",
+      leadMagnet: '10 tipp a tökéletes ajánlathoz',
+      placeholder: 'email@example.com',
+    },
+    problemSection: {
+      badge: 'A probléma',
+      title: 'Túl sok időt töltesz az ajánlatkészítéssel?',
+      description: 'A hagyományos ajánlatkészítés lassú, hibára hajlamos és nem skálázható. Minden projektnél újra kell kezdened a nulláról.',
+      solutionTitle: 'A megoldás: Vyndi AI-alapú ajánlatkészítő',
+      solutionDescription: 'Automatizáld az ajánlatkészítést, spórolj órákat, és növeld az üzleti eredményeidet. Mindezt egyetlen, könnyen használható eszközzel.',
+    },
+    featuresSection: {
+      badge: 'Funkciók',
+      title: 'Minden, amire szükséged van egy helyen',
+      description: 'A Vyndi minden eszközt biztosít, amire szükséged van a professzionális ajánlatkészítéshez',
+    },
+    demoSection: {
+      badge: 'Látogasd meg',
+      title: 'Nézd meg, hogyan működik',
+      description: 'Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz professzionális ajánlatokat percek alatt.',
+    },
+    roiCalculator: {
+      badge: 'Számológép',
+      title: 'Mennyit takaríthatnál meg?',
+      description: 'Számítsd ki, mennyi időt és pénzt takaríthatnál meg a Vyndi-val',
+    },
+    faq: {
+      badge: 'Gyakran ismételt kérdések',
+      title: 'Válaszok a leggyakoribb kérdésekre',
+    },
+    finalCta: {
+      badge: 'Kezdj el még ma',
+      title: 'Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton',
+      description: 'Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Vyndi AI az eddigi ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.',
+      noCreditCard: 'Nincs bankkártya szükséges • Azonnali hozzáférés • Bármikor lemondható',
+    },
+    stats: {
+      activeUsers: 'Aktív felhasználó',
+      createdOffers: 'Létrehozott ajánlat',
+      satisfaction: 'Elégedettségi arány',
+      support: 'Támogatás',
+    },
+    customerTicker: {
+      activeUsers: 'aktív felhasználó',
+      joinedRecently: 'Csatlakoztak mostanában:',
+    },
+    testimonials: {
+      badge: 'Ügyfeleink véleménye',
+      title: 'Csatlakozz a Vyndi közösséghez',
+      description: 'Több mint 500+ vállalat bízik bennünk az ajánlatkészítéshez',
+    },
+    useCases: {
+      badge: 'Használati esetek',
+      title: 'Minden iparághoz megfelelő megoldás',
+      description: 'A Vyndi-t különböző iparágakban használják a hatékony ajánlatkészítéshez',
+      items: {
+        0: {
+          title: 'Kreatív ügynökségek',
+          description: 'Gyors, professzionális ajánlatok ügyfeleknek egységes márkaidentitással.',
+          features: {
+            0: 'Márkázott PDF export',
+            1: 'AI-alapú szöveg generálás',
+            2: 'Gyors sablonváltás',
+          },
+          cta: 'Próbáld ki ügynökségeknek',
+        },
+        1: {
+          title: 'IT szolgáltatók',
+          description: 'Technikai ajánlatok és részletes árkalkulációk komplex projektekhez.',
+          features: {
+            0: 'Moduláris blokkrendszer',
+            1: 'Tételes árkalkuláció',
+            2: 'Technikai leírások',
+          },
+          cta: 'Kezdd el IT projektekhez',
+        },
+        2: {
+          title: 'Konzultánsok és freelancerek',
+          description: 'Egyszerű, hatékony ajánlatkészítés egyedülálló projektekhez.',
+          features: {
+            0: 'Gyors ajánlatkészítés',
+            1: 'Professzionális megjelenés',
+            2: 'Könnyű megosztás',
+          },
+          cta: 'Próbáld ki freelancerként',
+        },
+      },
+    },
+    resources: {
+      badge: 'Erőforrások',
+      title: 'Tanulj és fejlődj',
+      description: 'Hozzáférhetsz útmutatókhoz, sablonokhoz és hasznos tartalmakhoz',
+      viewAll: 'Összes erőforrás megtekintése',
+      open: 'Megnyitás',
+      ctaTitle: 'Készen állsz a kezdésre?',
+      ctaDescription: 'Kezdj el ingyen ajánlatokat készíteni még ma.',
+      items: {
+        0: {
+          title: 'Ajánlatkészítési útmutató',
+          description: 'Tippek és trükkök a tökéletes ajánlatok elkészítéséhez.',
+        },
+        1: {
+          title: 'Ingyenes ajánlat sablonok',
+          description: 'Letölthető sablonok különböző iparágakhoz és projekttípusokhoz.',
+        },
+        2: {
+          title: 'Blog és cikkek',
+          description: 'Hasznos cikkek az ajánlatkészítésről és az értékesítésről.',
+        },
+        3: {
+          title: 'Video útmutatók',
+          description: 'Lépésről lépésre videók a Vyndi használatáról.',
+        },
+      },
+    },
+    enterprise: {
+      badge: 'Nagycsapatoknak',
+      title: 'Szükséged van nagyobb csomagra?',
+      description: 'Testreszabott megoldások nagyobb csapatoknak, korlátlan ajánlatokkal és dedikált támogatással.',
+      features: {
+        0: 'Korlátlan ajánlatgenerálás',
+        1: 'Dedikált fiókkezelő',
+        2: 'Testreszabott számlázás',
+        3: 'Prioritásos támogatás',
+        4: 'SSO és egyedi integrációk',
+      },
+      ctaPrimary: 'Lépj kapcsolatba',
+      ctaSecondary: 'Csomagok megtekintése',
     },
     footerAria: 'Oldal lábléc',
   },

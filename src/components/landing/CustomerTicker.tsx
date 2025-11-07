@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { t } from '@/copy';
 
 interface CustomerTickerProps {
   className?: string;
@@ -57,12 +58,12 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
           ))}
         </div>
         <span className="font-medium text-fg">
-          <strong className="text-primary">{count}+</strong> aktív felhasználó
+          <strong className="text-primary">{count}+</strong> {t('landing.customerTicker.activeUsers')}
         </span>
       </div>
       <span className="hidden text-fg-muted sm:inline">•</span>
       <div className="flex items-center gap-2">
-        <span className="text-fg-muted">Csatlakoztak mostanában:</span>
+        <span className="text-fg-muted">{t('landing.customerTicker.joinedRecently')}</span>
         <div className="flex items-center gap-1">
           {customerNames.slice(0, 3).map((name, i) => (
             <span key={i} className="font-medium text-fg">
