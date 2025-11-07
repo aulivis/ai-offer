@@ -1299,7 +1299,7 @@ export default function NewOfferWizard() {
             : error instanceof Error
               ? error.message
               : t('errors.preview.fetchUnknown');
-        console.error('Előnézet hiba:', message, error);
+        console.error(t('api.preview.error'), message, error);
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewHtml('<p>(nincs előnézet)</p>');
           setPreviewLocked(false);
@@ -2305,7 +2305,7 @@ export default function NewOfferWizard() {
                   <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2">
                     <div className="flex items-center gap-2">
                       <label htmlFor="preview-zoom" className="text-xs font-medium text-slate-600">
-                        Nagyítás:
+                        {t('wizard.preview.zoom')}
                       </label>
                       <input
                         id="preview-zoom"
@@ -2316,7 +2316,7 @@ export default function NewOfferWizard() {
                         value={previewZoom}
                         onChange={(e) => setPreviewZoom(Number(e.target.value))}
                         className="h-2 w-24 rounded-lg bg-slate-200"
-                        aria-label="Előnézet nagyítása"
+                        aria-label={t('wizard.preview.zoomAria')}
                       />
                       <span className="min-w-[3rem] text-xs font-medium text-slate-700">
                         {previewZoom}%
@@ -2325,9 +2325,9 @@ export default function NewOfferWizard() {
                         type="button"
                         onClick={() => setPreviewZoom(100)}
                         className="rounded px-2 py-1 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-                        aria-label="Nagyítás visszaállítása"
+                        aria-label={t('wizard.preview.zoomResetAria')}
                       >
-                        Reset
+                        {t('wizard.preview.zoomReset')}
                       </button>
                     </div>
                     <label className="flex items-center gap-2">
@@ -2336,9 +2336,9 @@ export default function NewOfferWizard() {
                         checked={showMarginGuides}
                         onChange={(e) => setShowMarginGuides(e.target.checked)}
                         className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                        aria-label="Margók mutatása"
+                        aria-label={t('wizard.preview.showMarginsAria')}
                       />
-                      <span className="text-xs text-slate-600">Margók mutatása</span>
+                      <span className="text-xs text-slate-600">{t('wizard.preview.showMargins')}</span>
                     </label>
                   </div>
                 </div>
@@ -2354,7 +2354,7 @@ export default function NewOfferWizard() {
                             {t('offers.wizard.previewTemplates.lockedTitle')}
                           </p>
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                            Pro
+                            {t('app.planUpgradeModal.badge')}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500">
@@ -2397,14 +2397,14 @@ export default function NewOfferWizard() {
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-primary text-sm">💡</span>
-                  <p className="text-xs font-semibold text-slate-700">Tippek a jobb formázáshoz</p>
+                  <p className="text-xs font-semibold text-slate-700">{t('wizard.preview.tipsTitle')}</p>
                 </div>
                 <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 ml-4">
                   <li>{t('richTextEditor.placeholderReminder')}</li>
-                  <li>Használj felsorolásokat és számozott listákat a strukturáláshoz</li>
-                  <li>Kiemeld a fontos információkat félkövérrel vagy dőlt betűvel</li>
-                  <li>Tartsd a szöveget rövid és tömören, könnyen olvasható részekre bontva</li>
-                  <li>Használj alcímeket a tartalom szervezéséhez</li>
+                  <li>{t('wizard.preview.tipsItems.useLists')}</li>
+                  <li>{t('wizard.preview.tipsItems.highlight')}</li>
+                  <li>{t('wizard.preview.tipsItems.keepShort')}</li>
+                  <li>{t('wizard.preview.tipsItems.useHeadings')}</li>
                 </ul>
               </div>
               
@@ -2426,7 +2426,7 @@ export default function NewOfferWizard() {
                         setEditedHtml(html);
                       }}
                       placeholder={t('richTextEditor.placeholderHint')}
-                      aria-label="Ajánlat szövegének szerkesztése"
+                        aria-label={t('richTextEditor.placeholderHint')}
                     />
                     {/* Content length warning */}
                     {(() => {
@@ -2435,7 +2435,7 @@ export default function NewOfferWizard() {
                         return (
                           <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2">
                             <p className="text-xs font-medium text-amber-800">
-                              ⚠️ A szöveg hosszú ({textLength} karakter). A PDF több oldalt is tartalmazhat.
+                              {t('wizard.preview.longContentWarning', { length: textLength })}
                             </p>
                           </div>
                         );
@@ -2611,9 +2611,11 @@ export default function NewOfferWizard() {
 
             <Card className="space-y-5 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Összegzés</h2>
+                <h2 className="text-sm font-semibold text-slate-900">
+                  {t('offers.wizard.steps.summary')}
+                </h2>
                 <p className="mt-1 text-xs text-slate-500">
-                  A PDF generálása után az ajánlat megjelenik a listádban.
+                  {t('wizard.preview.afterGeneration')}
                 </p>
               </div>
               <dl className="space-y-3 text-sm text-slate-600">
@@ -2738,7 +2740,7 @@ export default function NewOfferWizard() {
         previewHtml={previewDocumentHtml}
         zoom={fullscreenZoom}
         showMarginGuides={showMarginGuides}
-        title="PDF előnézet - Teljes képernyő"
+        title={t('wizard.preview.fullscreenTitle')}
       />
       </AppFrame>
     </ErrorBoundary>

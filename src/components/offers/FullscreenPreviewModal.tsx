@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import { PreviewMarginGuides } from './PreviewMarginGuides';
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
+import { t } from '@/copy';
 
 type FullscreenPreviewModalProps = {
   open: boolean;
@@ -21,7 +22,7 @@ export function FullscreenPreviewModal({
   previewHtml,
   zoom = 100,
   showMarginGuides = false,
-  title = 'PDF előnézet',
+  title = t('wizard.preview.fullscreenTitle'),
 }: FullscreenPreviewModalProps) {
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -83,10 +84,10 @@ export function FullscreenPreviewModal({
           type="button"
           variant="secondary"
           onClick={onClose}
-          aria-label="Előnézet bezárása"
+          aria-label={t('wizard.preview.fullscreenCloseAria')}
           className="bg-white text-slate-900 hover:bg-slate-100"
         >
-          Bezárás (Esc)
+          {t('wizard.preview.fullscreenClose')}
         </Button>
       </div>
       <div className="flex-1 overflow-auto bg-slate-100 p-4 md:p-8">

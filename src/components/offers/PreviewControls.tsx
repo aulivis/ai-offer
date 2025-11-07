@@ -57,7 +57,7 @@ export function PreviewControls({
             onClick={onFullscreen}
             className="text-xs"
           >
-            Teljes képernyő
+            {t('wizard.preview.fullscreenButton')}
           </Button>
         )}
       </div>
@@ -77,7 +77,7 @@ export function PreviewControls({
       {/* Zoom controls */}
       {onZoomChange && (
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-slate-700">Nagyítás:</label>
+          <label className="text-xs font-semibold text-slate-700">{t('wizard.preview.zoom')}</label>
           <div className="flex flex-1 items-center gap-1">
             <Button
               type="button"
@@ -109,7 +109,7 @@ export function PreviewControls({
               onClick={() => onZoomChange(100)}
               className="ml-auto px-2 text-xs"
             >
-              Reset
+              {t('wizard.preview.zoomReset')}
             </Button>
           </div>
         </div>
@@ -124,7 +124,7 @@ export function PreviewControls({
             onChange={(e) => onToggleMarginGuides(e.target.checked)}
             className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
           />
-          <span className="text-xs text-slate-600">Mutass margókat (20mm/15mm)</span>
+          <span className="text-xs text-slate-600">{t('wizard.preview.marginGuides')}</span>
         </label>
       )}
 
@@ -134,14 +134,14 @@ export function PreviewControls({
         onClick={() => setShowAdvanced(!showAdvanced)}
         className="w-full text-left text-xs font-medium text-slate-600 hover:text-slate-900"
       >
-        {showAdvanced ? '▼' : '▶'} Speciális beállítások
+        {showAdvanced ? '▼' : '▶'} {t('wizard.preview.advancedSettings')}
       </button>
 
       {showAdvanced && (
         <div className="space-y-3 rounded-lg border border-border/60 bg-slate-50/50 p-3">
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-700">
-              Elsődleges szín
+              {t('wizard.preview.primaryColor')}
             </label>
             <input
               type="color"
@@ -152,7 +152,7 @@ export function PreviewControls({
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-700">
-              Másodlagos szín
+              {t('wizard.preview.secondaryColor')}
             </label>
             <input
               type="color"

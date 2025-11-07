@@ -318,6 +318,8 @@ export const hu = {
     emptyStates: {
       noOffers: 'Még nem hoztál létre ajánlatokat.',
       noResults: 'Nincs találat. Próbálj másik keresést vagy szűrőt.',
+      noOffersMessage: 'Hozz létre első ajánlatodat, hogy elkezdhesd használni a Proponót.',
+      noResultsMessage: 'Próbálj meg más keresési feltételeket vagy szűrőket használni.',
     },
     status: {
       labels: {
@@ -1567,6 +1569,75 @@ export const hu = {
         gross: 'Bruttó összesen',
       },
       currency: 'Ft',
+    },
+  },
+  wizard: {
+    progress: {
+      label: 'Előrehaladás',
+      estimatedTime: 'Becsült idő',
+      timeUnit: 'perc',
+      stepLabel: 'Step {current}/3',
+      readyForGeneration: '✓ Kész a generáláshoz',
+    },
+    preview: {
+      zoom: 'Nagyítás:',
+      zoomReset: 'Reset',
+      zoomResetAria: 'Nagyítás visszaállítása',
+      zoomAria: 'Előnézet nagyítása',
+      showMargins: 'Margók mutatása',
+      showMarginsAria: 'Margók mutatása',
+      tipsTitle: 'Tippek a jobb formázáshoz',
+      tipsItems: {
+        useLists: 'Használj felsorolásokat és számozott listákat a strukturáláshoz',
+        highlight: 'Kiemeld a fontos információkat félkövérrel vagy dőlt betűvel',
+        keepShort: 'Tartsd a szöveget rövid és tömören, könnyen olvasható részekre bontva',
+        useHeadings: 'Használj alcímeket a tartalom szervezéséhez',
+      },
+      longContentWarning: '⚠️ A szöveg hosszú ({length} karakter). A PDF több oldalt is tartalmazhat.',
+      fullscreenTitle: 'PDF előnézet',
+      fullscreenClose: 'Bezárás (Esc)',
+      fullscreenCloseAria: 'Előnézet bezárása',
+      fullscreenButton: 'Teljes képernyő',
+      marginGuides: 'Mutass margókat (20mm/15mm)',
+      advancedSettings: 'Speciális beállítások',
+      primaryColor: 'Elsődleges szín',
+      secondaryColor: 'Másodlagos szín',
+      afterGeneration: 'A PDF generálása után az ajánlat megjelenik a listádban.',
+    },
+    quota: {
+      exhaustedBadge: 'KVÓTA TELJES',
+      upgradeButton: 'Frissítés az előfizetésben →',
+      itemCount: '{count} tétel',
+    },
+    draft: {
+      saving: 'Mentés...',
+      saved: 'Vázlat mentve',
+      savedWithTime: 'Vázlat mentve ({time})',
+    },
+    pricing: {
+      ariaLabel: 'Árlista és ügyfél adatok',
+    },
+    details: {
+      ariaLabel: 'Projekt részletek',
+    },
+  },
+  api: {
+    pdf: {
+      generating: 'A PDF generálása folyamatban van. Frissíts később.',
+      completed: 'A PDF generálása elkészült.',
+      processing: 'A PDF generálása folyamatban van az edge worker által. Frissíts később.',
+      inlineCompleted: 'A PDF generálása helyben készült el, azonnal letölthető.',
+      imageUploadProOnly: 'Képfeltöltés csak Pro előfizetéssel érhető el.',
+    },
+    preview: {
+      error: 'Előnézet hiba:',
+    },
+    image: {
+      maxCount: 'Legfeljebb {count} kép tölthető fel.',
+    },
+    error: {
+      invalidImageUpload: 'Érvénytelen képfeltöltés.',
+      incompleteImageData: 'Hiányos képadatok érkeztek.',
     },
   },
 } as const;

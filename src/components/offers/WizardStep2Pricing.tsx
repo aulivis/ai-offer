@@ -93,7 +93,7 @@ export function WizardStep2Pricing({
   };
 
   return (
-    <div className="space-y-4" aria-label="Árlista és ügyfél adatok">
+    <div className="space-y-4" aria-label={t('wizard.pricing.ariaLabel')}>
       {/* Quick Insert Activities */}
       {filteredActivities.length > 0 && (
         <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
@@ -107,7 +107,7 @@ export function WizardStep2Pricing({
               </p>
             </div>
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-              {filteredActivities.length} tétel
+              {t('wizard.quota.itemCount', { count: filteredActivities.length })}
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">

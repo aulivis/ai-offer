@@ -64,8 +64,7 @@ import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandlin
 
 export const runtime = 'nodejs';
 
-const USER_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást a csomagban.';
-const DEVICE_LIMIT_RESPONSE = 'Elérted a havi ajánlatlimitálást ezen az eszközön.';
+// These messages are now in translation files - use createTranslator() at call site
 
 const DEFAULT_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
 
@@ -441,7 +440,8 @@ function normalizeImageAssets(
   }
 
   if (!Array.isArray(input)) {
-    throw new ImageAssetError('Érvénytelen képadatok érkeztek.');
+    const translator = createTranslator(undefined);
+    throw new ImageAssetError(translator.t('api.error.invalidImageUpload'));
   }
 
   if (!input.length) {
@@ -449,11 +449,16 @@ function normalizeImageAssets(
   }
 
   if (plan !== 'pro') {
-    throw new ImageAssetError('Képfeltöltés csak Pro előfizetéssel érhető el.', 403);
+    const translator = createTranslator(undefined);
+    throw new ImageAssetError(translator.t('api.pdf.imageUploadProOnly'), 403);
   }
 
   if (input.length > MAX_IMAGE_COUNT) {
-    throw new ImageAssetError(`Legfeljebb ${MAX_IMAGE_COUNT} kép tölthető fel.`, 400);
+    const translator = createTranslator(undefined);
+    throw new ImageAssetError(
+      translator.t('api.image.maxCount', { count: MAX_IMAGE_COUNT }),
+      400,
+    );
   }
 
   const seenKeys = new Set<string>();
@@ -461,13 +466,15 @@ function normalizeImageAssets(
 
   for (const raw of input) {
     if (!raw || typeof raw !== 'object') {
-      throw new ImageAssetError('Hiányos képadatok érkeztek.');
+      const translator = createTranslator(undefined);
+      throw new ImageAssetError(translator.t('api.error.incompleteImageData'));
     }
 
     const key =
       typeof (raw as { key?: unknown }).key === 'string' ? (raw as { key: string }).key.trim() : '';
     if (!key || key.length > 80) {
-      throw new ImageAssetError('Érvénytelen képazonosító érkezett.');
+      const translator = createTranslator(undefined);
+      throw new ImageAssetError(translator.t('api.error.invalidImageUpload'));
     }
     if (seenKeys.has(key)) {
       continue;
@@ -678,9 +685,10 @@ export const POST = withAuth(
       limit: rateLimitResult.limit,
       remaining: rateLimitResult.remaining,
     });
+    const translator = createTranslator(req.headers.get('accept-language'));
     return createRateLimitResponse(
       rateLimitResult,
-      'Elérted a havi AI generálási limitet. Próbáld újra később.',
+      translator.t('quotaWarningBar.message.user'),
     );
   }
 
@@ -721,9 +729,12 @@ export const POST = withAuth(
     try {
       sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
     } catch (error) {
+      const translator = createTranslator(req.headers.get('accept-language'));
       const status = error instanceof ImageAssetError ? error.status : 400;
       const message =
-        error instanceof ImageAssetError ? error.message : 'Érvénytelen képfeltöltés.';
+        error instanceof ImageAssetError
+          ? error.message
+          : translator.t('api.error.invalidImageUpload');
       return NextResponse.json({ error: message }, { status });
     }
 
@@ -817,8 +828,9 @@ export const POST = withAuth(
           total: quotaCheck.totalCount,
           periodStart: usagePeriodStart,
         });
+        const translator = createTranslator(req.headers.get('accept-language'));
         return NextResponse.json(
-          { error: 'Elérted a havi ajánlatlimitálást a csomagban.' },
+          { error: translator.t('quotaWarningBar.message.user') },
           { status: 402 },
         );
       }
@@ -862,8 +874,9 @@ export const POST = withAuth(
           total: deviceQuotaCheck.totalCount,
           periodStart: usagePeriodStart,
         });
+        const deviceTranslator = createTranslator(req.headers.get('accept-language'));
         return NextResponse.json(
-          { error: 'Elérted a havi ajánlatlimitálást ezen az eszközön.' },
+          { error: deviceTranslator.t('quotaWarningBar.message.device') },
           { status: 402 },
         );
       }
@@ -1207,7 +1220,8 @@ Különös figyelmet fordít a következőkre:
 
     let immediatePdfUrl: string | null = null;
     let responseStatus: 'pending' | 'completed' = 'pending';
-    let responseNote = 'A PDF generálása folyamatban van. Frissíts később.';
+    const translator = createTranslator(req.headers.get('accept-language'));
+    let responseNote = translator.t('api.pdf.generating');
 
     try {
       await dispatchPdfJob(sb, downloadToken);
@@ -1239,13 +1253,13 @@ Különös figyelmet fordít a következőkre:
         log.info('PDF job already completed by edge worker', { jobId: downloadToken });
         immediatePdfUrl = jobStatus.pdf_url;
         responseStatus = 'completed';
-        responseNote = 'A PDF generálása elkészült.';
+        responseNote = translator.t('api.pdf.completed');
       } else if (jobStatus?.status === 'processing') {
         // Edge worker is currently processing - don't start inline fallback
         // The edge worker will complete or fail, and the user can check status later
         log.info('PDF job already being processed by edge worker', { jobId: downloadToken });
         responseStatus = 'pending';
-        responseNote = 'A PDF generálása folyamatban van az edge worker által. Frissíts később.';
+        responseNote = translator.t('api.pdf.processing');
       } else if (jobStatus?.status === 'failed') {
         // Job already failed - try inline fallback as last resort
         log.warn('PDF job failed in edge worker, attempting inline fallback', {
@@ -1289,7 +1303,7 @@ Különös figyelmet fordít a következőkre:
           immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
           if (immediatePdfUrl) {
             responseStatus = 'completed';
-            responseNote = 'A PDF generálása helyben készült el, azonnal letölthető.';
+            responseNote = translator.t('api.pdf.inlineCompleted');
             log.info('Inline PDF fallback completed successfully', {
               jobId: downloadToken,
               pdfUrl: immediatePdfUrl,

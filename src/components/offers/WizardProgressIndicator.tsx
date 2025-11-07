@@ -71,7 +71,7 @@ export function WizardProgressIndicator({
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700">Előrehaladás</span>
+            <span className="text-xs font-semibold text-slate-700">{t('wizard.progress.label')}</span>
             <span className="text-sm font-bold text-slate-900">{progress}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-slate-200">
@@ -82,17 +82,21 @@ export function WizardProgressIndicator({
           </div>
         </div>
         <div className="text-right">
-          <span className="block text-xs text-slate-500">Becsült idő</span>
-          <span className="text-sm font-semibold text-slate-700">{estimatedTime} perc</span>
+          <span className="block text-xs text-slate-500">{t('wizard.progress.estimatedTime')}</span>
+          <span className="text-sm font-semibold text-slate-700">
+            {estimatedTime} {t('wizard.progress.timeUnit')}
+          </span>
         </div>
       </div>
       <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
         <span className="inline-flex items-center gap-1">
           <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          Step {step}/3
+          {t('wizard.progress.stepLabel', { current: step })}
         </span>
         {progress === 100 && step === 3 && (
-          <span className="ml-auto font-medium text-emerald-600">✓ Kész a generáláshoz</span>
+          <span className="ml-auto font-medium text-emerald-600">
+            {t('wizard.progress.readyForGeneration')}
+          </span>
         )}
       </div>
     </div>

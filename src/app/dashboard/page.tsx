@@ -1406,7 +1406,7 @@ export default function DashboardPage() {
                     icon={<ChartBarIcon className="h-7 w-7" />}
                     color="info"
                     isEmpty={totalOffersCount === 0}
-                    emptyMessage="Hozz létre első ajánlatodat a kezdéshez"
+                    emptyMessage={t('dashboard.emptyStates.noOffersMessage')}
                   />
 
                   {/* Created Offers - Funnel Start */}
@@ -1718,11 +1718,11 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-fg">{emptyMessage}</h3>
               {noOffersLoaded ? (
                 <p className="text-sm leading-relaxed text-fg-muted">
-                  Hozz létre első ajánlatodat, hogy elkezdhesd használni a Proponót.
+                  {t('dashboard.emptyStates.noOffersMessage')}
                 </p>
               ) : (
                 <p className="text-sm leading-relaxed text-fg-muted">
-                  Próbálj meg más keresési feltételeket vagy szűrőket használni.
+                  {t('dashboard.emptyStates.noResultsMessage')}
                 </p>
               )}
             </div>

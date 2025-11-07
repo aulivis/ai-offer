@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { t } from '@/copy';
 
 type DraftSaveIndicatorProps = {
   isSaving?: boolean;
@@ -32,18 +33,20 @@ export function DraftSaveIndicator({ isSaving, lastSaved }: DraftSaveIndicatorPr
       {isSaving ? (
         <div className="flex items-center gap-2">
           <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
-          <span className="text-xs font-medium text-slate-700">Mentés...</span>
+          <span className="text-xs font-medium text-slate-700">{t('wizard.draft.saving')}</span>
         </div>
       ) : (
         <div className="flex items-center gap-2">
           <span className="text-emerald-600">✓</span>
           <span className="text-xs font-medium text-slate-700">
-            Vázlat mentve{' '}
-            {lastSaved &&
-              `(${lastSaved.toLocaleTimeString('hu-HU', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })})`}
+            {lastSaved
+              ? t('wizard.draft.savedWithTime', {
+                  time: lastSaved.toLocaleTimeString('hu-HU', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }),
+                })
+              : t('wizard.draft.saved')}
           </span>
         </div>
       )}

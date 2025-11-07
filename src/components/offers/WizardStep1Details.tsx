@@ -124,7 +124,10 @@ export function WizardStep1Details({
   };
 
   return (
-    <Card className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6" aria-label="Projekt részletek">
+    <Card
+      className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6"
+      aria-label={t('wizard.details.ariaLabel')}
+    >
       {/* Header */}
       <div className="space-y-1.5">
         <h2 className="text-lg font-semibold text-slate-900">
@@ -150,7 +153,7 @@ export function WizardStep1Details({
               <p className="text-sm font-bold tracking-tight">{quotaInfo.title}</p>
               {quotaInfo.isExhausted && (
                 <span className="inline-flex items-center rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-900">
-                  KVÓTA TELJES
+                  {t('wizard.quota.exhaustedBadge')}
                 </span>
               )}
             </div>
@@ -167,7 +170,7 @@ export function WizardStep1Details({
                 onClick={() => router.push('/billing')}
                 className="mt-3 w-full rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
               >
-                Frissítés az előfizetésben →
+                {t('wizard.quota.upgradeButton')}
               </Button>
             )}
           </div>
