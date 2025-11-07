@@ -55,7 +55,7 @@ begin
      set offers_generated = v_usage.offers_generated + 1
    where user_id = p_user_id
      and period_start = p_period_start
-  returning offers_generated, period_start
+  returning usage_counters.offers_generated, usage_counters.period_start
    into offers_generated, period_start;
 
   allowed := true;
