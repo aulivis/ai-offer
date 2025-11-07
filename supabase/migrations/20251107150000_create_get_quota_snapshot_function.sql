@@ -63,11 +63,12 @@ begin
   end case;
 
   -- Get confirmed usage (read-only, no lock)
-  select coalesce(offers_generated, 0)
+  -- Use table alias to avoid ambiguity with return column names
+  select coalesce(uc.offers_generated, 0)
   into v_confirmed
-  from usage_counters
-  where user_id = v_user_id
-    and period_start = v_period_start;
+  from usage_counters uc
+  where uc.user_id = v_user_id
+    and uc.period_start = v_period_start;
 
   -- Initialize to 0 if not found
   if v_confirmed is null then
@@ -78,20 +79,21 @@ begin
   -- Uses same logic as check_quota_with_pending
   select count(*)
   into v_pending_user
-  from pdf_jobs
-  where user_id = v_user_id
-    and status in ('pending', 'processing')
-    and date(timezone('utc', created_at)) = v_period_start;
+  from pdf_jobs pj
+  where pj.user_id = v_user_id
+    and pj.status in ('pending', 'processing')
+    and date(timezone('utc', pj.created_at)) = v_period_start;
 
   -- Get device quota if device_id is provided
   if p_device_id is not null then
     -- Get confirmed device usage (read-only)
-    select coalesce(offers_generated, 0)
+    -- Use table alias to avoid ambiguity with return column names
+    select coalesce(duc.offers_generated, 0)
     into v_confirmed_device
-    from device_usage_counters
-    where user_id = v_user_id
-      and device_id = p_device_id
-      and period_start = v_period_start;
+    from device_usage_counters duc
+    where duc.user_id = v_user_id
+      and duc.device_id = p_device_id
+      and duc.period_start = v_period_start;
 
     -- Initialize to 0 if not found
     if v_confirmed_device is null then
@@ -101,11 +103,11 @@ begin
     -- Count pending and processing jobs for device (read-only)
     select count(*)
     into v_pending_device
-    from pdf_jobs
-    where user_id = v_user_id
-      and device_id = p_device_id
-      and status in ('pending', 'processing')
-      and date(timezone('utc', created_at)) = v_period_start;
+    from pdf_jobs pj2
+    where pj2.user_id = v_user_id
+      and pj2.device_id = p_device_id
+      and pj2.status in ('pending', 'processing')
+      and date(timezone('utc', pj2.created_at)) = v_period_start;
   else
     v_confirmed_device := null;
     v_pending_device := null;
