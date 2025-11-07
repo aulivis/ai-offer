@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
-import { fetchWithSupabaseAuth } from '@/lib/api';
+import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { currentMonthStart } from '@/lib/services/usage';
 import { t } from '@/copy';
 import { getDeviceIdFromCookie } from '@/lib/deviceId';
@@ -111,6 +111,12 @@ export default function QuotaWarningBar() {
         setQuotaSnapshot(usageData);
       } catch (error) {
         if (!active) {
+          return;
+        }
+        // Silently handle 401 errors - user is not authenticated, which is expected
+        // Only log other errors
+        if (error instanceof ApiError && error.status === 401) {
+          setQuotaSnapshot(null);
           return;
         }
         console.error('Failed to load quota for warning bar:', error);
