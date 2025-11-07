@@ -115,7 +115,7 @@ export function Modal({ open, onClose, labelledBy, describedBy, children }: Moda
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
-        className="w-full max-w-4xl rounded-3xl border border-border bg-bg p-6 shadow-pop focus:outline-none"
+        className="w-full max-w-4xl rounded-3xl border border-border bg-bg p-4 sm:p-5 shadow-pop focus:outline-none"
         tabIndex={-1}
       >
         {children}

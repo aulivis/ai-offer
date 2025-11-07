@@ -2319,28 +2319,28 @@ export default function NewOfferWizard() {
         )}
 
         {step === 3 && (
-          <section className="space-y-6" aria-label="Összegzés és előnézet">
-            <Card className="space-y-6 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6 sm:space-y-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-2">
-                  <h2 className="text-xl font-bold text-slate-900">
+          <section className="space-y-5" aria-label="Összegzés és előnézet">
+            <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <h2 className="text-lg font-bold text-slate-900">
                     {t('offers.wizard.steps.summary')}
                   </h2>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-600">
                     {t('offers.wizard.previewTemplates.contentGoesToPdf')}
                   </p>
                 </div>
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                   {t('offers.wizard.previewTemplates.livePreview')}
                 </span>
               </div>
               {/* Tips for text editing */}
-              <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-primary text-lg">💡</span>
-                  <p className="text-sm font-semibold text-slate-900">{t('wizard.preview.tipsTitle')}</p>
+                  <span className="text-primary text-base">💡</span>
+                  <p className="text-xs font-semibold text-slate-900">{t('wizard.preview.tipsTitle')}</p>
                 </div>
-                <ul className="list-disc list-inside space-y-2 text-xs text-slate-700 ml-2">
+                <ul className="list-disc list-inside space-y-1 text-xs text-slate-700 ml-3">
                   <li>{t('richTextEditor.placeholderReminder')}</li>
                   <li>{t('wizard.preview.tipsItems.useLists')}</li>
                   <li>{t('wizard.preview.tipsItems.highlight')}</li>
@@ -2399,30 +2399,28 @@ export default function NewOfferWizard() {
                   </>
                 )}
               </div>
-              {/* Preview Section with Thumbnail */}
-              <div className="space-y-4 rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base font-semibold text-slate-900">
+              {/* Preview Section - Compact Design */}
+              <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-white p-4">
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900 truncate">
                       {t('offers.wizard.previewTemplates.previewHeading')}
                     </h3>
                     {selectedPdfTemplate && (
-                      <p className="text-xs text-slate-600 mt-1">
+                      <p className="text-xs text-slate-600 mt-0.5 truncate">
                         Sablon: <span className="font-semibold">{selectedPdfTemplate.label}</span>
                       </p>
                     )}
                   </div>
                   {previewDocumentHtml && (
-                    <div className="hidden sm:flex items-center justify-center relative w-20 h-28 rounded-lg border-2 border-slate-300 bg-white shadow-md overflow-hidden group">
+                    <div className="hidden sm:flex items-center justify-center relative w-16 h-20 rounded-lg border-2 border-primary/30 bg-white shadow-sm overflow-hidden flex-shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-white" />
-                      <div className="relative z-10 text-center p-2">
-                        <svg className="w-8 h-8 mx-auto text-slate-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="relative z-10 text-center p-1.5">
+                        <svg className="w-6 h-6 mx-auto text-slate-400 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <p className="text-[10px] font-semibold text-slate-600">PDF</p>
-                        <p className="text-[9px] text-slate-500 mt-0.5">Előnézet</p>
+                        <p className="text-[9px] font-semibold text-slate-600">PDF</p>
                       </div>
-                      <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors" />
                     </div>
                   )}
                 </div>
@@ -2430,7 +2428,7 @@ export default function NewOfferWizard() {
                   type="button"
                   onClick={() => setIsPreviewModalOpen(true)}
                   disabled={!previewDocumentHtml && !previewLoading}
-                  className="w-full rounded-xl border-2 border-primary bg-primary px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-primary/50 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100"
+                  className="w-full rounded-lg border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
                 >
                   {previewLoading && !previewDocumentHtml ? (
                     <span className="flex items-center gap-2">
@@ -2438,8 +2436,8 @@ export default function NewOfferWizard() {
                       {t('offers.wizard.preview.loading')}
                     </span>
                   ) : previewDocumentHtml ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
@@ -2449,9 +2447,6 @@ export default function NewOfferWizard() {
                     t('wizard.preview.noPreview')
                   )}
                 </Button>
-                <p className="text-xs text-slate-600 text-center">
-                  {t('offers.wizard.previewTemplates.previewHint')}
-                </p>
               </div>
               {isProPlan ? (
                 <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
@@ -2674,7 +2669,7 @@ export default function NewOfferWizard() {
         onClose={() => setIsPreviewModalOpen(false)}
         labelledBy="preview-modal-title"
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 id="preview-modal-title" className="text-lg font-semibold text-slate-900">
               {t('offers.wizard.previewTemplates.previewHeading')}
@@ -2687,7 +2682,7 @@ export default function NewOfferWizard() {
           </div>
           
           {/* Template Selector and Preview Controls */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Template Selector */}
             <div className="space-y-2">
               <Select
@@ -2828,7 +2823,7 @@ export default function NewOfferWizard() {
           </div>
           
           {/* Preview container */}
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 max-h-[75vh] overflow-y-auto">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 max-h-[60vh] overflow-y-auto">
             <div 
               className="mx-auto bg-white shadow-lg relative"
               style={{ 
@@ -2871,15 +2866,15 @@ export default function NewOfferWizard() {
             </div>
           </div>
           
-          <p className="text-[11px] text-slate-500">
-            {t('offers.wizard.previewTemplates.previewHint')}
-          </p>
-          
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+            <p className="text-xs text-slate-500">
+              {t('offers.wizard.previewTemplates.previewHint')}
+            </p>
             <Button
               type="button"
               variant="secondary"
               onClick={() => setIsPreviewModalOpen(false)}
+              className="text-sm"
             >
               {t('common.close')}
             </Button>
