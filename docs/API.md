@@ -182,24 +182,6 @@ Upload brand logo image.
 }
 ```
 
-### Usage
-
-#### GET /api/usage/with-pending
-Get usage statistics including pending jobs.
-
-**Query Parameters:**
-- `period_start` (optional) - ISO date string
-- `device_id` (optional) - Device identifier
-
-**Response:**
-```json
-{
-  "offersGenerated": 5,
-  "periodStart": "2024-01-01",
-  "pendingCount": 2
-}
-```
-
 ### Templates
 
 #### GET /api/templates
