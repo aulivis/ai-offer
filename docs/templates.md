@@ -115,14 +115,42 @@ Every template must pass the repository lint rules and golden tests:
 
 If golden tests fail, update the snapshots intentionally (`npx vitest -u src/app/pdf/templates/__tests__/golden.test.ts`) and double-check the rendered HTML before committing.
 
+## Quick Start: Creating a New Template
+
+### Fastest Method: Clone an Existing Template
+
+For the fastest workflow, clone an existing template:
+
+```bash
+# Clone a template (recommended for similar designs)
+pnpm template:clone free.minimal "Your Template Name" premium
+
+# Then customize the cloned files
+```
+
+See [TEMPLATE_QUICK_START.md](./TEMPLATE_QUICK_START.md) for a streamlined guide.
+
+### Alternative: Create from Scratch
+
+```bash
+# Create a new template with all common patterns included
+pnpm template:new "Your Template Name" [tier] [legacy-id]
+```
+
+The generator now includes:
+- ✅ Common patterns (header, footer, pricing table, sections)
+- ✅ Working CSS styles ready to customize
+- ✅ Helper functions already imported
+- ✅ Proper TypeScript types
+
 ## Add a new template in 10 steps
 
 1. **Clone the repo & install deps** – `npm install` if you have not already.
-2. **Run the template generator** – `pnpm template:new "Your Template Name" [tier] [legacy-id]` to create the scaffold.
+2. **Run the template generator** – `pnpm template:new "Your Template Name" [tier] [legacy-id]` to create the scaffold, or `pnpm template:clone <source> "Name" [tier]` to clone an existing template.
 3. **Customize tokens** – Edit `tokens.ts` to define your color palette, typography, and spacing.
 4. **Define styles** – Update `styles.css.ts` with template-specific CSS and print styles.
 5. **Build the head partial** – Edit `partials/head.ts` to include fonts, CSS variables, and meta tags your layout requires.
-6. **Compose the body partial** – Implement `renderBody` using `ctx.offer`, `ctx.rows`, `ctx.tokens`, and `ctx.i18n` for localized copy.
+6. **Compose the body partial** – Implement `renderBody` using `ctx.offer`, `ctx.rows`, `ctx.tokens`, and `ctx.i18n` for localized copy. (The generator now includes common patterns, so you may only need to adjust styling.)
 7. **Wire optional assets** – Add any supporting images or SVGs under `assets/` and import them from your partials.
 8. **Declare capabilities** – Set the `capabilities` map in `index.ts` (e.g. `'branding.logo': true`) so the app can toggle features correctly.
 9. **Register template** – Import and register your template in `engineRegistry.ts` using `registerTemplate()`.

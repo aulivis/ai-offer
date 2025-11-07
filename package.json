@@ -12,6 +12,7 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "template:new": "ts-node scripts/new-template.ts",
+    "template:clone": "ts-node scripts/clone-template.ts",
     "test": "vitest run",
     "test:templates": "vitest run src/app/pdf/templates/__tests__/golden.test.ts",
     "prepare": "husky"

@@ -61,15 +61,156 @@ export const ${id.replace(/\./g, '_')}Tokens: ThemeTokens = {
 
 fs.writeFileSync(path.join(baseDir, 'tokens.ts'), tokensContent, 'utf8');
 
-// Generate styles.css.ts
-const stylesContent = `import { PRINT_BASE_CSS } from '../print.css';
+// Generate styles.css.ts with common patterns
+const cssClassName = id.replace(/\./g, '-');
+const stylesContent = `import { PRINT_BASE_CSS } from '../../print.css';
 
 export const pdfStyles = PRINT_BASE_CSS;
 
 export const templateStyles = \`
-  /* Add your template-specific styles here */
-  .offer-doc {
-    /* Custom styles */
+  .offer-doc--${cssClassName} {
+    background: var(--bg, #ffffff);
+    color: var(--text, #0f172a);
+  }
+
+  .offer-doc__header--${cssClassName} {
+    border-bottom: 2px solid var(--border, #e2e8f0);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .offer-doc__header-content--${cssClassName} {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .offer-doc__company--${cssClassName} {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .offer-doc__title--${cssClassName} {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0;
+    color: var(--text, #0f172a);
+  }
+
+  .offer-doc__meta--${cssClassName} {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border, #e2e8f0);
+  }
+
+  .offer-doc__meta-item--${cssClassName} {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .offer-doc__meta-label--${cssClassName} {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted, #64748b);
+  }
+
+  .offer-doc__meta-value--${cssClassName} {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text, #0f172a);
+  }
+
+  .section-card--${cssClassName} {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: 2rem;
+  }
+
+  .section-card__title--${cssClassName} {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--muted, #64748b);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border, #e2e8f0);
+  }
+
+  .offer-doc__content--${cssClassName} {
+    line-height: 1.7;
+    color: var(--text, #0f172a);
+  }
+
+  .offer-doc__content--${cssClassName} h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text, #0f172a);
+    margin: 1.5rem 0 1rem 0;
+  }
+
+  .offer-doc__content--${cssClassName} h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text, #0f172a);
+    margin: 1.25rem 0 0.75rem 0;
+  }
+
+  .offer-doc__content--${cssClassName} p {
+    margin: 0 0 1rem 0;
+  }
+
+  .offer-doc__footer--${cssClassName} {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border, #e2e8f0);
+  }
+
+  .offer-doc__footer-grid--${cssClassName} {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .offer-doc__footer-column--${cssClassName} {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .offer-doc__footer-label--${cssClassName} {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted, #64748b);
+    margin-bottom: 0.25rem;
+  }
+
+  .offer-doc__footer-value--${cssClassName} {
+    font-size: 0.85rem;
+    color: var(--text, #0f172a);
+  }
+
+  .offer-doc__footer-value--${cssClassName}.offer-doc__footer-value--placeholder {
+    color: var(--muted, #999999);
+    font-style: italic;
+  }
+
+  @media print {
+    .offer-doc--${cssClassName} {
+      background: #ffffff;
+    }
   }
 \`;
 `;
@@ -96,28 +237,145 @@ export function renderHead(ctx: RenderCtx): string {
 
 fs.writeFileSync(path.join(baseDir, 'partials/head.ts'), headContent, 'utf8');
 
-// Generate partials/body.ts
-const bodyContent = `import { sanitizeInput } from '@/lib/sanitize';
+// Generate partials/body.ts with common patterns
+const bodyContent = `import { countRenderablePricingRows, priceTableHtml } from '@/app/lib/pricing';
+import { renderSectionHeading } from '@/app/lib/offerSections';
+import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
-import type { RenderCtx } from '../types';
+import type { RenderCtx } from '../../types';
+import { buildHeaderFooterCtx } from '../../shared/headerFooter';
+import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
 
-export function renderBody(ctx: RenderCtx): string {
-  const safeTitle = sanitizeInput(
-    ctx.offer.title || ctx.i18n.t('pdf.templates.common.defaultTitle'),
-  );
-  const safeCompany = sanitizeInput(ctx.offer.companyName || '');
+function partialHeader(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const { company, title, companyPlaceholder, issueDate, labels } = safeCtx;
 
   return \`
-    <div class="offer-doc">
-      <div class="offer-doc__header">
-        <h1>\${safeTitle}</h1>
-        \${safeCompany ? \`<p>\${safeCompany}</p>\` : ''}
+    <header class="offer-doc__header--${id.replace(/\./g, '-')} first-page-only" style="margin-top: 0; padding-top: 0;">
+      <div class="offer-doc__header-content--${id.replace(/\./g, '-')}">
+        <div class="offer-doc__company--${id.replace(/\./g, '-')}">\${company.value || companyPlaceholder}</div>
+        <h1 class="offer-doc__title--${id.replace(/\./g, '-')}">\${title}</h1>
       </div>
-      <div class="offer-doc__content">
-        <!-- Add your template body content here -->
+      <div class="offer-doc__meta--${id.replace(/\./g, '-')}">
+        <div class="offer-doc__meta-item--${id.replace(/\./g, '-')}">
+          <span class="offer-doc__meta-label--${id.replace(/\./g, '-')}">\${labels.date}</span>
+          <span class="offer-doc__meta-value--${id.replace(/\./g, '-')}">\${issueDate.value}</span>
+        </div>
       </div>
-    </div>
+    </header>
   \`;
+}
+
+function partialSections(ctx: RenderCtx): string {
+  if (!ctx.offer.bodyHtml || ctx.offer.bodyHtml.trim().length === 0) {
+    return '';
+  }
+
+  return \`
+    <section class="section-card--${id.replace(/\./g, '-')}">
+      <div class="offer-doc__content--${id.replace(/\./g, '-')}">
+        \${ctx.offer.bodyHtml}
+      </div>
+    </section>
+  \`;
+}
+
+function partialPriceTable(ctx: RenderCtx): string {
+  const priceTable = priceTableHtml(ctx.rows, ctx.i18n, {
+    footnote: ctx.offer.pricingFootnote,
+  });
+  const rowCount = countRenderablePricingRows(ctx.rows);
+
+  if (rowCount === 0) {
+    return '';
+  }
+
+  const pricingHeading = renderSectionHeading(
+    ctx.i18n.t('pdf.templates.sections.pricing'),
+    'pricing',
+  );
+
+  return \`
+    <section class="section-card--${id.replace(/\./g, '-')}">
+      <h2 class="section-card__title--${id.replace(/\./g, '-')}">\${pricingHeading}</h2>
+      \${priceTable}
+    </section>
+  \`;
+}
+
+function partialFooter(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const {
+    labels,
+    contactName,
+    contactEmail,
+    contactPhone,
+    companyWebsite,
+    companyAddress,
+    companyTaxId,
+  } = safeCtx;
+
+  const contactClass = contactName.isPlaceholder
+    ? \`offer-doc__footer-value--${id.replace(/\./g, '-')} offer-doc__footer-value--placeholder\`
+    : \`offer-doc__footer-value--${id.replace(/\./g, '-')}\`;
+  const emailClass = contactEmail.isPlaceholder
+    ? \`offer-doc__footer-value--${id.replace(/\./g, '-')} offer-doc__footer-value--placeholder\`
+    : \`offer-doc__footer-value--${id.replace(/\./g, '-')}\`;
+  const phoneClass = contactPhone.isPlaceholder
+    ? \`offer-doc__footer-value--${id.replace(/\./g, '-')} offer-doc__footer-value--placeholder\`
+    : \`offer-doc__footer-value--${id.replace(/\./g, '-')}\`;
+
+  return \`
+    <footer class="offer-doc__footer--${id.replace(/\./g, '-')}">
+      <div class="offer-doc__footer-grid--${id.replace(/\./g, '-')}">
+        <div class="offer-doc__footer-column--${id.replace(/\./g, '-')}">
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}">\${labels.contact}</span>
+          <span class="\${contactClass}">\${contactName.value}</span>
+        </div>
+        <div class="offer-doc__footer-column--${id.replace(/\./g, '-')}">
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}">\${labels.email}</span>
+          <span class="\${emailClass}">\${contactEmail.value}</span>
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}" style="margin-top: 0.75rem;">\${labels.phone}</span>
+          <span class="\${phoneClass}">\${contactPhone.value}</span>
+        </div>
+        <div class="offer-doc__footer-column--${id.replace(/\./g, '-')}">
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}">\${labels.website}</span>
+          <span class="offer-doc__footer-value--${id.replace(/\./g, '-')}">\${companyWebsite.value}</span>
+        </div>
+        <div class="offer-doc__footer-column--${id.replace(/\./g, '-')}">
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}">\${labels.company}</span>
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}" style="margin-top: 0.75rem;">\${labels.address}</span>
+          <span class="offer-doc__footer-value--${id.replace(/\./g, '-')}">\${companyAddress.value}</span>
+          <span class="offer-doc__footer-label--${id.replace(/\./g, '-')}" style="margin-top: 0.75rem;">\${labels.taxId}</span>
+          <span class="offer-doc__footer-value--${id.replace(/\./g, '-')}">\${companyTaxId.value}</span>
+        </div>
+      </div>
+    </footer>
+  \`;
+}
+
+export function renderBody(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const slimHeader = renderSlimHeader(safeCtx);
+  const slimFooter = renderSlimFooter(safeCtx);
+  const header = partialHeader(ctx);
+  const sections = partialSections(ctx);
+  const priceTable = partialPriceTable(ctx);
+  const footer = partialFooter(ctx);
+
+  const content = [slimHeader, slimFooter, header, sections, priceTable, footer]
+    .filter(Boolean)
+    .join('\\n');
+
+  const html = \`
+    <main class="offer-template offer-template--${id.replace(/\./g, '-')}">
+      <article class="offer-doc offer-doc--${id.replace(/\./g, '-')}">
+\${content}
+      </article>
+    </main>
+  \`;
+  ensureSafeHtml(html, '${id} template body');
+  return html;
 }
 `;
 
