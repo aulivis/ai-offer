@@ -23,8 +23,18 @@ import UseCasesSection from '@/components/landing/UseCasesSection';
 import ResourcesSection from '@/components/landing/ResourcesSection';
 import EnterpriseCTA from '@/components/landing/EnterpriseCTA';
 import EmailCapture from '@/components/landing/EmailCapture';
-import Chatbot from '@/components/chatbot/Chatbot';
+import dynamic from 'next/dynamic';
 import { t } from '@/copy';
+
+// Dynamically import Chatbot to avoid SSR issues with ai/react
+const Chatbot = dynamic(() => import('@/components/chatbot/Chatbot'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[400px] items-center justify-center rounded-2xl border border-border bg-bg-muted">
+      <p className="text-fg-muted">Loading chatbot...</p>
+    </div>
+  ),
+});
 
 export default function Home() {
   // Problem-Agitate-Solve section data

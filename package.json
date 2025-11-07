@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.64",
+    "@ai-sdk/react": "^2.0.89",
     "@heroicons/react": "^2.2.0",
     "@noble/hashes": "^2.0.1",
     "@node-rs/argon2": "^2.0.2",

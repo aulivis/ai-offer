@@ -7,7 +7,7 @@
  * Uses RAG (Retrieval Augmented Generation) to answer questions based on app documentation.
  */
 
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 
@@ -24,7 +24,6 @@ export default function Chatbot({
 }: ChatbotProps) {
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: '/api/chatbot',
-    streamProtocol: 'data',
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
