@@ -98,7 +98,7 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
               Az útmutatót elküldtük az email címedre. Kérjük, nézd meg a postaládádat!
             </p>
             <Link
-              href="/new"
+              href="/login?redirect=/new"
               onClick={handleClose}
               className="block w-full rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
             >

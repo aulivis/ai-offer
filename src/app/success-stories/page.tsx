@@ -106,7 +106,7 @@ export default function SuccessStoriesPage() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link
-                href="/new"
+                href="/login?redirect=/new"
                 className="inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
               >
                 Ingyenes próba indítása

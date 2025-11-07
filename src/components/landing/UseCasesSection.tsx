@@ -49,7 +49,7 @@ export default function UseCasesSection() {
         t('landing.useCases.items.0.features.2'),
       ],
       cta: t('landing.useCases.items.0.cta'),
-      href: '/new',
+      href: '/login?redirect=/new',
     },
     {
       title: t('landing.useCases.items.1.title'),
@@ -61,7 +61,7 @@ export default function UseCasesSection() {
         t('landing.useCases.items.1.features.2'),
       ],
       cta: t('landing.useCases.items.1.cta'),
-      href: '/new',
+      href: '/login?redirect=/new',
     },
     {
       title: t('landing.useCases.items.2.title'),
@@ -73,7 +73,7 @@ export default function UseCasesSection() {
         t('landing.useCases.items.2.features.2'),
       ],
       cta: t('landing.useCases.items.2.cta'),
-      href: '/new',
+      href: '/login?redirect=/new',
     },
   ];
 

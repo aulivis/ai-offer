@@ -384,21 +384,21 @@ export default function Home() {
             <span className="text-base md:text-sm">{t('landing.hero.pricing.pro')}</span>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/new"
-              className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
-            >
-              <span>{t('landing.hero.primaryCta')}</span>
-              <svg
-                className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href="/login?redirect=/new"
+                className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
+                <span>{t('landing.hero.primaryCta')}</span>
+                <svg
+                  className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
             <Link
               href="/login"
               className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
@@ -551,7 +551,7 @@ export default function Home() {
               </ul>
               <div className="mt-8">
                 <Link
-                  href="/new"
+                  href="/login?redirect=/new"
                   className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:shadow-pop hover:scale-105"
                 >
                   {t('landing.productVideo.cta')}
@@ -782,7 +782,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <Link
-                href="/new"
+                href="/login?redirect=/new"
                 className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:scale-105 hover:shadow-xl"
               >
                 <span>{t('landing.cta.primaryCta')}</span>

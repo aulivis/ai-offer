@@ -2,7 +2,8 @@
 
 import { t } from '@/copy';
 import Image from 'next/image';
-import { type CSSProperties, useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -19,6 +20,12 @@ const GOOGLE_BUTTON_STYLES: CSSProperties = {
 } as CSSProperties;
 
 export default function LoginClient() {
+  const searchParams = useSearchParams();
+  const redirectTo = useMemo(() => {
+    const redirect = searchParams?.get('redirect');
+    return redirect ? decodeURIComponent(redirect) : '/dashboard';
+  }, [searchParams]);
+
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +89,7 @@ export default function LoginClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, remember_me: rememberMe }),
+        body: JSON.stringify({ email, remember_me: rememberMe, redirect_to: redirectTo }),
       });
 
       if (!response.ok && response.status !== 202) {
@@ -151,7 +158,6 @@ export default function LoginClient() {
       if (!isGoogleAvailable) {
         throw new Error(googleStatusMessage ?? t('login.googleDisabledFallback'));
       }
-      const redirectTo = `${location.origin}/dashboard`;
       const url = new URL('/api/auth/google', location.origin);
       url.searchParams.set('redirect_to', redirectTo);
       if (rememberMe) {
@@ -171,35 +177,96 @@ export default function LoginClient() {
       className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 pb-16 pt-12"
     >
       <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
-        <div className="hidden lg:block space-y-6">
-          <h2 className="text-3xl font-bold text-[#1c274c]">
-            Miért válaszd a Vyndi-t?
-          </h2>
+        {/* Left Side - Benefits & Value Props */}
+        <div className="hidden lg:block space-y-8">
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-[#1c274c]">
+              {t('login.benefits.title')}
+            </h2>
+            <p className="text-lg text-fg-muted leading-relaxed">
+              {t('login.benefits.subtitle')}
+            </p>
+          </div>
           <ul className="space-y-4">
-            <li className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
-              <span className="text-base text-fg-muted">AI-alapú automatikus ajánlatkészítés</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
-              <span className="text-base text-fg-muted">Márkázott PDF-ek professzionális megjelenéssel</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-primary flex-none" />
-              <span className="text-base text-fg-muted">Interaktív visszajelzések és státusz követés</span>
-            </li>
+            {[
+              t('login.benefits.items.0'),
+              t('login.benefits.items.1'),
+              t('login.benefits.items.2'),
+              t('login.benefits.items.3'),
+            ].map((benefit, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <svg
+                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-base text-fg-muted leading-relaxed">{benefit}</span>
+              </li>
+            ))}
           </ul>
+          
+          {/* Trust Indicators */}
+          <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <svg className="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-semibold text-fg">{t('login.trust.noCreditCard')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-semibold text-fg">{t('login.trust.instantAccess')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-semibold text-fg">{t('login.trust.cancelAnytime')}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <Card className="w-full space-y-8 rounded-3xl border border-border/70 bg-bg/90 p-10 text-fg shadow-card backdrop-blur">
-        <div className="space-y-4 text-center">
-          <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg text-base font-semibold text-fg">
+        {/* Right Side - Login Form */}
+        <Card className="w-full space-y-6 rounded-3xl border border-border/70 bg-bg/90 p-8 md:p-10 text-fg shadow-card backdrop-blur">
+        <div className="space-y-3 text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-lg font-bold text-primary">
             V
           </span>
-          <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#1c274c]">
+          <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c] md:text-4xl">
             {t('login.title')}
           </h1>
-          <p className="text-base text-fg-muted">{t('login.description')}</p>
+          <p className="text-sm text-fg-muted leading-relaxed md:text-base">
+            {t('login.description')}
+          </p>
+          {/* Account Creation Notice */}
+          <div className="mx-auto max-w-md rounded-xl border border-emerald-200/50 bg-emerald-50/50 p-3 text-left">
+            <p className="text-xs font-medium text-emerald-800 md:text-sm">
+              {t('login.accountCreationNotice')}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -269,7 +336,7 @@ export default function LoginClient() {
             {googleStatusMessage && (
               <div
                 role="alert"
-                className="rounded-2xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-700"
+                className="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-700"
               >
                 {googleStatusMessage}
               </div>
@@ -277,7 +344,7 @@ export default function LoginClient() {
             {error && (
               <div
                 role="alert"
-                className="rounded-2xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-sm text-rose-600"
+                className="rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-sm text-rose-600"
               >
                 {error}
               </div>
@@ -285,11 +352,11 @@ export default function LoginClient() {
             {sent && (
               <div
                 role="status"
-                className="rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700"
+                className="rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700"
               >
-                <p>{MAGIC_LINK_MESSAGE}</p>
+                <p className="font-medium">{MAGIC_LINK_MESSAGE}</p>
                 {isCooldownActive && (
-                  <p className="mt-1 text-xs font-semibold text-emerald-700">
+                  <p className="mt-1 text-xs text-emerald-600">
                     {t('login.messages.magicLinkResendTimer', { seconds: cooldownRemaining })}
                   </p>
                 )}

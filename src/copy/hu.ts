@@ -1012,9 +1012,10 @@ export const hu = {
     backHome: 'Vissza a főoldalra',
   },
   login: {
-    title: 'Bejelentkezés',
+    title: 'Kezdj el ingyen',
     description:
-      'Írd be az e-mail címed, és küldünk egy biztonságos belépési linket, mely 5 percig érvényes. Csak kattints rá, és automatikusan bejelentkezhetsz – jelszó nélkül.',
+      'Írd be az e-mail címed, és azonnal elkezdheted az ajánlatkészítést. Jelszó nélkül, gyorsan és biztonságosan.',
+    accountCreationNotice: '✨ Nincs még fiókod? Automatikusan létrehozunk egyet, amikor bejelentkezel. Teljesen ingyenes, bankkártya nélkül.',
     emailLabel: 'E-mail cím',
     emailPlaceholder: 'email@cimed.hu',
     magicLinkButton: 'Belépési link küldése',
@@ -1032,9 +1033,24 @@ export const hu = {
     googleStatusTitle: 'Állapot',
     rememberMe: 'Bejelentkezés megjegyzése',
     rememberMeHelp: 'Ha bejelölöd, 30 napig bejelentkezve maradsz.',
+    benefits: {
+      title: 'Miért válaszd a Vyndi-t?',
+      subtitle: 'Ingyenes próba, azonnali hozzáférés, bankkártya nélkül.',
+      items: {
+        0: 'Automatikus fióklétrehozás – csak az e-mail címed kell',
+        1: 'Teljesen ingyenes kezdés – 2 ajánlat / hónap, bankkártya nélkül',
+        2: 'Azonnali hozzáférés – percek alatt elkezdheted az ajánlatkészítést',
+        3: 'AI-alapú automatikus ajánlatkészítés professzionális eredményekkel',
+      },
+    },
+    trust: {
+      noCreditCard: 'Nincs bankkártya szükséges',
+      instantAccess: 'Azonnali hozzáférés',
+      cancelAnytime: 'Bármikor lemondható',
+    },
     messages: {
       magicLinkInfo:
-        'Ha létezik fiók ehhez az e-mail címhez, perceken belül elküldjük a belépési linket.',
+        '✅ Belépési linket küldtünk az e-mail címedre! Ha nincs még fiókod, automatikusan létrehozunk egyet.',
       magicLinkResendTimer: 'Új link {seconds} másodperc múlva kérhető újra.',
     },
   },
