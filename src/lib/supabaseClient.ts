@@ -52,7 +52,7 @@ export async function ensureSession(expectedUserId?: string): Promise<void> {
   const client = getSupabaseClient();
   
   // Check if we already have a valid session
-  const { data: { session } } = await client.auth.getSession();
+  let { data: { session } } = await client.auth.getSession();
   
   // If we have a session and an expected user ID, validate they match
   if (session && session.user && expectedUserId) {
@@ -83,8 +83,14 @@ export async function ensureSession(expectedUserId?: string): Promise<void> {
       
       return;
     }
+    // Session matches, we're good
+    if (!sessionInitialized) {
+      sessionInitialized = true;
+    }
+    return;
   }
   
+  // If we have a session but no expected user ID, we're good
   if (session && session.user) {
     if (!sessionInitialized) {
       sessionInitialized = true;
@@ -98,6 +104,49 @@ export async function ensureSession(expectedUserId?: string): Promise<void> {
   }
 
   await sessionInitPromise;
+  
+  // After initialization, verify we have a session
+  // Wait a bit for the session to propagate and retry if needed
+  let finalSession = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+    const { data: { session: checkSession } } = await client.auth.getSession();
+    if (checkSession && checkSession.user) {
+      finalSession = checkSession;
+      break;
+    }
+  }
+  
+  // If we still don't have a session, check cookies to see if they exist
+  if (!finalSession || !finalSession.user) {
+    const accessToken = getCookie('propono_at');
+    const refreshToken = getCookie('propono_rt');
+    
+    if (!accessToken || !refreshToken) {
+      // No cookies - user is not logged in
+      throw new Error('No authentication cookies found. Please log in.');
+    }
+    
+    // Cookies exist but session wasn't set - this is an error
+    console.error('Session initialization failed despite having cookies', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      expectedUserId,
+    });
+    throw new Error('Failed to initialize session from cookies. Please try refreshing the page.');
+  }
+  
+  // Verify session matches expected user ID if provided
+  if (expectedUserId && finalSession.user.id !== expectedUserId) {
+    console.error('Session user ID mismatch after initialization', {
+      sessionUserId: finalSession.user.id,
+      expectedUserId,
+    });
+    throw new Error('Session user ID mismatch: The session does not match the expected user.');
+  }
+  
+  // Mark as initialized
+  sessionInitialized = true;
 }
 
 /**
@@ -160,27 +209,28 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
       if (data.session && data.session.user) {
         // Verify the session was actually set by checking getSession
         // Sometimes setSession returns success but the session isn't immediately available
-        let verified = false;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          await new Promise(resolve => setTimeout(resolve, 50 * (attempt + 1)));
-          const { data: { session: verifySession } } = await client.auth.getSession();
-          if (verifySession && verifySession.user && verifySession.user.id === data.session.user.id) {
-            verified = true;
+        let verifiedSession = null;
+        for (let attempt = 0; attempt < 5; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+          const { data: { session: checkSession } } = await client.auth.getSession();
+          if (checkSession && checkSession.user && checkSession.user.id === data.session.user.id) {
+            verifiedSession = checkSession;
             break;
           }
         }
         
-        if (verified) {
+        if (verifiedSession && verifiedSession.user) {
           sessionInitialized = true;
           console.log('Supabase session initialized from custom cookies', {
-            userId: data.session.user.id,
+            userId: verifiedSession.user.id,
             forced: force,
           });
         } else {
           sessionInitialized = false;
-          console.warn('Session set but could not verify it was applied', {
+          console.warn('Session set but could not verify it was applied after multiple attempts', {
             expectedUserId: data.session.user.id,
           });
+          // Don't throw here - let ensureSession handle the error
         }
       } else {
         sessionInitialized = false;
@@ -216,3 +266,6 @@ function getCookie(name: string): string | null {
   }
   return null;
 }
+
+// Export getCookie for use in ensureSession
+export { getCookie };

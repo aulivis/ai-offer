@@ -525,18 +525,19 @@ export default function DashboardPage() {
       // Ensure session is initialized from cookies before querying
       // This is critical for custom cookie-based auth (propono_at, propono_rt)
       // Pass the expected user ID to validate the session matches
+      // ensureSession will throw if it can't initialize a matching session
       try {
         const { ensureSession } = await import('@/lib/supabaseClient');
         await ensureSession(user);
       } catch (error) {
         console.error('Failed to ensure Supabase session', error);
-        // If session initialization fails, throw a user-friendly error
+        // If session initialization fails, the error message from ensureSession is already user-friendly
+        // Just re-throw it or wrap it if needed
         const errorMessage = error instanceof Error ? error.message : 'Session initialization failed';
-        throw new Error(`Authentication error: ${errorMessage}. Please refresh the page or log in again.`);
+        throw new Error(errorMessage);
       }
       
-      // Check auth session before querying - give it a moment to propagate
-      await new Promise(resolve => setTimeout(resolve, 50));
+      // Verify the session one more time before querying
       const { data: { session }, error: sessionError } = await sb.auth.getSession();
       const sessionMatches = session?.user?.id === user;
       
@@ -548,19 +549,16 @@ export default function DashboardPage() {
         matchesUserId: sessionMatches,
       });
       
-      // If session doesn't match, RLS will block the query
-      // In this case, we should show an error or redirect to login
+      // If session doesn't match after ensureSession, this is unexpected
+      // ensureSession should have thrown an error already, but check anyway
       if (!sessionMatches) {
-        if (session?.user?.id) {
-          console.error('Session user ID mismatch - RLS will block queries', {
-            expectedUserId: user,
-            sessionUserId: session.user.id,
-          });
-          throw new Error('Session mismatch: The current session does not match your account. Please refresh the page or log in again.');
-        } else {
-          console.error('No session found after initialization');
-          throw new Error('No active session found. Please log in again.');
-        }
+        console.error('Session verification failed after ensureSession', {
+          expectedUserId: user,
+          sessionUserId: session?.user?.id,
+        });
+        // This shouldn't happen if ensureSession worked correctly
+        // But handle it gracefully
+        throw new Error('Session verification failed. Please refresh the page.');
       }
       
       // First, try a simple query without the join to see if that's the issue
