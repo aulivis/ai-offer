@@ -487,8 +487,8 @@ export default function BillingPage() {
 
   const planLimit = useMemo<number | null>(() => {
     if (plan === 'pro') return null;
-    if (plan === 'standard') return 10;
-    return 3;
+    if (plan === 'standard') return 5;
+    return 2;
   }, [plan]);
 
   type PlanCtaVariant = Extract<ButtonProps['variant'], 'primary' | 'secondary'>;

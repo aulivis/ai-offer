@@ -423,6 +423,9 @@ export default function NewOfferWizard() {
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
 
+  // edit on step 3 (declared early for use in draft persistence)
+  const [editedHtml, setEditedHtml] = useState<string>('');
+
   // Draft persistence
   const wizardDraftData = useMemo(
     () => ({
@@ -491,8 +494,7 @@ export default function NewOfferWizard() {
     updateHeight: updatePreviewFrameHeight,
   } = useIframeAutoHeight({ minHeight: 720 });
 
-  // edit on step 3
-  const [editedHtml, setEditedHtml] = useState<string>('');
+  // edit on step 3 (state moved above for draft persistence)
   const richTextEditorRef = useRef<RichTextEditorHandle | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageAssets, setImageAssets] = useState<OfferImageAsset[]>([]);
