@@ -87,20 +87,7 @@ export const WizardActionBar = memo(function WizardActionBar({
               (Ctrl+Enter)
             </span>
           </Button>
-        ) : (
-          <Button
-            onClick={onSubmit}
-            disabled={isSubmitDisabled || isDisabled}
-            loading={isSubmitting}
-            className="w-full rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200 touch-manipulation min-h-[44px] sm:w-auto"
-            aria-label="Generate PDF and save offer"
-          >
-            {submitLabel}
-            <span className="ml-2 hidden text-xs opacity-70 sm:inline">
-              (Ctrl+Enter)
-            </span>
-          </Button>
-        )}
+        ) : null}
       </div>
     </div>
   );

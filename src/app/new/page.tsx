@@ -2334,98 +2334,6 @@ export default function NewOfferWizard() {
                   {t('offers.wizard.previewTemplates.livePreview')}
                 </span>
               </div>
-              <div className="space-y-4">
-                {/* Preview controls */}
-                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2">
-                    <div className="flex items-center gap-2">
-                      <label htmlFor="preview-zoom" className="text-xs font-medium text-slate-600">
-                        {t('wizard.preview.zoom')}
-                      </label>
-                      <input
-                        id="preview-zoom"
-                        type="range"
-                        min="50"
-                        max="200"
-                        step="25"
-                        value={previewZoom}
-                        onChange={(e) => setPreviewZoom(Number(e.target.value))}
-                        className="h-2 w-24 rounded-lg bg-slate-200"
-                        aria-label={t('wizard.preview.zoomAria')}
-                      />
-                      <span className="min-w-[3rem] text-xs font-medium text-slate-700">
-                        {previewZoom}%
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPreviewZoom(100)}
-                        className="rounded px-2 py-1 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-                        aria-label={t('wizard.preview.zoomResetAria')}
-                      >
-                        {t('wizard.preview.zoomReset')}
-                      </button>
-                    </div>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={showMarginGuides}
-                        onChange={(e) => setShowMarginGuides(e.target.checked)}
-                        className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                        aria-label={t('wizard.preview.showMarginsAria')}
-                      />
-                      <span className="text-xs text-slate-600">{t('wizard.preview.showMargins')}</span>
-                    </label>
-                  </div>
-                {showLockedTemplates ? (
-                  <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-slate-50/80 p-3">
-                    <div className="flex items-start gap-2.5">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-600">
-                        <LockBadgeIcon className="h-3.5 w-3.5" />
-                      </span>
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-semibold text-slate-700">
-                            {t('offers.wizard.previewTemplates.lockedTitle')}
-                          </p>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                            {t('app.planUpgradeModal.badge')}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500">
-                          {t('offers.wizard.previewTemplates.lockedDescription')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {lockedTemplateSummaries.map((template) => (
-                        <div
-                          key={template.label}
-                          className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm"
-                        >
-                          <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                            <LockBadgeIcon className="h-3 w-3" />
-                          </span>
-                          <div className="space-y-0.5">
-                            <p className="text-xs font-semibold text-slate-700">{template.label}</p>
-                            <p className="text-[11px] text-slate-500">{template.highlight}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        openPlanUpgradeDialog({
-                          description: t('app.planUpgradeModal.reasons.proTemplates'),
-                        })
-                      }
-                      className="self-start"
-                    >
-                      {t('app.planUpgradeModal.primaryCta')}
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
               {/* Tips for text editing */}
               <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center gap-2">
@@ -2778,93 +2686,149 @@ export default function NewOfferWizard() {
             )}
           </div>
           
-          {/* Template Selector */}
-          <div className="space-y-2">
-            <Select
-              label={t('offers.wizard.previewTemplates.heading')}
-              help={t('offers.wizard.previewTemplates.helper')}
-              value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
-              onChange={handlePdfTemplateChange}
-              wrapperClassName="flex flex-col gap-2"
-              aria-label="PDF sablon kiválasztása"
-            >
-              {availablePdfTemplates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-          
-          {/* Preview controls */}
-          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
-            <div className="flex items-center gap-2">
-              <label htmlFor="modal-preview-zoom" className="text-xs font-medium text-slate-600">
-                {t('wizard.preview.zoom')}
-              </label>
-              <input
-                id="modal-preview-zoom"
-                type="range"
-                min="50"
-                max="200"
-                step="25"
-                value={previewZoom}
-                onChange={(e) => setPreviewZoom(Number(e.target.value))}
-                className="h-2 w-24 rounded-lg bg-slate-200"
-                aria-label={t('wizard.preview.zoomAria')}
-              />
-              <span className="min-w-[3rem] text-xs font-medium text-slate-700">
-                {previewZoom}%
-              </span>
-              <button
-                type="button"
-                onClick={() => setPreviewZoom(100)}
-                className="rounded px-2 py-1 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-                aria-label={t('wizard.preview.zoomResetAria')}
+          {/* Template Selector and Preview Controls */}
+          <div className="space-y-4">
+            {/* Template Selector */}
+            <div className="space-y-2">
+              <Select
+                label={t('offers.wizard.previewTemplates.heading')}
+                help={t('offers.wizard.previewTemplates.helper')}
+                value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
+                onChange={handlePdfTemplateChange}
+                wrapperClassName="flex flex-col gap-2"
+                aria-label="PDF sablon kiválasztása"
               >
-                {t('wizard.preview.zoomReset')}
-              </button>
+                {availablePdfTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.label}
+                  </option>
+                ))}
+              </Select>
             </div>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={showMarginGuides}
-                onChange={(e) => setShowMarginGuides(e.target.checked)}
-                className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                aria-label={t('wizard.preview.showMarginsAria')}
-              />
-              <span className="text-xs text-slate-600">{t('wizard.preview.showMargins')}</span>
-            </label>
-            {previewDocumentHtml && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsPreviewModalOpen(false);
-                  setIsPreviewFullscreen(true);
-                }}
-                className="ml-auto inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                aria-label={t('wizard.preview.fullscreenButton')}
-                title={t('wizard.preview.fullscreenButton')}
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+
+            {/* Locked Templates Info */}
+            {showLockedTemplates && (
+              <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-4">
+                <div className="flex items-start gap-2.5">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                    <LockBadgeIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-semibold text-slate-700">
+                        {t('offers.wizard.previewTemplates.lockedTitle')}
+                      </p>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                        {t('app.planUpgradeModal.badge')}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      {t('offers.wizard.previewTemplates.lockedDescription')}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {lockedTemplateSummaries.map((template) => (
+                    <div
+                      key={template.label}
+                      className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm"
+                    >
+                      <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                        <LockBadgeIcon className="h-3 w-3" />
+                      </span>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-slate-700">{template.label}</p>
+                        <p className="text-[11px] text-slate-500">{template.highlight}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    openPlanUpgradeDialog({
+                      description: t('app.planUpgradeModal.reasons.proTemplates'),
+                    })
+                  }
+                  className="self-start"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                  />
-                </svg>
-              </button>
+                  {t('app.planUpgradeModal.primaryCta')}
+                </Button>
+              </div>
             )}
+
+            {/* Preview controls */}
+            <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+              <div className="flex items-center gap-2">
+                <label htmlFor="modal-preview-zoom" className="text-sm font-medium text-slate-700">
+                  {t('wizard.preview.zoom')}:
+                </label>
+                <input
+                  id="modal-preview-zoom"
+                  type="range"
+                  min="50"
+                  max="200"
+                  step="25"
+                  value={previewZoom}
+                  onChange={(e) => setPreviewZoom(Number(e.target.value))}
+                  className="h-2 w-24 rounded-lg bg-slate-200"
+                  aria-label={t('wizard.preview.zoomAria')}
+                />
+                <span className="min-w-[3rem] text-sm font-medium text-slate-700">
+                  {previewZoom}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom(100)}
+                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                  aria-label={t('wizard.preview.zoomResetAria')}
+                >
+                  {t('wizard.preview.zoomReset')}
+                </button>
+              </div>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={showMarginGuides}
+                  onChange={(e) => setShowMarginGuides(e.target.checked)}
+                  className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                  aria-label={t('wizard.preview.showMarginsAria')}
+                />
+                <span className="text-sm text-slate-700">{t('wizard.preview.showMargins')}</span>
+              </label>
+              {previewDocumentHtml && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPreviewModalOpen(false);
+                    setIsPreviewFullscreen(true);
+                  }}
+                  className="ml-auto inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  aria-label={t('wizard.preview.fullscreenButton')}
+                  title={t('wizard.preview.fullscreenButton')}
+                >
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                    />
+                  </svg>
+                  {t('wizard.preview.fullscreenButton')}
+                </button>
+              )}
+            </div>
           </div>
           
           {/* Preview container */}
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 max-h-[80vh] overflow-y-auto">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 max-h-[75vh] overflow-y-auto">
             <div 
               className="mx-auto bg-white shadow-lg relative"
               style={{ 

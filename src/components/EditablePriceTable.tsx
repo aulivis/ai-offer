@@ -159,7 +159,8 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
                     <Button
                       type="button"
                       onClick={() => removeRow(r.id)}
-                      className="text-xs font-medium text-rose-500 transition hover:text-rose-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                      aria-label={t('editablePriceTable.actions.removeRow')}
                     >
                       {t('editablePriceTable.actions.removeRow')}
                     </Button>
