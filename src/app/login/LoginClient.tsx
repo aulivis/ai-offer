@@ -253,13 +253,13 @@ export default function LoginClient() {
         {/* Right Side - Login Form */}
         <Card className="w-full space-y-6 rounded-3xl border border-border/70 bg-bg/90 p-8 md:p-10 text-fg shadow-card backdrop-blur">
         <div className="space-y-3 text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
+          <div className="inline-flex items-center justify-center">
             <Image
               src="/vyndi-logo.png"
               alt="Vyndi"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain"
             />
           </div>
           <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c] md:text-4xl">
