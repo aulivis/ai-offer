@@ -93,30 +93,52 @@ export function WizardStep2Pricing({
   };
 
   return (
-    <div className="space-y-4" aria-label={t('wizard.pricing.ariaLabel')}>
+    <div className="space-y-6" aria-label={t('wizard.pricing.ariaLabel')}>
+      {/* Header */}
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold text-slate-900">
+          {t('offers.wizard.steps.pricing')}
+        </h2>
+        <p className="text-sm text-slate-600 leading-relaxed">
+          {t('offers.wizard.forms.pricing.helper')}
+        </p>
+      </div>
+
+      {/* Error Summary */}
+      {validationError && (
+        <div className="rounded-xl border-2 border-rose-300 bg-rose-50/90 p-4">
+          <div className="flex items-start gap-3">
+            <svg className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm font-semibold text-rose-900">{validationError}</p>
+          </div>
+        </div>
+      )}
+
       {/* Quick Insert Activities */}
       {filteredActivities.length > 0 && (
-        <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
-          <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-slate-900">
                 {t('offers.wizard.forms.details.quickInsertTitle')}
-              </h2>
-              <p className="text-[11px] text-slate-500">
-                {t('offers.wizard.forms.details.quickInsertIndustryLabel')}: {industry}
+              </h3>
+              <p className="text-xs text-slate-600 mt-1">
+                {t('offers.wizard.forms.details.quickInsertIndustryLabel')}: <span className="font-semibold">{industry}</span>
               </p>
             </div>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               {t('wizard.quota.itemCount', { count: filteredActivities.length })}
             </span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {filteredActivities.map((a) => (
               <Button
                 key={a.id}
                 type="button"
                 onClick={() => handleActivityClick(a)}
-                className="rounded-full border border-border/70 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary hover:bg-primary/5 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 touch-manipulation min-h-[44px]"
               >
                 + {a.name}
               </Button>
@@ -126,33 +148,23 @@ export function WizardStep2Pricing({
       )}
 
       {/* Pricing Table */}
-      <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-slate-900">
-              {t('offers.wizard.steps.pricing')}
-            </h2>
-            <p className="text-[11px] text-slate-500">
-              {t('offers.wizard.forms.pricing.helper')}
-            </p>
-          </div>
+      <Card className="border-none bg-white/95 shadow-lg ring-1 ring-slate-900/5 overflow-hidden">
+        <div className="p-5 sm:p-6 border-b border-slate-200">
+          <h3 className="text-base font-semibold text-slate-900">
+            {t('offers.wizard.steps.pricing')}
+          </h3>
         </div>
-        {validationError && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50/90 p-2.5 text-xs text-rose-700">
-            {validationError}
-          </div>
-        )}
         <EditablePriceTable rows={rows} onChange={onRowsChange} />
       </Card>
 
       {/* Client Information */}
-      <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+        <div className="flex flex-col gap-2">
           <div>
-            <h2 className="text-base font-semibold text-slate-700">
+            <h3 className="text-base font-semibold text-slate-900">
               {t('offers.wizard.forms.details.sections.client')}
-            </h2>
-            <p className="text-[11px] text-slate-500">
+            </h3>
+            <p className="text-xs text-slate-600 mt-1">
               {t('offers.wizard.forms.details.sections.clientHelper')}
             </p>
           </div>
@@ -184,7 +196,7 @@ export function WizardStep2Pricing({
             </div>
           )}
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Input
             label={t('offers.wizard.forms.details.clientFieldAddress')}
             placeholder={t('offers.wizard.forms.details.clientFieldAddress')}

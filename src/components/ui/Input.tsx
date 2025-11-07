@@ -28,9 +28,16 @@ export function Input({ error, label, help, id, className, wrapperClassName, ...
 
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
 
+  const isRequired = props.required || props['aria-required'] === 'true' || props['aria-required'] === true;
+  
   return (
     <label htmlFor={inputId} className={wrapperClasses}>
-      {label && <span className="text-sm font-medium text-fg">{label}</span>}
+      {label && (
+        <span className="text-sm font-medium text-fg">
+          {label}
+          {isRequired && <span className="ml-1 text-danger" aria-label="required">*</span>}
+        </span>
+      )}
       <input
         id={inputId}
         aria-invalid={!!error}

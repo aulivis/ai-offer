@@ -1127,6 +1127,7 @@ export const hu = {
         titleRequired: 'Adj meg egy címet az ajánlathoz.',
         overviewRequired: 'Adj rövid projektáttekintést az AI-nak.',
         pricingRequired: 'Adj hozzá legalább egy tételt az árlistához.',
+        errorSummaryTitle: 'Kérjük, javítsd a következő hibákat:',
       },
       actions: {
         back: 'Vissza',

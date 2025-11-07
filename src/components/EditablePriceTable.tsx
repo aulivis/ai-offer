@@ -168,33 +168,33 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
               );
             })}
           </tbody>
-          <tfoot className="bg-slate-50/90 text-slate-600">
+          <tfoot className="bg-gradient-to-br from-slate-50 to-slate-100/50 text-slate-700">
             <tr className="border-t-2 border-slate-300">
-              <td className="px-4 py-2 text-right font-medium" colSpan={5}>
+              <td className="px-4 py-3 text-right font-semibold" colSpan={5}>
                 {t('editablePriceTable.totals.net')}
               </td>
-              <td className="px-4 py-2 text-right font-semibold text-slate-700 tabular-nums">
+              <td className="px-4 py-3 text-right font-bold text-slate-900 tabular-nums text-base">
                 {formatCurrency(totals.net)}
               </td>
-              <td className="px-4 py-2" />
+              <td className="px-4 py-3" />
             </tr>
             <tr className="border-t border-slate-200">
-              <td className="px-4 py-2 text-right font-medium" colSpan={5}>
+              <td className="px-4 py-2 text-right font-semibold" colSpan={5}>
                 {t('editablePriceTable.totals.vat')}
               </td>
-              <td className="px-4 py-2 text-right font-semibold text-slate-700 tabular-nums">
+              <td className="px-4 py-2 text-right font-semibold text-slate-800 tabular-nums">
                 {formatCurrency(totals.vat)}
               </td>
               <td className="px-4 py-2" />
             </tr>
-            <tr className="border-t border-slate-200">
-              <td className="px-4 py-2 text-right font-medium" colSpan={5}>
+            <tr className="border-t-2 border-slate-400 bg-slate-200/50">
+              <td className="px-4 py-3 text-right font-bold text-base" colSpan={5}>
                 {t('editablePriceTable.totals.gross')}
               </td>
-              <td className="px-4 py-2 text-right font-semibold text-slate-700 tabular-nums">
+              <td className="px-4 py-3 text-right font-bold text-lg text-slate-900 tabular-nums">
                 {formatCurrency(totals.gross)}
               </td>
-              <td className="px-4 py-2" />
+              <td className="px-4 py-3" />
             </tr>
           </tfoot>
         </table>
@@ -204,7 +204,7 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
         <Button
           type="button"
           onClick={addRow}
-          className="w-full rounded-full border border-border px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-border hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto"
+          className="w-full rounded-full border border-border px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-primary hover:bg-primary/5 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation min-h-[44px] sm:w-auto"
         >
           {t('editablePriceTable.actions.addRow')}
         </Button>

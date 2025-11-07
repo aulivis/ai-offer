@@ -68,10 +68,10 @@ export const WizardActionBar = memo(function WizardActionBar({
           onClick={onPrev}
           disabled={step === 1}
           variant="secondary"
-          className="w-full rounded-full border border-border/70 px-5 py-2.5 text-sm font-semibold transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300 sm:w-auto"
+          className="w-full rounded-full border border-border/70 px-5 py-3 text-sm font-semibold transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300 touch-manipulation min-h-[44px] sm:w-auto"
           aria-label={`Go back to previous step${step > 1 ? ` (Step ${step - 1})` : ''}`}
         >
-          {backButtonLabel}
+          ← {backButtonLabel}
         </Button>
 
         {step < 3 ? (
@@ -79,10 +79,10 @@ export const WizardActionBar = memo(function WizardActionBar({
             ref={nextButtonRef}
             onClick={onNext}
             disabled={isNextDisabled || isDisabled}
-            className="w-full rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200 sm:w-auto"
+            className="w-full rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200 touch-manipulation min-h-[44px] sm:w-auto"
             aria-label={`Continue to next step${step < 3 ? ` (Step ${step + 1})` : ''}`}
           >
-            {nextButtonLabel}
+            {nextButtonLabel} →
             <span className="ml-2 hidden text-xs opacity-70 sm:inline">
               (Ctrl+Enter)
             </span>
@@ -92,7 +92,7 @@ export const WizardActionBar = memo(function WizardActionBar({
             onClick={onSubmit}
             disabled={isSubmitDisabled || isDisabled}
             loading={isSubmitting}
-            className="w-full rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200 sm:w-auto"
+            className="w-full rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-400 disabled:text-slate-200 touch-manipulation min-h-[44px] sm:w-auto"
             aria-label="Generate PDF and save offer"
           >
             {submitLabel}

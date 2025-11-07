@@ -1908,8 +1908,8 @@ export default function NewOfferWizard() {
         >
           Ugrás a tartalomhoz
         </a>
-        <div className="space-y-6" id="wizard-content">
-          <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
+        <div className="space-y-6 sm:space-y-8" id="wizard-content">
+          <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
             <StepIndicator steps={wizardSteps} />
             <WizardProgressIndicator
               step={step as WizardStep}
@@ -2319,18 +2319,18 @@ export default function NewOfferWizard() {
         )}
 
         {step === 3 && (
-          <section className="space-y-4" aria-label="Összegzés és előnézet">
-            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-5 md:p-6">
-              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h2 className="text-base font-semibold text-slate-900">
+          <section className="space-y-6" aria-label="Összegzés és előnézet">
+            <Card className="space-y-6 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6 sm:space-y-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                  <h2 className="text-xl font-bold text-slate-900">
                     {t('offers.wizard.steps.summary')}
                   </h2>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-sm text-slate-600 leading-relaxed">
                     {t('offers.wizard.previewTemplates.contentGoesToPdf')}
                   </p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                   {t('offers.wizard.previewTemplates.livePreview')}
                 </span>
               </div>
@@ -2427,12 +2427,12 @@ export default function NewOfferWizard() {
                 ) : null}
               </div>
               {/* Tips for text editing */}
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-primary text-sm">💡</span>
-                  <p className="text-xs font-semibold text-slate-700">{t('wizard.preview.tipsTitle')}</p>
+                  <span className="text-primary text-lg">💡</span>
+                  <p className="text-sm font-semibold text-slate-900">{t('wizard.preview.tipsTitle')}</p>
                 </div>
-                <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 ml-4">
+                <ul className="list-disc list-inside space-y-2 text-xs text-slate-700 ml-2">
                   <li>{t('richTextEditor.placeholderReminder')}</li>
                   <li>{t('wizard.preview.tipsItems.useLists')}</li>
                   <li>{t('wizard.preview.tipsItems.highlight')}</li>
@@ -2491,15 +2491,31 @@ export default function NewOfferWizard() {
                   </>
                 )}
               </div>
-              <div className="space-y-2.5">
+              {/* Preview Section with Thumbnail */}
+              <div className="space-y-4 rounded-xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    {t('offers.wizard.previewTemplates.previewHeading')}
-                  </p>
-                  {selectedPdfTemplate && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                      {selectedPdfTemplate.label}
-                    </span>
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {t('offers.wizard.previewTemplates.previewHeading')}
+                    </h3>
+                    {selectedPdfTemplate && (
+                      <p className="text-xs text-slate-600 mt-1">
+                        Sablon: <span className="font-semibold">{selectedPdfTemplate.label}</span>
+                      </p>
+                    )}
+                  </div>
+                  {previewDocumentHtml && (
+                    <div className="hidden sm:flex items-center justify-center relative w-20 h-28 rounded-lg border-2 border-slate-300 bg-white shadow-md overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-white" />
+                      <div className="relative z-10 text-center p-2">
+                        <svg className="w-8 h-8 mx-auto text-slate-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p className="text-[10px] font-semibold text-slate-600">PDF</p>
+                        <p className="text-[9px] text-slate-500 mt-0.5">Előnézet</p>
+                      </div>
+                      <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors" />
+                    </div>
                   )}
                 </div>
                 <Button
@@ -2514,12 +2530,18 @@ export default function NewOfferWizard() {
                       {t('offers.wizard.preview.loading')}
                     </span>
                   ) : previewDocumentHtml ? (
-                    t('wizard.preview.openPreview')
+                    <span className="flex items-center gap-2">
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      {t('wizard.preview.openPreview')}
+                    </span>
                   ) : (
                     t('wizard.preview.noPreview')
                   )}
                 </Button>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-600 text-center">
                   {t('offers.wizard.previewTemplates.previewHint')}
                 </p>
               </div>
