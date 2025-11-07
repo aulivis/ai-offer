@@ -190,6 +190,26 @@ export const templateStyles = `
     font-style: italic;
   }
 
+  .offer-doc__marketing-footer {
+    border-top: 1px solid var(--border, #e0e0e0);
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    text-align: center;
+  }
+
+  .offer-doc__marketing-text {
+    color: var(--muted, #666666);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .offer-doc__marketing-link {
+    color: var(--primary, #1a1a1a);
+    text-decoration: underline;
+    font-weight: 500;
+  }
+
   @media print {
     .offer-doc--minimal {
       background: #ffffff;
@@ -200,6 +220,17 @@ export const templateStyles = `
       color: #ffffff !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+
+    .offer-doc__marketing-link {
+      color: var(--primary, #1a1a1a);
+    }
+
+    .offer-doc__marketing-link::after {
+      content: ' (' attr(href) ')';
+      font-size: 0.9em;
+      color: var(--muted, #666666);
+      word-break: break-all;
     }
   }
 `;

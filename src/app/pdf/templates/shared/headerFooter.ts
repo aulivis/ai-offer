@@ -48,7 +48,8 @@ function deriveMonogram(value: string | null | undefined): string {
 
 function safeField(raw: string | null | undefined, fallback: string): SafeField {
   const sanitized = sanitizeInput(raw ?? '');
-  if (!sanitized) {
+  // Check if value is empty or equals the placeholder text (case-insensitive)
+  if (!sanitized || sanitized.toLowerCase().trim() === fallback.toLowerCase().trim()) {
     return { value: fallback, isPlaceholder: true };
   }
   return { value: sanitized, isPlaceholder: false };

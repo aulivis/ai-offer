@@ -5,6 +5,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
 import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
+import { renderMarketingFooter } from '../../shared/marketingFooter';
 
 function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -75,21 +76,35 @@ function partialFooter(ctx: RenderCtx): string {
     companyTaxId,
   } = safeCtx;
 
+  // For placeholder fields, show "-" (em dash) instead of placeholder text for better UX
+  const notProvided = ctx.i18n.t('pdf.templates.common.notProvided') || '—';
+  
+  const contactValue = contactName.isPlaceholder ? notProvided : contactName.value;
   const contactClass = contactName.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
+  
+  const emailValue = contactEmail.isPlaceholder ? notProvided : contactEmail.value;
   const emailClass = contactEmail.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
+  
+  const phoneValue = contactPhone.isPlaceholder ? notProvided : contactPhone.value;
   const phoneClass = contactPhone.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
+  
+  const websiteValue = companyWebsite.isPlaceholder ? notProvided : companyWebsite.value;
   const websiteClass = companyWebsite.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
+  
+  const addressValue = companyAddress.isPlaceholder ? notProvided : companyAddress.value;
   const addressClass = companyAddress.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
+  
+  const taxValue = companyTaxId.isPlaceholder ? notProvided : companyTaxId.value;
   const taxClass = companyTaxId.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
@@ -99,24 +114,24 @@ function partialFooter(ctx: RenderCtx): string {
       <div class="offer-doc__footer-grid--minimal">
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.contact}</span>
-          <span class="${contactClass}">${contactName.value}</span>
+          <span class="${contactClass}">${contactValue}</span>
         </div>
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.email}</span>
-          <span class="${emailClass}">${contactEmail.value}</span>
+          <span class="${emailClass}">${emailValue}</span>
           <span class="offer-doc__footer-label--minimal" style="margin-top: 0.75rem;">${labels.phone}</span>
-          <span class="${phoneClass}">${contactPhone.value}</span>
+          <span class="${phoneClass}">${phoneValue}</span>
         </div>
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.website}</span>
-          <span class="${websiteClass}">${companyWebsite.value}</span>
+          <span class="${websiteClass}">${websiteValue}</span>
         </div>
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.company}</span>
           <span class="offer-doc__footer-label--minimal" style="margin-top: 0.75rem;">${labels.address}</span>
-          <span class="${addressClass}">${companyAddress.value}</span>
+          <span class="${addressClass}">${addressValue}</span>
           <span class="offer-doc__footer-label--minimal" style="margin-top: 0.75rem;">${labels.taxId}</span>
-          <span class="${taxClass}">${companyTaxId.value}</span>
+          <span class="${taxClass}">${taxValue}</span>
         </div>
       </div>
     </footer>
@@ -131,8 +146,9 @@ export function renderBody(ctx: RenderCtx): string {
   const sections = partialSections(ctx);
   const priceTable = partialPriceTable(ctx);
   const footer = partialFooter(ctx);
+  const marketingFooter = renderMarketingFooter(ctx.i18n);
 
-  const content = [slimHeader, slimFooter, header, sections, priceTable, footer]
+  const content = [slimHeader, slimFooter, header, sections, priceTable, footer, marketingFooter]
     .filter(Boolean)
     .join('\n');
 

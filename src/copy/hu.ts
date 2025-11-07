@@ -1790,6 +1790,7 @@ export const hu = {
         addressLabel: 'Cím',
         taxIdLabel: 'Adószám',
         notProvided: '—',
+        pageLabel: 'Oldal',
       },
       sections: {
         overview: 'Összefoglaló',
@@ -1800,6 +1801,11 @@ export const hu = {
         nextSteps: 'Következő lépések',
         pricing: 'Árképzés',
         gallery: 'Galéria',
+      },
+      marketing: {
+        generatedBy: 'Ez az ajánlat a',
+        upsell: 'Frissíts Pro csomagra a prémium sablonokért és haladó funkciókért.',
+        visitLink: 'Látogasd meg a Vyndi AI-t',
       },
       runtime: {
         freeBase: {

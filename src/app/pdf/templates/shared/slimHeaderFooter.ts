@@ -20,6 +20,8 @@ export function renderSlimHeader(ctx: HeaderFooterCtx): string {
 }
 
 export function renderSlimFooter(ctx: HeaderFooterCtx): string {
+  // Page numbers are added via CSS counter in print mode
+  // The label is just "Oldal" which will become "Oldal 1 / 2" etc. via CSS
   return `
     <div class="offer-doc__slim-bar slim-footer" aria-hidden="true">
       <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.7rem;">
