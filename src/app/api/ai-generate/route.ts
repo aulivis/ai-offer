@@ -1220,7 +1220,6 @@ Különös figyelmet fordít a következőkre:
 
     let immediatePdfUrl: string | null = null;
     let responseStatus: 'pending' | 'completed' = 'pending';
-    const translator = createTranslator(req.headers.get('accept-language'));
     let responseNote = translator.t('api.pdf.generating');
 
     try {
