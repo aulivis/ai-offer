@@ -4,28 +4,22 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
-import { currentMonthStart } from '@/lib/services/usage';
 import { t } from '@/copy';
 import { getDeviceIdFromCookie } from '@/lib/deviceId';
-
-type UsageResponse = {
-  plan: 'free' | 'standard' | 'pro';
-  limit: number | null;
-  confirmed: number;
-  pendingUser: number;
-  pendingDevice: number | null;
-  confirmedDevice: number | null;
-  remaining: number | null;
-  periodStart: string;
-};
+import { 
+  getQuotaData, 
+  isUserQuotaExhausted as checkUserQuotaExhausted, 
+  isDeviceQuotaExhausted as checkDeviceQuotaExhausted, 
+  type QuotaData 
+} from '@/lib/services/quota';
 
 export default function QuotaWarningBar() {
   const sb = useSupabase();
   const { status: authStatus, user } = useOptionalAuth();
-  const [quotaSnapshot, setQuotaSnapshot] = useState<UsageResponse | null>(null);
+  const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load quota function
+  // Load quota function - use unified quota service
   const loadQuota = useCallback(async () => {
     if (authStatus !== 'authenticated' || !user) {
       setQuotaSnapshot(null);
@@ -36,42 +30,14 @@ export default function QuotaWarningBar() {
     setIsLoading(true);
     try {
       const deviceId = getDeviceIdFromCookie();
-      const { iso: expectedPeriod } = currentMonthStart();
-
-      // Call database function directly - simpler and faster than API route
-      const { data, error } = await sb.rpc('get_quota_snapshot', {
-        p_period_start: expectedPeriod,
-        p_device_id: deviceId || null,
-      });
-
-      if (error) {
-        // Silently handle auth errors - user is not authenticated, which is expected
-        if (error.message?.includes('authenticated') || error.code === 'PGRST301') {
-          setQuotaSnapshot(null);
-          return;
-        }
-        throw new Error(`Failed to load quota: ${error.message}`);
-      }
-
-      const snapshot = Array.isArray(data) ? data[0] : data;
-      if (!snapshot) {
+      const quotaData = await getQuotaData(sb, deviceId, null);
+      setQuotaSnapshot(quotaData);
+    } catch (error) {
+      // Silently handle auth errors - user is not authenticated, which is expected
+      if (error instanceof Error && (error.message?.includes('authenticated') || error.message?.includes('PGRST301'))) {
+        setQuotaSnapshot(null);
         return;
       }
-
-      // Map database response to UsageResponse format
-      const usageData: UsageResponse = {
-        plan: snapshot.plan as 'free' | 'standard' | 'pro',
-        limit: snapshot.quota_limit,
-        confirmed: Number(snapshot.confirmed) || 0,
-        pendingUser: Number(snapshot.pending_user) || 0,
-        pendingDevice: snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : null,
-        confirmedDevice: snapshot.confirmed_device !== null ? Number(snapshot.confirmed_device) || 0 : null,
-        remaining: snapshot.remaining,
-        periodStart: snapshot.period_start,
-      };
-
-      setQuotaSnapshot(usageData);
-    } catch (error) {
       console.error('Failed to load quota for warning bar:', error);
       setQuotaSnapshot(null);
     } finally {
@@ -96,11 +62,9 @@ export default function QuotaWarningBar() {
       return;
     }
 
-    const { iso: expectedPeriod } = currentMonthStart();
-
     // Subscribe to usage_counters changes
     const usageChannel = sb
-      .channel(`quota-warning-usage-${user.id}-${expectedPeriod}`)
+      .channel(`quota-warning-usage-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -109,11 +73,9 @@ export default function QuotaWarningBar() {
           table: 'usage_counters',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          const updated = payload.new as { period_start?: string };
-          if (updated.period_start === expectedPeriod) {
-            loadQuota();
-          }
+        () => {
+          // Refresh quota on any usage counter update (period check handled by get_quota_snapshot)
+          loadQuota();
         },
       )
       .on(
@@ -124,18 +86,15 @@ export default function QuotaWarningBar() {
           table: 'usage_counters',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          const inserted = payload.new as { period_start?: string };
-          if (inserted.period_start === expectedPeriod) {
-            loadQuota();
-          }
+        () => {
+          loadQuota();
         },
       )
       .subscribe();
 
     // Subscribe to pdf_jobs changes
     const jobsChannel = sb
-      .channel(`quota-warning-jobs-${user.id}-${expectedPeriod}`)
+      .channel(`quota-warning-jobs-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -144,21 +103,11 @@ export default function QuotaWarningBar() {
           table: 'pdf_jobs',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          const job = (payload.new || payload.old) as { created_at?: string } | null;
-          if (!job?.created_at) return;
-
-          const jobDate = new Date(job.created_at);
-          const jobPeriod = new Date(jobDate.getFullYear(), jobDate.getMonth(), 1)
-            .toISOString()
-            .split('T')[0];
-
-          if (jobPeriod === expectedPeriod) {
-            // Debounce rapid changes
-            setTimeout(() => {
-              loadQuota();
-            }, 500);
-          }
+        () => {
+          // Debounce rapid changes
+          setTimeout(() => {
+            loadQuota();
+          }, 500);
         },
       )
       .subscribe();
@@ -169,23 +118,18 @@ export default function QuotaWarningBar() {
     };
   }, [authStatus, sb, user, loadQuota]);
 
-  const { isQuotaExhausted, isDeviceQuotaExhausted, warningType } = useMemo(() => {
+  const quotaStatus = useMemo((): {
+    isQuotaExhausted: boolean;
+    isDeviceQuotaExhausted: boolean;
+    warningType: 'both' | 'user' | 'device' | null;
+  } => {
     if (!quotaSnapshot || isLoading) {
       return { isQuotaExhausted: false, isDeviceQuotaExhausted: false, warningType: null };
     }
 
-    const { limit, confirmed, pendingUser, pendingDevice, confirmedDevice, plan } = quotaSnapshot;
-
-    // Check user quota exhaustion
-    const userQuotaExhausted =
-      limit !== null && typeof limit === 'number' && confirmed + pendingUser >= limit;
-
-    // Check device quota exhaustion (only for free plan)
-    const deviceLimit = plan === 'free' && typeof limit === 'number' ? 2 : null;
-    const deviceConfirmed = confirmedDevice ?? 0;
-    const devicePending = pendingDevice ?? 0;
-    const deviceQuotaExhausted =
-      deviceLimit !== null && deviceConfirmed + devicePending >= deviceLimit;
+    // Use unified quota service helpers (imported functions)
+    const userQuotaExhausted: boolean = checkUserQuotaExhausted(quotaSnapshot);
+    const deviceQuotaExhausted: boolean = checkDeviceQuotaExhausted(quotaSnapshot);
 
     // Determine warning type
     let warningType: 'both' | 'user' | 'device' | null = null;
@@ -203,6 +147,8 @@ export default function QuotaWarningBar() {
       warningType,
     };
   }, [quotaSnapshot, isLoading]);
+
+  const { isQuotaExhausted, isDeviceQuotaExhausted, warningType } = quotaStatus;
 
   // Don't show if quota is not exhausted
   if (!warningType || isLoading) {
@@ -256,4 +202,3 @@ export default function QuotaWarningBar() {
     </div>
   );
 }
-

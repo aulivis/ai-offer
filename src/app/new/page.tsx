@@ -694,42 +694,19 @@ export default function NewOfferWizard() {
 
       setQuotaLoading(true);
       try {
-        const { iso: expectedPeriod } = currentMonthStart();
-
-        // Call database function directly - simpler and faster than API route
-        const { data, error } = await sb.rpc('get_quota_snapshot', {
-          p_period_start: expectedPeriod,
-        });
+        // Use unified quota service - single source of truth
+        const { getQuotaData } = await import('@/lib/services/quota');
+        const quotaData = await getQuotaData(sb, null, null);
 
         if (!active) {
           return;
         }
 
-        if (error) {
-          throw new Error(`Failed to load quota: ${error.message}`);
-        }
-
-        const snapshot = Array.isArray(data) ? data[0] : data;
-        if (!snapshot) {
-          throw new Error('No quota snapshot returned from database');
-        }
-
-        // Validate and normalize the response
-        const planValue = snapshot.plan;
-        if (planValue !== 'free' && planValue !== 'standard' && planValue !== 'pro') {
-          throw new Error('Invalid plan in quota snapshot');
-        }
-
-        const limit = snapshot.quota_limit !== null && snapshot.quota_limit !== undefined ? Number(snapshot.quota_limit) : null;
-        const confirmed = Number.isFinite(snapshot.confirmed) ? Number(snapshot.confirmed) : 0;
-        const pendingUser = Number.isFinite(snapshot.pending_user) ? Number(snapshot.pending_user) : 0;
-        const periodStart = typeof snapshot.period_start === 'string' ? snapshot.period_start : expectedPeriod;
-
         setQuotaSnapshot({
-          limit,
-          used: confirmed,
-          pending: pendingUser,
-          periodStart,
+          limit: quotaData.limit,
+          used: quotaData.confirmed,
+          pending: quotaData.pendingUser,
+          periodStart: quotaData.periodStart,
         });
         setQuotaError(null);
       } catch (quotaLoadError) {

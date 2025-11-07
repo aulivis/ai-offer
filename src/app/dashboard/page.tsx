@@ -778,7 +778,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Load quota function
+  // Load quota function - use unified quota service
   const loadQuota = useCallback(async () => {
     if (authStatus !== 'authenticated' || !user) {
       setQuotaSnapshot(null);
@@ -789,35 +789,21 @@ export default function DashboardPage() {
     setIsQuotaLoading(true);
     try {
       const deviceId = getDeviceIdFromCookie();
-      const { iso: expectedPeriod } = currentMonthStart();
+      const { getQuotaData } = await import('@/lib/services/quota');
+      const quotaData = await getQuotaData(sb, deviceId, null);
 
-      // Call database function directly - simpler and faster than API route
-      const { data, error } = await sb.rpc('get_quota_snapshot', {
-        p_period_start: expectedPeriod,
-        p_device_id: deviceId || null,
-      });
-
-      if (error) {
-        throw new Error(`Failed to load quota: ${error.message}`);
-      }
-
-      const snapshot = Array.isArray(data) ? data[0] : data;
-      if (!snapshot) {
-        throw new Error('No quota snapshot returned from database');
-      }
-
-      // Map database response to quota snapshot format
+      // Map to dashboard format
       const normalizedDevicePending = deviceId
-        ? snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : 0
-        : snapshot.pending_device !== null ? Number(snapshot.pending_device) : null;
+        ? quotaData.pendingDevice ?? 0
+        : quotaData.pendingDevice;
 
       setQuotaSnapshot({
-        plan: snapshot.plan as SubscriptionPlan,
-        limit: snapshot.quota_limit,
-        used: Number(snapshot.confirmed) || 0,
-        pending: Number(snapshot.pending_user) || 0,
+        plan: quotaData.plan as SubscriptionPlan,
+        limit: quotaData.limit,
+        used: quotaData.confirmed,
+        pending: quotaData.pendingUser,
         devicePending: normalizedDevicePending,
-        periodStart: snapshot.period_start,
+        periodStart: quotaData.periodStart,
       });
     } catch (error) {
       console.error('Failed to load usage quota.', error);
@@ -859,13 +845,12 @@ export default function DashboardPage() {
         },
         (payload) => {
           const updated = payload.new as { period_start?: string };
-          if (updated.period_start === expectedPeriod) {
-            console.log('Dashboard: Usage counter updated via realtime', {
-              userId: user.id,
-              period: updated.period_start,
-            });
-            loadQuota();
-          }
+          // Refresh quota on any usage counter update (period check handled by get_quota_snapshot)
+          console.log('Dashboard: Usage counter updated via realtime, refreshing quota', {
+            userId: user.id,
+            period: updated.period_start,
+          });
+          loadQuota();
         },
       )
       .on(
@@ -878,13 +863,11 @@ export default function DashboardPage() {
         },
         (payload) => {
           const inserted = payload.new as { period_start?: string };
-          if (inserted.period_start === expectedPeriod) {
-            console.log('Dashboard: Usage counter inserted via realtime', {
-              userId: user.id,
-              period: inserted.period_start,
-            });
-            loadQuota();
-          }
+          console.log('Dashboard: Usage counter inserted via realtime, refreshing quota', {
+            userId: user.id,
+            period: inserted.period_start,
+          });
+          loadQuota();
         },
       )
       .subscribe();
@@ -904,24 +887,16 @@ export default function DashboardPage() {
           const job = (payload.new || payload.old) as { id?: string; status?: string; created_at?: string } | null;
           if (!job?.created_at) return;
 
-          const jobDate = new Date(job.created_at);
-          const jobPeriod = new Date(jobDate.getFullYear(), jobDate.getMonth(), 1)
-            .toISOString()
-            .split('T')[0];
-
-          if (jobPeriod === expectedPeriod) {
-            console.log('Dashboard: PDF job changed via realtime', {
-              userId: user.id,
-              event: payload.eventType,
-              jobId: job.id,
-              status: job.status,
-              period: jobPeriod,
-            });
-            // Debounce rapid changes
-            setTimeout(() => {
-              loadQuota();
-            }, 500);
-          }
+          // Debounce rapid changes - refresh quota after job status changes
+          console.log('Dashboard: PDF job changed via realtime, refreshing quota', {
+            userId: user.id,
+            event: payload.eventType,
+            jobId: job.id,
+            status: job.status,
+          });
+          setTimeout(() => {
+            loadQuota();
+          }, 500);
         },
       )
       .subscribe();

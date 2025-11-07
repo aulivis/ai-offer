@@ -402,45 +402,18 @@ export default function BillingPage() {
 
     (async () => {
       try {
-        const { currentMonthStart } = await import('@/lib/services/usage');
-        const { iso: currentPeriod } = currentMonthStart();
-        const [{ data: profile }, { data: usageRow }] = await Promise.all([
-          supabase.from('profiles').select('plan').eq('id', user.id).maybeSingle(),
-          supabase
-            .from('usage_counters')
-            .select('offers_generated, period_start')
-            .eq('user_id', user.id)
-            .maybeSingle(),
-        ]);
+        // Use unified quota service - single source of truth
+        const { getQuotaData } = await import('@/lib/services/quota');
+        const quotaData = await getQuotaData(supabase, null, null);
 
         if (!active) {
           return;
         }
-
-        const effectivePlan = resolveEffectivePlan(profile?.plan ?? null);
         
-        // Recalculate usage based on actual successful PDFs to ensure accuracy
-        // This fixes cases where quota was incremented but PDF generation failed
-        let actualCount = Number(usageRow?.offers_generated ?? 0);
-        try {
-          const { countSuccessfulPdfs } = await import('@/lib/services/usage');
-          actualCount = await countSuccessfulPdfs(supabase, user.id, currentPeriod);
-          
-          // If count differs, sync it (but don't block UI if sync fails)
-          if (actualCount !== Number(usageRow?.offers_generated ?? 0)) {
-            const { recalculateUsageFromPdfs } = await import('@/lib/services/usage');
-            await recalculateUsageFromPdfs(supabase, user.id, currentPeriod).catch((err) => {
-              console.warn('Failed to sync usage counter:', err);
-            });
-          }
-        } catch (recalcError) {
-          console.warn('Failed to recalculate usage from PDFs, using counter value:', recalcError);
-        }
-        
-        setPlan(effectivePlan);
+        setPlan(quotaData.plan);
         setUsage({
-          offersGenerated: actualCount,
-          periodStart: usageRow?.period_start ?? currentPeriod,
+          offersGenerated: quotaData.confirmed,
+          periodStart: quotaData.periodStart,
         });
         setIsLoadingData(false);
       } catch (error) {
