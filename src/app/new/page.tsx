@@ -2327,38 +2327,16 @@ export default function NewOfferWizard() {
                     {t('offers.wizard.steps.summary')}
                   </h2>
                   <p className="text-xs text-slate-600">
-                    Ez a tartalom kerül a PDF-be – finomhangold bátran.
+                    {t('offers.wizard.previewTemplates.contentGoesToPdf')}
                   </p>
                 </div>
                 <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                  Élő előnézet
+                  {t('offers.wizard.previewTemplates.livePreview')}
                 </span>
               </div>
-              <div
-                className={
-                  showLockedTemplates
-                    ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]'
-                    : 'space-y-4'
-                }
-              >
-                <div className="space-y-3">
-                  <Select
-                    label={t('offers.wizard.previewTemplates.heading')}
-                    help={t('offers.wizard.previewTemplates.helper')}
-                    value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
-                    onChange={handlePdfTemplateChange}
-                    wrapperClassName="flex flex-col gap-2 min-w-0"
-                    aria-label="PDF sablon kiválasztása"
-                  >
-                    {availablePdfTemplates.map((template) => (
-                      <option key={template.id} value={template.id}>
-                        {template.label}
-                      </option>
-                    ))}
-                  </Select>
-                  
-                  {/* Preview controls */}
-                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2">
+              <div className="space-y-4">
+                {/* Preview controls */}
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2">
                     <div className="flex items-center gap-2">
                       <label htmlFor="preview-zoom" className="text-xs font-medium text-slate-600">
                         {t('wizard.preview.zoom')}
@@ -2397,7 +2375,6 @@ export default function NewOfferWizard() {
                       <span className="text-xs text-slate-600">{t('wizard.preview.showMargins')}</span>
                     </label>
                   </div>
-                </div>
                 {showLockedTemplates ? (
                   <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-slate-50/80 p-3">
                     <div className="flex items-start gap-2.5">
@@ -2529,7 +2506,7 @@ export default function NewOfferWizard() {
                   type="button"
                   onClick={() => setIsPreviewModalOpen(true)}
                   disabled={!previewDocumentHtml && !previewLoading}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+                  className="w-full rounded-xl border-2 border-primary bg-primary px-6 py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-primary/50 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100"
                 >
                   {previewLoading && !previewDocumentHtml ? (
                     <span className="flex items-center gap-2">
@@ -2550,10 +2527,9 @@ export default function NewOfferWizard() {
                 <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-slate-700">Képek a PDF-hez</p>
+                      <p className="text-sm font-semibold text-slate-700">{t('richTextEditor.imageSection.heading')}</p>
                       <p className="text-xs text-slate-500">
-                        Legfeljebb {MAX_IMAGE_COUNT} kép tölthető fel, {MAX_IMAGE_SIZE_MB} MB
-                        fájlméretig.
+                        {t('richTextEditor.imageSection.description')}
                       </p>
                     </div>
                     <Button
@@ -2562,7 +2538,7 @@ export default function NewOfferWizard() {
                       disabled={imageLimitReached || !previewLocked || previewLoading}
                       className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                     >
-                      Kép beszúrása
+                      {t('richTextEditor.imageSection.insert')}
                     </Button>
                   </div>
                   <input
@@ -2575,7 +2551,7 @@ export default function NewOfferWizard() {
                   />
                   {!previewLocked ? (
                     <p className="text-[11px] text-slate-500">
-                      Előbb generáld le az AI előnézetet, utána adhatod hozzá a képeket.
+                      {t('richTextEditor.imageSection.notAvailable')}
                     </p>
                   ) : null}
                   {imageAssets.length > 0 ? (
@@ -2778,6 +2754,24 @@ export default function NewOfferWizard() {
                 {selectedPdfTemplate.label}
               </span>
             )}
+          </div>
+          
+          {/* Template Selector */}
+          <div className="space-y-2">
+            <Select
+              label={t('offers.wizard.previewTemplates.heading')}
+              help={t('offers.wizard.previewTemplates.helper')}
+              value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
+              onChange={handlePdfTemplateChange}
+              wrapperClassName="flex flex-col gap-2"
+              aria-label="PDF sablon kiválasztása"
+            >
+              {availablePdfTemplates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.label}
+                </option>
+              ))}
+            </Select>
           </div>
           
           {/* Preview controls */}

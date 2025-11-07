@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { HelpIcon } from '@/components/ui/HelpIcon';
 
 const MAGIC_LINK_MESSAGE = t('login.messages.magicLinkInfo');
 const MAGIC_LINK_COOLDOWN_SECONDS = 60;
@@ -252,9 +253,15 @@ export default function LoginClient() {
         {/* Right Side - Login Form */}
         <Card className="w-full space-y-6 rounded-3xl border border-border/70 bg-bg/90 p-8 md:p-10 text-fg shadow-card backdrop-blur">
         <div className="space-y-3 text-center">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-lg font-bold text-primary">
-            V
-          </span>
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
+            <Image
+              src="/vyndi-logo.png"
+              alt="Vyndi"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
+          </div>
           <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c] md:text-4xl">
             {t('login.title')}
           </h1>
@@ -278,12 +285,21 @@ export default function LoginClient() {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Checkbox
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            label={t('login.rememberMe')}
-            help={t('login.rememberMeHelp')}
-          />
+          <div className="space-y-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-5 w-5 rounded border border-border bg-bg text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary accent-primary"
+              />
+              <span className="text-sm text-fg">{t('login.rememberMe')}</span>
+              <HelpIcon
+                content={t('login.rememberMeHelp')}
+                label={t('login.rememberMeHelp')}
+              />
+            </label>
+          </div>
 
           <Button
             onClick={sendMagic}

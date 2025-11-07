@@ -1042,10 +1042,10 @@ export const hu = {
     backHome: 'Vissza a főoldalra',
   },
   login: {
-    title: 'Kezdd el ingyen ajánlatokat készíteni',
+    title: 'Készíts ajánlatokat néhány perc alatt - teljesen ingyen',
     description:
-      'Írd be az e-mail címed, és azonnal elkezdheted a professzionális ajánlatok készítését. Jelszó nélkül, gyorsan és biztonságosan. Bankkártya nincs szükséges.',
-    accountCreationNotice: '✨ Nincs még fiókod? Automatikusan létrehozunk egyet, amikor bejelentkezel. Teljesen ingyenes, bankkártya nélkül. Azonnal hozzáférsz 2 ingyenes ajánlathoz.',
+      'Írd be az e-mail címed, és azonnal elkezdheted a professzionális ajánlatok készítését. Jelszó nélkül, gyorsan és biztonságosan. Bankkártyára nincs szükséges a regisztrációhoz.',
+    accountCreationNotice: '✨ Nincs még fiókod? Nem probléma! Automatikusan létrehozunk egyet, amikor először bejelentkezel.',
     emailLabel: 'E-mail cím',
     emailPlaceholder: 'email@cimed.hu',
     magicLinkButton: 'Belépési link küldése',
@@ -1061,7 +1061,7 @@ export const hu = {
     googleDisabledFallback:
       'A Google bejelentkezés jelenleg nem érhető el. Kérjük, próbáld újra később.',
     googleStatusTitle: 'Állapot',
-    rememberMe: 'Bejelentkezés megjegyzése',
+    rememberMe: 'Maradjak bejelentkezve',
     rememberMeHelp: 'Ha bejelölöd, 30 napig bejelentkezve maradsz.',
     benefits: {
       title: 'Miért válaszd a Vyndi-t?',
@@ -1181,6 +1181,8 @@ export const hu = {
         previewHeading: 'PDF előnézet',
         previewHint: 'A végleges PDF a kiválasztott sablont és a márkázott színeidet használja.',
         summaryLabel: 'Sablon',
+        livePreview: 'Élő előnézet',
+        contentGoesToPdf: 'Ez a tartalom kerül a PDF-be – finomhangold bátran.',
       },
       toast: {
         previewRequiredTitle: 'Előnézet szükséges',
@@ -1808,7 +1810,7 @@ export const hu = {
       label: 'Előrehaladás',
       estimatedTime: 'Becsült idő',
       timeUnit: 'perc',
-      stepLabel: 'Step {current}/3',
+      stepLabel: 'Lépés {current}/3',
       readyForGeneration: '✓ Kész a generáláshoz',
     },
     preview: {
