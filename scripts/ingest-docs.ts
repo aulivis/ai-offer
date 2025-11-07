@@ -16,18 +16,104 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
+import * as dotenv from 'dotenv';
 
-import { envServer } from '../src/env.server';
-import { chunkMarkdown } from '../src/lib/chatbot/chunking';
-import { generateEmbeddings, storeEmbeddings, createOpenAIClient } from '../src/lib/chatbot/embeddings';
+// Load environment variables from .env.local
+dotenv.config({ path: join(process.cwd(), '.env.local') });
+
+// Get environment variables directly (for ts-node compatibility)
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !OPENAI_API_KEY) {
+  console.error('❌ Missing required environment variables:');
+  if (!SUPABASE_URL) console.error('  - NEXT_PUBLIC_SUPABASE_URL');
+  if (!SUPABASE_SERVICE_ROLE_KEY) console.error('  - SUPABASE_SERVICE_ROLE_KEY');
+  if (!OPENAI_API_KEY) console.error('  - OPENAI_API_KEY');
+  console.error('\n💡 Make sure .env.local exists with these variables.');
+  process.exit(1);
+}
+
+import { chunkMarkdown, type DocumentChunk } from '../src/lib/chatbot/chunking';
 
 // Initialize clients
-const supabase = createClient(
-  envServer.NEXT_PUBLIC_SUPABASE_URL,
-  envServer.SUPABASE_SERVICE_ROLE_KEY,
-);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-const openai = createOpenAIClient();
+/**
+ * Generates embeddings for document chunks using OpenAI.
+ */
+async function generateEmbeddings(
+  chunks: DocumentChunk[],
+): Promise<Array<{ chunk: DocumentChunk; embedding: number[] }>> {
+  const results: Array<{ chunk: DocumentChunk; embedding: number[] }> = [];
+  
+  // Process in batches to avoid rate limits
+  const batchSize = 100;
+  for (let i = 0; i < chunks.length; i += batchSize) {
+    const batch = chunks.slice(i, i + batchSize);
+    
+    try {
+      const response = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: batch.map((chunk) => chunk.content),
+      });
+      
+      // Map embeddings to chunks
+      for (let j = 0; j < batch.length; j++) {
+        results.push({
+          chunk: batch[j]!,
+          embedding: response.data[j]?.embedding ?? [],
+        });
+      }
+      
+      // Rate limiting: wait a bit between batches
+      if (i + batchSize < chunks.length) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      console.error(`Error generating embeddings for batch ${i}-${i + batchSize}:`, error);
+      throw error;
+    }
+  }
+  
+  return results;
+}
+
+/**
+ * Stores embeddings in Supabase chatbot_documents table.
+ */
+async function storeEmbeddings(
+  embeddings: Array<{ chunk: DocumentChunk; embedding: number[] }>,
+): Promise<void> {
+  // Prepare records for insertion
+  const records = embeddings.map(({ chunk, embedding }) => ({
+    content: chunk.content,
+    embedding, // Pass as array - Supabase will handle conversion
+    metadata: {
+      ...chunk.metadata,
+      heading: chunk.metadata.heading,
+    },
+    source_path: chunk.metadata.sourcePath,
+    chunk_index: chunk.metadata.chunkIndex,
+  }));
+  
+  // Insert in batches to avoid payload size limits
+  const batchSize = 50;
+  for (let i = 0; i < records.length; i += batchSize) {
+    const batch = records.slice(i, i + batchSize);
+    
+    const { error } = await supabase
+      .from('chatbot_documents')
+      .insert(batch);
+    
+    if (error) {
+      console.error(`Error storing embeddings batch ${i}-${i + batchSize}:`, error);
+      throw error;
+    }
+  }
+}
 
 /**
  * Recursively finds all markdown files in a directory.
@@ -87,12 +173,12 @@ async function processFile(filePath: string, docsDir: string): Promise<void> {
     
     // Generate embeddings
     console.log(`  → Generating embeddings...`);
-    const embeddings = await generateEmbeddings(chunks, openai);
+    const embeddings = await generateEmbeddings(chunks);
     console.log(`  → Generated ${embeddings.length} embeddings`);
     
     // Store in database
     console.log(`  → Storing in database...`);
-    await storeEmbeddings(supabase, embeddings);
+    await storeEmbeddings(embeddings);
     console.log(`  ✅ Successfully ingested ${relativePath}`);
   } catch (error) {
     console.error(`  ❌ Error processing ${relativePath}:`, error);
