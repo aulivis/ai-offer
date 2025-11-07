@@ -73,16 +73,16 @@ function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
 }
 
 
-function normalizeUsageLimitError(message: string | undefined): string | null {
+function normalizeUsageLimitError(message: string | undefined, translator?: Translator): string | null {
   if (!message) return null;
   const normalized = message.toLowerCase();
 
   if (normalized.includes('eszközön elérted a havi ajánlatlimitálást')) {
-    return DEVICE_LIMIT_RESPONSE;
+    return translator?.t('quotaWarningBar.message.device') ?? 'Elérted az eszközön a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.';
   }
 
   if (normalized.includes('havi ajánlatlimitálás')) {
-    return USER_LIMIT_RESPONSE;
+    return translator?.t('quotaWarningBar.message.user') ?? 'Elérted a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.';
   }
 
   return null;
@@ -1238,7 +1238,7 @@ Különös figyelmet fordít a következőkre:
         stack: dispatchError instanceof Error ? dispatchError.stack : undefined,
       });
 
-      const dispatchLimitMessage = normalizeUsageLimitError(message);
+      const dispatchLimitMessage = normalizeUsageLimitError(message, translator);
       if (dispatchLimitMessage) {
         return NextResponse.json({ error: dispatchLimitMessage }, { status: 402 });
       }
@@ -1322,7 +1322,7 @@ Különös figyelmet fordít a következőkre:
             inlineError instanceof Error ? inlineError.message : String(inlineError);
           log.error('Inline PDF fallback error', inlineError);
 
-          const limitMessage = normalizeUsageLimitError(inlineMessage);
+          const limitMessage = normalizeUsageLimitError(inlineMessage, translator);
           if (limitMessage) {
             return NextResponse.json({ error: limitMessage }, { status: 402 });
           }
