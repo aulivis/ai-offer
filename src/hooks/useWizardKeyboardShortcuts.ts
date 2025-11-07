@@ -83,6 +83,13 @@ export function useWizardKeyboardShortcuts({
         onNext();
         return;
       }
+
+      // Ctrl/Cmd + S: Save draft (prevent default browser save)
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        // Draft is auto-saved, but we can show a toast or indicator
+        return;
+      }
     },
     [enabled, step, onNext, onPrev, onSubmit, isNextDisabled, isSubmitDisabled],
   );

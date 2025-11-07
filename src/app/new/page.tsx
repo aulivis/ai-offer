@@ -61,6 +61,12 @@ import {
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { WIZARD_CONFIG, MAX_IMAGE_SIZE_MB } from '@/constants/wizard';
+import { useDraftPersistence } from '@/hooks/useDraftPersistence';
+import { PreviewMarginGuides } from '@/components/offers/PreviewMarginGuides';
+import { WizardProgressIndicator } from '@/components/offers/WizardProgressIndicator';
+import { DraftSaveIndicator } from '@/components/offers/DraftSaveIndicator';
+import { SkeletonLoader, PreviewSkeletonLoader } from '@/components/offers/SkeletonLoader';
+import { FullscreenPreviewModal } from '@/components/offers/FullscreenPreviewModal';
 
 type Step1Form = {
   industry: string;
@@ -417,6 +423,49 @@ export default function NewOfferWizard() {
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
 
+  // Draft persistence
+  const wizardDraftData = useMemo(
+    () => ({
+      step,
+      form,
+      client,
+      rows,
+      editedHtml,
+      selectedPdfTemplateId,
+    }),
+    [step, form, client, rows, editedHtml, selectedPdfTemplateId],
+  );
+  const { loadDraft, clearDraft } = useDraftPersistence('new-offer', wizardDraftData);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [draftSaving, setDraftSaving] = useState(false);
+
+  // Update last saved timestamp when draft data changes
+  useEffect(() => {
+    if (step > 0) {
+      setDraftSaving(true);
+      const timer = setTimeout(() => {
+        setLastSaved(new Date());
+        setDraftSaving(false);
+      }, 2100); // Slightly after the 2s debounce
+      return () => clearTimeout(timer);
+    }
+  }, [wizardDraftData, step]);
+
+  // Load draft on mount (only once)
+  useEffect(() => {
+    const saved = loadDraft();
+    if (saved && saved.step) {
+      // Restore draft state
+      setStep(saved.step);
+      if (saved.form) setForm(saved.form);
+      if (saved.client) setClient(saved.client);
+      if (saved.rows) setRows(saved.rows);
+      if (saved.editedHtml) setEditedHtml(saved.editedHtml);
+      if (saved.selectedPdfTemplateId) setSelectedPdfTemplateId(saved.selectedPdfTemplateId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   // Real-time validation with debouncing (must be after form and rows declarations)
   const { errors: validationErrors, isValid: isStepValid } = useRealTimeValidation({
     step,
@@ -447,6 +496,12 @@ export default function NewOfferWizard() {
   const richTextEditorRef = useRef<RichTextEditorHandle | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageAssets, setImageAssets] = useState<OfferImageAsset[]>([]);
+  
+  // Preview controls
+  const [previewZoom, setPreviewZoom] = useState(100);
+  const [showMarginGuides, setShowMarginGuides] = useState(false);
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
+  const [fullscreenZoom, setFullscreenZoom] = useState(100);
   const [textTemplates, setTextTemplates] = useState<OfferTextTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
@@ -1568,6 +1623,12 @@ export default function NewOfferWizard() {
         htmlForApi = prepared.html;
         imagePayload = prepared.images;
       }
+      
+      // Clear draft on successful generation
+      const clearDraftOnSuccess = () => {
+        clearDraft();
+        handleSuccessfulGeneration();
+      };
       try {
         const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
           (acc, key) => {
@@ -1656,6 +1717,7 @@ export default function NewOfferWizard() {
         }
       }
 
+      clearDraft();
       router.replace('/dashboard');
     } finally {
       setLoading(false);
@@ -1736,6 +1798,46 @@ export default function NewOfferWizard() {
     },
   ];
 
+  // Calculate progress
+  const completedFields = useMemo(() => {
+    const step1Completed =
+      (form.title.trim() ? 1 : 0) +
+      (form.projectDetails.overview.trim() ? 1 : 0) +
+      (form.projectDetails.deliverables.trim() ? 0.5 : 0) +
+      (form.projectDetails.timeline.trim() ? 0.5 : 0) +
+      (form.projectDetails.constraints.trim() ? 0.5 : 0);
+    const step2Completed = rows.filter((r) => r.name.trim() && r.unitPrice > 0).length;
+    const step3Completed = previewLocked ? 1 : 0;
+
+    return {
+      step1: Math.min(step1Completed, 3),
+      step2: Math.min(step2Completed, 1),
+      step3: step3Completed,
+    };
+  }, [form, rows, previewLocked]);
+
+  const totalFields = {
+    step1: 3, // title, overview, and at least one detail field
+    step2: 1, // at least one pricing row
+    step3: 1, // preview generated
+  };
+
+  // Clear draft on successful generation
+  const handleSuccessfulGeneration = useCallback(() => {
+    clearDraft();
+  }, [clearDraft]);
+
+  // Keyboard shortcuts
+  useWizardKeyboardShortcuts({
+    step: step as WizardStep,
+    onNext: () => goToStep(Math.min(3, step + 1)),
+    onPrev: () => goToStep(Math.max(1, step - 1)),
+    onSubmit: generate,
+    isNextDisabled: isQuotaExhausted || quotaLoading,
+    isSubmitDisabled: loading || isQuotaExhausted || quotaLoading || !previewLocked,
+    enabled: !loading,
+  });
+
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
@@ -1743,10 +1845,25 @@ export default function NewOfferWizard() {
       }}
     >
       <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
-        <div className="space-y-6">
+        {/* Skip link for accessibility */}
+        <a
+          href="#wizard-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        >
+          Ugrás a tartalomhoz
+        </a>
+        <div className="space-y-6" id="wizard-content">
           <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">
-          <StepIndicator steps={wizardSteps} />
-        </Card>
+            <StepIndicator steps={wizardSteps} />
+            <WizardProgressIndicator
+              step={step as WizardStep}
+              completedFields={completedFields}
+              totalFields={totalFields}
+            />
+          </Card>
+          
+          {/* Draft save indicator */}
+          <DraftSaveIndicator isSaving={draftSaving} lastSaved={lastSaved} />
 
         {step === 1 && (
           <section className="space-y-6">
@@ -2146,8 +2263,8 @@ export default function NewOfferWizard() {
         )}
 
         {step === 3 && (
-          <section className="space-y-4">
-            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-5">
+          <section className="space-y-4" aria-label="Összegzés és előnézet">
+            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-5 md:p-6">
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h2 className="text-base font-semibold text-slate-900">
@@ -2168,19 +2285,63 @@ export default function NewOfferWizard() {
                     : 'space-y-4'
                 }
               >
-                <Select
-                  label={t('offers.wizard.previewTemplates.heading')}
-                  help={t('offers.wizard.previewTemplates.helper')}
-                  value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
-                  onChange={handlePdfTemplateChange}
-                  wrapperClassName="flex flex-col gap-2 min-w-0"
-                >
-                  {availablePdfTemplates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.label}
-                    </option>
-                  ))}
-                </Select>
+                <div className="space-y-3">
+                  <Select
+                    label={t('offers.wizard.previewTemplates.heading')}
+                    help={t('offers.wizard.previewTemplates.helper')}
+                    value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
+                    onChange={handlePdfTemplateChange}
+                    wrapperClassName="flex flex-col gap-2 min-w-0"
+                    aria-label="PDF sablon kiválasztása"
+                  >
+                    {availablePdfTemplates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.label}
+                      </option>
+                    ))}
+                  </Select>
+                  
+                  {/* Preview controls */}
+                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-2">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="preview-zoom" className="text-xs font-medium text-slate-600">
+                        Nagyítás:
+                      </label>
+                      <input
+                        id="preview-zoom"
+                        type="range"
+                        min="50"
+                        max="200"
+                        step="25"
+                        value={previewZoom}
+                        onChange={(e) => setPreviewZoom(Number(e.target.value))}
+                        className="h-2 w-24 rounded-lg bg-slate-200"
+                        aria-label="Előnézet nagyítása"
+                      />
+                      <span className="min-w-[3rem] text-xs font-medium text-slate-700">
+                        {previewZoom}%
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewZoom(100)}
+                        className="rounded px-2 py-1 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900"
+                        aria-label="Nagyítás visszaállítása"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={showMarginGuides}
+                        onChange={(e) => setShowMarginGuides(e.target.checked)}
+                        className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                        aria-label="Margók mutatása"
+                      />
+                      <span className="text-xs text-slate-600">Margók mutatása</span>
+                    </label>
+                  </div>
+                </div>
                 {showLockedTemplates ? (
                   <div className="space-y-3 rounded-xl border border-dashed border-border/70 bg-slate-50/80 p-3">
                     <div className="flex items-start gap-2.5">
@@ -2248,25 +2409,54 @@ export default function NewOfferWizard() {
               </div>
               
               <div className="relative">
-                <RichTextEditor
-                  ref={richTextEditorRef}
-                  value={editedHtml || previewHtml}
-                  onChange={(html) => setEditedHtml(html)}
-                  placeholder={t('richTextEditor.placeholderHint')}
-                />
-                {previewLoading ? (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
-                    <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
-                    <div className="space-y-0.5 text-center">
-                      <p className="text-xs font-medium text-slate-700">
-                        {t('offers.wizard.preview.loading')}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        {t('offers.wizard.preview.loadingHint')}
-                      </p>
+                {previewLoading && !previewHtml ? (
+                  <div className="rounded-xl border border-slate-200 bg-white p-6">
+                    <SkeletonLoader />
+                    <div className="mt-4 flex items-center gap-2 text-center text-xs text-slate-500">
+                      <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      <span>{t('offers.wizard.preview.loading')}</span>
                     </div>
                   </div>
-                ) : null}
+                ) : (
+                  <>
+                    <RichTextEditor
+                      ref={richTextEditorRef}
+                      value={editedHtml || previewHtml}
+                      onChange={(html) => {
+                        setEditedHtml(html);
+                      }}
+                      placeholder={t('richTextEditor.placeholderHint')}
+                      aria-label="Ajánlat szövegének szerkesztése"
+                    />
+                    {/* Content length warning */}
+                    {(() => {
+                      const textLength = (editedHtml || previewHtml || '').replace(/<[^>]*>/g, '').length;
+                      if (textLength > 4000) {
+                        return (
+                          <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2">
+                            <p className="text-xs font-medium text-amber-800">
+                              ⚠️ A szöveg hosszú ({textLength} karakter). A PDF több oldalt is tartalmazhat.
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                    {previewLoading && previewHtml ? (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
+                        <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
+                        <div className="space-y-0.5 text-center">
+                          <p className="text-xs font-medium text-slate-700">
+                            {t('offers.wizard.preview.loading')}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {t('offers.wizard.preview.loadingHint')}
+                          </p>
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
@@ -2283,31 +2473,44 @@ export default function NewOfferWizard() {
                   {/* Preview container matching A4 dimensions with proper scaling */}
                   {/* PDF uses 20mm top/bottom and 15mm left/right margins - shown via @page rules in CSS */}
                   <div 
-                    className="mx-auto bg-white shadow-lg"
+                    className="mx-auto bg-white shadow-lg relative"
                     style={{ 
                       width: '210mm', 
                       maxWidth: '100%', 
                       aspectRatio: '210/297',
-                      position: 'relative'
+                      position: 'relative',
+                      transform: `scale(${previewZoom / 100})`,
+                      transformOrigin: 'top center',
+                      marginBottom: `${((previewZoom - 100) * 2)}px`,
                     }}
                   >
-                    <iframe
-                      ref={previewFrameRef}
-                      className="offer-template-preview block w-full h-full"
-                      sandbox="allow-same-origin"
-                      srcDoc={previewDocumentHtml}
-                      style={{
-                        border: '0',
-                        width: '100%',
-                        height: `${previewFrameHeight}px`,
-                        minHeight: '720px',
-                        backgroundColor: 'white',
-                        display: 'block',
-                        margin: 0,
-                        padding: 0,
-                      }}
-                      title={t('offers.wizard.previewTemplates.previewHeading')}
-                    />
+                    {/* Margin guides overlay */}
+                    {showMarginGuides && <PreviewMarginGuides enabled={showMarginGuides} />}
+                    
+                    {previewLoading && !previewDocumentHtml ? (
+                      <div className="flex h-full min-h-[720px] items-center justify-center p-8">
+                        <PreviewSkeletonLoader />
+                      </div>
+                    ) : (
+                      <iframe
+                        ref={previewFrameRef}
+                        className="offer-template-preview block w-full h-full"
+                        sandbox="allow-same-origin"
+                        srcDoc={previewDocumentHtml}
+                        style={{
+                          border: '0',
+                          width: '100%',
+                          height: `${previewFrameHeight}px`,
+                          minHeight: '720px',
+                          backgroundColor: 'white',
+                          display: 'block',
+                          margin: 0,
+                          padding: 0,
+                        }}
+                        title={t('offers.wizard.previewTemplates.previewHeading')}
+                        aria-label={t('offers.wizard.previewTemplates.previewHeading')}
+                      />
+                    )}
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-500">
@@ -2527,6 +2730,16 @@ export default function NewOfferWizard() {
           </div>
         </form>
       </Modal>
+      
+      {/* Fullscreen preview modal */}
+      <FullscreenPreviewModal
+        open={isPreviewFullscreen}
+        onClose={() => setIsPreviewFullscreen(false)}
+        previewHtml={previewDocumentHtml}
+        zoom={fullscreenZoom}
+        showMarginGuides={showMarginGuides}
+        title="PDF előnézet - Teljes képernyő"
+      />
       </AppFrame>
     </ErrorBoundary>
   );

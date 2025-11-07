@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
-import { Input } from '@/components/ui/Input';
+import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
-import { t } from '@/copy';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
+import { t } from '@/copy';
 
 type PreviewControlsProps = {
   templateOptions: Array<OfferTemplate>;
@@ -17,23 +17,13 @@ type PreviewControlsProps = {
   onBrandingPrimaryChange: (color: string) => void;
   onBrandingSecondaryChange: (color: string) => void;
   onBrandingLogoChange: (url: string) => void;
+  zoom?: number;
+  onZoomChange?: (zoom: number) => void;
+  showMarginGuides?: boolean;
+  onToggleMarginGuides?: (enabled: boolean) => void;
+  onFullscreen?: () => void;
 };
 
-/**
- * Controls for preview customization (template, branding colors, logo).
- * Allows users to customize the appearance of the generated offer preview.
- * 
- * @param templateOptions - Available template options
- * @param selectedTemplateId - Currently selected template
- * @param defaultTemplateId - Default template fallback
- * @param brandingPrimary - Primary brand color (hex)
- * @param brandingSecondary - Secondary brand color (hex)
- * @param brandingLogoUrl - Logo image URL
- * @param onTemplateChange - Callback when template changes
- * @param onBrandingPrimaryChange - Callback when primary color changes
- * @param onBrandingSecondaryChange - Callback when secondary color changes
- * @param onBrandingLogoChange - Callback when logo URL changes
- */
 export function PreviewControls({
   templateOptions,
   selectedTemplateId,
@@ -45,91 +35,134 @@ export function PreviewControls({
   onBrandingPrimaryChange,
   onBrandingSecondaryChange,
   onBrandingLogoChange,
+  zoom = 100,
+  onZoomChange,
+  showMarginGuides = false,
+  onToggleMarginGuides,
+  onFullscreen,
 }: PreviewControlsProps) {
-  const resolvedTemplateForControls = useMemo(
-    () =>
-      templateOptions.some((template) => template.id === selectedTemplateId)
-        ? selectedTemplateId
-        : defaultTemplateId,
-    [templateOptions, selectedTemplateId, defaultTemplateId],
-  );
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <p className="text-sm font-semibold text-slate-700">
-          {t('offers.previewCard.controls.title')}
-        </p>
-        <p className="text-xs text-slate-500">{t('offers.previewCard.controls.helper')}</p>
+      <div className="flex items-center justify-between gap-2">
+        <label className="text-xs font-semibold text-slate-700">
+          {t('offers.wizard.previewTemplates.heading')}
+        </label>
+        {onFullscreen && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onFullscreen}
+            className="text-xs"
+          >
+            Teljes képernyő
+          </Button>
+        )}
       </div>
-      {templateOptions.length > 0 ? (
-        <Select
-          label={t('offers.previewCard.controls.templateLabel')}
-          value={resolvedTemplateForControls}
-          onChange={(event) => onTemplateChange(event.target.value as TemplateId)}
-        >
-          {templateOptions.map((template) => (
-            <option key={template.id} value={template.id}>
-              {template.label}
-            </option>
-          ))}
-        </Select>
-      ) : null}
-      <div className="space-y-3">
-        <p className="text-sm font-semibold text-slate-700">
-          {t('offers.previewCard.controls.brandingTitle')}
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('offers.previewCard.controls.primaryLabel')}
+
+      <Select
+        value={selectedTemplateId ?? defaultTemplateId}
+        onChange={(e) => onTemplateChange(e.target.value as TemplateId)}
+        className="w-full"
+      >
+        {templateOptions.map((template) => (
+          <option key={template.id} value={template.id}>
+            {template.label}
+          </option>
+        ))}
+      </Select>
+
+      {/* Zoom controls */}
+      {onZoomChange && (
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-slate-700">Nagyítás:</label>
+          <div className="flex flex-1 items-center gap-1">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onZoomChange(Math.max(50, zoom - 25))}
+              disabled={zoom <= 50}
+              className="px-2 text-xs"
+            >
+              −
+            </Button>
+            <span className="min-w-[3rem] text-center text-xs font-medium text-slate-600">
+              {zoom}%
             </span>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={brandingPrimary}
-                onChange={(event) => onBrandingPrimaryChange(event.target.value)}
-                className="h-10 w-12 cursor-pointer rounded-md border border-border bg-white"
-                aria-label={t('offers.previewCard.controls.primaryLabel')}
-              />
-              <Input
-                value={brandingPrimary}
-                onChange={(event) => onBrandingPrimaryChange(event.target.value)}
-                className="py-2 text-sm font-mono"
-                wrapperClassName="flex-1"
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('offers.previewCard.controls.secondaryLabel')}
-            </span>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={brandingSecondary}
-                onChange={(event) => onBrandingSecondaryChange(event.target.value)}
-                className="h-10 w-12 cursor-pointer rounded-md border border-border bg-white"
-                aria-label={t('offers.previewCard.controls.secondaryLabel')}
-              />
-              <Input
-                value={brandingSecondary}
-                onChange={(event) => onBrandingSecondaryChange(event.target.value)}
-                className="py-2 text-sm font-mono"
-                wrapperClassName="flex-1"
-              />
-            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onZoomChange(Math.min(200, zoom + 25))}
+              disabled={zoom >= 200}
+              className="px-2 text-xs"
+            >
+              +
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onZoomChange(100)}
+              className="ml-auto px-2 text-xs"
+            >
+              Reset
+            </Button>
           </div>
         </div>
-        <Input
-          label={t('offers.previewCard.controls.logoLabel')}
-          placeholder={t('offers.previewCard.controls.logoPlaceholder')}
-          value={brandingLogoUrl}
-          onChange={(event) => onBrandingLogoChange(event.target.value)}
-          type="url"
-        />
-      </div>
+      )}
+
+      {/* Margin guides toggle */}
+      {onToggleMarginGuides && (
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showMarginGuides}
+            onChange={(e) => onToggleMarginGuides(e.target.checked)}
+            className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
+          />
+          <span className="text-xs text-slate-600">Mutass margókat (20mm/15mm)</span>
+        </label>
+      )}
+
+      {/* Advanced controls toggle */}
+      <button
+        type="button"
+        onClick={() => setShowAdvanced(!showAdvanced)}
+        className="w-full text-left text-xs font-medium text-slate-600 hover:text-slate-900"
+      >
+        {showAdvanced ? '▼' : '▶'} Speciális beállítások
+      </button>
+
+      {showAdvanced && (
+        <div className="space-y-3 rounded-lg border border-border/60 bg-slate-50/50 p-3">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-700">
+              Elsődleges szín
+            </label>
+            <input
+              type="color"
+              value={brandingPrimary}
+              onChange={(e) => onBrandingPrimaryChange(e.target.value)}
+              className="h-8 w-full rounded border border-border"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-700">
+              Másodlagos szín
+            </label>
+            <input
+              type="color"
+              value={brandingSecondary}
+              onChange={(e) => onBrandingSecondaryChange(e.target.value)}
+              className="h-8 w-full rounded border border-border"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

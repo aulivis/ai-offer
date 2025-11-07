@@ -93,7 +93,7 @@ export function WizardStep2Pricing({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" aria-label="Árlista és ügyfél adatok">
       {/* Quick Insert Activities */}
       {filteredActivities.length > 0 && (
         <Card className="space-y-3 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5">

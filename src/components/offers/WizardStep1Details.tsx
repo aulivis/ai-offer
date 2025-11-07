@@ -124,7 +124,7 @@ export function WizardStep1Details({
   };
 
   return (
-    <Card className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
+    <Card className="space-y-5 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6" aria-label="Projekt részletek">
       {/* Header */}
       <div className="space-y-1.5">
         <h2 className="text-lg font-semibold text-slate-900">
