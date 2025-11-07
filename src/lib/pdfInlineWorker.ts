@@ -384,6 +384,7 @@ export async function processPdfJobInline(
       { userId: job.userId },
       job.userLimit,
       job.usagePeriodStart,
+      job.jobId, // Exclude this job from pending count
     );
     
     console.log('User quota increment result', {
@@ -426,6 +427,7 @@ export async function processPdfJobInline(
         { userId: job.userId, deviceId: job.deviceId },
         job.deviceLimit ?? null,
         job.usagePeriodStart,
+        job.jobId, // Exclude this job from pending count
       );
       
       console.log('Device quota increment result', {

@@ -412,6 +412,7 @@ serve(async (request) => {
       { userId: job.user_id },
       userLimit,
       usagePeriodStart,
+      jobId, // Exclude this job from pending count
     );
     
     console.log('User quota increment result (edge worker)', {
@@ -459,6 +460,7 @@ serve(async (request) => {
         { userId: job.user_id, deviceId },
         deviceLimit,
         usagePeriodStart,
+        jobId, // Exclude this job from pending count
       );
       
       console.log('Device quota increment result (edge worker)', {
@@ -937,6 +939,7 @@ export async function incrementUsage<K extends CounterKind>(
   target: CounterTargets[K],
   limit: number | null,
   periodStart: string,
+  excludeJobId?: string | null,
 ) {
   const config = COUNTER_CONFIG[kind];
   const normalizedLimit = Number.isFinite(limit ?? NaN) ? Number(limit) : null;
@@ -951,12 +954,14 @@ export async function incrementUsage<K extends CounterKind>(
           p_user_id: target.userId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
+          p_exclude_job_id: excludeJobId || null,
         }
       : {
           p_user_id: target.userId,
           p_device_id: (target as CounterTargets['device']).deviceId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
+          p_exclude_job_id: excludeJobId || null,
         };
 
   console.log('Calling quota increment RPC (edge worker)', {
@@ -965,6 +970,7 @@ export async function incrementUsage<K extends CounterKind>(
     target,
     limit: normalizedLimit,
     periodStart,
+    excludeJobId,
     payload: rpcPayload,
   });
 

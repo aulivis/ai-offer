@@ -173,6 +173,7 @@ export async function incrementUsage<K extends CounterKind>(
   target: CounterTargets[K],
   limit: number | null,
   periodStart: string,
+  excludeJobId?: string | null,
 ): Promise<UsageIncrementResult> {
   const config = COUNTER_CONFIG[kind];
   const normalizedLimit = Number.isFinite(limit ?? NaN) ? Number(limit) : null;
@@ -187,12 +188,14 @@ export async function incrementUsage<K extends CounterKind>(
           p_user_id: target.userId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
+          p_exclude_job_id: excludeJobId || null,
         }
       : {
           p_user_id: target.userId,
           p_device_id: (target as CounterTargets['device']).deviceId,
           p_limit: normalizedLimit,
           p_period_start: periodStart,
+          p_exclude_job_id: excludeJobId || null,
         };
 
   console.log('Calling quota increment RPC', {
@@ -201,6 +204,7 @@ export async function incrementUsage<K extends CounterKind>(
     target,
     limit: normalizedLimit,
     periodStart,
+    excludeJobId,
     payload: rpcPayload,
   });
 
