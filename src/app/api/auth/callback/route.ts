@@ -258,22 +258,20 @@ async function handleMagicLinkTokens(
   request: Request,
   logger: RequestLogger,
   rememberMe: boolean = false,
-) {
+): Promise<void> {
   try {
     await persistSessionOpaque(userId, tokens.refreshToken, tokens.expiresIn, request, logger, rememberMe);
     await setAuthCookies(tokens.accessToken, tokens.refreshToken, {
       accessTokenMaxAgeSeconds: tokens.expiresIn,
       rememberMe,
     });
+    recordMagicLinkCallback('success');
   } catch (error) {
     recordMagicLinkCallback('failure', { reason: 'persist_or_cookie_failed' });
     await clearAuthCookies();
     logger.error('Unable to finalize magic link login.', error);
-    return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+    throw error; // Let caller handle redirect
   }
-
-  recordMagicLinkCallback('success');
-  return redirectTo(redirectTarget);
 }
 
 export async function GET(request: Request) {
@@ -327,18 +325,29 @@ export async function GET(request: Request) {
       maxAge: 0,
     });
 
-    // Clean up remember_me cookie
-    cookieStore.set({
-      name: 'remember_me',
-      value: '',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: envServer.APP_URL.startsWith('https'),
-      path: '/',
-      maxAge: 0,
-    });
+      // Clean up remember_me cookie
+      cookieStore.set({
+        name: 'remember_me',
+        value: '',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: envServer.APP_URL.startsWith('https'),
+        path: '/',
+        maxAge: 0,
+      });
 
-    return handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe);
+      try {
+        await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe);
+        
+        // Redirect to init-session page for client-side session initialization
+        const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
+        initSessionUrl.searchParams.set('redirect', finalRedirect);
+        initSessionUrl.searchParams.set('user_id', userId);
+        
+        return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
+      } catch (error) {
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      }
   }
 
   // Magic link verifyOtp (token_hash)
@@ -400,7 +409,9 @@ export async function GET(request: Request) {
         maxAge: 0,
       });
 
-      return handleMagicLinkTokens(
+      // For magic link flows, also use the init-session page to ensure client session is ready
+      // This provides consistent behavior across all auth flows
+      await handleMagicLinkTokens(
         { accessToken, refreshToken, expiresIn },
         userId,
         finalRedirect,
@@ -408,6 +419,14 @@ export async function GET(request: Request) {
         logger,
         rememberMe,
       );
+      
+      // Redirect to init-session page for client-side session initialization
+      // This ensures the Supabase client session is properly initialized
+      const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
+      initSessionUrl.searchParams.set('redirect', finalRedirect);
+      initSessionUrl.searchParams.set('user_id', userId);
+      
+      return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
     } catch (error) {
       recordMagicLinkCallback('failure', { reason: 'verify_error' });
       logger.error('Unexpected error while verifying magic link token.', error);
@@ -494,7 +513,14 @@ export async function GET(request: Request) {
       maxAge: 0,
     });
 
-    return redirectTo(finalRedirect);
+    // For OAuth flows, redirect to client-side session initialization page
+    // This ensures the Supabase client session is properly initialized before
+    // redirecting to the final destination (dashboard, etc.)
+    const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
+    initSessionUrl.searchParams.set('redirect', finalRedirect);
+    initSessionUrl.searchParams.set('user_id', userId);
+    
+    return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
   } catch (error) {
     logger.error('Failed to complete OAuth callback', error);
     await clearAuthCookies();

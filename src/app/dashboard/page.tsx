@@ -525,19 +525,34 @@ export default function DashboardPage() {
       // Ensure session is initialized from cookies before querying
       // This is critical for custom cookie-based auth (propono_at, propono_rt)
       // Pass the expected user ID to validate the session matches
-      // ensureSession will throw if it can't initialize a matching session
+      // Use more aggressive retry settings for dashboard queries (post-OAuth scenarios)
       try {
         const { ensureSession } = await import('@/lib/supabaseClient');
-        await ensureSession(user);
+        await ensureSession(user, {
+          maxRetries: 8, // More retries for dashboard (may be loaded right after OAuth)
+          initialDelay: 150, // Slightly longer initial delay
+          maxDelay: 3000, // Longer max delay for post-OAuth scenarios
+        });
       } catch (error) {
         console.error('Failed to ensure Supabase session', error);
-        // If session initialization fails, the error message from ensureSession is already user-friendly
-        // Just re-throw it or wrap it if needed
-        const errorMessage = error instanceof Error ? error.message : 'Session initialization failed';
+        // If session initialization fails, provide user-friendly error
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : 'Session initialization failed';
+        
+        // Show user-friendly toast and throw error
+        showToast({
+          title: t('errors.auth.sessionFailed'),
+          description: errorMessage,
+          variant: 'error',
+        });
+        
         throw new Error(errorMessage);
       }
       
       // Verify the session one more time before querying
+      // Give it a moment for the session to fully propagate
+      await new Promise(resolve => setTimeout(resolve, 100));
       const { data: { session }, error: sessionError } = await sb.auth.getSession();
       const sessionMatches = session?.user?.id === user;
       
@@ -556,8 +571,14 @@ export default function DashboardPage() {
           expectedUserId: user,
           sessionUserId: session?.user?.id,
         });
-        // This shouldn't happen if ensureSession worked correctly
-        // But handle it gracefully
+        
+        // Show user-friendly error
+        showToast({
+          title: t('errors.auth.sessionVerificationFailed'),
+          description: t('errors.auth.sessionVerificationFailedDescription'),
+          variant: 'error',
+        });
+        
         throw new Error('Session verification failed. Please refresh the page.');
       }
       

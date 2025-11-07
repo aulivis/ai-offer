@@ -1673,6 +1673,9 @@ export const hu = {
       logoutMissingCsrf: 'Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.',
       logoutFailed: 'Nem sikerült kijelentkezni. Próbáld újra vagy frissítsd az oldalt.',
       logoutUnknown: 'Hiba történt kijelentkezés közben. Próbáld újra vagy frissítsd az oldalt.',
+      sessionFailed: 'Nem sikerült inicializálni a munkamenetet. Próbáld újra vagy frissítsd az oldalt.',
+      sessionVerificationFailed: 'A munkamenet ellenőrzése sikertelen',
+      sessionVerificationFailedDescription: 'Nem sikerült ellenőrizni a munkamenetet. Kérjük, frissítsd az oldalt vagy jelentkezz be újra.',
     },
     settings: {
       validationRequired: 'Kérjük, javítsd a piros mezőket.',
