@@ -1,11 +1,11 @@
-'use client';
-
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { t } from '@/copy';
-import { useOptionalAuth } from '@/hooks/useOptionalAuth';
+
+export const metadata = {
+  title: 'Erőforrások - Vyndi',
+  description: 'Hasznos útmutatók, sablonok és cikkek az ajánlatkészítésről',
+};
 
 const resources = [
   {
@@ -107,32 +107,6 @@ const resources = [
 ];
 
 export default function ResourcesPage() {
-  const router = useRouter();
-  const { status, user } = useOptionalAuth();
-
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (status === 'authenticated' && user) {
-      router.replace('/dashboard');
-    }
-  }, [status, user, router]);
-
-  // Show loading state while checking auth
-  if (status === 'loading') {
-    return (
-      <main id="main" className="mx-auto flex w-full max-w-7xl items-center justify-center px-6 py-20">
-        <div className="text-center">
-          <p className="text-fg-muted">{t('app.loading')}</p>
-        </div>
-      </main>
-    );
-  }
-
-  // Don't render the page if user is authenticated (will redirect)
-  if (status === 'authenticated' && user) {
-    return null;
-  }
-
   return (
     <main id="main" className="mx-auto w-full max-w-7xl px-6 py-12 md:py-20">
       {/* Hero Section */}
@@ -179,7 +153,7 @@ export default function ResourcesPage() {
                     <div className="relative z-10 flex flex-1 flex-col">
                       <div className="mb-4 flex items-center justify-between">
                         <span className={`rounded-full ${category.bgColor} px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-700`}>
-                          {t(`landing.resources.types.${resource.type}`)}
+                          {t(`landing.resources.types.${resource.type}` as 'landing.resources.types.guide' | 'landing.resources.types.template' | 'landing.resources.types.article' | 'landing.resources.types.video')}
                         </span>
                         <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${category.color} text-white shadow-md transition-transform group-hover:scale-110 group-hover:shadow-lg`}>
                           <svg

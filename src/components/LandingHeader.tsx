@@ -28,6 +28,7 @@ const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
 
 const AUTH_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: '/dashboard', labelKey: 'nav.dashboard' },
+  { href: '/resources', labelKey: 'nav.resources' },
   { href: '/settings', labelKey: 'nav.settings' },
   { href: '/billing', labelKey: 'nav.billing' },
 ];
