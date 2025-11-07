@@ -44,12 +44,47 @@ export function getSupabaseClient(): SupabaseClient {
  * instead of Supabase's default cookie names.
  * 
  * This function will re-initialize the session if cookies are present but session is not set.
+ * 
+ * @param expectedUserId - Optional user ID to validate the session matches. If provided and
+ *   the session user ID doesn't match, the session will be re-initialized.
  */
-export async function ensureSession(): Promise<void> {
+export async function ensureSession(expectedUserId?: string): Promise<void> {
   const client = getSupabaseClient();
   
   // Check if we already have a valid session
   const { data: { session } } = await client.auth.getSession();
+  
+  // If we have a session and an expected user ID, validate they match
+  if (session && session.user && expectedUserId) {
+    if (session.user.id !== expectedUserId) {
+      console.warn('Session user ID mismatch, re-initializing session', {
+        sessionUserId: session.user.id,
+        expectedUserId,
+      });
+      // Reset session state and re-initialize
+      resetSessionState();
+      // Clear the current session
+      await client.auth.signOut();
+      // Re-initialize from cookies with force flag
+      sessionInitPromise = initializeSession(client, true);
+      await sessionInitPromise;
+      
+      // Verify the session now matches after re-initialization
+      const { data: { session: newSession } } = await client.auth.getSession();
+      if (newSession && newSession.user && newSession.user.id !== expectedUserId) {
+        console.error('Session still mismatched after re-initialization', {
+          sessionUserId: newSession.user.id,
+          expectedUserId,
+        });
+        // This indicates the cookies themselves have a different user ID
+        // than expected - this is a serious auth issue
+        throw new Error('Session user ID mismatch: Cookies contain a different user ID than expected.');
+      }
+      
+      return;
+    }
+  }
+  
   if (session && session.user) {
     if (!sessionInitialized) {
       sessionInitialized = true;
@@ -75,9 +110,21 @@ export function resetSessionState(): void {
 
 /**
  * Initialize session from custom cookies.
+ * 
+ * @param force - If true, force re-initialization even if already initialized.
  */
-async function initializeSession(client: SupabaseClient): Promise<void> {
-  if (sessionInitialized || typeof document === 'undefined') {
+async function initializeSession(client: SupabaseClient, force = false): Promise<void> {
+  if (!force && sessionInitialized) {
+    // Even if already initialized, verify the session is still valid
+    const { data: { session } } = await client.auth.getSession();
+    if (session && session.user) {
+      return;
+    }
+    // Session is invalid, reset state and continue
+    sessionInitialized = false;
+  }
+  
+  if (typeof document === 'undefined') {
     return;
   }
 
@@ -86,6 +133,18 @@ async function initializeSession(client: SupabaseClient): Promise<void> {
     const refreshToken = getCookie('propono_rt');
     
     if (accessToken && refreshToken) {
+      // If forcing, sign out first to clear any stale session
+      if (force) {
+        try {
+          await client.auth.signOut();
+          // Small delay to ensure signout completes
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (signOutError) {
+          // Ignore sign out errors, continue with session setting
+          console.warn('Error during sign out before session re-init', signOutError);
+        }
+      }
+      
       const { data, error } = await client.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
@@ -94,24 +153,51 @@ async function initializeSession(client: SupabaseClient): Promise<void> {
       if (error) {
         console.warn('Failed to set Supabase session from custom cookies', error);
         // Don't mark as initialized if there was an error
+        sessionInitialized = false;
         return;
       }
 
-      if (data.session) {
-        sessionInitialized = true;
-        console.log('Supabase session initialized from custom cookies', {
-          userId: data.session.user?.id,
-        });
+      if (data.session && data.session.user) {
+        // Verify the session was actually set by checking getSession
+        // Sometimes setSession returns success but the session isn't immediately available
+        let verified = false;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 50 * (attempt + 1)));
+          const { data: { session: verifySession } } = await client.auth.getSession();
+          if (verifySession && verifySession.user && verifySession.user.id === data.session.user.id) {
+            verified = true;
+            break;
+          }
+        }
+        
+        if (verified) {
+          sessionInitialized = true;
+          console.log('Supabase session initialized from custom cookies', {
+            userId: data.session.user.id,
+            forced: force,
+          });
+        } else {
+          sessionInitialized = false;
+          console.warn('Session set but could not verify it was applied', {
+            expectedUserId: data.session.user.id,
+          });
+        }
+      } else {
+        sessionInitialized = false;
+        console.warn('Session set but no user found in response');
       }
     } else {
       // No cookies found - check if there's already a session
       const { data: { session } } = await client.auth.getSession();
-      if (session) {
+      if (session && session.user) {
         sessionInitialized = true;
+      } else {
+        sessionInitialized = false;
       }
     }
   } catch (error) {
     console.warn('Error initializing Supabase session from custom cookies', error);
+    sessionInitialized = false;
   }
 }
 

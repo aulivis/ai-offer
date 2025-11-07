@@ -524,22 +524,44 @@ export default function DashboardPage() {
       
       // Ensure session is initialized from cookies before querying
       // This is critical for custom cookie-based auth (propono_at, propono_rt)
+      // Pass the expected user ID to validate the session matches
       try {
         const { ensureSession } = await import('@/lib/supabaseClient');
-        await ensureSession();
+        await ensureSession(user);
       } catch (error) {
-        console.warn('Failed to ensure Supabase session', error);
+        console.error('Failed to ensure Supabase session', error);
+        // If session initialization fails, throw a user-friendly error
+        const errorMessage = error instanceof Error ? error.message : 'Session initialization failed';
+        throw new Error(`Authentication error: ${errorMessage}. Please refresh the page or log in again.`);
       }
       
-      // Check auth session before querying
+      // Check auth session before querying - give it a moment to propagate
+      await new Promise(resolve => setTimeout(resolve, 50));
       const { data: { session }, error: sessionError } = await sb.auth.getSession();
+      const sessionMatches = session?.user?.id === user;
+      
       console.log('Dashboard auth session check', {
         userId: user,
         hasSession: !!session,
         sessionUserId: session?.user?.id,
         sessionError,
-        matchesUserId: session?.user?.id === user,
+        matchesUserId: sessionMatches,
       });
+      
+      // If session doesn't match, RLS will block the query
+      // In this case, we should show an error or redirect to login
+      if (!sessionMatches) {
+        if (session?.user?.id) {
+          console.error('Session user ID mismatch - RLS will block queries', {
+            expectedUserId: user,
+            sessionUserId: session.user.id,
+          });
+          throw new Error('Session mismatch: The current session does not match your account. Please refresh the page or log in again.');
+        } else {
+          console.error('No session found after initialization');
+          throw new Error('No active session found. Please log in again.');
+        }
+      }
       
       // First, try a simple query without the join to see if that's the issue
       const { data: simpleData, error: simpleError, count: simpleCount } = await sb
