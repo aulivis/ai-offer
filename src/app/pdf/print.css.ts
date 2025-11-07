@@ -346,6 +346,17 @@ export const PRINT_BASE_CSS = `
 
   .slim-header__title {
     font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 60%;
+    min-width: 0;
+  }
+
+  .slim-header__company {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 40%;
+    min-width: 0;
   }
 
   .slim-footer__page-number {
@@ -391,6 +402,7 @@ export const PRINT_BASE_CSS = `
       background: #ffffff !important;
       color: var(--muted, #1f2937);
       justify-content: space-between;
+      align-items: center;
       padding: var(--page-safe-inset) 0;
       position: fixed !important;
       left: var(--page-margin-left) !important;
@@ -401,6 +413,31 @@ export const PRINT_BASE_CSS = `
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
       color-adjust: exact;
+      overflow: hidden;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .slim-header > div {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .slim-footer > div {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 70%;
+    }
+
+    .slim-footer__page-number {
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     
     .slim-header {
@@ -428,10 +465,25 @@ export const PRINT_BASE_CSS = `
       padding-top: 0 !important;
     }
     
-    .offer-doc__content {
-      margin-top: 0;
-      padding-top: 0;
-    }
+  .offer-doc__content {
+    margin-top: 0;
+    padding-top: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+
+  /* Ensure main content area accounts for fixed headers/footers */
+  main {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  /* Prevent overlapping with fixed slim header on first page */
+  .first-page-only {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
     
     .section-card {
       background: #ffffff !important;

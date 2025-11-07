@@ -12,7 +12,7 @@ function partialHeader(ctx: RenderCtx): string {
   const { company, title, companyPlaceholder, issueDate, labels } = safeCtx;
 
   return `
-    <header class="offer-doc__header--minimal first-page-only" style="margin-top: 0; padding-top: 0;">
+    <header class="offer-doc__header--minimal first-page-only">
       <div class="offer-doc__header-content--minimal">
         <div class="offer-doc__company--minimal">${company.value || companyPlaceholder}</div>
         <h1 class="offer-doc__title--minimal">${title}</h1>

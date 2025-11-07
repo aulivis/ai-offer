@@ -6,18 +6,31 @@ export const templateStyles = `
   .offer-doc--minimal {
     background: var(--bg, #ffffff);
     color: var(--text, #1a1a1a);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .offer-template--minimal {
+    padding: 0;
+    margin: 0;
   }
 
   .offer-doc__header--minimal {
     border-bottom: 2px solid var(--border, #e0e0e0);
     padding-bottom: 1.5rem;
     margin-bottom: 2rem;
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   .offer-doc__header-content--minimal {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    width: 100%;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .offer-doc__company--minimal {
@@ -26,6 +39,9 @@ export const templateStyles = `
     color: var(--muted, #666666);
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   .offer-doc__title--minimal {
@@ -34,20 +50,30 @@ export const templateStyles = `
     line-height: 1.2;
     margin: 0;
     color: var(--text, #1a1a1a);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    hyphens: auto;
   }
 
   .offer-doc__meta--minimal {
     display: flex;
+    flex-wrap: wrap;
     gap: 1.5rem;
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border, #e0e0e0);
+    width: 100%;
+    max-width: 100%;
   }
 
   .offer-doc__meta-item--minimal {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0;
+    flex: 0 1 auto;
+    max-width: 100%;
   }
 
   .offer-doc__meta-label--minimal {
@@ -56,12 +82,18 @@ export const templateStyles = `
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--muted, #666666);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   .offer-doc__meta-value--minimal {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text, #1a1a1a);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   .section-card--minimal {
@@ -85,6 +117,10 @@ export const templateStyles = `
   .offer-doc__content--minimal {
     line-height: 1.7;
     color: var(--text, #1a1a1a);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    hyphens: auto;
   }
 
   .offer-doc__content--minimal h2 {
@@ -163,12 +199,20 @@ export const templateStyles = `
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .offer-doc__footer-column--minimal {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .offer-doc__footer-label--minimal {
@@ -178,11 +222,16 @@ export const templateStyles = `
     letter-spacing: 0.08em;
     color: var(--muted, #666666);
     margin-bottom: 0.25rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .offer-doc__footer-value--minimal {
     font-size: 0.85rem;
     color: var(--text, #1a1a1a);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   .offer-doc__footer-value--minimal.offer-doc__footer-value--placeholder {
@@ -213,6 +262,50 @@ export const templateStyles = `
   @media print {
     .offer-doc--minimal {
       background: #ffffff;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .offer-template--minimal {
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    /* Ensure header doesn't overlap with slim header */
+    .offer-doc__header--minimal.first-page-only {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+
+    /* Prevent content from overlapping with fixed headers/footers */
+    .offer-doc__header--minimal + .section-card--minimal {
+      margin-top: 0;
+    }
+
+    /* Ensure text wraps properly in print */
+    .offer-doc__header-content--minimal,
+    .offer-doc__title--minimal,
+    .offer-doc__company--minimal,
+    .offer-doc__content--minimal,
+    .offer-doc__footer-value--minimal,
+    .offer-doc__footer-label--minimal {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      max-width: 100%;
+    }
+
+    /* Prevent footer grid from overlapping */
+    .offer-doc__footer-grid--minimal {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    /* Ensure footer columns don't overflow */
+    .offer-doc__footer-column--minimal {
+      min-width: 0;
+      overflow: hidden;
     }
 
     .pricing-table__footer-row:last-of-type .pricing-table__footer-cell {
@@ -231,6 +324,24 @@ export const templateStyles = `
       font-size: 0.9em;
       color: var(--muted, #666666);
       word-break: break-all;
+    }
+
+    /* Prevent text overflow in meta items */
+    .offer-doc__meta--minimal {
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .offer-doc__meta-item--minimal {
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+
+    .offer-doc__meta-value--minimal,
+    .offer-doc__meta-label--minimal {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
     }
   }
 `;
