@@ -8,6 +8,19 @@ export const templateStyles = `
     color: var(--text, #1a1a1a);
     padding-top: 0;
     padding-bottom: 0;
+    position: relative;
+  }
+
+  /* Subtle accent line at the top using brand primary */
+  .offer-doc--minimal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--brand-primary, var(--primary, #1a1a1a));
+    z-index: 1;
   }
 
   .offer-template--minimal {
@@ -16,11 +29,13 @@ export const templateStyles = `
   }
 
   .offer-doc__header--minimal {
-    border-bottom: 2px solid var(--border, #e0e0e0);
+    border-bottom: 2px solid var(--brand-primary, var(--primary, #1a1a1a));
     padding-bottom: 1.5rem;
     margin-bottom: 2rem;
     break-after: avoid;
     page-break-after: avoid;
+    position: relative;
+    z-index: 2;
   }
 
   .offer-doc__header-content--minimal {
@@ -36,7 +51,7 @@ export const templateStyles = `
   .offer-doc__company--minimal {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--muted, #666666);
+    color: var(--brand-secondary, var(--secondary, #666666));
     text-transform: uppercase;
     letter-spacing: 0.1em;
     word-wrap: break-word;
@@ -49,7 +64,7 @@ export const templateStyles = `
     font-weight: 600;
     line-height: 1.2;
     margin: 0;
-    color: var(--text, #1a1a1a);
+    color: var(--brand-primary, var(--primary, #1a1a1a));
     word-wrap: break-word;
     overflow-wrap: break-word;
     max-width: 100%;
@@ -106,12 +121,12 @@ export const templateStyles = `
   .section-card__title--minimal {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--muted, #666666);
+    color: var(--brand-primary, var(--primary, #1a1a1a));
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin: 0 0 1rem 0;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border, #e0e0e0);
+    border-bottom: 2px solid var(--brand-primary, var(--primary, #1a1a1a));
   }
 
   .offer-doc__content--minimal {
@@ -126,14 +141,14 @@ export const templateStyles = `
   .offer-doc__content--minimal h2 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text, #1a1a1a);
+    color: var(--brand-primary, var(--primary, #1a1a1a));
     margin: 1.5rem 0 1rem 0;
   }
 
   .offer-doc__content--minimal h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text, #1a1a1a);
+    color: var(--brand-primary, var(--primary, #1a1a1a));
     margin: 1.25rem 0 0.75rem 0;
   }
 
@@ -152,47 +167,63 @@ export const templateStyles = `
   }
 
   .pricing-table__table-wrapper {
-    border: 1px solid var(--border, #e0e0e0);
+    border: 1px solid var(--brand-border, var(--border, #e0e0e0));
     border-radius: 0;
     overflow: hidden;
-    background: transparent;
+    background: #fafafa;
+    position: relative;
+  }
+
+  /* Subtle decorative element for pricing table - accent line */
+  .pricing-table__table-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--brand-primary, var(--primary, #1a1a1a));
+    opacity: 0.4;
+    z-index: 1;
   }
 
   .pricing-table__header {
-    background-color: var(--secondary, #f5f5f5) !important;
-    color: var(--text, #1a1a1a) !important;
+    background-color: var(--brand-secondary, var(--secondary, #f5f5f5)) !important;
+    color: var(--brand-primary, var(--primary, #1a1a1a)) !important;
     font-weight: 600;
     font-size: 0.7rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0.875rem 1rem;
-    border-bottom: 2px solid var(--border, #e0e0e0);
+    border-bottom: 2px solid var(--brand-primary, var(--primary, #1a1a1a));
+    position: relative;
+    z-index: 2;
   }
 
   .pricing-table__row:nth-of-type(even) .pricing-table__cell {
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 0.01);
   }
 
   .pricing-table__cell {
-    border-bottom: 1px solid var(--border, #e0e0e0);
+    border-bottom: 1px solid var(--brand-border, var(--border, #e0e0e0));
     padding: 1rem;
     font-size: 0.9rem;
   }
 
   .pricing-table__footer-row:last-of-type .pricing-table__footer-cell {
-    background-color: var(--text, #1a1a1a) !important;
-    color: var(--bg, #ffffff) !important;
+    background-color: var(--brand-primary, var(--primary, #1a1a1a)) !important;
+    color: var(--brand-primary-contrast, var(--bg, #ffffff)) !important;
     font-weight: 600;
   }
 
   .pricing-table__footer-row:first-of-type .pricing-table__footer-cell {
-    border-top: 2px solid var(--border, #e0e0e0);
+    border-top: 2px solid var(--brand-primary, var(--primary, #1a1a1a));
   }
 
   .offer-doc__footer--minimal {
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--border, #e0e0e0);
+    border-top: 1px solid var(--brand-border, var(--border, #e0e0e0));
   }
 
   .offer-doc__footer-grid--minimal {
@@ -254,7 +285,7 @@ export const templateStyles = `
   }
 
   .offer-doc__marketing-link {
-    color: var(--primary, #1a1a1a);
+    color: var(--brand-primary, var(--primary, #1a1a1a));
     text-decoration: underline;
     font-weight: 500;
   }
@@ -264,6 +295,14 @@ export const templateStyles = `
       background: #ffffff;
       padding-top: 0;
       margin-top: 0;
+    }
+
+    /* Ensure accent line prints */
+    .offer-doc--minimal::before {
+      display: block;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
     }
 
     .offer-template--minimal {
@@ -308,15 +347,23 @@ export const templateStyles = `
       overflow: hidden;
     }
 
+    /* Ensure pricing table decorative element prints */
+    .pricing-table__table-wrapper::before {
+      display: block;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
+    }
+
     .pricing-table__footer-row:last-of-type .pricing-table__footer-cell {
-      background-color: #1a1a1a !important;
-      color: #ffffff !important;
+      background-color: var(--brand-primary, var(--primary, #1a1a1a)) !important;
+      color: var(--brand-primary-contrast, #ffffff) !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
 
     .offer-doc__marketing-link {
-      color: var(--primary, #1a1a1a);
+      color: var(--brand-primary, var(--primary, #1a1a1a));
     }
 
     .offer-doc__marketing-link::after {
