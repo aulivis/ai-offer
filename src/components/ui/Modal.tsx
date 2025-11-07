@@ -19,9 +19,10 @@ export type ModalProps = {
   labelledBy?: string;
   describedBy?: string;
   children: ReactNode;
+  className?: string;
 };
 
-export function Modal({ open, onClose, labelledBy, describedBy, children }: ModalProps) {
+export function Modal({ open, onClose, labelledBy, describedBy, children, className }: ModalProps) {
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -102,6 +103,10 @@ export function Modal({ open, onClose, labelledBy, describedBy, children }: Moda
     }
   };
 
+  // If className includes a max-w class, don't apply the default max-w-4xl
+  const hasCustomMaxWidth = className?.includes('max-w-');
+  const defaultMaxWidth = hasCustomMaxWidth ? '' : 'max-w-4xl';
+
   return createPortal(
     <div
       ref={overlayRef}
@@ -115,7 +120,7 @@ export function Modal({ open, onClose, labelledBy, describedBy, children }: Moda
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
-        className="w-full max-w-4xl rounded-3xl border border-border bg-bg p-4 sm:p-5 shadow-pop focus:outline-none"
+        className={`w-full ${defaultMaxWidth} rounded-3xl border border-border bg-bg p-4 sm:p-5 shadow-pop focus:outline-none ${className || ''}`}
         tabIndex={-1}
       >
         {children}
