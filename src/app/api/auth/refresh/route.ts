@@ -106,13 +106,15 @@ export async function POST(request: Request) {
   const log = createLogger(requestId);
   const csrfHeader = request.headers.get('x-csrf-token');
   const csrfCookie = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+  const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value ?? null;
 
-  if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
+  // CSRF validation: require CSRF token if a CSRF cookie exists
+  // If no CSRF cookie exists but a refresh token is present, allow refresh
+  // (this handles the case where CSRF cookie expired but refresh token is still valid)
+  if (csrfCookie && !verifyCsrfToken(csrfHeader, csrfCookie)) {
     log.warn('Invalid CSRF token');
     return Response.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
   }
-
-  const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value ?? null;
 
   if (!refreshToken) {
     await clearAuthCookies();
