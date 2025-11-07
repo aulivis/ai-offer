@@ -10,6 +10,15 @@ import { getRequestId } from '@/lib/requestId';
 import { usageQuerySchema } from '@/lib/validation/schemas';
 import { handleValidationError } from '@/lib/errorHandling';
 
+/**
+ * @deprecated This endpoint is deprecated. Use the database function `get_quota_snapshot` directly via RPC instead.
+ * The frontend now queries quota directly from the database using the `get_quota_snapshot` RPC function,
+ * which is faster and enables real-time updates. This endpoint is kept for backwards compatibility
+ * but may be removed in a future version.
+ * 
+ * If you need quota recalculation functionality, consider implementing it as a separate endpoint
+ * or as part of an admin/maintenance API.
+ */
 export async function GET(request: Request) {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);

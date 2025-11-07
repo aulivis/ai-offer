@@ -778,6 +778,56 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Load quota function
+  const loadQuota = useCallback(async () => {
+    if (authStatus !== 'authenticated' || !user) {
+      setQuotaSnapshot(null);
+      setIsQuotaLoading(false);
+      return;
+    }
+
+    setIsQuotaLoading(true);
+    try {
+      const deviceId = getDeviceIdFromCookie();
+      const { iso: expectedPeriod } = currentMonthStart();
+
+      // Call database function directly - simpler and faster than API route
+      const { data, error } = await sb.rpc('get_quota_snapshot', {
+        p_period_start: expectedPeriod,
+        p_device_id: deviceId || null,
+      });
+
+      if (error) {
+        throw new Error(`Failed to load quota: ${error.message}`);
+      }
+
+      const snapshot = Array.isArray(data) ? data[0] : data;
+      if (!snapshot) {
+        throw new Error('No quota snapshot returned from database');
+      }
+
+      // Map database response to quota snapshot format
+      const normalizedDevicePending = deviceId
+        ? snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : 0
+        : snapshot.pending_device !== null ? Number(snapshot.pending_device) : null;
+
+      setQuotaSnapshot({
+        plan: snapshot.plan as SubscriptionPlan,
+        limit: snapshot.quota_limit,
+        used: Number(snapshot.confirmed) || 0,
+        pending: Number(snapshot.pending_user) || 0,
+        devicePending: normalizedDevicePending,
+        periodStart: snapshot.period_start,
+      });
+    } catch (error) {
+      console.error('Failed to load usage quota.', error);
+      setQuotaSnapshot(null);
+    } finally {
+      setIsQuotaLoading(false);
+    }
+  }, [authStatus, sb, user]);
+
+  // Load quota on mount and when refresh key changes
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
       setQuotaSnapshot(null);
@@ -785,68 +835,102 @@ export default function DashboardPage() {
       return;
     }
 
-    let active = true;
-    setIsQuotaLoading(true);
+    loadQuota();
+  }, [authStatus, user, sb, refreshKey, loadQuota]);
 
-    (async () => {
-      try {
-        // Optional: Recalculate usage from actual PDFs to ensure accuracy
-        // This is a maintenance operation that can be done on-demand if needed
-        // For now, we rely on the database function which uses the same logic as PDF generation
-        // If you want to force recalculation, you can add a button to trigger it manually
+  // Set up real-time subscriptions for quota updates
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      return;
+    }
 
-        const deviceId = getDeviceIdFromCookie();
-        const { iso: expectedPeriod } = currentMonthStart();
+    const { iso: expectedPeriod } = currentMonthStart();
 
-        // Call database function directly - simpler and faster than API route
-        const { data, error } = await sb.rpc('get_quota_snapshot', {
-          p_period_start: expectedPeriod,
-          p_device_id: deviceId || null,
-        });
+    // Subscribe to usage_counters changes
+    const usageChannel = sb
+      .channel(`dashboard-quota-usage-${user.id}-${expectedPeriod}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'usage_counters',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as { period_start?: string };
+          if (updated.period_start === expectedPeriod) {
+            console.log('Dashboard: Usage counter updated via realtime', {
+              userId: user.id,
+              period: updated.period_start,
+            });
+            loadQuota();
+          }
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'usage_counters',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const inserted = payload.new as { period_start?: string };
+          if (inserted.period_start === expectedPeriod) {
+            console.log('Dashboard: Usage counter inserted via realtime', {
+              userId: user.id,
+              period: inserted.period_start,
+            });
+            loadQuota();
+          }
+        },
+      )
+      .subscribe();
 
-        if (!active) {
-          return;
-        }
+    // Subscribe to pdf_jobs changes
+    const jobsChannel = sb
+      .channel(`dashboard-quota-jobs-${user.id}-${expectedPeriod}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pdf_jobs',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const job = (payload.new || payload.old) as { id?: string; status?: string; created_at?: string } | null;
+          if (!job?.created_at) return;
 
-        if (error) {
-          throw new Error(`Failed to load quota: ${error.message}`);
-        }
+          const jobDate = new Date(job.created_at);
+          const jobPeriod = new Date(jobDate.getFullYear(), jobDate.getMonth(), 1)
+            .toISOString()
+            .split('T')[0];
 
-        const snapshot = Array.isArray(data) ? data[0] : data;
-        if (!snapshot) {
-          throw new Error('No quota snapshot returned from database');
-        }
-
-        // Map database response to quota snapshot format
-        const normalizedDevicePending = deviceId
-          ? snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : 0
-          : snapshot.pending_device !== null ? Number(snapshot.pending_device) : null;
-
-        setQuotaSnapshot({
-          plan: snapshot.plan as SubscriptionPlan,
-          limit: snapshot.quota_limit,
-          used: Number(snapshot.confirmed) || 0,
-          pending: Number(snapshot.pending_user) || 0,
-          devicePending: normalizedDevicePending,
-          periodStart: snapshot.period_start,
-        });
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-        console.error('Failed to load usage quota.', error);
-        setQuotaSnapshot(null);
-      } finally {
-        if (active) {
-          setIsQuotaLoading(false);
-        }
-      }
-    })();
+          if (jobPeriod === expectedPeriod) {
+            console.log('Dashboard: PDF job changed via realtime', {
+              userId: user.id,
+              event: payload.eventType,
+              jobId: job.id,
+              status: job.status,
+              period: jobPeriod,
+            });
+            // Debounce rapid changes
+            setTimeout(() => {
+              loadQuota();
+            }, 500);
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      active = false;
+      sb.removeChannel(usageChannel);
+      sb.removeChannel(jobsChannel);
     };
-  }, [authStatus, user, sb, refreshKey]);
+  }, [authStatus, sb, user, loadQuota]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 

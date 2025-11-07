@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { currentMonthStart } from '@/lib/services/usage';
@@ -25,7 +25,61 @@ export default function QuotaWarningBar() {
   const [quotaSnapshot, setQuotaSnapshot] = useState<UsageResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Only show for authenticated users
+  // Load quota function
+  const loadQuota = useCallback(async () => {
+    if (authStatus !== 'authenticated' || !user) {
+      setQuotaSnapshot(null);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const deviceId = getDeviceIdFromCookie();
+      const { iso: expectedPeriod } = currentMonthStart();
+
+      // Call database function directly - simpler and faster than API route
+      const { data, error } = await sb.rpc('get_quota_snapshot', {
+        p_period_start: expectedPeriod,
+        p_device_id: deviceId || null,
+      });
+
+      if (error) {
+        // Silently handle auth errors - user is not authenticated, which is expected
+        if (error.message?.includes('authenticated') || error.code === 'PGRST301') {
+          setQuotaSnapshot(null);
+          return;
+        }
+        throw new Error(`Failed to load quota: ${error.message}`);
+      }
+
+      const snapshot = Array.isArray(data) ? data[0] : data;
+      if (!snapshot) {
+        return;
+      }
+
+      // Map database response to UsageResponse format
+      const usageData: UsageResponse = {
+        plan: snapshot.plan as 'free' | 'standard' | 'pro',
+        limit: snapshot.quota_limit,
+        confirmed: Number(snapshot.confirmed) || 0,
+        pendingUser: Number(snapshot.pending_user) || 0,
+        pendingDevice: snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : null,
+        confirmedDevice: snapshot.confirmed_device !== null ? Number(snapshot.confirmed_device) || 0 : null,
+        remaining: snapshot.remaining,
+        periodStart: snapshot.period_start,
+      };
+
+      setQuotaSnapshot(usageData);
+    } catch (error) {
+      console.error('Failed to load quota for warning bar:', error);
+      setQuotaSnapshot(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [authStatus, sb, user]);
+
+  // Load quota on mount
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
       setQuotaSnapshot(null);
@@ -33,68 +87,87 @@ export default function QuotaWarningBar() {
       return;
     }
 
-    let active = true;
-    setIsLoading(true);
+    loadQuota();
+  }, [authStatus, user, sb, loadQuota]);
 
-    (async () => {
-      try {
-        const deviceId = getDeviceIdFromCookie();
-        const { iso: expectedPeriod } = currentMonthStart();
+  // Set up real-time subscriptions for quota updates
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      return;
+    }
 
-        // Call database function directly - simpler and faster than API route
-        const { data, error } = await sb.rpc('get_quota_snapshot', {
-          p_period_start: expectedPeriod,
-          p_device_id: deviceId || null,
-        });
+    const { iso: expectedPeriod } = currentMonthStart();
 
-        if (!active) {
-          return;
-        }
-
-        if (error) {
-          // Silently handle auth errors - user is not authenticated, which is expected
-          if (error.message?.includes('authenticated') || error.code === 'PGRST301') {
-            setQuotaSnapshot(null);
-            return;
+    // Subscribe to usage_counters changes
+    const usageChannel = sb
+      .channel(`quota-warning-usage-${user.id}-${expectedPeriod}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'usage_counters',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as { period_start?: string };
+          if (updated.period_start === expectedPeriod) {
+            loadQuota();
           }
-          throw new Error(`Failed to load quota: ${error.message}`);
-        }
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'usage_counters',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const inserted = payload.new as { period_start?: string };
+          if (inserted.period_start === expectedPeriod) {
+            loadQuota();
+          }
+        },
+      )
+      .subscribe();
 
-        const snapshot = Array.isArray(data) ? data[0] : data;
-        if (!snapshot || !active) {
-          return;
-        }
+    // Subscribe to pdf_jobs changes
+    const jobsChannel = sb
+      .channel(`quota-warning-jobs-${user.id}-${expectedPeriod}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pdf_jobs',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const job = (payload.new || payload.old) as { created_at?: string } | null;
+          if (!job?.created_at) return;
 
-        // Map database response to UsageResponse format
-        const usageData: UsageResponse = {
-          plan: snapshot.plan as 'free' | 'standard' | 'pro',
-          limit: snapshot.quota_limit,
-          confirmed: Number(snapshot.confirmed) || 0,
-          pendingUser: Number(snapshot.pending_user) || 0,
-          pendingDevice: snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : null,
-          confirmedDevice: snapshot.confirmed_device !== null ? Number(snapshot.confirmed_device) || 0 : null,
-          remaining: snapshot.remaining,
-          periodStart: snapshot.period_start,
-        };
+          const jobDate = new Date(job.created_at);
+          const jobPeriod = new Date(jobDate.getFullYear(), jobDate.getMonth(), 1)
+            .toISOString()
+            .split('T')[0];
 
-        setQuotaSnapshot(usageData);
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-        console.error('Failed to load quota for warning bar:', error);
-        setQuotaSnapshot(null);
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    })();
+          if (jobPeriod === expectedPeriod) {
+            // Debounce rapid changes
+            setTimeout(() => {
+              loadQuota();
+            }, 500);
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      active = false;
+      sb.removeChannel(usageChannel);
+      sb.removeChannel(jobsChannel);
     };
-  }, [authStatus, user, sb]);
+  }, [authStatus, sb, user, loadQuota]);
 
   const { isQuotaExhausted, isDeviceQuotaExhausted, warningType } = useMemo(() => {
     if (!quotaSnapshot || isLoading) {
