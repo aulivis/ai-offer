@@ -16,6 +16,13 @@ import GuaranteeBadge from '@/components/landing/GuaranteeBadge';
 import ProductScreenshot from '@/components/landing/ProductScreenshot';
 import ProductGif from '@/components/landing/ProductGif';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
+import StickyCTABar from '@/components/landing/StickyCTABar';
+import CustomerTicker from '@/components/landing/CustomerTicker';
+import RecentlyJoinedWidget from '@/components/landing/RecentlyJoinedWidget';
+import UseCasesSection from '@/components/landing/UseCasesSection';
+import ResourcesSection from '@/components/landing/ResourcesSection';
+import EnterpriseCTA from '@/components/landing/EnterpriseCTA';
+import EmailCapture from '@/components/landing/EmailCapture';
 import { t } from '@/copy';
 
 export default function Home() {
@@ -168,6 +175,7 @@ export default function Home() {
       role: 'Ügynökségvezető',
       company: 'Studio Fluo',
       rating: 5,
+      avatarUrl: undefined, // Add actual avatar URLs when available
     },
     {
       quote:
@@ -176,6 +184,7 @@ export default function Home() {
       role: 'Üzletfejlesztési vezető',
       company: 'Tech Solutions Kft.',
       rating: 5,
+      avatarUrl: undefined,
     },
     {
       quote:
@@ -184,6 +193,7 @@ export default function Home() {
       role: 'Projektmenedzser',
       company: 'Creative Agency',
       rating: 5,
+      avatarUrl: undefined,
     },
   ];
 
@@ -254,6 +264,19 @@ export default function Home() {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
+        </svg>
+      ),
+      text: '99.9% rendelkezésre állás',
+    },
+    {
+      icon: (
+        <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
             d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
@@ -272,6 +295,19 @@ export default function Home() {
         </svg>
       ),
       text: 'Ingyenes próba',
+    },
+    {
+      icon: (
+        <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      ),
+      text: 'Nincs bankkártya szükséges',
     },
   ];
 
@@ -340,6 +376,15 @@ export default function Home() {
               {t('landing.hero.description')}
             </p>
 
+            {/* Pricing Display */}
+            <div className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
+              <span className="text-xl font-bold text-primary md:text-2xl">Innen indul: Ingyenes</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="text-base md:text-sm">Standard: 1 490 Ft/hó</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="text-base md:text-sm">Pro: 6 990 Ft/hó</span>
+            </div>
+
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/new"
@@ -374,6 +419,9 @@ export default function Home() {
 
             {/* Trust badges in hero */}
             <TrustBadges badges={trustBadges} className="mt-4" />
+            
+            {/* Customer ticker */}
+            <CustomerTicker className="mt-6" />
           </div>
 
           {/* Product Demo Area */}
@@ -626,7 +674,18 @@ export default function Home() {
         <div className="mt-12">
           <SocialProofWidget />
         </div>
+        
+        {/* Recently Joined Widget */}
+        <div className="mt-8 max-w-md mx-auto">
+          <RecentlyJoinedWidget />
+        </div>
       </section>
+
+      {/* USE CASES SECTION */}
+      <UseCasesSection />
+
+      {/* RESOURCES SECTION */}
+      <ResourcesSection />
 
       {/* COMPARISON TABLE SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6">
@@ -752,7 +811,21 @@ export default function Home() {
         <GuaranteeBadge />
       </section>
 
+      {/* EMAIL CAPTURE SECTION */}
+      <section className="mx-auto w-full max-w-4xl px-6">
+        <EmailCapture
+          title="Kapj ingyenes tippeket az ajánlatkészítéshez"
+          description="Iratkozz fel hírlevelünkre és kapd meg az ingyenes útmutatót: '10 tipp a tökéletes ajánlathoz'"
+          leadMagnet="10 tipp a tökéletes ajánlathoz"
+          placeholder="email@example.com"
+        />
+      </section>
+
+      {/* ENTERPRISE CTA SECTION */}
+      <EnterpriseCTA />
+
       <footer aria-label={t('landing.footerAria')} className="sr-only" />
+      <StickyCTABar />
       <LandingPageClient />
     </main>
   );

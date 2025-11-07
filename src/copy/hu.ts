@@ -65,6 +65,8 @@ export const hu = {
     brand: 'Vyndi',
     demo: 'Bemutató',
     caseStudies: 'Esettanulmányok',
+    successStories: 'Sikertörténetek',
+    resources: 'Erőforrások',
     billing: 'Előfizetés',
     offers: 'Ajánlatok',
     dashboard: 'Ajánlatok',
