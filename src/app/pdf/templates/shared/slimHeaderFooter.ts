@@ -7,8 +7,10 @@ export function renderSlimHeader(ctx: HeaderFooterCtx): string {
     ? `<img src="${sanitizeInput(ctx.logoUrl)}" alt="Logo" style="height: 16px; max-width: 60px; object-fit: contain; flex-shrink: 0;" />`
     : `<span style="font-weight: 600; font-size: 0.75rem; flex-shrink: 0;">${ctx.monogram}</span>`;
 
+  // Slim header should only appear on pages 2+ (not on first page where main header shows)
+  // CSS will handle hiding it on first page
   return `
-    <div class="offer-doc__slim-bar slim-header" aria-hidden="true">
+    <div class="offer-doc__slim-bar slim-header not-first-page" aria-hidden="true">
       <div style="display: flex; align-items: center; gap: 1rem; min-width: 0; flex: 1; overflow: hidden;">
         ${logoMarkup}
         <span class="slim-header__company" style="word-wrap: break-word; overflow-wrap: break-word; max-width: 40%;">${ctx.company.value || ctx.companyPlaceholder}</span>

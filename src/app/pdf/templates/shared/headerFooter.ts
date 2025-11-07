@@ -1,6 +1,6 @@
 import { sanitizeInput } from '@/lib/sanitize';
 
-import type { RenderCtx } from '../../types';
+import type { RenderCtx } from '../types';
 
 export type SafeField = { value: string; isPlaceholder: boolean };
 

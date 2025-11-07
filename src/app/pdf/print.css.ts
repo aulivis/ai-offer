@@ -16,17 +16,29 @@ export const PRINT_BASE_CSS = `
     --page-safe-inset: 5mm;
     --page-header-offset: 0mm;
     --page-footer-offset: 0mm;
+    /* Calculate slim header height for content spacing */
+    --slim-header-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-header-padding) + 2px);
+    --slim-footer-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-footer-padding) + 2px);
   }
 
   @page {
     size: A4;
-    /* Use standard margins: 5mm top/bottom for safety, 15mm left/right */
-    margin: var(--page-margin-top) var(--page-margin-right) var(--page-margin-bottom) var(--page-margin-left);
+    /* Standard margins: account for fixed header/footer */
+    /* On pages 2+, we need space for the slim header at the top */
+    /* On all pages, we need space for the slim footer at the bottom */
+    margin-top: calc(var(--page-margin-top) + var(--slim-header-height));
+    margin-right: var(--page-margin-right);
+    margin-bottom: calc(var(--page-margin-bottom) + var(--slim-footer-height));
+    margin-left: var(--page-margin-left);
   }
 
   @page :first {
-    /* First page uses same margins as other pages for consistency */
+    /* First page: slim header is hidden, so we don't need extra top margin for it */
+    /* The main header handles its own spacing */
     margin-top: var(--page-margin-top);
+    margin-right: var(--page-margin-right);
+    margin-bottom: calc(var(--page-margin-bottom) + var(--slim-footer-height));
+    margin-left: var(--page-margin-left);
   }
 
   html,
@@ -410,9 +422,13 @@ export const PRINT_BASE_CSS = `
       align-items: center;
       padding: var(--page-safe-inset) 0;
       position: fixed !important;
+      /* Match content width exactly by using same left/right margins as content area */
+      /* Content area uses page margins, so header/footer should match */
       left: var(--page-margin-left) !important;
       right: var(--page-margin-right) !important;
       width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
+      max-width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
+      box-sizing: border-box;
       z-index: 1000;
       pointer-events: none;
       -webkit-print-color-adjust: exact;
@@ -445,50 +461,78 @@ export const PRINT_BASE_CSS = `
       white-space: nowrap;
     }
     
+    /* Calculate header/footer heights for spacing */
     .slim-header {
-      top: 0 !important;
+      top: var(--page-margin-top) !important;
       border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
-      padding-bottom: var(--page-header-padding);
+      padding-top: var(--page-safe-inset) !important;
+      padding-bottom: calc(var(--page-safe-inset) + var(--page-header-padding)) !important;
+      height: auto;
+      min-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-header-padding));
     }
     
     .slim-footer {
-      bottom: 0 !important;
+      bottom: var(--page-margin-bottom) !important;
       border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
-      padding-top: var(--page-footer-padding);
+      padding-top: calc(var(--page-safe-inset) + var(--page-footer-padding)) !important;
+      padding-bottom: var(--page-safe-inset) !important;
+      height: auto;
+      min-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-footer-padding));
     }
 
     .slim-footer__page-number::after {
       content: ' ' counter(page) ' / ' counter(pages);
     }
     
+    /* Hide slim header on first page - it duplicates the main header info */
+    /* Solution: Hide the slim header when the first-page header is present */
+    /* Since the first-page header comes AFTER the slim header in DOM order, */
+    /* we can use a CSS sibling selector to hide the slim header */
+    .offer-doc__header.first-page-only ~ .slim-header {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      overflow: hidden !important;
+    }
+    
+    /* Ensure first-page header is above slim header and covers it on page 1 */
+    .offer-doc__header.first-page-only {
+      background: #ffffff !important;
+      position: relative;
+      z-index: 1002 !important; /* Above slim header */
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      break-after: avoid;
+      page-break-after: avoid;
+      margin-bottom: var(--page-header-gap) !important;
+    }
+    
+    /* Ensure slim header z-index allows first-page header to cover it */
+    .slim-header {
+      z-index: 1000; /* Below first-page header when it exists */
+    }
+    
+    /* Content spacing is handled by @page margins */
+    .offer-doc__content {
+      margin-top: 0;
+      padding-top: 0;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+    
+    main {
+      padding-top: 0;
+      margin-top: 0;
+    }
+    
     .first-page-only {
       display: block;
     }
-    
-    .offer-doc__header.first-page-only {
-      margin-top: 0 !important;
-      padding-top: 0 !important;
-    }
-    
-  .offer-doc__content {
-    margin-top: 0;
-    padding-top: 0;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 100%;
-  }
-
-  /* Ensure main content area accounts for fixed headers/footers */
-  main {
-    padding-top: 0;
-    margin-top: 0;
-  }
-
-  /* Prevent overlapping with fixed slim header on first page */
-  .first-page-only {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-  }
     
     .section-card {
       background: #ffffff !important;

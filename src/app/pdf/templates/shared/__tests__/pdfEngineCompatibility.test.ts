@@ -223,7 +223,10 @@ describe('PDF Engine Compatibility', () => {
           expect(pdf.length).toBeGreaterThan(0);
 
           // Verify PDF header (should start with %PDF)
-          const pdfHeader = pdf.toString('latin1', 0, 4);
+          const pdfBuffer = Buffer.isBuffer(pdf)
+            ? pdf
+            : Buffer.from(pdf.buffer, pdf.byteOffset, pdf.byteLength);
+          const pdfHeader = pdfBuffer.toString('latin1', 0, 4);
           expect(pdfHeader).toBe('%PDF');
         } finally {
           await page.close();

@@ -43,7 +43,7 @@ function partialSections(ctx: RenderCtx): string {
 
 function partialPriceTable(ctx: RenderCtx): string {
   const priceTable = priceTableHtml(ctx.rows, ctx.i18n, {
-    footnote: ctx.offer.pricingFootnote,
+    footnote: ctx.offer.pricingFootnote ?? null,
   });
   const rowCount = countRenderablePricingRows(ctx.rows);
 
@@ -140,6 +140,8 @@ function partialFooter(ctx: RenderCtx): string {
 
 export function renderBody(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
+  // Slim header should only appear on pages 2+ (hidden on page 1)
+  // Slim footer appears on all pages
   const slimHeader = renderSlimHeader(safeCtx);
   const slimFooter = renderSlimFooter(safeCtx);
   const header = partialHeader(ctx);
@@ -148,7 +150,9 @@ export function renderBody(ctx: RenderCtx): string {
   const footer = partialFooter(ctx);
   const marketingFooter = renderMarketingFooter(ctx.i18n);
 
-  const content = [slimHeader, slimFooter, header, sections, priceTable, footer, marketingFooter]
+  // Order: main header first (so it's on page 1), then slim header/footer, then content
+  // This allows CSS to hide slim header when it's on the same "visual page" as main header
+  const content = [header, slimHeader, slimFooter, sections, priceTable, footer, marketingFooter]
     .filter(Boolean)
     .join('\n');
 
