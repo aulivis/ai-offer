@@ -519,7 +519,7 @@ export const hu = {
       },
       spotlight: {
         0: 'Szabadszavas promptok iparági sablonokkal',
-        1: 'Drag & drop blokkok, reszponzív layout',
+        1: 'Reszponzív layout és automatikus formázás',
         2: 'Automatikus PDF export és státuszjelentés',
       },
       standard: {
@@ -541,7 +541,7 @@ export const hu = {
         1: {
           title: 'AI, ami érti a briefet',
           description:
-            'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, az árkalkulációt és a moduláris blokkokat.',
+            'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
         },
         2: {
           title: 'Egyszerű megosztás és követés',
@@ -556,9 +556,9 @@ export const hu = {
             'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
         },
         1: {
-          title: 'Moduláris blokkok',
+          title: 'AI-szöveg és sablonok',
           description:
-            'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
+            'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd a szekciókat.',
         },
         2: {
           title: 'Megosztás & mérés',
@@ -570,7 +570,7 @@ export const hu = {
         badge: 'Folyamat vizuálisan',
         title: 'Három lépés, ahol a csapatod együtt dolgozik',
         description:
-          'A Vyndi felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
+          'A Vyndi felülete egyszerű és áttekinthető. Az AI mindig egységes arculatot tart.',
       },
       cta: {
         badge: 'Ajánlatkészítés újrafogalmazva',
@@ -777,7 +777,7 @@ export const hu = {
       {
         title: 'AI, ami érti a briefet',
         description:
-          'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, árkalkulációt és moduláris blokkokat.',
+          'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
       },
       {
         title: 'Egyszerű megosztás és követés',
@@ -789,7 +789,7 @@ export const hu = {
       label: 'Folyamat vizuálisan',
       title: 'Három lépés, ahol a csapatod együtt dolgozik',
       description:
-        'A Vyndi felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
+        'A Vyndi felülete egyszerű és áttekinthető. Az AI mindig egységes arculatot tart.',
       steps: [
         {
           title: 'Brief & mood',
@@ -797,9 +797,9 @@ export const hu = {
             'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
         },
         {
-          title: 'Moduláris blokkok',
+          title: 'AI-szöveg és sablonok',
           description:
-            'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
+            'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd a szekciókat.',
         },
         {
           title: 'Megosztás & mérés',
@@ -811,11 +811,11 @@ export const hu = {
     quote: {
       heading: 'Márkázott PDF, ami úgy néz ki, mintha egy design stúdió készítette volna',
       description:
-        'Feltöltött logó, betűtípus és színkód – mind bekerül az ajánlat minden oldalára. Az AI segít az összegzésekben, de a vizuális layout a te irányításod alatt marad.',
+        'Feltöltött logó, betűtípus és színkód – mind bekerül az ajánlat minden oldalára. Az AI segít az összegzésekben, és a márkázott PDF automatikusan készül.',
       features: [
         {
-          title: 'Dinamikus komponensek',
-          description: 'Drag & drop blokkok, reszponzív rács a Penpot logikájával.',
+          title: 'Professzionális komponensek',
+          description: 'Reszponzív layout és automatikus formázás.',
         },
         {
           title: 'Átlátható státuszok',
@@ -824,7 +824,7 @@ export const hu = {
       ],
       testimonial: {
         quote:
-          '„A Vyndi olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető."',
+          '„A Vyndi segít gyorsan és professzionálisan készíteni ajánlatokat. Végre egy egyszerű eszköz, amit a teljes csapat használhat."',
         author: 'Kiss Júlia',
         role: 'Ügynökségvezető • Studio Fluo',
       },

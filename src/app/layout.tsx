@@ -22,6 +22,11 @@ import { gota, spaceMono, workSans } from './fonts';
 export const metadata: Metadata = {
   title: 'Vyndi — AI offers',
   description: 'AI-assisted, professional offers for SMEs',
+  icons: {
+    icon: '/vyndi-logo.png',
+    shortcut: '/vyndi-logo.png',
+    apple: '/vyndi-logo.png',
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

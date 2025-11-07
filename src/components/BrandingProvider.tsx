@@ -72,7 +72,12 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
 
   useEffect(() => {
     if (status !== 'authenticated' || !userId) {
-      setState(DEFAULT_FETCH_STATE);
+      // Show default Vyndi logo when not authenticated
+      setState({
+        ...DEFAULT_FETCH_STATE,
+        logoUrl: '/vyndi-logo.png',
+        isLoading: false,
+      });
       return;
     }
 
@@ -115,6 +120,11 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
           // This prevents errors on landing page when user is not authenticated
           console.debug('Could not load brand logo URL:', error);
           logoUrl = null;
+        }
+        
+        // Fallback to default Vyndi logo if no user logo is available
+        if (!logoUrl) {
+          logoUrl = '/vyndi-logo.png';
         }
 
         if (!active) {

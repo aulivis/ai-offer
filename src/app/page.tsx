@@ -92,7 +92,7 @@ export default function Home() {
       ),
       title: 'AI, ami érti a briefet',
       description:
-        'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget, árkalkulációt és moduláris blokkokat.',
+        'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
       highlight: true,
     },
     {
@@ -139,9 +139,9 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'Moduláris blokkok',
+      title: 'AI-szöveg és sablonok',
       description:
-        'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd vizuálisan a szekciókat, mint egy dizájn eszközben.',
+        'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd a szekciókat.',
     },
     {
       icon: (
@@ -163,7 +163,7 @@ export default function Home() {
   const testimonials = [
     {
       quote:
-        'A Vyndi olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.',
+        'A Vyndi segít gyorsan és professzionálisan készíteni ajánlatokat. Végre egy egyszerű eszköz, amit a teljes csapat használhat.',
       author: 'Kiss Júlia',
       role: 'Ügynökségvezető',
       company: 'Studio Fluo',
@@ -287,7 +287,7 @@ export default function Home() {
       challenge:
         'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
       solution:
-        'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, a drag & drop felület lehetővé tette a valós idejű együttműködést, és a márkázott PDF-ek automatikusan készültek.',
+        'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, és a márkázott PDF-ek automatikusan készültek.',
       results: [
         { metric: 'Időmegtakarítás', value: '70%' },
         { metric: 'Ajánlatok/hét', value: '25+' },
@@ -477,7 +477,7 @@ export default function Home() {
               <ul className="mt-6 space-y-3">
                 {[
                   'AI-alapú szöveg generálás',
-                  'Drag & drop szerkesztés',
+                  'Reszponzív szerkesztés',
                   'Automatikus márkázás',
                   'Valós idejű együttműködés',
                 ].map((item, index) => (
@@ -523,8 +523,8 @@ export default function Home() {
             // src="/images/gifs/ai-generation.gif" // Add when available
           />
           <ProductGif
-            alt="Drag & drop szerkesztés animáció"
-            caption="Drag & drop szerkesztés"
+            alt="Reszponzív szerkesztés animáció"
+            caption="Reszponzív szerkesztés"
             // src="/images/gifs/drag-drop.gif" // Add when available
           />
           <ProductScreenshot
@@ -545,8 +545,7 @@ export default function Home() {
             Három egyszerű lépés a sikerhez
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            A Vyndi felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és
-            a háttérben az AI mindig egységes arculatot tart.
+            A Vyndi felülete egyszerű és áttekinthető. Az AI mindig egységes arculatot tart.
           </p>
         </div>
 

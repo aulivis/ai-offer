@@ -19,7 +19,7 @@ const defaultFeatures: ComparisonFeature[] = [
   { feature: 'Magyar nyelvű támogatás', vyndi: true, competitor1: false, competitor2: false },
   { feature: 'Márkázott PDF export', vyndi: true, competitor1: true, competitor2: 'Prémium' },
   { feature: 'Valós idejű együttműködés', vyndi: true, competitor1: false, competitor2: true },
-  { feature: 'Drag & drop szerkesztés', vyndi: true, competitor1: true, competitor2: false },
+  { feature: 'Reszponzív szerkesztés', vyndi: true, competitor1: true, competitor2: false },
   { feature: 'Ingyenes próba', vyndi: true, competitor1: false, competitor2: true },
   { feature: 'Automatikus árkalkuláció', vyndi: true, competitor1: false, competitor2: false },
   { feature: 'Interaktív visszajelzések', vyndi: true, competitor1: false, competitor2: false },

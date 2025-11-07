@@ -29,10 +29,10 @@ const sections: Section[] = [
         <p>
           Kapcsolattartó e-mail:{' '}
           <Link
-            href="mailto:privacy@propono.hu"
+            href="mailto:privacy@vyndi.hu"
             className="text-primary underline-offset-4 hover:underline"
           >
-            privacy@propono.hu
+            privacy@vyndi.hu
           </Link>
         </p>
       </div>
@@ -140,10 +140,10 @@ const sections: Section[] = [
         <p>
           Ön jogosult az alábbi jogok gyakorlására. Kérését a{' '}
           <Link
-            href="mailto:privacy@propono.hu"
+            href="mailto:privacy@vyndi.hu"
             className="text-primary underline-offset-4 hover:underline"
           >
-            privacy@propono.hu
+            privacy@vyndi.hu
           </Link>{' '}
           címen vagy postai úton juttathatja el hozzánk:
         </p>
@@ -173,10 +173,10 @@ const sections: Section[] = [
         <p>
           Ha bármilyen kérdése vagy észrevétele van az adatkezeléssel kapcsolatban, írjon nekünk a{' '}
           <Link
-            href="mailto:privacy@propono.hu"
+            href="mailto:privacy@vyndi.hu"
             className="text-primary underline-offset-4 hover:underline"
           >
-            privacy@propono.hu
+            privacy@vyndi.hu
           </Link>{' '}
           címre, vagy küldjön levelet a Propono Labs Kft. postacímére: 1053 Budapest, Magyarország.
         </p>

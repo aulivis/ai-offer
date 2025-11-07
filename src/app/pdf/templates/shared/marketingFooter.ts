@@ -4,7 +4,7 @@ import { sanitizeInput } from '@/lib/sanitize';
  * Marketing footer for free templates
  * Includes attribution to Vyndi AI, upsell message, and homepage link
  */
-export function renderMarketingFooter(homepageUrl: string = 'https://vyndi.ai'): string {
+export function renderMarketingFooter(homepageUrl: string = 'https://vyndi.hu'): string {
   const safeUrl = sanitizeInput(homepageUrl);
   const brandName = 'Vyndi AI';
   const upsellMessage = 'Upgrade to Pro for premium templates and advanced features.';
