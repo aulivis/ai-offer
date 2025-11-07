@@ -426,6 +426,10 @@ export default function NewOfferWizard() {
   // edit on step 3 (declared early for use in draft persistence)
   const [editedHtml, setEditedHtml] = useState<string>('');
 
+  // preview (declared early for use in draft persistence)
+  const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
+  const [previewLocked, setPreviewLocked] = useState(false);
+
   // Draft persistence
   const wizardDraftData = useMemo(
     () => ({
@@ -434,9 +438,11 @@ export default function NewOfferWizard() {
       client,
       rows,
       editedHtml,
+      previewHtml,
+      previewLocked,
       selectedPdfTemplateId,
     }),
-    [step, form, client, rows, editedHtml, selectedPdfTemplateId],
+    [step, form, client, rows, editedHtml, previewHtml, previewLocked, selectedPdfTemplateId],
   );
   const { loadDraft, clearDraft } = useDraftPersistence('new-offer', wizardDraftData);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -464,10 +470,51 @@ export default function NewOfferWizard() {
       if (saved.client) setClient(saved.client);
       if (saved.rows) setRows(saved.rows);
       if (saved.editedHtml) setEditedHtml(saved.editedHtml);
+      if (saved.previewHtml) setPreviewHtml(saved.previewHtml);
+      if (typeof saved.previewLocked === 'boolean') setPreviewLocked(saved.previewLocked);
       if (saved.selectedPdfTemplateId) setSelectedPdfTemplateId(saved.selectedPdfTemplateId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
+
+  // Save draft on beforeunload and route changes to ensure AI-generated text is saved
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Save draft immediately when user is about to leave
+      try {
+        localStorage.setItem(
+          'offer-wizard-draft-new-offer',
+          JSON.stringify(wizardDraftData),
+        );
+      } catch (err) {
+        console.warn('Failed to save draft on navigation:', err);
+      }
+    };
+
+    // Save draft before page unload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Save draft on visibility change (when user switches tabs/apps)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        try {
+          localStorage.setItem(
+            'offer-wizard-draft-new-offer',
+            JSON.stringify(wizardDraftData),
+          );
+        } catch (err) {
+          console.warn('Failed to save draft on visibility change:', err);
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [wizardDraftData]);
 
   // Real-time validation with debouncing (must be after form and rows declarations)
   const { errors: validationErrors, isValid: isStepValid } = useRealTimeValidation({
@@ -480,10 +527,8 @@ export default function NewOfferWizard() {
     },
   });
 
-  // preview
-  const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
+  // preview (previewHtml and previewLocked moved above for draft persistence)
   const [previewLoading, setPreviewLoading] = useState(false);
-  const [previewLocked, setPreviewLocked] = useState(false);
   const previewAbortRef = useRef<AbortController | null>(null);
   const previewRequestIdRef = useRef(0);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
@@ -1737,15 +1782,21 @@ export default function NewOfferWizard() {
         }
       }
 
-      // If PDF generation failed but text was saved, show a warning
+      // If PDF generation failed but text was saved, show a warning and keep the draft
       if (okFlag === true && responseStatus === 'failed' && textSaved) {
         showToast({
           title: t('toasts.offers.textSaved.title'),
           description: responseNote || t('toasts.offers.textSaved.description'),
           variant: 'warning',
         });
+        // Don't clear draft or redirect - let user continue editing
+        // The text is already saved in the database, so they can find it in dashboard
+        // But keep the wizard state so they can continue working if needed
+        setLoading(false);
+        return;
       }
 
+      // Only clear draft and redirect on successful completion
       clearDraft();
       
       // Wait a moment for quota to be updated on the backend before redirecting
