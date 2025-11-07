@@ -595,13 +595,13 @@ export default function Home() {
       <section className="mx-auto w-full max-w-6xl px-6">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-            Folyamat
+            {t('landing.howItWorks.label')}
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Három egyszerű lépés a sikerhez
+            {t('landing.howItWorks.titleAlt')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            A Vyndi felülete egyszerű és áttekinthető. Az AI mindig egységes arculatot tart.
+            {t('landing.howItWorks.descriptionAlt')}
           </p>
         </div>
 
@@ -702,10 +702,10 @@ export default function Home() {
             Összehasonlítás
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Vyndi vs. versenytársak
+            {t('landing.comparisonTable.title')}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Nézd meg, mi teszi a Vyndi-t egyedivé az ajánlatkészítés terén
+            {t('landing.comparisonTable.description')}
           </p>
         </div>
         <div className="mt-12">

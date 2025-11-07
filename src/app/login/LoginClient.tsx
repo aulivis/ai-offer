@@ -95,21 +95,21 @@ export default function LoginClient() {
       if (!response.ok && response.status !== 202) {
         const payload: unknown = await response
           .json()
-          .catch(() => ({ error: 'Nem sikerült elküldeni a magic linket.' }));
+          .catch(() => ({ error: t('errors.network') }));
         const message =
           payload &&
           typeof payload === 'object' &&
           'error' in payload &&
           typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error?: string }).error as string)
-            : 'Nem sikerült elküldeni a magic linket.';
+            : t('errors.network');
         throw new Error(message);
       }
 
       setSent(true);
       setCooldownRemaining(MAGIC_LINK_COOLDOWN_SECONDS);
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
+      const message = e instanceof Error ? e.message : t('errors.unknown');
       setError(message);
       setCooldownRemaining(0);
     } finally {
@@ -165,7 +165,7 @@ export default function LoginClient() {
       }
       window.location.assign(url.toString());
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Ismeretlen hiba';
+      const message = e instanceof Error ? e.message : t('errors.unknown');
       setError(message);
       setIsGoogleLoading(false);
     }
