@@ -31,7 +31,7 @@ export const hu = {
       close: 'Oldalsáv elrejtése',
     },
     footer: {
-      brand: 'Propono',
+      brand: 'Vyndi',
       description:
         'Professzionális ajánlatok percek alatt AI segítségével. Ideális kis- és középvállalkozásoknak.',
       contactHeading: 'Kapcsolat',
@@ -62,7 +62,7 @@ export const hu = {
     },
   },
   nav: {
-    brand: 'Propono',
+    brand: 'Vyndi',
     demo: 'Bemutató',
     caseStudies: 'Esettanulmányok',
     billing: 'Előfizetés',
@@ -77,7 +77,7 @@ export const hu = {
     menuToggle: 'Navigáció megnyitása',
   },
   announcementBar: {
-    message: 'Új ajánlat sablonok a Proponóban',
+    message: 'Új ajánlat sablonok a Vyndiben',
     cta: 'Próbáld ki most',
     ctaHref: '/demo',
   },
@@ -90,7 +90,7 @@ export const hu = {
     cta: 'Frissíts most',
   },
   header: {
-    brand: 'Propono',
+    brand: 'Vyndi',
     nav: {
       demo: 'Bemutató',
       caseStudies: 'Esettanulmányok',
@@ -318,7 +318,7 @@ export const hu = {
     emptyStates: {
       noOffers: 'Még nem hoztál létre ajánlatokat.',
       noResults: 'Nincs találat. Próbálj másik keresést vagy szűrőt.',
-      noOffersMessage: 'Hozz létre első ajánlatodat, hogy elkezdhesd használni a Proponót.',
+      noOffersMessage: 'Hozz létre első ajánlatodat, hogy elkezdhesd használni a Vyndit.',
       noResultsMessage: 'Próbálj meg más keresési feltételeket vagy szűrőket használni.',
     },
     status: {
@@ -414,8 +414,8 @@ export const hu = {
       subtitle: 'Állapotod és kvótáid havi bontásban.',
       planLabels: {
         free: 'Ingyenes csomag',
-        standard: 'Propono Standard',
-        pro: 'Propono Pro',
+        standard: 'Vyndi Standard',
+        pro: 'Vyndi Pro',
       },
       limit: {
         title: 'Havi keret',
@@ -455,7 +455,7 @@ export const hu = {
     plans: {
       standard: {
         badge: 'Belépő csomag',
-        name: 'Propono Standard',
+        name: 'Vyndi Standard',
         description:
           '10 professzionális ajánlat havonta PDF exporttal és tételes árkalkulációval. Ideális kis csapatoknak.',
         features: {
@@ -468,7 +468,7 @@ export const hu = {
         downgradeHelper: 'Válts Standard csomagra, ha kevesebb ajánlatra van szükséged a hónapban.',
       },
       pro: {
-        name: 'Propono Pro',
+        name: 'Vyndi Pro',
         description:
           'Korlátlan ajánlatgenerálás, márkázott PDF-ek, fejlett sablonkönyvtár és prioritásos támogatás növekvő csapatoknak.',
         features: {
@@ -511,7 +511,7 @@ export const hu = {
     public: {
       badge: 'Előfizetés',
       hero: {
-        title: 'Nyisd meg a Propono prémium élményét és zárj több projektet.',
+        title: 'Nyisd meg a Vyndi prémium élményét és zárj több projektet.',
         description:
           'Fedezd fel, hogyan készíthetsz AI által támogatott, márkázott ajánlatokat percek alatt. Válaszd ki a csomagot, és lépj tovább az értékesítés következő szintjére.',
         ctaPrimary: 'Csomag kiválasztása',
@@ -536,7 +536,7 @@ export const hu = {
         0: {
           title: 'Egységes, professzionális megjelenés',
           description:
-            'A Propono témái igazodnak a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+            'A Vyndi témái igazodnak a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
         },
         1: {
           title: 'AI, ami érti a briefet',
@@ -570,7 +570,7 @@ export const hu = {
         badge: 'Folyamat vizuálisan',
         title: 'Három lépés, ahol a csapatod együtt dolgozik',
         description:
-          'A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
+          'A Vyndi felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
       },
       cta: {
         badge: 'Ajánlatkészítés újrafogalmazva',
@@ -756,12 +756,12 @@ export const hu = {
       highlighted: 'ajánlatokat',
       titleLine2: 'percek alatt.',
       description:
-        'A Propono AI segítségével automatikusan generálja az ajánlataidat, így több időd marad az üzletfejlesztésre.',
+        'A Vyndi AI segítségével automatikusan generálja az ajánlataidat, így több időd marad az üzletfejlesztésre.',
       primaryCta: 'Kezdés ingyen',
       secondaryCta: 'Bemutató megtekintése',
       spotlightHeading: 'Mit kapsz azonnal?',
       spotlightDescription:
-        'A Propono a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól kezdve prémium élményt kap.',
+        'A Vyndi a csapatod workflow-jába simul, így az ügyfél már az első prezentációtól kezdve prémium élményt kap.',
       spotlightItems: [
         'Szabadszavas promptok iparági sablonokkal',
         'Rugalmas rács, ahol minden komponens mozgatható',
@@ -772,7 +772,7 @@ export const hu = {
       {
         title: 'Egységes, professzionális megjelenés',
         description:
-          'A Propono sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+          'A Vyndi sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
       },
       {
         title: 'AI, ami érti a briefet',
@@ -789,7 +789,7 @@ export const hu = {
       label: 'Folyamat vizuálisan',
       title: 'Három lépés, ahol a csapatod együtt dolgozik',
       description:
-        'A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
+        'A Vyndi felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és a háttérben az AI mindig egységes arculatot tart.',
       steps: [
         {
           title: 'Brief & mood',
@@ -824,7 +824,7 @@ export const hu = {
       ],
       testimonial: {
         quote:
-          '„A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.”',
+          '„A Vyndi olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető."',
         author: 'Kiss Júlia',
         role: 'Ügynökségvezető • Studio Fluo',
       },
@@ -833,7 +833,7 @@ export const hu = {
       label: 'Ajánlatkészítés újrafogalmazva',
       title: 'Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton',
       description:
-        'Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.',
+        'Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Vyndi AI az eddigi ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.',
       primaryCta: 'Kezdj el most – ingyen',
       secondaryCta: 'Árak és csomagok',
     },
@@ -843,7 +843,7 @@ export const hu = {
     badge: 'Demó',
     title: 'Interaktív demó hamarosan',
     description:
-      'Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Propono ajánlatkészítő folyamatát. Addig is regisztrálj és kezdd el ingyen az Ingyenes csomaggal, vagy lépj tovább a Propono Standard 10 ajánlatos keretével.',
+      'Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Vyndi ajánlatkészítő folyamatát. Addig is regisztrálj és kezdd el ingyen az Ingyenes csomaggal, vagy lépj tovább a Vyndi Standard 10 ajánlatos keretével.',
     loginCta: 'Bejelentkezés',
     backHome: 'Vissza a főoldalra',
   },

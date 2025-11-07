@@ -2,13 +2,13 @@ import { sanitizeInput } from '@/lib/sanitize';
 
 /**
  * Marketing footer for free templates
- * Includes attribution to Propono AI, upsell message, and homepage link
+ * Includes attribution to Vyndi AI, upsell message, and homepage link
  */
-export function renderMarketingFooter(homepageUrl: string = 'https://propono.ai'): string {
+export function renderMarketingFooter(homepageUrl: string = 'https://vyndi.ai'): string {
   const safeUrl = sanitizeInput(homepageUrl);
-  const brandName = 'Propono AI';
+  const brandName = 'Vyndi AI';
   const upsellMessage = 'Upgrade to Pro for premium templates and advanced features.';
-  const linkText = 'Visit Propono AI';
+  const linkText = 'Visit Vyndi AI';
 
   return `
     <div class="offer-doc__marketing-footer">

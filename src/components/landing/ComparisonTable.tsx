@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/Card';
 
 interface ComparisonFeature {
   feature: string;
-  propono: boolean | string;
+  vyndi: boolean | string;
   competitor1: boolean | string;
   competitor2: boolean | string;
 }
@@ -15,14 +15,14 @@ interface ComparisonTableProps {
 }
 
 const defaultFeatures: ComparisonFeature[] = [
-  { feature: 'AI-alapú szöveg generálás', propono: true, competitor1: false, competitor2: 'Korlátozott' },
-  { feature: 'Magyar nyelvű támogatás', propono: true, competitor1: false, competitor2: false },
-  { feature: 'Márkázott PDF export', propono: true, competitor1: true, competitor2: 'Prémium' },
-  { feature: 'Valós idejű együttműködés', propono: true, competitor1: false, competitor2: true },
-  { feature: 'Drag & drop szerkesztés', propono: true, competitor1: true, competitor2: false },
-  { feature: 'Ingyenes próba', propono: true, competitor1: false, competitor2: true },
-  { feature: 'Automatikus árkalkuláció', propono: true, competitor1: false, competitor2: false },
-  { feature: 'Interaktív visszajelzések', propono: true, competitor1: false, competitor2: false },
+  { feature: 'AI-alapú szöveg generálás', vyndi: true, competitor1: false, competitor2: 'Korlátozott' },
+  { feature: 'Magyar nyelvű támogatás', vyndi: true, competitor1: false, competitor2: false },
+  { feature: 'Márkázott PDF export', vyndi: true, competitor1: true, competitor2: 'Prémium' },
+  { feature: 'Valós idejű együttműködés', vyndi: true, competitor1: false, competitor2: true },
+  { feature: 'Drag & drop szerkesztés', vyndi: true, competitor1: true, competitor2: false },
+  { feature: 'Ingyenes próba', vyndi: true, competitor1: false, competitor2: true },
+  { feature: 'Automatikus árkalkuláció', vyndi: true, competitor1: false, competitor2: false },
+  { feature: 'Interaktív visszajelzések', vyndi: true, competitor1: false, competitor2: false },
 ];
 
 export default function ComparisonTable({
@@ -64,7 +64,7 @@ export default function ComparisonTable({
           <thead>
             <tr className="border-b border-border bg-bg-muted/50">
               <th className="px-6 py-4 text-left text-sm font-semibold text-fg">Funkció</th>
-              <th className="px-6 py-4 text-center text-sm font-semibold text-primary">Propono</th>
+              <th className="px-6 py-4 text-center text-sm font-semibold text-primary">Vyndi</th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-fg-muted">{competitor1Name}</th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-fg-muted">{competitor2Name}</th>
             </tr>
@@ -76,7 +76,7 @@ export default function ComparisonTable({
                 className="border-b border-border/50 transition-colors hover:bg-bg-muted/30"
               >
                 <td className="px-6 py-4 text-sm font-medium text-fg">{item.feature}</td>
-                <td className="px-6 py-4 text-center">{renderValue(item.propono)}</td>
+                <td className="px-6 py-4 text-center">{renderValue(item.vyndi)}</td>
                 <td className="px-6 py-4 text-center">{renderValue(item.competitor1)}</td>
                 <td className="px-6 py-4 text-center">{renderValue(item.competitor2)}</td>
               </tr>

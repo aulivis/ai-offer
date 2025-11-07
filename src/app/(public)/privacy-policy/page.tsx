@@ -22,7 +22,7 @@ const sections: Section[] = [
       <div className="space-y-3 text-base leading-relaxed text-muted-foreground">
         <p>
           Az adatkezelő a <strong>Propono Labs Kft.</strong> (székhely: 1053 Budapest,
-          Magyarország), amely a Propono ajánlatkészítő szolgáltatás működtetéséért felel. A
+          Magyarország), amely a Vyndi ajánlatkészítő szolgáltatás működtetéséért felel. A
           társaság felelős minden, a szolgáltatás igénybevétele során történő adatkezelési
           műveletért.
         </p>
@@ -58,7 +58,7 @@ const sections: Section[] = [
             visszajelzések és támogatási kérések tartalma.
           </li>
           <li>
-            <strong>Használati adatok:</strong> a Propono felületén végzett műveletek metaadatai,
+            <strong>Használati adatok:</strong> a Vyndi felületén végzett műveletek metaadatai,
             például bejelentkezési idők, IP-címek, eszköz- és böngészőinformációk, valamint a
             funkcióhasználat statisztikái.
           </li>

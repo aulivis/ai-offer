@@ -15,9 +15,9 @@ export default function DemoPlaceholderPage() {
           Interaktív demó hamarosan
         </h1>
         <p className="text-base leading-relaxed text-fg-muted">
-          Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Propono
+          Dolgozunk egy részletes bemutatón, ahol lépésről lépésre kipróbálhatod a Vyndi
           ajánlatkészítő folyamatát. Addig is regisztrálj és kezdd el ingyen az Ingyenes csomaggal,
-          vagy lépj tovább a Propono Standard 10 ajánlatos keretével.
+          vagy lépj tovább a Vyndi Standard 10 ajánlatos keretével.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link

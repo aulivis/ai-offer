@@ -20,7 +20,7 @@ export default function GuaranteeBadge({ className = '' }: GuaranteeBadgeProps) 
       <div className="flex-1">
         <h3 className="text-lg font-bold text-fg">100% Elégedettségi Garancia</h3>
         <p className="mt-1 text-sm text-fg-muted">
-          Ha nem vagy elégedett a Propono-val az első 30 napban, teljes visszatérítést kapsz. Nincs
+          Ha nem vagy elégedett a Vyndi-val az első 30 napban, teljes visszatérítést kapsz. Nincs
           kockázat, nincs kötelezettség.
         </p>
       </div>

@@ -173,7 +173,7 @@ export default function LoginClient() {
       <div className="grid w-full max-w-5xl gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div className="hidden lg:block space-y-6">
           <h2 className="text-3xl font-bold text-[#1c274c]">
-            Miért válaszd a Propono-t?
+            Miért válaszd a Vyndi-t?
           </h2>
           <ul className="space-y-4">
             <li className="flex items-start gap-3">
@@ -194,7 +194,7 @@ export default function LoginClient() {
         <Card className="w-full space-y-8 rounded-3xl border border-border/70 bg-bg/90 p-10 text-fg shadow-card backdrop-blur">
         <div className="space-y-4 text-center">
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg text-base font-semibold text-fg">
-            P
+            V
           </span>
           <h1 className="font-sans text-4xl font-bold tracking-[-0.125rem] text-[#1c274c]">
             {t('login.title')}

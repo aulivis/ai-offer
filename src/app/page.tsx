@@ -77,7 +77,7 @@ export default function Home() {
       ),
       title: 'Egyetlen esztétikus felület',
       description:
-        'A Propono sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+        'A Vyndi sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
     },
     {
       icon: (
@@ -163,7 +163,7 @@ export default function Home() {
   const testimonials = [
     {
       quote:
-        'A Propono olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.',
+        'A Vyndi olyan, mintha az ajánlatkészítéshez kapnánk egy Penpotot. Végre ugyanabban a térben dolgozik designer, sales és vezető.',
       author: 'Kiss Júlia',
       role: 'Ügynökségvezető',
       company: 'Studio Fluo',
@@ -189,9 +189,9 @@ export default function Home() {
 
   const faqItems = [
     {
-      question: 'Mennyi időbe telik megtanulni a Propono használatát?',
+      question: 'Mennyi időbe telik megtanulni a Vyndi használatát?',
       answer:
-        'A Propono intuitív felülettel rendelkezik, amelyet percek alatt elsajátíthatsz. Az első ajánlatodat 10 perc alatt elkészítheted, és az AI segítségével még gyorsabban haladsz. Részletes útmutatókat és videókat is biztosítunk.',
+        'A Vyndi intuitív felülettel rendelkezik, amelyet percek alatt elsajátíthatsz. Az első ajánlatodat 10 perc alatt elkészítheted, és az AI segítségével még gyorsabban haladsz. Részletes útmutatókat és videókat is biztosítunk.',
     },
     {
       question: 'Milyen formátumokban exportálhatom az ajánlatokat?',
@@ -201,7 +201,7 @@ export default function Home() {
     {
       question: 'Működik offline is?',
       answer:
-        'A Propono web-alapú alkalmazás, amely internetkapcsolatot igényel az AI funkciókhoz és a szinkronizációhoz. Azonban az elkészített ajánlatokat PDF-ként letöltheted, amelyeket offline is megoszthatsz.',
+        'A Vyndi web-alapú alkalmazás, amely internetkapcsolatot igényel az AI funkciókhoz és a szinkronizációhoz. Azonban az elkészített ajánlatokat PDF-ként letöltheted, amelyeket offline is megoszthatsz.',
     },
     {
       question: 'Biztonságosak az adataim?',
@@ -287,14 +287,14 @@ export default function Home() {
       challenge:
         'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
       solution:
-        'A Propono bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, a drag & drop felület lehetővé tette a valós idejű együttműködést, és a márkázott PDF-ek automatikusan készültek.',
+        'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, a drag & drop felület lehetővé tette a valós idejű együttműködést, és a márkázott PDF-ek automatikusan készültek.',
       results: [
         { metric: 'Időmegtakarítás', value: '70%' },
         { metric: 'Ajánlatok/hét', value: '25+' },
         { metric: 'Elfogadási arány', value: '+35%' },
       ],
       quote:
-        'A Propono megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
+        'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
       author: 'Kiss Júlia',
       role: 'Ügynökségvezető',
     },
@@ -304,7 +304,7 @@ export default function Home() {
       challenge:
         'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
       solution:
-        'A Propono moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
+        'A Vyndi moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
       results: [
         { metric: 'Ajánlatkészítési idő', value: '-65%' },
         { metric: 'Sablonok száma', value: '50+' },
@@ -379,7 +379,7 @@ export default function Home() {
           {/* Product Demo Area */}
           <div className="relative lg:order-last">
             <VideoPlayer
-              title="Propono Product Demo"
+              title="Vyndi Product Demo"
               className="w-full"
               // Add videoUrl and thumbnailUrl props when available
             />
@@ -422,7 +422,7 @@ export default function Home() {
         <div className="mt-12 rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 md:p-12">
           <div className="mx-auto max-w-3xl text-center">
             <h3 className="text-2xl font-semibold text-fg md:text-3xl">
-              A megoldás: Propono AI-alapú ajánlatkészítő
+              A megoldás: Vyndi AI-alapú ajánlatkészítő
             </h3>
             <p className="mt-4 text-lg text-fg-muted">
               Automatizáld az ajánlatkészítést, spórolj órákat, és növeld az üzleti eredményeidet.
@@ -442,7 +442,7 @@ export default function Home() {
             Minden, amire szükséged van egy helyen
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            A Propono minden eszközt biztosít, amire szükséged van a professzionális ajánlatkészítéshez
+            A Vyndi minden eszközt biztosít, amire szükséged van a professzionális ajánlatkészítéshez
           </p>
         </div>
 
@@ -471,7 +471,7 @@ export default function Home() {
                 Nézd meg, hogyan működik
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-fg-muted">
-                Tekintsd meg a Propono működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz
+                Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz
                 professzionális ajánlatokat percek alatt.
               </p>
               <ul className="mt-6 space-y-3">
@@ -507,7 +507,7 @@ export default function Home() {
             </div>
             <div className="relative">
               <VideoPlayer
-                title="Propono Product Demo"
+                title="Vyndi Product Demo"
                 className="w-full"
                 // Add videoUrl and thumbnailUrl props when available
               />
@@ -545,7 +545,7 @@ export default function Home() {
             Három egyszerű lépés a sikerhez
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            A Propono felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és
+            A Vyndi felülete szabad vászonként működik. A blokkokat mozgathatod, kommentelhetsz, és
             a háttérben az AI mindig egységes arculatot tart.
           </p>
         </div>
@@ -589,7 +589,7 @@ export default function Home() {
             Ügyfeleink véleménye
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Csatlakozz a Propono közösséghez
+            Csatlakozz a Vyndi közösséghez
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
             Több mint 500+ vállalat bízik bennünk az ajánlatkészítéshez
@@ -636,10 +636,10 @@ export default function Home() {
             Összehasonlítás
           </span>
           <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
-            Propono vs. versenytársak
+            Vyndi vs. versenytársak
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Nézd meg, mi teszi a Propono-t egyedivé az ajánlatkészítés terén
+            Nézd meg, mi teszi a Vyndi-t egyedivé az ajánlatkészítés terén
           </p>
         </div>
         <div className="mt-12">
@@ -687,7 +687,7 @@ export default function Home() {
             Mennyit takaríthatnál meg?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
-            Számítsd ki, mennyi időt és pénzt takaríthatnál meg a Propono-val
+            Számítsd ki, mennyi időt és pénzt takaríthatnál meg a Vyndi-val
           </p>
         </div>
         <div className="mt-12">
@@ -721,7 +721,7 @@ export default function Home() {
               Csatlakozz a vizuális workflow-hoz, és spórolj órákat minden ajánlaton
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-fg-muted">
-              Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Propono AI az eddigi
+              Ingyenes kipróbálás, azonnali meghívás a csapattagoknak. A Vyndi AI az eddigi
               ajánlataidból tanul, hogy minden új dokumentum pontos, esztétikus és márkahű legyen.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">

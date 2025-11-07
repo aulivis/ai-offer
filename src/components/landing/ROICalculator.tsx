@@ -22,7 +22,7 @@ export default function ROICalculator({ className = '' }: ROICalculatorProps) {
       <div className="mb-6 text-center">
         <h3 className="text-2xl font-semibold text-fg">Számítsd ki a megtakarításod</h3>
         <p className="mt-2 text-base text-fg-muted">
-          Mennyi időt és pénzt takaríthatnál meg a Propono-val?
+          Mennyi időt és pénzt takaríthatnál meg a Vyndi-val?
         </p>
       </div>
 
@@ -95,7 +95,7 @@ export default function ROICalculator({ className = '' }: ROICalculatorProps) {
 
         <div className="rounded-lg bg-primary/10 p-4 text-center">
           <p className="text-sm text-fg-muted">
-            A Propono segítségével <strong className="text-fg">70%-kal gyorsabban</strong> készíthetsz
+            A Vyndi segítségével <strong className="text-fg">70%-kal gyorsabban</strong> készíthetsz
             ajánlatokat
           </p>
         </div>

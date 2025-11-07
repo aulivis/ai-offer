@@ -20,7 +20,7 @@ import { getRequestLanguage } from './lib/language';
 import { gota, spaceMono, workSans } from './fonts';
 
 export const metadata: Metadata = {
-  title: 'Propono — AI offers',
+  title: 'Vyndi — AI offers',
   description: 'AI-assisted, professional offers for SMEs',
 };
 

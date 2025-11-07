@@ -25,7 +25,7 @@ const cookieCategories: Section = {
   heading: '1. Sütik kategóriái',
   content: (
     <div className="space-y-3 text-base leading-relaxed text-muted-foreground">
-      <p>A Propono három sütikategóriát különböztet meg:</p>
+      <p>A Vyndi három sütikategóriát különböztet meg:</p>
       <ul className="list-disc space-y-2 pl-5">
         <li>
           <strong>Szükséges sütik:</strong> biztosítják a bejelentkezést, a munkamenetet és az oldal
@@ -50,7 +50,7 @@ const cookieInventory: CookieEntry[] = [
   {
     name: 'propono_at',
     purpose:
-      'Hitelesítési munkamenet-süti, amely biztosítja a bejelentkezett felhasználók számára a Propono felülethez való hozzáférést.',
+      'Hitelesítési munkamenet-süti, amely biztosítja a bejelentkezett felhasználók számára a Vyndi felülethez való hozzáférést.',
     duration: 'Munkamenet (a böngésző bezárásáig)',
     provider: 'Propono Labs Kft.',
   },
