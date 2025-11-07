@@ -460,12 +460,7 @@ serve(async (request) => {
 
     if (deviceUsageIncremented && deviceId) {
       try {
-        await rollbackUsageIncrement(
-          supabase,
-          'device',
-          { userId: job.user_id, deviceId },
-          usagePeriodStart,
-        );
+        await rollbackUsageIncrement(supabase, 'device', { userId: job.user_id, deviceId }, usagePeriodStart);
       } catch (rollbackError) {
         console.error('Failed to rollback device usage increment:', rollbackError);
       }
