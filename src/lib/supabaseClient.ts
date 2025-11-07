@@ -225,6 +225,9 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
   }
 
   try {
+    // Try to read cookies - note: HttpOnly cookies CANNOT be read via document.cookie
+    // This is a security feature. If cookies are HttpOnly, this will return null.
+    // In that case, we rely on the server-side session verification via API calls.
     const accessToken = getCookie('propono_at');
     const refreshToken = getCookie('propono_rt');
     

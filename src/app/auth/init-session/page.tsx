@@ -35,81 +35,143 @@ export default function InitSessionPage() {
         // Reset any stale session state
         resetSessionState();
 
-        // Wait a bit for cookies to be available (browser cookie propagation)
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait a bit for cookies to propagate (HttpOnly cookies are set server-side)
+        await new Promise(resolve => setTimeout(resolve, 300));
 
-        // Check if cookies are available
-        const accessToken = getCookie('propono_at');
-        const refreshToken = getCookie('propono_rt');
-
-        if (!accessToken || !refreshToken) {
-          // Cookies not available yet, wait and retry
-          for (let attempt = 0; attempt < 5; attempt++) {
-            await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
-            const retryAccessToken = getCookie('propono_at');
-            const retryRefreshToken = getCookie('propono_rt');
+        // Fetch tokens from server-side API endpoint
+        // This endpoint reads HttpOnly cookies server-side and returns tokens
+        // so we can initialize the Supabase client session
+        let accessToken: string | null = null;
+        let refreshToken: string | null = null;
+        let verifiedUserId: string | null = null;
+        
+        try {
+          const verifyResponse = await fetch('/api/auth/init-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ expectedUserId }),
+            credentials: 'include',
+            cache: 'no-store',
+          });
+          
+          if (!verifyResponse.ok) {
+            const errorData = await verifyResponse.json().catch(() => ({}));
+            console.warn('Failed to get tokens from server', {
+              status: verifyResponse.status,
+              error: errorData.error,
+              hasCookies: errorData.hasCookies,
+            });
             
-            if (retryAccessToken && retryRefreshToken) {
-              break;
-            }
-            
-            if (attempt === 4) {
+            if (!errorData.hasCookies) {
               throw new Error('Authentication cookies not found. Please try logging in again.');
             }
+            
+            throw new Error(errorData.error || 'Failed to initialize session');
           }
+          
+          const verifyData = await verifyResponse.json();
+          if (!verifyData.success || !verifyData.accessToken || !verifyData.refreshToken) {
+            throw new Error('Invalid response from server');
+          }
+          
+          accessToken = verifyData.accessToken;
+          refreshToken = verifyData.refreshToken;
+          verifiedUserId = verifyData.userId;
+          
+          console.log('Tokens received from server', { 
+            userId: verifiedUserId,
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken,
+          });
+        } catch (fetchError) {
+          console.error('Failed to fetch tokens from API', fetchError);
+          if (fetchError instanceof Error) {
+            throw fetchError;
+          }
+          throw new Error('Failed to initialize session: Could not retrieve authentication tokens');
         }
-
-        // Initialize session with exponential backoff retry
+        
+        // Now initialize Supabase client session with the tokens
+        const { getSupabaseClient } = await import('@/lib/supabaseClient');
+        const client = getSupabaseClient();
+        
+        let sessionInitialized = false;
         let lastError: Error | null = null;
-        for (let attempt = 0; attempt < 5; attempt++) {
+        
+        for (let attempt = 0; attempt < 6; attempt++) {
           try {
-            await ensureSession(expectedUserId);
+            // Set the session using the tokens we got from the server
+            const { data, error: setError } = await client.auth.setSession({
+              access_token: accessToken!,
+              refresh_token: refreshToken!,
+            });
             
-            // Verify session was initialized by checking if we can get user info
-            const { getSupabaseClient } = await import('@/lib/supabaseClient');
-            const client = getSupabaseClient();
-            const { data: { session }, error: sessionError } = await client.auth.getSession();
-            
-            if (sessionError) {
-              throw new Error(`Session verification failed: ${sessionError.message}`);
+            if (setError) {
+              throw new Error(`Failed to set session: ${setError.message}`);
             }
             
-            if (!session || !session.user) {
-              throw new Error('Session initialized but no user found');
+            if (!data.session || !data.session.user) {
+              throw new Error('Session set but no user found');
             }
             
-            if (expectedUserId && session.user.id !== expectedUserId) {
+            // Verify user ID matches
+            if (expectedUserId && data.session.user.id !== expectedUserId) {
               throw new Error(
-                `Session user ID mismatch: expected ${expectedUserId}, got ${session.user.id}`
+                `Session user ID mismatch: expected ${expectedUserId}, got ${data.session.user.id}`
               );
             }
             
-            // Success!
-            if (mounted) {
-              setUserId(session.user.id);
-              setStatus('success');
-              
-              // Small delay to ensure session is fully propagated
-              await new Promise(resolve => setTimeout(resolve, 100));
-              
-              // Redirect to final destination
-              router.replace(redirectTo);
+            // Verify session is actually active
+            await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+            
+            const { data: { session: verifySession }, error: verifyError } = await client.auth.getSession();
+            
+            if (verifyError) {
+              throw new Error(`Session verification failed: ${verifyError.message}`);
             }
             
-            return;
+            if (!verifySession || !verifySession.user) {
+              throw new Error('Session not found after initialization');
+            }
+            
+            if (verifySession.user.id !== data.session.user.id) {
+              throw new Error('Session user ID changed after initialization');
+            }
+            
+            // Success!
+            sessionInitialized = true;
+            verifiedUserId = verifySession.user.id;
+            console.log('Session initialized successfully', { userId: verifiedUserId });
+            break;
           } catch (err) {
             lastError = err instanceof Error ? err : new Error('Unknown error');
+            console.warn(`Session initialization attempt ${attempt + 1} failed:`, lastError.message);
             
-            // If this isn't the last attempt, wait before retrying with exponential backoff
-            if (attempt < 4) {
-              const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5 seconds
+            // If this isn't the last attempt, wait before retrying
+            if (attempt < 5) {
+              const delay = Math.min(200 * Math.pow(1.5, attempt), 1500);
               await new Promise(resolve => setTimeout(resolve, delay));
             }
           }
         }
         
-        // All retries failed
-        throw lastError || new Error('Failed to initialize session after multiple attempts');
+        if (!sessionInitialized || !verifiedUserId) {
+          throw lastError || new Error('Failed to initialize session after multiple attempts');
+        }
+        
+        // Success!
+        if (mounted) {
+          setUserId(verifiedUserId);
+          setStatus('success');
+          
+          // Small delay to ensure session is fully propagated
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          // Redirect to final destination
+          router.replace(redirectTo);
+        }
       } catch (err) {
         if (!mounted) return;
         
