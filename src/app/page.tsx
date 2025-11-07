@@ -23,6 +23,7 @@ import UseCasesSection from '@/components/landing/UseCasesSection';
 import ResourcesSection from '@/components/landing/ResourcesSection';
 import EnterpriseCTA from '@/components/landing/EnterpriseCTA';
 import EmailCapture from '@/components/landing/EmailCapture';
+import Chatbot from '@/components/chatbot/Chatbot';
 import { t } from '@/copy';
 
 export default function Home() {
@@ -735,6 +736,24 @@ export default function Home() {
         </div>
         <div className="mt-12">
           <FAQ items={faqItems} />
+        </div>
+      </section>
+
+      {/* CHATBOT SECTION */}
+      <section className="mx-auto w-full max-w-4xl px-6">
+        <div className="text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            AI Assistant
+          </span>
+          <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+            Have questions? Ask our AI assistant
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+            Get instant answers about Propono's features, API, templates, and more. Powered by AI and our documentation.
+          </p>
+        </div>
+        <div className="mt-12">
+          <Chatbot />
         </div>
       </section>
 
