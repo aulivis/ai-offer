@@ -47,9 +47,10 @@ begin
   end if;
 
   -- Get user's plan from profile
-  select coalesce(plan, 'free') into v_plan
-  from profiles
-  where id = v_user_id;
+  -- Use table alias to avoid ambiguity with return column name
+  select coalesce(p.plan, 'free') into v_plan
+  from profiles p
+  where p.id = v_user_id;
 
   -- Determine limit based on plan
   case v_plan
