@@ -340,7 +340,64 @@ serve(async (request) => {
       throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
     }
 
-    // Increment quota AFTER offer update succeeds
+    // Verify PDF is actually downloadable before incrementing quota
+    // This ensures quota is only incremented when PDF is accessible to users
+    try {
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
+      let verifyResponse: Response;
+      try {
+        verifyResponse = await fetch(pdfUrl, {
+          method: 'HEAD',
+          signal: abortController.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      
+      if (!verifyResponse.ok) {
+        console.error('PDF verification failed - file not accessible (edge worker)', {
+          offerId: job.offer_id,
+          pdfUrl,
+          status: verifyResponse.status,
+          statusText: verifyResponse.statusText,
+        });
+        throw new Error(`PDF is not accessible: ${verifyResponse.status} ${verifyResponse.statusText}`);
+      }
+      
+      // Verify it's actually a PDF by checking Content-Type
+      const contentType = verifyResponse.headers.get('content-type');
+      if (contentType && !contentType.includes('application/pdf')) {
+        console.error('PDF verification failed - incorrect content type (edge worker)', {
+          offerId: job.offer_id,
+          pdfUrl,
+          contentType,
+        });
+        throw new Error(`PDF has incorrect content type: ${contentType}`);
+      }
+      
+      console.log('Verified: PDF is accessible and downloadable (edge worker)', {
+        offerId: job.offer_id,
+        pdfUrl,
+        contentType,
+      });
+    } catch (verifyError) {
+      const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
+      console.error('Failed to verify PDF accessibility (edge worker)', {
+        offerId: job.offer_id,
+        pdfUrl,
+        error: errorMessage,
+      });
+      // Rollback offer update since PDF is not accessible
+      await supabase
+        .from('offers')
+        .update({ pdf_url: null })
+        .eq('id', job.offer_id)
+        .eq('user_id', job.user_id);
+      throw new Error(`PDF is not accessible: ${errorMessage}`);
+    }
+
+    // Increment quota ONLY after PDF is verified as accessible and downloadable
     // If this fails, we can rollback the offer update if needed
     console.log('Attempting to increment user quota (edge worker)', {
       userId: job.user_id,
@@ -439,6 +496,8 @@ serve(async (request) => {
       });
     }
 
+    // Mark job as completed BEFORE returning
+    // If this fails, quota is already incremented, so we need to handle this carefully
     const { error: jobCompleteError } = await supabase
       .from('pdf_jobs')
       .update({
@@ -449,7 +508,17 @@ serve(async (request) => {
       })
       .eq('id', jobId);
     if (jobCompleteError) {
-      throw new Error(`Failed to mark job as completed: ${jobCompleteError.message}`);
+      // Job completion failed, but quota was already incremented
+      // This is a critical error - log it but don't rollback quota since PDF is accessible
+      console.error('CRITICAL: Failed to mark job as completed after quota increment (edge worker)', {
+        jobId,
+        offerId: job.offer_id,
+        error: jobCompleteError.message,
+        pdfUrl,
+      });
+      // Don't throw - quota is incremented and PDF is accessible, so this is a data consistency issue
+      // but the user should still have access to their PDF
+      // The job status will remain 'processing', which is acceptable
     }
 
     if (job.callback_url && pdfUrl) {
