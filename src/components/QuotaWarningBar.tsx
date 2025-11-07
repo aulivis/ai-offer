@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
-import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
 import { currentMonthStart } from '@/lib/services/usage';
 import { t } from '@/copy';
 import { getDeviceIdFromCookie } from '@/lib/deviceId';
@@ -19,52 +18,6 @@ type UsageResponse = {
   remaining: number | null;
   periodStart: string;
 };
-
-function parseUsageResponse(payload: unknown): UsageResponse | null {
-  if (!payload || typeof payload !== 'object') {
-    return null;
-  }
-
-  const record = payload as Record<string, unknown>;
-  const planValue = record.plan;
-  if (planValue !== 'free' && planValue !== 'standard' && planValue !== 'pro') {
-    return null;
-  }
-
-  const limit =
-    record.limit === null
-      ? null
-      : typeof record.limit === 'number' && Number.isFinite(record.limit)
-        ? record.limit
-        : null;
-
-  const confirmed = Number(record.confirmed) || 0;
-  const pendingUser = Number(record.pendingUser) || 0;
-  const pendingDevice =
-    record.pendingDevice === null || record.pendingDevice === undefined
-      ? null
-      : Number(record.pendingDevice) || 0;
-  const confirmedDevice =
-    record.confirmedDevice === null || record.confirmedDevice === undefined
-      ? null
-      : Number(record.confirmedDevice) || 0;
-  const periodStart = typeof record.periodStart === 'string' ? record.periodStart : '';
-
-  if (!periodStart) {
-    return null;
-  }
-
-  return {
-    plan: planValue,
-    limit,
-    confirmed,
-    pendingUser,
-    pendingDevice,
-    confirmedDevice,
-    remaining: typeof record.remaining === 'number' ? record.remaining : null,
-    periodStart,
-  };
-}
 
 export default function QuotaWarningBar() {
   const sb = useSupabase();
@@ -87,36 +40,46 @@ export default function QuotaWarningBar() {
       try {
         const deviceId = getDeviceIdFromCookie();
         const { iso: expectedPeriod } = currentMonthStart();
-        const params = new URLSearchParams({ period_start: expectedPeriod });
-        if (deviceId) {
-          params.set('device_id', deviceId);
-        }
 
-        const response = await fetchWithSupabaseAuth(
-          `/api/usage/with-pending?${params.toString()}`,
-          { method: 'GET', defaultErrorMessage: t('errors.requestFailed') },
-        );
+        // Call database function directly - simpler and faster than API route
+        const { data, error } = await sb.rpc('get_quota_snapshot', {
+          p_period_start: expectedPeriod,
+          p_device_id: deviceId || null,
+        });
 
         if (!active) {
           return;
         }
 
-        const payload = (await response.json().catch(() => null)) as unknown;
-        const usageData = parseUsageResponse(payload);
+        if (error) {
+          // Silently handle auth errors - user is not authenticated, which is expected
+          if (error.message?.includes('authenticated') || error.code === 'PGRST301') {
+            setQuotaSnapshot(null);
+            return;
+          }
+          throw new Error(`Failed to load quota: ${error.message}`);
+        }
 
-        if (!usageData || !active) {
+        const snapshot = Array.isArray(data) ? data[0] : data;
+        if (!snapshot || !active) {
           return;
         }
+
+        // Map database response to UsageResponse format
+        const usageData: UsageResponse = {
+          plan: snapshot.plan as 'free' | 'standard' | 'pro',
+          limit: snapshot.limit,
+          confirmed: Number(snapshot.confirmed) || 0,
+          pendingUser: Number(snapshot.pending_user) || 0,
+          pendingDevice: snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : null,
+          confirmedDevice: snapshot.confirmed_device !== null ? Number(snapshot.confirmed_device) || 0 : null,
+          remaining: snapshot.remaining,
+          periodStart: snapshot.period_start,
+        };
 
         setQuotaSnapshot(usageData);
       } catch (error) {
         if (!active) {
-          return;
-        }
-        // Silently handle 401 errors - user is not authenticated, which is expected
-        // Only log other errors
-        if (error instanceof ApiError && error.status === 401) {
-          setQuotaSnapshot(null);
           return;
         }
         console.error('Failed to load quota for warning bar:', error);

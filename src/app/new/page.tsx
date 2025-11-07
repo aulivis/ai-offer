@@ -650,53 +650,35 @@ export default function NewOfferWizard() {
       setQuotaLoading(true);
       try {
         const { iso: expectedPeriod } = currentMonthStart();
-        const params = new URLSearchParams({ period_start: expectedPeriod });
 
-        const response = await fetchWithSupabaseAuth(
-          `/api/usage/with-pending?${params.toString()}`,
-          { method: 'GET', defaultErrorMessage: t('errors.requestFailed') },
-        );
+        // Call database function directly - simpler and faster than API route
+        const { data, error } = await sb.rpc('get_quota_snapshot', {
+          p_period_start: expectedPeriod,
+        });
 
         if (!active) {
           return;
         }
 
-        const payload = (await response.json().catch(() => null)) as unknown;
-        
-        // Parse the response similar to dashboard
-        if (!payload || typeof payload !== 'object') {
-          throw new Error('Invalid usage response payload.');
+        if (error) {
+          throw new Error(`Failed to load quota: ${error.message}`);
         }
 
-        const record = payload as Record<string, unknown>;
-        const planValue = record.plan;
+        const snapshot = Array.isArray(data) ? data[0] : data;
+        if (!snapshot) {
+          throw new Error('No quota snapshot returned from database');
+        }
+
+        // Validate and normalize the response
+        const planValue = snapshot.plan;
         if (planValue !== 'free' && planValue !== 'standard' && planValue !== 'pro') {
-          throw new Error('Invalid plan in usage response.');
+          throw new Error('Invalid plan in quota snapshot');
         }
 
-        let limit: number | null = null;
-        if (record.limit === null) {
-          limit = null;
-        } else if (record.limit !== undefined) {
-          const numericLimit = Number(record.limit);
-          if (Number.isFinite(numericLimit)) {
-            limit = numericLimit;
-          } else {
-            throw new Error('Invalid limit in usage response.');
-          }
-        }
-
-        const confirmedValue = Number(record.confirmed);
-        const confirmed = Number.isFinite(confirmedValue) ? confirmedValue : 0;
-
-        const pendingUserValue = Number(record.pendingUser);
-        const pendingUser = Number.isFinite(pendingUserValue) ? pendingUserValue : 0;
-
-        const periodStart = typeof record.periodStart === 'string' ? record.periodStart : '';
-
-        if (!periodStart) {
-          throw new Error('Missing periodStart in usage response.');
-        }
+        const limit = snapshot.limit !== null && snapshot.limit !== undefined ? Number(snapshot.limit) : null;
+        const confirmed = Number.isFinite(snapshot.confirmed) ? Number(snapshot.confirmed) : 0;
+        const pendingUser = Number.isFinite(snapshot.pending_user) ? Number(snapshot.pending_user) : 0;
+        const periodStart = typeof snapshot.period_start === 'string' ? snapshot.period_start : expectedPeriod;
 
         setQuotaSnapshot({
           limit,

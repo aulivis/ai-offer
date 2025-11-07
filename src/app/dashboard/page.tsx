@@ -790,55 +790,45 @@ export default function DashboardPage() {
 
     (async () => {
       try {
-        // First, try to recalculate usage from actual PDFs to ensure accuracy
-        // This fixes cases where quota was incremented but PDF generation failed
-        // or where quota wasn't properly incremented
-        try {
-          const { recalculateUsageFromPdfs } = await import('@/lib/services/usage');
-          const { iso: expectedPeriod } = currentMonthStart();
-          await recalculateUsageFromPdfs(sb, user.id, expectedPeriod).catch((err) => {
-            console.warn('Failed to recalculate usage from PDFs, continuing with counter value:', err);
-          });
-        } catch (recalcError) {
-          console.warn('Failed to recalculate usage from PDFs, continuing with counter value:', recalcError);
-        }
+        // Optional: Recalculate usage from actual PDFs to ensure accuracy
+        // This is a maintenance operation that can be done on-demand if needed
+        // For now, we rely on the database function which uses the same logic as PDF generation
+        // If you want to force recalculation, you can add a button to trigger it manually
 
         const deviceId = getDeviceIdFromCookie();
         const { iso: expectedPeriod } = currentMonthStart();
-        const params = new URLSearchParams({ period_start: expectedPeriod });
-        if (deviceId) {
-          params.set('device_id', deviceId);
-        }
 
-        const response = await fetchWithSupabaseAuth(
-          `/api/usage/with-pending?${params.toString()}`,
-          { method: 'GET', defaultErrorMessage: t('errors.requestFailed') },
-        );
+        // Call database function directly - simpler and faster than API route
+        const { data, error } = await sb.rpc('get_quota_snapshot', {
+          p_period_start: expectedPeriod,
+          p_device_id: deviceId || null,
+        });
 
         if (!active) {
           return;
         }
 
-        const payload = (await response.json().catch(() => null)) as unknown;
-        const usageData = parseUsageResponse(payload);
-
-        if (!usageData) {
-          throw new Error('Invalid usage response payload.');
+        if (error) {
+          throw new Error(`Failed to load quota: ${error.message}`);
         }
 
+        const snapshot = Array.isArray(data) ? data[0] : data;
+        if (!snapshot) {
+          throw new Error('No quota snapshot returned from database');
+        }
+
+        // Map database response to quota snapshot format
         const normalizedDevicePending = deviceId
-          ? typeof usageData.pendingDevice === 'number'
-            ? usageData.pendingDevice
-            : 0
-          : usageData.pendingDevice;
+          ? snapshot.pending_device !== null ? Number(snapshot.pending_device) || 0 : 0
+          : snapshot.pending_device !== null ? Number(snapshot.pending_device) : null;
 
         setQuotaSnapshot({
-          plan: usageData.plan,
-          limit: usageData.limit,
-          used: usageData.confirmed,
-          pending: usageData.pendingUser,
+          plan: snapshot.plan as SubscriptionPlan,
+          limit: snapshot.limit,
+          used: Number(snapshot.confirmed) || 0,
+          pending: Number(snapshot.pending_user) || 0,
           devicePending: normalizedDevicePending,
-          periodStart: usageData.periodStart,
+          periodStart: snapshot.period_start,
         });
       } catch (error) {
         if (!active) {
