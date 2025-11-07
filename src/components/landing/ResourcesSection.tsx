@@ -48,7 +48,7 @@ const resourceIcons = [
   ),
 ];
 
-const resourceHrefs = ['/resources/guide', '/resources/templates', '/resources/blog', '/resources/videos'];
+const resourceHrefs = ['/resources', '/resources', '/resources', '/resources'];
 const resourceCategories: Array<'guide' | 'template' | 'article' | 'video'> = ['guide', 'template', 'article', 'video'];
 
 export default function ResourcesSection() {

@@ -22,10 +22,6 @@ const pdfJobIdParamsSchema = z.object({
   jobId: uuidSchema,
 });
 
-function badRequest(message: string) {
-  return NextResponse.json({ error: message }, { status: 400 });
-}
-
 export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: RouteParams) => {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);

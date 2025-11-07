@@ -174,6 +174,12 @@ export const hu = {
       },
     },
   },
+  ui: {
+    scrollToTop: {
+      label: 'Vissza az oldal tetejére',
+      title: 'Vissza az oldal tetejére',
+    },
+  },
   stepIndicator: {
     statuses: {
       completed: 'Kész',

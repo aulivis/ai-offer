@@ -13,6 +13,18 @@ import {
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 
+/**
+ * POST /api/pdf/export
+ * 
+ * Public API endpoint for exporting PDFs using the runtime template system.
+ * This endpoint is designed for external use (SDK, integrations, etc.)
+ * and does not require authentication.
+ * 
+ * Note: This route is not currently used by the frontend application,
+ * but is available for external integrations and SDK usage.
+ * 
+ * @see {@link https://github.com/your-org/your-repo/wiki/PDF-Export-API Documentation}
+ */
 export const runtime = 'nodejs';
 
 const HEX_COLOR_PATTERN = /^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;

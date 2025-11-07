@@ -19,13 +19,13 @@ const resources = [
       {
         title: 'Ajánlatkészítési útmutató',
         description: 'Tippek és trükkök a tökéletes ajánlatok elkészítéséhez.',
-        href: '/resources/guide',
+        href: '/resources',
         type: 'guide',
       },
       {
         title: 'AI-alapú szöveg generálás használata',
         description: 'Tanuld meg, hogyan használd hatékonyan az AI funkciókat.',
-        href: '/resources/ai-guide',
+        href: '/resources',
         type: 'guide',
       },
     ],
@@ -43,13 +43,13 @@ const resources = [
       {
         title: 'Ingyenes ajánlat sablonok',
         description: 'Letölthető sablonok különböző iparágakhoz és projekttípusokhoz.',
-        href: '/resources/templates',
+        href: '/resources',
         type: 'template',
       },
       {
         title: 'Pro sablonok könyvtár',
         description: 'Prémium sablonok Pro előfizetőink számára.',
-        href: '/resources/pro-templates',
+        href: '/resources',
         type: 'template',
       },
     ],
@@ -67,13 +67,13 @@ const resources = [
       {
         title: '10 tipp a tökéletes ajánlathoz',
         description: 'Gyakorlati tanácsok, amik segítenek jobb ajánlatokat készíteni.',
-        href: '/resources/blog/10-tips',
+        href: '/resources',
         type: 'article',
       },
       {
         title: 'Ajánlatkészítés best practices',
         description: 'Iparági best practice-ek és trendek az ajánlatkészítésben.',
-        href: '/resources/blog/best-practices',
+        href: '/resources',
         type: 'article',
       },
     ],
@@ -91,13 +91,13 @@ const resources = [
       {
         title: 'Bevezető videó',
         description: 'Ismerd meg a Vyndi-t 5 percben.',
-        href: '/resources/videos/intro',
+        href: '/resources',
         type: 'video',
       },
       {
         title: 'Teljes funkció bemutató',
         description: 'Részletes útmutató minden funkcióról.',
-        href: '/resources/videos/full-tour',
+        href: '/resources',
         type: 'video',
       },
     ],
