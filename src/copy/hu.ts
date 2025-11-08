@@ -1945,5 +1945,15 @@ export const hu = {
       greeting: '👋 Üdv! Itt vagyok, hogy segítsek a Vyndi megismerésében.',
       description: 'Kérdezz bármit a funkciókról, API-ról, sablonokról vagy a platform használatáról.',
     },
+    suggestedQuestions: {
+      title: 'Gyakori kérdések:',
+      questions: {
+        packages: 'Milyen csomagok vannak?',
+        createOffer: 'Hogyan tudok ajánlatot készíteni?',
+        templates: 'Milyen sablonok elérhetők?',
+        api: 'Hogyan használhatom az API-t?',
+        pricing: 'Mennyibe kerül a szolgáltatás?',
+      },
+    },
   },
 } as const;

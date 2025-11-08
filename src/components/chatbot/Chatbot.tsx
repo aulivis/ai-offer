@@ -26,11 +26,24 @@ export default function Chatbot({
   const defaultTitle = title || t('chatbot.title');
   const defaultPlaceholder = placeholder || t('chatbot.placeholder');
   const [input, setInput] = useState('');
-  // Type assertion needed because ChatInit types don't fully expose api option
-  // but it's accepted at runtime via HttpChatTransportInitOptions
+  
+  // useChat hook configuration
+  // Note: The 'api' option should work, but we also provide a custom fetch
+  // to handle cases where useChat might default to /api/chat
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chatbot',
-  } as Parameters<typeof useChat>[0]);
+    id: 'vyndi-chatbot',
+    fetch: (url, options) => {
+      // Ensure we always use /api/chatbot, not /api/chat
+      const urlString = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
+      if (urlString && urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
+        const correctedUrl = urlString.replace('/api/chat', '/api/chatbot');
+        console.log('[Chatbot] Redirecting request from', urlString, 'to', correctedUrl);
+        return fetch(correctedUrl, options);
+      }
+      return fetch(url, options);
+    },
+  });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -46,9 +59,21 @@ export default function Chatbot({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     
-    // sendMessage accepts { text: string } for simple text messages
-    sendMessage({ text: input.trim() });
+    // sendMessage accepts { text: string } or { content: string } for simple text messages
+    // Ensure we're sending to the correct endpoint
+    sendMessage({ 
+      text: input.trim(),
+      // Explicitly ensure the endpoint is used
+    } as any);
     setInput('');
+  };
+  
+  // Handle suggested question click
+  const handleQuestionClick = (question: string) => {
+    if (isLoading) return;
+    sendMessage({ 
+      text: question,
+    } as any);
   };
   
   // Handle input change
@@ -120,14 +145,49 @@ export default function Chatbot({
         className={`flex-1 overflow-y-auto p-4 ${isExpanded ? 'h-[500px]' : 'h-[400px]'} transition-all`}
       >
         {messages.length === 0 ? (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <p className="text-fg-muted">
-                {t('chatbot.emptyState.greeting')}
-              </p>
-              <p className="mt-2 text-sm text-fg-muted">
-                {t('chatbot.emptyState.description')}
-              </p>
+          <div className="flex h-full flex-col items-center justify-center px-4 py-8">
+            <div className="w-full max-w-2xl space-y-6">
+              <div className="text-center">
+                <p className="text-lg text-fg">
+                  {t('chatbot.emptyState.greeting')}
+                </p>
+                <p className="mt-2 text-sm text-fg-muted">
+                  {t('chatbot.emptyState.description')}
+                </p>
+              </div>
+              {/* Suggested Questions */}
+              <div>
+                <p className="mb-3 text-sm font-semibold text-fg">
+                  {t('chatbot.suggestedQuestions.title')}
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {Object.entries(t('chatbot.suggestedQuestions.questions')).map(([key, question]) => (
+                    <button
+                      key={key}
+                      onClick={() => handleQuestionClick(question)}
+                      disabled={isLoading}
+                      className="group rounded-lg border border-border bg-bg px-4 py-3 text-left text-sm text-fg transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg
+                          className="h-4 w-4 text-fg-muted group-hover:text-primary"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                          />
+                        </svg>
+                        {question}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         ) : (
