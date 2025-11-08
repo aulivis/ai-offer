@@ -10,8 +10,13 @@
 import { useState, useEffect, useRef } from 'react';
 import Chatbot from './Chatbot';
 import { t } from '@/copy';
+import { envClient } from '@/env.client';
 
 export default function ChatbotWidget() {
+  // Check if chatbot is enabled via environment variable
+  // Defaults to true if not set (enabled by default)
+  const isEnabled = envClient.NEXT_PUBLIC_ENABLE_CHATBOT;
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);
@@ -61,6 +66,9 @@ export default function ChatbotWidget() {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
 
+  // Don't render if chatbot is disabled
+  if (!isEnabled) return null;
+  
   if (!isVisible) return null;
 
   return (
