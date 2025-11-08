@@ -19,14 +19,8 @@ export default function QuotaWarningBar() {
   const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Don't show for unauthenticated users or while loading auth status
-  const isAuthenticated = authStatus === 'authenticated' && user !== null;
-  
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Load quota function - use unified quota service
+  // IMPORTANT: All hooks must be called before any conditional returns
   const loadQuota = useCallback(async () => {
     if (authStatus !== 'authenticated' || !user) {
       setQuotaSnapshot(null);
@@ -156,6 +150,12 @@ export default function QuotaWarningBar() {
   }, [quotaSnapshot, isLoading]);
 
   const { isQuotaExhausted, isDeviceQuotaExhausted, warningType } = quotaStatus;
+
+  // Don't show for unauthenticated users (checked after all hooks are called)
+  const isAuthenticated = authStatus === 'authenticated' && user !== null;
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // Don't show if quota is not exhausted
   if (!warningType || isLoading) {
