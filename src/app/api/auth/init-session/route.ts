@@ -27,13 +27,32 @@ export async function POST(request: Request) {
     const accessToken = cookieStore.get('propono_at')?.value ?? null;
     const refreshToken = cookieStore.get('propono_rt')?.value ?? null;
     
+    // Debug: log all cookies to help diagnose the issue
+    const allCookies = cookieStore.getAll();
+    log.info('Session initialization request', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      expectedUserId,
+      cookieNames: allCookies.map(c => c.name),
+      cookieCount: allCookies.length,
+    });
+    
     if (!accessToken || !refreshToken) {
-      log.warn('Session initialization requested but cookies not found');
+      log.warn('Session initialization requested but cookies not found', {
+        allCookies: allCookies.map(c => ({ name: c.name, hasValue: !!c.value })),
+        requestHeaders: {
+          cookie: request.headers.get('cookie'),
+          referer: request.headers.get('referer'),
+        },
+      });
       return NextResponse.json(
         { 
           success: false, 
           error: 'No authentication cookies found',
           hasCookies: false,
+          debug: {
+            cookieNames: allCookies.map(c => c.name),
+          },
         },
         { status: 401 }
       );

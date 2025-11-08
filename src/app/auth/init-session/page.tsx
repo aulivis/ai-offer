@@ -36,62 +36,98 @@ export default function InitSessionPage() {
         // Reset any stale session state
         resetSessionState();
 
-        // Wait a bit for cookies to propagate (HttpOnly cookies are set server-side)
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        // Fetch tokens from server-side API endpoint
+        // Fetch tokens from server-side API endpoint with retries
         // This endpoint reads HttpOnly cookies server-side and returns tokens
         // so we can initialize the Supabase client session
+        // We retry because cookies might need time to propagate after redirect
         let accessToken: string | null = null;
         let refreshToken: string | null = null;
         let verifiedUserId: string | null = null;
         
-        try {
-          const verifyResponse = await fetch('/api/auth/init-session', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ expectedUserId }),
-            credentials: 'include',
-            cache: 'no-store',
-          });
-          
-          if (!verifyResponse.ok) {
-            const errorData = await verifyResponse.json().catch(() => ({}));
-            console.warn('Failed to get tokens from server', {
-              status: verifyResponse.status,
-              error: errorData.error,
-              hasCookies: errorData.hasCookies,
-            });
-            
-            if (!errorData.hasCookies) {
-              throw new Error(t('errors.auth.cookiesNotFound'));
+        const maxRetries = 5;
+        let lastFetchError: Error | null = null;
+        
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          try {
+            // Wait before each attempt (exponential backoff)
+            if (attempt > 0) {
+              const delay = Math.min(300 * Math.pow(1.5, attempt - 1), 2000);
+              await new Promise(resolve => setTimeout(resolve, delay));
             }
             
-            throw new Error(errorData.error || t('errors.initSession.error'));
+            const verifyResponse = await fetch('/api/auth/init-session', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ expectedUserId }),
+              credentials: 'include',
+              cache: 'no-store',
+            });
+            
+            if (!verifyResponse.ok) {
+              const errorData = await verifyResponse.json().catch(() => ({}));
+              
+              // If cookies not found and we have retries left, try again
+              if (errorData.hasCookies === false && attempt < maxRetries - 1) {
+                console.warn(`Cookies not found, retrying... (attempt ${attempt + 1}/${maxRetries})`, {
+                  status: verifyResponse.status,
+                  error: errorData.error,
+                  debug: errorData.debug,
+                });
+                lastFetchError = new Error(errorData.error || 'Cookies not found');
+                continue;
+              }
+              
+              console.warn('Failed to get tokens from server', {
+                status: verifyResponse.status,
+                error: errorData.error,
+                hasCookies: errorData.hasCookies,
+                attempt: attempt + 1,
+              });
+              
+              if (!errorData.hasCookies) {
+                throw new Error(t('errors.auth.cookiesNotFound'));
+              }
+              
+              throw new Error(errorData.error || t('errors.initSession.error'));
+            }
+            
+            const verifyData = await verifyResponse.json();
+            if (!verifyData.success || !verifyData.accessToken || !verifyData.refreshToken) {
+              throw new Error(t('errors.initSession.error'));
+            }
+            
+            accessToken = verifyData.accessToken;
+            refreshToken = verifyData.refreshToken;
+            verifiedUserId = verifyData.userId;
+            
+            console.log('Tokens received from server', { 
+              userId: verifiedUserId,
+              hasAccessToken: !!accessToken,
+              hasRefreshToken: !!refreshToken,
+              attempt: attempt + 1,
+            });
+            
+            // Success! Break out of retry loop
+            break;
+          } catch (fetchError) {
+            lastFetchError = fetchError instanceof Error ? fetchError : new Error('Unknown error');
+            
+            // If this is the last attempt, throw the error
+            if (attempt === maxRetries - 1) {
+              console.error('Failed to fetch tokens from API after all retries', lastFetchError);
+              throw lastFetchError;
+            }
+            
+            // Otherwise, log and continue to next retry
+            console.warn(`Failed to fetch tokens (attempt ${attempt + 1}/${maxRetries}), retrying...`, lastFetchError.message);
           }
-          
-          const verifyData = await verifyResponse.json();
-          if (!verifyData.success || !verifyData.accessToken || !verifyData.refreshToken) {
-            throw new Error(t('errors.initSession.error'));
-          }
-          
-          accessToken = verifyData.accessToken;
-          refreshToken = verifyData.refreshToken;
-          verifiedUserId = verifyData.userId;
-          
-          console.log('Tokens received from server', { 
-            userId: verifiedUserId,
-            hasAccessToken: !!accessToken,
-            hasRefreshToken: !!refreshToken,
-          });
-        } catch (fetchError) {
-          console.error('Failed to fetch tokens from API', fetchError);
-          if (fetchError instanceof Error) {
-            throw fetchError;
-          }
-          throw new Error(t('errors.initSession.error'));
+        }
+        
+        // If we got here without tokens, something went wrong
+        if (!accessToken || !refreshToken) {
+          throw lastFetchError || new Error(t('errors.initSession.error'));
         }
         
         // Now initialize Supabase client session with the tokens

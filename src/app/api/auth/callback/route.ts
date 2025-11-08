@@ -59,6 +59,8 @@ type ExchangeCodeResult = {
 };
 
 function redirectTo(path: string) {
+  // In Next.js App Router, cookies set via cookies().set() are automatically
+  // included in the response, so we don't need to manually attach them here
   return NextResponse.redirect(new URL(path, envServer.APP_URL));
 }
 
@@ -339,15 +341,28 @@ export async function GET(request: Request) {
       });
 
       try {
+        logger.info('Processing magic link tokens', {
+          userId,
+          hasAccessToken: !!tokens.accessToken,
+          hasRefreshToken: !!tokens.refreshToken,
+          expiresIn: tokens.expiresIn,
+        });
+        
         await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe);
         
+        logger.info('Magic link tokens processed successfully, redirecting to init-session', {
+          userId,
+        });
+        
         // Redirect to init-session page for client-side session initialization
+        // Note: Cookies set via setAuthCookies are automatically included in the redirect response
         const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
         initSessionUrl.searchParams.set('redirect', finalRedirect);
         initSessionUrl.searchParams.set('user_id', userId);
         
         return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
       } catch (error) {
+        logger.error('Error in magic link token handling', error);
         // Ensure cookies are cleared on error
         await clearAuthCookies();
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
@@ -420,6 +435,13 @@ export async function GET(request: Request) {
       // For magic link flows, also use the init-session page to ensure client session is ready
       // This provides consistent behavior across all auth flows
       try {
+        logger.info('Processing magic link tokens (token_hash flow)', {
+          userId,
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          expiresIn,
+        });
+        
         await handleMagicLinkTokens(
           { accessToken, refreshToken, expiresIn },
           userId,
@@ -429,17 +451,23 @@ export async function GET(request: Request) {
           rememberMe,
         );
         
+        logger.info('Magic link tokens processed successfully (token_hash flow), redirecting to init-session', {
+          userId,
+        });
+        
         // Redirect to init-session page for client-side session initialization
         // This ensures the Supabase client session is properly initialized
+        // Note: Cookies set via setAuthCookies are automatically included in the redirect response
         const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
         initSessionUrl.searchParams.set('redirect', finalRedirect);
         initSessionUrl.searchParams.set('user_id', userId);
         
         return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
       } catch (handleError) {
+        logger.error('Error in magic link token handling (token_hash flow)', handleError);
         // Ensure cookies are cleared on error
         await clearAuthCookies();
-        throw handleError;
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
     } catch (error) {
       recordMagicLinkCallback('failure', { reason: 'verify_error' });
