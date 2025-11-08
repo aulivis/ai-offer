@@ -135,36 +135,72 @@ const SYSTEM_PROMPT = `
 Te egy tapasztalt magyar üzleti ajánlatíró asszisztens vagy, aki professzionális, 
 magas színvonalú ajánlatokat készít magyar vállalkozások számára.
 
+ÉRTÉKPROPOZÍCIÓ ÉS HASZNOK:
+- Mindig a hasznokra és előnyökre fókuszálj, ne a funkciókra vagy jellemzőkre!
+- Mutasd be, hogyan oldja meg az ajánlat a vevő problémáját vagy igényét.
+- Használj konkrét, mérhető eredményeket és előnyöket, ahol lehetséges.
+- A value_proposition mezőben (ha van) hangsúlyozd ki az egyedi értéket.
+
 NYELVI MINŐSÉG:
 - Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
 - Kerüld az anglicizmusokat, helyette magyar kifejezéseket használj (pl. "feladat" helyett "task", "határidő" helyett "deadline").
 - Használj üzleti szakszavakat és formális, de barátságos hangvételt.
 - A szöveg legyen érthető, világos és logikusan felépített.
 - Minden bekezdés legyen jól strukturált, 2-4 mondat hosszúságú.
+- Használj történetmesélést és konkrét példákat a bizalom építéséhez, ahol releváns.
 
 SZERKEZET ÉS TARTALOM:
-- A bevezető köszöntse a címzettet és mutassa be az ajánlat célját.
-- A projekt összefoglaló világosan mutassa be a projekt hátterét és céljait.
-- A felsorolásokban használj rövid, lényegretörő pontokat, amelyek konkrét információkat tartalmaznak.
+- A bevezető köszöntse a címzettet (névvel, ha elérhető) és mutassa be az ajánlat célját.
+- A projekt összefoglaló következzen a probléma-megoldás-eredmény keretrendszerben:
+  * Mutasd be a problémát vagy igényt, amit a projekt megold
+  * Ismertesd a javasolt megoldást
+  * Vázold fel a várható eredményeket és előnyöket
+- A felsorolásokban használj rövid, lényegretörő, konkrét pontokat.
 - Minden szakasz legyen tartalmas és releváns a projekt kontextusához.
-- A zárás legyen udvarias és cselekvésre ösztönző.
+- A deliverables mezőben említsd meg a minőségi követelményeket vagy szabványokat, ahol releváns.
+- A schedule mezőben használj konkrét dátumokat vagy időkereteket (pl. "2025. február 15-ig", "2 hét alatt").
+- A zárás legyen udvarias, értékösszefoglaló és erősen cselekvésre ösztönző.
+
+CSELEKVÉSRE ÖSZTÖNZÉS (CTA):
+- A next_steps szakaszban használj konkrét, akcióorientált kifejezéseket:
+  * "Kérjük, jelezze vissza a véleményét 2025. február 10-ig"
+  * "Várjuk a visszajelzését a következő 3 munkanapon belül"
+  * "Kérjük, erősítse meg az elfogadást e-mailben"
+- A zárásban szerepeljen egyértelmű következő lépés javaslat.
+- Használj olyan kifejezéseket, amelyek konkrét cselekedetre ösztönöznek.
+
+SZEMÉLYRE SZABÁS ÉS URGENS:
+- Ha a vevő neve vagy cégneve elérhető, használd a bevezetőben (pl. "Tisztelt Kovács Úr" vagy "Tisztelt ABC Kft.").
+- Ha határidő van megadva, természetesen építsd be az urgensséget a szövegbe (de ne legyél tolakodó vagy agresszív).
+- A határidőt említsd meg a schedule és next_steps szakaszokban is, ahol releváns.
+
+BIZALOM ÉS HITELESSÉG:
+- Ha testimonials mező van megadva, használd őket a bizalom építéséhez.
+- Ha guarantees mező van megadva, említsd meg őket a zárásban vagy külön szakaszban.
+- Az expected_outcomes mezőben használj mérhető, konkrét eredményeket (pl. "30% növekedés", "2 hét alatt").
 
 FORMÁZÁS:
 - A megadott JSON sémát töltsd ki: minden mező magyar szöveg legyen, HTML jelölés nélkül.
 - A felsorolás típusú mezők mintegy 3-5, jól formázott pontot tartalmazzanak.
 - Ne találj ki árakat; az árképzés külön jelenik meg az alkalmazásban.
 - A szöveg legyen professzionális, de nem túlzottan formális vagy száraz.
+- Az opcionális mezőket csak akkor töltsd ki, ha releváns információ áll rendelkezésre.
 `;
 
 type OfferSections = {
   introduction: string;
   project_summary: string;
+  value_proposition?: string;
   scope: string[];
   deliverables: string[];
+  expected_outcomes?: string[];
   schedule: string[];
   assumptions: string[];
   next_steps: string[];
   closing: string;
+  testimonials?: string[];
+  guarantees?: string[];
+  client_context?: string;
 };
 
 const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
@@ -188,15 +224,21 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
     properties: {
       introduction: {
         type: 'string',
-        description: 'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely köszönti a címzettet és bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet.',
+        description: 'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely köszönti a címzettet (névvel vagy cégnévvel, ha elérhető) és bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet.',
         minLength: 50,
         maxLength: 300,
       },
       project_summary: {
         type: 'string',
-        description: 'A projekt céljának és hátterének részletes összefoglalása (3-5 mondat). Mutassa be a projekt kontextusát, céljait és jelentőségét. Legyen informatív és meggyőző.',
+        description: 'A projekt céljának és hátterének részletes összefoglalása (3-5 mondat). Kövesse a probléma-megoldás-eredmény keretrendszert: mutassa be a problémát/igényt, a javasolt megoldást, és a várható eredményeket. Legyen informatív és meggyőző.',
         minLength: 100,
         maxLength: 500,
+      },
+      value_proposition: {
+        type: 'string',
+        description: 'Opcionális: Az egyedi értékpropozíció és főbb előnyök rövid összefoglalása (2-3 mondat). Hangsúlyozd ki, hogyan oldja meg az ajánlat a vevő problémáját és milyen konkrét előnyöket nyújt. Használj mérhető eredményeket, ahol lehetséges.',
+        minLength: 80,
+        maxLength: 300,
       },
       scope: {
         type: 'array',
@@ -215,9 +257,20 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 6,
         items: {
           type: 'string',
-          description: 'Egy konkrét, szállítandó eredmény vagy deliverable. Legyen specifikus és mérhető (min. 20, max. 120 karakter).',
+          description: 'Egy konkrét, szállítandó eredmény vagy deliverable. Legyen specifikus és mérhető. Említsd meg a minőségi követelményeket vagy szabványokat, ahol releváns (min. 20, max. 120 karakter).',
           minLength: 20,
           maxLength: 120,
+        },
+      },
+      expected_outcomes: {
+        type: 'array',
+        minItems: 2,
+        maxItems: 5,
+        items: {
+          type: 'string',
+          description: 'Opcionális: Egy mérhető, konkrét várható eredmény vagy előny (pl. "30% növekedés", "2 hét alatt"). Legyen specifikus és kvantifikálható (min. 20, max. 100 karakter).',
+          minLength: 20,
+          maxLength: 100,
         },
       },
       schedule: {
@@ -226,7 +279,7 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 5,
         items: {
           type: 'string',
-          description: 'Kulcs mérföldkő vagy ütemezési pont dátumokkal vagy időkerettel. Legyen konkrét és érthető (min. 25, max. 100 karakter).',
+          description: 'Kulcs mérföldkő vagy ütemezési pont konkrét dátumokkal vagy időkerettel (pl. "2025. február 15-ig", "2 hét alatt"). Legyen konkrét és érthető (min. 25, max. 100 karakter).',
           minLength: 25,
           maxLength: 100,
         },
@@ -248,16 +301,44 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 4,
         items: {
           type: 'string',
-          description: 'Következő lépés vagy teendő, amely cselekvésre ösztönzi a címzettet. Legyen konkrét és akcióorientált (min. 20, max. 100 karakter).',
+          description: 'Következő lépés vagy teendő, amely cselekvésre ösztönzi a címzettet. Használj konkrét, akcióorientált kifejezéseket határidővel (pl. "Kérjük, jelezze vissza a véleményét 2025. február 10-ig"). Legyen konkrét és akcióorientált (min. 20, max. 100 karakter).',
           minLength: 20,
           maxLength: 100,
         },
       },
       closing: {
         type: 'string',
-        description: 'Udvarias, meggyőző záró bekezdés (2-3 mondat), amely összefoglalja az ajánlat értékét és cselekvésre ösztönzi a címzettet. Legyen pozitív és együttműködésre ösztönző.',
+        description: 'Udvarias, meggyőző záró bekezdés (2-3 mondat), amely összefoglalja az ajánlat értékét és erősen cselekvésre ösztönzi a címzettet. Tartalmazzon egyértelmű következő lépés javaslatot. Legyen pozitív és együttműködésre ösztönző.',
         minLength: 60,
         maxLength: 250,
+      },
+      testimonials: {
+        type: 'array',
+        minItems: 1,
+        maxItems: 3,
+        items: {
+          type: 'string',
+          description: 'Opcionális: Ügyfél vélemény vagy tesztimonál a bizalom építéséhez. Legyen rövid és meggyőző (min. 40, max. 200 karakter).',
+          minLength: 40,
+          maxLength: 200,
+        },
+      },
+      guarantees: {
+        type: 'array',
+        minItems: 1,
+        maxItems: 3,
+        items: {
+          type: 'string',
+          description: 'Opcionális: Garancia vagy biztonsági jelző, amely csökkenti a vevő kockázatérzetét (pl. "100% elégedettségi garancia", "30 napos pénzvisszafizetési garancia"). Legyen rövid és meggyőző (min. 30, max. 120 karakter).',
+          minLength: 30,
+          maxLength: 120,
+        },
+      },
+      client_context: {
+        type: 'string',
+        description: 'Opcionális: Ügyfél-specifikus kontextus vagy kapcsolati információk, amelyek segíthetnek a személyre szabásban. Használd a bevezetőben vagy a projekt összefoglalóban, ha releváns (min. 30, max. 200 karakter).',
+        minLength: 30,
+        maxLength: 200,
       },
     },
   },
@@ -307,15 +388,23 @@ function sectionsToHtml(
 ): string {
   const labels = {
     overview: i18n.t('pdf.templates.sections.overview'),
+    valueProposition: i18n.t('pdf.templates.sections.valueProposition'),
     scope: i18n.t('pdf.templates.sections.scope'),
     deliverables: i18n.t('pdf.templates.sections.deliverables'),
+    expectedOutcomes: i18n.t('pdf.templates.sections.expectedOutcomes'),
     timeline: i18n.t('pdf.templates.sections.timeline'),
     assumptions: i18n.t('pdf.templates.sections.assumptions'),
     nextSteps: i18n.t('pdf.templates.sections.nextSteps'),
+    testimonials: i18n.t('pdf.templates.sections.testimonials'),
+    guarantees: i18n.t('pdf.templates.sections.guarantees'),
   } as const;
 
   if (style === 'compact') {
-    const overviewContent = safeParagraphGroup([sections.introduction, sections.project_summary]);
+    const overviewParts: string[] = [sections.introduction, sections.project_summary];
+    if (sections.value_proposition) {
+      overviewParts.push(sections.value_proposition);
+    }
+    const overviewContent = safeParagraphGroup(overviewParts);
     const nextSteps = safeList(limitList(sections.next_steps, 3));
     const closingNote = renderClosingNote(sections.closing, 'offer-doc__section-note--compact');
 
@@ -351,6 +440,12 @@ function sectionsToHtml(
             ${nextSteps}
             ${closingNote}
           </div>
+          ${sections.guarantees && sections.guarantees.length > 0
+            ? `<div class="offer-doc__compact-card offer-doc__compact-card--closing">
+                ${renderSectionHeading(labels.guarantees, 'guarantees', { level: 'h3' })}
+                ${safeList(limitList(sections.guarantees, 3))}
+              </div>`
+            : ''}
         </section>
       </div>
     `;
@@ -359,12 +454,19 @@ function sectionsToHtml(
   }
 
   // Detailed style: better spacing and structure for professional PDF
+  const overviewParts: string[] = [sections.introduction, sections.project_summary];
   const html = `
     <div class="offer-doc__sections">
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.overview, 'overview')}
-        ${safeParagraphGroup([sections.introduction, sections.project_summary])}
+        ${safeParagraphGroup(overviewParts)}
       </section>
+      ${sections.value_proposition
+        ? `<section class="offer-doc__section">
+            ${renderSectionHeading(labels.valueProposition, 'valueProposition')}
+            ${safeParagraphGroup([sections.value_proposition])}
+          </section>`
+        : ''}
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.scope, 'scope')}
         ${safeList(sections.scope)}
@@ -373,6 +475,12 @@ function sectionsToHtml(
         ${renderSectionHeading(labels.deliverables, 'deliverables')}
         ${safeList(sections.deliverables)}
       </section>
+      ${sections.expected_outcomes && sections.expected_outcomes.length > 0
+        ? `<section class="offer-doc__section">
+            ${renderSectionHeading(labels.expectedOutcomes, 'expectedOutcomes')}
+            ${safeList(sections.expected_outcomes)}
+          </section>`
+        : ''}
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.timeline, 'timeline')}
         ${safeList(sections.schedule)}
@@ -381,6 +489,18 @@ function sectionsToHtml(
         ${renderSectionHeading(labels.assumptions, 'assumptions')}
         ${safeList(sections.assumptions)}
       </section>
+      ${sections.testimonials && sections.testimonials.length > 0
+        ? `<section class="offer-doc__section">
+            ${renderSectionHeading(labels.testimonials, 'testimonials')}
+            ${safeList(sections.testimonials)}
+          </section>`
+        : ''}
+      ${sections.guarantees && sections.guarantees.length > 0
+        ? `<section class="offer-doc__section">
+            ${renderSectionHeading(labels.guarantees, 'guarantees')}
+            ${safeList(sections.guarantees)}
+          </section>`
+        : ''}
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.nextSteps, 'nextSteps')}
         ${safeList(sections.next_steps)}
@@ -396,10 +516,18 @@ function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
   return {
     introduction: sanitizeInput((sections.introduction || '').trim()),
     project_summary: sanitizeInput((sections.project_summary || '').trim()),
+    value_proposition: sections.value_proposition
+      ? sanitizeInput((sections.value_proposition || '').trim())
+      : undefined,
     scope: (sections.scope || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
     deliverables: (sections.deliverables || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
+    expected_outcomes: sections.expected_outcomes
+      ? (sections.expected_outcomes || [])
+          .map((item) => sanitizeInput((item || '').trim()))
+          .filter(Boolean)
+      : undefined,
     schedule: (sections.schedule || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
@@ -410,6 +538,19 @@ function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
     closing: sanitizeInput((sections.closing || '').trim()),
+    testimonials: sections.testimonials
+      ? (sections.testimonials || [])
+          .map((item) => sanitizeInput((item || '').trim()))
+          .filter(Boolean)
+      : undefined,
+    guarantees: sections.guarantees
+      ? (sections.guarantees || [])
+          .map((item) => sanitizeInput((item || '').trim()))
+          .filter(Boolean)
+      : undefined,
+    client_context: sections.client_context
+      ? sanitizeInput((sections.client_context || '').trim())
+      : undefined,
   };
 }
 
@@ -940,6 +1081,13 @@ export const POST = withAuth(
       const safeDeadline = sanitizeInput(deadline || '—');
       const safeBrand = sanitizeInput(brandVoice);
 
+      const clientInfo = clientCompanyName
+        ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
+        : '';
+      const deadlineGuidance = safeDeadline && safeDeadline !== '—'
+        ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
+        : '';
+
       const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
@@ -947,11 +1095,10 @@ Nyelv: ${normalizedLanguage}
 ${toneGuidance}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
-
-Projekt részletek:
+${clientInfo}Projekt részletek:
 ${safeProjectDetails || '—'}
 
-Határidő: ${safeDeadline}
+Határidő: ${safeDeadline}${deadlineGuidance}
 
 ${styleAddon}
 
@@ -961,6 +1108,7 @@ Különös figyelmet fordít a következőkre:
 - A felsorolások pontjai legyenek konkrétak, mérhetők és érthetők
 - A szöveg legyen meggyőző, de nem túlzottan marketinges
 - Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
+- Ha ügyfél/cég neve van megadva, használd a bevezetőben a személyre szabáshoz
 `;
 
       try {
