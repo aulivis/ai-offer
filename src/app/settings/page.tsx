@@ -27,6 +27,7 @@ import {
   PaintBrushIcon,
   CubeIcon,
   DocumentTextIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { SettingsAuthSection } from '@/components/settings/SettingsAuthSection';
@@ -34,6 +35,7 @@ import { SettingsCompanySection } from '@/components/settings/SettingsCompanySec
 import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
 import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
 import { SettingsActivitiesSection } from '@/components/settings/SettingsActivitiesSection';
+import { SettingsProFeaturesSection } from '@/components/settings/SettingsProFeaturesSection';
 import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
@@ -179,13 +181,19 @@ export default function SettingsPage() {
       icon: <CubeIcon className="h-5 w-5" />,
       href: '#activities',
     },
+    {
+      id: 'pro-features',
+      label: t('settings.proFeatures.title'),
+      icon: <LockClosedIcon className="h-5 w-5" />,
+      href: '#pro-features',
+    },
   ];
 
   useEffect(() => {
     if (loading) return;
 
     const handleScroll = () => {
-      const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities'];
+      const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities', 'pro-features'];
       const scrollPosition = window.scrollY + 200;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -377,6 +385,8 @@ export default function SettingsPage() {
         brand_color_primary: prof?.brand_color_primary ?? '#1c274c',
         brand_color_secondary: prof?.brand_color_secondary ?? '#e2e8f0',
         offer_template: templateId,
+        enable_reference_photos: prof?.enable_reference_photos ?? false,
+        enable_testimonials: prof?.enable_testimonials ?? false,
       });
       setNewAct((prev) => ({ ...prev, industries }));
 
@@ -534,6 +544,8 @@ export default function SettingsPage() {
             brand_color_primary: primary,
             brand_color_secondary: secondary,
             offer_template: templateId,
+            enable_reference_photos: profile.enable_reference_photos ?? false,
+            enable_testimonials: profile.enable_testimonials ?? false,
           })
           .eq('id', user.id)
           .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
@@ -580,6 +592,8 @@ export default function SettingsPage() {
         brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
         industries: sanitizedIndustries,
         offer_template: profileData?.offer_template ?? templateId,
+        enable_reference_photos: profile.enable_reference_photos ?? false,
+        enable_testimonials: profile.enable_testimonials ?? false,
       }));
       showToast({
         title: t('toasts.settings.saveSuccess'),
@@ -979,6 +993,15 @@ export default function SettingsPage() {
             onToggleNewActivityIndustry={toggleNewActIndustry}
             onAddActivity={addActivity}
             onDeleteActivity={deleteActivity}
+          />
+
+          <SettingsProFeaturesSection
+            profile={profile}
+            plan={plan}
+            onProfileChange={setProfile}
+            onSave={() => saveProfile('all')}
+            onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+            saving={saving}
           />
         </div>
       </div>

@@ -10,6 +10,8 @@ export type Profile = {
   brand_color_primary?: string | null;
   brand_color_secondary?: string | null;
   offer_template?: string | null;
+  enable_reference_photos?: boolean;
+  enable_testimonials?: boolean;
 };
 
 export type ActivityRow = {
@@ -19,6 +21,16 @@ export type ActivityRow = {
   default_unit_price: number;
   default_vat: number;
   industries: string[];
+  reference_images?: string[] | null;
+};
+
+export type Testimonial = {
+  id: string;
+  user_id: string;
+  activity_id?: string | null;
+  text: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export const ALL_INDUSTRIES_HU = [

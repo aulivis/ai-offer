@@ -109,6 +109,10 @@ const previewRequestSchema = z
       (value) => (value === null || value === undefined ? undefined : value),
       z.enum(['compact', 'detailed']).default('detailed'),
     ),
+    formality: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['tegeződés', 'magázódás']).default('tegeződés'),
+    ),
   })
   .strict();
 
@@ -199,7 +203,7 @@ export const POST = withAuth(
       return handleValidationError(parsed.error, requestId);
     }
 
-    const { industry, title, projectDetails, deadline, language, brandVoice, style } = parsed.data;
+    const { industry, title, projectDetails, deadline, language, brandVoice, style, formality } = parsed.data;
 
     if (!envServer.OPENAI_API_KEY) {
       const errorResponse = NextResponse.json({ error: 'OPENAI_API_KEY missing' }, { status: 500 });
@@ -235,11 +239,17 @@ export const POST = withAuth(
         ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
         : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
 
+    const formalityGuidance =
+      formality === 'magázódás'
+        ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
+        : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+
     const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
 Nyelv: ${safeLanguage}
 ${toneGuidance}
+${formalityGuidance}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
 
@@ -254,6 +264,7 @@ Különös figyelmet fordít a következőkre:
 - A felsorolások pontjai legyenek konkrétak, mérhetők és érthetők
 - A szöveg legyen meggyőző, de nem túlzottan marketinges
 - Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
+- A szólítást következetesen alkalmazd a teljes szövegben
 `;
 
     const encoder = new TextEncoder();

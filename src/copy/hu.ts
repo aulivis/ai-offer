@@ -747,6 +747,26 @@ export const hu = {
       empty: 'Még nincs sablon. Adj hozzá legalább egy gyakran használt tételt.',
       emptyHelper: 'Adjon hozzá tevékenységeket a gyorsabb ajánlatkészítéshez',
     },
+    proFeatures: {
+      title: 'Pro funkciók',
+      subtitle: 'Kapcsold be a Pro előfizetéshez tartozó funkciókat.',
+      referencePhotos: {
+        title: 'Referenciafotók',
+        description:
+          'Csatolj legfeljebb 3 képet minden mentett tevékenységhez. A képek az ajánlatokban is megjelenhetnek.',
+        enabled: 'Aktiválva',
+        upgradeDescription:
+          'A referenciafotók funkció csak Pro előfizetéssel érhető el. Frissíts a számlázási oldalon a funkció használatához.',
+      },
+      testimonials: {
+        title: 'Vásárlói visszajelzések',
+        description:
+          'Add hozzá az ügyfelek visszajelzéseit és véleményeit. Maximum 10 tesztimonál menthető, amelyek az ajánlatokban is megjelenhetnek.',
+        enabled: 'Aktiválva',
+        upgradeDescription:
+          'A vásárlói visszajelzések funkció csak Pro előfizetéssel érhető el. Frissíts a számlázási oldalon a funkció használatához.',
+      },
+    },
     validation: {
       phone: 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).',
       tax: 'Adószám formátum: 12345678-1-12',
@@ -1315,6 +1335,11 @@ export const hu = {
           voiceOptions: {
             friendly: 'Barátságos',
             formal: 'Formális',
+          },
+          formalityLabel: 'Szólítás',
+          formalityOptions: {
+            tegeződés: 'Tegeződés',
+            magázódás: 'Magázódás',
           },
           clientLookupLabel: 'Cég neve',
           clientLookupPlaceholder: 'Kezdj el gépelni…',

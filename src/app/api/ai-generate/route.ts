@@ -715,6 +715,10 @@ const aiGenerateRequestSchema = z
       (value) => (value === null || value === undefined ? undefined : value),
       z.enum(['compact', 'detailed']).default('detailed'),
     ),
+    formality: z.preprocess(
+      (value) => (value === null || value === undefined ? undefined : value),
+      z.enum(['tegeződés', 'magázódás']).default('tegeződés'),
+    ),
     prices: z.preprocess(
       (value) => (value === null || value === undefined ? [] : value),
       z.array(priceRowSchema).default([]),
@@ -850,6 +854,7 @@ export const POST = withAuth(
       language,
       brandVoice,
       style,
+      formality,
       prices,
       aiOverrideHtml,
       clientId,
@@ -1075,6 +1080,11 @@ export const POST = withAuth(
           ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
           : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
 
+      const formalityGuidance =
+        formality === 'magázódás'
+          ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
+          : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+
       // Sanitize user inputs before passing to OpenAI
       const safeIndustry = sanitizeInput(industry);
       const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
@@ -1093,6 +1103,7 @@ Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi inf
 
 Nyelv: ${normalizedLanguage}
 ${toneGuidance}
+${formalityGuidance}
 Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
 ${clientInfo}Projekt részletek:
@@ -1109,6 +1120,7 @@ Különös figyelmet fordít a következőkre:
 - A szöveg legyen meggyőző, de nem túlzottan marketinges
 - Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
 - Ha ügyfél/cég neve van megadva, használd a bevezetőben a személyre szabáshoz
+- A szólítást következetesen alkalmazd a teljes szövegben
 `;
 
       try {

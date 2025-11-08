@@ -76,6 +76,7 @@ type Step1Form = {
   language: 'hu' | 'en';
   brandVoice: 'friendly' | 'formal';
   style: 'compact' | 'detailed';
+  formality: 'tegeződés' | 'magázódás';
 };
 
 type ClientForm = {
@@ -408,6 +409,7 @@ export default function NewOfferWizard() {
     language: 'hu',
     brandVoice: 'friendly',
     style: 'detailed',
+    formality: 'tegeződés',
   });
   const [detailsTipsOpen, setDetailsTipsOpen] = useState(false);
 
@@ -1226,6 +1228,7 @@ export default function NewOfferWizard() {
             language: form.language,
             brandVoice: form.brandVoice,
             style: form.style,
+            formality: form.formality,
           }),
           signal: controller.signal,
           authErrorMessage: t('errors.preview.authError'),
@@ -1683,6 +1686,7 @@ export default function NewOfferWizard() {
             language: form.language,
             brandVoice: form.brandVoice,
             style: form.style,
+            formality: form.formality,
             prices: serializedPrices,
             aiOverrideHtml: htmlForApi,
             clientId: cid,

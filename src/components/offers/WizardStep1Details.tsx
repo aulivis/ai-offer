@@ -31,6 +31,7 @@ type Step1Form = {
   language: 'hu' | 'en';
   brandVoice: 'friendly' | 'formal';
   style: 'compact' | 'detailed';
+  formality: 'tegeződés' | 'magázódás';
 };
 
 type ClientForm = {
@@ -424,6 +425,18 @@ export function WizardStep1Details({
               </option>
               <option value="formal">
                 {t('offers.wizard.forms.details.voiceOptions.formal')}
+              </option>
+            </Select>
+            <Select
+              label={t('offers.wizard.forms.details.formalityLabel')}
+              value={form.formality}
+              onChange={(e) => handleFieldChange('formality', e.target.value as 'tegeződés' | 'magázódás')}
+            >
+              <option value="tegeződés">
+                {t('offers.wizard.forms.details.formalityOptions.tegeződés')}
+              </option>
+              <option value="magázódás">
+                {t('offers.wizard.forms.details.formalityOptions.magázódás')}
               </option>
             </Select>
           </div>
