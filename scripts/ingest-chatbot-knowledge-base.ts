@@ -13,7 +13,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { createOpenAIClient, generateQueryEmbedding } from '../src/lib/chatbot/embeddings';
+import OpenAI from 'openai';
 import { chunkMarkdown } from '../src/lib/chatbot/chunking';
 
 // Load environment variables
@@ -35,6 +35,11 @@ if (!OPENAI_API_KEY) {
   process.exit(1);
 }
 
+// Type assertions after validation
+const supabaseUrl: string = SUPABASE_URL;
+const supabaseKey: string = SUPABASE_SERVICE_ROLE_KEY;
+const openaiApiKey: string = OPENAI_API_KEY;
+
 const KNOWLEDGE_BASE_PATH = join(process.cwd(), 'docs', 'chatbot', 'public-knowledge-base.md');
 const SOURCE_PATH = 'docs/chatbot/public-knowledge-base.md';
 
@@ -54,8 +59,8 @@ async function main() {
   console.log('✅ Read knowledge base file:', content.length, 'characters');
 
   // Initialize clients
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const openai = createOpenAIClient();
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const openai = new OpenAI({ apiKey: openaiApiKey });
 
   // Chunk the document
   console.log('📦 Chunking document...');
@@ -83,8 +88,12 @@ async function main() {
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
     try {
-      // Generate embedding using the same function as the API
-      const embedding = await generateQueryEmbedding(chunk.content, openai);
+      // Generate embedding using OpenAI (same as API)
+      const response = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: chunk.content,
+      });
+      const embedding = response.data[0]?.embedding ?? [];
 
       // Store in database
       const { error: insertError } = await supabase

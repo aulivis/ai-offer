@@ -462,10 +462,10 @@ Válaszolj KIZÁRÓLAG magyar nyelven.
 
 Számodra a következőkről kell válaszolnod:
 - Vyndi funkciói és működése
-- API dokumentáció
+- Előfizetési csomagok és árazás
 - Sablon rendszer
 - Platform használata
-- Architektúra és technikai részletek
+- Ajánlat készítés lépésről lépésre
 
 Fontos: Nem található releváns dokumentáció erre a kérdésre a jelenlegi adatbázisban.
 
@@ -486,10 +486,10 @@ Válaszolj KIZÁRÓLAG magyar nyelven.
 
 Számodra a következőkről kell válaszolnod:
 - Vyndi funkciói és működése
-- API dokumentáció
+- Előfizetési csomagok és árazás
 - Sablon rendszer
 - Platform használata
-- Architektúra és technikai részletek
+- Ajánlat készítés lépésről lépésre
 
 Utasítások:
 - Válaszolj KIZÁRÓLAG a megadott dokumentációs kontextus alapján

@@ -2025,7 +2025,7 @@ export const hu = {
     disclaimer: 'Az AI válaszok a Vyndi dokumentációján alapulnak. Előfordulhatnak pontatlanságok.',
     emptyState: {
       greeting: '👋 Üdv! Itt vagyok, hogy segítsek a Vyndi megismerésében.',
-      description: 'Kérdezz bármit a funkciókról, API-ról, sablonokról vagy a platform használatáról.',
+      description: 'Kérdezz bármit a funkciókról, sablonokról, csomagokról vagy a platform használatáról.',
     },
     suggestedQuestions: {
       title: 'Gyakori kérdések:',
@@ -2033,7 +2033,6 @@ export const hu = {
         packages: 'Milyen csomagok vannak?',
         createOffer: 'Hogyan tudok ajánlatot készíteni?',
         templates: 'Milyen sablonok elérhetők?',
-        api: 'Hogyan használhatom az API-t?',
         pricing: 'Mennyibe kerül a szolgáltatás?',
       },
     },

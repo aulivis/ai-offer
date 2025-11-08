@@ -92,45 +92,7 @@ A Pro csomagra való frissítéssel hozzáférhetsz a prémium sablonokhoz. Tov�
 
 ---
 
-### 4. "Hogyan használhatom az API-t?" (How can I use the API?)
-
-**Expected Answer:**
-A Vyndi API REST-alapú, és HTTP-only cookie-alapú hitelesítést használ.
-
-**Hitelesítés:**
-- `propono_at` - Hozzáférési token (HTTP-only cookie)
-- `propono_rt` - Frissítési token (HTTP-only cookie)
-- `XSRF-TOKEN` - CSRF token (header: `x-csrf-token`)
-
-**Főbb Végpontok:**
-
-1. **POST /api/ai-generate** - AI-alapú ajánlat generálása és PDF létrehozása
-2. **POST /api/ai-preview** - AI-alapú ajánlat előnézet generálása (streaming)
-3. **GET /api/templates** - Elérhető PDF sablonok listázása
-4. **POST /api/storage/upload-brand-logo** - Céges logó feltöltése
-
-**Példa kérés:**
-```json
-POST /api/ai-generate
-{
-  "title": "Projekt Címe",
-  "industry": "Technology",
-  "projectDetails": {},
-  "deadline": "2024-12-31",
-  "language": "hu",
-  "prices": [],
-  "templateId": "template-id"
-}
-```
-
-**Rate Limiting:**
-Minden végpont rate limiting-et alkalmaz. A válaszok tartalmaznak `X-RateLimit-*` headereket.
-
-Teljes API dokumentáció: https://vyndi.com/docs/api
-
----
-
-### 5. "Mennyibe kerül a szolgáltatás?" (How much does the service cost?)
+### 4. "Mennyibe kerül a szolgáltatás?" (How much does the service cost?)
 
 **Expected Answer:**
 A Vyndi három előfizetési csomagot kínál különböző árakkal:

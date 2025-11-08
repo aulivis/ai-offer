@@ -42,7 +42,6 @@ export default function Chatbot({
         packages: 'Milyen csomagok vannak?',
         createOffer: 'Hogyan tudok ajánlatot készíteni?',
         templates: 'Milyen sablonok elérhetők?',
-        api: 'Hogyan használhatom az API-t?',
         pricing: 'Mennyibe kerül a szolgáltatás?',
       };
     }
