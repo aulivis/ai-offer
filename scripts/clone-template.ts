@@ -201,3 +201,7 @@ console.log(`      registerTemplate(${newId.replace(/\./g, '_')}Template);`);
 console.log(`   7. Run tests: pnpm test:templates`);
 console.log(`\n💡 Tip: Search for "${sourceName}" in the cloned files to find remaining references to update.\n`);
 
+
+
+
+

@@ -35,6 +35,12 @@ export async function POST(req: NextRequest) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
   
+  log.info('Chatbot API route called', {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries()),
+  });
+  
   try {
     // Rate limiting (public endpoint, so stricter limits)
     const rateLimitResult = await checkRateLimitMiddleware(req, {
@@ -55,36 +61,65 @@ export async function POST(req: NextRequest) {
     }
   } catch (rateLimitError) {
     // If rate limiting fails, log but continue (don't block the request)
-    log.warn('Rate limit check failed', { error: rateLimitError });
+    log.warn('Rate limit check failed', { 
+      error: rateLimitError instanceof Error ? rateLimitError.message : String(rateLimitError) 
+    });
   }
   
   try {
     // Parse request body
-    const body = await req.json();
-    const { messages } = body;
+    let body;
+    try {
+      body = await req.json();
+      log.info('Request body parsed', { bodyKeys: Object.keys(body) });
+    } catch (parseError) {
+      log.error('Failed to parse request body', {
+        error: parseError instanceof Error ? parseError.message : String(parseError),
+      });
+      return NextResponse.json(
+        { error: 'Érvénytelen kérés: nem sikerült feldolgozni a kérést' },
+        { status: 400 },
+      );
+    }
+    
+    // Handle different message formats from useChat
+    // useChat can send: { messages: [...] } or the messages might be at root level
+    const messages = body.messages || (Array.isArray(body) ? body : []);
     
     if (!Array.isArray(messages) || messages.length === 0) {
-      log.warn('Invalid request: messages array missing or empty');
+      log.warn('Invalid request: messages array missing or empty', {
+        bodyKeys: Object.keys(body),
+        bodyType: typeof body,
+        isArray: Array.isArray(body),
+      });
       return NextResponse.json(
         { error: 'Érvénytelen kérés: üzenetek tömbje szükséges' },
         { status: 400 },
       );
     }
     
-    // Helper to extract text content from message (handles both string and parts array)
+    // Helper to extract text content from message (handles multiple formats from useChat)
     const getMessageContent = (message: any): string => {
+      // Format 1: { role: 'user', content: 'text' } - standard format
       if (typeof message.content === 'string') {
         return message.content;
       }
+      // Format 2: { role: 'user', parts: [{ type: 'text', text: '...' }] } - parts array format
       if (message.parts && Array.isArray(message.parts)) {
         return message.parts
           .filter((part: any) => part.type === 'text')
           .map((part: any) => part.text || '')
           .join('');
       }
+      // Format 3: { role: 'user', text: 'text' } - alternative format
       if (message.text) {
         return message.text;
       }
+      // Format 4: Direct string (shouldn't happen but handle gracefully)
+      if (typeof message === 'string') {
+        return message;
+      }
+      log.warn('Could not extract message content', { message });
       return '';
     };
     

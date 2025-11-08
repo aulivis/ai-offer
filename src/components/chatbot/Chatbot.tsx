@@ -67,10 +67,14 @@ export default function Chatbot({
       .join('');
   };
   
-  return (
-    <Card className={`flex flex-col ${className}`}>
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border p-4">
+  // If className includes h-full, don't wrap in Card (it's already in a container)
+  const isStandalone = className.includes('h-full');
+  
+  const content = (
+    <>
+      {/* Header - only show if NOT standalone (when in Card) */}
+      {!isStandalone && (
+        <div className="flex items-center justify-between border-b border-border p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
             <svg
@@ -108,7 +112,8 @@ export default function Chatbot({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-      </div>
+        </div>
+      )}
       
       {/* Messages */}
       <div
@@ -218,7 +223,14 @@ export default function Chatbot({
           {t('chatbot.disclaimer')}
         </p>
       </form>
-    </Card>
+    </>
   );
+
+  // Return wrapped in Card if not standalone, otherwise return directly
+  if (isStandalone) {
+    return <div className={`flex flex-col ${className}`}>{content}</div>;
+  }
+
+  return <Card className={`flex flex-col ${className}`}>{content}</Card>;
 }
 

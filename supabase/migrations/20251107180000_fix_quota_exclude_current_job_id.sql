@@ -193,3 +193,7 @@ grant execute on function public.check_and_increment_usage(uuid, integer, date, 
 grant execute on function public.check_and_increment_device_usage(uuid, text, integer, date, uuid) to authenticated;
 grant execute on function public.check_and_increment_device_usage(uuid, text, integer, date, uuid) to service_role;
 
+
+
+
+

@@ -227,3 +227,7 @@ pnpm format:fix
 - Check function signatures match `RenderCtx` type
 - Verify template exports match `OfferTemplate` interface
 
+
+
+
+

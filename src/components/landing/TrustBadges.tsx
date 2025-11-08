@@ -27,3 +27,7 @@ export default function TrustBadges({ badges, className = '' }: TrustBadgesProps
 
 
 
+
+
+
+

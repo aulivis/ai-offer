@@ -468,3 +468,7 @@ export const yourTemplate: OfferTemplate = {
 - [Template Quick Start Guide](./TEMPLATE_QUICK_START.md)
 - [Industry Best Practices](../TEMPLATE_SYSTEM_INDUSTRY_COMPARISON.md)
 
+
+
+
+

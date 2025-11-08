@@ -13,3 +13,7 @@ FROM pg_indexes
 WHERE tablename = 'chatbot_documents'
   AND indexname LIKE '%vector%';
 
+
+
+
+
