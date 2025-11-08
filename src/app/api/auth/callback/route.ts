@@ -59,10 +59,13 @@ type ExchangeCodeResult = {
 };
 
 function redirectTo(path: string) {
-  // Note: In Next.js App Router, cookies set via cookies().set() are automatically
+  // In Next.js App Router, cookies set via cookies().set() are automatically
   // included in ANY response returned from the route handler, including redirects.
-  // So we don't need to manually copy cookies here - they should be included automatically.
-  return NextResponse.redirect(new URL(path, envServer.APP_URL));
+  // The cookie store is tied to the request context, so cookies set via
+  // cookieStore.set() will be automatically serialized into Set-Cookie headers
+  // when the response is returned.
+  const redirectUrl = new URL(path, envServer.APP_URL);
+  return NextResponse.redirect(redirectUrl);
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
@@ -382,26 +385,36 @@ export async function GET(request: Request) {
         initSessionUrl.searchParams.set('redirect', finalRedirect);
         initSessionUrl.searchParams.set('user_id', userId);
         
+        // Double-check cookies are still in the store before redirecting
+        const finalVerifyAt = cookieStore.get('propono_at')?.value;
+        const finalVerifyRt = cookieStore.get('propono_rt')?.value;
+        
         logger.info('Redirecting to init-session', {
           userId,
           redirectUrl: initSessionUrl.toString(),
           cookiesSet: true,
+          accessTokenPresent: !!finalVerifyAt,
+          refreshTokenPresent: !!finalVerifyRt,
+          accessTokenLength: finalVerifyAt?.length ?? 0,
+          refreshTokenLength: finalVerifyRt?.length ?? 0,
         });
+        
+        if (!finalVerifyAt || !finalVerifyRt) {
+          logger.error('Cookies lost before redirect', {
+            userId,
+            hadAccessToken: !!verifyAt,
+            hadRefreshToken: !!verifyRt,
+            hasAccessTokenNow: !!finalVerifyAt,
+            hasRefreshTokenNow: !!finalVerifyRt,
+          });
+          await clearAuthCookies();
+          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        }
         
         // Create the redirect response
         // In Next.js App Router, cookies set via cookieStore.set() should be automatically
-        // included in the response. However, to ensure they're included, we'll create
-        // the redirect response and verify the cookie store is properly used.
-        const redirectResponse = NextResponse.redirect(initSessionUrl);
-        
-        // Log cookie information for debugging
-        logger.info('Redirect response created', {
-          userId,
-          redirectUrl: initSessionUrl.toString(),
-          // Note: We can't directly access Set-Cookie headers here, but they should be included
-        });
-        
-        return redirectResponse;
+        // included in the response. We return the redirect which should include all cookies.
+        return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
       } catch (error) {
         logger.error('Error in magic link token handling', error);
         // Ensure cookies are cleared on error
@@ -525,9 +538,8 @@ export async function GET(request: Request) {
           redirectUrl: initSessionUrl.toString(),
         });
         
-        // Create the redirect response directly
-        const redirectResponse = NextResponse.redirect(initSessionUrl);
-        return redirectResponse;
+        // Use redirectTo helper to ensure cookies are properly included
+        return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
         // Ensure cookies are cleared on error

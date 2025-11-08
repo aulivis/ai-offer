@@ -1,16 +1,17 @@
 'use client';
 
 /**
- * Chatbot Component
+ * Chatbot Component - Redesigned with Vanda Avatar
  * 
  * Interactive chatbot interface using Vercel AI SDK for streaming responses.
- * Uses RAG (Retrieval Augmented Generation) to answer questions based on app documentation.
+ * Features Vanda as a personalized assistant with improved UI/UX design.
  */
 
 import { useChat } from '@ai-sdk/react';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import { t, hu } from '@/copy';
+import VandaAvatar from './VandaAvatar';
 
 interface ChatbotProps {
   className?: string;
@@ -48,10 +49,8 @@ export default function Chatbot({
   }, []);
   
   // useChat hook configuration
-  // Using default /api/chat endpoint (industry best practice: single endpoint)
-  // No custom fetch needed - useChat defaults to /api/chat which is our primary endpoint
   const { messages, sendMessage, status, error } = useChat({
-    api: '/api/chat', // Primary endpoint - single source of truth
+    api: '/api/chat',
     id: 'vyndi-chatbot',
     onError: (error) => {
       console.error('[Chatbot] Error from useChat:', error);
@@ -73,11 +72,8 @@ export default function Chatbot({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     
-    // sendMessage accepts { text: string } or { content: string } for simple text messages
-    // Ensure we're sending to the correct endpoint
     sendMessage({ 
       text: input.trim(),
-      // Explicitly ensure the endpoint is used
     } as any);
     setInput('');
   };
@@ -130,7 +126,7 @@ export default function Chatbot({
           href={linkUrl.startsWith('http') ? linkUrl : `/${linkUrl}`}
           target={linkUrl.startsWith('http') ? '_blank' : undefined}
           rel={linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
-          className="text-primary underline hover:text-primary/80"
+          className="text-primary underline hover:text-primary/80 transition-colors"
           onClick={(e) => {
             if (!linkUrl.startsWith('http')) {
               e.preventDefault();
@@ -185,81 +181,75 @@ export default function Chatbot({
     <>
       {/* Header - only show if NOT standalone (when in Card) */}
       {!isStandalone && (
-        <div className="flex items-center justify-between border-b border-border p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+        <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-bg to-bg-muted/30 p-4">
+          <div className="flex items-center gap-3">
+            <VandaAvatar size="md" variant={isLoading ? 'thinking' : 'online'} />
+            <div>
+              <h3 className="text-base font-semibold text-fg">{defaultTitle}</h3>
+              <p className="text-xs text-fg-muted flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                {isLoading ? t('chatbot.status.thinking') : t('chatbot.status.online')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="rounded-lg p-2 text-fg-muted hover:bg-bg-muted hover:text-fg transition-colors"
+            aria-label={isExpanded ? t('chatbot.minimize') : t('chatbot.expand')}
+          >
             <svg
-              className="h-6 w-6 text-primary"
+              className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-fg">{defaultTitle}</h3>
-            <p className="text-sm text-fg-muted">
-              {isLoading ? t('chatbot.thinking') : t('chatbot.poweredBy')}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="rounded-lg p-2 text-fg-muted hover:bg-bg-muted hover:text-fg"
-          aria-label={isExpanded ? t('chatbot.minimize') : t('chatbot.expand')}
-        >
-          <svg
-            className={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+          </button>
         </div>
       )}
       
       {/* Messages */}
       <div
-        className={`flex-1 overflow-y-auto p-4 ${isExpanded ? 'h-[500px]' : 'h-[400px]'} transition-all`}
+        className={`flex-1 overflow-y-auto ${isExpanded ? 'h-[500px]' : 'h-[400px]'} transition-all duration-300 scroll-smooth`}
+        style={{ scrollbarWidth: 'thin' }}
       >
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-4 py-8">
-            <div className="w-full max-w-2xl space-y-6">
-              <div className="text-center">
-                <p className="text-lg text-fg">
+            <div className="w-full max-w-2xl space-y-6 animate-in fade-in duration-500">
+              {/* Vanda Avatar in Empty State */}
+              <div className="flex justify-center">
+                <VandaAvatar size="xl" variant="default" className="scale-110" />
+              </div>
+              
+              {/* Welcome Message */}
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-semibold text-fg">
                   {t('chatbot.emptyState.greeting')}
-                </p>
-                <p className="mt-2 text-sm text-fg-muted">
+                </h2>
+                <p className="text-sm text-fg-muted max-w-md mx-auto leading-relaxed">
                   {t('chatbot.emptyState.description')}
                 </p>
               </div>
+              
               {/* Suggested Questions */}
-              <div>
-                <p className="mb-3 text-sm font-semibold text-fg">
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-fg text-center">
                   {t('chatbot.suggestedQuestions.title')}
                 </p>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   {Object.entries(suggestedQuestions).map(([key, question]) => {
-                    // Ensure question is a string
                     const questionText = typeof question === 'string' ? question : String(question || '');
                     return (
                       <button
                         key={key}
                         onClick={() => handleQuestionClick(questionText)}
                         disabled={isLoading}
-                        className="group rounded-lg border border-border bg-bg px-4 py-3 text-left text-sm text-fg transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group relative rounded-xl border border-border bg-bg px-4 py-3 text-left text-sm text-fg transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                       >
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-2.5">
                           <svg
-                            className="h-4 w-4 text-fg-muted group-hover:text-primary"
+                            className="h-4 w-4 text-fg-muted group-hover:text-primary transition-colors flex-shrink-0"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -271,7 +261,7 @@ export default function Chatbot({
                               d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                             />
                           </svg>
-                          <span>{questionText}</span>
+                          <span className="leading-relaxed">{questionText}</span>
                         </span>
                       </button>
                     );
@@ -281,126 +271,176 @@ export default function Chatbot({
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+          <div className="space-y-4 p-4">
+            {messages.map((message, index) => {
+              const messageText = getMessageText(message);
+              const isUser = message.role === 'user';
+              const showAvatar = !isUser;
+              
+              return (
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-ink'
-                      : 'bg-bg-muted text-fg'
-                  }`}
+                  key={message.id}
+                  className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="whitespace-pre-wrap break-words">
-                    {message.role === 'assistant' 
-                      ? renderMessageWithLinks(getMessageText(message))
-                      : getMessageText(message)
-                    }
-                  </div>
-                  {message.role === 'assistant' && (
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="text-xs text-fg-muted">
-                        {new Date().toLocaleTimeString()}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleFeedback(message.id, 'up')}
-                          disabled={isLoading}
-                          className={`rounded p-1.5 transition-colors ${
-                            feedback[message.id] === 'up'
-                              ? 'bg-green-100 text-green-600'
-                              : 'text-fg-muted hover:bg-bg-muted hover:text-green-600'
-                          } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          aria-label={t('chatbot.feedback.helpful')}
-                          title={t('chatbot.feedback.helpful')}
-                        >
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleFeedback(message.id, 'down')}
-                          disabled={isLoading}
-                          className={`rounded p-1.5 transition-colors ${
-                            feedback[message.id] === 'down'
-                              ? 'bg-red-100 text-red-600'
-                              : 'text-fg-muted hover:bg-bg-muted hover:text-red-600'
-                          } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          aria-label={t('chatbot.feedback.notHelpful')}
-                          title={t('chatbot.feedback.notHelpful')}
-                        >
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
-                            />
-                          </svg>
-                        </button>
-                      </div>
+                  {/* Avatar for Vanda's messages */}
+                  {showAvatar && (
+                    <div className="flex-shrink-0">
+                      <VandaAvatar 
+                        size="sm" 
+                        variant={index === messages.length - 1 && isLoading ? 'thinking' : 'default'}
+                        className="mb-1"
+                      />
                     </div>
                   )}
+                  
+                  {/* Message Bubble */}
+                  <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%] sm:max-w-[70%]`}>
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
+                        isUser
+                          ? 'bg-primary text-primary-ink rounded-br-sm'
+                          : 'bg-bg-muted text-fg border border-border/50 rounded-bl-sm'
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                        {isUser 
+                          ? messageText
+                          : renderMessageWithLinks(messageText)
+                        }
+                      </div>
+                    </div>
+                    
+                    {/* Feedback and Timestamp for Assistant Messages */}
+                    {!isUser && (
+                      <div className="mt-2 flex items-center gap-3 text-xs text-fg-muted">
+                        <span className="opacity-60">
+                          {new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleFeedback(message.id, 'up')}
+                            disabled={isLoading}
+                            className={`rounded-md p-1.5 transition-all duration-200 ${
+                              feedback[message.id] === 'up'
+                                ? 'bg-success/20 text-success scale-110'
+                                : 'hover:bg-bg-muted text-fg-muted hover:text-success'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            aria-label={t('chatbot.feedback.helpful')}
+                            title={t('chatbot.feedback.helpful')}
+                          >
+                            <svg
+                              className="h-3.5 w-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(message.id, 'down')}
+                            disabled={isLoading}
+                            className={`rounded-md p-1.5 transition-all duration-200 ${
+                              feedback[message.id] === 'down'
+                                ? 'bg-danger/20 text-danger scale-110'
+                                : 'hover:bg-bg-muted text-fg-muted hover:text-danger'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            aria-label={t('chatbot.feedback.notHelpful')}
+                            title={t('chatbot.feedback.notHelpful')}
+                          >
+                            <svg
+                              className="h-3.5 w-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Timestamp for User Messages */}
+                    {isUser && (
+                      <span className="mt-1.5 text-xs text-fg-muted opacity-60">
+                        {new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Spacer for user messages to align with avatar */}
+                  {isUser && <div className="w-8 flex-shrink-0" />}
                 </div>
-              </div>
-            ))}
+              );
+            })}
+            
+            {/* Typing Indicator */}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl bg-bg-muted px-4 py-2">
-                  <div className="flex items-center gap-2">
+              <div className="flex items-end gap-2.5 justify-start animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex-shrink-0">
+                  <VandaAvatar size="sm" variant="thinking" className="mb-1" />
+                </div>
+                <div className="rounded-2xl rounded-bl-sm bg-bg-muted border border-border/50 px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-1.5">
                     <span className="text-sm text-fg-muted">{t('chatbot.typing')}</span>
-                    <div className="h-2 w-2 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.3s]" />
-                    <div className="h-2 w-2 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.15s]" />
-                    <div className="h-2 w-2 animate-bounce rounded-full bg-fg-muted" />
+                    <div className="flex gap-1">
+                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.3s]" />
+                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.15s]" />
+                      <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-fg-muted" />
+                    </div>
                   </div>
                 </div>
               </div>
             )}
+            
             <div ref={messagesEndRef} />
           </div>
         )}
         
+        {/* Error Message */}
         {error && (
-          <div 
-            className="rounded-lg border border-danger bg-danger/10 p-3 text-sm text-danger"
-            role="alert"
-            aria-live="assertive"
-          >
-            <p className="font-medium">{t('chatbot.error')}</p>
-            <p className="mt-1">{error.message || t('common.status.error')}</p>
+          <div className="px-4 pb-4">
+            <div 
+              className="rounded-xl border border-danger/30 bg-danger/10 p-3.5 text-sm text-danger shadow-sm animate-in fade-in slide-in-from-top-2"
+              role="alert"
+              aria-live="assertive"
+            >
+              <p className="font-medium flex items-center gap-2">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {t('chatbot.error')}
+              </p>
+              <p className="mt-1.5 text-xs opacity-90">{error.message || t('common.status.error')}</p>
+            </div>
           </div>
         )}
       </div>
       
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="border-t border-border p-4">
-        <div className="flex gap-2">
+      <form onSubmit={handleSubmit} className="border-t border-border bg-bg-muted/30 p-4">
+        <div className="flex gap-2.5">
           <input
+            type="text"
             value={input}
             onChange={handleInputChange}
             placeholder={defaultPlaceholder}
             disabled={isLoading}
             aria-label={defaultPlaceholder}
             aria-describedby="chatbot-input-description"
-            className="flex-1 rounded-2xl border border-border bg-bg px-4 py-2 text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="flex-1 rounded-xl border border-border bg-bg px-4 py-2.5 text-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-all duration-200"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
                 e.preventDefault();
@@ -411,7 +451,8 @@ export default function Chatbot({
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="rounded-2xl bg-primary px-6 py-2 font-medium text-primary-ink hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-ink hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
+            aria-label={t('chatbot.send')}
           >
             {isLoading ? (
               <svg
@@ -434,11 +475,23 @@ export default function Chatbot({
                 />
               </svg>
             ) : (
-              t('chatbot.send')
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
             )}
           </button>
         </div>
-        <p id="chatbot-input-description" className="mt-2 text-xs text-fg-muted">
+        <p id="chatbot-input-description" className="mt-2 text-xs text-fg-muted/70 px-1">
           {t('chatbot.disclaimer')}
         </p>
       </form>
@@ -450,6 +503,5 @@ export default function Chatbot({
     return <div className={`flex flex-col ${className}`}>{content}</div>;
   }
 
-  return <Card className={`flex flex-col ${className}`}>{content}</Card>;
+  return <Card className={`flex flex-col overflow-hidden ${className}`}>{content}</Card>;
 }
-

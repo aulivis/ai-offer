@@ -27,14 +27,18 @@ interface ChatbotSectionProps {
 export default function ChatbotSection({ className = '' }: ChatbotSectionProps) {
   return (
     <section className={`mx-auto w-full max-w-4xl px-6 ${className}`}>
-      <div className="text-center">
-        <span className="text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-          {t('chatbot.title')}
-        </span>
-        <h2 className="mt-4 text-3xl font-semibold text-fg md:text-4xl">
+      <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.36em] text-primary">
+            <span>{t('chatbot.title')}</span>
+            <span className="text-fg-muted">•</span>
+            <span className="normal-case tracking-normal">{t('chatbot.subtitle')}</span>
+          </span>
+        </div>
+        <h2 className="text-3xl font-semibold text-fg md:text-4xl">
           {t('chatbot.welcomeTitle')}
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-fg-muted">
+        <p className="mx-auto max-w-2xl text-lg text-fg-muted leading-relaxed">
           {t('chatbot.welcomeDescription')}
         </p>
       </div>

@@ -1,14 +1,17 @@
 import { cookies } from 'next/headers';
 
 import { CSRF_COOKIE_NAME, createCsrfToken } from './csrf';
+import { envServer } from '@/env.server';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isSecure = envServer.APP_URL.startsWith('https');
+// Use 'lax' for development to allow cookies on redirects, 'strict' for production
 const sameSite = (isProduction ? 'strict' : 'lax') as 'strict' | 'lax';
 
 const baseCookieOptions = {
   httpOnly: true,
   sameSite,
-  secure: isProduction,
+  secure: isSecure, // Use APP_URL to determine if we're using HTTPS
   path: '/',
 };
 

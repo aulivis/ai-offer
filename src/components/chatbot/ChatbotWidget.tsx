@@ -4,11 +4,12 @@
  * Chatbot Widget - Industry Standard Slide-Up Chat Window
  * 
  * Floating chatbot button that opens a slide-up chat window (like Intercom/Drift).
- * Positioned to avoid conflict with ScrollToTop button.
+ * Features Vanda as the personalized assistant.
  */
 
 import { useState, useEffect, useRef } from 'react';
 import Chatbot from './Chatbot';
+import VandaAvatar from './VandaAvatar';
 import { t } from '@/copy';
 import { envClient } from '@/env.client';
 
@@ -75,31 +76,25 @@ export default function ChatbotWidget() {
     <>
       {/* Floating Chatbot Button - Positioned to avoid ScrollToTop (bottom-24 = 96px, ScrollToTop is at bottom-8 = 32px) */}
       {!isOpen && (
-      <button
-        data-chatbot-button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95"
-        aria-label={t('chatbot.openAria')}
-        aria-expanded={isOpen}
-        aria-controls="chatbot-window"
-      >
-          <svg
-            className="h-7 w-7 text-primary-ink"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+        <button
+          data-chatbot-button
+          onClick={() => setIsOpen(true)}
+          className="group fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95"
+          aria-label={t('chatbot.openAria')}
+          aria-expanded={isOpen}
+          aria-controls="chatbot-window"
+        >
+          {/* Vanda Avatar on Button */}
+          <div className="relative h-full w-full">
+            <VandaAvatar 
+              size="lg" 
+              variant="online" 
+              className="absolute inset-0 scale-90 transition-transform group-hover:scale-95"
             />
-          </svg>
-          {/* Notification badge - hidden by default, can be shown when there are unread messages */}
-          {/* <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-ink">
-            <span className="sr-only">Új üzenet</span>
-          </span> */}
+          </div>
+          
+          {/* Pulse animation for attention */}
+          <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
         </button>
       )}
 
@@ -117,35 +112,24 @@ export default function ChatbotWidget() {
         aria-labelledby="chatbot-window-title"
         aria-hidden={!isOpen}
       >
-        <div className="flex h-[600px] max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-2xl border border-border bg-bg shadow-2xl">
+        <div className="flex h-[600px] max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-2xl border border-border bg-bg shadow-2xl backdrop-blur-sm">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border bg-bg-muted/50 px-4 py-3">
+          <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-bg to-bg-muted/30 px-4 py-3.5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <svg
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                  />
-                </svg>
-              </div>
+              <VandaAvatar size="md" variant="online" />
               <div>
                 <h2 id="chatbot-window-title" className="text-base font-semibold text-fg">
                   {t('chatbot.title')}
                 </h2>
-                <p className="text-xs text-fg-muted">{t('chatbot.poweredBy')}</p>
+                <p className="text-xs text-fg-muted flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                  {t('chatbot.status.online')}
+                </p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded-lg p-1.5 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="rounded-lg p-1.5 text-fg-muted transition-all duration-200 hover:bg-bg-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-primary"
               aria-label={t('chatbot.closeAria')}
               aria-controls="chatbot-window"
             >
@@ -174,5 +158,3 @@ export default function ChatbotWidget() {
     </>
   );
 }
-
-
