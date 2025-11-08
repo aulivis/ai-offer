@@ -44,45 +44,46 @@ export async function GET() {
  * Public endpoint - no authentication required.
  */
 export async function POST(req: NextRequest) {
-  const requestId = getRequestId(req);
-  const log = createLogger(requestId);
-  
-  log.info('Chatbot API route called', {
-    method: req.method,
-    url: req.url,
-  });
-  
   try {
-    // Rate limiting (public endpoint, so stricter limits)
-    const rateLimitResult = await checkRateLimitMiddleware(req, {
-      maxRequests: 10, // 10 requests per window
-      windowMs: 60 * 1000, // 1 minute window
-      keyPrefix: 'chatbot',
+    const requestId = getRequestId(req);
+    const log = createLogger(requestId);
+    
+    log.info('Chatbot API route called', {
+      method: req.method,
+      url: req.url,
     });
     
-    if (rateLimitResult && !rateLimitResult.allowed) {
-      log.warn('Chatbot rate limit exceeded', {
-        limit: rateLimitResult.limit,
-        remaining: rateLimitResult.remaining,
+    // Rate limiting (public endpoint, so stricter limits)
+    let rateLimitResult;
+    try {
+      rateLimitResult = await checkRateLimitMiddleware(req, {
+        maxRequests: 10, // 10 requests per window
+        windowMs: 60 * 1000, // 1 minute window
+        keyPrefix: 'chatbot',
       });
-      return createRateLimitResponse(
-        rateLimitResult,
-        'Túl sok kérés. Kérjük, várj egy pillanatot, mielőtt újra kérdeznél.',
-      );
+      
+      if (rateLimitResult && !rateLimitResult.allowed) {
+        log.warn('Chatbot rate limit exceeded', {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+        });
+        return createRateLimitResponse(
+          rateLimitResult,
+          'Túl sok kérés. Kérjük, várj egy pillanatot, mielőtt újra kérdeznél.',
+        );
+      }
+    } catch (rateLimitError) {
+      // If rate limiting fails, log but continue (don't block the request)
+      log.warn('Rate limit check failed', { 
+        error: rateLimitError instanceof Error ? rateLimitError.message : String(rateLimitError) 
+      });
     }
-  } catch (rateLimitError) {
-    // If rate limiting fails, log but continue (don't block the request)
-    log.warn('Rate limit check failed', { 
-      error: rateLimitError instanceof Error ? rateLimitError.message : String(rateLimitError) 
-    });
-  }
-  
-  try {
+    
     // Parse request body
     let body;
     try {
       body = await req.json();
-      log.info('Request body parsed', { bodyKeys: Object.keys(body) });
+      log.info('Request body parsed', { bodyKeys: Object.keys(body || {}) });
     } catch (parseError) {
       log.error('Failed to parse request body', {
         error: parseError instanceof Error ? parseError.message : String(parseError),
@@ -95,11 +96,11 @@ export async function POST(req: NextRequest) {
     
     // Handle different message formats from useChat
     // useChat can send: { messages: [...] } or the messages might be at root level
-    const messages = body.messages || (Array.isArray(body) ? body : []);
+    const messages = body?.messages || (Array.isArray(body) ? body : []);
     
     if (!Array.isArray(messages) || messages.length === 0) {
       log.warn('Invalid request: messages array missing or empty', {
-        bodyKeys: Object.keys(body),
+        bodyKeys: Object.keys(body || {}),
         bodyType: typeof body,
         isArray: Array.isArray(body),
       });
@@ -112,18 +113,18 @@ export async function POST(req: NextRequest) {
     // Helper to extract text content from message (handles multiple formats from useChat)
     const getMessageContent = (message: any): string => {
       // Format 1: { role: 'user', content: 'text' } - standard format
-      if (typeof message.content === 'string') {
+      if (typeof message?.content === 'string') {
         return message.content;
       }
       // Format 2: { role: 'user', parts: [{ type: 'text', text: '...' }] } - parts array format
-      if (message.parts && Array.isArray(message.parts)) {
+      if (message?.parts && Array.isArray(message.parts)) {
         return message.parts
           .filter((part: any) => part.type === 'text')
           .map((part: any) => part.text || '')
           .join('');
       }
       // Format 3: { role: 'user', text: 'text' } - alternative format
-      if (message.text) {
+      if (message?.text) {
         return message.text;
       }
       // Format 4: Direct string (shouldn't happen but handle gracefully)
@@ -237,19 +238,14 @@ ${context}`;
     return result.toDataStreamResponse();
   } catch (error) {
     // Log the full error for debugging
-    log.error('Error processing chatbot query', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      requestId,
-    });
+    console.error('Chatbot API error:', error);
     
     return NextResponse.json(
       {
         error: 'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.',
-        requestId,
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
     );
   }
 }
-
