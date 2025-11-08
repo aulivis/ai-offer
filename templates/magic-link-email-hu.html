@@ -3,66 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Belépési link</title>
+  <title>Belépési link - Vyndi</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td {font-family: Arial, sans-serif !important;}
+  </style>
+  <![endif]-->
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f7fafc;">
-  <div style="background: linear-gradient(135deg, #1c274c 0%, #2d3f6b 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-    <!-- Vyndi Logo -->
-    <img src="{{ .SiteURL }}/vyndi-logo.png" alt="Vyndi" style="height: 40px; width: auto; margin-bottom: 10px;" />
-    <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Vyndi</h1>
-    <p style="color: #e2e8f0; margin: 10px 0 0 0; font-size: 16px;">AI-alapú ajánlatkészítés</p>
-  </div>
-  
-  <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
-    <h2 style="color: #1c274c; margin-top: 0; font-size: 24px; font-weight: 600;">Üdvözlünk!</h2>
-    
-    <p style="color: #4a5568; font-size: 16px; margin-bottom: 20px;">
-      Kattints az alábbi gombra a bejelentkezéshez. A link <strong>1 órán keresztül érvényes</strong>.
-    </p>
-    
-    <div style="text-align: center; margin: 40px 0;">
-      <!-- Email-safe button with table for maximum compatibility -->
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
-        <tr>
-          <td align="center">
-            <table border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <td align="center" bgcolor="#1c274c" style="border-radius: 6px; padding: 16px 40px;">
-                  <a href="{{ .ConfirmationURL }}" 
-                     style="display: inline-block; background-color: #1c274c; color: #ffffff; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 1.5; text-align: center; border-radius: 6px;">
-                    Bejelentkezés
-                  </a>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </div>
-    
-    <p style="color: #718096; font-size: 14px; margin-top: 30px; padding-top: 30px;">
-      <strong>Nem te kérted ezt a linket?</strong><br>
-      Ha nem te kezdeményezted ezt a bejelentkezést, nyugodtan hagyd figyelmen kívül ezt az e-mailt. A link automatikusan lejár, és senki más nem férhet hozzá fiókodhoz.
-    </p>
-    
-    <div style="margin-top: 40px; padding: 20px; background: #f7fafc; border-radius: 6px;">
-      <p style="color: #4a5568; font-size: 14px; margin: 0 0 10px 0;">
-        <strong>💡 Tipp:</strong> Ha a gomb nem működik, másold be az alábbi linket a böngésződbe:
-      </p>
-      <p style="color: #2d3748; font-size: 12px; word-break: break-all; margin: 0; font-family: monospace;">
-        {{ .ConfirmationURL }}
-      </p>
-    </div>
-  </div>
-  
-  <div style="text-align: center; margin-top: 30px; padding-top: 20px;">
-    <p style="color: #a0aec0; font-size: 12px; margin: 5px 0;">
-      <strong>Vyndi</strong> - AI-alapú ajánlatkészítés percek alatt
-    </p>
-    <p style="color: #a0aec0; font-size: 12px; margin: 5px 0;">
-      <a href="{{ .SiteURL }}" style="color: #1c274c; text-decoration: none;">Weboldal</a> | 
-      <a href="{{ .SiteURL }}/settings" style="color: #1c274c; text-decoration: none;">Beállítások</a>
-    </p>
-  </div>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a202c; background-color: #f7fafc; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+  <!-- Email wrapper -->
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7fafc; padding: 20px;">
+    <tr>
+      <td align="center">
+        <!-- Main content container -->
+        <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header with logo and brand -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1c274c 0%, #2d3f6b 100%); padding: 40px 30px; text-align: center;">
+              <!-- Logo -->
+              <img src="{{ .SiteURL }}/vyndi-logo.png" alt="Vyndi" width="120" height="40" style="display: block; margin: 0 auto 16px; width: 120px; height: auto; max-width: 120px;" />
+              <!-- Brand name with better contrast -->
+              <h1 style="margin: 0; padding: 0; color: #ffffff; font-size: 32px; font-weight: 700; line-height: 1.2; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">Vyndi</h1>
+              <!-- Tagline with improved visibility -->
+              <p style="margin: 12px 0 0 0; padding: 0; color: #ffffff; font-size: 16px; font-weight: 500; opacity: 0.95; letter-spacing: 0.2px;">AI-alapú ajánlatkészítés</p>
+            </td>
+          </tr>
+          
+          <!-- Main content card -->
+          <tr>
+            <td style="background-color: #ffffff; padding: 48px 40px; border: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0;">
+              <!-- Greeting -->
+              <h2 style="margin: 0 0 16px 0; padding: 0; color: #1c274c; font-size: 28px; font-weight: 700; line-height: 1.3;">Üdvözlünk! 👋</h2>
+              
+              <!-- Main message -->
+              <p style="margin: 0 0 32px 0; padding: 0; color: #4a5568; font-size: 16px; line-height: 1.7;">
+                Kattints az alábbi gombra, hogy bejelentkezz a Vyndi fiókodba. A belépési link <strong style="color: #1c274c;">1 órán keresztül érvényes</strong>, utána új linket kell kérned.
+              </p>
+              
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 40px 0;">
+                <tr>
+                  <td align="center" style="padding: 0;">
+                    <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" bgcolor="#1c274c" style="border-radius: 8px; padding: 0;">
+                          <a href="{{ .ConfirmationURL }}" 
+                             style="display: inline-block; padding: 18px 48px; background-color: #1c274c; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; line-height: 1.5; border-radius: 8px; border: 2px solid #1c274c;">
+                            Bejelentkezés
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Alternative link (if button doesn't work) -->
+              <div style="margin: 0 0 40px 0; padding: 20px; background-color: #f7fafc; border-radius: 8px; border-left: 4px solid #1c274c;">
+                <p style="margin: 0 0 12px 0; padding: 0; color: #4a5568; font-size: 14px; font-weight: 600;">
+                  💡 Ha a gomb nem működik
+                </p>
+                <p style="margin: 0 0 8px 0; padding: 0; color: #718096; font-size: 13px; line-height: 1.6;">
+                  Másold be az alábbi linket a böngésződbe:
+                </p>
+                <p style="margin: 0; padding: 0;">
+                  <a href="{{ .ConfirmationURL }}" style="color: #1c274c; text-decoration: underline; font-size: 12px; font-family: monospace; word-break: break-all;">{{ .ConfirmationURL }}</a>
+                </p>
+              </div>
+              
+              <!-- Security notice -->
+              <div style="margin: 0; padding: 24px 0 0 0; border-top: 1px solid #e2e8f0;">
+                <p style="margin: 0; padding: 0; color: #718096; font-size: 14px; line-height: 1.7;">
+                  <strong style="color: #4a5568;">Nem te kérted ezt a linket?</strong><br>
+                  Ha nem te kezdeményezted ezt a bejelentkezést, nyugodtan hagyd figyelmen kívül ezt az e-mailt. A link automatikusan lejár, és senki más nem férhet hozzá a fiókodhoz.
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f7fafc; padding: 32px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="margin: 0 0 12px 0; padding: 0; color: #718096; font-size: 14px; font-weight: 600;">
+                Vyndi - AI-alapú ajánlatkészítés percek alatt
+              </p>
+              <p style="margin: 0; padding: 0;">
+                <a href="{{ .SiteURL }}" style="color: #1c274c; text-decoration: none; font-size: 14px; margin: 0 12px;">Weboldal</a>
+                <span style="color: #cbd5e0;">|</span>
+                <a href="{{ .SiteURL }}/settings" style="color: #1c274c; text-decoration: none; font-size: 14px; margin: 0 12px;">Beállítások</a>
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+        
+        <!-- Unsubscribe / Help text -->
+        <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin-top: 24px;">
+          <tr>
+            <td align="center" style="padding: 0 20px;">
+              <p style="margin: 0; padding: 0; color: #a0aec0; font-size: 12px; line-height: 1.6;">
+                Ha bármilyen kérdésed van, látogass el a <a href="{{ .SiteURL }}/contact" style="color: #1c274c; text-decoration: underline;">kapcsolat oldalunkra</a>.
+              </p>
+            </td>
+          </tr>
+        </table>
+        
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
