@@ -49,48 +49,91 @@ export default function Chatbot({
   }, []);
   
   // Custom fetch function to intercept and fix endpoint
-  // useChat might default to /api/chat, so we intercept and redirect
+  // This ensures all requests go to /api/chatbot even if useChat defaults to /api/chat
   const customFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     // Extract URL string
     let urlString: string = '';
+    let baseUrl = '';
+    
     if (typeof input === 'string') {
       urlString = input;
     } else if (input instanceof URL) {
-      urlString = input.href;
+      urlString = input.pathname + input.search;
+      baseUrl = input.origin;
     } else if (input instanceof Request) {
       urlString = input.url;
     }
     
-    // Redirect /api/chat to /api/chatbot if needed
-    if (urlString && urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
-      urlString = urlString.replace('/api/chat', '/api/chatbot');
-      console.log('[Chatbot] Redirecting endpoint:', urlString);
+    // Normalize URL - handle both absolute and relative URLs
+    if (!urlString.startsWith('http')) {
+      // Relative URL - use current origin
+      baseUrl = window.location.origin;
+    } else {
+      // Absolute URL - extract base
+      try {
+        const url = new URL(urlString);
+        baseUrl = url.origin;
+        urlString = url.pathname + url.search;
+      } catch (e) {
+        // If URL parsing fails, try to use as-is
+        console.warn('[Chatbot] Failed to parse URL:', urlString);
+      }
     }
+    
+    // Always ensure we're using /api/chatbot endpoint
+    // If the URL is /api/chat, redirect to /api/chatbot
+    // Note: /api/chat now exists as a fallback, but we prefer /api/chatbot
+    if (urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
+      urlString = urlString.replace('/api/chat', '/api/chatbot');
+      console.log('[Chatbot] Redirecting endpoint to:', urlString);
+    } else if (!urlString.includes('/api/chatbot')) {
+      // If no API endpoint specified, use /api/chatbot
+      urlString = '/api/chatbot';
+      console.log('[Chatbot] Using default endpoint:', urlString);
+    }
+    
+    // Construct full URL
+    const fullUrl = baseUrl ? `${baseUrl}${urlString}` : urlString;
     
     // Reconstruct fetch with corrected URL
-    if (typeof input === 'string') {
-      return fetch(urlString || input, init);
-    } else if (input instanceof URL) {
-      return fetch(urlString ? new URL(urlString, window.location.origin) : input, init);
-    } else if (input instanceof Request) {
-      const newUrl = urlString || input.url;
-      return fetch(newUrl, {
-        method: init?.method || input.method,
-        headers: new Headers(init?.headers || input.headers),
-        body: init?.body !== undefined ? init.body : input.body,
-        signal: init?.signal || input.signal,
-        ...init,
-      });
+    try {
+      if (typeof input === 'string') {
+        return fetch(fullUrl, init);
+      } else if (input instanceof URL) {
+        return fetch(new URL(urlString, baseUrl || window.location.origin), init);
+      } else if (input instanceof Request) {
+        // Create new request with corrected URL
+        const newRequest = new Request(fullUrl, {
+          method: init?.method || input.method,
+          headers: new Headers(init?.headers || input.headers),
+          body: init?.body !== undefined ? init.body : input.body,
+          signal: init?.signal || input.signal,
+          cache: init?.cache || input.cache,
+          credentials: init?.credentials || input.credentials,
+          mode: init?.mode || input.mode,
+          redirect: init?.redirect || input.redirect,
+          referrer: init?.referrer || input.referrer,
+          referrerPolicy: init?.referrerPolicy || input.referrerPolicy,
+        });
+        return fetch(newRequest);
+      }
+      
+      return fetch(input, init);
+    } catch (fetchError) {
+      console.error('[Chatbot] Fetch error:', fetchError);
+      throw fetchError;
     }
-    
-    return fetch(input, init);
   }, []);
   
   // useChat hook configuration
+  // Explicitly set api to '/api/chatbot' to ensure correct endpoint
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chatbot',
     id: 'vyndi-chatbot',
     fetch: customFetch,
+    onError: (error) => {
+      console.error('[Chatbot] Error from useChat:', error);
+    },
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
