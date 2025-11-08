@@ -25,6 +25,18 @@ const SIMILARITY_THRESHOLD = 0.7; // Minimum similarity score
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
+// Explicitly set runtime (may help with route recognition)
+export const runtime = 'nodejs';
+
+/**
+ * GET /api/chatbot
+ * 
+ * Health check endpoint for chatbot API.
+ */
+export async function GET() {
+  return NextResponse.json({ status: 'ok', message: 'Chatbot API is running' });
+}
+
 /**
  * POST /api/chatbot
  * 
@@ -38,7 +50,6 @@ export async function POST(req: NextRequest) {
   log.info('Chatbot API route called', {
     method: req.method,
     url: req.url,
-    headers: Object.fromEntries(req.headers.entries()),
   });
   
   try {
