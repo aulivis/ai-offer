@@ -5,14 +5,21 @@ import { envServer } from '@/env.server';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const isSecure = envServer.APP_URL.startsWith('https');
-// Use 'lax' for development to allow cookies on redirects, 'strict' for production
-const sameSite = (isProduction ? 'strict' : 'lax') as 'strict' | 'lax';
+// Always use 'lax' for SameSite to allow cookies on same-site redirects
+// This is necessary for magic link flows where we redirect after setting cookies
+// 'lax' allows cookies to be sent on top-level navigations (like redirects)
+// while still providing CSRF protection for cross-site requests
+const sameSite = 'lax' as const;
 
+// For localhost, don't set domain attribute (browsers handle it automatically)
+// For production, also don't set domain to allow cookies to work across subdomains if needed
 const baseCookieOptions = {
   httpOnly: true,
   sameSite,
   secure: isSecure, // Use APP_URL to determine if we're using HTTPS
   path: '/',
+  // Explicitly don't set domain - let browser handle it
+  // This ensures cookies work correctly on localhost and in production
 };
 
 type SetAuthCookiesOptions = {

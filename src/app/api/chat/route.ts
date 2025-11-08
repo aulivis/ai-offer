@@ -317,29 +317,38 @@ export async function POST(req: NextRequest) {
       });
       
       // Return preset answer directly using streaming
+      // Stream the answer with minimal GPT processing to ensure compatibility with useChat
       try {
+        log.info('Creating stream response for preset question', {
+          answerLength: presetMatch.answer.length,
+          requestId,
+        });
+        
+        // Use streamText with a very direct prompt
+        // Simply ask GPT to return the provided answer as-is
         const result = streamText({
           model: openai('gpt-3.5-turbo'),
-          system: `Te Vanda vagy, a Vyndi segítőasszisztense. Barátságos, segítőkész emberként válaszolsz, aki szívesen segít a felhasználóknak megérteni a Vyndi platformot.
+          system: `Te Vanda vagy, a Vyndi segítőasszisztense. Válaszolj magyar nyelven, barátságosan.
 
-Válaszolj KIZÁRÓLAG magyar nyelven, barátságos, közvetlen hangvételben, mintha egy kolléga lennél, aki segít. Használj "te" szólítást, és legyél természetes, meleg.
-
-A következő választ add vissza a felhasználónak, de formázd meg barátságosan, mintha természetes beszélgetésben mondanád el. Ne csak copy-paste-eld, hanem közvetlenül, barátságosan közöld a választ.`,
+A felhasználó kérdésére a megadott válasz szövegét add vissza PONTOSAN úgy, ahogy van. Ne változtasd meg semmit, csak add vissza a szöveget.`,
           messages: [
-            ...messagesToUse.slice(0, -1), // All messages except the last one
             {
               role: 'user' as const,
-              content: `Kérlek, válaszolj a következő kérdésre barátságosan és természetesen: ${lastMessage.content}
+              content: `Válaszolj erre a kérdésre: "${lastMessage.content}"
 
-Itt van a válasz, amit közölj (de formázd meg barátságosan):
+A válasz, amit PONTOSAN így add vissza (ne változtasd meg semmit):
 
 ${presetMatch.answer}`,
             },
           ],
-          temperature: 0.7,
+          temperature: 0.0, // Zero temperature for maximum consistency - should return answer as-is
         });
         
-        // Track analytics
+        log.info('Stream text created successfully for preset question', {
+          requestId,
+        });
+        
+        // Track analytics (async, don't await)
         const responseTime = Date.now() - startTime;
         fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
           method: 'POST',
@@ -364,13 +373,29 @@ ${presetMatch.answer}`,
           });
         });
         
-        return result.toTextStreamResponse();
+        // Convert to stream response compatible with useChat hook
+        const streamResponse = result.toTextStreamResponse();
+        
+        log.info('Returning stream response for preset question', {
+          hasResponse: !!streamResponse,
+          requestId,
+        });
+        
+        return streamResponse;
       } catch (streamError) {
         log.error('Failed to create stream response for preset question', streamError instanceof Error ? streamError : undefined, {
           errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
+          errorMessage: streamError instanceof Error ? streamError.message : String(streamError),
+          errorStack: streamError instanceof Error ? streamError.stack : undefined,
           requestId,
         });
-        // Fall through to regular processing as fallback
+        
+        // If streaming fails, fall through to regular RAG processing as backup
+        // This ensures the user still gets an answer, just not from the preset
+        log.warn('Streaming failed for preset question, falling through to RAG processing', {
+          requestId,
+        });
+        // Don't return here - let it fall through to regular processing
       }
     }
     

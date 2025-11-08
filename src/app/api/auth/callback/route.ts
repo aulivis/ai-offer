@@ -420,18 +420,14 @@ export async function GET(request: Request) {
           return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
         }
         
-        // Create redirect response - cookies set via cookieStore.set() are automatically
-        // included in the response by Next.js App Router
-        // IMPORTANT: Use relative URL construction to ensure same-origin redirect
-        // which allows cookies to be properly sent
-        const redirectUrl = new URL(redirectPath, envServer.APP_URL);
+        // Use redirectTo helper which properly handles relative URLs
+        // This ensures cookies set via cookieStore.set() are included in the redirect response
         logger.info('Creating redirect response', {
           userId,
-          redirectUrl: redirectUrl.toString(),
-          isAbsolute: redirectUrl.protocol.startsWith('http'),
+          redirectPath,
         });
         
-        return NextResponse.redirect(redirectUrl);
+        return redirectTo(redirectPath);
       } catch (error) {
         logger.error('Error in magic link token handling', error);
         // Ensure cookies are cleared on error
@@ -553,9 +549,9 @@ export async function GET(request: Request) {
           redirectPath,
         });
         
-        // Create redirect - cookies are automatically included by Next.js
-        const redirectUrl = new URL(redirectPath, envServer.APP_URL);
-        return NextResponse.redirect(redirectUrl);
+        // Use redirectTo helper which properly handles relative URLs
+        // This ensures cookies set via cookieStore.set() are included in the redirect response
+        return redirectTo(redirectPath);
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
         // Ensure cookies are cleared on error
