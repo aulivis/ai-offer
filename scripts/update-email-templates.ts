@@ -120,7 +120,7 @@ function getHungarianMagicLinkTemplate(templatePath?: string): EmailTemplate {
     }
   }
 
-  // Default template
+  // Default template - matches templates/magic-link-email-hu.html
   return {
     subject: 'Belépési link - Vyndi',
     content: `<!DOCTYPE html>
@@ -130,34 +130,49 @@ function getHungarianMagicLinkTemplate(templatePath?: string): EmailTemplate {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Belépési link</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f7fafc;">
   <div style="background: linear-gradient(135deg, #1c274c 0%, #2d3f6b 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+    <!-- Vyndi Logo -->
+    <img src="{{ .SiteURL }}/vyndi-logo.png" alt="Vyndi" style="height: 40px; width: auto; margin-bottom: 10px;" />
     <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Vyndi</h1>
     <p style="color: #e2e8f0; margin: 10px 0 0 0; font-size: 16px;">AI-alapú ajánlatkészítés</p>
   </div>
   
   <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
-    <h2 style="color: #1c274c; margin-top: 0; font-size: 24px; font-weight: 600;">Üdvözöljük!</h2>
+    <h2 style="color: #1c274c; margin-top: 0; font-size: 24px; font-weight: 600;">Üdvözlünk!</h2>
     
     <p style="color: #4a5568; font-size: 16px; margin-bottom: 20px;">
-      Kattintson az alábbi gombra a bejelentkezéshez. A link <strong>1 órán keresztül érvényes</strong>.
+      Kattints az alábbi gombra a bejelentkezéshez. A link <strong>1 órán keresztül érvényes</strong>.
     </p>
     
     <div style="text-align: center; margin: 40px 0;">
-      <a href="{{ .ConfirmationURL }}" 
-         style="display: inline-block; background: linear-gradient(135deg, #1c274c 0%, #2d3f6b 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(28, 39, 76, 0.2);">
-        Bejelentkezés
-      </a>
+      <!-- Email-safe button with table for maximum compatibility -->
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
+        <tr>
+          <td align="center">
+            <table border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td align="center" bgcolor="#1c274c" style="border-radius: 6px; padding: 16px 40px;">
+                  <a href="{{ .ConfirmationURL }}" 
+                     style="display: inline-block; background-color: #1c274c; color: #ffffff; text-decoration: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 1.5; text-align: center; border-radius: 6px;">
+                    Bejelentkezés
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     </div>
     
-    <p style="color: #718096; font-size: 14px; margin-top: 30px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
-      <strong>Nem Ön kérte ezt a linket?</strong><br>
-      Ha nem Ön kezdeményezte ezt a bejelentkezést, nyugodtan hagyja figyelmen kívül ezt az e-mailt. A link automatikusan lejár, és senki más nem férhet hozzá fiókjához.
+    <p style="color: #718096; font-size: 14px; margin-top: 30px; padding-top: 30px;">
+      <strong>Nem te kérted ezt a linket?</strong><br>
+      Ha nem te kezdeményezted ezt a bejelentkezést, nyugodtan hagyd figyelmen kívül ezt az e-mailt. A link automatikusan lejár, és senki más nem férhet hozzá fiókodhoz.
     </p>
     
-    <div style="margin-top: 40px; padding: 20px; background: #f7fafc; border-radius: 6px; border-left: 4px solid #1c274c;">
+    <div style="margin-top: 40px; padding: 20px; background: #f7fafc; border-radius: 6px;">
       <p style="color: #4a5568; font-size: 14px; margin: 0 0 10px 0;">
-        <strong>💡 Tipp:</strong> Ha a gomb nem működik, másolja be az alábbi linket a böngészőjébe:
+        <strong>💡 Tipp:</strong> Ha a gomb nem működik, másold be az alábbi linket a böngésződbe:
       </p>
       <p style="color: #2d3748; font-size: 12px; word-break: break-all; margin: 0; font-family: monospace;">
         {{ .ConfirmationURL }}
@@ -165,7 +180,7 @@ function getHungarianMagicLinkTemplate(templatePath?: string): EmailTemplate {
     </div>
   </div>
   
-  <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+  <div style="text-align: center; margin-top: 30px; padding-top: 20px;">
     <p style="color: #a0aec0; font-size: 12px; margin: 5px 0;">
       <strong>Vyndi</strong> - AI-alapú ajánlatkészítés percek alatt
     </p>
