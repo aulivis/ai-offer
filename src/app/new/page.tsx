@@ -1648,6 +1648,81 @@ export default function NewOfferWizard() {
     return ins.data?.id;
   }
 
+  // Convert storage paths to base64 data URLs
+  async function convertStoragePathsToBase64(paths: string[]): Promise<PreparedImagePayload[]> {
+    if (paths.length === 0 || !user) return [];
+
+    const results: PreparedImagePayload[] = [];
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i];
+      try {
+        // Get signed URL
+        const { data: signedData, error: signedError } = await sb.storage
+          .from('brand-assets')
+          .createSignedUrl(path, 60 * 60); // 1 hour
+
+        if (signedError || !signedData?.signedUrl) {
+          console.warn('Failed to get signed URL for image:', path);
+          continue;
+        }
+
+        // Fetch image as blob
+        const response = await fetch(signedData.signedUrl);
+        if (!response.ok) {
+          console.warn('Failed to fetch image:', path);
+          continue;
+        }
+
+        const blob = await response.blob();
+        
+        // Convert blob to base64
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            resolve(result);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+
+        const dataUrl = await base64Promise;
+        results.push({
+          key: `ref-img-${i}`,
+          dataUrl,
+          alt: `Reference image ${i + 1}`,
+        });
+      } catch (error) {
+        console.error('Error converting storage path to base64:', path, error);
+      }
+    }
+
+    return results;
+  }
+
+  // Fetch testimonials by IDs
+  async function fetchTestimonialsByIds(ids: string[]): Promise<Array<{ id: string; text: string }>> {
+    if (ids.length === 0 || !user) return [];
+
+    try {
+      const { data, error } = await sb
+        .from('testimonials')
+        .select('id, text')
+        .eq('user_id', user.id)
+        .in('id', ids);
+
+      if (error) {
+        console.error('Failed to fetch testimonials:', error);
+        return [];
+      }
+
+      return (data || []).map((t) => ({ id: t.id, text: t.text }));
+    } catch (error) {
+      console.error('Error fetching testimonials:', error);
+      return [];
+    }
+  }
+
   async function generate() {
     try {
       if (quotaLoading) {
@@ -1684,6 +1759,36 @@ export default function NewOfferWizard() {
         htmlForApi = prepared.html;
         imagePayload = prepared.images;
       }
+
+      // Convert reference images to base64
+      const referenceImagePayload: PreparedImagePayload[] = [];
+      if (selectedImages.length > 0 && profileSettings.enable_reference_photos) {
+        try {
+          const converted = await convertStoragePathsToBase64(selectedImages);
+          referenceImagePayload.push(...converted);
+        } catch (error) {
+          console.error('Failed to convert reference images:', error);
+          showToast({
+            title: 'Nem sikerült a referenciafotók konvertálása',
+            description: 'Próbáld újra később.',
+            variant: 'error',
+          });
+        }
+      }
+
+      // Fetch testimonials
+      const testimonialsData: Array<{ id: string; text: string }> = [];
+      if (selectedTestimonials.length > 0 && profileSettings.enable_testimonials) {
+        try {
+          const fetched = await fetchTestimonialsByIds(selectedTestimonials);
+          testimonialsData.push(...fetched);
+        } catch (error) {
+          console.error('Failed to fetch testimonials:', error);
+        }
+      }
+
+      // Merge reference images with existing images
+      imagePayload = [...imagePayload, ...referenceImagePayload];
       
       // Clear draft on successful generation
       const clearDraftOnSuccess = () => {
@@ -1724,6 +1829,7 @@ export default function NewOfferWizard() {
             clientId: cid,
             imageAssets: imagePayload,
             templateId: selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID,
+            testimonials: testimonialsData.map((t) => t.text),
           }),
           authErrorMessage: t('errors.auth.notLoggedIn'),
           errorMessageBuilder: (status) => t('errors.offer.generateStatus', { status }),

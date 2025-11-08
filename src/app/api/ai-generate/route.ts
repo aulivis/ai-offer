@@ -743,6 +743,10 @@ const aiGenerateRequestSchema = z
       (value) => (value === null || value === undefined ? [] : value),
       z.array(imageAssetSchema).default([]),
     ),
+    testimonials: z.preprocess(
+      (value) => (value === null || value === undefined ? [] : value),
+      z.array(z.string().trim()).default([]),
+    ),
   })
   .strict();
 
@@ -861,6 +865,7 @@ export const POST = withAuth(
       templateId,
       pdfWebhookUrl,
       imageAssets,
+      testimonials,
     } = parsed.data;
 
     const sb = await supabaseServer();
@@ -1098,6 +1103,11 @@ export const POST = withAuth(
         ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
         : '';
 
+      // Include testimonials in prompt if provided
+      const testimonialsSection = testimonials && testimonials.length > 0
+        ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
+        : '';
+
       const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
@@ -1110,6 +1120,7 @@ ${clientInfo}Projekt részletek:
 ${safeProjectDetails || '—'}
 
 Határidő: ${safeDeadline}${deadlineGuidance}
+${testimonialsSection}
 
 ${styleAddon}
 
@@ -1121,6 +1132,7 @@ Különös figyelmet fordít a következőkre:
 - Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
 - Ha ügyfél/cég neve van megadva, használd a bevezetőben a személyre szabáshoz
 - A szólítást következetesen alkalmazd a teljes szövegben
+${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelzések, használd fel őket a testimonials szakaszban' : ''}
 `;
 
       try {
