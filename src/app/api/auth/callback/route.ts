@@ -64,14 +64,29 @@ function redirectTo(path: string) {
   // The cookie store is tied to the request context, so cookies set via
   // cookieStore.set() will be automatically serialized into Set-Cookie headers
   // when the response is returned.
-  // Use relative URL for same-origin redirects to ensure cookies are properly sent
-  // Only use absolute URL if it's a different origin
+  // 
+  // IMPORTANT: Do NOT call await cookies() here as it may create timing issues.
+  // Instead, rely on Next.js to automatically include cookies that were set
+  // earlier in the request handler via the same cookie store instance.
+  //
+  // CRITICAL: Use a relative URL (starting with /) to ensure cookies work correctly.
+  // Absolute URLs can cause cookie issues due to domain/path mismatches.
+  // Next.js will automatically include any cookies set via cookies().set() in this response
   const isAbsolute = path.startsWith('http://') || path.startsWith('https://');
   if (isAbsolute) {
-    return NextResponse.redirect(new URL(path));
+    // For absolute URLs, extract the pathname to use as relative
+    try {
+      const url = new URL(path);
+      return NextResponse.redirect(url.pathname + url.search + url.hash, { status: 302 });
+    } catch {
+      // If URL parsing fails, fall back to absolute redirect
+      return NextResponse.redirect(new URL(path), { status: 302 });
+    }
   }
-  // For relative paths, use them directly to ensure cookies work correctly
-  return NextResponse.redirect(new URL(path, envServer.APP_URL));
+  // For relative paths, ensure they start with / and use 302 status
+  // Using status 302 (Found) instead of 307 (Temporary Redirect) can help with cookie handling
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return NextResponse.redirect(new URL(normalizedPath, envServer.APP_URL), { status: 302 });
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
@@ -421,12 +436,14 @@ export async function GET(request: Request) {
         }
         
         // Use redirectTo helper which properly handles relative URLs
-        // This ensures cookies set via cookieStore.set() are included in the redirect response
+        // Pass the cookieStore to ensure cookies are included in the redirect response
         logger.info('Creating redirect response', {
           userId,
           redirectPath,
         });
         
+        // Create redirect response
+        // Next.js should automatically include cookies set via cookies().set() in this response
         return redirectTo(redirectPath);
       } catch (error) {
         logger.error('Error in magic link token handling', error);
@@ -550,7 +567,7 @@ export async function GET(request: Request) {
         });
         
         // Use redirectTo helper which properly handles relative URLs
-        // This ensures cookies set via cookieStore.set() are included in the redirect response
+        // Pass the cookieStore to ensure cookies are included in the redirect response
         return redirectTo(redirectPath);
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);

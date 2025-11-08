@@ -316,37 +316,55 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       
-      // Return preset answer directly using streaming
-      // Stream the answer with minimal GPT processing to ensure compatibility with useChat
+      // Return preset answer directly using streaming (industry best practice: no LLM call for preset answers)
+      // This is faster, more reliable, and cost-effective
       try {
-        log.info('Creating stream response for preset question', {
+        log.info('Creating direct stream response for preset question', {
           answerLength: presetMatch.answer.length,
           requestId,
         });
         
-        // Use streamText with a very direct prompt
-        // Simply ask GPT to return the provided answer as-is
-        const result = streamText({
-          model: openai('gpt-3.5-turbo'),
-          system: `Te Vanda vagy, a Vyndi segítőasszisztense. Válaszolj magyar nyelven, barátságosan.
-
-A felhasználó kérdésére a megadott válasz szövegét add vissza PONTOSAN úgy, ahogy van. Ne változtasd meg semmit, csak add vissza a szöveget.`,
-          messages: [
-            {
-              role: 'user' as const,
-              content: `Válaszolj erre a kérdésre: "${lastMessage.content}"
-
-A válasz, amit PONTOSAN így add vissza (ne változtasd meg semmit):
-
-${presetMatch.answer}`,
+        // Create a direct text stream in the format expected by useChat hook
+        // This avoids unnecessary LLM calls and ensures exact answer delivery
+        // The Vercel AI SDK uses a specific protocol format for streaming text
+        const createPresetAnswerStream = (text: string): ReadableStream<Uint8Array> => {
+          const encoder = new TextEncoder();
+          let index = 0;
+          const chunkSize = 15; // Characters per chunk for smooth streaming effect
+          
+          return new ReadableStream({
+            async start(controller) {
+              try {
+                // Stream the text in chunks to simulate typing effect
+                // Use the Vercel AI SDK protocol format: 0:"text chunk"\n
+                // This format is what useChat hook expects for text streaming
+                while (index < text.length) {
+                  const chunk = text.slice(index, Math.min(index + chunkSize, text.length));
+                  index += chunkSize;
+                  
+                  // Escape the chunk for JSON (handle special characters)
+                  const escapedChunk = JSON.stringify(chunk);
+                  // Format: 0:"chunk"\n (protocol format for text deltas)
+                  const protocolData = `0:${escapedChunk}\n`;
+                  
+                  controller.enqueue(encoder.encode(protocolData));
+                  
+                  // Small delay for smoother streaming effect (makes it feel more natural)
+                  await new Promise(resolve => setTimeout(resolve, 15));
+                }
+                
+                // Close the stream
+                controller.close();
+              } catch (error) {
+                log.error('Error in preset answer stream', {
+                  error: error instanceof Error ? error.message : String(error),
+                  requestId,
+                });
+                controller.error(error);
+              }
             },
-          ],
-          temperature: 0.0, // Zero temperature for maximum consistency - should return answer as-is
-        });
-        
-        log.info('Stream text created successfully for preset question', {
-          requestId,
-        });
+          });
+        };
         
         // Track analytics (async, don't await)
         const responseTime = Date.now() - startTime;
@@ -373,10 +391,18 @@ ${presetMatch.answer}`,
           });
         });
         
-        // Convert to stream response compatible with useChat hook
-        const streamResponse = result.toTextStreamResponse();
+        // Create stream response with proper headers for useChat compatibility
+        const stream = createPresetAnswerStream(presetMatch.answer);
+        const streamResponse = new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+            'x-request-id': requestId,
+          },
+        });
         
-        log.info('Returning stream response for preset question', {
+        log.info('Returning direct stream response for preset question', {
           hasResponse: !!streamResponse,
           requestId,
         });
