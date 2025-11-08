@@ -158,11 +158,14 @@ For automation and version control, you can update email templates via the Supab
    - Go to [Supabase Account Settings → Tokens](https://supabase.com/dashboard/account/tokens)
    - Click **"Generate new token"**
    - Give it a descriptive name (e.g., "Email Template Management")
-   - Select the `projects:write` scope (this allows modifying project settings)
    - Copy the token immediately - it won't be shown again!
    - Store it securely (e.g., in your password manager or environment variables)
 
-   > **Note**: This is a Personal Access Token for your Supabase account, not a project API key. It's used for the Management API to update project settings like email templates.
+   > **Note**: 
+   > - This is a Personal Access Token for your Supabase account, not a project API key
+   > - PATs don't have configurable scopes - they provide full access to your account
+   > - It's used for the Management API to update project settings like email templates
+   > - Make sure to store it securely as it has full account access
 
 2. **Project Reference**: 
    - Found in your Supabase project URL: `https://<project-ref>.supabase.co`
@@ -196,18 +199,26 @@ curl -X PATCH "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
 A Node.js script is provided to update templates programmatically:
 
 ```bash
-# Using npm script (recommended)
+# Option 1: Using npm script (recommended if you have npm)
+npm run email:templates:update
+
+# Option 2: Using pnpm (if you have pnpm installed)
 pnpm email:templates:update
 
-# Or directly with ts-node
+# Option 3: Run directly with ts-node (no package manager needed)
+npx ts-node scripts/update-email-templates.ts
+
+# Option 4: If ts-node is installed globally
 ts-node scripts/update-email-templates.ts
 
 # With custom template file
-ts-node scripts/update-email-templates.ts --template templates/magic-link-email-hu.html
+npx ts-node scripts/update-email-templates.ts --template templates/magic-link-email-hu.html
 
 # With custom credentials
-ts-node scripts/update-email-templates.ts --token <token> --url <url>
+npx ts-node scripts/update-email-templates.ts --token <token> --url <url>
 ```
+
+> **Note**: If you get "pnpm is not recognized", use `npm` instead or run with `npx ts-node` directly.
 
 The script:
 - Fetches current email templates from Supabase
@@ -263,11 +274,14 @@ If you want to use the script to update templates programmatically:
 ```env
 # Supabase Personal Access Token (PAT) - Different from project API keys!
 # Get it from: https://supabase.com/dashboard/account/tokens
+# Note: PATs don't have scopes - they provide full account access
 SUPABASE_ACCESS_TOKEN=your-personal-access-token
 
 # Your Supabase project URL (script will extract project ref from this)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 ```
+
+> **Important**: Create this file as `web/.env.local` (not just `.env`). The script automatically loads from `.env.local`.
 
 ### Important: Token Types Explained
 
@@ -282,8 +296,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 - Used for: Management API (updating project settings, templates, etc.)
 - Scoped to: Your account (can manage multiple projects)
 - Example: `SUPABASE_ACCESS_TOKEN` (for the update script)
+- **Note**: PATs don't have configurable scopes - they provide full account access. Supabase doesn't currently support scoped PATs.
 
-> **⚠️ Do not confuse these!** The PAT is account-level and used for the Management API. The project API keys are project-specific and used for regular application operations.
+> **⚠️ Do not confuse these!** The PAT is account-level and used for the Management API. The project API keys are project-specific and used for regular application operations. Store PATs securely as they have full account access.
 
 ## Troubleshooting
 

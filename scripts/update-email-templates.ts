@@ -7,9 +7,12 @@
  *   ts-node scripts/update-email-templates.ts
  *
  * Environment variables required:
- *   - SUPABASE_ACCESS_TOKEN: Your Supabase Personal Access Token (PAT) with projects:write scope
+ *   - SUPABASE_ACCESS_TOKEN: Your Supabase Personal Access Token (PAT)
  *                            Get it from: https://supabase.com/dashboard/account/tokens
+ *                            Note: PATs don't have scopes - they provide full account access
  *   - NEXT_PUBLIC_SUPABASE_URL: Your Supabase project URL (e.g., https://xxx.supabase.co)
+ *
+ * The script automatically loads variables from .env.local in the web directory.
  *
  * Or pass as arguments:
  *   ts-node scripts/update-email-templates.ts --token <token> --url <url>
@@ -20,6 +23,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env.local (same as other scripts)
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 interface EmailTemplate {
   subject: string;
@@ -199,10 +206,11 @@ Options:
   --template <path>     Path to HTML template file (default: uses built-in template)
   --help, -h            Show this help message
 
-Environment variables:
-  SUPABASE_ACCESS_TOKEN        Your Supabase Personal Access Token (PAT) with projects:write scope
+Environment variables (loaded from .env.local):
+  SUPABASE_ACCESS_TOKEN        Your Supabase Personal Access Token (PAT)
                                Get it from: https://supabase.com/dashboard/account/tokens
-                               Note: This is different from your project's API keys!
+                               Note: PATs don't have scopes - they provide full account access
+                               This is different from your project's API keys!
   NEXT_PUBLIC_SUPABASE_URL     Your Supabase project URL (e.g., https://xxx.supabase.co)
 
 Examples:
@@ -217,15 +225,30 @@ Examples:
   if (!accessToken) {
     console.error('❌ Error: SUPABASE_ACCESS_TOKEN environment variable or --token argument is required');
     console.error('');
+    console.error('🔍 Debugging:');
+    console.error(`   Current working directory: ${process.cwd()}`);
+    console.error(`   Looking for .env.local in: ${path.join(process.cwd(), '.env.local')}`);
+    console.error(`   SUPABASE_ACCESS_TOKEN is ${process.env.SUPABASE_ACCESS_TOKEN ? 'SET' : 'NOT SET'}`);
+    console.error(`   NEXT_PUBLIC_SUPABASE_URL is ${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET'}`);
+    console.error('');
     console.error('📝 How to get your Supabase Personal Access Token:');
     console.error('   1. Go to https://supabase.com/dashboard/account/tokens');
     console.error('   2. Click "Generate new token"');
     console.error('   3. Give it a name (e.g., "Email Template Management")');
-    console.error('   4. Select the "projects:write" scope');
-    console.error('   5. Copy the token and store it securely');
+    console.error('   4. Copy the token immediately (it won\'t be shown again)');
+    console.error('   5. Store it securely');
+    console.error('');
+    console.error('💡 Setting the token:');
+    console.error('   Option 1: Create/edit .env.local in the web directory:');
+    console.error('      SUPABASE_ACCESS_TOKEN=your-token-here');
+    console.error('      NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co');
+    console.error('');
+    console.error('   Option 2: Pass as command-line arguments:');
+    console.error('      npm run email:templates:update -- --token your-token --url https://your-project.supabase.co');
     console.error('');
     console.error('   Note: This is a Personal Access Token (PAT) from your account settings,');
     console.error('         NOT the same as your project\'s API keys (anon key, service role key).');
+    console.error('         PATs don\'t have scopes - they provide full access to your account.');
     process.exit(1);
   }
 
