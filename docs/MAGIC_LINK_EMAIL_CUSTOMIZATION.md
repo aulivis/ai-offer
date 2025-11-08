@@ -153,14 +153,21 @@ For automation and version control, you can update email templates via the Supab
 
 ### Prerequisites
 
-1. **Supabase Access Token**: 
-   - Go to your Supabase project settings
-   - Navigate to **API** → **Project API keys**
-   - Create a new access token with `projects:write` scope
+1. **Supabase Personal Access Token (PAT)**: 
+   - This is different from your project's API keys (anon key, service role key)
+   - Go to [Supabase Account Settings → Tokens](https://supabase.com/dashboard/account/tokens)
+   - Click **"Generate new token"**
+   - Give it a descriptive name (e.g., "Email Template Management")
+   - Select the `projects:write` scope (this allows modifying project settings)
+   - Copy the token immediately - it won't be shown again!
+   - Store it securely (e.g., in your password manager or environment variables)
+
+   > **Note**: This is a Personal Access Token for your Supabase account, not a project API key. It's used for the Management API to update project settings like email templates.
 
 2. **Project Reference**: 
    - Found in your Supabase project URL: `https://<project-ref>.supabase.co`
-   - Or in `NEXT_PUBLIC_SUPABASE_URL` environment variable
+   - Or extract it from `NEXT_PUBLIC_SUPABASE_URL` environment variable
+   - Example: If your URL is `https://abcdefghijklmnop.supabase.co`, then `abcdefghijklmnop` is your project ref
 
 ### Using the Management API
 
@@ -236,20 +243,47 @@ The script:
 
 ## Environment Variables
 
-Make sure these environment variables are set:
+### For Your Application
+
+Make sure these environment variables are set in your application:
 
 ```env
 # Application URL (used in email templates)
 APP_URL=https://yourdomain.com
 
-# Supabase Configuration
+# Supabase Configuration (Project API Keys)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Optional: For programmatic template updates
-SUPABASE_ACCESS_TOKEN=your-access-token
-PROJECT_REF=your-project-ref
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # From project settings
 ```
+
+### For Programmatic Template Updates (Optional)
+
+If you want to use the script to update templates programmatically:
+
+```env
+# Supabase Personal Access Token (PAT) - Different from project API keys!
+# Get it from: https://supabase.com/dashboard/account/tokens
+SUPABASE_ACCESS_TOKEN=your-personal-access-token
+
+# Your Supabase project URL (script will extract project ref from this)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+```
+
+### Important: Token Types Explained
+
+**Project API Keys** (anon key, service role key):
+- Found in: Project Settings → API
+- Used for: Database queries, authentication, storage
+- Scoped to: A specific project
+- Example: `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+**Personal Access Token (PAT)**:
+- Found in: Account Settings → Tokens (https://supabase.com/dashboard/account/tokens)
+- Used for: Management API (updating project settings, templates, etc.)
+- Scoped to: Your account (can manage multiple projects)
+- Example: `SUPABASE_ACCESS_TOKEN` (for the update script)
+
+> **⚠️ Do not confuse these!** The PAT is account-level and used for the Management API. The project API keys are project-specific and used for regular application operations.
 
 ## Troubleshooting
 
