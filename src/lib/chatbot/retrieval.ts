@@ -15,7 +15,7 @@ export interface RetrievedDocument {
   content: string;
   metadata: Record<string, unknown>;
   sourcePath: string;
-  chunkIndex: number;
+  chunkIndex?: number;
   similarity: number;
 }
 

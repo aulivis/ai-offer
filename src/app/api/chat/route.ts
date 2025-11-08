@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
           content,
         };
       })
-      .filter((m: any) => m !== null);
+      .filter((m: any): m is { role: 'user' | 'assistant'; content: string } => m !== null);
     
     if (convertedMessages.length === 0) {
       log.warn('Invalid request: no valid messages found after conversion', { requestId });
@@ -268,14 +268,19 @@ export async function POST(req: NextRequest) {
     const openaiClient = createOpenAIClient();
     
     // Best Practice: Conversation summarization for long conversations
-    let messagesToUse = convertedMessages;
+    let messagesToUse: Array<{ role: 'user' | 'assistant'; content: string }> = convertedMessages;
     if (ENABLE_SUMMARIZATION && shouldSummarize(convertedMessages)) {
       log.info('Summarizing conversation', {
         originalLength: convertedMessages.length,
         requestId,
       });
       try {
-        messagesToUse = await summarizeConversation(convertedMessages, openaiClient);
+        const summarized = await summarizeConversation(convertedMessages, openaiClient);
+        // Ensure type safety - summarizeConversation should return properly typed messages
+        messagesToUse = summarized.map((m) => ({
+          role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+          content: m.content,
+        }));
         log.info('Conversation summarized', {
           newLength: messagesToUse.length,
           requestId,
@@ -438,11 +443,44 @@ export async function POST(req: NextRequest) {
       requestId,
     });
     
-    // Format context from retrieved documents (with markdown links)
-    const context = formatContext(documents, true);
+    // Handle case when no documents are found
+    // Best Practice: Provide helpful response even when no documents match
+    let context: string;
+    let systemPrompt: string;
     
-    // Build system prompt - Hungarian language, Vyndi branding
-    const systemPrompt = `Te egy segítőkész asszisztens vagy a Vyndi számára, egy AI-alapú üzleti ajánlatkészítő platform számára.
+    if (documents.length === 0) {
+      log.warn('No documents found for query', {
+        query: lastMessage.content,
+        requestId,
+      });
+      
+      // Still provide a response, but inform the user that no documentation was found
+      context = 'No relevant documentation found for this query.';
+      systemPrompt = `Te egy segítőkész asszisztens vagy a Vyndi számára, egy AI-alapú üzleti ajánlatkészítő platform számára.
+
+Válaszolj KIZÁRÓLAG magyar nyelven.
+
+Számodra a következőkről kell válaszolnod:
+- Vyndi funkciói és működése
+- API dokumentáció
+- Sablon rendszer
+- Platform használata
+- Architektúra és technikai részletek
+
+Fontos: Nem található releváns dokumentáció erre a kérdésre a jelenlegi adatbázisban.
+
+Utasítások:
+- Udvariasan jelezd, hogy a kérdésre jelenleg nincs elérhető dokumentáció
+- Javasold, hogy a felhasználó ellenőrizze a dokumentációt vagy lépjen kapcsolatba a támogatással
+- Ha lehetséges, adj általános választ a Vyndi funkcióiról
+- Mindig magyar nyelven válaszolj
+- Legyél segítőkész és barátságos`;
+    } else {
+      // Format context from retrieved documents (with markdown links)
+      context = formatContext(documents, true);
+      
+      // Build system prompt - Hungarian language, Vyndi branding
+      systemPrompt = `Te egy segítőkész asszisztens vagy a Vyndi számára, egy AI-alapú üzleti ajánlatkészítő platform számára.
 
 Válaszolj KIZÁRÓLAG magyar nyelven.
 
@@ -464,15 +502,31 @@ Utasítások:
 
 Dokumentációs Kontextus:
 ${context}`;
+    }
     
     // Stream response using Vercel AI SDK
-    const result = streamText({
-      model: openai('gpt-3.5-turbo'), // Using GPT-3.5 for cost efficiency
-      system: systemPrompt,
-      messages: messagesToUse,
-      maxTokens: 1000, // Limit response length
-      temperature: 0.7, // Balanced creativity
-    });
+    let result;
+    try {
+      result = streamText({
+        model: openai('gpt-3.5-turbo'), // Using GPT-3.5 for cost efficiency
+        system: systemPrompt,
+        messages: messagesToUse,
+        maxTokens: 1000, // Limit response length
+        temperature: 0.7, // Balanced creativity
+      } as any); // Type assertion needed due to AI SDK type definitions
+    } catch (streamError) {
+      log.error('Failed to create stream response', {
+        error: streamError instanceof Error ? streamError.message : String(streamError),
+        errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
+        errorDetails: streamError instanceof Error ? {
+          name: streamError.name,
+          message: streamError.message,
+          stack: streamError.stack,
+        } : JSON.stringify(streamError, Object.getOwnPropertyNames(streamError)),
+        requestId,
+      });
+      throw streamError;
+    }
     
     // Best Practice: Analytics tracking (async, don't await)
     const responseTime = Date.now() - startTime;
@@ -499,54 +553,94 @@ ${context}`;
     });
     
     // Return data stream response compatible with @ai-sdk/react useChat hook
-    return result.toDataStreamResponse();
+    // Use toDataStreamResponse() for useChat hook compatibility
+    // Type assertion needed as TypeScript types may not be fully up to date
+    return (result as any).toDataStreamResponse() as Response;
   } catch (error) {
     const log = createLogger(requestId);
     
-    // Best Practice: Comprehensive error logging
+    // Best Practice: Comprehensive error logging with proper serialization
+    // Handle all error types, not just Error instances
+    let errorMessage = 'Unknown error';
+    let errorStack: string | undefined;
+    let errorType = 'Unknown';
+    let errorDetails: any = {};
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      errorStack = error.stack;
+      errorType = error.constructor.name;
+      errorDetails = {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      };
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+      errorType = 'String';
+    } else if (error && typeof error === 'object') {
+      // Try to extract meaningful information from error object
+      try {
+        errorMessage = (error as any).message || (error as any).error || JSON.stringify(error);
+        errorType = (error as any).constructor?.name || 'Object';
+        errorDetails = JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      } catch (serializeError) {
+        errorMessage = String(error);
+        errorType = 'Object (serialization failed)';
+      }
+    } else {
+      errorMessage = String(error);
+      errorType = typeof error;
+    }
+    
     log.error('Chat API error', {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
+      error: errorMessage,
+      errorType,
+      errorStack,
+      errorDetails,
       requestId,
     });
     
-    // Best Practice: Track error analytics
+    // Best Practice: Track error analytics (non-blocking)
     fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         event: 'error',
         data: {
-          error: error instanceof Error ? error.message : String(error),
-          errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+          error: errorMessage,
+          errorType,
           requestId,
         },
       }),
     }).catch((analyticsError) => {
-      // Don't log analytics errors to avoid recursion
-      console.error('Failed to track error analytics:', analyticsError);
+      // Don't log analytics errors to avoid recursion - analytics failures are non-blocking
+      // Silently fail - analytics table might not exist yet
     });
     
     // Best Practice: Secure error messages (no sensitive data exposure)
-    let errorMessage = 'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.';
+    let userErrorMessage = 'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.';
     let statusCode = 500;
     
-    if (error instanceof Error) {
-      if (error.message.includes('rate limit') || error.message.includes('429')) {
-        errorMessage = 'Túl sok kérés. Kérjük, várj egy pillanatot, mielőtt újra kérdeznél.';
-        statusCode = 429;
-      } else if (error.message.includes('embedding') || error.message.includes('OpenAI')) {
-        errorMessage = 'Hiba történt a kérdés feldolgozása során. Kérjük, próbáld újra.';
-        statusCode = 500;
-      } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
-        errorMessage = 'A kérés túl sokáig tartott. Kérjük, próbáld újra.';
-        statusCode = 504;
-      }
+    const errorMsgLower = errorMessage.toLowerCase();
+    if (errorMsgLower.includes('rate limit') || errorMsgLower.includes('429')) {
+      userErrorMessage = 'Túl sok kérés. Kérjük, várj egy pillanatot, mielőtt újra kérdeznél.';
+      statusCode = 429;
+    } else if (errorMsgLower.includes('embedding') || errorMsgLower.includes('openai')) {
+      userErrorMessage = 'Hiba történt a kérdés feldolgozása során. Kérjük, próbáld újra.';
+      statusCode = 500;
+    } else if (errorMsgLower.includes('timeout') || errorMsgLower.includes('timed out')) {
+      userErrorMessage = 'A kérés túl sokáig tartott. Kérjük, próbáld újra.';
+      statusCode = 504;
+    } else if (errorMsgLower.includes('no documents') || errorMsgLower.includes('no relevant')) {
+      // This shouldn't happen as we handle it above, but just in case
+      userErrorMessage = 'Nem található releváns dokumentáció erre a kérdésre. Kérjük, próbáld más megfogalmazásban.';
+      statusCode = 200; // Still return 200, but with a helpful message
     }
     
     return NextResponse.json(
       {
-        error: errorMessage,
+        error: userErrorMessage,
         requestId,
       },
       { status: statusCode },
