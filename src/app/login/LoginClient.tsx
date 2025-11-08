@@ -37,6 +37,25 @@ export default function LoginClient() {
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [rememberMe, setRememberMe] = useState(false);
 
+  // Check for error in URL params (e.g., from init-session failure)
+  // Set a minimum cooldown to prevent immediate retry after failure
+  useEffect(() => {
+    const errorParam = searchParams?.get('error');
+    const messageParam = searchParams?.get('message');
+    
+    if (errorParam || messageParam) {
+      // Show error message
+      setError(errorParam ? decodeURIComponent(errorParam) : messageParam ? decodeURIComponent(messageParam) : null);
+      
+      // Set a minimum cooldown (15 seconds) to prevent immediate retry
+      // This prevents rapid-fire requests when session init fails
+      const minCooldownAfterFailure = 15;
+      if (cooldownRemaining < minCooldownAfterFailure) {
+        setCooldownRemaining(minCooldownAfterFailure);
+      }
+    }
+  }, [searchParams, cooldownRemaining]);
+
   useEffect(() => {
     let ignore = false;
 
@@ -104,6 +123,23 @@ export default function LoginClient() {
           typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error?: string }).error as string)
             : t('errors.network');
+        
+        // Handle rate limit errors (429)
+        if (response.status === 429) {
+          const retryAfter = 
+            payload &&
+            typeof payload === 'object' &&
+            'retryAfter' in payload &&
+            typeof (payload as { retryAfter?: unknown }).retryAfter === 'number'
+              ? (payload as { retryAfter: number }).retryAfter
+              : response.headers.get('Retry-After')
+                ? parseInt(response.headers.get('Retry-After')!, 10)
+                : MAGIC_LINK_COOLDOWN_SECONDS;
+          
+          setCooldownRemaining(Math.max(retryAfter, cooldownRemaining));
+          throw new Error(message || 'Too many requests. Please wait before trying again.');
+        }
+        
         throw new Error(message);
       }
 
@@ -112,7 +148,11 @@ export default function LoginClient() {
     } catch (e) {
       const message = e instanceof Error ? e.message : t('errors.unknown');
       setError(message);
-      setCooldownRemaining(0);
+      // Don't reset cooldown to 0 on error - keep existing cooldown or set minimum
+      if (cooldownRemaining === 0) {
+        // Set a minimum cooldown of 5 seconds after any error to prevent rapid retries
+        setCooldownRemaining(5);
+      }
     } finally {
       setIsMagicLoading(false);
     }

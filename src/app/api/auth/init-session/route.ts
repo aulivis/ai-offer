@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { envServer } from '@/env.server';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
+import { clearAuthCookies } from '@/lib/auth/cookies';
 
 /**
  * API endpoint to initialize Supabase client session from HttpOnly cookies.
@@ -61,11 +62,13 @@ export async function POST(request: Request) {
     
     if (userError || !user) {
       log.warn('Failed to verify access token', { error: userError?.message });
+      // Clear invalid cookies
+      await clearAuthCookies();
       return NextResponse.json(
         { 
           success: false, 
           error: 'Invalid access token',
-          hasCookies: true,
+          hasCookies: false,
         },
         { status: 401 }
       );
@@ -77,11 +80,13 @@ export async function POST(request: Request) {
         expected: expectedUserId,
         actual: user.id,
       });
+      // Clear cookies on user ID mismatch
+      await clearAuthCookies();
       return NextResponse.json(
         { 
           success: false, 
           error: 'User ID mismatch',
-          hasCookies: true,
+          hasCookies: false,
           userId: user.id,
         },
         { status: 403 }

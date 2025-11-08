@@ -86,6 +86,21 @@ export async function clearAuthCookies() {
     httpOnly: false,
     maxAge: 0,
   });
+
+  // Clear auth flow cookies
+  cookieStore.set({
+    name: 'post_auth_redirect',
+    value: '',
+    ...baseCookieOptions,
+    maxAge: 0,
+  });
+
+  cookieStore.set({
+    name: 'remember_me',
+    value: '',
+    ...baseCookieOptions,
+    maxAge: 0,
+  });
 }
 
 export async function setCSRFCookie() {

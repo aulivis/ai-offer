@@ -2,8 +2,15 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { envServer } from '@/env.server';
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
+import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { createAuthRequestLogger } from '@/lib/observability/authLogging';
+import {
+  consumeMagicLinkRateLimit,
+  hashMagicLinkEmailKey,
+  RATE_LIMIT_MAX_ATTEMPTS,
+  RATE_LIMIT_WINDOW_MS,
+} from './rateLimiter';
 
 /**
  * A magic link elküldésekor eltároljuk a végső redirect útvonalat
@@ -19,6 +26,42 @@ export async function POST(request: Request) {
 
   if (!email) {
     return NextResponse.json({ error: 'Missing email' }, { status: 400 });
+  }
+
+  // Check rate limit before processing
+  try {
+    const rateLimitKey = hashMagicLinkEmailKey(email);
+    const supabase = supabaseServiceRole();
+    const rateLimitResult = await consumeMagicLinkRateLimit(supabase, rateLimitKey);
+
+    if (!rateLimitResult.allowed) {
+      const retryAfterSeconds = Math.ceil(rateLimitResult.retryAfterMs / 1000);
+      logger.warn('Magic link rate limit exceeded', {
+        email,
+        retryAfterMs: rateLimitResult.retryAfterMs,
+        maxAttempts: RATE_LIMIT_MAX_ATTEMPTS,
+        windowMs: RATE_LIMIT_WINDOW_MS,
+      });
+      return NextResponse.json(
+        {
+          error: 'Too many requests. Please wait before requesting another magic link.',
+          retryAfter: retryAfterSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfterSeconds.toString(),
+            'X-RateLimit-Limit': RATE_LIMIT_MAX_ATTEMPTS.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(Date.now() + rateLimitResult.retryAfterMs).toISOString(),
+          },
+        },
+      );
+    }
+  } catch (rateLimitError) {
+    logger.error('Rate limit check failed', rateLimitError);
+    // Continue with the request if rate limiting fails (fail open)
+    // This prevents rate limiting issues from blocking legitimate requests
   }
 
   // A végső cél szanitizálása és eltárolása sütiben

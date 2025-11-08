@@ -298,6 +298,7 @@ export async function GET(request: Request) {
   if (accessTokenFromLink) {
     if (!refreshTokenFromLink) {
       recordMagicLinkCallback('failure', { reason: 'missing_refresh_token' });
+      await clearAuthCookies();
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
@@ -305,6 +306,7 @@ export async function GET(request: Request) {
     const userId = payload?.sub ?? '';
     if (!userId) {
       recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
+      await clearAuthCookies();
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
@@ -346,6 +348,8 @@ export async function GET(request: Request) {
         
         return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
       } catch (error) {
+        // Ensure cookies are cleared on error
+        await clearAuthCookies();
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
   }
@@ -356,6 +360,7 @@ export async function GET(request: Request) {
     const otpType = normalizeOtpType(url.searchParams.get('type'));
     if (!otpType) {
       recordMagicLinkCallback('failure', { reason: 'invalid_token_type' });
+      await clearAuthCookies();
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
 
@@ -366,6 +371,7 @@ export async function GET(request: Request) {
       if (error || !data?.session) {
         recordMagicLinkCallback('failure', { reason: 'verify_failed' });
         logger.error('Supabase verifyOtp failed.', error ?? undefined);
+        await clearAuthCookies();
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
 
@@ -377,6 +383,7 @@ export async function GET(request: Request) {
       if (!accessToken || !refreshToken) {
         recordMagicLinkCallback('failure', { reason: 'missing_tokens' });
         logger.error('Supabase verifyOtp returned missing tokens.');
+        await clearAuthCookies();
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
 
@@ -384,7 +391,8 @@ export async function GET(request: Request) {
       const userId = payload?.sub ?? '';
       if (!userId) {
         recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        await clearAuthCookies();
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
 
       // Végcél sütit töröljük
@@ -411,25 +419,32 @@ export async function GET(request: Request) {
 
       // For magic link flows, also use the init-session page to ensure client session is ready
       // This provides consistent behavior across all auth flows
-      await handleMagicLinkTokens(
-        { accessToken, refreshToken, expiresIn },
-        userId,
-        finalRedirect,
-        request,
-        logger,
-        rememberMe,
-      );
-      
-      // Redirect to init-session page for client-side session initialization
-      // This ensures the Supabase client session is properly initialized
-      const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
-      initSessionUrl.searchParams.set('redirect', finalRedirect);
-      initSessionUrl.searchParams.set('user_id', userId);
-      
-      return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
+      try {
+        await handleMagicLinkTokens(
+          { accessToken, refreshToken, expiresIn },
+          userId,
+          finalRedirect,
+          request,
+          logger,
+          rememberMe,
+        );
+        
+        // Redirect to init-session page for client-side session initialization
+        // This ensures the Supabase client session is properly initialized
+        const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
+        initSessionUrl.searchParams.set('redirect', finalRedirect);
+        initSessionUrl.searchParams.set('user_id', userId);
+        
+        return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
+      } catch (handleError) {
+        // Ensure cookies are cleared on error
+        await clearAuthCookies();
+        throw handleError;
+      }
     } catch (error) {
       recordMagicLinkCallback('failure', { reason: 'verify_error' });
       logger.error('Unexpected error while verifying magic link token.', error);
+      await clearAuthCookies();
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
     }
   }
