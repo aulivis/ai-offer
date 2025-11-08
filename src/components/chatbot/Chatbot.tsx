@@ -50,77 +50,72 @@ export default function Chatbot({
   
   // Custom fetch function to intercept and fix endpoint
   // This ensures all requests go to /api/chatbot even if useChat defaults to /api/chat
+  // NOTE: The /api/chat route exists as a compatibility layer and forwards to /api/chatbot
   const customFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    // Log the original request for debugging
+    console.log('[Chatbot] Custom fetch called with:', {
+      input: typeof input === 'string' ? input : input instanceof URL ? input.href : input instanceof Request ? input.url : 'unknown',
+      method: init?.method || (input instanceof Request ? input.method : 'GET'),
+    });
+    
     // Extract URL string
     let urlString: string = '';
-    let baseUrl = '';
+    let baseUrl = window.location.origin;
     
     if (typeof input === 'string') {
-      urlString = input;
+      // Handle relative and absolute URLs
+      if (input.startsWith('http')) {
+        try {
+          const url = new URL(input);
+          baseUrl = url.origin;
+          urlString = url.pathname + url.search;
+        } catch (e) {
+          urlString = input;
+        }
+      } else {
+        urlString = input;
+      }
     } else if (input instanceof URL) {
-      urlString = input.pathname + input.search;
       baseUrl = input.origin;
+      urlString = input.pathname + input.search;
     } else if (input instanceof Request) {
-      urlString = input.url;
-    }
-    
-    // Normalize URL - handle both absolute and relative URLs
-    if (!urlString.startsWith('http')) {
-      // Relative URL - use current origin
-      baseUrl = window.location.origin;
-    } else {
-      // Absolute URL - extract base
       try {
-        const url = new URL(urlString);
+        const url = new URL(input.url);
         baseUrl = url.origin;
         urlString = url.pathname + url.search;
       } catch (e) {
-        // If URL parsing fails, try to use as-is
-        console.warn('[Chatbot] Failed to parse URL:', urlString);
+        urlString = input.url;
       }
     }
     
-    // Always ensure we're using /api/chatbot endpoint
-    // Redirect /api/chat to /api/chatbot if needed (safety net)
+    // Always redirect /api/chat to /api/chatbot
+    // Even though /api/chat exists as a compatibility route, we prefer /api/chatbot
     if (urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
+      const originalUrl = urlString;
       urlString = urlString.replace('/api/chat', '/api/chatbot');
-      console.log('[Chatbot] Redirecting /api/chat to /api/chatbot');
-    }
-    
-    // Ensure we always use /api/chatbot (explicitly set in useChat config, but enforce here)
-    if (!urlString.includes('/api/chatbot') && urlString.includes('/api/')) {
-      // If somehow we get a different /api/* endpoint, default to /api/chatbot
-      urlString = '/api/chatbot';
-      console.warn('[Chatbot] Unexpected API endpoint, defaulting to /api/chatbot');
+      console.log('[Chatbot] Redirecting endpoint:', originalUrl, '->', urlString);
     }
     
     // Construct full URL
-    const fullUrl = baseUrl ? `${baseUrl}${urlString}` : urlString;
+    const fullUrl = urlString.startsWith('http') 
+      ? urlString 
+      : `${baseUrl}${urlString.startsWith('/') ? '' : '/'}${urlString}`;
+    
+    console.log('[Chatbot] Final fetch URL:', fullUrl);
     
     // Reconstruct fetch with corrected URL
     try {
-      if (typeof input === 'string') {
-        return fetch(fullUrl, init);
-      } else if (input instanceof URL) {
-        return fetch(new URL(urlString, baseUrl || window.location.origin), init);
-      } else if (input instanceof Request) {
-        // Create new request with corrected URL
-        const newRequest = new Request(fullUrl, {
-          method: init?.method || input.method,
-          headers: new Headers(init?.headers || input.headers),
-          body: init?.body !== undefined ? init.body : input.body,
-          signal: init?.signal || input.signal,
-          cache: init?.cache || input.cache,
-          credentials: init?.credentials || input.credentials,
-          mode: init?.mode || input.mode,
-          redirect: init?.redirect || input.redirect,
-          referrer: init?.referrer || input.referrer,
-          referrerPolicy: init?.referrerPolicy || input.referrerPolicy,
-        });
-        return fetch(newRequest);
-      }
+      // Create new request with corrected URL and all properties
+      const fetchInit: RequestInit = {
+        ...init,
+        method: init?.method || (input instanceof Request ? input.method : 'GET'),
+        headers: init?.headers || (input instanceof Request ? input.headers : new Headers()),
+        body: init?.body !== undefined ? init.body : (input instanceof Request ? input.body : null),
+        signal: init?.signal || (input instanceof Request ? input.signal : undefined),
+        credentials: init?.credentials || (input instanceof Request ? input.credentials : 'same-origin'),
+      };
       
-      return fetch(input, init);
+      return fetch(fullUrl, fetchInit);
     } catch (fetchError) {
       console.error('[Chatbot] Fetch error:', fetchError);
       throw fetchError;
