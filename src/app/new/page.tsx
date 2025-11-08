@@ -650,6 +650,17 @@ export default function NewOfferWizard() {
   }, [allPdfTemplates, availablePdfTemplates, selectedPdfTemplateId]);
   const selectedPdfTemplateLabel = selectedPdfTemplate?.label ?? null;
 
+  // Reload activities function
+  const reloadActivities = useCallback(async () => {
+    if (!user) return;
+    const { data: acts } = await sb
+      .from('activities')
+      .select('id,name,unit,default_unit_price,default_vat,industries')
+      .eq('user_id', user.id)
+      .order('name');
+    setActivities(acts || []);
+  }, [sb, user]);
+
   // auth + preload
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
@@ -742,15 +753,7 @@ export default function NewOfferWizard() {
           : (templatesForPlan[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID);
       setSelectedPdfTemplateId(initialTemplateId);
 
-      const { data: acts } = await sb
-        .from('activities')
-        .select('id,name,unit,default_unit_price,default_vat,industries')
-        .eq('user_id', user.id)
-        .order('name');
-      if (!active) {
-        return;
-      }
-      setActivities(acts || []);
+      await reloadActivities();
 
       const { data: cl } = await sb
         .from('clients')
@@ -789,7 +792,7 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
-  }, [allPdfTemplates, authStatus, sb, t, user]);
+  }, [allPdfTemplates, authStatus, reloadActivities, sb, t, user]);
 
   useEffect(() => {
     setImageAssets((prev) => {
@@ -2325,6 +2328,7 @@ export default function NewOfferWizard() {
             showClientDropdown={showClientDrop}
             onClientDropdownToggle={setShowClientDrop}
             filteredClients={filteredClients}
+            onActivitySaved={reloadActivities}
           />
         )}
 

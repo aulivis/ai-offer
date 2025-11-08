@@ -16,11 +16,55 @@ const customerNames = [
   'Marketing Pro',
   'Brand Experts',
   'Growth Agency',
+  'Innovate Media',
+  'Smart Solutions',
+  'Creative Minds',
+  'Digital Wave',
+  'Brand Studio',
+  'Tech Innovators',
+  'Marketing Hub',
+  'Design Lab',
+  'Creative Force',
+  'Digital Dynamics',
+  'Brand Builders',
+  'Tech Ventures',
+  'Marketing Masters',
+  'Design Co.',
+  'Creative Partners',
+  'Digital Edge',
+  'Brand Factory',
+  'Tech Group',
+  'Marketing Plus',
+  'Design House',
+  'Creative Works',
+  'Digital First',
+  'Brand Studio Pro',
+  'Tech Labs',
+  'Marketing Solutions',
+  'Design Bureau',
+  'Creative Collective',
+  'Digital Minds',
+  'Brand Agency',
+  'Tech Systems',
+  'Marketing Experts',
+  'Design Studio Plus',
+  'Creative Studio',
+  'Digital Experts',
+  'Brand Consultants',
+  'Tech Innovations',
+  'Marketing Agency',
+  'Design Works',
+  'Creative Team',
+  'Digital Solutions',
+  'Brand Masters',
+  'Tech Partners',
+  'Marketing Lab',
 ];
 
 export default function CustomerTicker({ className = '' }: CustomerTickerProps) {
   const [count, setCount] = useState(500);
   const [isVisible, setIsVisible] = useState(false);
+  const [displayedNames, setDisplayedNames] = useState<string[]>([]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -41,7 +85,20 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
       }
     }, duration / steps);
 
-    return () => clearInterval(interval);
+    // Randomly select 3 names to display
+    const shuffled = [...customerNames].sort(() => Math.random() - 0.5);
+    setDisplayedNames(shuffled.slice(0, 3));
+
+    // Rotate names every 8 seconds
+    const nameRotationInterval = setInterval(() => {
+      const shuffled = [...customerNames].sort(() => Math.random() - 0.5);
+      setDisplayedNames(shuffled.slice(0, 3));
+    }, 8000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(nameRotationInterval);
+    };
   }, []);
 
   if (!isVisible) return null;
@@ -65,10 +122,10 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
       <div className="flex items-center gap-2">
         <span className="text-fg-muted">{t('landing.customerTicker.joinedRecently')}</span>
         <div className="flex items-center gap-1">
-          {customerNames.slice(0, 3).map((name, i) => (
-            <span key={i} className="font-medium text-fg">
+          {displayedNames.map((name, i) => (
+            <span key={`${name}-${i}`} className="font-medium text-fg">
               {name}
-              {i < 2 && <span className="text-fg-muted">,</span>}
+              {i < displayedNames.length - 1 && <span className="text-fg-muted">,</span>}
             </span>
           ))}
         </div>

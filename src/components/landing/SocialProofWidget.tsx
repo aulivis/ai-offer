@@ -14,13 +14,77 @@ interface SocialProofWidgetProps {
   className?: string;
 }
 
-const defaultActivities: Activity[] = [
-  { name: 'Kovács Márta', action: 'létrehozott egy új ajánlatot', time: '2 perce' },
-  { name: 'Nagy Péter', action: 'elfogadott egy ajánlatot', time: '5 perce' },
-  { name: 'Szabó Anna', action: 'megosztott egy ajánlatot', time: '12 perce' },
-  { name: 'Tóth János', action: 'létrehozott egy új ajánlatot', time: '18 perce' },
-  { name: 'Kiss Éva', action: 'elfogadott egy ajánlatot', time: '25 perce' },
-];
+// Generate 100+ different names and activities
+const generateActivities = (): Activity[] => {
+  const firstNames = [
+    'Kovács', 'Nagy', 'Szabó', 'Tóth', 'Kiss', 'Horváth', 'Varga', 'Molnár', 'Németh', 'Farkas',
+    'Balogh', 'Papp', 'Lakatos', 'Takács', 'Juhász', 'Mészáros', 'Oláh', 'Simon', 'Rácz', 'Fekete',
+    'Szilágyi', 'Török', 'Fehér', 'Balázs', 'Gál', 'Kis', 'Szűcs', 'Kovács', 'Mátyás', 'Orbán',
+    'Hegedűs', 'László', 'Antal', 'Somogyi', 'Fodor', 'Bodnár', 'Sipos', 'Magyar', 'Sándor', 'Deák',
+    'Király', 'Barna', 'Bakos', 'Dudás', 'Major', 'Hajdu', 'Veres', 'Borbély', 'Fábián', 'Lengyel',
+    'Gulyás', 'Jakab', 'Bognár', 'Szekeres', 'Márton', 'Pál', 'Illés', 'Vörös', 'Rónai', 'Benedek',
+    'Fülöp', 'Szalai', 'Huszár', 'Makai', 'Kállai', 'Barta', 'Péter', 'Szőke', 'Virág', 'Máté',
+    'Bálint', 'Kertész', 'Pataki', 'Bognár', 'Katona', 'Székely', 'Boros', 'Ács', 'Vincze', 'Lukács',
+    'Novák', 'Soós', 'Tisza', 'Gergely', 'Tamás', 'Nagy', 'Boros', 'Puskás', 'Szabó', 'Fazekas',
+    'Kocsis', 'Dobos', 'Balog', 'Kelemen', 'Kárpáti', 'Lázár', 'Bíró', 'Sárosi', 'Erdős', 'Szász',
+    'Vas', 'Kálmán', 'Császár', 'Vida', 'Benedek', 'György', 'Körösi', 'Márkus', 'Sipos', 'Dudás',
+  ];
+  
+  const lastNames = [
+    'Márta', 'Péter', 'Anna', 'János', 'Éva', 'László', 'Katalin', 'István', 'Zsuzsanna', 'Ferenc',
+    'Mária', 'Gábor', 'Judit', 'András', 'Erzsébet', 'József', 'Ilona', 'Mihály', 'Ágnes', 'Zoltán',
+    'Edit', 'Sándor', 'Mónika', 'Tamás', 'Krisztina', 'Róbert', 'Zsolt', 'Erika', 'Balázs', 'Andrea',
+    'Tibor', 'Gabriella', 'Dániel', 'Ildikó', 'Attila', 'Beáta', 'György', 'Anikó', 'Gergő', 'Dóra',
+    'Márk', 'Viktória', 'Barnabás', 'Szilvia', 'Richárd', 'Renáta', 'Bence', 'Adrienn', 'Ádám', 'Dorottya',
+    'Máté', 'Nikolett', 'Dávid', 'Kitti', 'Levente', 'Réka', 'Márton', 'Patrícia', 'Bálint', 'Klaudia',
+    'Dominik', 'Fanni', 'Noémi', 'Gergely', 'Bernadett', 'Kristóf', 'Enikő', 'Boldizsár', 'Petra', 'Csongor',
+    'Dénes', 'Vivien', 'Mátyás', 'Nikoletta', 'Áron', 'Lilla', 'Kristóf', 'Nóra', 'Milán', 'Luca',
+    'Zsombor', 'Lili', 'Ákos', 'Napsugár', 'Marcell', 'Zsófia', 'Ábel', 'Liliána', 'Benjámin', 'Emese',
+    'Ármin', 'Rebeka', 'Péter', 'Szabina', 'Alex', 'Bianka', 'Zétény', 'Dalma', 'Árpád', 'Léna',
+  ];
+  
+  const actions = [
+    'létrehozott egy új ajánlatot',
+    'elfogadott egy ajánlatot',
+    'megosztott egy ajánlatot',
+    'frissített egy ajánlatot',
+    'mentett egy ajánlatot',
+    'exportált egy PDF-et',
+    'létrehozott egy új sablont',
+    'hozzáadott egy új tevékenységet',
+  ];
+  
+  const times = [
+    '1 perce', '2 perce', '3 perce', '5 perce', '8 perce', '10 perce', '12 perce', '15 perce',
+    '18 perce', '20 perce', '25 perce', '30 perce', '35 perce', '40 perce', '45 perce', '50 perce',
+    '1 órája', '2 órája', '3 órája', '5 órája',
+  ];
+  
+  const activities: Activity[] = [];
+  const usedCombinations = new Set<string>();
+  
+  // Generate unique combinations until we have 100+
+  while (activities.length < 100) {
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const action = actions[Math.floor(Math.random() * actions.length)];
+    const time = times[Math.floor(Math.random() * times.length)];
+    const combination = `${firstName} ${lastName}-${action}-${time}`;
+    
+    if (!usedCombinations.has(combination)) {
+      usedCombinations.add(combination);
+      activities.push({
+        name: `${firstName} ${lastName}`,
+        action,
+        time,
+      });
+    }
+  }
+  
+  return activities;
+};
+
+const defaultActivities: Activity[] = generateActivities();
 
 export default function SocialProofWidget({
   activities = defaultActivities,
@@ -28,18 +92,24 @@ export default function SocialProofWidget({
 }: SocialProofWidgetProps) {
   const [currentActivity, setCurrentActivity] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [shuffledActivities, setShuffledActivities] = useState<Activity[]>(activities);
 
   useEffect(() => {
+    // Shuffle activities on mount for variety
+    const shuffled = [...activities].sort(() => Math.random() - 0.5);
+    setShuffledActivities(shuffled);
+    setCurrentActivity(0);
+    
     const interval = setInterval(() => {
-      setCurrentActivity((prev) => (prev + 1) % activities.length);
+      setCurrentActivity((prev) => (prev + 1) % shuffled.length);
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [activities.length]);
+  }, [activities]);
 
   if (!isVisible) return null;
 
-  const activity = activities[currentActivity];
+  const activity = shuffledActivities[currentActivity] || shuffledActivities[0];
 
   return (
     <Card

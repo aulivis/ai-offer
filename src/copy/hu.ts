@@ -204,6 +204,8 @@ export const hu = {
     actions: {
       addRow: '+ Új tétel',
       removeRow: 'Törlés',
+      saveActivity: 'Mentés későbbre',
+      saving: 'Mentés...',
     },
     totals: {
       net: 'Nettó:',
@@ -1582,6 +1584,10 @@ export const hu = {
         description: 'Nem sikerült feltölteni a logót. Próbáld újra.',
       },
       saveSuccess: 'Mentve!',
+      activitySaved: {
+        title: 'Tevékenység mentve',
+        description: 'A tevékenység sikeresen mentve a beállításokba.',
+      },
     },
     offers: {
       loadFailed: {

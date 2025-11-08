@@ -44,12 +44,27 @@ export function createPriceRow(
   };
 }
 
+type Activity = {
+  id: string;
+  name: string;
+  unit: string;
+};
+
 type Props = {
   rows: PriceRow[];
   onChange: (rows: PriceRow[]) => void;
+  activities?: Activity[];
+  onSaveActivity?: (row: PriceRow) => Promise<void>;
+  savingActivityId?: string | null;
 };
 
-export default function EditablePriceTable({ rows, onChange }: Props) {
+export default function EditablePriceTable({ 
+  rows, 
+  onChange, 
+  activities = [],
+  onSaveActivity,
+  savingActivityId = null 
+}: Props) {
   const totals = useMemo(() => {
     const net = rows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0);
     const vat = rows.reduce(
@@ -106,16 +121,49 @@ export default function EditablePriceTable({ rows, onChange }: Props) {
           <tbody>
             {rows.map((r, idx) => {
               const lineNet = (Number(r.qty) || 0) * (Number(r.unitPrice) || 0);
+              // Check if this row matches an existing activity
+              const matchesActivity = activities.some(
+                (a) => a.name.trim().toLowerCase() === r.name.trim().toLowerCase() && a.unit === r.unit
+              );
+              // Show save button if row has a name and doesn't match existing activity
+              const canSaveActivity = onSaveActivity && r.name.trim() && !matchesActivity;
+              const isSaving = savingActivityId === r.id;
+              
               return (
                 <tr key={r.id} className="border-b border-slate-200/80 bg-white even:bg-slate-50/60 last:border-b-0">
                   <td className="px-4 py-3 align-top">
-                    <Input
-                      placeholder={t('editablePriceTable.placeholders.name')}
-                      value={r.name}
-                      onChange={(e) => update(idx, 'name', e.target.value)}
-                      title={r.name}
-                      className="truncate py-2 text-sm"
-                    />
+                    <div className="flex flex-col gap-1.5">
+                      <Input
+                        placeholder={t('editablePriceTable.placeholders.name')}
+                        value={r.name}
+                        onChange={(e) => update(idx, 'name', e.target.value)}
+                        title={r.name}
+                        className="truncate py-2 text-sm"
+                      />
+                      {canSaveActivity && (
+                        <Button
+                          type="button"
+                          onClick={() => onSaveActivity?.(r)}
+                          disabled={isSaving}
+                          className="w-full rounded border border-primary/30 bg-primary/5 px-2 py-1 text-xs font-semibold text-primary transition hover:border-primary hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-50"
+                          aria-label={t('editablePriceTable.actions.saveActivity')}
+                        >
+                          {isSaving ? (
+                            <>
+                              <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />
+                              {t('editablePriceTable.actions.saving')}
+                            </>
+                          ) : (
+                            <span className="flex items-center gap-1">
+                              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              {t('editablePriceTable.actions.saveActivity')}
+                            </span>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <Input

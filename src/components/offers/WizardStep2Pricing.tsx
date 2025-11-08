@@ -1,11 +1,14 @@
 'use client';
 
 import { t } from '@/copy';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import EditablePriceTable, { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
+import { useSupabase } from '@/components/SupabaseProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useToast } from '@/components/ToastProvider';
 
 type Activity = {
   id: string;
@@ -48,6 +51,7 @@ type WizardStep2PricingProps = {
   showClientDropdown: boolean;
   onClientDropdownToggle: (show: boolean) => void;
   filteredClients: Client[];
+  onActivitySaved?: () => void;
 };
 
 export function WizardStep2Pricing({
@@ -63,7 +67,13 @@ export function WizardStep2Pricing({
   showClientDropdown,
   onClientDropdownToggle,
   filteredClients,
+  onActivitySaved,
 }: WizardStep2PricingProps) {
+  const supabase = useSupabase();
+  const { user } = useRequireAuth();
+  const { showToast } = useToast();
+  const [savingActivityId, setSavingActivityId] = useState<string | null>(null);
+
   const filteredActivities = useMemo(() => {
     return activities.filter(
       (a) => (a.industries || []).length === 0 || a.industries.includes(industry),
@@ -81,6 +91,54 @@ export function WizardStep2Pricing({
       }),
       ...rows,
     ]);
+  };
+
+  const handleSaveActivity = async (row: PriceRow) => {
+    if (!user || !row.name.trim()) {
+      showToast({
+        title: t('errors.settings.activityNameRequired'),
+        description: t('errors.settings.activityNameRequired'),
+        variant: 'error',
+      });
+      return;
+    }
+
+    try {
+      setSavingActivityId(row.id);
+      const ins = await supabase
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          name: row.name.trim(),
+          unit: row.unit || 'db',
+          default_unit_price: Number(row.unitPrice) || 0,
+          default_vat: Number(row.vat) || 27,
+          industries: [industry],
+        })
+        .select();
+
+      if (ins.error) {
+        throw ins.error;
+      }
+
+      showToast({
+        title: t('toasts.settings.activitySaved.title') || 'Tevékenység mentve',
+        description: t('toasts.settings.activitySaved.description') || 'A tevékenység sikeresen mentve a beállításokba.',
+        variant: 'success',
+      });
+
+      // Notify parent to reload activities
+      onActivitySaved?.();
+    } catch (error) {
+      console.error('Failed to save activity:', error);
+      showToast({
+        title: t('errors.settings.saveFailed') || 'Hiba',
+        description: error instanceof Error ? error.message : t('errors.settings.saveUnknown') || 'Ismeretlen hiba történt.',
+        variant: 'error',
+      });
+    } finally {
+      setSavingActivityId(null);
+    }
   };
 
   const handleClientFieldChange = (field: keyof ClientForm, value: string) => {
@@ -154,7 +212,13 @@ export function WizardStep2Pricing({
             {t('offers.wizard.steps.pricing')}
           </h3>
         </div>
-        <EditablePriceTable rows={rows} onChange={onRowsChange} />
+        <EditablePriceTable 
+          rows={rows} 
+          onChange={onRowsChange}
+          activities={activities}
+          onSaveActivity={handleSaveActivity}
+          savingActivityId={savingActivityId}
+        />
       </Card>
 
       {/* Client Information */}

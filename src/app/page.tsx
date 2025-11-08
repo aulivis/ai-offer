@@ -658,6 +658,11 @@ export default function Home() {
         <div className="mt-12 max-w-md mx-auto">
           <RecentlyJoinedWidget />
         </div>
+
+        {/* Social Proof Widget */}
+        <div className="mt-12 max-w-2xl mx-auto">
+          <SocialProofWidget />
+        </div>
       </section>
 
       {/* USE CASES SECTION */}
