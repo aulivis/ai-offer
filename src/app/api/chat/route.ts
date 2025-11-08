@@ -554,8 +554,21 @@ ${context}`;
     
     // Return data stream response compatible with @ai-sdk/react useChat hook
     // Use toDataStreamResponse() for useChat hook compatibility
-    // Type assertion needed as TypeScript types may not be fully up to date
-    return (result as any).toDataStreamResponse() as Response;
+    try {
+      return (result as any).toDataStreamResponse() as Response;
+    } catch (responseError) {
+      log.error('Failed to convert stream to response', {
+        error: responseError instanceof Error ? responseError.message : String(responseError),
+        errorType: responseError instanceof Error ? responseError.constructor.name : typeof responseError,
+        errorDetails: responseError instanceof Error ? {
+          name: responseError.name,
+          message: responseError.message,
+          stack: responseError.stack,
+        } : JSON.stringify(responseError, Object.getOwnPropertyNames(responseError)),
+        requestId,
+      });
+      throw responseError;
+    }
   } catch (error) {
     const log = createLogger(requestId);
     
