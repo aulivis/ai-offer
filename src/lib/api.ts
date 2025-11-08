@@ -34,6 +34,11 @@ function readCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+function hasRefreshToken(): boolean {
+  const refreshToken = readCookie('propono_rt');
+  return refreshToken !== null && refreshToken.length > 0;
+}
+
 export function getCsrfToken(): string | null {
   const cookieValue = readCookie('XSRF-TOKEN');
   if (!cookieValue) {
@@ -190,7 +195,9 @@ export async function fetchWithSupabaseAuth(
   let response: Response;
   response = await attemptFetch();
 
-  if (response.status === 401) {
+  // Only attempt refresh if we have a refresh token cookie
+  // This prevents infinite refresh loops when the user is not logged in
+  if (response.status === 401 && hasRefreshToken()) {
     const refreshed = await refreshSession(requestSignal);
     if (refreshed) {
       // Small delay to ensure cookies are propagated after refresh
