@@ -24,18 +24,21 @@ export async function setAuthCookies(
   accessToken: string,
   refreshToken: string,
   options: SetAuthCookiesOptions = {},
+  cookieStore?: Awaited<ReturnType<typeof cookies>>,
 ) {
-  const cookieStore = await cookies();
+  // Use provided cookie store or get a new one
+  // In Next.js App Router, all calls to cookies() in the same request return the same store
+  const store = cookieStore ?? await cookies();
   const { accessTokenMaxAgeSeconds, rememberMe = false } = options;
 
-  cookieStore.set({
+  store.set({
     name: 'propono_at',
     value: accessToken,
     ...baseCookieOptions,
     ...(accessTokenMaxAgeSeconds ? { maxAge: accessTokenMaxAgeSeconds } : {}),
   });
 
-  cookieStore.set({
+  store.set({
     name: 'propono_rt',
     value: refreshToken,
     ...baseCookieOptions,
@@ -53,7 +56,7 @@ export async function setAuthCookies(
       ? Math.max(accessTokenMaxAgeSeconds, 7 * 24 * 60 * 60) // At least 7 days for session cookies
       : 7 * 24 * 60 * 60; // Default 7 days
 
-  cookieStore.set({
+  store.set({
     name: CSRF_COOKIE_NAME,
     value: csrfValue,
     ...baseCookieOptions,

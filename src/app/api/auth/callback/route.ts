@@ -59,8 +59,9 @@ type ExchangeCodeResult = {
 };
 
 function redirectTo(path: string) {
-  // In Next.js App Router, cookies set via cookies().set() are automatically
-  // included in the response, so we don't need to manually attach them here
+  // Note: In Next.js App Router, cookies set via cookies().set() are automatically
+  // included in ANY response returned from the route handler, including redirects.
+  // So we don't need to manually copy cookies here - they should be included automatically.
   return NextResponse.redirect(new URL(path, envServer.APP_URL));
 }
 
@@ -260,13 +261,15 @@ async function handleMagicLinkTokens(
   request: Request,
   logger: RequestLogger,
   rememberMe: boolean = false,
+  cookieStore?: Awaited<ReturnType<typeof cookies>>,
 ): Promise<void> {
   try {
     await persistSessionOpaque(userId, tokens.refreshToken, tokens.expiresIn, request, logger, rememberMe);
+    // Pass the cookie store to ensure we're using the same instance
     await setAuthCookies(tokens.accessToken, tokens.refreshToken, {
       accessTokenMaxAgeSeconds: tokens.expiresIn,
       rememberMe,
-    });
+    }, cookieStore);
     recordMagicLinkCallback('success');
   } catch (error) {
     recordMagicLinkCallback('failure', { reason: 'persist_or_cookie_failed' });
@@ -348,19 +351,57 @@ export async function GET(request: Request) {
           expiresIn: tokens.expiresIn,
         });
         
-        await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe);
+        // Pass the same cookie store instance to ensure cookies are set correctly
+        await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe, cookieStore);
         
-        logger.info('Magic link tokens processed successfully, redirecting to init-session', {
+        // Verify cookies were set using the same cookie store instance
+        const verifyAt = cookieStore.get('propono_at')?.value;
+        const verifyRt = cookieStore.get('propono_rt')?.value;
+        
+        logger.info('Magic link tokens processed, verifying cookies before redirect', {
           userId,
+          hasAccessTokenCookie: !!verifyAt,
+          hasRefreshTokenCookie: !!verifyRt,
+          accessTokenLength: verifyAt?.length ?? 0,
+          refreshTokenLength: verifyRt?.length ?? 0,
         });
         
+        if (!verifyAt || !verifyRt) {
+          logger.error('Cookies not found after setting them', {
+            userId,
+            cookieStoreHasAt: !!verifyAt,
+            cookieStoreHasRt: !!verifyRt,
+          });
+          await clearAuthCookies();
+          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        }
+        
         // Redirect to init-session page for client-side session initialization
-        // Note: Cookies set via setAuthCookies are automatically included in the redirect response
+        // Create redirect URL
         const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
         initSessionUrl.searchParams.set('redirect', finalRedirect);
         initSessionUrl.searchParams.set('user_id', userId);
         
-        return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
+        logger.info('Redirecting to init-session', {
+          userId,
+          redirectUrl: initSessionUrl.toString(),
+          cookiesSet: true,
+        });
+        
+        // Create the redirect response
+        // In Next.js App Router, cookies set via cookieStore.set() should be automatically
+        // included in the response. However, to ensure they're included, we'll create
+        // the redirect response and verify the cookie store is properly used.
+        const redirectResponse = NextResponse.redirect(initSessionUrl);
+        
+        // Log cookie information for debugging
+        logger.info('Redirect response created', {
+          userId,
+          redirectUrl: initSessionUrl.toString(),
+          // Note: We can't directly access Set-Cookie headers here, but they should be included
+        });
+        
+        return redirectResponse;
       } catch (error) {
         logger.error('Error in magic link token handling', error);
         // Ensure cookies are cleared on error
@@ -442,6 +483,7 @@ export async function GET(request: Request) {
           expiresIn,
         });
         
+        // Pass the same cookie store instance to ensure cookies are set correctly
         await handleMagicLinkTokens(
           { accessToken, refreshToken, expiresIn },
           userId,
@@ -449,20 +491,43 @@ export async function GET(request: Request) {
           request,
           logger,
           rememberMe,
+          cookieStore,
         );
         
-        logger.info('Magic link tokens processed successfully (token_hash flow), redirecting to init-session', {
+        // Verify cookies were set using the same cookie store instance
+        const verifyAt = cookieStore.get('propono_at')?.value;
+        const verifyRt = cookieStore.get('propono_rt')?.value;
+        
+        logger.info('Magic link tokens processed (token_hash flow), verifying cookies before redirect', {
           userId,
+          hasAccessTokenCookie: !!verifyAt,
+          hasRefreshTokenCookie: !!verifyRt,
         });
+        
+        if (!verifyAt || !verifyRt) {
+          logger.error('Cookies not found after setting them (token_hash flow)', {
+            userId,
+            cookieStoreHasAt: !!verifyAt,
+            cookieStoreHasRt: !!verifyRt,
+          });
+          await clearAuthCookies();
+          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        }
         
         // Redirect to init-session page for client-side session initialization
         // This ensures the Supabase client session is properly initialized
-        // Note: Cookies set via setAuthCookies are automatically included in the redirect response
         const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
         initSessionUrl.searchParams.set('redirect', finalRedirect);
         initSessionUrl.searchParams.set('user_id', userId);
         
-        return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
+        logger.info('Redirecting to init-session (token_hash flow)', {
+          userId,
+          redirectUrl: initSessionUrl.toString(),
+        });
+        
+        // Create the redirect response directly
+        const redirectResponse = NextResponse.redirect(initSessionUrl);
+        return redirectResponse;
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
         // Ensure cookies are cleared on error
