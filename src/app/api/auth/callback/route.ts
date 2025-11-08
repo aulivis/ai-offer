@@ -59,34 +59,32 @@ type ExchangeCodeResult = {
 };
 
 function redirectTo(path: string) {
-  // In Next.js App Router, cookies set via cookies().set() are automatically
-  // included in ANY response returned from the route handler, including redirects.
-  // The cookie store is tied to the request context, so cookies set via
-  // cookieStore.set() will be automatically serialized into Set-Cookie headers
-  // when the response is returned.
-  // 
-  // IMPORTANT: Do NOT call await cookies() here as it may create timing issues.
-  // Instead, rely on Next.js to automatically include cookies that were set
-  // earlier in the request handler via the same cookie store instance.
-  //
-  // CRITICAL: Use a relative URL (starting with /) to ensure cookies work correctly.
-  // Absolute URLs can cause cookie issues due to domain/path mismatches.
-  // Next.js will automatically include any cookies set via cookies().set() in this response
+  // CRITICAL: Use a relative URL string (starting with /) for redirects.
+  // Next.js App Router automatically includes cookies set via cookies().set() in ALL responses,
+  // including redirects. The key is to use a relative URL string, not a URL object.
+  
   const isAbsolute = path.startsWith('http://') || path.startsWith('https://');
+  let redirectPath: string;
+  
   if (isAbsolute) {
     // For absolute URLs, extract the pathname to use as relative
     try {
       const url = new URL(path);
-      return NextResponse.redirect(url.pathname + url.search + url.hash, { status: 302 });
+      redirectPath = url.pathname + url.search + url.hash;
     } catch {
-      // If URL parsing fails, fall back to absolute redirect
-      return NextResponse.redirect(new URL(path), { status: 302 });
+      // If URL parsing fails, try to extract path manually
+      redirectPath = path.replace(/^https?:\/\/[^/]+/, '') || '/';
     }
+  } else {
+    // For relative paths, ensure they start with /
+    redirectPath = path.startsWith('/') ? path : `/${path}`;
   }
-  // For relative paths, ensure they start with / and use 302 status
-  // Using status 302 (Found) instead of 307 (Temporary Redirect) can help with cookie handling
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  return NextResponse.redirect(new URL(normalizedPath, envServer.APP_URL), { status: 302 });
+  
+  // Create redirect response with relative URL string
+  // Next.js automatically includes all cookies set via cookies().set() in this response
+  // Status 302 is standard for redirects and works correctly with cookies
+  // IMPORTANT: Use the relative path string directly, not a URL object
+  return NextResponse.redirect(redirectPath, { status: 302 });
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
@@ -353,28 +351,6 @@ export async function GET(request: Request) {
       refreshTokenPreview: tokens.refreshToken.substring(0, 20) + (tokens.refreshToken.length > 20 ? '...' : ''),
     });
 
-    // Végcél sütit töröljük
-    cookieStore.set({
-      name: 'post_auth_redirect',
-      value: '',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: envServer.APP_URL.startsWith('https'),
-      path: '/',
-      maxAge: 0,
-    });
-
-      // Clean up remember_me cookie
-      cookieStore.set({
-        name: 'remember_me',
-        value: '',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: envServer.APP_URL.startsWith('https'),
-        path: '/',
-        maxAge: 0,
-      });
-
       try {
         logger.info('Processing magic link tokens', {
           userId,
@@ -383,8 +359,33 @@ export async function GET(request: Request) {
           expiresIn: tokens.expiresIn,
         });
         
+        // CRITICAL: Set auth cookies FIRST before doing anything else
+        // This ensures they're properly committed to the response
         // Pass the same cookie store instance to ensure cookies are set correctly
         await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe, cookieStore);
+        
+        // AFTER setting auth cookies, clean up temporary cookies
+        // This ensures auth cookies are set before we clear anything
+        cookieStore.set({
+          name: 'post_auth_redirect',
+          value: '',
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: envServer.APP_URL.startsWith('https'),
+          path: '/',
+          maxAge: 0,
+        });
+
+        // Clean up remember_me cookie
+        cookieStore.set({
+          name: 'remember_me',
+          value: '',
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: envServer.APP_URL.startsWith('https'),
+          path: '/',
+          maxAge: 0,
+        });
         
         // Verify cookies were set using the same cookie store instance
         const verifyAt = cookieStore.get('propono_at')?.value;
@@ -436,14 +437,13 @@ export async function GET(request: Request) {
         }
         
         // Use redirectTo helper which properly handles relative URLs
-        // Pass the cookieStore to ensure cookies are included in the redirect response
         logger.info('Creating redirect response', {
           userId,
           redirectPath,
         });
         
-        // Create redirect response
-        // Next.js should automatically include cookies set via cookies().set() in this response
+        // Create redirect response with relative URL
+        // Next.js automatically includes cookies set via cookies().set() in the redirect response
         return redirectTo(redirectPath);
       } catch (error) {
         logger.error('Error in magic link token handling', error);
@@ -494,28 +494,6 @@ export async function GET(request: Request) {
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
       }
 
-      // Végcél sütit töröljük
-      cookieStore.set({
-        name: 'post_auth_redirect',
-        value: '',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: envServer.APP_URL.startsWith('https'),
-        path: '/',
-        maxAge: 0,
-      });
-
-      // Clean up remember_me cookie
-      cookieStore.set({
-        name: 'remember_me',
-        value: '',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: envServer.APP_URL.startsWith('https'),
-        path: '/',
-        maxAge: 0,
-      });
-
       // For magic link flows, also use the init-session page to ensure client session is ready
       // This provides consistent behavior across all auth flows
       try {
@@ -526,6 +504,7 @@ export async function GET(request: Request) {
           expiresIn,
         });
         
+        // CRITICAL: Set auth cookies FIRST before doing anything else
         // Pass the same cookie store instance to ensure cookies are set correctly
         await handleMagicLinkTokens(
           { accessToken, refreshToken, expiresIn },
@@ -536,6 +515,29 @@ export async function GET(request: Request) {
           rememberMe,
           cookieStore,
         );
+        
+        // AFTER setting auth cookies, clean up temporary cookies
+        // This ensures auth cookies are set before we clear anything
+        cookieStore.set({
+          name: 'post_auth_redirect',
+          value: '',
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: envServer.APP_URL.startsWith('https'),
+          path: '/',
+          maxAge: 0,
+        });
+
+        // Clean up remember_me cookie
+        cookieStore.set({
+          name: 'remember_me',
+          value: '',
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: envServer.APP_URL.startsWith('https'),
+          path: '/',
+          maxAge: 0,
+        });
         
         // Verify cookies were set using the same cookie store instance
         const verifyAt = cookieStore.get('propono_at')?.value;
@@ -567,7 +569,7 @@ export async function GET(request: Request) {
         });
         
         // Use redirectTo helper which properly handles relative URLs
-        // Pass the cookieStore to ensure cookies are included in the redirect response
+        // Next.js automatically includes cookies set via cookies().set() in the redirect response
         return redirectTo(redirectPath);
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
@@ -665,11 +667,9 @@ export async function GET(request: Request) {
     // For OAuth flows, redirect to client-side session initialization page
     // This ensures the Supabase client session is properly initialized before
     // redirecting to the final destination (dashboard, etc.)
-    const initSessionUrl = new URL('/auth/init-session', envServer.APP_URL);
-    initSessionUrl.searchParams.set('redirect', finalRedirect);
-    initSessionUrl.searchParams.set('user_id', userId);
+    const initSessionPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
     
-    return redirectTo(initSessionUrl.pathname + initSessionUrl.search);
+    return redirectTo(initSessionPath);
   } catch (error) {
     logger.error('Failed to complete OAuth callback', error);
     await clearAuthCookies();

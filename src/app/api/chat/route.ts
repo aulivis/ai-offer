@@ -316,55 +316,43 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       
-      // Return preset answer directly using streaming (industry best practice: no LLM call for preset answers)
-      // This is faster, more reliable, and cost-effective
+      // Use streamText to return preset answer in the correct format for useChat hook
+      // This ensures compatibility with the Vercel AI SDK's streaming protocol
+      // We use a system prompt that instructs the model to return the preset answer exactly
       try {
-        log.info('Creating direct stream response for preset question', {
+        log.info('Creating stream response for preset question using streamText', {
           answerLength: presetMatch.answer.length,
           requestId,
         });
         
-        // Create a direct text stream in the format expected by useChat hook
-        // This avoids unnecessary LLM calls and ensures exact answer delivery
-        // The Vercel AI SDK uses a specific protocol format for streaming text
-        const createPresetAnswerStream = (text: string): ReadableStream<Uint8Array> => {
-          const encoder = new TextEncoder();
-          let index = 0;
-          const chunkSize = 15; // Characters per chunk for smooth streaming effect
-          
-          return new ReadableStream({
-            async start(controller) {
-              try {
-                // Stream the text in chunks to simulate typing effect
-                // Use the Vercel AI SDK protocol format: 0:"text chunk"\n
-                // This format is what useChat hook expects for text streaming
-                while (index < text.length) {
-                  const chunk = text.slice(index, Math.min(index + chunkSize, text.length));
-                  index += chunkSize;
-                  
-                  // Escape the chunk for JSON (handle special characters)
-                  const escapedChunk = JSON.stringify(chunk);
-                  // Format: 0:"chunk"\n (protocol format for text deltas)
-                  const protocolData = `0:${escapedChunk}\n`;
-                  
-                  controller.enqueue(encoder.encode(protocolData));
-                  
-                  // Small delay for smoother streaming effect (makes it feel more natural)
-                  await new Promise(resolve => setTimeout(resolve, 15));
-                }
-                
-                // Close the stream
-                controller.close();
-              } catch (error) {
-                log.error('Error in preset answer stream', {
-                  error: error instanceof Error ? error.message : String(error),
-                  requestId,
-                });
-                controller.error(error);
-              }
-            },
-          });
-        };
+        // Use streamText to return preset answer in the correct format for useChat hook
+        // We use the actual user question and provide the answer in the system prompt
+        // with very explicit instructions to return it exactly as provided
+        
+        // Create messages with the actual user question
+        const presetMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
+          {
+            role: 'user',
+            content: lastMessage.content,
+          },
+        ];
+        
+        // System prompt that provides the exact answer and instructs to return it verbatim
+        const presetSystemPrompt = `Te Vanda vagy, a Vyndi segítőasszisztense. 
+
+A felhasználó kérdésére a válasz a következő:
+
+${presetMatch.answer}
+
+FONTOS: Ezt a választ KIZÁRÓLAG úgy add vissza, ahogy itt van, karakterenként pontosan. Ne adj hozzá semmit, ne változtass semmit, ne írj előszót vagy bevezetőt, csak ezt a szöveget add vissza.`;
+        
+        // Use streamText with zero temperature for deterministic output
+        const presetResult = streamText({
+          model: openai('gpt-3.5-turbo'),
+          system: presetSystemPrompt,
+          messages: presetMessages,
+          temperature: 0.0, // Zero temperature for deterministic, exact output
+        });
         
         // Track analytics (async, don't await)
         const responseTime = Date.now() - startTime;
@@ -391,23 +379,13 @@ export async function POST(req: NextRequest) {
           });
         });
         
-        // Create stream response with proper headers for useChat compatibility
-        const stream = createPresetAnswerStream(presetMatch.answer);
-        const streamResponse = new Response(stream, {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache, no-transform',
-            'Connection': 'keep-alive',
-            'x-request-id': requestId,
-          },
-        });
-        
-        log.info('Returning direct stream response for preset question', {
-          hasResponse: !!streamResponse,
+        log.info('Returning stream response for preset question', {
+          hasResponse: !!presetResult,
           requestId,
         });
         
-        return streamResponse;
+        // Return the properly formatted stream response
+        return presetResult.toTextStreamResponse();
       } catch (streamError) {
         log.error('Failed to create stream response for preset question', streamError instanceof Error ? streamError : undefined, {
           errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
