@@ -81,15 +81,17 @@ export default function Chatbot({
     }
     
     // Always ensure we're using /api/chatbot endpoint
-    // If the URL is /api/chat, redirect to /api/chatbot
-    // Note: /api/chat now exists as a fallback, but we prefer /api/chatbot
+    // Redirect /api/chat to /api/chatbot if needed (safety net)
     if (urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
       urlString = urlString.replace('/api/chat', '/api/chatbot');
-      console.log('[Chatbot] Redirecting endpoint to:', urlString);
-    } else if (!urlString.includes('/api/chatbot')) {
-      // If no API endpoint specified, use /api/chatbot
+      console.log('[Chatbot] Redirecting /api/chat to /api/chatbot');
+    }
+    
+    // Ensure we always use /api/chatbot (explicitly set in useChat config, but enforce here)
+    if (!urlString.includes('/api/chatbot') && urlString.includes('/api/')) {
+      // If somehow we get a different /api/* endpoint, default to /api/chatbot
       urlString = '/api/chatbot';
-      console.log('[Chatbot] Using default endpoint:', urlString);
+      console.warn('[Chatbot] Unexpected API endpoint, defaulting to /api/chatbot');
     }
     
     // Construct full URL
