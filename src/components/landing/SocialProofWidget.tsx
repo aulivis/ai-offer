@@ -84,19 +84,24 @@ const generateActivities = (): Activity[] => {
   return activities;
 };
 
-const defaultActivities: Activity[] = generateActivities();
-
 export default function SocialProofWidget({
-  activities = defaultActivities,
+  activities: providedActivities,
   className = '',
 }: SocialProofWidgetProps) {
+  const [mounted, setMounted] = useState(false);
   const [currentActivity, setCurrentActivity] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [shuffledActivities, setShuffledActivities] = useState<Activity[]>(activities);
+  const [shuffledActivities, setShuffledActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
+    // Mark as mounted to avoid hydration mismatch
+    setMounted(true);
+    
+    // Generate or use provided activities only on client
+    const activitiesToUse = providedActivities || generateActivities();
+    
     // Shuffle activities on mount for variety
-    const shuffled = [...activities].sort(() => Math.random() - 0.5);
+    const shuffled = [...activitiesToUse].sort(() => Math.random() - 0.5);
     setShuffledActivities(shuffled);
     setCurrentActivity(0);
     
@@ -105,9 +110,42 @@ export default function SocialProofWidget({
     }, 4000);
 
     return () => clearInterval(interval);
-  }, [activities]);
+  }, [providedActivities]);
 
   if (!isVisible) return null;
+
+  // Don't render activity content until mounted to avoid hydration mismatch
+  if (!mounted || shuffledActivities.length === 0) {
+    return (
+      <Card
+        className={`flex items-center gap-3 border-primary/20 bg-primary/5 p-4 shadow-sm transition-all duration-500 ${className}`}
+      >
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/20">
+          <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <div className="h-4 w-32 animate-pulse rounded bg-primary/10" />
+          <div className="mt-2 h-3 w-24 animate-pulse rounded bg-primary/5" />
+        </div>
+        <button
+          onClick={() => setIsVisible(false)}
+          className="flex-shrink-0 rounded-full p-1 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg"
+          aria-label="Bezárás"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </Card>
+    );
+  }
 
   const activity = shuffledActivities[currentActivity] || shuffledActivities[0];
 
