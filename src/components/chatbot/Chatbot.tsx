@@ -8,9 +8,9 @@
  */
 
 import { useChat } from '@ai-sdk/react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
-import { t } from '@/copy';
+import { t, hu } from '@/copy';
 
 interface ChatbotProps {
   className?: string;
@@ -27,22 +27,70 @@ export default function Chatbot({
   const defaultPlaceholder = placeholder || t('chatbot.placeholder');
   const [input, setInput] = useState('');
   
+  // Get suggested questions from dictionary directly (t() only returns strings)
+  const suggestedQuestions = useMemo(() => {
+    try {
+      const questions = hu.chatbot.suggestedQuestions.questions;
+      // Validate that questions is an object with string values
+      if (questions && typeof questions === 'object' && !Array.isArray(questions)) {
+        return questions;
+      }
+      throw new Error('Invalid questions format');
+    } catch (error) {
+      console.warn('[Chatbot] Failed to load questions from dictionary, using fallback:', error);
+      return {
+        packages: 'Milyen csomagok vannak?',
+        createOffer: 'Hogyan tudok ajánlatot készíteni?',
+        templates: 'Milyen sablonok elérhetők?',
+        api: 'Hogyan használhatom az API-t?',
+        pricing: 'Mennyibe kerül a szolgáltatás?',
+      };
+    }
+  }, []);
+  
+  // Custom fetch function to intercept and fix endpoint
+  // useChat might default to /api/chat, so we intercept and redirect
+  const customFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    // Extract URL string
+    let urlString: string = '';
+    if (typeof input === 'string') {
+      urlString = input;
+    } else if (input instanceof URL) {
+      urlString = input.href;
+    } else if (input instanceof Request) {
+      urlString = input.url;
+    }
+    
+    // Redirect /api/chat to /api/chatbot if needed
+    if (urlString && urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
+      urlString = urlString.replace('/api/chat', '/api/chatbot');
+      console.log('[Chatbot] Redirecting endpoint:', urlString);
+    }
+    
+    // Reconstruct fetch with corrected URL
+    if (typeof input === 'string') {
+      return fetch(urlString || input, init);
+    } else if (input instanceof URL) {
+      return fetch(urlString ? new URL(urlString, window.location.origin) : input, init);
+    } else if (input instanceof Request) {
+      const newUrl = urlString || input.url;
+      return fetch(newUrl, {
+        method: init?.method || input.method,
+        headers: new Headers(init?.headers || input.headers),
+        body: init?.body !== undefined ? init.body : input.body,
+        signal: init?.signal || input.signal,
+        ...init,
+      });
+    }
+    
+    return fetch(input, init);
+  }, []);
+  
   // useChat hook configuration
-  // Note: The 'api' option should work, but we also provide a custom fetch
-  // to handle cases where useChat might default to /api/chat
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chatbot',
     id: 'vyndi-chatbot',
-    fetch: (url, options) => {
-      // Ensure we always use /api/chatbot, not /api/chat
-      const urlString = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
-      if (urlString && urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
-        const correctedUrl = urlString.replace('/api/chat', '/api/chatbot');
-        console.log('[Chatbot] Redirecting request from', urlString, 'to', correctedUrl);
-        return fetch(correctedUrl, options);
-      }
-      return fetch(url, options);
-    },
+    fetch: customFetch,
   });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -161,31 +209,35 @@ export default function Chatbot({
                   {t('chatbot.suggestedQuestions.title')}
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {Object.entries(t('chatbot.suggestedQuestions.questions')).map(([key, question]) => (
-                    <button
-                      key={key}
-                      onClick={() => handleQuestionClick(question)}
-                      disabled={isLoading}
-                      className="group rounded-lg border border-border bg-bg px-4 py-3 text-left text-sm text-fg transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="h-4 w-4 text-fg-muted group-hover:text-primary"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                          />
-                        </svg>
-                        {question}
-                      </span>
-                    </button>
-                  ))}
+                  {Object.entries(suggestedQuestions).map(([key, question]) => {
+                    // Ensure question is a string
+                    const questionText = typeof question === 'string' ? question : String(question || '');
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleQuestionClick(questionText)}
+                        disabled={isLoading}
+                        className="group rounded-lg border border-border bg-bg px-4 py-3 text-left text-sm text-fg transition-all hover:border-primary hover:bg-primary/5 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="flex items-center gap-2">
+                          <svg
+                            className="h-4 w-4 text-fg-muted group-hover:text-primary"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                            />
+                          </svg>
+                          <span>{questionText}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
