@@ -26,3 +26,4 @@ if exist .next rmdir /s /q .next
    - Check browser console for errors
    - Check terminal for server logs
 
+

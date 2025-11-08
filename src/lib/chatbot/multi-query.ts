@@ -87,3 +87,4 @@ export function expandQuerySimple(query: string): string[] {
   return variations.slice(0, 3); // Limit to 3 variations
 }
 
+
