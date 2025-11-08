@@ -1,10 +1,17 @@
 /**
- * Chatbot Feedback API Route
+ * Chat Feedback API Route
  * 
  * Handles user feedback (thumbs up/down) on chatbot responses.
+ * Part of the unified /api/chat endpoint structure.
  * 
- * POST /api/chatbot/feedback
+ * POST /api/chat/feedback
  * Body: { messageId: string, type: 'up' | 'down', comment?: string }
+ * 
+ * Industry Best Practices:
+ * - Input validation
+ * - Structured logging
+ * - Error handling
+ * - Request ID tracking
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,7 +23,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * POST /api/chatbot/feedback
+ * POST /api/chat/feedback
  * 
  * Stores user feedback for a chatbot response.
  */
@@ -38,9 +45,13 @@ export async function POST(req: NextRequest) {
     } catch (parseError) {
       log.error('Failed to parse feedback request body', {
         error: parseError instanceof Error ? parseError.message : String(parseError),
+        requestId,
       });
       return NextResponse.json(
-        { error: 'Érvénytelen kérés' },
+        { 
+          error: 'Érvénytelen kérés',
+          requestId,
+        },
         { status: 400 }
       );
     }
@@ -50,14 +61,20 @@ export async function POST(req: NextRequest) {
     // Validate input
     if (!messageId || typeof messageId !== 'string') {
       return NextResponse.json(
-        { error: 'Érvénytelen üzenet azonosító' },
+        { 
+          error: 'Érvénytelen üzenet azonosító',
+          requestId,
+        },
         { status: 400 }
       );
     }
     
     if (!type || (type !== 'up' && type !== 'down')) {
       return NextResponse.json(
-        { error: 'Érvénytelen visszajelzés típus (up vagy down kell)' },
+        { 
+          error: 'Érvénytelen visszajelzés típus (up vagy down kell)',
+          requestId,
+        },
         { status: 400 }
       );
     }
@@ -79,9 +96,13 @@ export async function POST(req: NextRequest) {
         error: error.message,
         messageId,
         type,
+        requestId,
       });
       return NextResponse.json(
-        { error: 'Nem sikerült menteni a visszajelzést' },
+        { 
+          error: 'Nem sikerült menteni a visszajelzést',
+          requestId,
+        },
         { status: 500 }
       );
     }
@@ -90,27 +111,33 @@ export async function POST(req: NextRequest) {
       messageId,
       type,
       hasComment: !!comment,
+      requestId,
     });
     
     return NextResponse.json({ 
       success: true,
-      message: 'Köszönjük a visszajelzést!' 
+      message: 'Köszönjük a visszajelzést!',
+      requestId,
     });
   } catch (error) {
     log.error('Error processing feedback', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      requestId,
     });
     
     return NextResponse.json(
-      { error: 'Váratlan hiba történt' },
+      { 
+        error: 'Váratlan hiba történt',
+        requestId,
+      },
       { status: 500 }
     );
   }
 }
 
 /**
- * GET /api/chatbot/feedback
+ * GET /api/chat/feedback
  * 
  * Retrieves feedback statistics (admin only - requires service role).
  */
@@ -131,9 +158,13 @@ export async function GET(req: NextRequest) {
     if (feedbackError) {
       log.error('Failed to retrieve feedback', {
         error: feedbackError.message,
+        requestId,
       });
       return NextResponse.json(
-        { error: 'Nem sikerült lekérni a visszajelzéseket' },
+        { 
+          error: 'Nem sikerült lekérni a visszajelzéseket',
+          requestId,
+        },
         { status: 500 }
       );
     }
@@ -150,14 +181,19 @@ export async function GET(req: NextRequest) {
       down: downCount,
       satisfactionRate: Math.round(satisfactionRate * 100) / 100,
       recentFeedback: feedbackData?.slice(0, 50) || [],
+      requestId,
     });
   } catch (error) {
     log.error('Error retrieving feedback', {
       error: error instanceof Error ? error.message : String(error),
+      requestId,
     });
     
     return NextResponse.json(
-      { error: 'Váratlan hiba történt' },
+      { 
+        error: 'Váratlan hiba történt',
+        requestId,
+      },
       { status: 500 }
     );
   }

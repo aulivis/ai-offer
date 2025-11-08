@@ -8,7 +8,7 @@
  */
 
 import { useChat } from '@ai-sdk/react';
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import { t, hu } from '@/copy';
 
@@ -48,86 +48,12 @@ export default function Chatbot({
     }
   }, []);
   
-  // Custom fetch function to intercept and fix endpoint
-  // This ensures all requests go to /api/chatbot even if useChat defaults to /api/chat
-  // NOTE: The /api/chat route exists as a compatibility layer and forwards to /api/chatbot
-  const customFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    // Log the original request for debugging
-    console.log('[Chatbot] Custom fetch called with:', {
-      input: typeof input === 'string' ? input : input instanceof URL ? input.href : input instanceof Request ? input.url : 'unknown',
-      method: init?.method || (input instanceof Request ? input.method : 'GET'),
-    });
-    
-    // Extract URL string
-    let urlString: string = '';
-    let baseUrl = window.location.origin;
-    
-    if (typeof input === 'string') {
-      // Handle relative and absolute URLs
-      if (input.startsWith('http')) {
-        try {
-          const url = new URL(input);
-          baseUrl = url.origin;
-          urlString = url.pathname + url.search;
-        } catch (e) {
-          urlString = input;
-        }
-      } else {
-        urlString = input;
-      }
-    } else if (input instanceof URL) {
-      baseUrl = input.origin;
-      urlString = input.pathname + input.search;
-    } else if (input instanceof Request) {
-      try {
-        const url = new URL(input.url);
-        baseUrl = url.origin;
-        urlString = url.pathname + url.search;
-      } catch (e) {
-        urlString = input.url;
-      }
-    }
-    
-    // Always redirect /api/chat to /api/chatbot
-    // Even though /api/chat exists as a compatibility route, we prefer /api/chatbot
-    if (urlString.includes('/api/chat') && !urlString.includes('/api/chatbot')) {
-      const originalUrl = urlString;
-      urlString = urlString.replace('/api/chat', '/api/chatbot');
-      console.log('[Chatbot] Redirecting endpoint:', originalUrl, '->', urlString);
-    }
-    
-    // Construct full URL
-    const fullUrl = urlString.startsWith('http') 
-      ? urlString 
-      : `${baseUrl}${urlString.startsWith('/') ? '' : '/'}${urlString}`;
-    
-    console.log('[Chatbot] Final fetch URL:', fullUrl);
-    
-    // Reconstruct fetch with corrected URL
-    try {
-      // Create new request with corrected URL and all properties
-      const fetchInit: RequestInit = {
-        ...init,
-        method: init?.method || (input instanceof Request ? input.method : 'GET'),
-        headers: init?.headers || (input instanceof Request ? input.headers : new Headers()),
-        body: init?.body !== undefined ? init.body : (input instanceof Request ? input.body : null),
-        signal: init?.signal || (input instanceof Request ? input.signal : undefined),
-        credentials: init?.credentials || (input instanceof Request ? input.credentials : 'same-origin'),
-      };
-      
-      return fetch(fullUrl, fetchInit);
-    } catch (fetchError) {
-      console.error('[Chatbot] Fetch error:', fetchError);
-      throw fetchError;
-    }
-  }, []);
-  
   // useChat hook configuration
-  // Explicitly set api to '/api/chatbot' to ensure correct endpoint
+  // Using default /api/chat endpoint (industry best practice: single endpoint)
+  // No custom fetch needed - useChat defaults to /api/chat which is our primary endpoint
   const { messages, sendMessage, status, error } = useChat({
-    api: '/api/chatbot',
+    api: '/api/chat', // Primary endpoint - single source of truth
     id: 'vyndi-chatbot',
-    fetch: customFetch,
     onError: (error) => {
       console.error('[Chatbot] Error from useChat:', error);
     },
@@ -235,7 +161,7 @@ export default function Chatbot({
     setFeedback(prev => ({ ...prev, [messageId]: type }));
     
     try {
-      const response = await fetch('/api/chatbot/feedback', {
+      const response = await fetch('/api/chat/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, type }),
