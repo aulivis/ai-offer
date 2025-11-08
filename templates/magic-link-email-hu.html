@@ -20,13 +20,17 @@
           
           <!-- Header with logo and brand -->
           <tr>
-            <td style="background: linear-gradient(135deg, #1c274c 0%, #2d3f6b 100%); padding: 40px 30px; text-align: center;">
+            <td bgcolor="#1c274c" style="background-color: #1c274c; background-image: linear-gradient(135deg, #1c274c 0%, #2d3f6b 100%); padding: 40px 30px; text-align: center;">
               <!-- Logo -->
-              <img src="{{ .SiteURL }}/vyndi-logo.png" alt="Vyndi" width="120" height="40" style="display: block; margin: 0 auto 16px; width: 120px; height: auto; max-width: 120px;" />
-              <!-- Brand name with better contrast -->
-              <h1 style="margin: 0; padding: 0; color: #ffffff; font-size: 32px; font-weight: 700; line-height: 1.2; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); letter-spacing: -0.5px;">Vyndi</h1>
-              <!-- Tagline with improved visibility -->
-              <p style="margin: 12px 0 0 0; padding: 0; color: #ffffff; font-size: 16px; font-weight: 500; opacity: 0.95; letter-spacing: 0.2px;">AI-alapú ajánlatkészítés</p>
+              <img src="{{ .SiteURL }}/vyndi-logo.png" alt="Vyndi" width="120" height="40" style="display: block; margin: 0 auto 16px; width: 120px; height: auto; max-width: 120px; border: 0;" />
+              <!-- Brand name with maximum contrast for light/dark mode compatibility -->
+              <h1 style="margin: 0; padding: 0; color: #ffffff !important; font-size: 32px; font-weight: 700; line-height: 1.2; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); letter-spacing: -0.5px; mso-color-alt: #ffffff;">
+                <span style="color: #ffffff;">Vyndi</span>
+              </h1>
+              <!-- Tagline with maximum visibility -->
+              <p style="margin: 12px 0 0 0; padding: 0; color: #ffffff !important; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; mso-color-alt: #ffffff;">
+                <span style="color: #ffffff; opacity: 1;">AI-alapú ajánlatkészítés</span>
+              </p>
             </td>
           </tr>
           
@@ -103,7 +107,7 @@
           <tr>
             <td align="center" style="padding: 0 20px;">
               <p style="margin: 0; padding: 0; color: #a0aec0; font-size: 12px; line-height: 1.6;">
-                Ha bármilyen kérdésed van, látogass el a <a href="{{ .SiteURL }}/contact" style="color: #1c274c; text-decoration: underline;">kapcsolat oldalunkra</a>.
+                Ha bármilyen kérdésed van, írj nekünk: <a href="mailto:hello@vyndi.hu" style="color: #1c274c; text-decoration: underline;">hello@vyndi.hu</a>
               </p>
             </td>
           </tr>
