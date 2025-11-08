@@ -70,3 +70,4 @@ export function addColorIndicators(html: string): string {
 
 
 
+
