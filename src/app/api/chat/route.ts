@@ -26,6 +26,7 @@ import { retrieveSimilarDocuments, formatContext } from '@/lib/chatbot/retrieval
 import { rerankDocuments } from '@/lib/chatbot/reranking';
 import { generateQueryVariations } from '@/lib/chatbot/multi-query';
 import { summarizeConversation, shouldSummarize } from '@/lib/chatbot/summarization';
+import { matchPresetQuestion } from '@/lib/chatbot/preset-questions';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
@@ -304,6 +305,74 @@ export async function POST(req: NextRequest) {
       queryLength: lastMessage.content.length,
       requestId,
     });
+    
+    // Check for preset questions first (before vector search)
+    // Use a lower threshold (0.6) to catch more variations
+    const presetMatch = matchPresetQuestion(lastMessage.content, 0.6);
+    if (presetMatch) {
+      log.info('Matched preset question', {
+        question: presetMatch.question,
+        query: lastMessage.content,
+        requestId,
+      });
+      
+      // Return preset answer directly using streaming
+      try {
+        const result = streamText({
+          model: openai('gpt-3.5-turbo'),
+          system: `Te Vanda vagy, a Vyndi segítőasszisztense. Barátságos, segítőkész emberként válaszolsz, aki szívesen segít a felhasználóknak megérteni a Vyndi platformot.
+
+Válaszolj KIZÁRÓLAG magyar nyelven, barátságos, közvetlen hangvételben, mintha egy kolléga lennél, aki segít. Használj "te" szólítást, és legyél természetes, meleg.
+
+A következő választ add vissza a felhasználónak, de formázd meg barátságosan, mintha természetes beszélgetésben mondanád el. Ne csak copy-paste-eld, hanem közvetlenül, barátságosan közöld a választ.`,
+          messages: [
+            ...messagesToUse.slice(0, -1), // All messages except the last one
+            {
+              role: 'user' as const,
+              content: `Kérlek, válaszolj a következő kérdésre barátságosan és természetesen: ${lastMessage.content}
+
+Itt van a válasz, amit közölj (de formázd meg barátságosan):
+
+${presetMatch.answer}`,
+            },
+          ],
+          temperature: 0.7,
+        });
+        
+        // Track analytics
+        const responseTime = Date.now() - startTime;
+        fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'query_processed',
+            data: {
+              queryLength: lastMessage.content.length,
+              documentCount: 0,
+              responseTime,
+              cacheHit: false,
+              multiQuery: false,
+              reranked: false,
+              presetQuestion: true,
+              requestId,
+            },
+          }),
+        }).catch((error) => {
+          log.warn('Failed to track analytics', {
+            error: error instanceof Error ? error.message : String(error),
+            requestId,
+          });
+        });
+        
+        return result.toTextStreamResponse();
+      } catch (streamError) {
+        log.error('Failed to create stream response for preset question', streamError instanceof Error ? streamError : undefined, {
+          errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
+          requestId,
+        });
+        // Fall through to regular processing as fallback
+      }
+    }
     
     // Best Practice: Multi-query retrieval (improves recall)
     let allDocuments: Awaited<ReturnType<typeof retrieveSimilarDocuments>> = [];

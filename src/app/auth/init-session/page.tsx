@@ -36,6 +36,11 @@ export default function InitSessionPage() {
         // Reset any stale session state
         resetSessionState();
 
+        // Small initial delay to ensure cookies from redirect are processed by the browser
+        // This is important because cookies set in a redirect response need time to be
+        // stored by the browser before they can be sent with subsequent requests
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Fetch tokens from server-side API endpoint with retries
         // This endpoint reads HttpOnly cookies server-side and returns tokens
         // so we can initialize the Supabase client session
@@ -50,6 +55,7 @@ export default function InitSessionPage() {
         for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {
             // Wait before each attempt (exponential backoff)
+            // First attempt already waited 100ms, so wait more on retries
             if (attempt > 0) {
               const delay = Math.min(300 * Math.pow(1.5, attempt - 1), 2000);
               await new Promise(resolve => setTimeout(resolve, delay));

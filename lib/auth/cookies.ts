@@ -38,15 +38,21 @@ export async function setAuthCookies(
     name: 'propono_at',
     value: accessToken,
     ...baseCookieOptions,
-    ...(accessTokenMaxAgeSeconds ? { maxAge: accessTokenMaxAgeSeconds } : {}),
+    // Always set a maxAge to ensure cookie persists across redirects
+    // Use provided expiration or default to 1 hour (3600 seconds)
+    maxAge: accessTokenMaxAgeSeconds || 3600,
   });
 
   store.set({
     name: 'propono_rt',
     value: refreshToken,
     ...baseCookieOptions,
-    // Set maxAge only if rememberMe is true, otherwise it's a session cookie
-    ...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE_SECONDS } : {}),
+    // Always set a maxAge to ensure cookie persists across redirects
+    // Use rememberMe expiration if enabled, otherwise use a reasonable default (7 days)
+    // Session cookies (no maxAge) can be lost during redirects in some browsers
+    maxAge: rememberMe 
+      ? REMEMBER_ME_MAX_AGE_SECONDS 
+      : Math.max(accessTokenMaxAgeSeconds || 3600, 7 * 24 * 60 * 60), // At least 7 days
   });
 
   const { value: csrfValue } = createCsrfToken();
