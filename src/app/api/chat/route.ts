@@ -511,18 +511,13 @@ ${context}`;
         model: openai('gpt-3.5-turbo'), // Using GPT-3.5 for cost efficiency
         system: systemPrompt,
         messages: messagesToUse,
-        maxTokens: 1000, // Limit response length
         temperature: 0.7, // Balanced creativity
-      } as any); // Type assertion needed due to AI SDK type definitions
+        // Note: maxTokens removed as it's not supported in this AI SDK version
+        // The model will use its default max token limit
+      });
     } catch (streamError) {
-      log.error('Failed to create stream response', {
-        error: streamError instanceof Error ? streamError.message : String(streamError),
+      log.error('Failed to create stream response', streamError instanceof Error ? streamError : undefined, {
         errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
-        errorDetails: streamError instanceof Error ? {
-          name: streamError.name,
-          message: streamError.message,
-          stack: streamError.stack,
-        } : JSON.stringify(streamError, Object.getOwnPropertyNames(streamError)),
         requestId,
       });
       throw streamError;
@@ -552,22 +547,48 @@ ${context}`;
       });
     });
     
-    // Return data stream response compatible with @ai-sdk/react useChat hook
-    // Use toDataStreamResponse() for useChat hook compatibility
+    // Return text stream response compatible with @ai-sdk/react useChat hook
+    // Use toTextStreamResponse() for useChat hook compatibility
     try {
-      return (result as any).toDataStreamResponse() as Response;
+      // Check if result has the toTextStreamResponse method
+      if (!result || typeof result.toTextStreamResponse !== 'function') {
+        log.error('Invalid stream result: toTextStreamResponse method not found', undefined, {
+          resultType: typeof result,
+          resultKeys: result ? Object.keys(result) : [],
+          requestId,
+        });
+        throw new Error('Invalid stream result: toTextStreamResponse method not found');
+      }
+      
+      return result.toTextStreamResponse();
     } catch (responseError) {
-      log.error('Failed to convert stream to response', {
-        error: responseError instanceof Error ? responseError.message : String(responseError),
-        errorType: responseError instanceof Error ? responseError.constructor.name : typeof responseError,
-        errorDetails: responseError instanceof Error ? {
-          name: responseError.name,
-          message: responseError.message,
-          stack: responseError.stack,
-        } : JSON.stringify(responseError, Object.getOwnPropertyNames(responseError)),
+      const errorMessage = responseError instanceof Error 
+        ? responseError.message 
+        : String(responseError);
+      const errorStack = responseError instanceof Error 
+        ? responseError.stack 
+        : undefined;
+      const errorName = responseError instanceof Error 
+        ? responseError.name 
+        : typeof responseError;
+      
+      log.error('Failed to convert stream to response', responseError instanceof Error ? responseError : undefined, {
+        errorMessage,
+        errorType: errorName,
+        errorStack,
+        resultType: typeof result,
+        resultExists: !!result,
         requestId,
       });
-      throw responseError;
+      
+      // Return a proper error response instead of throwing
+      return NextResponse.json(
+        {
+          error: 'Hiba történt a válasz generálása során. Kérjük, próbáld újra.',
+          requestId,
+        },
+        { status: 500 },
+      );
     }
   } catch (error) {
     const log = createLogger(requestId);
@@ -606,8 +627,8 @@ ${context}`;
       errorType = typeof error;
     }
     
-    log.error('Chat API error', {
-      error: errorMessage,
+    log.error('Chat API error', error instanceof Error ? error : undefined, {
+      errorMessage,
       errorType,
       errorStack,
       errorDetails,
