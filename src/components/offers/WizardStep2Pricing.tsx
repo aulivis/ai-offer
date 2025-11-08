@@ -1,14 +1,16 @@
 'use client';
 
 import { t } from '@/copy';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import EditablePriceTable, { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/components/ToastProvider';
+import { PhotoIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 type Activity = {
   id: string;
@@ -17,6 +19,7 @@ type Activity = {
   default_unit_price: number;
   default_vat: number;
   industries: string[];
+  reference_images?: string[] | null;
 };
 
 type ClientForm = {
@@ -52,6 +55,12 @@ type WizardStep2PricingProps = {
   onClientDropdownToggle: (show: boolean) => void;
   filteredClients: Client[];
   onActivitySaved?: () => void;
+  enableReferencePhotos: boolean;
+  enableTestimonials: boolean;
+  selectedImages: string[];
+  onSelectedImagesChange: (images: string[]) => void;
+  selectedTestimonials: string[];
+  onSelectedTestimonialsChange: (testimonials: string[]) => void;
 };
 
 export function WizardStep2Pricing({
@@ -68,11 +77,27 @@ export function WizardStep2Pricing({
   onClientDropdownToggle,
   filteredClients,
   onActivitySaved,
+  enableReferencePhotos,
+  enableTestimonials,
+  selectedImages,
+  onSelectedImagesChange,
+  selectedTestimonials,
+  onSelectedTestimonialsChange,
 }: WizardStep2PricingProps) {
   const supabase = useSupabase();
   const { user } = useRequireAuth();
   const { showToast } = useToast();
   const [savingActivityId, setSavingActivityId] = useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [pendingActivity, setPendingActivity] = useState<Activity | null>(null);
+  const [activityImageUrls, setActivityImageUrls] = useState<Record<string, string>>({});
+  const [loadingImageUrls, setLoadingImageUrls] = useState(false);
+  const [showTestimonialsModal, setShowTestimonialsModal] = useState(false);
+  const [availableTestimonials, setAvailableTestimonials] = useState<Array<{
+    id: string;
+    text: string;
+    activity_id?: string | null;
+  }>>([]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(
@@ -80,7 +105,53 @@ export function WizardStep2Pricing({
     );
   }, [activities, industry]);
 
-  const handleActivityClick = (activity: Activity) => {
+  // Load testimonials when testimonials modal is opened
+  useEffect(() => {
+    if (showTestimonialsModal && enableTestimonials && user) {
+      (async () => {
+        const { data } = await supabase
+          .from('testimonials')
+          .select('id, text, activity_id')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        setAvailableTestimonials((data as typeof availableTestimonials) || []);
+      })();
+    }
+  }, [showTestimonialsModal, enableTestimonials, user, supabase]);
+
+  // Load image URLs when image modal is opened
+  useEffect(() => {
+    if (showImageModal && pendingActivity && enableReferencePhotos) {
+      const images = (pendingActivity.reference_images as string[] | null) || [];
+      if (images.length === 0) {
+        setActivityImageUrls({});
+        setLoadingImageUrls(false);
+        return;
+      }
+
+      setLoadingImageUrls(true);
+      (async () => {
+        const urls: Record<string, string> = {};
+        for (const path of images) {
+          try {
+            const { data } = await supabase.storage
+              .from('brand-assets')
+              .createSignedUrl(path, 60 * 60 * 24); // 1 day
+            if (data?.signedUrl) {
+              urls[path] = data.signedUrl;
+            }
+          } catch (error) {
+            console.error('Failed to load image URL:', error);
+          }
+        }
+        setActivityImageUrls(urls);
+        setLoadingImageUrls(false);
+      })();
+    }
+  }, [showImageModal, pendingActivity, enableReferencePhotos, supabase]);
+
+  const handleActivityClick = async (activity: Activity) => {
+    // Add activity to rows
     onRowsChange([
       createPriceRow({
         name: activity.name,
@@ -91,6 +162,19 @@ export function WizardStep2Pricing({
       }),
       ...rows,
     ]);
+
+    // Check if activity has images and feature is enabled
+    const hasImages = enableReferencePhotos && 
+      (activity.reference_images as string[] | null)?.length > 0;
+
+    if (hasImages) {
+      setPendingActivity(activity);
+      setShowImageModal(true);
+      // Don't return - let the modal's onClose handle testimonials
+    } else if (enableTestimonials) {
+      // If no images but testimonials enabled, show testimonials modal directly
+      setShowTestimonialsModal(true);
+    }
   };
 
   const handleSaveActivity = async (row: PriceRow) => {
@@ -295,6 +379,165 @@ export function WizardStep2Pricing({
           </div>
         </div>
       </Card>
+
+      {/* Image Selection Modal */}
+      {showImageModal && pendingActivity && (
+        <Modal
+          open={showImageModal}
+          onClose={() => {
+            setShowImageModal(false);
+            setPendingActivity(null);
+            // After closing image modal, show testimonials modal if enabled
+            if (enableTestimonials) {
+              setShowTestimonialsModal(true);
+            }
+          }}
+        >
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              {t('offers.wizard.images.modalTitle', { activity: pendingActivity.name })}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t('offers.wizard.images.modalDescription')}
+            </p>
+            {loadingImageUrls ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-4">
+                {((pendingActivity.reference_images as string[] | null) || []).map((path) => {
+                  const url = activityImageUrls[path];
+                  const isSelected = selectedImages.includes(path);
+                  return (
+                    <div
+                      key={path}
+                      className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${
+                        isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-border'
+                      }`}
+                      onClick={() => {
+                        if (isSelected) {
+                          onSelectedImagesChange(selectedImages.filter((img) => img !== path));
+                        } else {
+                          onSelectedImagesChange([...selectedImages, path]);
+                        }
+                      }}
+                    >
+                      {url ? (
+                        <>
+                          <img src={url} alt="Reference" className="h-full w-full object-cover" />
+                          {isSelected && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
+                              <div className="rounded-full bg-primary p-2">
+                                <CheckIcon className="h-5 w-5 text-white" />
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                          <PhotoIcon className="h-8 w-8 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowImageModal(false);
+                  setPendingActivity(null);
+                  if (enableTestimonials) {
+                    setShowTestimonialsModal(true);
+                  }
+                }}
+              >
+                {t('offers.wizard.actions.next')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Testimonials Selection Modal */}
+      {showTestimonialsModal && (
+        <Modal
+          open={showTestimonialsModal}
+          onClose={() => setShowTestimonialsModal(false)}
+        >
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              {t('offers.wizard.testimonials.modalTitle')}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t('offers.wizard.testimonials.modalDescription')}
+            </p>
+            {availableTestimonials.length === 0 ? (
+              <p className="py-4 text-sm text-slate-500">
+                {t('offers.wizard.testimonials.noTestimonials')}
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {availableTestimonials.map((testimonial) => {
+                  const isSelected = selectedTestimonials.includes(testimonial.id);
+                  return (
+                    <div
+                      key={testimonial.id}
+                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border bg-white hover:border-primary/50'
+                      }`}
+                      onClick={() => {
+                        if (isSelected) {
+                          onSelectedTestimonialsChange(
+                            selectedTestimonials.filter((id) => id !== testimonial.id),
+                          );
+                        } else if (selectedTestimonials.length < 3) {
+                          onSelectedTestimonialsChange([...selectedTestimonials, testimonial.id]);
+                        } else {
+                          showToast({
+                            title: t('offers.wizard.testimonials.maxReached'),
+                            description: t('offers.wizard.testimonials.maxReachedDescription'),
+                            variant: 'error',
+                          });
+                        }
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+                            isSelected
+                              ? 'border-primary bg-primary'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {isSelected && <CheckIcon className="h-3 w-3 text-white" />}
+                        </div>
+                        <p className="flex-1 text-sm text-slate-700">{testimonial.text}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-slate-500">
+                {t('offers.wizard.testimonials.selectedCount', {
+                  current: selectedTestimonials.length,
+                  max: 3,
+                })}
+              </p>
+              <Button variant="primary" onClick={() => setShowTestimonialsModal(false)}>
+                {t('offers.wizard.actions.back')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

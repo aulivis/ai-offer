@@ -28,6 +28,7 @@ import {
   CubeIcon,
   DocumentTextIcon,
   LockClosedIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { SettingsAuthSection } from '@/components/settings/SettingsAuthSection';
@@ -36,6 +37,7 @@ import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingS
 import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
 import { SettingsActivitiesSection } from '@/components/settings/SettingsActivitiesSection';
 import { SettingsProFeaturesSection } from '@/components/settings/SettingsProFeaturesSection';
+import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
@@ -86,6 +88,14 @@ export default function SettingsPage() {
     industries: [] as string[],
   });
   const [actSaving, setActSaving] = useState(false);
+  const [testimonials, setTestimonials] = useState<Array<{
+    id: string;
+    user_id: string;
+    activity_id?: string | null;
+    text: string;
+    created_at: string;
+    updated_at: string;
+  }>>([]);
   const [newIndustry, setNewIndustry] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoUploadProgress, setLogoUploadProgress] = useState<number | null>(null);
@@ -392,13 +402,25 @@ export default function SettingsPage() {
 
       const { data: list } = await supabase
         .from('activities')
-        .select('id,name,unit,default_unit_price,default_vat,industries')
+        .select('id,name,unit,default_unit_price,default_vat,industries,reference_images')
         .eq('user_id', user.id)
         .order('name');
       if (!active) {
         return;
       }
       setActs((list as ActivityRow[]) || []);
+
+      // Load testimonials
+      const { data: testimonialsList } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (!active) {
+        return;
+      }
+      setTestimonials((testimonialsList as typeof testimonials) || []);
+
       setEmail(user.email ?? null);
       setLoading(false);
     })();
@@ -989,10 +1011,24 @@ export default function SettingsPage() {
             activities={acts}
             newActivity={newAct}
             saving={actSaving}
+            enableReferencePhotos={profile.enable_reference_photos ?? false}
             onNewActivityChange={setNewAct}
             onToggleNewActivityIndustry={toggleNewActIndustry}
             onAddActivity={addActivity}
             onDeleteActivity={deleteActivity}
+            onActivityImagesChange={async (activityId, imagePaths) => {
+              if (!user) return;
+              const { error } = await supabase
+                .from('activities')
+                .update({ reference_images: imagePaths })
+                .eq('id', activityId)
+                .eq('user_id', user.id);
+              if (!error) {
+                setActs((prev) =>
+                  prev.map((a) => (a.id === activityId ? { ...a, reference_images: imagePaths } : a)),
+                );
+              }
+            }}
           />
 
           <SettingsProFeaturesSection
@@ -1003,6 +1039,44 @@ export default function SettingsPage() {
             onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
             saving={saving}
           />
+
+          {profile.enable_testimonials && (
+            <Card
+              id="testimonials"
+              as="section"
+              className="scroll-mt-24"
+              header={
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900">
+                        {t('settings.testimonials.title')}
+                      </h2>
+                      <p className="text-sm text-slate-500">{t('settings.testimonials.subtitle')}</p>
+                    </div>
+                  </div>
+                </CardHeader>
+              }
+            >
+              <TestimonialsManager
+                testimonials={testimonials}
+                activities={acts}
+                enabled={profile.enable_testimonials ?? false}
+                onTestimonialsChange={async () => {
+                  if (!user) return;
+                  const { data: testimonialsList } = await supabase
+                    .from('testimonials')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+                  setTestimonials((testimonialsList as typeof testimonials) || []);
+                }}
+              />
+            </Card>
+          )}
         </div>
       </div>
     </AppFrame>

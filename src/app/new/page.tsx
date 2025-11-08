@@ -95,6 +95,7 @@ type Activity = {
   default_unit_price: number;
   default_vat: number;
   industries: string[];
+  reference_images?: string[] | null;
 };
 type Client = {
   id: string;
@@ -424,6 +425,15 @@ export default function NewOfferWizard() {
   const [rows, setRows] = useState<PriceRow[]>([
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedTestimonials, setSelectedTestimonials] = useState<string[]>([]);
+  const [profileSettings, setProfileSettings] = useState<{
+    enable_reference_photos: boolean;
+    enable_testimonials: boolean;
+  }>({
+    enable_reference_photos: false,
+    enable_testimonials: false,
+  });
 
   // edit on step 3 (declared early for use in draft persistence)
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -657,11 +667,33 @@ export default function NewOfferWizard() {
     if (!user) return;
     const { data: acts } = await sb
       .from('activities')
-      .select('id,name,unit,default_unit_price,default_vat,industries')
+      .select('id,name,unit,default_unit_price,default_vat,industries,reference_images')
       .eq('user_id', user.id)
       .order('name');
     setActivities(acts || []);
   }, [sb, user]);
+
+  // Load profile settings and activities on mount
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      // Load profile settings
+      const { data: prof } = await sb
+        .from('profiles')
+        .select('enable_reference_photos, enable_testimonials')
+        .eq('id', user.id)
+        .single();
+      if (prof) {
+        setProfileSettings({
+          enable_reference_photos: prof.enable_reference_photos ?? false,
+          enable_testimonials: prof.enable_testimonials ?? false,
+        });
+      }
+
+      // Load activities
+      await reloadActivities();
+    })();
+  }, [user, sb, reloadActivities]);
 
   // auth + preload
   useEffect(() => {
@@ -2333,6 +2365,12 @@ export default function NewOfferWizard() {
             onClientDropdownToggle={setShowClientDrop}
             filteredClients={filteredClients}
             onActivitySaved={reloadActivities}
+            enableReferencePhotos={profileSettings.enable_reference_photos}
+            enableTestimonials={profileSettings.enable_testimonials}
+            selectedImages={selectedImages}
+            onSelectedImagesChange={setSelectedImages}
+            selectedTestimonials={selectedTestimonials}
+            onSelectedTestimonialsChange={setSelectedTestimonials}
           />
         )}
 

@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { CubeIcon, CheckCircleIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { ActivityRow } from './types';
 import { ALL_INDUSTRIES_HU } from './types';
+import { ActivityImageManager } from './ActivityImageManager';
 
 type NewActivity = {
   name: string;
@@ -20,20 +21,24 @@ type SettingsActivitiesSectionProps = {
   activities: ActivityRow[];
   newActivity: NewActivity;
   saving: boolean;
+  enableReferencePhotos: boolean;
   onNewActivityChange: (updater: (prev: NewActivity) => NewActivity) => void;
   onToggleNewActivityIndustry: (industry: string) => void;
   onAddActivity: () => void;
   onDeleteActivity: (id: string) => void;
+  onActivityImagesChange: (activityId: string, imagePaths: string[]) => void;
 };
 
 export function SettingsActivitiesSection({
   activities,
   newActivity,
   saving,
+  enableReferencePhotos,
   onNewActivityChange,
   onToggleNewActivityIndustry,
   onAddActivity,
   onDeleteActivity,
+  onActivityImagesChange,
 }: SettingsActivitiesSectionProps) {
   return (
     <Card
@@ -167,6 +172,14 @@ export function SettingsActivitiesSection({
                     <TrashIcon className="h-4 w-4" />
                   </button>
                 </div>
+                {enableReferencePhotos && (
+                  <ActivityImageManager
+                    activityId={a.id}
+                    imagePaths={(a.reference_images as string[] | null) || []}
+                    enabled={enableReferencePhotos}
+                    onImagesChange={(paths) => onActivityImagesChange(a.id, paths)}
+                  />
+                )}
               </div>
             ))}
           </div>
