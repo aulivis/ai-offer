@@ -67,12 +67,14 @@ export default function ChatbotWidget() {
     <>
       {/* Floating Chatbot Button - Positioned to avoid ScrollToTop (bottom-24 = 96px, ScrollToTop is at bottom-8 = 32px) */}
       {!isOpen && (
-        <button
-          data-chatbot-button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95"
-          aria-label={t('chatbot.openAria')}
-        >
+      <button
+        data-chatbot-button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95"
+        aria-label={t('chatbot.openAria')}
+        aria-expanded={isOpen}
+        aria-controls="chatbot-window"
+      >
           <svg
             className="h-7 w-7 text-primary-ink"
             fill="none"
@@ -96,6 +98,7 @@ export default function ChatbotWidget() {
       {/* Slide-Up Chat Window - Industry Standard Design */}
       <div
         ref={chatWindowRef}
+        id="chatbot-window"
         className={`fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] transition-all duration-300 ease-out ${
           isOpen
             ? 'translate-y-0 opacity-100'
@@ -104,6 +107,7 @@ export default function ChatbotWidget() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="chatbot-window-title"
+        aria-hidden={!isOpen}
       >
         <div className="flex h-[600px] max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-2xl border border-border bg-bg shadow-2xl">
           {/* Header */}
@@ -135,6 +139,7 @@ export default function ChatbotWidget() {
               onClick={() => setIsOpen(false)}
               className="rounded-lg p-1.5 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-primary"
               aria-label={t('chatbot.closeAria')}
+              aria-controls="chatbot-window"
             >
               <svg
                 className="h-5 w-5"

@@ -190,11 +190,16 @@ function parseEmbedding(embedding: unknown): number[] {
 
 /**
  * Formats retrieved documents into context string for LLM.
+ * Includes source citations with clickable links.
  * 
  * @param documents - Retrieved documents
+ * @param includeMarkdownLinks - Whether to include markdown link format (default: true)
  * @returns Formatted context string
  */
-export function formatContext(documents: RetrievedDocument[]): string {
+export function formatContext(
+  documents: RetrievedDocument[],
+  includeMarkdownLinks: boolean = true
+): string {
   if (documents.length === 0) {
     return 'No relevant documentation found.';
   }
@@ -203,10 +208,44 @@ export function formatContext(documents: RetrievedDocument[]): string {
     .map((doc, index) => {
       const source = doc.sourcePath;
       const heading = doc.metadata.heading as string | undefined;
-      const section = heading ? ` (${heading})` : '';
       
-      return `[${index + 1}] Source: ${source}${section}\n${doc.content}`;
+      // Create source link
+      let sourceLink: string;
+      if (includeMarkdownLinks && heading) {
+        // Create anchor-friendly heading slug
+        const anchor = heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        sourceLink = `[${index + 1}] [${source}#${anchor}](${source}#${anchor})`;
+      } else if (includeMarkdownLinks) {
+        sourceLink = `[${index + 1}] [${source}](${source})`;
+      } else {
+        const section = heading ? ` (${heading})` : '';
+        sourceLink = `[${index + 1}] Source: ${source}${section}`;
+      }
+      
+      return `${sourceLink}\n${doc.content}`;
     })
     .join('\n\n---\n\n');
+}
+
+/**
+ * Formats sources as a separate citations list.
+ * 
+ * @param documents - Retrieved documents
+ * @returns Formatted citations string
+ */
+export function formatSources(documents: RetrievedDocument[]): string {
+  if (documents.length === 0) {
+    return '';
+  }
+  
+  return documents
+    .map((doc, index) => {
+      const source = doc.sourcePath;
+      const heading = doc.metadata.heading as string | undefined;
+      const section = heading ? ` - ${heading}` : '';
+      
+      return `${index + 1}. [${source}${section}](${source})`;
+    })
+    .join('\n');
 }
 

@@ -14,13 +14,21 @@ import { streamText } from 'ai';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { generateQueryEmbedding, createOpenAIClient } from '@/lib/chatbot/embeddings';
 import { retrieveSimilarDocuments, formatContext } from '@/lib/chatbot/retrieval';
+import { rerankDocuments } from '@/lib/chatbot/reranking';
+import { generateQueryVariations } from '@/lib/chatbot/multi-query';
+import { summarizeConversation, shouldSummarize } from '@/lib/chatbot/summarization';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 
 const MAX_MESSAGES = 20; // Limit conversation history
-const RETRIEVAL_LIMIT = 5; // Number of document chunks to retrieve
+const RETRIEVAL_LIMIT = 5; // Number of document chunks to retrieve after re-ranking
+const RETRIEVAL_LIMIT_BEFORE_RERANK = 10; // Retrieve more documents before re-ranking
 const SIMILARITY_THRESHOLD = 0.7; // Minimum similarity score
+const ENABLE_MULTI_QUERY = true; // Enable multi-query retrieval
+const ENABLE_RERANKING = true; // Enable query re-ranking
+const ENABLE_CACHING = false; // Enable response caching (disabled for streaming responses)
+const ENABLE_SUMMARIZATION = true; // Enable conversation summarization
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -167,39 +175,144 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // Limit conversation history
-    const limitedMessages = convertedMessages.slice(-MAX_MESSAGES);
-    
-    log.info('Processing chatbot query', {
-      messageCount: messages.length,
-      queryLength: lastMessage.content.length,
-    });
+    // Track start time for analytics
+    const startTime = Date.now();
     
     // Initialize clients
     const supabase = supabaseServiceRole();
     const openaiClient = createOpenAIClient();
     
-    // Generate embedding for the query
-    const queryEmbedding = await generateQueryEmbedding(
-      lastMessage.content,
-      openaiClient,
-    );
+    // Note: Caching is disabled for streaming responses
+    // To implement caching, you would need to collect the full streamed response
+    // and cache it after streaming completes, then replay on cache hit
     
-    // Retrieve relevant documents
-    const documents = await retrieveSimilarDocuments(
-      supabase,
-      queryEmbedding,
-      RETRIEVAL_LIMIT,
-      SIMILARITY_THRESHOLD,
-    );
+    // Summarize conversation if needed (if enabled)
+    let messagesToUse = convertedMessages;
+    if (ENABLE_SUMMARIZATION && shouldSummarize(convertedMessages)) {
+      log.info('Summarizing conversation', {
+        originalLength: convertedMessages.length,
+      });
+      messagesToUse = await summarizeConversation(convertedMessages, openaiClient);
+      log.info('Conversation summarized', {
+        newLength: messagesToUse.length,
+      });
+    } else {
+      // Limit conversation history
+      messagesToUse = convertedMessages.slice(-MAX_MESSAGES);
+    }
+    
+    log.info('Processing chatbot query', {
+      messageCount: messages.length,
+      messagesUsed: messagesToUse.length,
+      queryLength: lastMessage.content.length,
+    });
+    
+    // Multi-query retrieval (if enabled)
+    let allDocuments: Awaited<ReturnType<typeof retrieveSimilarDocuments>> = [];
+    
+    if (ENABLE_MULTI_QUERY) {
+      try {
+        // Generate query variations
+        const queryVariations = await generateQueryVariations(
+          lastMessage.content,
+          openaiClient,
+        );
+        
+        log.info('Generated query variations', {
+          count: queryVariations.length,
+          variations: queryVariations,
+        });
+        
+        // Retrieve documents for each variation
+        const retrievalPromises = queryVariations.map(async (query) => {
+          const queryEmbedding = await generateQueryEmbedding(query, openaiClient);
+          return retrieveSimilarDocuments(
+            supabase,
+            queryEmbedding,
+            RETRIEVAL_LIMIT_BEFORE_RERANK,
+            SIMILARITY_THRESHOLD,
+          );
+        });
+        
+        const documentsArrays = await Promise.all(retrievalPromises);
+        allDocuments = documentsArrays.flat();
+        
+        // Deduplicate by document ID
+        const uniqueDocs = Array.from(
+          new Map(allDocuments.map(doc => [doc.id, doc])).values()
+        );
+        allDocuments = uniqueDocs;
+      } catch (error) {
+        log.warn('Multi-query retrieval failed, falling back to single query', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Fallback to single query
+        const queryEmbedding = await generateQueryEmbedding(
+          lastMessage.content,
+          openaiClient,
+        );
+        allDocuments = await retrieveSimilarDocuments(
+          supabase,
+          queryEmbedding,
+          RETRIEVAL_LIMIT_BEFORE_RERANK,
+          SIMILARITY_THRESHOLD,
+        );
+      }
+    } else {
+      // Single query retrieval
+      const queryEmbedding = await generateQueryEmbedding(
+        lastMessage.content,
+        openaiClient,
+      );
+      allDocuments = await retrieveSimilarDocuments(
+        supabase,
+        queryEmbedding,
+        RETRIEVAL_LIMIT_BEFORE_RERANK,
+        SIMILARITY_THRESHOLD,
+      );
+    }
+    
+    // Re-rank documents (if enabled)
+    let documents = allDocuments;
+    if (ENABLE_RERANKING && documents.length > RETRIEVAL_LIMIT) {
+      try {
+        log.info('Re-ranking documents', {
+          before: documents.length,
+          after: RETRIEVAL_LIMIT,
+        });
+        documents = await rerankDocuments(
+          lastMessage.content,
+          documents,
+          RETRIEVAL_LIMIT,
+        );
+        log.info('Documents re-ranked', {
+          count: documents.length,
+        });
+      } catch (error) {
+        log.warn('Re-ranking failed, using original results', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Fallback: just take top N by similarity
+        documents = documents
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, RETRIEVAL_LIMIT);
+      }
+    } else {
+      // Sort by similarity and take top N
+      documents = documents
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, RETRIEVAL_LIMIT);
+    }
     
     log.info('Retrieved documents', {
       count: documents.length,
       sources: documents.map((d) => d.sourcePath),
+      multiQuery: ENABLE_MULTI_QUERY,
+      reranked: ENABLE_RERANKING,
     });
     
-    // Format context from retrieved documents
-    const context = formatContext(documents);
+    // Format context from retrieved documents (with markdown links)
+    const context = formatContext(documents, true);
     
     // Build system prompt - Hungarian language, Vyndi branding
     const systemPrompt = `Te egy segítőkész asszisztens vagy a Vyndi számára, egy AI-alapú üzleti ajánlatkészítő platform számára.
@@ -229,23 +342,81 @@ ${context}`;
     const result = streamText({
       model: openai('gpt-3.5-turbo'), // Using GPT-3.5 for cost efficiency
       system: systemPrompt,
-      messages: limitedMessages,
+      messages: messagesToUse,
       maxTokens: 1000, // Limit response length
       temperature: 0.7, // Balanced creativity
     });
     
+    // Track analytics (async, don't await)
+    const responseTime = Date.now() - startTime;
+    fetch(`${req.nextUrl.origin}/api/chatbot/analytics`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'query_processed',
+        data: {
+          queryLength: lastMessage.content.length,
+          documentCount: documents.length,
+          responseTime,
+          cacheHit: false,
+          multiQuery: ENABLE_MULTI_QUERY,
+          reranked: ENABLE_RERANKING,
+        },
+      }),
+    }).catch(console.error);
+    
+    // Cache response (if enabled) - Note: We can't easily cache streaming responses
+    // In production, you might want to collect the full response and cache it
+    // For now, we'll skip caching streaming responses
+    
     // Return data stream response compatible with @ai-sdk/react useChat hook
     return result.toDataStreamResponse();
   } catch (error) {
+    const requestId = getRequestId(req);
+    const log = createLogger(requestId);
+    
     // Log the full error for debugging
-    console.error('Chatbot API error:', error);
+    log.error('Chatbot API error', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    
+    // Track error analytics
+    fetch(`${req.nextUrl.origin}/api/chatbot/analytics`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'error',
+        data: {
+          error: error instanceof Error ? error.message : String(error),
+          errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+        },
+      }),
+    }).catch(console.error);
+    
+    // Determine error type and return appropriate message
+    let errorMessage = 'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.';
+    let statusCode = 500;
+    
+    if (error instanceof Error) {
+      if (error.message.includes('rate limit') || error.message.includes('429')) {
+        errorMessage = 'Túl sok kérés. Kérjük, várj egy pillanatot, mielőtt újra kérdeznél.';
+        statusCode = 429;
+      } else if (error.message.includes('embedding') || error.message.includes('OpenAI')) {
+        errorMessage = 'Hiba történt a kérdés feldolgozása során. Kérjük, próbáld újra.';
+        statusCode = 500;
+      } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
+        errorMessage = 'A kérés túl sokáig tartott. Kérjük, próbáld újra.';
+        statusCode = 504;
+      }
+    }
     
     return NextResponse.json(
       {
-        error: 'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.',
-        details: error instanceof Error ? error.message : String(error),
+        error: errorMessage,
+        requestId,
       },
-      { status: 500 },
+      { status: statusCode },
     );
   }
 }

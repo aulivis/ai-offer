@@ -1955,5 +1955,10 @@ export const hu = {
         pricing: 'Mennyibe kerül a szolgáltatás?',
       },
     },
+    feedback: {
+      helpful: 'Hasznos',
+      notHelpful: 'Nem hasznos',
+      thankYou: 'Köszönjük a visszajelzést!',
+    },
   },
 } as const;

@@ -96,6 +96,7 @@ export default function Chatbot({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const isLoading = status === 'streaming' || status === 'submitted';
+  const [feedback, setFeedback] = useState<Record<string, 'up' | 'down' | null>>({});
   
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -138,6 +139,78 @@ export default function Chatbot({
       .filter((part: any) => part.type === 'text')
       .map((part: any) => part.text || '')
       .join('');
+  };
+  
+  // Helper to parse markdown links and render them
+  const renderMessageWithLinks = (text: string): React.ReactNode => {
+    // Simple markdown link parser: [text](url)
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts: (string | React.ReactElement)[] = [];
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+    
+    while ((match = linkRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      
+      // Add the link
+      const linkText = match[1];
+      const linkUrl = match[2];
+      parts.push(
+        <a
+          key={key++}
+          href={linkUrl.startsWith('http') ? linkUrl : `/${linkUrl}`}
+          target={linkUrl.startsWith('http') ? '_blank' : undefined}
+          rel={linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+          className="text-primary underline hover:text-primary/80"
+          onClick={(e) => {
+            if (!linkUrl.startsWith('http')) {
+              e.preventDefault();
+              // Handle internal links
+              window.location.href = `/${linkUrl}`;
+            }
+          }}
+        >
+          {linkText}
+        </a>
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+    
+    return parts.length > 0 ? <>{parts}</> : text;
+  };
+  
+  // Handle feedback submission
+  const handleFeedback = async (messageId: string, type: 'up' | 'down') => {
+    // Update local state immediately for UI feedback
+    setFeedback(prev => ({ ...prev, [messageId]: type }));
+    
+    try {
+      const response = await fetch('/api/chatbot/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, type }),
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to submit feedback');
+        // Revert feedback on error
+        setFeedback(prev => ({ ...prev, [messageId]: null }));
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      // Revert feedback on error
+      setFeedback(prev => ({ ...prev, [messageId]: null }));
+    }
   };
   
   // If className includes h-full, don't wrap in Card (it's already in a container)
@@ -257,11 +330,68 @@ export default function Chatbot({
                   }`}
                 >
                   <div className="whitespace-pre-wrap break-words">
-                    {getMessageText(message)}
+                    {message.role === 'assistant' 
+                      ? renderMessageWithLinks(getMessageText(message))
+                      : getMessageText(message)
+                    }
                   </div>
                   {message.role === 'assistant' && (
-                    <div className="mt-2 text-xs text-fg-muted">
-                      {new Date().toLocaleTimeString()}
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-xs text-fg-muted">
+                        {new Date().toLocaleTimeString()}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleFeedback(message.id, 'up')}
+                          disabled={isLoading}
+                          className={`rounded p-1.5 transition-colors ${
+                            feedback[message.id] === 'up'
+                              ? 'bg-green-100 text-green-600'
+                              : 'text-fg-muted hover:bg-bg-muted hover:text-green-600'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          aria-label={t('chatbot.feedback.helpful')}
+                          title={t('chatbot.feedback.helpful')}
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(message.id, 'down')}
+                          disabled={isLoading}
+                          className={`rounded p-1.5 transition-colors ${
+                            feedback[message.id] === 'down'
+                              ? 'bg-red-100 text-red-600'
+                              : 'text-fg-muted hover:bg-bg-muted hover:text-red-600'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          aria-label={t('chatbot.feedback.notHelpful')}
+                          title={t('chatbot.feedback.notHelpful')}
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -284,7 +414,11 @@ export default function Chatbot({
         )}
         
         {error && (
-          <div className="rounded-lg border border-danger bg-danger/10 p-3 text-sm text-danger">
+          <div 
+            className="rounded-lg border border-danger bg-danger/10 p-3 text-sm text-danger"
+            role="alert"
+            aria-live="assertive"
+          >
             <p className="font-medium">{t('chatbot.error')}</p>
             <p className="mt-1">{error.message || t('common.status.error')}</p>
           </div>
@@ -299,7 +433,15 @@ export default function Chatbot({
             onChange={handleInputChange}
             placeholder={defaultPlaceholder}
             disabled={isLoading}
+            aria-label={defaultPlaceholder}
+            aria-describedby="chatbot-input-description"
             className="flex-1 rounded-2xl border border-border bg-bg px-4 py-2 text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
+                e.preventDefault();
+                handleSubmit(e as any);
+              }
+            }}
           />
           <button
             type="submit"
@@ -331,7 +473,7 @@ export default function Chatbot({
             )}
           </button>
         </div>
-        <p className="mt-2 text-xs text-fg-muted">
+        <p id="chatbot-input-description" className="mt-2 text-xs text-fg-muted">
           {t('chatbot.disclaimer')}
         </p>
       </form>
