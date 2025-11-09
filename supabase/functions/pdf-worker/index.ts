@@ -282,10 +282,12 @@ serve(async (request) => {
               await page.setTitle(documentTitle);
             }
             
-            // Generate PDF with professional settings (A4 with 15mm side margins, 20mm top/bottom for headers/footers)
+            // Generate PDF with zero margins - let CSS @page handle all margins
+            // This ensures headers/footers are positioned correctly and don't overlap with content
+            // The CSS in print.css.ts defines @page margins that account for fixed headers/footers
             return await page.pdf({
               format: 'A4',
-              margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' },
+              margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
               printBackground: true,
               preferCSSPageSize: true,
               displayHeaderFooter: false,

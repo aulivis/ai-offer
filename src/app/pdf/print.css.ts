@@ -25,10 +25,10 @@ export const PRINT_BASE_CSS = `
 
   @page {
     size: A4;
-    /* Standard margins: account for fixed header/footer */
+    /* Content margins: account for fixed header/footer space */
     /* On pages 2+, we need space for the slim header at the top */
     /* On all pages, we need space for the slim footer at the bottom */
-    /* These margins match the content area width exactly */
+    /* Fixed headers/footers are positioned from page edges (0,0), so margins push content away */
     margin-top: calc(var(--page-margin-top) + var(--slim-header-height));
     margin-right: var(--page-margin-right);
     margin-bottom: calc(var(--page-margin-bottom) + var(--slim-footer-height));
@@ -423,10 +423,9 @@ export const PRINT_BASE_CSS = `
       color: var(--muted, #1f2937);
       justify-content: space-between;
       align-items: center;
-      padding: var(--page-safe-inset) 0;
       position: fixed !important;
-      /* Match content width exactly by using same left/right margins as @page margins */
-      /* This ensures header/footer align perfectly with main content */
+      /* Position from page edges (Puppeteer margins are 0) */
+      /* Match content width by using same left/right margins as @page margins */
       left: var(--page-margin-left) !important;
       right: var(--page-margin-right) !important;
       width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
@@ -467,36 +466,38 @@ export const PRINT_BASE_CSS = `
     
     /* Calculate header/footer heights for spacing */
     .slim-header {
+      /* Position from top of page with safe margin (Puppeteer margins are 0, so we add margin here) */
       top: var(--page-margin-top) !important;
       border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
       padding-top: var(--page-safe-inset) !important;
       padding-bottom: calc(var(--page-safe-inset) + var(--page-header-padding)) !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
       height: auto;
       min-height: var(--slim-header-height);
       max-height: var(--slim-header-height);
     }
     
     .slim-footer {
+      /* Position from bottom of page with safe margin (Puppeteer margins are 0, so we add margin here) */
       bottom: var(--page-margin-bottom) !important;
       border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
       padding-top: calc(var(--page-safe-inset) + var(--page-footer-padding)) !important;
       padding-bottom: var(--page-safe-inset) !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
       height: auto;
       min-height: var(--slim-footer-height);
       max-height: var(--slim-footer-height);
     }
 
-    /* Page numbering - ensure counter works with Chrome-based PDF generation */
-    /* Chrome/Puppeteer/Playwright automatically handles page and pages counters in @page context */
-    /* The counter(page) shows current page, counter(pages) shows total pages */
-    /* These counters work with any Chrome-based PDF engine (Puppeteer, Playwright, Browserless, etc.) */
+    /* Page numbering - CSS page counters work in print media */
+    /* The 'page' counter shows current page number, 'pages' shows total pages */
+    /* Note: These counters only work in print context and are evaluated during PDF rendering */
     .slim-footer__page-number::after {
       content: ' ' counter(page) ' / ' counter(pages);
       font-variant-numeric: tabular-nums;
     }
-    
-    /* Ensure page counter is available - it's automatically available in print media */
-    /* No explicit initialization needed as browsers handle this automatically */
     
     /* Hide slim header on first page - use sibling selector since slim header comes after first-page header in DOM */
     /* The DOM order is: header.first-page-only -> slim-header -> content */
