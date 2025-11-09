@@ -20,6 +20,8 @@ import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import dynamic from 'next/dynamic';
 import { ViewSwitcher, type ViewMode } from '@/components/dashboard/ViewSwitcher';
+import { MetricCard } from '@/components/dashboard/MetricCard';
+import { DeleteConfirmationDialog } from '@/components/dashboard/DeleteConfirmationDialog';
 
 // Lazy load heavy dashboard components for route-based code splitting
 const OfferCard = dynamic(() => import('@/components/dashboard/OfferCard').then(mod => mod.default), {
@@ -69,167 +71,6 @@ function isSortDirectionValue(value: string): value is SortDirectionOption {
   return (SORT_DIRECTION_OPTIONS as readonly string[]).includes(value);
 }
 
-/** Enhanced KPI Card with modern design */
-function MetricCard({
-  label,
-  value,
-  helper,
-  progress,
-  icon,
-  trend,
-  trendValue,
-  color = 'primary',
-  onClick,
-  quickAction,
-  comparison,
-  isEmpty = false,
-  emptyMessage,
-}: {
-  label: string;
-  value: string;
-  helper?: ReactNode;
-  progress?: { used: number; limit: number | null };
-  icon?: ReactNode;
-  trend?: 'up' | 'down' | 'neutral';
-  trendValue?: string;
-  color?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
-  onClick?: () => void;
-  quickAction?: { label: string; onClick: () => void; icon?: ReactNode };
-  comparison?: { label: string; value: string; trend: 'up' | 'down' | 'neutral' };
-  isEmpty?: boolean;
-  emptyMessage?: string;
-}) {
-  const progressPercentage =
-    progress && progress.limit !== null
-      ? Math.min((progress.used / progress.limit) * 100, 100)
-      : null;
-
-  const iconColors = {
-    primary: 'text-primary',
-    success: 'text-emerald-600',
-    warning: 'text-amber-600',
-    danger: 'text-rose-600',
-    info: 'text-blue-600',
-  };
-
-  const trendColors = {
-    up: 'text-emerald-600',
-    down: 'text-rose-600',
-    neutral: 'text-fg-muted',
-  };
-
-  const isEmptyState = isEmpty && (value === '—' || value === '0' || !value);
-
-  return (
-    <Card 
-      className={`group relative overflow-hidden p-5 sm:p-6 transition-all duration-200 ${
-        onClick ? 'cursor-pointer hover:shadow-lg hover:border-primary/30' : 'hover:shadow-lg'
-      } ${isEmptyState ? 'opacity-75' : ''}`}
-      onClick={onClick}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2 sm:gap-3 mb-2.5 sm:mb-3">
-            {icon && (
-              <div className={`flex-shrink-0 ${iconColors[color]} scale-90 sm:scale-100 mt-0.5`}>
-                {icon}
-              </div>
-            )}
-            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted leading-tight break-words min-w-0 flex-1">{label}</p>
-          </div>
-          {isEmptyState && emptyMessage ? (
-            <div className="mt-2.5 sm:mt-3">
-              <p className="text-base sm:text-lg font-semibold text-fg-muted">{value}</p>
-              <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs leading-relaxed text-fg-muted break-words">{emptyMessage}</p>
-            </div>
-          ) : (
-            <>
-              <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 flex-wrap">
-                <p className="text-2xl sm:text-3xl font-bold text-fg break-words">{value}</p>
-                {trend && trendValue && (
-                  <span className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ${trendColors[trend]}`}>
-                    {trend === 'up' ? (
-                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    ) : trend === 'down' ? (
-                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                      </svg>
-                    ) : (
-                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
-                      </svg>
-                    )}
-                    {trendValue}
-                  </span>
-                )}
-              </div>
-              {comparison && (
-                <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs flex-wrap">
-                  <span className="text-fg-muted">{comparison.label}:</span>
-                  <span className={`font-semibold flex items-center gap-0.5 sm:gap-1 ${
-                    comparison.trend === 'up' ? 'text-emerald-600' :
-                    comparison.trend === 'down' ? 'text-rose-600' :
-                    'text-fg-muted'
-                  }`}>
-                    {comparison.trend === 'up' ? '↑' : comparison.trend === 'down' ? '↓' : '→'}
-                    {comparison.value}
-                  </span>
-                </div>
-              )}
-              {progressPercentage !== null && progress && (
-                <div className="mt-3 sm:mt-4 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
-                    <span className="text-fg-muted">Használat</span>
-                    <span className="font-semibold text-fg break-words">
-                      {progress.used.toLocaleString('hu-HU')} / {progress.limit?.toLocaleString('hu-HU')}
-                    </span>
-                  </div>
-                  <div className="h-1.5 sm:h-2 w-full rounded-full bg-border/60 overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-500 ${
-                        progressPercentage >= 90
-                          ? 'bg-danger'
-                          : progressPercentage >= 75
-                            ? 'bg-warning'
-                            : 'bg-primary'
-                      }`}
-                      style={{ width: `${progressPercentage}%` }}
-                      aria-label={`${progressPercentage.toFixed(0)}% used`}
-                    />
-                  </div>
-                </div>
-              )}
-              {helper && <p className="mt-2.5 sm:mt-3 text-[11px] sm:text-xs leading-relaxed text-fg-muted break-words hyphens-auto">{helper}</p>}
-            </>
-          )}
-        </div>
-        {quickAction && (
-          <div className="flex-shrink-0 ml-1 sm:ml-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                quickAction.onClick();
-              }}
-              className="inline-flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border/60 bg-white/90 px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-fg shadow-sm transition-colors hover:bg-primary/10 hover:border-primary/60 hover:text-primary"
-              title={quickAction.label}
-            >
-              {quickAction.icon}
-              <span className="hidden sm:inline">{quickAction.label}</span>
-            </button>
-          </div>
-        )}
-      </div>
-      {/* Decorative gradient overlay */}
-      <div className="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-      {onClick && (
-        <div className="absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-primary/5 pointer-events-none" />
-      )}
-    </Card>
-  );
-}
 
 type UsageQuotaSnapshot = {
   plan: SubscriptionPlan;
@@ -391,76 +232,6 @@ function createOfferPdfFileName(offer: Offer): string {
   return `${safeBase}.pdf`;
 }
 
-/** Törlés megerősítése (dialog) — semantic + A11y */
-function DeleteConfirmationDialog({
-  offer,
-  onCancel,
-  onConfirm,
-  isDeleting,
-}: {
-  offer: Offer | null;
-  onCancel: () => void;
-  onConfirm: () => void;
-  isDeleting: boolean;
-}) {
-  const open = Boolean(offer);
-  const labelId = open ? `delete-offer-title-${offer!.id}` : undefined;
-  const descriptionId = open ? `delete-offer-description-${offer!.id}` : undefined;
-
-  const handleClose = () => {
-    if (!isDeleting) {
-      onCancel();
-    }
-  };
-
-  return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      {...(labelId ? { labelledBy: labelId } : {})}
-      {...(descriptionId ? { describedBy: descriptionId } : {})}
-    >
-      {open && (
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <div className="inline-flex items-center rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger">
-              {t('dashboard.deleteModal.badge')}
-            </div>
-            <h2 id={labelId} className="text-lg font-semibold text-fg">
-              {t('dashboard.deleteModal.title')}
-            </h2>
-            <p id={descriptionId} className="text-sm leading-6 text-fg-muted">
-              {t('dashboard.deleteModal.description', {
-                title: offer!.title || t('dashboard.deleteModal.untitled'),
-              })}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              onClick={handleClose}
-              disabled={isDeleting}
-              className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {t('dashboard.deleteModal.cancel')}
-            </Button>
-            <Button
-              type="button"
-              onClick={onConfirm}
-              disabled={isDeleting}
-              className="inline-flex items-center justify-center rounded-full bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:brightness-95"
-            >
-              {isDeleting
-                ? t('dashboard.deleteModal.deleting')
-                : t('dashboard.deleteModal.confirm')}
-            </Button>
-          </div>
-        </div>
-      )}
-    </Modal>
-  );
-}
 
 export default function DashboardPage() {
   const { showToast } = useToast();
@@ -1591,6 +1362,7 @@ export default function DashboardPage() {
                           progress: {
                             used: quotaSnapshot.used + quotaSnapshot.pending,
                             limit: quotaSnapshot.plan === 'standard' ? 5 : 2,
+                            label: 'Használat',
                           },
                         }
                       : {})}
@@ -2103,6 +1875,7 @@ export default function DashboardPage() {
         onCancel={handleCancelDelete}
         onConfirm={confirmDeleteOffer}
         isDeleting={Boolean(deletingId)}
+        itemName={offerToDelete?.title || undefined}
       />
       <KeyboardShortcutsModal
         open={showKeyboardShortcuts}
