@@ -64,14 +64,16 @@ export function DeleteConfirmationDialog({
       title: itemName || offer?.title || t('dashboard.deleteModal.untitled'),
     });
 
+  const modalProps = {
+    open,
+    onClose: handleClose,
+    size: 'sm' as const,
+    ...(labelId && { labelledBy: labelId }),
+    ...(descriptionId && { describedBy: descriptionId }),
+  };
+
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      labelledBy={labelId}
-      describedBy={descriptionId}
-      size="sm"
-    >
+    <Modal {...modalProps}>
       {open && (
         <>
           <ModalHeader>

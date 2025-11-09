@@ -43,6 +43,7 @@ export const hu = {
       },
     },
     sidebar: {
+      title: 'Navigáció',
       open: 'Oldalsáv megnyitása',
       close: 'Oldalsáv elrejtése',
     },
@@ -191,6 +192,7 @@ export const hu = {
     },
   },
   editablePriceTable: {
+    ariaLabel: 'Ártáblázat',
     columns: {
       item: 'Tétel',
       quantity: 'Menny.',
@@ -198,6 +200,7 @@ export const hu = {
       unitPrice: 'Egységár (Ft)',
       vat: 'ÁFA %',
       netTotal: 'Nettó össz.',
+      actions: 'Műveletek',
     },
     placeholders: {
       name: 'Megnevezés',
@@ -793,8 +796,10 @@ export const hu = {
         description:
           'Add hozzá az ügyfelek visszajelzéseit és véleményeit. Maximum 10 tesztimonál menthető, amelyek az ajánlatokban is megjelenhetnek.',
         enabled: 'Aktiválva',
+        upgradeTitle: 'Pro előfizetés szükséges',
         upgradeDescription:
           'A vásárlói visszajelzések funkció csak Pro előfizetéssel érhető el. Frissíts a számlázási oldalon a funkció használatához.',
+        upgradeButton: 'Frissítés a Pro csomagra',
       },
     },
     testimonials: {
@@ -972,6 +977,7 @@ export const hu = {
       cta: 'Kezdj el ajánlatot készíteni most',
     },
     successStories: {
+      badge: 'Sikertörténetek',
       title: 'Valós eredmények valós ügyfelektől',
       description:
         'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat akár 70%-kal. Valós sikertörténetek, valós számok.',
@@ -979,6 +985,8 @@ export const hu = {
       ctaTitle: 'Készen állsz, hogy te is ilyen eredményeket érj el?',
       ctaDescription:
         'Kezdd el ingyen még ma, bankkártya nélkül, és tapasztald meg, hogyan növelheted az ajánlatkészítési hatékonyságodat és az elfogadási arányt.',
+      ctaButton: 'Ingyenes próba indítása',
+      viewPackages: 'Csomagok megtekintése',
     },
     stickyBar: {
       title: 'Készen állsz, hogy profibb ajánlatokat készíts percek alatt?',
@@ -1258,14 +1266,6 @@ export const hu = {
         role: 'Projektmenedzser',
       },
     },
-    successStories: {
-      badge: 'Sikertörténetek',
-      title: 'Valós eredmények valós ügyfelektől',
-      description:
-        'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat és javítani az üzleti eredményeiket.',
-      ctaButton: 'Ingyenes próba indítása',
-      viewPackages: 'Csomagok megtekintése',
-    },
     trustBadgesInline: {
       noCreditCard: 'Nem szükséges bankkártya',
     },
@@ -1327,6 +1327,10 @@ export const hu = {
       inProgress: 'Bejelentkezés folyamatban…',
       missingToken: 'Missing magic token',
       unableToAuthenticate: 'Unable to authenticate',
+    },
+    initSession: {
+      invalidTokens: 'Érvénytelen hitelesítési tokenek',
+      userIdMismatch: 'Felhasználó ID eltérés',
     },
   },
   validation: {
@@ -2273,12 +2277,6 @@ export const hu = {
       freeTrial: 'Ingyenes próba',
       noCreditCard: 'Nincs bankkártya szükséges',
       instantAccess: 'Azonnali hozzáférés',
-    },
-  },
-  auth: {
-    initSession: {
-      invalidTokens: 'Érvénytelen hitelesítési tokenek',
-      userIdMismatch: 'Felhasználó ID eltérés',
     },
   },
 } as const;

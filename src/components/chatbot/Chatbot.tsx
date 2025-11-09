@@ -8,6 +8,7 @@
  */
 
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { t, hu } from '@/copy';
@@ -46,8 +47,10 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
 
   // useChat hook configuration
   const { messages, sendMessage, status, error } = useChat({
-    api: '/api/chat',
     id: 'vyndi-chatbot',
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+    }),
     onError: (error) => {
       console.error('[Chatbot] Error from useChat:', error);
       console.error('[Chatbot] Error details:', {
@@ -56,21 +59,12 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
         stack: error?.stack,
       });
     },
-    onResponse: (response) => {
-      console.log('[Chatbot] API response received:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-        headers: Object.fromEntries(response.headers.entries()),
+    onFinish: (options) => {
+      console.log('[Chatbot] Chat finished:', {
+        isAbort: options.isAbort,
+        isDisconnect: options.isDisconnect,
+        isError: options.isError,
       });
-      if (!response.ok) {
-        console.error('[Chatbot] API response not OK:', {
-          status: response.status,
-          statusText: response.statusText,
-          url: response.url,
-        });
-      }
     },
   });
 
@@ -89,16 +83,16 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // useChat's sendMessage accepts { content: string } format
-    sendMessage({ content: input.trim() });
+    // useChat's sendMessage accepts { text: string } format
+    sendMessage({ text: input.trim() });
     setInput('');
   };
 
   // Handle suggested question click
   const handleQuestionClick = (question: string) => {
     if (isLoading) return;
-    // useChat's sendMessage accepts { content: string } format
-    sendMessage({ content: question.trim() });
+    // useChat's sendMessage accepts { text: string } format
+    sendMessage({ text: question.trim() });
   };
 
   // Handle input change
@@ -108,22 +102,12 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
 
   // Helper to extract text content from message parts
   const getMessageText = useCallback((message: (typeof messages)[0]): string => {
-    // Handle format 1: content property (from useChat text streams)
-    if (message.content && typeof message.content === 'string') {
-      return message.content;
-    }
-
-    // Handle format 2: parts array (legacy format)
+    // UIMessage has a parts array where text parts have type: 'text' and text: string
     if (message.parts && Array.isArray(message.parts) && message.parts.length > 0) {
       return message.parts
-        .filter((part: { type?: string }) => part.type === 'text')
-        .map((part: { text?: string }) => part.text || '')
+        .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
+        .map((part) => part.text || '')
         .join('');
-    }
-
-    // Handle format 3: text property (alternative format)
-    if (message.text && typeof message.text === 'string') {
-      return message.text;
     }
 
     return '';
@@ -502,7 +486,7 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
               if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
                 e.preventDefault();
                 // Submit message directly (same as handleSubmit does)
-                sendMessage({ content: input.trim() });
+                sendMessage({ text: input.trim() });
                 setInput('');
               }
             }}
