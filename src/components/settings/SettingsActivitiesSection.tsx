@@ -22,11 +22,13 @@ type SettingsActivitiesSectionProps = {
   newActivity: NewActivity;
   saving: boolean;
   plan: 'free' | 'standard' | 'pro';
+  defaultActivityId: string | null | undefined;
   onNewActivityChange: (updater: (prev: NewActivity) => NewActivity) => void;
   onToggleNewActivityIndustry: (industry: string) => void;
   onAddActivity: () => void;
   onDeleteActivity: (id: string) => void;
   onActivityImagesChange: (activityId: string, imagePaths: string[]) => Promise<void>;
+  onDefaultActivityChange: (activityId: string | null) => Promise<void>;
   onOpenPlanUpgradeDialog: (options: { description: string }) => void;
 };
 
@@ -35,11 +37,13 @@ export function SettingsActivitiesSection({
   newActivity,
   saving,
   plan,
+  defaultActivityId,
   onNewActivityChange,
   onToggleNewActivityIndustry,
   onAddActivity,
   onDeleteActivity,
   onActivityImagesChange,
+  onDefaultActivityChange,
   onOpenPlanUpgradeDialog,
 }: SettingsActivitiesSectionProps) {
   const isPro = plan === 'pro';
@@ -63,6 +67,31 @@ export function SettingsActivitiesSection({
       }
     >
       <div className="space-y-6">
+        {activities.length > 0 && (
+          <div className="rounded-xl border border-border/60 bg-slate-50/50 p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <InformationCircleIcon className="h-5 w-5 text-slate-500" />
+              <label className="block text-sm font-semibold text-slate-900">
+                Alapértelmezett tevékenység az ajánlatkészítőben
+              </label>
+            </div>
+            <p className="text-xs text-slate-600 mb-4">
+              Ez a tevékenység jelenik meg alapértelmezetten az ajánlatkészítő 2. lépésében a "Konzultáció" helyett.
+            </p>
+            <select
+              value={defaultActivityId || ''}
+              onChange={(e) => onDefaultActivityChange(e.target.value || null)}
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Nincs alapértelmezett tevékenység</option>
+              {activities.map((activity) => (
+                <option key={activity.id} value={activity.id}>
+                  {activity.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="rounded-xl border border-border/60 bg-slate-50/50 p-6">
           <h3 className="mb-4 text-sm font-semibold text-slate-900">
             {t('settings.activities.addNewHeading')}

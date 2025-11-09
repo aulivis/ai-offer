@@ -680,7 +680,7 @@ export default function NewOfferWizard() {
       // Load profile settings
       const { data: prof } = await sb
         .from('profiles')
-        .select('enable_reference_photos, enable_testimonials')
+        .select('enable_reference_photos, enable_testimonials, default_activity_id')
         .eq('id', user.id)
         .single();
       if (prof) {
@@ -692,6 +692,31 @@ export default function NewOfferWizard() {
 
       // Load activities
       await reloadActivities();
+      
+      // Initialize rows with default activity if available
+      if (prof?.default_activity_id) {
+        const { data: defaultActivity } = await sb
+          .from('activities')
+          .select('id,name,unit,default_unit_price,default_vat,reference_images')
+          .eq('id', prof.default_activity_id)
+          .eq('user_id', user.id)
+          .single();
+        if (defaultActivity) {
+          setRows([
+            createPriceRow({
+              name: defaultActivity.name,
+              qty: 1,
+              unit: defaultActivity.unit || 'db',
+              unitPrice: Number(defaultActivity.default_unit_price || 0),
+              vat: Number(defaultActivity.default_vat || 27),
+            }),
+          ]);
+          // If default activity has reference images, show them
+          if (prof.enable_reference_photos && defaultActivity.reference_images && Array.isArray(defaultActivity.reference_images) && defaultActivity.reference_images.length > 0) {
+            // The image modal will be shown when step 2 is rendered
+          }
+        }
+      }
     })();
   }, [user, sb, reloadActivities]);
 
@@ -707,7 +732,7 @@ export default function NewOfferWizard() {
       const { data: prof } = await sb
         .from('profiles')
         .select(
-          'industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_path, brand_logo_url, plan, offer_template',
+          'industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_path, brand_logo_url, plan, offer_template, default_activity_id',
         )
         .eq('id', user.id)
         .maybeSingle();

@@ -1514,9 +1514,6 @@ export default function DashboardPage() {
 
           {/* Conversion Funnel Group */}
           <div className="relative">
-            {/* Funnel visualization line */}
-            <div className="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent hidden lg:block" />
-            
             <div className={`grid gap-3 sm:gap-4 ${
               metricsViewMode === 'compact' 
                 ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' 

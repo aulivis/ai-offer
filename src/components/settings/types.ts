@@ -12,6 +12,7 @@ export type Profile = {
   offer_template?: string | null;
   enable_reference_photos?: boolean;
   enable_testimonials?: boolean;
+  default_activity_id?: string | null;
 };
 
 export type ActivityRow = {

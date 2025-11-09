@@ -1,7 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -98,12 +98,34 @@ export function WizardStep2Pricing({
     text: string;
     activity_id?: string | null;
   }>>([]);
+  const hasShownInitialModalRef = useRef(false);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(
       (a) => (a.industries || []).length === 0 || a.industries.includes(industry),
     );
   }, [activities, industry]);
+
+  // Check if first row matches a default activity with reference images
+  useEffect(() => {
+    if (hasShownInitialModalRef.current || rows.length === 0 || !enableReferencePhotos) return;
+    
+    const firstRow = rows[0];
+    if (!firstRow || !firstRow.name) return;
+    
+    // Find matching activity
+    const matchingActivity = activities.find(
+      (a) => a.name === firstRow.name && 
+      (a.reference_images as string[] | null)?.length > 0
+    );
+    
+    if (matchingActivity && !showImageModal && selectedImages.length === 0) {
+      // Show image modal for default activity
+      hasShownInitialModalRef.current = true;
+      setPendingActivity(matchingActivity);
+      setShowImageModal(true);
+    }
+  }, [rows, activities, enableReferencePhotos, showImageModal, selectedImages.length]);
 
   // Load testimonials when testimonials modal is opened
   useEffect(() => {

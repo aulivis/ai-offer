@@ -37,7 +37,6 @@ import { SettingsCompanySection } from '@/components/settings/SettingsCompanySec
 import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
 import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
 import { SettingsActivitiesSection } from '@/components/settings/SettingsActivitiesSection';
-import { SettingsProFeaturesSection } from '@/components/settings/SettingsProFeaturesSection';
 import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow } from '@/components/settings/types';
@@ -192,19 +191,13 @@ export default function SettingsPage() {
       icon: <CubeIcon className="h-5 w-5" />,
       href: '#activities',
     },
-    {
-      id: 'pro-features',
-      label: t('settings.proFeatures.title'),
-      icon: <LockClosedIcon className="h-5 w-5" />,
-      href: '#pro-features',
-    },
   ];
 
   useEffect(() => {
     if (loading) return;
 
     const handleScroll = () => {
-      const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities', 'pro-features'];
+      const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities'];
       const scrollPosition = window.scrollY + 200;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -398,6 +391,7 @@ export default function SettingsPage() {
         offer_template: templateId,
         enable_reference_photos: prof?.enable_reference_photos ?? false,
         enable_testimonials: prof?.enable_testimonials ?? false,
+        default_activity_id: prof?.default_activity_id ?? null,
       });
       setNewAct((prev) => ({ ...prev, industries }));
 
@@ -569,6 +563,7 @@ export default function SettingsPage() {
             offer_template: templateId,
             enable_reference_photos: profile.enable_reference_photos ?? false,
             enable_testimonials: profile.enable_testimonials ?? false,
+            default_activity_id: profile.default_activity_id ?? null,
           })
           .eq('id', user.id)
           .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
@@ -617,6 +612,7 @@ export default function SettingsPage() {
         offer_template: profileData?.offer_template ?? templateId,
         enable_reference_photos: profile.enable_reference_photos ?? false,
         enable_testimonials: profile.enable_testimonials ?? false,
+        default_activity_id: profile.default_activity_id ?? null,
       }));
       showToast({
         title: t('toasts.settings.saveSuccess'),
@@ -1013,6 +1009,7 @@ export default function SettingsPage() {
             newActivity={newAct}
             saving={actSaving}
             plan={plan}
+            defaultActivityId={profile.default_activity_id}
             onNewActivityChange={setNewAct}
             onToggleNewActivityIndustry={toggleNewActIndustry}
             onAddActivity={addActivity}
@@ -1041,10 +1038,33 @@ export default function SettingsPage() {
                 });
               }
             }}
+            onDefaultActivityChange={async (activityId) => {
+              if (!user) return;
+              try {
+                setProfile((p) => ({ ...p, default_activity_id: activityId }));
+                const { error } = await supabase
+                  .from('profiles')
+                  .update({ default_activity_id: activityId })
+                  .eq('id', user.id);
+                if (error) {
+                  throw error;
+                }
+                showToast({
+                  title: t('toasts.settings.saveSuccess'),
+                  variant: 'success',
+                });
+              } catch (error) {
+                console.error('Failed to save default activity:', error);
+                showToast({
+                  title: t('errors.settings.saveFailed', { message: 'Nem sikerült menteni az alapértelmezett tevékenységet' }),
+                  description: error instanceof Error ? error.message : 'Ismeretlen hiba',
+                  variant: 'error',
+                });
+              }
+            }}
             onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
           />
 
-          <SettingsProFeaturesSection plan={plan} />
 
           <Card
             id="testimonials"
@@ -1105,17 +1125,7 @@ export default function SettingsPage() {
                     setTestimonials((testimonialsList as typeof testimonials) || []);
                   }}
                 />
-              ) : (
-                <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
-                  <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-slate-400" />
-                  <p className="mt-4 text-sm font-medium text-slate-600">
-                    {t('settings.testimonials.empty')}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Kapcsold be a vásárlói visszajelzések funkciót a fejlécen lévő kapcsolóval.
-                  </p>
-                </div>
-              )
+              ) : null
             ) : (
               <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">

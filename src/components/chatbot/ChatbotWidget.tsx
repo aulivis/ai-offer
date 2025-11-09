@@ -162,6 +162,25 @@ export default function ChatbotWidget() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-bg to-bg-muted/30 px-4 py-3.5">
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded-lg p-1.5 text-fg-muted transition-all duration-200 hover:bg-bg-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="Vissza a főoldalra"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+              </button>
               <VandaAvatar size="lg" variant="online" />
               <div>
                 <h2 id="chatbot-window-title" className="text-[1.024rem] font-semibold text-fg">

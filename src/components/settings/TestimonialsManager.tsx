@@ -113,6 +113,7 @@ export function TestimonialsManager({
     activityId: '',
     starRating: 5,
     starStyle: 'filled' as StarStyle,
+    showStars: true,
   });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -145,8 +146,8 @@ export function TestimonialsManager({
         user_id: user?.id,
         text: newTestimonial.text.trim(),
         activity_id: newTestimonial.activityId || null,
-        star_rating: newTestimonial.starRating || null,
-        star_style: newTestimonial.starStyle || null,
+        star_rating: newTestimonial.showStars ? (newTestimonial.starRating || null) : null,
+        star_style: newTestimonial.showStars ? (newTestimonial.starStyle || null) : null,
       });
 
       if (error) {
@@ -162,7 +163,7 @@ export function TestimonialsManager({
         return;
       }
 
-      setNewTestimonial({ text: '', activityId: '', starRating: 5, starStyle: 'filled' });
+      setNewTestimonial({ text: '', activityId: '', starRating: 5, starStyle: 'filled', showStars: true });
       onTestimonialsChange();
       showToast({
         title: t('settings.testimonials.addSuccess'),
@@ -237,55 +238,74 @@ export function TestimonialsManager({
               ))}
             </Select>
             <div className="space-y-2">
-              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Csillag értékelés
-              </label>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-600">Értékelés:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        type="button"
-                        onClick={() => setNewTestimonial((prev) => ({ ...prev, starRating: rating }))}
-                        className={`text-lg transition-colors ${
-                          newTestimonial.starRating >= rating ? 'text-yellow-400' : 'text-gray-300'
-                        } hover:text-yellow-500`}
-                      >
-                        ★
-                      </button>
-                    ))}
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Csillag értékelés
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setNewTestimonial((prev) => ({ ...prev, showStars: !prev.showStars }))}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                    newTestimonial.showStars ? 'bg-primary' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      newTestimonial.showStars ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+              {newTestimonial.showStars && (
+                <>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-600">Értékelés:</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((rating) => (
+                          <button
+                            key={rating}
+                            type="button"
+                            onClick={() => setNewTestimonial((prev) => ({ ...prev, starRating: rating }))}
+                            className={`text-lg transition-colors ${
+                              newTestimonial.starRating >= rating ? 'text-yellow-400' : 'text-gray-300'
+                            } hover:text-yellow-500`}
+                          >
+                            ★
+                          </button>
+                        ))}
+                      </div>
+                      <span className="text-xs text-slate-500">
+                        {newTestimonial.starRating} / 5
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xs text-slate-500">
-                    {newTestimonial.starRating} / 5
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-slate-600">Stílus:</span>
-                <div className="flex gap-2">
-                  {STAR_STYLES.map((styleOption) => (
-                    <button
-                      key={styleOption.value}
-                      type="button"
-                      onClick={() =>
-                        setNewTestimonial((prev) => ({ ...prev, starStyle: styleOption.value }))
-                      }
-                      className={`rounded border px-3 py-1.5 text-xs font-semibold transition-all ${
-                        newTestimonial.starStyle === styleOption.value
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-border bg-white text-slate-700 hover:border-primary/50'
-                      }`}
-                    >
-                      {styleOption.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="pt-2">
-                <StarRating rating={newTestimonial.starRating} style={newTestimonial.starStyle} />
-              </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-slate-600">Stílus:</span>
+                    <div className="flex gap-2">
+                      {STAR_STYLES.map((styleOption) => (
+                        <button
+                          key={styleOption.value}
+                          type="button"
+                          onClick={() =>
+                            setNewTestimonial((prev) => ({ ...prev, starStyle: styleOption.value }))
+                          }
+                          className={`rounded border px-3 py-1.5 text-xs font-semibold transition-all ${
+                            newTestimonial.starStyle === styleOption.value
+                              ? 'border-primary bg-primary text-white'
+                              : 'border-border bg-white text-slate-700 hover:border-primary/50'
+                          }`}
+                        >
+                          {styleOption.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <StarRating rating={newTestimonial.starRating} style={newTestimonial.starStyle} />
+                  </div>
+                </>
+              )}
             </div>
             <Button onClick={handleAdd} disabled={saving} loading={saving} variant="secondary">
               <PlusIcon className="h-4 w-4" />
