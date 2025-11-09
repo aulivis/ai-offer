@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { clearAuthCookies } from '../../../../../lib/auth/cookies';
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
 
   if (!accessToken) {
     await clearAuthCookies();
-    const response = Response.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
+    const response = NextResponse.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
     return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
   }
 
@@ -27,16 +28,16 @@ export async function GET(request: Request) {
     if (error || !data?.user) {
       log.warn('Session validation failed', { error: error?.message });
       await clearAuthCookies();
-      const response = Response.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
+      const response = NextResponse.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
       return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
     }
 
     log.setContext({ userId: data.user.id });
-    const response = Response.json({ user: data.user });
+    const response = NextResponse.json({ user: data.user });
     return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
   } catch (error) {
     log.error('Failed to load Supabase user', error);
-    const response = Response.json(
+    const response = NextResponse.json(
       { error: 'Nem sikerült ellenőrizni a bejelentkezést.' },
       { status: 500 },
     );

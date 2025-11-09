@@ -59,7 +59,7 @@ export function createSupabaseOAuthClient() {
      * végül fallbackként megkeresünk MINDEN 'sb_*code*verifier*' sütit.
      */
     async consumeCodeVerifier(): Promise<string | null> {
-      const authClient = client.auth as { storageKey?: string };
+      const authClient = client.auth as unknown as { storageKey?: string };
       const configuredStorageKey =
         typeof authClient?.storageKey === 'string' && authClient.storageKey.length > 0
           ? authClient.storageKey

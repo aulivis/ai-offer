@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   }
 
   const successRedirect = sanitizeOAuthRedirect(
-    parsed.success ? parsed.data.redirect_to : null,
+    parsed.success ? (parsed.data.redirect_to ?? null) : null,
     '/settings?link=google_success',
   );
   const errorRedirect = sanitizeOAuthRedirect(null, '/settings?link=google_error');

@@ -182,7 +182,7 @@ export const POST = withAuth(
     }
 
     let requestBody: unknown;
-    let requestHash: string;
+    let requestHash: string | undefined;
 
     try {
       requestBody = await req.json();
@@ -554,7 +554,9 @@ Különös figyelmet fordít a következőkre:
           };
 
           const handleAbort = (error: unknown) => {
-            log.warn('Preview stream aborted', error);
+            log.warn('Preview stream aborted', {
+              error: error instanceof Error ? error.message : String(error),
+            });
             const message = 'Az előnézet kérése megszakadt. Próbáld újra néhány másodperc múlva.';
             push({ type: 'error', message });
             closeStream();
@@ -628,21 +630,24 @@ Különös figyelmet fordít a következőkre:
       }
 
       const responsePromise = Promise.resolve(
-        new Response(readable, {
+        new NextResponse(readable, {
           headers: responseHeaders,
         }),
       );
 
       // Cache the request for deduplication (only cache for short time)
-      requestCache.set(requestHash, {
-        promise: responsePromise,
-        timestamp: Date.now(),
-      });
+      if (requestHash) {
+        requestCache.set(requestHash, {
+          promise: responsePromise,
+          timestamp: Date.now(),
+        });
 
-      // Clean up cache entry after TTL
-      setTimeout(() => {
-        requestCache.delete(requestHash);
-      }, REQUEST_CACHE_TTL_MS);
+        // Clean up cache entry after TTL
+        const hashToDelete = requestHash;
+        setTimeout(() => {
+          requestCache.delete(hashToDelete);
+        }, REQUEST_CACHE_TTL_MS);
+      }
 
       return responsePromise;
     } catch (error) {
