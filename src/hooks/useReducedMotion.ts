@@ -9,10 +9,22 @@ import { prefersReducedMotion } from '@/styles/animations';
  * Returns true if the user prefers reduced motion, false otherwise.
  * Updates automatically when the preference changes.
  * 
+ * @returns {boolean} True if user prefers reduced motion, false otherwise
+ * 
  * @example
  * ```tsx
- * const reducedMotion = useReducedMotion();
- * const animationDuration = reducedMotion ? 0 : 300;
+ * import { useReducedMotion } from '@/hooks/useReducedMotion';
+ * 
+ * function MyComponent() {
+ *   const reducedMotion = useReducedMotion();
+ *   const animationDuration = reducedMotion ? 0 : 300;
+ *   
+ *   return (
+ *     <div style={{ transitionDuration: `${animationDuration}ms` }}>
+ *       Content
+ *     </div>
+ *   );
+ * }
  * ```
  */
 export function useReducedMotion(): boolean {

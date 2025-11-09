@@ -5,6 +5,29 @@
  * All animations should check for reduced motion preference and provide
  * alternatives or disable animations when needed.
  * 
+ * @module animations
+ * 
+ * @example
+ * ```tsx
+ * import { 
+ *   getAnimationDuration,
+ *   getAnimationStyle,
+ *   useReducedMotion 
+ * } from '@/styles/animations';
+ * import { useReducedMotion } from '@/hooks/useReducedMotion';
+ * 
+ * function MyComponent() {
+ *   const reducedMotion = useReducedMotion();
+ *   const duration = getAnimationDuration('smooth', true);
+ *   
+ *   return (
+ *     <div style={getAnimationStyle('smooth', 'easeOut', true)}>
+ *       Content
+ *     </div>
+ *   );
+ * }
+ * ```
+ * 
  * Usage:
  * - Use animation classes in Tailwind: `transition-all duration-300`
  * - Use animation utilities in inline styles with reduced motion support

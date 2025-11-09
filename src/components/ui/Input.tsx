@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useId } from 'react';
 import { t } from '@/copy';
+import { LoadingSpinner } from './LoadingSpinner';
 
 type FieldMessage = React.ReactNode;
 
@@ -10,9 +11,36 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   help?: FieldMessage;
   id?: string;
   wrapperClassName?: string;
+  /** Show loading state (disables input and shows spinner) */
+  loading?: boolean;
 };
 
-export function Input({ error, label, help, id, className, wrapperClassName, ...props }: Props) {
+/**
+ * Input component with error handling, help text, and loading state support
+ * 
+ * @example
+ * ```tsx
+ * <Input
+ *   label="Email"
+ *   type="email"
+ *   placeholder="Enter your email"
+ *   error={errors.email}
+ *   help="We'll never share your email"
+ *   loading={isSubmitting}
+ * />
+ * ```
+ */
+export function Input({ 
+  error, 
+  label, 
+  help, 
+  id, 
+  className, 
+  wrapperClassName,
+  loading,
+  disabled,
+  ...props 
+}: Props) {
   const inputId = useId();
   const describedByIds: string[] = [];
 
@@ -24,11 +52,16 @@ export function Input({ error, label, help, id, className, wrapperClassName, ...
     describedByIds.push(`${inputId}-error`);
   }
 
+  if (loading) {
+    describedByIds.push(`${inputId}-loading`);
+  }
+
   const describedBy = describedByIds.length > 0 ? describedByIds.join(' ') : undefined;
 
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
 
   const isRequired = props.required || props['aria-required'] === 'true' || props['aria-required'] === true;
+  const isDisabled = disabled || loading;
   
   return (
     <label htmlFor={inputId} className={wrapperClasses}>
@@ -38,28 +71,43 @@ export function Input({ error, label, help, id, className, wrapperClassName, ...
           {isRequired && <span className="ml-1 text-danger" aria-label="required">*</span>}
         </span>
       )}
-      <input
-        id={inputId}
-        aria-invalid={!!error}
-        aria-describedby={describedBy}
-        className={[
-          'w-full rounded-2xl border px-4 py-2.5 text-base',
-          'bg-bg text-fg placeholder:text-fg-muted border-border',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-          error ? 'border-danger focus-visible:ring-danger' : '',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        {...props}
-      />
+      <div className="relative">
+        <input
+          id={inputId}
+          aria-invalid={!!error}
+          aria-describedby={describedBy}
+          aria-busy={loading}
+          disabled={isDisabled}
+          className={[
+            'w-full rounded-2xl border px-4 py-2.5 text-base',
+            'bg-bg text-fg placeholder:text-fg-muted border-border',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+            error ? 'border-danger focus-visible:ring-danger' : '',
+            loading ? 'pr-10' : '',
+            isDisabled ? 'cursor-not-allowed opacity-60' : '',
+            className,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          {...props}
+        />
+        {loading && (
+          <div 
+            id={`${inputId}-loading`}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+            aria-hidden="true"
+          >
+            <LoadingSpinner size="sm" />
+          </div>
+        )}
+      </div>
       {help && (
         <span id={`${inputId}-help`} className="block text-xs text-fg-muted">
           {help}
         </span>
       )}
       {error && (
-        <span id={`${inputId}-error`} className="block text-xs text-danger">
+        <span id={`${inputId}-error`} className="block text-xs text-danger" role="alert">
           {error}
         </span>
       )}

@@ -58,6 +58,24 @@ const sizes = {
   lg: 'px-7 py-4 text-base min-h-[48px]', // Enhanced for primary CTAs
 };
 
+/**
+ * Button component with variants, sizes, and loading state support
+ * 
+ * @example
+ * ```tsx
+ * <Button variant="primary" size="lg" loading={isSubmitting}>
+ *   Submit
+ * </Button>
+ * 
+ * <Button variant="secondary" size="md">
+ *   Cancel
+ * </Button>
+ * 
+ * <Button variant="danger" loading={isDeleting}>
+ *   Delete
+ * </Button>
+ * ```
+ */
 export function Button({
   className,
   variant = 'primary',

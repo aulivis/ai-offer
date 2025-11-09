@@ -3,6 +3,7 @@
 import { t } from '@/copy';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -14,15 +15,63 @@ const FOCUSABLE_SELECTOR = [
 ].join(',');
 
 export type ModalProps = {
+  /** Whether the modal is open */
   open: boolean;
+  /** Callback when modal should close */
   onClose: () => void;
+  /** ID of element that labels the modal */
   labelledBy?: string;
+  /** ID of element that describes the modal */
   describedBy?: string;
+  /** Modal content */
   children: ReactNode;
+  /** Additional className for the modal panel */
   className?: string;
+  /** Show close button (default: true) */
+  showCloseButton?: boolean;
+  /** Prevent body scroll when open (default: true) */
+  preventBodyScroll?: boolean;
+  /** Modal size */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 };
 
-export function Modal({ open, onClose, labelledBy, describedBy, children, className }: ModalProps) {
+const sizeClasses = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  full: 'max-w-full mx-4',
+};
+
+/**
+ * Modal component with focus trap, keyboard navigation, and accessibility support
+ * 
+ * @example
+ * ```tsx
+ * <Modal open={isOpen} onClose={() => setIsOpen(false)} size="lg">
+ *   <ModalHeader>
+ *     <h2>Modal Title</h2>
+ *   </ModalHeader>
+ *   <ModalBody>
+ *     Modal content
+ *   </ModalBody>
+ *   <ModalFooter>
+ *     <Button onClick={() => setIsOpen(false)}>Close</Button>
+ *   </ModalFooter>
+ * </Modal>
+ * ```
+ */
+export function Modal({ 
+  open, 
+  onClose, 
+  labelledBy, 
+  describedBy, 
+  children, 
+  className = '',
+  showCloseButton = true,
+  preventBodyScroll = true,
+  size = 'md',
+}: ModalProps) {
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -31,6 +80,34 @@ export function Modal({ open, onClose, labelledBy, describedBy, children, classN
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (!preventBodyScroll || !mounted) return;
+
+    if (open) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+    } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+    };
+  }, [open, preventBodyScroll, mounted]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -103,9 +180,12 @@ export function Modal({ open, onClose, labelledBy, describedBy, children, classN
     }
   };
 
-  // If className includes a max-w class, don't apply the default max-w-4xl
+  // Determine max width based on size prop or className
   const hasCustomMaxWidth = className?.includes('max-w-');
-  const defaultMaxWidth = hasCustomMaxWidth ? '' : 'max-w-4xl';
+  const sizeMaxWidth = hasCustomMaxWidth ? '' : sizeClasses[size];
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return createPortal(
     <div
@@ -127,13 +207,61 @@ export function Modal({ open, onClose, labelledBy, describedBy, children, classN
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
-        className={`w-full ${defaultMaxWidth} max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl md:rounded-3xl border border-border bg-bg p-4 sm:p-5 md:p-6 shadow-pop focus:outline-none transition-transform duration-300 ease-out ${className || ''}`}
+        className={`relative w-full ${sizeMaxWidth} max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl md:rounded-3xl border border-border bg-bg p-4 sm:p-5 md:p-6 shadow-pop focus:outline-none transition-transform duration-300 ease-out ${className || ''}`}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
+        style={{
+          animation: open && !prefersReducedMotion ? 'slideUp 300ms ease-out' : undefined,
+        }}
       >
-        {children}
+        {showCloseButton && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 z-10 rounded-full p-2 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={t('modal.close') || 'Close'}
+          >
+            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+          </button>
+        )}
+        <div className={showCloseButton ? 'pr-10' : ''}>
+          {children}
+        </div>
       </div>
     </div>,
     document.body,
+  );
+}
+
+/**
+ * Modal header component
+ */
+export function ModalHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`mb-4 flex items-center justify-between border-b border-border pb-4 ${className || ''}`} {...props}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Modal body component
+ */
+export function ModalBody({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`flex-1 overflow-y-auto ${className || ''}`} {...props}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Modal footer component
+ */
+export function ModalFooter({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`mt-4 flex items-center justify-end gap-2 border-t border-border pt-4 ${className || ''}`} {...props}>
+      {children}
+    </div>
   );
 }

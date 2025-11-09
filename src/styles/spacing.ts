@@ -4,6 +4,20 @@
  * Provides a consistent spacing scale based on 4px base unit (0.25rem)
  * This ensures visual consistency across the application.
  * 
+ * @module spacing
+ * 
+ * @example
+ * ```tsx
+ * import { SPACING_SCALE, getSpacing, SPACING_PRESETS } from '@/styles/spacing';
+ * 
+ * // Use spacing values
+ * const padding = getSpacing('md'); // '1rem'
+ * const gap = SPACING_SCALE.lg; // '1.5rem'
+ * 
+ * // Use presets
+ * const cardPadding = SPACING_PRESETS.cardPadding; // '1.5rem'
+ * ```
+ * 
  * Usage:
  * - Use spacing tokens in Tailwind classes: `p-4`, `gap-6`, `mb-8`
  * - Use spacing values in inline styles: `style={{ padding: spacing.md }}`

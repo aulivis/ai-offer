@@ -2,9 +2,13 @@ import * as React from 'react';
 import { t } from '@/copy';
 
 interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
+  /** Card header content */
   header?: React.ReactNode;
+  /** HTML element or component to render as */
   as?: React.ElementType;
+  /** Card size */
   size?: 'sm' | 'md' | 'lg';
+  /** Card style variant */
   variant?: 'default' | 'elevated' | 'outlined' | 'flat';
 }
 
@@ -21,6 +25,24 @@ const variantClasses = {
   flat: 'border-0 bg-[rgb(var(--color-bg-muted-rgb)/0.96)] shadow-none',
 };
 
+/**
+ * Card component with size and variant options
+ * 
+ * @example
+ * ```tsx
+ * <Card size="md" variant="default">
+ *   <CardHeader>
+ *     <h3>Title</h3>
+ *   </CardHeader>
+ *   <CardBody>
+ *     Content
+ *   </CardBody>
+ *   <CardFooter>
+ *     Actions
+ *   </CardFooter>
+ * </Card>
+ * ```
+ */
 export function Card({
   header,
   className,
@@ -47,18 +69,27 @@ export function Card({
   );
 }
 
+/**
+ * Card header component
+ */
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const cls = ['mb-4 flex flex-col gap-1', className].filter(Boolean).join(' ');
 
   return <div className={cls} {...props} />;
 }
 
+/**
+ * Card body component
+ */
 export function CardBody({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const cls = ['flex flex-col gap-4', className].filter(Boolean).join(' ');
 
   return <div className={cls} {...props} />;
 }
 
+/**
+ * Card footer component
+ */
 export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const cls = ['mt-4 flex items-center gap-2 pt-4 border-t border-border/60', className].filter(Boolean).join(' ');
 

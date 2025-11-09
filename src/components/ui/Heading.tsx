@@ -23,6 +23,14 @@ export type HeadingProps = React.ComponentPropsWithoutRef<'h1'> & {
  * 
  * Provides consistent heading styles based on the typography scale.
  * Automatically maps heading levels to appropriate typography styles.
+ * 
+ * @example
+ * ```tsx
+ * <Heading level="h1">Page Title</Heading>
+ * <Heading level="h2" size="h1">Large Section Title</Heading>
+ * <H1>Convenience component</H1>
+ * <H2>Another convenience component</H2>
+ * ```
  */
 export function Heading({
   level = 'h2',
