@@ -89,7 +89,7 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest, context
 
     const { data: jobRows, error: jobError } = await adminClient
       .from('pdf_jobs')
-      .select<{ storage_path: string | null }>('storage_path')
+      .select('storage_path')
       .eq('offer_id', offerId)
       .eq('user_id', offer.user_id);
 

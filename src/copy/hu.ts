@@ -359,6 +359,10 @@ export const hu = {
     pagination: {
       summary: 'Megjelenítve {displayed} / {total} ajánlat',
       allLoaded: 'Az összes ajánlat megjelenítve.',
+      loading: 'További ajánlatok betöltése…',
+    },
+    offersList: {
+      label: 'Ajánlatok listája',
     },
     emptyStates: {
       noOffers: 'Még nem hoztál létre ajánlatokat.',
@@ -524,6 +528,8 @@ export const hu = {
           3: '• Képek beszúrása a PDF-be',
         },
         cta: 'Pro csomag aktiválása most',
+        downgradeCta: 'Pro csomagra váltás',
+        downgradeHelper: 'Válts Pro csomagra korlátlan ajánlatokért és prémium funkciókért.',
       },
       currentBadge: 'Aktív csomag',
       currentCta: 'Jelenlegi csomag',

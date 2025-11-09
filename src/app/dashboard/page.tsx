@@ -1932,7 +1932,7 @@ export default function DashboardPage() {
         onCancel={handleCancelDelete}
         onConfirm={confirmDeleteOffer}
         isDeleting={Boolean(deletingId)}
-        itemName={offerToDelete?.title || undefined}
+        {...(offerToDelete?.title ? { itemName: offerToDelete.title } : {})}
       />
       <KeyboardShortcutsModal
         open={showKeyboardShortcuts}

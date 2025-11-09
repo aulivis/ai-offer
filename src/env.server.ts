@@ -144,7 +144,24 @@ const envWithDefaults: RawServerEnv = {
   SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI:
     process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI ??
     serverEnvDefaults.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI,
-  EXTERNAL_API_SYSTEM_USER_ID: process.env.EXTERNAL_API_SYSTEM_USER_ID,
+  ...(process.env.EXTERNAL_API_SYSTEM_USER_ID !== undefined
+    ? { EXTERNAL_API_SYSTEM_USER_ID: process.env.EXTERNAL_API_SYSTEM_USER_ID }
+    : {}),
 };
 
-export const envServer: ServerEnv = ServerEnvSchema.parse(envWithDefaults);
+const parsedEnv = ServerEnvSchema.parse(envWithDefaults);
+const { EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId, ...parsedEnvRest } = parsedEnv;
+
+// Construct ServerEnv with proper handling of optional property
+// With exactOptionalPropertyTypes, we must omit the property entirely if undefined
+const envServerBase: Omit<ServerEnv, 'EXTERNAL_API_SYSTEM_USER_ID'> = {
+  ...parsedEnvRest,
+  STRIPE_PRICE_ALLOWLIST: parsedEnv.STRIPE_PRICE_ALLOWLIST,
+  OAUTH_REDIRECT_ALLOWLIST: parsedEnv.OAUTH_REDIRECT_ALLOWLIST,
+  PDF_WEBHOOK_ALLOWLIST: parsedEnv.PDF_WEBHOOK_ALLOWLIST,
+};
+
+export const envServer: ServerEnv =
+  externalApiUserId !== undefined
+    ? { ...envServerBase, EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId }
+    : envServerBase;

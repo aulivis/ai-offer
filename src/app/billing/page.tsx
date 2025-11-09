@@ -92,38 +92,38 @@ const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
 const MARKETING_FEATURE_KEYS: Array<{ title: CopyKey; description: CopyKey }> = [
   {
-    title: 'billing.public.marketingFeatures.0.title',
-    description: 'billing.public.marketingFeatures.0.description',
+    title: 'billing.public.marketingFeatures.0.title' as CopyKey,
+    description: 'billing.public.marketingFeatures.0.description' as CopyKey,
   },
   {
-    title: 'billing.public.marketingFeatures.1.title',
-    description: 'billing.public.marketingFeatures.1.description',
+    title: 'billing.public.marketingFeatures.1.title' as CopyKey,
+    description: 'billing.public.marketingFeatures.1.description' as CopyKey,
   },
   {
-    title: 'billing.public.marketingFeatures.2.title',
-    description: 'billing.public.marketingFeatures.2.description',
+    title: 'billing.public.marketingFeatures.2.title' as CopyKey,
+    description: 'billing.public.marketingFeatures.2.description' as CopyKey,
   },
 ];
 
 const MARKETING_STEP_KEYS: Array<{ title: CopyKey; description: CopyKey }> = [
   {
-    title: 'billing.public.marketingSteps.0.title',
-    description: 'billing.public.marketingSteps.0.description',
+    title: 'billing.public.marketingSteps.0.title' as CopyKey,
+    description: 'billing.public.marketingSteps.0.description' as CopyKey,
   },
   {
-    title: 'billing.public.marketingSteps.1.title',
-    description: 'billing.public.marketingSteps.1.description',
+    title: 'billing.public.marketingSteps.1.title' as CopyKey,
+    description: 'billing.public.marketingSteps.1.description' as CopyKey,
   },
   {
-    title: 'billing.public.marketingSteps.2.title',
-    description: 'billing.public.marketingSteps.2.description',
+    title: 'billing.public.marketingSteps.2.title' as CopyKey,
+    description: 'billing.public.marketingSteps.2.description' as CopyKey,
   },
 ];
 
 const MARKETING_SPOTLIGHT_KEYS: CopyKey[] = [
-  'billing.public.spotlight.0',
-  'billing.public.spotlight.1',
-  'billing.public.spotlight.2',
+  'billing.public.spotlight.0' as CopyKey,
+  'billing.public.spotlight.1' as CopyKey,
+  'billing.public.spotlight.2' as CopyKey,
 ];
 
 const PLAN_ORDER: Record<'free' | 'standard' | 'pro', number> = {
@@ -160,6 +160,13 @@ function parsePeriodStart(value: string | null | undefined): Date {
 }
 
 // Plan Card Component
+type PlanCta = {
+  label: string;
+  disabled: boolean;
+  variant: 'primary' | 'secondary';
+  onClick?: () => void | Promise<void>;
+};
+
 function PlanCard({
   planType,
   isCurrent,
@@ -172,7 +179,7 @@ function PlanCard({
   isCurrent: boolean;
   isPopular: boolean;
   isDowngrade: boolean;
-  cta: ReturnType<typeof getPlanCta>;
+  cta: PlanCta;
   plan: 'free' | 'standard' | 'pro' | null;
   isLoading: boolean;
 }) {
@@ -183,9 +190,9 @@ function PlanCard({
       description: t('billing.plans.standard.description'),
       price: '1 490',
       features: [
-        t('billing.plans.standard.features.0'),
-        t('billing.plans.standard.features.1'),
-        t('billing.plans.standard.features.2'),
+        t('billing.plans.standard.features.0' as CopyKey),
+        t('billing.plans.standard.features.1' as CopyKey),
+        t('billing.plans.standard.features.2' as CopyKey),
       ],
     },
     pro: {
@@ -194,9 +201,9 @@ function PlanCard({
       description: t('billing.plans.pro.description'),
       price: '6 990',
       features: [
-        t('billing.plans.pro.features.0'),
-        t('billing.plans.pro.features.1'),
-        t('billing.plans.pro.features.2'),
+        t('billing.plans.pro.features.0' as CopyKey),
+        t('billing.plans.pro.features.1' as CopyKey),
+        t('billing.plans.pro.features.2' as CopyKey),
       ],
     },
   };
@@ -261,7 +268,11 @@ function PlanCard({
         {isDowngrade && !isCurrent && (
           <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
             <p className="text-xs font-medium text-amber-800">
-              {t(`billing.plans.${planType}.downgradeHelper`)}
+              {t(
+                (planType === 'standard'
+                  ? 'billing.plans.standard.downgradeHelper'
+                  : 'billing.plans.pro.downgradeHelper') as CopyKey,
+              )}
             </p>
           </div>
         )}
@@ -472,19 +483,26 @@ export default function BillingPage() {
     } else if (isCurrentPlan) {
       label = t('billing.plans.currentCta');
     } else if (isDowngrade) {
-      label = t(`billing.plans.${target}.downgradeCta`);
+      label = t(
+        (target === 'standard'
+          ? 'billing.plans.standard.downgradeCta'
+          : 'billing.plans.pro.downgradeCta') as CopyKey,
+      );
     } else {
       label = t(`billing.plans.${target}.cta`);
     }
 
     const variant: PlanCtaVariant = isDowngrade || isCurrentPlan ? 'secondary' : 'primary';
 
-    return {
+    const cta: PlanCta = {
       label,
       disabled: isCurrentPlan || isLoading,
       variant,
-      onClick: isCurrentPlan || isLoading ? undefined : () => startCheckout(priceId),
     };
+    if (!isCurrentPlan && !isLoading) {
+      cta.onClick = () => startCheckout(priceId);
+    }
+    return cta;
   };
 
   const standardCta = getPlanCta('standard');
@@ -659,7 +677,7 @@ export default function BillingPage() {
                 title={t('billing.currentPlan.offersThisMonth.title')}
                 value={offersThisMonthLabel}
                 helper={t('billing.currentPlan.offersThisMonth.helper')}
-                progress={usageProgress}
+                {...(usageProgress !== undefined ? { progress: usageProgress } : {})}
                 icon={
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -1056,9 +1074,9 @@ function PublicBillingLanding() {
               </div>
               <ul className="mt-8 flex-1 space-y-4">
                 {[
-                  t('billing.plans.standard.features.0'),
-                  t('billing.plans.standard.features.1'),
-                  t('billing.plans.standard.features.2'),
+                  t('billing.plans.standard.features.0' as CopyKey),
+                  t('billing.plans.standard.features.1' as CopyKey),
+                  t('billing.plans.standard.features.2' as CopyKey),
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <svg
@@ -1108,9 +1126,9 @@ function PublicBillingLanding() {
               </div>
               <ul className="mt-8 flex-1 space-y-4">
                 {[
-                  t('billing.plans.pro.features.0'),
-                  t('billing.plans.pro.features.1'),
-                  t('billing.plans.pro.features.2'),
+                  t('billing.plans.pro.features.0' as CopyKey),
+                  t('billing.plans.pro.features.1' as CopyKey),
+                  t('billing.plans.pro.features.2' as CopyKey),
                 ].map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     <svg
@@ -1280,11 +1298,11 @@ function PublicBillingLanding() {
                 </p>
                 <ul className="mt-6 space-y-3">
                   {[
-                    t('landing.enterprise.features.0'),
-                    t('landing.enterprise.features.1'),
-                    t('landing.enterprise.features.2'),
-                    t('landing.enterprise.features.3'),
-                    t('landing.enterprise.features.4'),
+                    t('landing.enterprise.features.0' as CopyKey),
+                    t('landing.enterprise.features.1' as CopyKey),
+                    t('landing.enterprise.features.2' as CopyKey),
+                    t('landing.enterprise.features.3' as CopyKey),
+                    t('landing.enterprise.features.4' as CopyKey),
                   ].map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <svg
