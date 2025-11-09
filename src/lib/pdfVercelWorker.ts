@@ -14,12 +14,10 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { randomUUID } from 'crypto';
 
 import { generatePdfVercelNativeWithTimeout } from './pdfVercelNative';
 import { renderRuntimePdfHtml } from './pdfRuntime';
 import type { PdfJobInput } from './queue/pdf';
-import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { envServer } from '@/env.server';
 
 const JOB_TIMEOUT_MS = 90_000;
@@ -124,7 +122,7 @@ export async function processPdfJobVercelNative(
     const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
     new Uint8Array(pdfArrayBuffer).set(pdfUint8);
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('offers')
       .upload(storagePath, pdfArrayBuffer, {
         contentType: 'application/pdf',

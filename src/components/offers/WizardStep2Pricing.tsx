@@ -11,6 +11,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/components/ToastProvider';
 import { PhotoIcon, CheckIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 type Activity = {
   id: string;
@@ -71,7 +72,7 @@ export function WizardStep2Pricing({
   validationError,
   client,
   onClientChange,
-  clientList,
+  clientList: _clientList,
   onClientSelect,
   showClientDropdown,
   onClientDropdownToggle,
@@ -458,7 +459,13 @@ export function WizardStep2Pricing({
                     >
                       {url ? (
                         <>
-                          <img src={url} alt="Reference" className="h-full w-full object-cover" />
+                          <Image
+                            src={url}
+                            alt="Reference"
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
                           {isSelected && (
                             <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
                               <div className="rounded-full bg-primary p-2">

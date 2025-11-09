@@ -13,7 +13,6 @@ export default function ProductGif({
   alt,
   caption,
   className = '',
-  autoplay = true,
 }: ProductGifProps) {
   // Placeholder if no GIF provided
   if (!src) {

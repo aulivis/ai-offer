@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';

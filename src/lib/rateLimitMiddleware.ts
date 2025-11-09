@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { consumeRateLimit, getClientIdentifier, type RateLimitResult } from '@/lib/rateLimiting';

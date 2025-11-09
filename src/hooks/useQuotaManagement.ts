@@ -5,7 +5,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { t } from '@/copy';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
-import { getQuotaData, type QuotaData } from '@/lib/services/quota';
+import { getQuotaData } from '@/lib/services/quota';
 
 export type QuotaSnapshot = {
   limit: number | null;
@@ -122,7 +122,7 @@ export function useQuotaManagement() {
     } finally {
       setQuotaLoading(false);
     }
-  }, [authStatus, sb, t, user]);
+  }, [authStatus, sb, user]);
 
   // Load quota on mount and when refresh trigger changes
   useEffect(() => {

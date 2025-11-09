@@ -136,7 +136,6 @@ export default function StepIndicator({ steps }: Props) {
           const clickable = step.status === 'completed' && typeof step.onSelect === 'function';
           const isCurrent = step.status === 'current';
           const isCompleted = step.status === 'completed';
-          const isUpcoming = step.status === 'upcoming';
 
           const circleClasses = classNames(
             'grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border-2 text-xs font-semibold transition-all duration-200',

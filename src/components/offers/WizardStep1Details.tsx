@@ -1,7 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/Button';
 import { HelpIcon } from '@/components/ui/HelpIcon';
 import {
   projectDetailFields,
-  emptyProjectDetails,
   type ProjectDetails,
   type ProjectDetailKey,
 } from '@/lib/projectDetails';
@@ -85,15 +84,15 @@ type WizardStep1DetailsProps = {
 export function WizardStep1Details({
   form,
   onFormChange,
-  client,
-  onClientChange,
-  clientList,
-  onClientSelect,
+  client: _client,
+  onClientChange: _onClientChange,
+  clientList: _clientList,
+  onClientSelect: _onClientSelect,
   availableIndustries,
   validationErrors,
-  showClientDropdown,
-  onClientDropdownToggle,
-  filteredClients,
+  showClientDropdown: _showClientDropdown,
+  onClientDropdownToggle: _onClientDropdownToggle,
+  filteredClients: _filteredClients,
   textTemplates,
   selectedTemplateId,
   onTemplateSelect,
@@ -113,15 +112,6 @@ export function WizardStep1Details({
         [field]: value,
       },
     });
-  };
-
-  const handleClientFieldChange = (field: keyof ClientForm, value: string) => {
-    onClientChange({ [field]: value });
-  };
-
-  const pickClient = (c: Client) => {
-    onClientSelect(c);
-    onClientDropdownToggle(false);
   };
 
   return (

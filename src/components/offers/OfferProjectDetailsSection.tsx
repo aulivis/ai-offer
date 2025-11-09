@@ -182,7 +182,6 @@ export function OfferProjectDetailsSection({
             const fieldValidation = isRequired && showInlineValidation ? overviewValidation : null;
             const fieldError =
               field === 'overview' ? overviewError : errors?.projectDetails?.[field];
-            const fieldId = `field-${field}`;
 
             return (
               <Textarea

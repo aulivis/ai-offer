@@ -25,10 +25,10 @@ export const WizardActionBar = memo(function WizardActionBar({
   step,
   onPrev,
   onNext,
-  onSubmit,
+  onSubmit: _onSubmit,
   isNextDisabled,
-  isSubmitDisabled = false,
-  isSubmitting,
+  isSubmitDisabled: _isSubmitDisabled = false,
+  isSubmitting: _isSubmitting,
   isQuotaExhausted = false,
   isQuotaLoading = false,
 }: WizardActionBarProps) {
@@ -49,9 +49,6 @@ export const WizardActionBar = memo(function WizardActionBar({
 
   const nextButtonLabel = t('offers.wizard.actions.next');
   const backButtonLabel = t('offers.wizard.actions.back');
-  const submitLabel = isSubmitting
-    ? t('offers.wizard.actions.previewInProgress')
-    : t('offers.wizard.actions.save');
 
   const isDisabled = isQuotaExhausted || isQuotaLoading;
 

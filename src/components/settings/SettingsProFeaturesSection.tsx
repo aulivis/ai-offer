@@ -8,7 +8,7 @@ type SettingsProFeaturesSectionProps = {
   plan: 'free' | 'standard' | 'pro';
 };
 
-export function SettingsProFeaturesSection({ plan }: SettingsProFeaturesSectionProps) {
+export function SettingsProFeaturesSection({ plan: _plan }: SettingsProFeaturesSectionProps) {
   // This section is now empty as reference images and testimonials have been moved
   // Keeping the card structure for potential future pro features
   return (

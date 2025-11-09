@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useCallback } from 'react';
 import { t } from '@/copy';
 import type { ProjectDetails, ProjectDetailKey } from '@/lib/projectDetails';
 import type { PriceRow } from '@/components/EditablePriceTable';

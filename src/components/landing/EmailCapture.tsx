@@ -50,7 +50,7 @@ export default function EmailCapture({
       trackEmailCapture(leadMagnet || 'email_capture');
       setStatus('success');
       setEmail('');
-    } catch (error) {
+    } catch {
       setStatus('error');
       setErrorMessage('Hiba történt. Kérjük, próbáld újra később.');
     }

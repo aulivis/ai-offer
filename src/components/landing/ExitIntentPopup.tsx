@@ -56,7 +56,7 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
       trackEmailCapture('exit_intent');
       trackConversion('exit_intent_converted');
       setStatus('success');
-    } catch (error) {
+    } catch {
       // Handle error silently or show message
       setStatus('idle');
     }

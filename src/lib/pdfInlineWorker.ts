@@ -217,7 +217,6 @@ export async function processPdfJobInline(
             // Extract header/footer data for Puppeteer templates
             const headerFooterData = await page.evaluate(() => {
               const footer = document.querySelector('.slim-footer');
-              const header = document.querySelector('.slim-header');
 
               if (!footer) return null;
 

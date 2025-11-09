@@ -23,7 +23,7 @@ export function createErrorResponse(
     cause?: unknown;
   } = {},
 ): NextResponse<StandardErrorResponse> {
-  const { requestId, issues, cause } = options;
+  const { requestId, issues } = options;
 
   const response: StandardErrorResponse = {
     error: message,
@@ -55,8 +55,6 @@ export function handleUnexpectedError(
   requestId?: string,
   log?: ReturnType<typeof createLogger>,
 ): NextResponse<StandardErrorResponse> {
-  const message = error instanceof Error ? error.message : String(error);
-
   if (log) {
     log.error('Unexpected error occurred', error);
   } else {

@@ -406,7 +406,7 @@ export async function countSuccessfulPdfsPerDevice(
 
   if (error) {
     // Fallback to direct query if function doesn't exist
-    const { count, error: countError } = await sb
+    const { error: countError } = await sb
       .from('offers')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)

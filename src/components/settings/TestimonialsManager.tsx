@@ -102,7 +102,7 @@ export function TestimonialsManager({
   testimonials,
   activities,
   enabled,
-  plan,
+  plan: _plan,
   onTestimonialsChange,
 }: TestimonialsManagerProps) {
   const supabase = useSupabase();
@@ -177,7 +177,7 @@ export function TestimonialsManager({
         title: t('settings.testimonials.addSuccess'),
         variant: 'success',
       });
-    } catch (error) {
+    } catch {
       showToast({
         title: t('settings.testimonials.addFailed'),
         variant: 'error',
@@ -201,7 +201,7 @@ export function TestimonialsManager({
         title: t('settings.testimonials.deleteSuccess'),
         variant: 'success',
       });
-    } catch (error) {
+    } catch {
       showToast({
         title: t('settings.testimonials.deleteFailed'),
         variant: 'error',

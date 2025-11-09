@@ -29,23 +29,23 @@ export async function injectPageNumbersTwoPass(
     pdf: (options: unknown) => Promise<Buffer | Uint8Array>;
   },
   pdfOptions: unknown,
-  pageLabel: string = 'Page',
+  _pageLabel: string = 'Page',
 ): Promise<Buffer | Uint8Array> {
   // First pass: Generate PDF to count pages
   const firstPassPdf = await page.pdf(pdfOptions);
 
   // Parse PDF to count pages accurately using pdf-lib
-  let totalPages = 1;
   try {
     const pdfBytes = firstPassPdf instanceof Buffer ? firstPassPdf : new Uint8Array(firstPassPdf);
     const pdfDoc = await PDFDocument.load(pdfBytes);
-    totalPages = pdfDoc.getPageCount();
+    // Page count is determined but not used in current implementation
+    void pdfDoc.getPageCount();
   } catch (error) {
     console.warn('Failed to parse PDF for page count, using estimation:', error);
     // Fallback: estimate from PDF size (rough approximation)
     const pdfSize = firstPassPdf instanceof Buffer ? firstPassPdf.length : firstPassPdf.byteLength;
     // Rough estimate: ~50KB per page for typical documents
-    totalPages = Math.max(1, Math.ceil(pdfSize / 50000));
+    void Math.max(1, Math.ceil(pdfSize / 50000));
   }
 
   // Inject page numbers into HTML using JavaScript

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { Modal } from './Modal';
-import { t } from '@/copy';
 
 type KeyboardShortcut = {
   keys: string[];

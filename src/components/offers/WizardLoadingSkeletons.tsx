@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton, SkeletonCard, SkeletonText } from '@/components/ui/Skeleton';
+import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
 import { Card } from '@/components/ui/Card';
 
 /**

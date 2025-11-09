@@ -152,7 +152,7 @@ export default function QuotaWarningBar() {
     };
   }, [quotaSnapshot, isLoading]);
 
-  const { isQuotaExhausted, isDeviceQuotaExhausted, warningType } = quotaStatus;
+  const { warningType } = quotaStatus;
 
   // Don't show for unauthenticated users (checked after all hooks are called)
   // Also don't show while loading auth status

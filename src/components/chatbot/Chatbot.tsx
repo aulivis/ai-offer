@@ -8,7 +8,7 @@
  */
 
 import { useChat } from '@ai-sdk/react';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { t, hu } from '@/copy';
 import VandaAvatar from './VandaAvatar';
@@ -107,7 +107,7 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
   };
 
   // Helper to extract text content from message parts
-  const getMessageText = (message: (typeof messages)[0]): string => {
+  const getMessageText = useCallback((message: (typeof messages)[0]): string => {
     // Handle format 1: content property (from useChat text streams)
     if (message.content && typeof message.content === 'string') {
       return message.content;
@@ -127,7 +127,7 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
     }
 
     return '';
-  };
+  }, []);
 
   // Debug: Log messages changes (after getMessageText is defined)
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
         status,
       });
     }
-  }, [messages, status]);
+  }, [messages, status, getMessageText]);
 
   // Helper to parse markdown links and render them
   const renderMessageWithLinks = (text: string): React.ReactNode => {

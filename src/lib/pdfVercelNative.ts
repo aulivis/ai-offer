@@ -51,7 +51,7 @@ async function getChromiumExecutablePath(): Promise<string | undefined> {
   // In local development, try to use local Puppeteer first
   // Fall back to @sparticuz/chromium if local Puppeteer not available
   try {
-    const puppeteer = await import('puppeteer');
+    await import('puppeteer');
     // Local Puppeteer will use its bundled Chromium
     return undefined; // Let Puppeteer use its default
   } catch {

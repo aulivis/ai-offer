@@ -6,7 +6,6 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { EmbeddingResult } from './embeddings';
 
 type SupabaseChatbotClient = SupabaseClient;
 
@@ -57,7 +56,7 @@ export async function retrieveSimilarDocuments(
         similarity: doc.similarity ?? 0,
       }));
     }
-  } catch (error) {
+  } catch {
     // RPC function not available, use fallback
     console.warn('RPC function not available, using fallback query');
   }

@@ -11,7 +11,7 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import type { Profile } from './types';
-import { ALL_INDUSTRIES_HU, validatePhoneHU, validateTaxHU, validateAddress } from './types';
+import { ALL_INDUSTRIES_HU } from './types';
 
 type SettingsCompanySectionProps = {
   profile: Profile;

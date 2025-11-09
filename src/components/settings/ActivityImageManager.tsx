@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { uploadWithProgress } from '@/lib/uploadWithProgress';
 import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
+import Image from 'next/image';
 
 type ActivityImageManagerProps = {
   activityId: string;
@@ -48,7 +49,7 @@ export function ActivityImageManager({
   activityId,
   imagePaths,
   enabled,
-  plan,
+  plan: _plan,
   onImagesChange,
   onOpenPlanUpgradeDialog,
 }: ActivityImageManagerProps) {
@@ -316,10 +317,12 @@ export function ActivityImageManager({
                 </div>
               ) : imageUrls[path] ? (
                 <>
-                  <img
+                  <Image
                     src={imageUrls[path]}
                     alt="Reference"
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    unoptimized
                   />
                   {enabled && (
                     <button

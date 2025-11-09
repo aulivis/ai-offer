@@ -13,6 +13,7 @@ import {
   useId,
 } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import AppFrame from '@/components/AppFrame';
 import { WizardStep1Details } from '@/components/offers/WizardStep1Details';
@@ -2041,7 +2042,6 @@ export default function NewOfferWizard() {
     step3: 1, // preview generated
   };
 
-
   // Keyboard shortcuts
   useWizardKeyboardShortcuts({
     step: step as WizardStep,
@@ -2623,10 +2623,13 @@ export default function NewOfferWizard() {
                               key={asset.key}
                               className="flex gap-2 rounded-xl border border-border/70 bg-white p-2 shadow-sm"
                             >
-                              <img
+                              <Image
                                 src={asset.dataUrl}
                                 alt={asset.alt}
+                                width={48}
+                                height={48}
                                 className="h-12 w-12 rounded-lg object-cover shadow-sm"
+                                unoptimized
                               />
                               <div className="flex flex-1 flex-col justify-between text-[11px] text-slate-500">
                                 <div>

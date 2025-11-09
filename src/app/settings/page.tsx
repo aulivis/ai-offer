@@ -219,9 +219,6 @@ export default function SettingsPage() {
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
   const hasErrors = hasGeneralErrors || hasBrandingErrors;
 
-  const primaryPreview = normalizeBrandHex(profile.brand_color_primary) ?? '#1c274c';
-  const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
-  const canUploadBrandLogo = plan !== 'free';
   // Use the template ID directly from profile for display (enforcement happens on save)
   const selectedTemplateId =
     (profile.offer_template as TemplateId | null) ?? DEFAULT_OFFER_TEMPLATE_ID;

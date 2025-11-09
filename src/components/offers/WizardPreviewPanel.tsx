@@ -49,7 +49,7 @@ export function WizardPreviewPanel({
   previewSummary,
   previewIssues,
   validationIssues,
-  attemptedSteps,
+  attemptedSteps: _attemptedSteps,
   activeTab,
   onTabChange,
   onRefresh,

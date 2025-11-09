@@ -32,7 +32,6 @@ export function TemplateSelector({
   gridCols = 3,
 }: TemplateSelectorProps) {
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
-  const userTemplateTier = planToTemplateTier(plan);
   const canUseProTemplates = plan === 'pro';
 
   const availableTemplates = useMemo(() => {

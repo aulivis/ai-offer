@@ -32,7 +32,6 @@ export async function uploadWithProgress(
     signal,
     body,
     method = 'POST',
-    ...restInit
   } = options;
 
   return new Promise((resolve, reject) => {
