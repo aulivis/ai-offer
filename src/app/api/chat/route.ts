@@ -316,48 +316,12 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       
-      // Use streamText to return preset answer in the correct format for useChat hook
-      // This ensures compatibility with the Vercel AI SDK's streaming protocol
-      // We use a system prompt that instructs the model to return the preset answer exactly
+      // For preset questions, return the answer directly without using AI
+      // Create a simple text stream that formats the answer for useChat hook
       try {
-        log.info('Creating stream response for preset question using streamText', {
-          answerLength: presetMatch.answer.length,
-          requestId,
-        });
-        
-        // Use streamText to return preset answer in the correct format for useChat hook
-        // We use the actual user question and provide the answer in the system prompt
-        // with very explicit instructions to return it exactly as provided
-        
-        // Create messages with the actual user question
-        const presetMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [
-          {
-            role: 'user',
-            content: lastMessage.content,
-          },
-        ];
-        
-        // For preset questions, use a very direct approach:
-        // Put the answer in the system prompt and instruct the model to return it exactly
-        // Use a format that makes it clear this is the expected response
-        const presetSystemPrompt = `Te Vanda vagy. A felhasználó kérdésére válaszolsz.
-
-A válasz:
-
-${presetMatch.answer}
-
-Most add vissza ezt a választ pontosan így, karakterről karakterre, anélkül hogy bármit változtatnál vagy hozzáadnál.`;
-        
-        // Use streamText with zero temperature for deterministic output
-        const presetResult = streamText({
-          model: openai('gpt-3.5-turbo'),
-          system: presetSystemPrompt,
-          messages: presetMessages,
-          temperature: 0.0, // Zero temperature for deterministic output
-        });
+        const responseTime = Date.now() - startTime;
         
         // Track analytics (async, don't await)
-        const responseTime = Date.now() - startTime;
         fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -381,23 +345,62 @@ Most add vissza ezt a választ pontosan így, karakterről karakterre, anélkül
           });
         });
         
-        log.info('Returning stream response for preset question', {
-          hasResponse: !!presetResult,
+        // Create a direct text stream response without using AI
+        // Return the preset answer directly in the format expected by useChat hook
+        // Format: text deltas as "0:" + JSON.stringify(text) + "\n"
+        // Done signal: "d:" + JSON.stringify({finishReason:"stop"}) + "\n"
+        const presetAnswer = presetMatch.answer;
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          start(controller) {
+            // Stream the answer character by character or in small chunks
+            // Format: each text delta should be sent as "0:" + JSON.stringify(text)
+            const chunkSize = 30;
+            let index = 0;
+            
+            const sendChunk = () => {
+              if (index >= presetAnswer.length) {
+                // Send done signal: d:{"finishReason":"stop"}
+                controller.enqueue(encoder.encode('d:{"finishReason":"stop"}\n'));
+                controller.close();
+                return;
+              }
+              
+              const chunk = presetAnswer.slice(index, index + chunkSize);
+              index += chunkSize;
+              
+              // AI SDK text stream format: "0:" + JSON.stringify(text) + "\n"
+              const data = `0:${JSON.stringify(chunk)}\n`;
+              controller.enqueue(encoder.encode(data));
+              
+              // Schedule next chunk with a small delay for streaming effect
+              setTimeout(sendChunk, 20);
+            };
+            
+            sendChunk();
+          },
+        });
+        
+        log.info('Returning direct stream response for preset question (no AI)', {
+          answerLength: presetAnswer.length,
           requestId,
         });
         
-        // Return the properly formatted stream response
-        return presetResult.toTextStreamResponse();
-      } catch (streamError) {
-        log.error('Failed to create stream response for preset question', streamError instanceof Error ? streamError : undefined, {
-          errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
-          errorMessage: streamError instanceof Error ? streamError.message : String(streamError),
-          errorStack: streamError instanceof Error ? streamError.stack : undefined,
+        // Return response with proper headers for text streaming
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-cache',
+          },
+        });
+      } catch (error) {
+        log.error('Failed to create stream response for preset question', error instanceof Error ? error : undefined, {
+          errorType: error instanceof Error ? error.constructor.name : typeof error,
+          errorMessage: error instanceof Error ? error.message : String(error),
           requestId,
         });
         
         // If streaming fails, fall through to regular RAG processing as backup
-        // This ensures the user still gets an answer, just not from the preset
         log.warn('Streaming failed for preset question, falling through to RAG processing', {
           requestId,
         });
