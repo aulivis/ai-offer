@@ -54,6 +54,20 @@ export default function Chatbot({
     id: 'vyndi-chatbot',
     onError: (error) => {
       console.error('[Chatbot] Error from useChat:', error);
+      console.error('[Chatbot] Error details:', {
+        message: error?.message,
+        cause: error?.cause,
+        stack: error?.stack,
+      });
+    },
+    onResponse: (response) => {
+      if (!response.ok) {
+        console.error('[Chatbot] API response not OK:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+        });
+      }
     },
   });
   
@@ -72,18 +86,16 @@ export default function Chatbot({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     
-    sendMessage({ 
-      text: input.trim(),
-    } as any);
+    // useChat's sendMessage accepts a string directly or { content: string }
+    sendMessage(input.trim());
     setInput('');
   };
   
   // Handle suggested question click
   const handleQuestionClick = (question: string) => {
     if (isLoading) return;
-    sendMessage({ 
-      text: question,
-    } as any);
+    // useChat's sendMessage accepts a string directly or { content: string }
+    sendMessage(question.trim());
   };
   
   // Handle input change

@@ -97,7 +97,7 @@ export default function ChatbotWidget() {
           ref={buttonRef}
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group !fixed bottom-24 right-6 z-[60] h-14 w-14 rounded-full border-2 border-border bg-bg-muted shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden"
+          className="group !fixed bottom-24 right-6 z-[60] h-14 w-14 rounded-full border-2 border-border bg-bg-muted shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
@@ -139,8 +139,8 @@ export default function ChatbotWidget() {
             )}
           </div>
           
-          {/* Green dot - available indicator - on front layer */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg-muted shadow-sm z-20" />
+          {/* Green dot - available indicator - on front layer with highest z-index */}
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg-muted shadow-sm z-[100]" style={{ zIndex: 100 }} />
         </button>
       )}
 
