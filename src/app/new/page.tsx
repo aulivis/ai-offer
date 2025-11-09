@@ -34,8 +34,22 @@ import {
 import type { TemplateId } from '@/app/pdf/templates/types';
 import type { WizardStep } from '@/types/wizard';
 import { useSupabase } from '@/components/SupabaseProvider';
-import RichTextEditor, { type RichTextEditorHandle } from '@/components/RichTextEditor';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import dynamic from 'next/dynamic';
+import type { RichTextEditorHandle } from '@/components/RichTextEditor';
+
+// Lazy load RichTextEditor to reduce initial bundle size
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor').then(mod => mod.default), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-bg-muted">
+      <div className="text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <p className="mt-2 text-sm text-fg-muted">Loading editor...</p>
+      </div>
+    </div>
+  ),
+});
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';

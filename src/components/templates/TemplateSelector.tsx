@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Image from 'next/image';
 import { t } from '@/copy';
 import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
@@ -93,23 +94,15 @@ export function TemplateSelector({
               {/* Preview Image */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm">
                 {template.preview ? (
-                  <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={template.preview}
-                      alt={`${template.label} előnézet`}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.classList.add('flex', 'items-center', 'justify-center');
-                          parent.innerHTML = `<span class="text-xs font-medium text-slate-400">${template.label}</span>`;
-                        }
-                      }}
-                    />
-                  </>
+                  <Image
+                    src={template.preview}
+                    alt={`${template.label} előnézet`}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                    loading="lazy"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
                     <div className="text-center">

@@ -7,6 +7,7 @@ import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useInfiniteScroll } from '@/hooks/useIntersectionObserver';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
@@ -21,6 +22,7 @@ import OfferCard from '@/components/dashboard/OfferCard';
 import { OfferListItem } from '@/components/dashboard/OfferListItem';
 import { OffersCardGrid } from '@/components/dashboard/OffersCardGrid';
 import { ViewSwitcher, type ViewMode } from '@/components/dashboard/ViewSwitcher';
+import { KeyboardShortcutsModal } from '@/components/ui/KeyboardShortcutsModal';
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
@@ -37,6 +39,7 @@ import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
 import ArrowsPointingOutIcon from '@heroicons/react/24/outline/ArrowsPointingOutIcon';
 import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIcon';
 import PlusIcon from '@heroicons/react/24/outline/PlusIcon';
+import QuestionMarkCircleIcon from '@heroicons/react/24/outline/QuestionMarkCircleIcon';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -487,6 +490,25 @@ export default function DashboardPage() {
     }
     return 'detailed';
   });
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+
+  // Keyboard shortcut handler: ? to show shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Show keyboard shortcuts modal with Shift+? or just ?
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        // Only trigger if not typing in an input field
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          e.preventDefault();
+          setShowKeyboardShortcuts(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -932,6 +954,16 @@ export default function DashboardPage() {
       setIsLoadingMore(false);
     }
   }, [fetchPage, hasMore, isLoadingMore, pageIndex, showToast, userId]);
+
+  // Auto-load more when scroll reaches bottom (progressive loading with intersection observer)
+  const loadMoreRef = useInfiniteScroll(
+    handleLoadMore,
+    hasMore,
+    isLoadingMore,
+    {
+      rootMargin: '200px', // Start loading 200px before reaching bottom
+    },
+  );
 
   const industries = useMemo(() => {
     const s = new Set<string>();
@@ -1468,6 +1500,16 @@ export default function DashboardPage() {
         description={t('dashboard.description')}
         actions={
           <div className="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setShowKeyboardShortcuts(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-2 text-sm font-semibold text-fg-muted transition hover:border-fg hover:bg-bg/80 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Show keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+            >
+              <QuestionMarkCircleIcon className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline">?</span>
+            </button>
             {isAdmin ? (
               <Link
                 href="/dashboard/telemetry"
@@ -2006,22 +2048,40 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <div className="mt-6 flex flex-col items-center gap-3 text-center">
+            {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}
+            <div ref={loadMoreRef} className="mt-6 flex flex-col items-center gap-3 text-center">
               {paginationSummary ? (
-                <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted" role="status" aria-live="polite">
                   {paginationSummary}
                 </p>
               ) : null}
-              <LoadMoreButton
-                currentPage={currentPage}
-                totalPages={totalPages ?? null}
-                hasNext={hasMore}
-                onClick={handleLoadMore}
-                isLoading={isLoadingMore}
-              />
-              {!hasMore ? (
-                <p className="text-xs text-fg-muted">{t('dashboard.pagination.allLoaded')}</p>
-              ) : null}
+              
+              {/* Load More Button - Also serves as intersection observer target for auto-loading */}
+              {hasMore && (
+                <div className="w-full">
+                  <LoadMoreButton
+                    currentPage={currentPage}
+                    totalPages={totalPages ?? null}
+                    hasNext={hasMore}
+                    onClick={handleLoadMore}
+                    isLoading={isLoadingMore}
+                  />
+                </div>
+              )}
+              
+              {!hasMore && offers.length > 0 && (
+                <p className="text-xs text-fg-muted" role="status" aria-live="polite">
+                  {t('dashboard.pagination.allLoaded')}
+                </p>
+              )}
+              
+              {/* Loading indicator for progressive loading */}
+              {isLoadingMore && (
+                <div className="flex items-center gap-2 text-sm text-fg-muted" aria-busy="true" aria-live="polite">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <span>{t('dashboard.pagination.loading') || 'Loading more offers...'}</span>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -2032,6 +2092,37 @@ export default function DashboardPage() {
         onCancel={handleCancelDelete}
         onConfirm={confirmDeleteOffer}
         isDeleting={Boolean(deletingId)}
+      />
+      <KeyboardShortcutsModal
+        open={showKeyboardShortcuts}
+        onClose={() => setShowKeyboardShortcuts(false)}
+        shortcuts={[
+          {
+            category: 'Navigation',
+            keys: ['?'],
+            description: 'Show keyboard shortcuts',
+          },
+          {
+            category: 'Dashboard',
+            keys: ['/', 'F'],
+            description: 'Focus search / filter',
+          },
+          {
+            category: 'Dashboard',
+            keys: ['Arrow Keys'],
+            description: 'Navigate between filter chips',
+          },
+          {
+            category: 'Dashboard',
+            keys: ['Home', 'End'],
+            description: 'Jump to first / last filter',
+          },
+          {
+            category: 'General',
+            keys: ['Esc'],
+            description: 'Close modal / Cancel action',
+          },
+        ]}
       />
     </>
   );

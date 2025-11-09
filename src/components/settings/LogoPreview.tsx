@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { t } from '@/copy';
@@ -59,14 +60,17 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
   if (logoUrl) {
     return (
       <div className="group relative h-24 w-24 flex-none overflow-hidden rounded-xl border-2 border-border bg-white shadow-sm transition-all hover:shadow-md">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={logoUrl}
           alt={t('settings.branding.logoPreviewAlt')}
+          width={96}
+          height={96}
           className="h-full w-full object-contain p-2"
           onError={() => setLogoUrl(null)}
+          unoptimized // User uploaded images may not be optimized
+          aria-hidden="false"
         />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/5" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/5" aria-hidden="true" />
       </div>
     );
   }
