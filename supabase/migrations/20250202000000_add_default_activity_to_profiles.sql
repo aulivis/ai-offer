@@ -1,6 +1,41 @@
 -- Add default_activity_id column to profiles table
-alter table public.profiles
-  add column if not exists default_activity_id text;
+-- Handle case where column might already exist with wrong type
+do $$
+begin
+  -- Check if column exists
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'default_activity_id'
+  ) then
+    -- Column exists, check if it's the wrong type
+    if exists (
+      select 1
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'profiles'
+        and column_name = 'default_activity_id'
+        and data_type = 'text'
+    ) then
+      -- Drop the column if it's text type (will be recreated as uuid)
+      alter table public.profiles drop column default_activity_id;
+    end if;
+  end if;
+  
+  -- Add column if it doesn't exist (or was just dropped)
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'default_activity_id'
+  ) then
+    alter table public.profiles
+      add column default_activity_id uuid;
+  end if;
+end $$;
 
 -- Add foreign key constraint to activities table
 do $$
