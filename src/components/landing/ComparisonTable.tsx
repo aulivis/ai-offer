@@ -59,9 +59,16 @@ export default function ComparisonTable({
   };
 
   return (
-    <div className={`overflow-x-auto ${className}`}>
+    <div className={`relative overflow-x-auto ${className}`}>
+      {/* Mobile scroll indicator */}
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-bg to-transparent sm:hidden" aria-hidden="true" />
       <Card className="overflow-hidden p-0">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table 
+            className="w-full min-w-[600px]"
+            role="table"
+            aria-label={t('landing.comparisonTable.ariaLabel') || 'Feature comparison table'}
+          >
           <thead>
             <tr className="border-b border-border bg-bg-muted/50">
               <th className="px-6 py-4 text-left text-sm font-semibold text-fg">{t('landing.comparisonTable.headerFeature')}</th>
@@ -84,7 +91,12 @@ export default function ComparisonTable({
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
+      {/* Mobile hint */}
+      <p className="mt-2 text-center text-xs text-fg-muted sm:hidden">
+        Scroll horizontally to see all features
+      </p>
     </div>
   );
 }

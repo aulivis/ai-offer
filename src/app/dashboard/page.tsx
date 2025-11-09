@@ -19,6 +19,7 @@ import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import OfferCard from '@/components/dashboard/OfferCard';
 import { OfferListItem } from '@/components/dashboard/OfferListItem';
+import { OffersCardGrid } from '@/components/dashboard/OffersCardGrid';
 import { ViewSwitcher, type ViewMode } from '@/components/dashboard/ViewSwitcher';
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
@@ -1964,33 +1965,22 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Offers List - Mobile optimized with accessibility */}
+        {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
         {!loading && filtered.length > 0 && (
           <>
             {viewMode === 'card' ? (
-              <div 
-                className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start" 
-                data-offers-section
-                role="region"
-                aria-label={t('dashboard.offersList.label') || 'Offers list'}
-                aria-busy={updatingId !== null || deletingId !== null}
-              >
-                {filtered.map((o) => (
-                  <OfferCard
-                    key={o.id}
-                    offer={o}
-                    isUpdating={updatingId === o.id}
-                    isDownloading={downloadingId === o.id}
-                    isDeleting={deletingId === o.id}
-                    onMarkSent={(offer, date) => markSent(offer, date)}
-                    onMarkDecision={(offer, decision, date) => markDecision(offer, decision, date)}
-                    onRevertToSent={(offer) => revertToSent(offer)}
-                    onRevertToDraft={(offer) => revertToDraft(offer)}
-                    onDelete={(offer) => setOfferToDelete(offer)}
-                    onDownload={(offer) => handleDownloadPdf(offer)}
-                  />
-                ))}
-              </div>
+              <OffersCardGrid
+                offers={filtered}
+                updatingId={updatingId}
+                downloadingId={downloadingId}
+                deletingId={deletingId}
+                onMarkSent={markSent}
+                onMarkDecision={markDecision}
+                onRevertToSent={revertToSent}
+                onRevertToDraft={revertToDraft}
+                onDelete={setOfferToDelete}
+                onDownload={handleDownloadPdf}
+              />
             ) : (
               <div 
                 className="flex flex-col gap-3"
