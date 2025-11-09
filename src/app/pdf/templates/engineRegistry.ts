@@ -124,15 +124,6 @@ const templateCache = new Map<TemplateId, TemplateCacheEntry>();
 // Cache TTL: 1 hour in milliseconds
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
-function extractLegacyId(template: unknown): string | null {
-  if (typeof template !== 'object' || !template) {
-    return null;
-  }
-
-  const candidate = (template as { legacyId?: unknown }).legacyId;
-  return typeof candidate === 'string' && candidate.trim().length > 0 ? candidate : null;
-}
-
 function formatValidationError(error: z.ZodError) {
   return error.issues
     .map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`)

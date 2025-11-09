@@ -1,9 +1,5 @@
 import type { TemplateId, TemplateTier } from '@/app/pdf/templates/types';
-import {
-  listTemplateMetadata,
-  getOfferTemplateByLegacyId,
-  loadTemplate,
-} from '@/app/pdf/templates/engineRegistry';
+import { getOfferTemplateByLegacyId, loadTemplate } from '@/app/pdf/templates/engineRegistry';
 
 export type SubscriptionPlan = 'free' | 'standard' | 'pro';
 

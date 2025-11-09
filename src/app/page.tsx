@@ -10,7 +10,6 @@ import StatCard from '@/components/landing/StatCard';
 import CustomerLogos from '@/components/landing/CustomerLogos';
 import SocialProofWidget from '@/components/landing/SocialProofWidget';
 import ComparisonTable from '@/components/landing/ComparisonTable';
-import CaseStudyCard from '@/components/landing/CaseStudyCard';
 import ROICalculator from '@/components/landing/ROICalculator';
 import GuaranteeBadge from '@/components/landing/GuaranteeBadge';
 import ProductScreenshot from '@/components/landing/ProductScreenshot';
@@ -308,40 +307,6 @@ export default function Home() {
   const customerLogos: Array<{ src: string; alt: string }> = [
     // Add actual logo paths when available
     // { src: '/images/logos/company1.svg', alt: 'Company 1' },
-  ];
-
-  const caseStudies = [
-    {
-      company: t('landing.caseStudiesInline.studioFluo.company'),
-      industry: t('landing.caseStudiesInline.studioFluo.industry'),
-      challenge: t('landing.caseStudiesInline.studioFluo.challenge'),
-      solution: t('landing.caseStudiesInline.studioFluo.solution'),
-      results: [
-        { metric: t('landing.caseStudiesInline.studioFluo.results.timeSaved'), value: '70%' },
-        { metric: t('landing.caseStudiesInline.studioFluo.results.offersPerWeek'), value: '25+' },
-        { metric: t('landing.caseStudiesInline.studioFluo.results.acceptanceRate'), value: '+35%' },
-      ],
-      quote: t('landing.caseStudiesInline.studioFluo.quote'),
-      author: t('landing.caseStudiesInline.studioFluo.author'),
-      role: t('landing.caseStudiesInline.studioFluo.role'),
-    },
-    {
-      company: t('landing.caseStudiesInline.techSolutions.company'),
-      industry: t('landing.caseStudiesInline.techSolutions.industry'),
-      challenge: t('landing.caseStudiesInline.techSolutions.challenge'),
-      solution: t('landing.caseStudiesInline.techSolutions.solution'),
-      results: [
-        { metric: t('landing.caseStudiesInline.techSolutions.results.offerTime'), value: '-65%' },
-        {
-          metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'),
-          value: '50+',
-        },
-        { metric: t('landing.caseStudiesInline.techSolutions.results.satisfaction'), value: '98%' },
-      ],
-      quote: t('landing.caseStudiesInline.techSolutions.quote'),
-      author: t('landing.caseStudiesInline.techSolutions.author'),
-      role: t('landing.caseStudiesInline.techSolutions.role'),
-    },
   ];
 
   return (

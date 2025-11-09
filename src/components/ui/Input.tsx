@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useId } from 'react';
-import { t } from '@/copy';
 import { LoadingSpinner } from './LoadingSpinner';
 
 type FieldMessage = React.ReactNode;
@@ -34,7 +33,6 @@ export function Input({
   error,
   label,
   help,
-  id,
   className,
   wrapperClassName,
   loading,

@@ -453,7 +453,7 @@ export default function DashboardPage() {
         count: typeof count === 'number' ? count : null,
       };
     },
-    [sb],
+    [sb, showToast],
   );
 
   useEffect(() => {
@@ -1167,7 +1167,7 @@ export default function DashboardPage() {
       });
     }
     return undefined;
-  }, [isQuotaLoading, quotaResetLabel, quotaSnapshot, t]);
+  }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
 
   /** Derived UI szövegek */
   const acceptanceLabel =

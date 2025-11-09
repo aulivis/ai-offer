@@ -25,7 +25,7 @@ export type TemplateMeta = {
  */
 function createSDKTemplateAdapter(engineTemplateId: EngineTemplateId): OfferTemplate | null {
   try {
-    const engineTemplate = loadEngineTemplate(engineTemplateId);
+    loadEngineTemplate(engineTemplateId);
 
     // For now, return null if it's not a runtime template
     // Runtime templates should be in SDK format

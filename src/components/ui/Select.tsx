@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { t } from '@/copy';
 import { LoadingSpinner } from './LoadingSpinner';
 
 type FieldMessage = React.ReactNode;

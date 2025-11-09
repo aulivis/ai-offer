@@ -99,6 +99,7 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
       clearInterval(interval);
       clearInterval(nameRotationInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!isVisible) return null;

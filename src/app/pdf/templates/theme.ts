@@ -30,8 +30,8 @@ export function createThemeCssVariables(tokens: ThemeTokens): string {
   const primaryContrast = contrastColor(tokens.color.primary);
 
   // Ensure print-safe colors
-  const printSafeText = ensurePrintSafeColor(tokens.color.text, tokens.color.bg);
-  const printSafePrimary = ensurePrintSafeColor(tokens.color.primary, tokens.color.bg);
+  const printSafeText = ensurePrintSafeColor(tokens.color.text);
+  const printSafePrimary = ensurePrintSafeColor(tokens.color.primary);
 
   const css = `
     .offer-doc {
@@ -77,7 +77,7 @@ export function createThemeCssVariables(tokens: ThemeTokens): string {
 /**
  * Ensure color is print-safe (simplified version)
  */
-function ensurePrintSafeColor(color: string, background: string = '#ffffff'): string {
+function ensurePrintSafeColor(color: string): string {
   try {
     // Basic check - if color is too light, darken it
     let hex = color.replace('#', '');

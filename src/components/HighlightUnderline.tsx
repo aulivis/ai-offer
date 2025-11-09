@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from 'react';
-import { t } from '@/copy';
 
 export default function HighlightUnderline({ children }: PropsWithChildren) {
   return (

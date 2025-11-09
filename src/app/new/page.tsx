@@ -14,7 +14,6 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
-import EditablePriceTable, { createPriceRow, PriceRow } from '@/components/EditablePriceTable';
 import AppFrame from '@/components/AppFrame';
 import { WizardStep1Details } from '@/components/offers/WizardStep1Details';
 import { WizardStep2Pricing } from '@/components/offers/WizardStep2Pricing';
@@ -22,9 +21,6 @@ import { WizardActionBar } from '@/components/offers/WizardActionBar';
 import { useWizardValidation } from '@/hooks/useWizardValidation';
 import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
 import { useRealTimeValidation } from '@/hooks/useRealTimeValidation';
-import { useOfferForm } from '@/hooks/useOfferForm';
-import { useClientAutocomplete } from '@/hooks/useClientAutocomplete';
-import { useQuotaManagement } from '@/hooks/useQuotaManagement';
 import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
@@ -57,7 +53,6 @@ import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
-import { currentMonthStart } from '@/lib/services/usage';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -366,7 +361,7 @@ export default function NewOfferWizard() {
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
-  const { validateStep1, validateStep2 } = useWizardValidation();
+  useWizardValidation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
@@ -519,7 +514,7 @@ export default function NewOfferWizard() {
   }, []); // Only run on mount
 
   // Real-time validation with debouncing (must be after form and rows declarations)
-  const { errors: validationErrors, isValid: isStepValid } = useRealTimeValidation({
+  const { errors: validationErrors } = useRealTimeValidation({
     step,
     title: form.title,
     projectDetails: form.projectDetails,
@@ -535,11 +530,7 @@ export default function NewOfferWizard() {
   const previewRequestIdRef = useRef(0);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
   const previewDocumentAbortRef = useRef<AbortController | null>(null);
-  const {
-    frameRef: previewFrameRef,
-    height: previewFrameHeight,
-    updateHeight: updatePreviewFrameHeight,
-  } = useIframeAutoHeight({ minHeight: 720 });
+  const { updateHeight: updatePreviewFrameHeight } = useIframeAutoHeight({ minHeight: 720 });
   const {
     frameRef: modalPreviewFrameRef,
     height: modalPreviewFrameHeight,
@@ -607,7 +598,7 @@ export default function NewOfferWizard() {
       return t('offers.wizard.quota.exhaustedDescription');
     }
     return t('offers.wizard.quota.availableDescription');
-  }, [isQuotaExhausted, quotaError, quotaLoading, t]);
+  }, [isQuotaExhausted, quotaError, quotaLoading]);
   const quotaRemainingText = useMemo(() => {
     if (quotaLoading || quotaError) {
       return null;
@@ -619,13 +610,13 @@ export default function NewOfferWizard() {
       remaining: remainingQuota,
       limit: quotaLimit,
     });
-  }, [quotaError, quotaLimit, quotaLoading, remainingQuota, t]);
+  }, [quotaError, quotaLimit, quotaLoading, remainingQuota]);
   const quotaPendingText = useMemo(() => {
     if (quotaLoading || quotaError || quotaLimit === null || quotaPending <= 0) {
       return null;
     }
     return t('offers.wizard.quota.pendingInfo', { count: quotaPending });
-  }, [quotaError, quotaLimit, quotaLoading, quotaPending, t]);
+  }, [quotaError, quotaLimit, quotaLoading, quotaPending]);
 
   useEffect(() => {
     if (!availablePdfTemplates.length) {
@@ -846,7 +837,7 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
-  }, [allPdfTemplates, authStatus, reloadActivities, sb, t, user]);
+  }, [allPdfTemplates, authStatus, reloadActivities, sb, user]);
 
   useEffect(() => {
     setImageAssets((prev) => {
@@ -883,11 +874,6 @@ export default function NewOfferWizard() {
     }
   }, [selectedTemplateId, textTemplates]);
 
-  const filteredActivities = useMemo(() => {
-    return activities.filter(
-      (a) => (a.industries || []).length === 0 || a.industries.includes(form.industry),
-    );
-  }, [activities, form.industry]);
   const previewBodyHtml = useMemo(() => {
     const trimmed = (editedHtml || previewHtml || '').trim();
     if (!trimmed) {
@@ -1443,6 +1429,7 @@ export default function NewOfferWizard() {
   }, [
     form.brandVoice,
     form.deadline,
+    form.formality,
     form.projectDetails,
     form.industry,
     form.language,
@@ -1482,7 +1469,8 @@ export default function NewOfferWizard() {
       return;
     }
     void callPreview();
-  }, [callPreview, hasPreviewInputs, isQuotaExhausted, previewLocked, quotaLoading, showToast, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callPreview, hasPreviewInputs, isQuotaExhausted, previewLocked, quotaLoading]);
 
   useEffect(() => {
     if (step !== 3) {
@@ -1812,11 +1800,6 @@ export default function NewOfferWizard() {
       // Merge reference images with existing images
       imagePayload = [...imagePayload, ...referenceImagePayload];
 
-      // Clear draft on successful generation
-      const clearDraftOnSuccess = () => {
-        clearDraft(); // Enhanced autosave hook's clear function
-        handleSuccessfulGeneration();
-      };
       try {
         const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
           (acc, key) => {
@@ -2013,7 +1996,7 @@ export default function NewOfferWizard() {
       }
       setStep(clampedStep);
     },
-    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, t, validationErrors],
+    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, validationErrors],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
@@ -2058,10 +2041,6 @@ export default function NewOfferWizard() {
     step3: 1, // preview generated
   };
 
-  // Clear draft on successful generation
-  const handleSuccessfulGeneration = useCallback(() => {
-    clearDraft();
-  }, [clearDraft]);
 
   // Keyboard shortcuts
   useWizardKeyboardShortcuts({

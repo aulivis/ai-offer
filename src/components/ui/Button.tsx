@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { tokens } from '@/styles/tokens.preset';
-import { t } from '@/copy';
 import { LoadingSpinner } from './LoadingSpinner';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {

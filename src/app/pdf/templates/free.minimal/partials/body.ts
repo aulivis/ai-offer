@@ -1,6 +1,6 @@
 import { countRenderablePricingRows, priceTableHtml } from '@/app/lib/pricing';
 import { renderSectionHeading } from '@/app/lib/offerSections';
-import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
+import { ensureSafeHtml } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';

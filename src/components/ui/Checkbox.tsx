@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { t } from '@/copy';
 
 type FieldMessage = React.ReactNode;
 

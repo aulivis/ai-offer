@@ -7,7 +7,6 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { HelpIcon } from '@/components/ui/HelpIcon';
 
 const MAGIC_LINK_MESSAGE = t('login.messages.magicLinkInfo');

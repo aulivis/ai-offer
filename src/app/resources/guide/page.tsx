@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
-import { t } from '@/copy';
 
 export const metadata: Metadata = {
   title: 'Ajánlatkészítési útmutató | Vyndi',

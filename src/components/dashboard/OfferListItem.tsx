@@ -380,12 +380,11 @@ function StatusBadge({ status, className }: { status: Offer['status']; className
 function StatusTimelineItem({
   title,
   dateLabel,
-  isActive,
   children,
 }: {
   title: string;
   dateLabel: string;
-  isActive: boolean;
+  isActive?: boolean;
   children?: ReactNode;
 }) {
   return (
