@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
-import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
-import { CSRF_COOKIE_NAME } from '../../../../../lib/auth/csrf';
+import { clearAuthCookies } from '../../../../../lib/auth/cookies';
+import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf';
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
@@ -110,7 +110,7 @@ async function redirectTo(
   const REMEMBER_ME_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
   
   // Calculate maxAge values based on options or defaults
-  // These should match the values used in setAuthCookies()
+  // These determine how long the cookies will persist in the browser
   const accessTokenMaxAge = cookieOptions?.accessTokenMaxAge ?? 3600; // 1 hour default
   const refreshTokenMaxAge = cookieOptions?.rememberMe
     ? REMEMBER_ME_MAX_AGE
@@ -119,69 +119,104 @@ async function redirectTo(
     ? REMEMBER_ME_MAX_AGE
     : Math.max(accessTokenMaxAge, 7 * 24 * 60 * 60); // At least 7 days
   
-  // Create redirect response with absolute URL
-  const response = NextResponse.redirect(absoluteUrl, { status: 302 });
-  
   // CRITICAL: If tokens are provided directly, use them (most reliable)
   // Otherwise, try to get them from the cookie store
   const accessToken = cookieOptions?.accessToken ?? store.get('propono_at')?.value;
   const refreshToken = cookieOptions?.refreshToken ?? store.get('propono_rt')?.value;
   const csrfToken = cookieOptions?.csrfToken ?? store.get(CSRF_COOKIE_NAME)?.value;
   
-  // Set auth cookies directly on the redirect response
-  // This ensures they're definitely included in the Set-Cookie headers
+  // Build Set-Cookie headers manually to ensure they're included in redirect response
+  // Next.js response.cookies.set() may not work reliably with redirects in some cases
+  const setCookieHeaders: string[] = [];
+  
+  // Helper function to build Set-Cookie header string
+  // Cookie values should NOT be URL-encoded in Set-Cookie headers
+  // But we need to ensure special characters are handled correctly
+  const buildCookieHeader = (
+    name: string,
+    value: string,
+    options: {
+      httpOnly?: boolean;
+      secure?: boolean;
+      sameSite?: 'strict' | 'lax' | 'none';
+      path?: string;
+      maxAge?: number;
+    }
+  ): string => {
+    // Cookie name and value are set as-is (no URL encoding in Set-Cookie header)
+    // Values containing special characters like commas, spaces, etc. should be quoted
+    // But JWT tokens are base64-encoded and safe
+    const cookieValue = value.includes(',') || value.includes(';') || value.includes(' ')
+      ? `"${value.replace(/"/g, '\\"')}"` // Quote if contains special chars, escape quotes
+      : value;
+    
+    const parts: string[] = [`${name}=${cookieValue}`];
+    if (options.path) parts.push(`Path=${options.path}`);
+    if (options.maxAge !== undefined) parts.push(`Max-Age=${options.maxAge}`);
+    if (options.httpOnly) parts.push('HttpOnly');
+    if (options.secure) parts.push('Secure');
+    if (options.sameSite) parts.push(`SameSite=${options.sameSite}`);
+    return parts.join('; ');
+  };
+  
+  // Set auth cookies with proper attributes
   if (accessToken) {
-    response.cookies.set('propono_at', accessToken, {
-      httpOnly: true,
-      sameSite: 'lax', // Allows cookies on same-site redirects (top-level navigations)
-      secure: isSecure, // false for HTTP (localhost), true for HTTPS
-      path: '/', // Available across entire site
-      maxAge: accessTokenMaxAge,
-      // Don't set domain - let browser handle it (important for localhost)
-    });
+    setCookieHeaders.push(
+      buildCookieHeader('propono_at', accessToken, {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: accessTokenMaxAge,
+      })
+    );
   }
   
   if (refreshToken) {
-    response.cookies.set('propono_rt', refreshToken, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: isSecure,
-      path: '/',
-      maxAge: refreshTokenMaxAge,
-    });
+    setCookieHeaders.push(
+      buildCookieHeader('propono_rt', refreshToken, {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: refreshTokenMaxAge,
+      })
+    );
   }
   
   if (csrfToken) {
-    response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
-      httpOnly: false, // CSRF token needs to be readable by client-side JS
-      sameSite: 'lax',
-      secure: isSecure,
-      path: '/',
-      maxAge: csrfMaxAge,
-    });
+    setCookieHeaders.push(
+      buildCookieHeader(CSRF_COOKIE_NAME, csrfToken, {
+        httpOnly: false,
+        secure: isSecure,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: csrfMaxAge,
+      })
+    );
   }
   
-  // Copy other cookies from the store (like language, consent, etc.)
-  // but skip auth cookies we already set above and cookies being cleared
-  const allCookies = store.getAll();
-  for (const cookie of allCookies) {
-    // Skip cookies we already handled or are being cleared
-    if (!cookie.value || 
-        cookie.name === 'propono_at' || 
-        cookie.name === 'propono_rt' || 
-        cookie.name === CSRF_COOKIE_NAME ||
-        cookie.name === 'post_auth_redirect' ||
-        cookie.name === 'remember_me') {
-      continue;
-    }
-    
-    // Copy other cookies as-is (preserve their original settings)
-    // Note: We can't easily preserve all original cookie options, so we use safe defaults
-    response.cookies.set(cookie.name, cookie.value, {
-      httpOnly: false, // Assume non-auth cookies are not httpOnly
-      sameSite: 'lax',
-      secure: isSecure,
-      path: '/',
+  // Create redirect response
+  const response = NextResponse.redirect(absoluteUrl, { status: 302 });
+  
+  // CRITICAL: Manually set Set-Cookie headers to ensure they're included in redirect response
+  // Next.js response.cookies.set() may not work reliably with redirects in App Router
+  // By manually constructing and appending Set-Cookie headers, we ensure the browser receives them
+  for (const cookieHeader of setCookieHeaders) {
+    response.headers.append('Set-Cookie', cookieHeader);
+  }
+  
+  // Log cookie headers for debugging (redact sensitive values)
+  if (accessToken || refreshToken) {
+    const logger = createAuthRequestLogger();
+    logger.info('Setting cookies on redirect response', {
+      cookieCount: setCookieHeaders.length,
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+      hasCsrfToken: !!csrfToken,
+      accessTokenLength: accessToken?.length ?? 0,
+      refreshTokenLength: refreshToken?.length ?? 0,
+      redirectUrl: absoluteUrl,
     });
   }
   
@@ -387,13 +422,11 @@ async function handleMagicLinkTokens(
   cookieStore?: Awaited<ReturnType<typeof cookies>>,
 ): Promise<void> {
   try {
+    // Only persist session - don't set cookies here since we'll set them on redirect response
     await persistSessionOpaque(userId, tokens.refreshToken, tokens.expiresIn, request, logger, rememberMe);
-    // Pass the cookie store to ensure we're using the same instance
-    await setAuthCookies(tokens.accessToken, tokens.refreshToken, {
-      accessTokenMaxAgeSeconds: tokens.expiresIn,
-      rememberMe,
-    }, cookieStore);
     recordMagicLinkCallback('success');
+    // NOTE: Cookies are NOT set here - they will be set on the redirect response
+    // This ensures cookies are included in the redirect response headers
   } catch (error) {
     recordMagicLinkCallback('failure', { reason: 'persist_or_cookie_failed' });
     await clearAuthCookies();
@@ -460,96 +493,29 @@ export async function GET(request: Request) {
           expiresIn: tokens.expiresIn,
         });
         
-        // CRITICAL: Set auth cookies FIRST before doing anything else
-        // This ensures they're properly committed to the response
-        // Pass the same cookie store instance to ensure cookies are set correctly
+        // Persist session (but don't set cookies here - they'll be set on redirect response)
         await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe, cookieStore);
         
-        // AFTER setting auth cookies, clean up temporary cookies
-        // This ensures auth cookies are set before we clear anything
-        cookieStore.set({
-          name: 'post_auth_redirect',
-          value: '',
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: envServer.APP_URL.startsWith('https'),
-          path: '/',
-          maxAge: 0,
-        });
-
-        // Clean up remember_me cookie
-        cookieStore.set({
-          name: 'remember_me',
-          value: '',
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: envServer.APP_URL.startsWith('https'),
-          path: '/',
-          maxAge: 0,
-        });
-        
-        // Verify cookies were set using the same cookie store instance
-        const verifyAt = cookieStore.get('propono_at')?.value;
-        const verifyRt = cookieStore.get('propono_rt')?.value;
-        
-        logger.info('Magic link tokens processed, verifying cookies before redirect', {
-          userId,
-          hasAccessTokenCookie: !!verifyAt,
-          hasRefreshTokenCookie: !!verifyRt,
-          accessTokenLength: verifyAt?.length ?? 0,
-          refreshTokenLength: verifyRt?.length ?? 0,
-        });
-        
-        if (!verifyAt || !verifyRt) {
-          logger.error('Cookies not found after setting them', {
-            userId,
-            cookieStoreHasAt: !!verifyAt,
-            cookieStoreHasRt: !!verifyRt,
-          });
-          await clearAuthCookies();
-          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
-        }
+        // Create CSRF token for the session
+        // We need to generate it here so we can include it in the redirect
+        const { value: csrfTokenValue } = createCsrfToken();
         
         // Redirect to init-session page for client-side session initialization
         // Build the redirect path (will be converted to absolute URL by redirectTo)
         const redirectPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
         
-        // Final verification that cookies are set in the store
-        const finalVerifyAt = cookieStore.get('propono_at')?.value;
-        const finalVerifyRt = cookieStore.get('propono_rt')?.value;
-        
-        logger.info('Preparing redirect to init-session', {
+        logger.info('Preparing redirect to init-session with cookies', {
           userId,
           redirectPath,
-          accessTokenPresent: !!finalVerifyAt,
-          refreshTokenPresent: !!finalVerifyRt,
-          accessTokenLength: finalVerifyAt?.length ?? 0,
-          refreshTokenLength: finalVerifyRt?.length ?? 0,
+          accessTokenLength: tokens.accessToken.length,
+          refreshTokenLength: tokens.refreshToken.length,
           expiresIn: tokens.expiresIn,
           rememberMe,
+          hasCsrfToken: !!csrfTokenValue,
         });
         
-        if (!finalVerifyAt || !finalVerifyRt) {
-          logger.error('Cookies missing before redirect', {
-            userId,
-            hasAccessToken: !!finalVerifyAt,
-            hasRefreshToken: !!finalVerifyRt,
-          });
-          await clearAuthCookies();
-          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
-        }
-        
-        // Use redirectTo helper which properly handles absolute URLs and cookies
-        logger.info('Creating redirect response', {
-          userId,
-          redirectPath,
-        });
-        
-        // Get CSRF token from store to pass to redirect
-        const csrfTokenValue = cookieStore.get(CSRF_COOKIE_NAME)?.value;
-        
-        // Pass tokens directly to ensure they're set on the redirect response
-        // This is more reliable than relying on cookie store synchronization
+        // Pass tokens directly to redirectTo to set cookies on redirect response
+        // This ensures cookies are included in Set-Cookie headers of the redirect
         return redirectTo(redirectPath, request, cookieStore, {
           accessTokenMaxAge: tokens.expiresIn,
           refreshTokenMaxAge: rememberMe 
@@ -619,8 +585,7 @@ export async function GET(request: Request) {
           expiresIn,
         });
         
-        // CRITICAL: Set auth cookies FIRST before doing anything else
-        // Pass the same cookie store instance to ensure cookies are set correctly
+        // Persist session (but don't set cookies here - they'll be set on redirect response)
         await handleMagicLinkTokens(
           { accessToken, refreshToken, expiresIn },
           userId,
@@ -631,63 +596,22 @@ export async function GET(request: Request) {
           cookieStore,
         );
         
-        // AFTER setting auth cookies, clean up temporary cookies
-        // This ensures auth cookies are set before we clear anything
-        cookieStore.set({
-          name: 'post_auth_redirect',
-          value: '',
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: envServer.APP_URL.startsWith('https'),
-          path: '/',
-          maxAge: 0,
-        });
-
-        // Clean up remember_me cookie
-        cookieStore.set({
-          name: 'remember_me',
-          value: '',
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: envServer.APP_URL.startsWith('https'),
-          path: '/',
-          maxAge: 0,
-        });
-        
-        // Verify cookies were set using the same cookie store instance
-        const verifyAt = cookieStore.get('propono_at')?.value;
-        const verifyRt = cookieStore.get('propono_rt')?.value;
-        
-        logger.info('Magic link tokens processed (token_hash flow), verifying cookies before redirect', {
-          userId,
-          hasAccessTokenCookie: !!verifyAt,
-          hasRefreshTokenCookie: !!verifyRt,
-        });
-        
-        if (!verifyAt || !verifyRt) {
-          logger.error('Cookies not found after setting them (token_hash flow)', {
-            userId,
-            cookieStoreHasAt: !!verifyAt,
-            cookieStoreHasRt: !!verifyRt,
-          });
-          await clearAuthCookies();
-          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
-        }
+        // Create CSRF token for the session
+        const { value: csrfTokenValue } = createCsrfToken();
         
         // Redirect to init-session page for client-side session initialization
         // Build redirect path (will be converted to absolute URL by redirectTo)
         const redirectPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
         
-        logger.info('Redirecting to init-session (token_hash flow)', {
+        logger.info('Redirecting to init-session (token_hash flow) with cookies', {
           userId,
           redirectPath,
           expiresIn,
           rememberMe,
+          accessTokenLength: accessToken.length,
+          refreshTokenLength: refreshToken.length,
+          hasCsrfToken: !!csrfTokenValue,
         });
-        
-        // Use redirectTo helper which properly handles absolute URLs and cookies
-        // Get CSRF token from store to pass to redirect
-        const csrfTokenValue = cookieStore.get(CSRF_COOKIE_NAME)?.value;
         
         // Pass tokens directly to ensure they're set on the redirect response
         return redirectTo(redirectPath, request, cookieStore, {
@@ -765,41 +689,26 @@ export async function GET(request: Request) {
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
+    // Persist session (but don't set cookies here - they'll be set on redirect response)
     await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger, rememberMe);
-    await setAuthCookies(accessToken, refreshToken, {
-      accessTokenMaxAgeSeconds: expiresIn,
-      rememberMe,
-    }, cookieStore);
-
-    // Végcél sütit töröljük
-    cookieStore.set({
-      name: 'post_auth_redirect',
-      value: '',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: envServer.APP_URL.startsWith('https'),
-      path: '/',
-      maxAge: 0,
-    });
-
-    // Clean up remember_me cookie
-    cookieStore.set({
-      name: 'remember_me',
-      value: '',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: envServer.APP_URL.startsWith('https'),
-      path: '/',
-      maxAge: 0,
-    });
-
+    
+    // Create CSRF token for the session
+    const { value: csrfTokenValue } = createCsrfToken();
+    
     // For OAuth flows, redirect to client-side session initialization page
     // This ensures the Supabase client session is properly initialized before
     // redirecting to the final destination (dashboard, etc.)
     const initSessionPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
     
-    // Get CSRF token from store to pass to redirect
-    const csrfTokenValue = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+    logger.info('Redirecting OAuth callback to init-session with cookies', {
+      userId,
+      redirectPath: initSessionPath,
+      expiresIn,
+      rememberMe,
+      accessTokenLength: accessToken.length,
+      refreshTokenLength: refreshToken.length,
+      hasCsrfToken: !!csrfTokenValue,
+    });
     
     // Pass tokens directly to ensure they're set on the redirect response
     return redirectTo(initSessionPath, request, cookieStore, {

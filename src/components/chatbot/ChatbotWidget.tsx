@@ -80,26 +80,30 @@ export default function ChatbotWidget() {
         <button
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden bg-bg relative"
+          className="group fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden bg-bg relative"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
         >
-          {/* Vanda Avatar Image - fills the whole button, visible on top */}
-          <Image
-            src="/images/vanda-waiting.png"
-            alt="Vanda"
-            width={56}
-            height={56}
-            className="absolute inset-0 h-full w-full object-cover rounded-full z-10"
-            priority
-          />
-          
           {/* Subtle pulse animation for attention - behind the image with very low opacity */}
           <div className="absolute inset-0 rounded-full bg-primary/10 animate-gentle-pulse z-0 pointer-events-none" />
           
+          {/* Vanda Avatar Image Container - fills the whole button */}
+          <div className="absolute inset-0 z-10 rounded-full overflow-hidden">
+            <div className="relative h-full w-full">
+              <Image
+                src="/images/vanda-waiting.png"
+                alt="Vanda"
+                fill
+                className="object-cover"
+                priority
+                sizes="56px"
+              />
+            </div>
+          </div>
+          
           {/* Green dot - available indicator - on front layer */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm z-30" />
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm z-20" />
         </button>
       )}
 
