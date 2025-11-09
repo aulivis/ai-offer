@@ -70,7 +70,8 @@ export async function getRequestLanguage(): Promise<Language> {
     return cookieLanguage;
   }
 
-  const headerLanguage = detectFromAcceptLanguage(headers().get('accept-language'));
+  const headersList = await headers();
+  const headerLanguage = detectFromAcceptLanguage(headersList.get('accept-language'));
   if (headerLanguage) {
     return headerLanguage;
   }

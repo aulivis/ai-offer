@@ -6,6 +6,7 @@ import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 import { deriveBrandMonogram, normalizeBrandHex, sanitizeBrandLogoUrl } from '@/lib/branding';
 import { renderMarketingFooter } from '@/app/pdf/templates/shared/marketingFooter';
 import { templateRequiresPro } from './offerTemplates';
+import { createTranslator } from '@/copy';
 
 /**
  * Shared CSS for the rendered offer document.  The rules only target the
@@ -991,7 +992,7 @@ export function offerBodyMarkup({
               <span class="${taxClass}">${resolvedCompanyTaxId}</span>
             </div>
           </div>
-          ${!templateRequiresPro(normalizedTemplate) ? renderMarketingFooter() : ''}
+          ${!templateRequiresPro(normalizedTemplate) ? renderMarketingFooter(createTranslator(undefined)) : ''}
         </footer>
         ${slimFooterMarkup}
       </article>
@@ -1053,7 +1054,7 @@ export function offerBodyMarkup({
             <span class="${taxClass}">${resolvedCompanyTaxId}</span>
           </div>
         </div>
-        ${!templateRequiresPro(normalizedTemplate) ? renderMarketingFooter() : ''}
+        ${!templateRequiresPro(normalizedTemplate) ? renderMarketingFooter(createTranslator(undefined)) : ''}
       </footer>
       ${slimFooterMarkup}
     </article>

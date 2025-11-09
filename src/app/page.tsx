@@ -454,7 +454,7 @@ export default function Home() {
               icon={feature.icon}
               title={feature.title}
               description={feature.description}
-              highlight={feature.highlight}
+              {...(feature.highlight && { highlight: feature.highlight })}
             />
           ))}
         </div>
@@ -476,10 +476,10 @@ export default function Home() {
               </p>
               <ul className="mt-6 space-y-3">
                 {[
-                  t('landing.productVideo.features.0'),
-                  t('landing.productVideo.features.1'),
-                  t('landing.productVideo.features.2'),
-                  t('landing.productVideo.features.3'),
+                  t('landing.productVideo.features.0' as Parameters<typeof t>[0]),
+                  t('landing.productVideo.features.1' as Parameters<typeof t>[0]),
+                  t('landing.productVideo.features.2' as Parameters<typeof t>[0]),
+                  t('landing.productVideo.features.3' as Parameters<typeof t>[0]),
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-base text-fg-muted">
                     <svg
@@ -689,7 +689,7 @@ export default function Home() {
             href="/success-stories"
             className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
           >
-            {t('landing.successStories.cta')}
+            {t('landing.successStories.cta' as Parameters<typeof t>[0])}
             <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"

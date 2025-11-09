@@ -263,29 +263,27 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       });
     if (uploadError) {
       // Serialize Supabase error properly for logging
+      const errorMessageRaw = (uploadError as { message?: string }).message || 'Unknown error';
       const errorDetails = {
-        message: uploadError.message || 'Unknown error',
-        statusCode: uploadError.statusCode || 'unknown',
-        error: uploadError.error || 'unknown',
-        name: uploadError.name || 'StorageError',
+        message: errorMessageRaw,
+        name: (uploadError as Error).name || 'StorageError',
       };
 
-      log.error(
-        'Logo upload failed',
+      const errorForLogging =
         uploadError instanceof Error
           ? uploadError
-          : new Error(uploadError.message || 'Storage upload failed'),
-        {
-          path,
-          userId,
-          errorDetails,
-          contentType: normalizedImage.contentType,
-          fileSize: normalizedImage.buffer.length,
-        },
-      );
+          : new Error(errorMessageRaw || 'Storage upload failed');
+
+      log.error('Logo upload failed', errorForLogging, {
+        path,
+        userId,
+        errorDetails,
+        contentType: normalizedImage.contentType,
+        fileSize: normalizedImage.buffer.length,
+      });
 
       // Provide more specific error messages
-      const errorMessage = uploadError.message?.toLowerCase() || '';
+      const errorMessage = errorMessageRaw.toLowerCase();
       if (
         errorMessage.includes('not found') ||
         errorMessage.includes('bucket') ||
@@ -302,7 +300,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         errorMessage.includes('permission') ||
         errorMessage.includes('unauthorized') ||
         errorMessage.includes('forbidden') ||
-        uploadError.statusCode === 403
+        errorMessage.includes('403')
       ) {
         return NextResponse.json(
           {
@@ -317,7 +315,8 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       if (
         errorMessage.includes('too large') ||
         errorMessage.includes('file size') ||
-        uploadError.statusCode === 413
+        errorMessage.includes('413') ||
+        errorMessage.includes('payload too large')
       ) {
         return NextResponse.json(
           { error: 'A fájl mérete túl nagy. Maximum 4 MB.' },

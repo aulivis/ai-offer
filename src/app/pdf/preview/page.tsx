@@ -64,7 +64,7 @@ function cloneSlots() {
     customer: { ...MOCK_SLOTS.customer },
     items: MOCK_SLOTS.items.map((item) => ({ ...item })),
     totals: { ...MOCK_SLOTS.totals },
-    notes: MOCK_SLOTS.notes,
+    ...(MOCK_SLOTS.notes !== undefined && { notes: MOCK_SLOTS.notes }),
   } satisfies RenderContext['slots'];
 }
 
@@ -116,7 +116,7 @@ export default async function PdfPreviewPage({
   const logoUrl = normalizeLogo(getFirst(resolvedSearchParams.logo));
 
   const slots = cloneSlots();
-  slots.brand.logoUrl = logoUrl ?? (slots.brand.logoUrl || undefined);
+  slots.brand.logoUrl = logoUrl ?? slots.brand.logoUrl ?? null;
 
   const tokens = buildTokens({
     name: slots.brand.name,

@@ -90,7 +90,7 @@ export default async function InitSessionPage({
         <InitSessionClient
           hasCookiesAvailable={true}
           redirectTo={redirectTo}
-          expectedUserId={expectedUserId}
+          {...(expectedUserId && { expectedUserId })}
         />
       );
     } catch (error) {
@@ -109,7 +109,7 @@ export default async function InitSessionPage({
     <InitSessionClient
       hasCookiesAvailable={false}
       redirectTo={redirectTo}
-      expectedUserId={expectedUserId}
+      {...(expectedUserId && { expectedUserId })}
     />
   );
 }

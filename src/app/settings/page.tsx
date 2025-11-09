@@ -1089,6 +1089,7 @@ export default function SettingsPage() {
                 }
                 showToast({
                   title: t('toasts.settings.saveSuccess'),
+                  description: '',
                   variant: 'success',
                 });
               } catch (error) {

@@ -78,9 +78,9 @@ export default async function NotFound() {
                   </h3>
                   <ul className="space-y-3 text-left">
                     {[
-                      t('app.notFound.suggestions.items.0'),
-                      t('app.notFound.suggestions.items.1'),
-                      t('app.notFound.suggestions.items.2'),
+                      t('app.notFound.suggestions.items.0' as Parameters<typeof t>[0]),
+                      t('app.notFound.suggestions.items.1' as Parameters<typeof t>[0]),
+                      t('app.notFound.suggestions.items.2' as Parameters<typeof t>[0]),
                     ].map((suggestion, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <svg

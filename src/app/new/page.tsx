@@ -34,6 +34,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import dynamic from 'next/dynamic';
 import type { RichTextEditorHandle } from '@/components/RichTextEditor';
+import { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
 
 // Lazy load RichTextEditor to reduce initial bundle size
 const RichTextEditor = dynamic(

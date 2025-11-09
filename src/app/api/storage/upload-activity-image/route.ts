@@ -245,7 +245,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       });
 
     if (uploadError) {
-      const errorMessage = uploadError.message?.toLowerCase() || '';
+      const errorMessage = ((uploadError as { message?: string }).message || '').toLowerCase();
 
       if (errorMessage.includes('not found') || errorMessage.includes('bucket')) {
         return NextResponse.json(

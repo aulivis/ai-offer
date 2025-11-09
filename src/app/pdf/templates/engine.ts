@@ -147,7 +147,7 @@ export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
   const ctx: RenderCtx = {
     offer,
     rows: options.rows,
-    branding: options.branding,
+    ...(options.branding && { branding: options.branding }),
     i18n: options.i18n,
     tokens,
     ...(normalizedImages ? { images: normalizedImages } : {}),

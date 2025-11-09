@@ -231,10 +231,10 @@ export default function LoginClient() {
           </div>
           <ul className="space-y-4">
             {[
-              t('login.benefits.items.0'),
-              t('login.benefits.items.1'),
-              t('login.benefits.items.2'),
-              t('login.benefits.items.3'),
+              t('login.benefits.items.0' as Parameters<typeof t>[0]),
+              t('login.benefits.items.1' as Parameters<typeof t>[0]),
+              t('login.benefits.items.2' as Parameters<typeof t>[0]),
+              t('login.benefits.items.3' as Parameters<typeof t>[0]),
             ].map((benefit, index) => (
               <li key={index} className="flex items-start gap-3">
                 <svg
