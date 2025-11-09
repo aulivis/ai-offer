@@ -2116,11 +2116,11 @@ export const hu = {
     expand: 'Kibontás',
     disclaimer: 'Válaszaim a Vyndi dokumentációján alapulnak. Ha valami nem világos, szólj bátran!',
     emptyState: {
-      greeting: 'Szia! 👋 Vanda vagyok, a Vyndi segítőasszisztense.',
+      greeting: 'Szia! 👋 Vanda vagyok, a Te virtuális asszisztensed.',
       description: 'Kérdezz bármit a funkciókról, sablonokról, csomagokról vagy a platform használatáról. Szívesen segítek!',
     },
     suggestedQuestions: {
-      title: 'Gyakran kérdezik:',
+      title: 'Gyakori kérdések:',
       questions: {
         packages: 'Milyen csomagok vannak?',
         createOffer: 'Hogyan tudok ajánlatot készíteni?',

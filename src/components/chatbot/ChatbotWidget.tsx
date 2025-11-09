@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Chatbot from './Chatbot';
 import VandaAvatar from './VandaAvatar';
 import { t } from '@/copy';
@@ -79,19 +80,20 @@ export default function ChatbotWidget() {
         <button
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95"
+          className="group fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden p-0.5"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
         >
-          {/* Vanda Avatar on Button */}
-          <div className="relative h-full w-full">
-            <VandaAvatar 
-              size="lg" 
-              variant="online" 
-              className="absolute inset-0 scale-90 transition-transform group-hover:scale-95"
-            />
-          </div>
+          {/* Vanda Avatar Image - fills the whole button */}
+          <Image
+            src="/images/vanda-waiting.png"
+            alt="Vanda"
+            width={56}
+            height={56}
+            className="h-full w-full object-cover rounded-full"
+            priority
+          />
           
           {/* Pulse animation for attention */}
           <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
@@ -116,13 +118,12 @@ export default function ChatbotWidget() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-bg to-bg-muted/30 px-4 py-3.5">
             <div className="flex items-center gap-3">
-              <VandaAvatar size="md" variant="online" />
+              <VandaAvatar size="md" variant="default" />
               <div>
                 <h2 id="chatbot-window-title" className="text-base font-semibold text-fg">
                   {t('chatbot.title')}
                 </h2>
                 <p className="text-xs text-fg-muted flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                   {t('chatbot.status.online')}
                 </p>
               </div>

@@ -58,33 +58,40 @@ type ExchangeCodeResult = {
   expires_in?: number;
 };
 
-function redirectTo(path: string) {
-  // CRITICAL: Use a relative URL string (starting with /) for redirects.
-  // Next.js App Router automatically includes cookies set via cookies().set() in ALL responses,
-  // including redirects. The key is to use a relative URL string, not a URL object.
+function redirectTo(path: string, request?: Request) {
+  // CRITICAL: Next.js NextResponse.redirect() requires absolute URLs.
+  // We need to construct an absolute URL from the relative path.
   
   const isAbsolute = path.startsWith('http://') || path.startsWith('https://');
-  let redirectPath: string;
+  let absoluteUrl: string;
   
   if (isAbsolute) {
-    // For absolute URLs, extract the pathname to use as relative
-    try {
-      const url = new URL(path);
-      redirectPath = url.pathname + url.search + url.hash;
-    } catch {
-      // If URL parsing fails, try to extract path manually
-      redirectPath = path.replace(/^https?:\/\/[^/]+/, '') || '/';
-    }
+    // Path is already absolute, use it directly
+    absoluteUrl = path;
   } else {
-    // For relative paths, ensure they start with /
-    redirectPath = path.startsWith('/') ? path : `/${path}`;
+    // Construct absolute URL from relative path
+    // Prefer using the request's origin if available, otherwise use APP_URL
+    let baseUrl: string;
+    if (request) {
+      try {
+        const url = new URL(request.url);
+        baseUrl = `${url.protocol}//${url.host}`;
+      } catch {
+        baseUrl = envServer.APP_URL;
+      }
+    } else {
+      baseUrl = envServer.APP_URL;
+    }
+    
+    // Ensure path starts with /
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    absoluteUrl = `${baseUrl}${normalizedPath}`;
   }
   
-  // Create redirect response with relative URL string
+  // Create redirect response with absolute URL
   // Next.js automatically includes all cookies set via cookies().set() in this response
   // Status 302 is standard for redirects and works correctly with cookies
-  // IMPORTANT: Use the relative path string directly, not a URL object
-  return NextResponse.redirect(redirectPath, { status: 302 });
+  return NextResponse.redirect(absoluteUrl, { status: 302 });
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
@@ -326,7 +333,7 @@ export async function GET(request: Request) {
     if (!refreshTokenFromLink) {
       recordMagicLinkCallback('failure', { reason: 'missing_refresh_token' });
       await clearAuthCookies();
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
     const payload = decodeJwtPayload<{ sub?: string }>(accessTokenFromLink);
@@ -334,7 +341,7 @@ export async function GET(request: Request) {
     if (!userId) {
       recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
       await clearAuthCookies();
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
     const tokens: MagicLinkTokens = {
@@ -406,11 +413,11 @@ export async function GET(request: Request) {
             cookieStoreHasRt: !!verifyRt,
           });
           await clearAuthCookies();
-          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
         }
         
         // Redirect to init-session page for client-side session initialization
-        // Build the redirect path - use relative URL to ensure cookies work correctly
+        // Build the redirect path (will be converted to absolute URL by redirectTo)
         const redirectPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
         
         // Final verification that cookies are set in the store
@@ -433,23 +440,23 @@ export async function GET(request: Request) {
             hasRefreshToken: !!finalVerifyRt,
           });
           await clearAuthCookies();
-          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
         }
         
-        // Use redirectTo helper which properly handles relative URLs
+        // Use redirectTo helper which properly handles absolute URLs
         logger.info('Creating redirect response', {
           userId,
           redirectPath,
         });
         
-        // Create redirect response with relative URL
+        // Create redirect response with absolute URL
         // Next.js automatically includes cookies set via cookies().set() in the redirect response
-        return redirectTo(redirectPath);
+        return redirectTo(redirectPath, request);
       } catch (error) {
         logger.error('Error in magic link token handling', error);
         // Ensure cookies are cleared on error
         await clearAuthCookies();
-        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
       }
   }
 
@@ -460,7 +467,7 @@ export async function GET(request: Request) {
     if (!otpType) {
       recordMagicLinkCallback('failure', { reason: 'invalid_token_type' });
       await clearAuthCookies();
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
     try {
@@ -471,7 +478,7 @@ export async function GET(request: Request) {
         recordMagicLinkCallback('failure', { reason: 'verify_failed' });
         logger.error('Supabase verifyOtp failed.', error ?? undefined);
         await clearAuthCookies();
-        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
       }
 
       const session = data.session;
@@ -483,7 +490,7 @@ export async function GET(request: Request) {
         recordMagicLinkCallback('failure', { reason: 'missing_tokens' });
         logger.error('Supabase verifyOtp returned missing tokens.');
         await clearAuthCookies();
-        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
       }
 
       const payload = decodeJwtPayload<{ sub?: string }>(accessToken);
@@ -491,7 +498,7 @@ export async function GET(request: Request) {
       if (!userId) {
         recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
         await clearAuthCookies();
-        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
       }
 
       // For magic link flows, also use the init-session page to ensure client session is ready
@@ -556,11 +563,11 @@ export async function GET(request: Request) {
             cookieStoreHasRt: !!verifyRt,
           });
           await clearAuthCookies();
-          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+          return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
         }
         
         // Redirect to init-session page for client-side session initialization
-        // Build redirect path as relative URL
+        // Build redirect path (will be converted to absolute URL by redirectTo)
         const redirectPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
         
         logger.info('Redirecting to init-session (token_hash flow)', {
@@ -568,27 +575,27 @@ export async function GET(request: Request) {
           redirectPath,
         });
         
-        // Use redirectTo helper which properly handles relative URLs
+        // Use redirectTo helper which properly handles absolute URLs
         // Next.js automatically includes cookies set via cookies().set() in the redirect response
-        return redirectTo(redirectPath);
+        return redirectTo(redirectPath, request);
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
         // Ensure cookies are cleared on error
         await clearAuthCookies();
-        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+        return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
       }
     } catch (error) {
       recordMagicLinkCallback('failure', { reason: 'verify_error' });
       logger.error('Unexpected error while verifying magic link token.', error);
       await clearAuthCookies();
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
   }
 
   // Google OAuth PKCE code exchange
   const code = url.searchParams.get('code');
   if (!code) {
-    return redirectTo(MISSING_AUTH_CODE_REDIRECT);
+    return redirectTo(MISSING_AUTH_CODE_REDIRECT, request);
   }
 
   try {
@@ -596,7 +603,7 @@ export async function GET(request: Request) {
 
     if (!verifierCookie) {
       logger.error('Missing PKCE code verifier cookie at callback');
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
     const redirectUriForExchange = new URL(envServer.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI);
@@ -627,13 +634,13 @@ export async function GET(request: Request) {
     const expiresIn = parseExpiresIn(exchange.expires_in ?? null);
 
     if (!accessToken || !refreshToken) {
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
     const payload = decodeJwtPayload<{ sub?: string }>(accessToken);
     const userId = payload?.sub ?? '';
     if (!userId) {
-      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+      return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
     }
 
     await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger, rememberMe);
@@ -669,11 +676,11 @@ export async function GET(request: Request) {
     // redirecting to the final destination (dashboard, etc.)
     const initSessionPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
     
-    return redirectTo(initSessionPath);
+    return redirectTo(initSessionPath, request);
   } catch (error) {
     logger.error('Failed to complete OAuth callback', error);
     await clearAuthCookies();
-    return redirectTo(MAGIC_LINK_FAILURE_REDIRECT);
+    return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
   }
 }
 

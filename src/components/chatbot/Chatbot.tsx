@@ -237,7 +237,7 @@ export default function Chatbot({
                 <p className="text-sm font-medium text-fg text-center">
                   {t('chatbot.suggestedQuestions.title')}
                 </p>
-                <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="flex flex-col gap-2.5">
                   {Object.entries(suggestedQuestions).map(([key, question]) => {
                     const questionText = typeof question === 'string' ? question : String(question || '');
                     return (
@@ -491,9 +491,6 @@ export default function Chatbot({
             )}
           </button>
         </div>
-        <p id="chatbot-input-description" className="mt-2 text-xs text-fg-muted/70 px-1">
-          {t('chatbot.disclaimer')}
-        </p>
       </form>
     </>
   );

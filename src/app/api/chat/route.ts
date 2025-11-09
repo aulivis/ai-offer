@@ -337,21 +337,23 @@ export async function POST(req: NextRequest) {
           },
         ];
         
-        // System prompt that provides the exact answer and instructs to return it verbatim
-        const presetSystemPrompt = `Te Vanda vagy, a Vyndi segítőasszisztense. 
+        // For preset questions, use a very direct approach:
+        // Put the answer in the system prompt and instruct the model to return it exactly
+        // Use a format that makes it clear this is the expected response
+        const presetSystemPrompt = `Te Vanda vagy. A felhasználó kérdésére válaszolsz.
 
-A felhasználó kérdésére a válasz a következő:
+A válasz:
 
 ${presetMatch.answer}
 
-FONTOS: Ezt a választ KIZÁRÓLAG úgy add vissza, ahogy itt van, karakterenként pontosan. Ne adj hozzá semmit, ne változtass semmit, ne írj előszót vagy bevezetőt, csak ezt a szöveget add vissza.`;
+Most add vissza ezt a választ pontosan így, karakterről karakterre, anélkül hogy bármit változtatnál vagy hozzáadnál.`;
         
         // Use streamText with zero temperature for deterministic output
         const presetResult = streamText({
           model: openai('gpt-3.5-turbo'),
           system: presetSystemPrompt,
           messages: presetMessages,
-          temperature: 0.0, // Zero temperature for deterministic, exact output
+          temperature: 0.0, // Zero temperature for deterministic output
         });
         
         // Track analytics (async, don't await)
