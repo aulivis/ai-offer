@@ -5,7 +5,7 @@ import { envClient } from '@/env.client';
 import { envServer } from '@/env.server';
 import { CSRF_COOKIE_NAME, verifyCsrfToken } from '../lib/auth/csrf';
 import { resolveRequestLanguage } from '@/app/lib/language';
-import { withLanguage } from '@/state/lang';
+import { withLanguage } from '@/state/lang.server';
 
 const supabase = createClient(
   envClient.NEXT_PUBLIC_SUPABASE_URL,

@@ -17,7 +17,7 @@ import { AriaLiveAnnouncer } from '@/components/ui/AriaLiveAnnouncer';
 import { WebVitalsReporter } from '@/components/performance/WebVitalsReporter';
 
 import { LanguageProvider } from '@/state/LanguageProvider';
-import { withLanguage } from '@/state/lang';
+import { withLanguage } from '@/state/lang.server';
 import { getRequestLanguage } from './lib/language';
 
 import { gota, spaceMono, workSans } from './fonts';

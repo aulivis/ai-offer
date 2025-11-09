@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { t } from '@/copy';
 import { getRequestLanguage } from './lib/language';
-import { withLanguage } from '@/state/lang';
+import { withLanguage } from '@/state/lang.server';
 
 export const metadata = {
   title: '404 - Az oldal nem található | Vyndi',

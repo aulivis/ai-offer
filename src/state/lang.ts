@@ -4,12 +4,6 @@ export type Language = LocaleKey;
 
 type LanguageListener = (language: Language) => void;
 
-// Define minimal interface for AsyncLocalStorage to avoid importing node:async_hooks types
-interface AsyncLocalStorage<T> {
-  run<R>(store: T, callback: () => R): R;
-  getStore(): T | undefined;
-}
-
 const LANGUAGE_COOKIE_NAME = 'language';
 
 const SUPPORTED_LANGUAGES: readonly Language[] = ['hu', 'en'];
@@ -17,47 +11,27 @@ const SUPPORTED_LANGUAGES: readonly Language[] = ['hu', 'en'];
 let clientLanguage: Language = 'hu';
 const listeners = new Set<LanguageListener>();
 
-let languageStorage: AsyncLocalStorage<Language> | null = null;
-
-function getAsyncLocalStorage(): AsyncLocalStorage<Language> | null {
-  if (typeof window !== 'undefined') {
-    return null;
-  }
-
-  if (!languageStorage) {
-    try {
-      // Dynamically require async_hooks only on server side
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const asyncHooks = require('node:async_hooks');
-      languageStorage = new asyncHooks.AsyncLocalStorage<Language>();
-    } catch {
-      // If async_hooks is not available (shouldn't happen in Node.js), return null
-      return null;
-    }
-  }
-
-  return languageStorage;
-}
-
-export function withLanguage<T>(language: Language, callback: () => T): T {
-  const storage = getAsyncLocalStorage();
-
-  if (!storage) {
-    return callback();
-  }
-
-  return storage.run(language, callback);
-}
-
+/**
+ * Client-side function to get the current language.
+ * On the server, this returns the default 'hu' (server code should use lang.server.ts).
+ * This function is safe to use in client components and will not cause webpack bundling issues.
+ */
 export function getLanguage(): Language {
-  if (typeof window === 'undefined') {
-    const storage = getAsyncLocalStorage();
-    return storage?.getStore() ?? 'hu';
+  // Client-side: return the client language state
+  if (typeof window !== 'undefined') {
+    return clientLanguage;
   }
 
-  return clientLanguage;
+  // Server-side: return default (server code should use getLanguage from lang.server.ts instead)
+  // This is a fallback for cases where getLanguage is called on the server but
+  // the caller hasn't imported from lang.server.ts
+  return 'hu';
 }
 
+/**
+ * Client-side function to set the language.
+ * This should only be called in client components.
+ */
 export function setLanguage(language: Language): void {
   if (typeof window === 'undefined') {
     throw new Error('setLanguage can only be used in a client environment');

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseServiceRole } from '@/lib/supabaseClient';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { recalculateUsageFromPdfs, countSuccessfulPdfs, recalculateDeviceUsageFromPdfs } from '@/lib/services/usage';
 import { currentMonthStart } from '@/lib/services/usage';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
