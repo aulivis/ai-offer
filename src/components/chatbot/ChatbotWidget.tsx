@@ -28,6 +28,24 @@ export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Debug: Log button visibility
+  useEffect(() => {
+    if (buttonRef.current && typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const styles = window.getComputedStyle(buttonRef.current);
+      console.log('[ChatbotWidget] Button mounted:', {
+        visible: !isOpen,
+        rect: { bottom: rect.bottom, right: rect.right, width: rect.width, height: rect.height },
+        zIndex: styles.zIndex,
+        opacity: styles.opacity,
+        display: styles.display,
+        visibility: styles.visibility,
+        position: styles.position,
+      });
+    }
+  }, [isOpen]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -76,9 +94,10 @@ export default function ChatbotWidget() {
       {/* Floating Chatbot Button - Positioned to avoid ScrollToTop (bottom-24 = 96px, ScrollToTop is at bottom-8 = 32px) */}
       {!isOpen && (
         <button
+          ref={buttonRef}
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group fixed bottom-24 right-6 z-[45] h-14 w-14 rounded-full border-2 border-border bg-bg-muted shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden relative"
+          className="group !fixed bottom-24 right-6 z-[60] h-14 w-14 rounded-full border-2 border-border bg-bg-muted shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
@@ -129,7 +148,7 @@ export default function ChatbotWidget() {
       <div
         ref={chatWindowRef}
         id="chatbot-window"
-        className={`fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] transition-all duration-300 ease-out ${
+        className={`fixed bottom-6 right-6 z-[60] w-[380px] max-w-[calc(100vw-3rem)] transition-all duration-300 ease-out ${
           isOpen
             ? 'translate-y-0 opacity-100'
             : 'translate-y-full opacity-0 pointer-events-none'

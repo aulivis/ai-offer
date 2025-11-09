@@ -54,13 +54,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <div className="flex-1">{children}</div>
                   <Footer />
                 </div>
-
-                <CookieBar />
-                <PreferencesModal />
-                <AnalyticsScriptGate />
-                <ScrollToTop />
-                <ChatbotWidget />
               </div>
+              {/* Global UI elements rendered outside main container to avoid stacking context issues */}
+              <CookieBar />
+              <PreferencesModal />
+              <AnalyticsScriptGate />
+              <ScrollToTop />
+              <ChatbotWidget />
             </ErrorBoundary>
           </AppProviders>
         </LanguageProvider>
