@@ -63,6 +63,10 @@ type RedirectCookieOptions = {
   accessTokenMaxAge?: number;
   refreshTokenMaxAge?: number;
   rememberMe?: boolean;
+  // Optionally pass tokens directly to ensure they're set on redirect
+  accessToken?: string;
+  refreshToken?: string;
+  csrfToken?: string;
 };
 
 async function redirectTo(
@@ -102,21 +106,6 @@ async function redirectTo(
   
   // Get the cookie store if not provided
   const store = cookieStore ?? await cookies();
-  
-  // Create redirect response with absolute URL
-  const response = NextResponse.redirect(absoluteUrl, { status: 302 });
-  
-  // CRITICAL: In Next.js App Router, when using NextResponse.redirect(),
-  // cookies set via cookies().set() may not be automatically included in the response.
-  // We need to explicitly copy cookies from the store to the response to ensure
-  // they are sent with the redirect.
-  // 
-  // IMPORTANT: We read cookies from the store and set them on the response with
-  // the same options to ensure they're properly serialized into Set-Cookie headers.
-  const accessToken = store.get('propono_at')?.value;
-  const refreshToken = store.get('propono_rt')?.value;
-  const csrfToken = store.get(CSRF_COOKIE_NAME)?.value;
-  
   const isSecure = envServer.APP_URL.startsWith('https');
   const REMEMBER_ME_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
   
@@ -130,9 +119,17 @@ async function redirectTo(
     ? REMEMBER_ME_MAX_AGE
     : Math.max(accessTokenMaxAge, 7 * 24 * 60 * 60); // At least 7 days
   
-  // Explicitly set cookies on the redirect response
-  // This ensures they are included in the Set-Cookie headers of the redirect response.
-  // The browser will receive these cookies and send them with the next request to /auth/init-session.
+  // Create redirect response with absolute URL
+  const response = NextResponse.redirect(absoluteUrl, { status: 302 });
+  
+  // CRITICAL: If tokens are provided directly, use them (most reliable)
+  // Otherwise, try to get them from the cookie store
+  const accessToken = cookieOptions?.accessToken ?? store.get('propono_at')?.value;
+  const refreshToken = cookieOptions?.refreshToken ?? store.get('propono_rt')?.value;
+  const csrfToken = cookieOptions?.csrfToken ?? store.get(CSRF_COOKIE_NAME)?.value;
+  
+  // Set auth cookies directly on the redirect response
+  // This ensures they're definitely included in the Set-Cookie headers
   if (accessToken) {
     response.cookies.set('propono_at', accessToken, {
       httpOnly: true,
@@ -161,6 +158,30 @@ async function redirectTo(
       secure: isSecure,
       path: '/',
       maxAge: csrfMaxAge,
+    });
+  }
+  
+  // Copy other cookies from the store (like language, consent, etc.)
+  // but skip auth cookies we already set above and cookies being cleared
+  const allCookies = store.getAll();
+  for (const cookie of allCookies) {
+    // Skip cookies we already handled or are being cleared
+    if (!cookie.value || 
+        cookie.name === 'propono_at' || 
+        cookie.name === 'propono_rt' || 
+        cookie.name === CSRF_COOKIE_NAME ||
+        cookie.name === 'post_auth_redirect' ||
+        cookie.name === 'remember_me') {
+      continue;
+    }
+    
+    // Copy other cookies as-is (preserve their original settings)
+    // Note: We can't easily preserve all original cookie options, so we use safe defaults
+    response.cookies.set(cookie.name, cookie.value, {
+      httpOnly: false, // Assume non-auth cookies are not httpOnly
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
     });
   }
   
@@ -524,13 +545,20 @@ export async function GET(request: Request) {
           redirectPath,
         });
         
-        // Pass cookie options to ensure cookies are set with correct maxAge values
+        // Get CSRF token from store to pass to redirect
+        const csrfTokenValue = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+        
+        // Pass tokens directly to ensure they're set on the redirect response
+        // This is more reliable than relying on cookie store synchronization
         return redirectTo(redirectPath, request, cookieStore, {
           accessTokenMaxAge: tokens.expiresIn,
           refreshTokenMaxAge: rememberMe 
             ? REMEMBER_ME_EXPIRES_IN_SECONDS 
             : Math.max(tokens.expiresIn || 3600, 7 * 24 * 60 * 60),
           rememberMe,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          csrfToken: csrfTokenValue,
         });
       } catch (error) {
         logger.error('Error in magic link token handling', error);
@@ -658,13 +686,19 @@ export async function GET(request: Request) {
         });
         
         // Use redirectTo helper which properly handles absolute URLs and cookies
-        // Pass cookie options to ensure cookies are set with correct maxAge values
+        // Get CSRF token from store to pass to redirect
+        const csrfTokenValue = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+        
+        // Pass tokens directly to ensure they're set on the redirect response
         return redirectTo(redirectPath, request, cookieStore, {
           accessTokenMaxAge: expiresIn,
           refreshTokenMaxAge: rememberMe 
             ? REMEMBER_ME_EXPIRES_IN_SECONDS 
             : Math.max(expiresIn || 3600, 7 * 24 * 60 * 60),
           rememberMe,
+          accessToken,
+          refreshToken,
+          csrfToken: csrfTokenValue,
         });
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
@@ -735,7 +769,7 @@ export async function GET(request: Request) {
     await setAuthCookies(accessToken, refreshToken, {
       accessTokenMaxAgeSeconds: expiresIn,
       rememberMe,
-    });
+    }, cookieStore);
 
     // Végcél sütit töröljük
     cookieStore.set({
@@ -764,13 +798,19 @@ export async function GET(request: Request) {
     // redirecting to the final destination (dashboard, etc.)
     const initSessionPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
     
-    // Pass cookie options to ensure cookies are set with correct maxAge values
+    // Get CSRF token from store to pass to redirect
+    const csrfTokenValue = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+    
+    // Pass tokens directly to ensure they're set on the redirect response
     return redirectTo(initSessionPath, request, cookieStore, {
       accessTokenMaxAge: expiresIn,
       refreshTokenMaxAge: rememberMe 
         ? REMEMBER_ME_EXPIRES_IN_SECONDS 
         : Math.max(expiresIn || 3600, 7 * 24 * 60 * 60),
       rememberMe,
+      accessToken,
+      refreshToken,
+      csrfToken: csrfTokenValue,
     });
   } catch (error) {
     logger.error('Failed to complete OAuth callback', error);

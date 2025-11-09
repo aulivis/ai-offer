@@ -93,13 +93,25 @@ export default function Chatbot({
   
   // Helper to extract text content from message parts
   const getMessageText = (message: typeof messages[0]): string => {
-    if (!message.parts || message.parts.length === 0) {
-      return '';
+    // Handle format 1: content property (from useChat text streams)
+    if (message.content && typeof message.content === 'string') {
+      return message.content;
     }
-    return message.parts
-      .filter((part: any) => part.type === 'text')
-      .map((part: any) => part.text || '')
-      .join('');
+    
+    // Handle format 2: parts array (legacy format)
+    if (message.parts && Array.isArray(message.parts) && message.parts.length > 0) {
+      return message.parts
+        .filter((part: any) => part.type === 'text')
+        .map((part: any) => part.text || '')
+        .join('');
+    }
+    
+    // Handle format 3: text property (alternative format)
+    if (message.text && typeof message.text === 'string') {
+      return message.text;
+    }
+    
+    return '';
   };
   
   // Helper to parse markdown links and render them
@@ -186,8 +198,7 @@ export default function Chatbot({
             <VandaAvatar size="lg" variant={isLoading ? 'thinking' : 'online'} />
             <div>
               <h3 className="text-[1.024rem] font-semibold text-fg">{defaultTitle}</h3>
-              <p className="text-[0.6rem] text-fg-muted flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+              <p className="text-[0.6rem] text-fg-muted">
                 {isLoading ? t('chatbot.status.thinking') : t('chatbot.status.online')}
               </p>
             </div>

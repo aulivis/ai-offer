@@ -80,26 +80,26 @@ export default function ChatbotWidget() {
         <button
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden p-0.5"
+          className="group fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden bg-bg relative"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
         >
-          {/* Vanda Avatar Image - fills the whole button */}
+          {/* Vanda Avatar Image - fills the whole button, visible on top */}
           <Image
             src="/images/vanda-waiting.png"
             alt="Vanda"
             width={56}
             height={56}
-            className="h-full w-full object-cover rounded-full"
+            className="absolute inset-0 h-full w-full object-cover rounded-full z-10"
             priority
           />
           
-          {/* Subtle pulse animation for attention - much more gentle */}
-          <div className="absolute inset-0 rounded-full bg-primary animate-gentle-pulse" />
+          {/* Subtle pulse animation for attention - behind the image with very low opacity */}
+          <div className="absolute inset-0 rounded-full bg-primary/10 animate-gentle-pulse z-0 pointer-events-none" />
           
           {/* Green dot - available indicator - on front layer */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm z-50" />
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm z-30" />
         </button>
       )}
 
@@ -126,8 +126,7 @@ export default function ChatbotWidget() {
                 <h2 id="chatbot-window-title" className="text-[1.024rem] font-semibold text-fg">
                   {t('chatbot.title')}
                 </h2>
-                <p className="text-[0.6rem] text-fg-muted flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                <p className="text-[0.6rem] text-fg-muted">
                   {t('chatbot.status.online')}
                 </p>
               </div>

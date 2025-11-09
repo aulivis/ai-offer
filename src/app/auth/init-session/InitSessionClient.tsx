@@ -35,8 +35,9 @@ export default function InitSessionClient({
 
         // If server indicated cookies are not available, wait a bit before first attempt
         // This gives the browser time to process cookies from redirect
+        // Cookies should be available immediately after redirect, so minimal delay is needed
         if (!hasCookiesAvailable) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
 
         // Fetch tokens from API endpoint
@@ -45,14 +46,16 @@ export default function InitSessionClient({
         let refreshToken: string | null = null;
         let verifiedUserId: string | null = null;
 
-        const maxRetries = hasCookiesAvailable ? 2 : 5; // Fewer retries if server confirmed cookies
+        // Reduced retries: if server confirmed cookies are available, only 1 retry is needed
+        // If server didn't confirm, allow 3 retries with short delays (cookies should be there after redirect)
+        const maxRetries = hasCookiesAvailable ? 1 : 3;
         let lastFetchError: Error | null = null;
 
         for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {
-            // Wait before each attempt (exponential backoff)
+            // Wait before each retry attempt (short delay, cookies should be available quickly)
             if (attempt > 0) {
-              const delay = Math.min(300 * Math.pow(1.5, attempt - 1), 2000);
+              const delay = Math.min(100 * attempt, 500); // Max 500ms delay
               await new Promise(resolve => setTimeout(resolve, delay));
             }
 
@@ -69,11 +72,13 @@ export default function InitSessionClient({
             if (!verifyResponse.ok) {
               const errorData = await verifyResponse.json().catch(() => ({}));
 
+              // If cookies are missing and we have retries left, continue
               if (errorData.hasCookies === false && attempt < maxRetries - 1) {
                 lastFetchError = new Error(errorData.error || 'Cookies not found');
                 continue;
               }
 
+              // No more retries or cookies definitely missing
               if (!errorData.hasCookies) {
                 throw new Error(t('errors.auth.cookiesNotFound'));
               }
@@ -110,7 +115,8 @@ export default function InitSessionClient({
         let sessionInitialized = false;
         let lastError: Error | null = null;
 
-        for (let attempt = 0; attempt < 6; attempt++) {
+        // Reduced session initialization retries - should work on first attempt if tokens are valid
+        for (let attempt = 0; attempt < 2; attempt++) {
           try {
             const { data, error: setError } = await client.auth.setSession({
               access_token: accessToken!,
@@ -131,7 +137,8 @@ export default function InitSessionClient({
               );
             }
 
-            await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+            // Verify session is persisted (brief delay to ensure it's saved)
+            await new Promise(resolve => setTimeout(resolve, 50));
 
             const { data: { session: verifySession }, error: verifyError } = await client.auth.getSession();
 
@@ -153,9 +160,9 @@ export default function InitSessionClient({
           } catch (err) {
             lastError = err instanceof Error ? err : new Error('Unknown error');
 
-            if (attempt < 5) {
-              const delay = Math.min(200 * Math.pow(1.5, attempt), 1500);
-              await new Promise(resolve => setTimeout(resolve, delay));
+            // Only retry once with a short delay
+            if (attempt < 1) {
+              await new Promise(resolve => setTimeout(resolve, 100));
             }
           }
         }
