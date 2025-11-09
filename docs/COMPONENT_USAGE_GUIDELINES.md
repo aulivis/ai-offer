@@ -717,9 +717,92 @@ Components are already optimized for code splitting. Use dynamic imports for hea
 />
 ```
 
+## View Transitions API
+
+### Overview
+
+The application uses the View Transitions API for smooth page transitions. This provides a native browser API for animating between page states without JavaScript.
+
+### Usage
+
+View transitions are automatically enabled for Next.js Link navigation. For programmatic navigation, use the `useViewTransition` hook:
+
+```tsx
+import { useViewTransition } from '@/hooks/useViewTransition';
+import { useRouter } from 'next/navigation';
+
+function MyComponent() {
+  const router = useRouter();
+  const startTransition = useViewTransition();
+
+  const handleNavigate = () => {
+    startTransition(() => {
+      router.push('/dashboard');
+    });
+  };
+
+  return <button onClick={handleNavigate}>Navigate</button>;
+}
+```
+
+### View Transition Names
+
+Key elements have view transition names applied:
+- `header` - Page header
+- `main-content` - Main content area
+- `footer` - Page footer
+
+### Reduced Motion
+
+View transitions automatically respect `prefers-reduced-motion` and are disabled for users who prefer reduced motion.
+
+## Container Queries
+
+### Overview
+
+Container queries allow components to respond to their container's size rather than the viewport size, enabling more flexible responsive design.
+
+### Usage
+
+Use the `Container` component to create a container context:
+
+```tsx
+import { Container } from '@/components/ui/Container';
+
+<Container type="inline-size" name="card">
+  <div className="container-responsive">
+    Content that adapts to container size
+  </div>
+</Container>
+```
+
+### Container Query Classes
+
+Use container query classes in CSS:
+
+```css
+@container card (min-width: 400px) {
+  .card-title {
+    font-size: 1.25rem;
+  }
+}
+```
+
+### Card Component
+
+The `Card` component automatically enables container queries:
+
+```tsx
+<Card>
+  <h3 className="card-title-responsive">Title</h3>
+  {/* Content adapts to card width */}
+</Card>
+```
+
 ## Resources
 
 - [Design Tokens Documentation](./DESIGN_TOKENS.md)
+- [Design System Documentation](./DESIGN_SYSTEM.md)
 - [Accessibility Guidelines](./ACCESSIBILITY.md)
 - [Component API Reference](./COMPONENT_API.md)
 
@@ -728,5 +811,6 @@ Components are already optimized for code splitting. Use dynamic imports for hea
 For questions or issues, please refer to:
 - Component JSDoc comments
 - Design tokens documentation
+- Design system documentation
 - Accessibility guidelines
 

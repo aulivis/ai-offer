@@ -28,6 +28,7 @@ export * from './spacing';
 export * from './typography';
 export * from './animations';
 export * from './fluidTypography';
+export * from './containerQueries';
 
 /**
  * Design system version

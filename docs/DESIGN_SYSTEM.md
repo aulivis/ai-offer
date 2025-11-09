@@ -11,9 +11,11 @@ This document provides a comprehensive overview of the design system, including 
 5. [Colors](#colors)
 6. [Components](#components)
 7. [Layout Patterns](#layout-patterns)
-8. [Accessibility](#accessibility)
-9. [Responsive Design](#responsive-design)
-10. [Best Practices](#best-practices)
+8. [View Transitions](#view-transitions)
+9. [Container Queries](#container-queries)
+10. [Accessibility](#accessibility)
+11. [Responsive Design](#responsive-design)
+12. [Best Practices](#best-practices)
 
 ## Overview
 
@@ -381,6 +383,111 @@ All components include proper ARIA attributes:
 - Tab key navigates through focusable elements
 - Arrow keys for filter chips and grids
 
+## View Transitions
+
+### Overview
+
+The design system uses the View Transitions API for smooth page transitions. This provides native browser support for animating between page states.
+
+### Automatic Transitions
+
+View transitions are automatically enabled for Next.js Link navigation. Key elements (header, main content, footer) have view transition names applied.
+
+### Programmatic Navigation
+
+Use the `useViewTransition` hook for programmatic navigation:
+
+```tsx
+import { useViewTransition } from '@/hooks/useViewTransition';
+import { useRouter } from 'next/navigation';
+
+function MyComponent() {
+  const router = useRouter();
+  const startTransition = useViewTransition();
+
+  const handleNavigate = () => {
+    startTransition(() => {
+      router.push('/dashboard');
+    });
+  };
+
+  return <button onClick={handleNavigate}>Navigate</button>;
+}
+```
+
+### Reduced Motion
+
+View transitions automatically respect `prefers-reduced-motion` and are disabled for users who prefer reduced motion.
+
+### View Transition Names
+
+- `header` - Page header
+- `main-content` - Main content area
+- `footer` - Page footer
+
+## Container Queries
+
+### Overview
+
+Container queries allow components to respond to their container's size rather than the viewport size, enabling more flexible responsive design.
+
+### Container Component
+
+Use the `Container` component to create a container context:
+
+```tsx
+import { Container } from '@/components/ui/Container';
+
+<Container type="inline-size" name="card">
+  <div className="container-responsive">
+    Content that adapts to container size
+  </div>
+</Container>
+```
+
+### Container Types
+
+- `inline-size` - Responds to inline (width) size
+- `block-size` - Responds to block (height) size
+- `size` - Responds to both inline and block size
+- `normal` - No container queries (default)
+
+### Container Query CSS
+
+Use container queries in CSS:
+
+```css
+@container card (min-width: 400px) {
+  .card-title {
+    font-size: 1.25rem;
+  }
+}
+
+@container card (min-width: 640px) {
+  .card-title {
+    font-size: 1.5rem;
+  }
+}
+```
+
+### Card Component
+
+The `Card` component automatically enables container queries:
+
+```tsx
+<Card>
+  <h3 className="card-title-responsive">Title</h3>
+  {/* Content adapts to card width */}
+</Card>
+```
+
+### Container Query Breakpoints
+
+- `320px` - Small container
+- `400px` - Medium container
+- `640px` - Large container
+- `1024px` - Extra large container
+
 ## Responsive Design
 
 ### Mobile-First Approach
@@ -409,6 +516,18 @@ Use Tailwind's responsive utilities for spacing:
 <div className="p-4 md:p-6 lg:p-8">
   Responsive padding
 </div>
+```
+
+### Container Queries
+
+Use container queries for component-level responsiveness:
+
+```tsx
+<Container type="inline-size" name="card">
+  <div className="container-responsive">
+    Content that adapts to container size
+  </div>
+</Container>
 ```
 
 ## Best Practices

@@ -287,6 +287,95 @@ p {
   }
 }
 
+/* View Transitions API Support */
+@supports (view-transition-name: none) {
+  /* Disable view transitions for users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
+  }
+
+  /* Smooth page transitions */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Header transition */
+  ::view-transition-old(header),
+  ::view-transition-new(header) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Main content transition */
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content) {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Footer transition */
+  ::view-transition-old(footer),
+  ::view-transition-new(footer) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Container Queries Support */
+/* Note: Container queries require container-type to be set on parent elements */
+/* Use the Container component or apply container-type via inline styles */
+
+/* Card container - enable container queries */
+.card-container {
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* Responsive typography within containers */
+@container card (min-width: 400px) {
+  .card-title-responsive {
+    font-size: 1.25rem;
+  }
+}
+
+@container card (min-width: 640px) {
+  .card-title-responsive {
+    font-size: 1.5rem;
+  }
+}
+
+/* Responsive spacing within containers */
+@container (min-width: 400px) {
+  .container-responsive-padding {
+    padding: 1.5rem;
+  }
+}
+
+@container (min-width: 640px) {
+  .container-responsive-padding {
+    padding: 2rem;
+  }
+}
+
+/* Grid layout within containers */
+@container (min-width: 600px) {
+  .container-grid-responsive {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 1024px) {
+  .container-grid-responsive {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 /* iOS Safe Area Support */
 @supports (padding: max(0px)) {
   .safe-area-inset {

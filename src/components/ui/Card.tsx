@@ -50,19 +50,22 @@ export function Card({
   as: Component = 'div',
   size = 'md',
   variant = 'default',
+  style,
   ...props
 }: CardProps) {
   const cls = [
     sizeClasses[size],
     variantClasses[variant],
     'transition duration-200 ease-out',
+    // Enable container queries for card
+    'card-container',
     className,
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
-    <Component className={cls} {...props}>
+    <Component className={cls} style={style} {...props}>
       {header}
       {children}
     </Component>
