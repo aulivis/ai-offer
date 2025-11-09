@@ -11,15 +11,20 @@ export type I18nDict = typeof hu;
 
 type Primitive = string | number | boolean | bigint | symbol | null | undefined;
 
+// Convert numeric keys to strings for template literal types
+type KeyToString<K> = K extends number ? `${K}` : K extends string ? K : never;
+
 type DeepKeys<T> = T extends Primitive
   ? never
   : T extends ReadonlyArray<unknown>
     ? never
     : {
-        [K in keyof T & string]: T[K] extends Primitive | ReadonlyArray<unknown>
-          ? `${K}`
-          : `${K}.${DeepKeys<T[K]>}`;
-      }[keyof T & string];
+        [K in keyof T]: K extends string | number
+          ? T[K] extends Primitive | ReadonlyArray<unknown>
+            ? KeyToString<K>
+            : `${KeyToString<K>}.${DeepKeys<T[K]>}`
+          : never;
+      }[keyof T];
 
 export type CopyKey = DeepKeys<typeof hu>;
 

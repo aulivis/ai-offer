@@ -1174,6 +1174,7 @@ export const hu = {
       headerVyndi: 'Vyndi',
       headerCompetitor1: 'Hagyományos megoldás',
       headerCompetitor2: 'Versenyző A',
+      ariaLabel: 'Funkció összehasonlító táblázat',
       features: {
         aiGeneration: 'AI-alapú szöveg generálás',
         hungarianSupport: 'Magyar nyelvű támogatás',
@@ -1631,6 +1632,34 @@ export const hu = {
           'Hiba a generálásnál ({status}). Próbáld újra vagy frissítsd az oldalt.',
         structuredResponseMissing:
           'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
+      },
+      summarySection: {
+        projectHeading: 'Projekt összegzés',
+        compensationHeading: 'Díjazás összesítése',
+        fields: {
+          title: 'Cím',
+          overview: 'Projekt áttekintés',
+          deliverables: 'Kulcs szállítandók',
+          timeline: 'Ütemezés & mérföldkövek',
+          constraints: 'Feltételezések & korlátok',
+          netTotal: 'Nettó összesen',
+          vat: 'ÁFA',
+          gross: 'Bruttó végösszeg',
+        },
+        empty: '—',
+      },
+      images: {
+        modalTitle: 'Referenciafotók hozzáadása: {activity}',
+        modalDescription: 'Válassz ki képeket, amelyeket az ajánlatban szeretnél megjeleníteni.',
+      },
+      testimonials: {
+        modalTitle: 'Vásárlói visszajelzések hozzáadása',
+        modalDescription:
+          'Válassz ki maximum 3 visszajelzést, amelyeket az ajánlatban szeretnél megjeleníteni.',
+        noTestimonials: 'Még nincs elérhető visszajelzés.',
+        maxReached: 'Maximum elérve',
+        maxReachedDescription: 'Maximum 3 visszajelzés választható ki.',
+        selectedCount: 'Kiválasztva: {current} / {max}',
       },
       summarySidebar: {
         priceTotals: {
@@ -2121,6 +2150,9 @@ export const hu = {
       currency: 'Ft',
     },
   },
+  modal: {
+    close: 'Bezárás',
+  },
   wizard: {
     progress: {
       label: 'Előrehaladás',
@@ -2166,6 +2198,9 @@ export const hu = {
       saving: 'Mentés...',
       saved: 'Vázlat mentve',
       savedWithTime: 'Vázlat mentve ({time})',
+      saveError: 'Mentési hiba',
+      retrying: 'Újrapróbálás...',
+      retry: 'Újrapróbálás',
     },
     pricing: {
       ariaLabel: 'Árlista és ügyfél adatok',
