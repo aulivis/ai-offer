@@ -86,16 +86,16 @@ export default function Chatbot({
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     
-    // useChat's sendMessage accepts a string directly or { content: string }
-    sendMessage(input.trim());
+    // useChat's sendMessage accepts { content: string } format
+    sendMessage({ content: input.trim() });
     setInput('');
   };
   
   // Handle suggested question click
   const handleQuestionClick = (question: string) => {
     if (isLoading) return;
-    // useChat's sendMessage accepts a string directly or { content: string }
-    sendMessage(question.trim());
+    // useChat's sendMessage accepts { content: string } format
+    sendMessage({ content: question.trim() });
   };
   
   // Handle input change
