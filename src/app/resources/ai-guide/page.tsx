@@ -250,8 +250,8 @@ export default function AIGuidePage() {
                 </li>
                 <li>
                   <strong>Add meg a kontextust:</strong> Írj egy rövid leírást arról, milyen típusú
-                  szöveget szeretnél (pl. &quot;Bemutatkozás a szolgáltatásokról&quot; vagy &quot;Ügyfél
-                  problémájának megoldása&quot;).
+                  szöveget szeretnél (pl. &quot;Bemutatkozás a szolgáltatásokról&quot; vagy
+                  &quot;Ügyfél problémájának megoldása&quot;).
                 </li>
                 <li>
                   <strong>Generáld a szöveget:</strong> Kattints a &quot;Generálás&quot; gombra, és
@@ -280,8 +280,8 @@ export default function AIGuidePage() {
                 />
               </svg>
               <p className="mt-4 text-sm font-medium text-gray-600">
-                [Helyőrző: Videó vagy interaktív tutorial - &quot;Hogyan használd az AI szöveg generálást
-                lépésről lépésre&quot;]
+                [Helyőrző: Videó vagy interaktív tutorial - &quot;Hogyan használd az AI szöveg
+                generálást lépésről lépésre&quot;]
               </p>
               <p className="mt-2 text-xs text-gray-500">
                 Ajánlott: 2-3 perces rövid videó bemutató a funkció használatáról
@@ -336,8 +336,8 @@ export default function AIGuidePage() {
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase text-green-700">✅ Hatékony</p>
                   <p className="text-sm text-fg-muted">
-                    &quot;Írj egy bemutatkozást egy weboldal fejlesztési projektjéről, amely hangsúlyozza
-                    a 10+ év tapasztalatot és a responsive design kiemelését&quot;
+                    &quot;Írj egy bemutatkozást egy weboldal fejlesztési projektjéről, amely
+                    hangsúlyozza a 10+ év tapasztalatot és a responsive design kiemelését&quot;
                   </p>
                 </div>
               </div>
@@ -353,8 +353,9 @@ export default function AIGuidePage() {
               </p>
               <div className="rounded-lg bg-blue-100 p-4">
                 <p className="text-sm text-blue-900">
-                  <strong>Példa:</strong> &quot;Használd a következő kifejezéseket: &apos;agilis fejlesztés&apos;,
-                  &apos;cloud-based megoldás&apos;, &apos;scalable architektúra&apos;&quot;
+                  <strong>Példa:</strong> &quot;Használd a következő kifejezéseket: &apos;agilis
+                  fejlesztés&apos;, &apos;cloud-based megoldás&apos;, &apos;scalable
+                  architektúra&apos;&quot;
                 </p>
               </div>
             </Card>
@@ -404,7 +405,8 @@ export default function AIGuidePage() {
                 <p className="rounded bg-white p-4 text-sm text-gray-800 shadow-sm">
                   &quot;Értjük, hogy a lassú weboldal betöltési idő negatívan befolyásolja az üzleti
                   teljesítményét. Megoldásunk egy gyors, optimalizált, modern weboldal fejlesztése,
-                  amely jelentősen csökkenti a betöltési időt és javítja a felhasználói élményt...&quot;
+                  amely jelentősen csökkenti a betöltési időt és javítja a felhasználói
+                  élményt...&quot;
                 </p>
               </div>
             </Card>

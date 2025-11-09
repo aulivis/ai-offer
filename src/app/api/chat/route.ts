@@ -265,7 +265,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the last user message for RAG
-    const userMessages = convertedMessages.filter((m: any) => m.role === 'user');
+    const userMessages = convertedMessages.filter(
+      (m): m is { role: 'user'; content: string } => m.role === 'user',
+    );
     const lastMessage = userMessages[userMessages.length - 1];
 
     if (!lastMessage || !lastMessage.content) {
