@@ -39,7 +39,7 @@ export default function Home() {
           />
         </svg>
       ),
-      text: 'Órákba telik egy professzionális ajánlat elkészítése',
+      text: t('landing.painPoints.timeConsuming'),
     },
     {
       icon: (
@@ -52,7 +52,7 @@ export default function Home() {
           />
         </svg>
       ),
-      text: 'Inkonzisztens dizájn és márkaidentitás',
+      text: t('landing.painPoints.inconsistentDesign'),
     },
     {
       icon: (
@@ -65,7 +65,7 @@ export default function Home() {
           />
         </svg>
       ),
-      text: 'Nehézkes együttműködés a csapat tagjai között',
+      text: t('landing.painPoints.poorCollaboration'),
     },
   ];
 
@@ -82,9 +82,8 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'Egyetlen esztétikus felület',
-      description:
-        'A Vyndi sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+      title: t('landing.featuresInline.unifiedInterface.title'),
+      description: t('landing.featuresInline.unifiedInterface.description'),
     },
     {
       icon: (
@@ -97,9 +96,8 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'AI, ami érti a briefet',
-      description:
-        'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
+      title: t('landing.featuresInline.aiBrief.title'),
+      description: t('landing.featuresInline.aiBrief.description'),
       highlight: true,
     },
     {
@@ -113,9 +111,8 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'Ügyfélközpontú megosztás',
-      description:
-        'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+      title: t('landing.featuresInline.clientSharing.title'),
+      description: t('landing.featuresInline.clientSharing.description'),
     },
   ];
 
@@ -131,9 +128,8 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'Brief & mood',
-      description:
-        'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
+      title: t('landing.stepsInline.brief.title'),
+      description: t('landing.stepsInline.brief.description'),
     },
     {
       icon: (
@@ -146,9 +142,8 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'AI-szöveg és sablonok',
-      description:
-        'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd a szekciókat.',
+      title: t('landing.stepsInline.aiTemplates.title'),
+      description: t('landing.stepsInline.aiTemplates.description'),
     },
     {
       icon: (
@@ -161,9 +156,8 @@ export default function Home() {
           />
         </svg>
       ),
-      title: 'Megosztás & mérés',
-      description:
-        'Egy kattintással készül a márkázott PDF, közben valós időben látod, mit olvasott el az ügyfél.',
+      title: t('landing.stepsInline.share.title'),
+      description: t('landing.stepsInline.share.description'),
     },
   ];
 
@@ -307,7 +301,7 @@ export default function Home() {
           />
         </svg>
       ),
-      text: 'Nem szükséges bankkártya',
+      text: t('landing.trustBadgesInline.noCreditCard'),
     },
   ];
 
@@ -318,38 +312,32 @@ export default function Home() {
 
   const caseStudies = [
     {
-      company: 'Studio Fluo',
-      industry: 'Kreatív ügynökség',
-      challenge:
-        'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
-      solution:
-        'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, és a márkázott PDF-ek automatikusan készültek.',
+      company: t('landing.caseStudiesInline.studioFluo.company'),
+      industry: t('landing.caseStudiesInline.studioFluo.industry'),
+      challenge: t('landing.caseStudiesInline.studioFluo.challenge'),
+      solution: t('landing.caseStudiesInline.studioFluo.solution'),
       results: [
-        { metric: 'Időmegtakarítás', value: '70%' },
-        { metric: 'Ajánlatok/hét', value: '25+' },
-        { metric: 'Elfogadási arány', value: '+35%' },
+        { metric: t('landing.caseStudiesInline.studioFluo.results.timeSaved'), value: '70%' },
+        { metric: t('landing.caseStudiesInline.studioFluo.results.offersPerWeek'), value: '25+' },
+        { metric: t('landing.caseStudiesInline.studioFluo.results.acceptanceRate'), value: '+35%' },
       ],
-      quote:
-        'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
-      author: 'Kiss Júlia',
-      role: 'Ügynökségvezető',
+      quote: t('landing.caseStudiesInline.studioFluo.quote'),
+      author: t('landing.caseStudiesInline.studioFluo.author'),
+      role: t('landing.caseStudiesInline.studioFluo.role'),
     },
     {
-      company: 'Tech Solutions Kft.',
-      industry: 'IT szolgáltatás',
-      challenge:
-        'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
-      solution:
-        'A Vyndi moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
+      company: t('landing.caseStudiesInline.techSolutions.company'),
+      industry: t('landing.caseStudiesInline.techSolutions.industry'),
+      challenge: t('landing.caseStudiesInline.techSolutions.challenge'),
+      solution: t('landing.caseStudiesInline.techSolutions.solution'),
       results: [
-        { metric: 'Ajánlatkészítési idő', value: '-65%' },
-        { metric: 'Sablonok száma', value: '50+' },
-        { metric: 'Ügyfél elégedettség', value: '98%' },
+        { metric: t('landing.caseStudiesInline.techSolutions.results.offerTime'), value: '-65%' },
+        { metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'), value: '50+' },
+        { metric: t('landing.caseStudiesInline.techSolutions.results.satisfaction'), value: '98%' },
       ],
-      quote:
-        'Az AI-alapú szöveg generálás és a moduláris rendszer lehetővé tette, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire.',
-      author: 'Nagy Péter',
-      role: 'Üzletfejlesztési vezető',
+      quote: t('landing.caseStudiesInline.techSolutions.quote'),
+      author: t('landing.caseStudiesInline.techSolutions.author'),
+      role: t('landing.caseStudiesInline.techSolutions.role'),
     },
   ];
 

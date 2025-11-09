@@ -1132,6 +1132,93 @@ export const hu = {
       },
     },
     footerAria: 'Oldal lábléc',
+    painPoints: {
+      timeConsuming: 'Órákba telik egy professzionális ajánlat elkészítése',
+      inconsistentDesign: 'Inkonzisztens dizájn és márkaidentitás',
+      poorCollaboration: 'Nehézkes együttműködés a csapat tagjai között',
+    },
+    featuresInline: {
+      unifiedInterface: {
+        title: 'Egyetlen esztétikus felület',
+        description: 'A Vyndi sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+      },
+      aiBrief: {
+        title: 'AI, ami érti a briefet',
+        description: 'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
+      },
+      clientSharing: {
+        title: 'Ügyfélközpontú megosztás',
+        description: 'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+      },
+    },
+    stepsInline: {
+      brief: {
+        title: 'Brief & mood',
+        description: 'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
+      },
+      aiTemplates: {
+        title: 'AI-szöveg és sablonok',
+        description: 'Válaszd ki a sablonjaidat, kérj új AI-szöveget vagy szerkeszd a szekciókat.',
+      },
+      share: {
+        title: 'Megosztás & mérés',
+        description: 'Egy kattintással készül a márkázott PDF ajánlat. Letöltheted vagy megoszthatod. Az irányítópulton követheted az ajánlatok státuszát.',
+      },
+    },
+    caseStudiesInline: {
+      studioFluo: {
+        company: 'Studio Fluo',
+        industry: 'Kreatív ügynökség',
+        challenge: 'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
+        solution: 'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, és a márkázott PDF-ek automatikusan készültek.',
+        results: {
+          timeSaved: 'Időmegtakarítás',
+          offersPerWeek: 'Ajánlatok/hét',
+          acceptanceRate: 'Elfogadási arány',
+        },
+        quote: 'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
+        author: 'Kiss Júlia',
+        role: 'Ügynökségvezető',
+      },
+      techSolutions: {
+        company: 'Tech Solutions Kft.',
+        industry: 'IT szolgáltatás',
+        challenge: 'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
+        solution: 'A Vyndi moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
+        results: {
+          offerTime: 'Ajánlatkészítési idő',
+          templatesCount: 'Sablonok száma',
+          satisfaction: 'Ügyfél elégedettség',
+        },
+        quote: 'Az AI-alapú szöveg generálás és a moduláris rendszer lehetővé tette, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire.',
+        author: 'Nagy Péter',
+        role: 'Üzletfejlesztési vezető',
+      },
+      creativeAgency: {
+        company: 'Creative Agency',
+        industry: 'Marketing ügynökség',
+        challenge: 'A marketing kampányokhoz rendszeresen kellett ajánlatokat készíteni, de a sablonok nehezen testreszabhatók voltak, és a vizuális megjelenés nem volt konzisztens.',
+        solution: 'A Vyndi sablonkönyvtára és márkaidentitás-kezelése lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsenek ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek.',
+        results: {
+          templateTime: 'Sablon készítési idő',
+          consistentAppearance: 'Konzisztens megjelenés',
+          offersPerMonth: 'Ajánlatok/hónap',
+        },
+        quote: 'A Vyndi segített, hogy minden ajánlatunk profi megjelenésű legyen, miközben jelentősen csökkent az elkészítésük ideje.',
+        author: 'Szabó Anna',
+        role: 'Projektmenedzser',
+      },
+    },
+    successStories: {
+      badge: 'Sikertörténetek',
+      title: 'Valós eredmények valós ügyfelektől',
+      description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat és javítani az üzleti eredményeiket.',
+      ctaButton: 'Ingyenes próba indítása',
+      viewPackages: 'Csomagok megtekintése',
+    },
+    trustBadgesInline: {
+      noCreditCard: 'Nem szükséges bankkártya',
+    },
   },
   demo: {
     badge: 'Demó',
@@ -2045,6 +2132,72 @@ export const hu = {
       helpful: 'Hasznos',
       notHelpful: 'Nem hasznos',
       thankYou: 'Köszönöm a visszajelzést!',
+    },
+  },
+  errorBoundary: {
+    title: 'Valami hiba történt',
+    description: 'Váratlan hiba lépett fel. Kérjük, frissítsd az oldalt, vagy lépj kapcsolatba az ügyfélszolgálattal, ha a probléma továbbra is fennáll.',
+    tryAgain: 'Újrapróbálás',
+    reloadPage: 'Oldal újratöltése',
+    errorDetails: 'Hibareszletek (csak fejlesztési módban)',
+  },
+  resources: {
+    badge: 'Erőforrások',
+    title: 'Tanulj és fejlődj',
+    description: 'Hozzáférhetsz útmutatókhoz, sablonokhoz, cikkekhez és videókhoz az ajánlatkészítésről.',
+    categories: {
+      guides: 'Útmutatók',
+      templates: 'Sablonok',
+      articles: 'Cikkek',
+      videos: 'Videók',
+    },
+    items: {
+      guide: {
+        title: 'Ajánlatkészítési útmutató',
+        description: 'Tippek és trükkök a tökéletes ajánlatok elkészítéséhez.',
+      },
+      aiGuide: {
+        title: 'AI-alapú szöveg generálás használata',
+        description: 'Tanuld meg, hogyan használd hatékonyan az AI funkciókat.',
+      },
+      templates: {
+        title: 'Ingyenes ajánlat sablonok',
+        description: 'Letölthető sablonok különböző iparágakhoz és projekttípusokhoz.',
+      },
+      proTemplates: {
+        title: 'Pro sablonok könyvtár',
+        description: 'Prémium sablonok Pro előfizetőink számára.',
+      },
+      tips: {
+        title: '10 tipp a tökéletes ajánlathoz',
+        description: 'Gyakorlati tanácsok, amik segítenek jobb ajánlatokat készíteni.',
+      },
+      bestPractices: {
+        title: 'Ajánlatkészítés best practices',
+        description: 'Iparági best practice-ek és trendek az ajánlatkészítésben.',
+      },
+      introVideo: {
+        title: 'Bevezető videó',
+        description: 'Ismerd meg a Vyndi-t 5 percben.',
+      },
+      fullTour: {
+        title: 'Teljes funkció bemutató',
+        description: 'Részletes útmutató minden funkcióról.',
+      },
+    },
+    ctaTitle: 'Készen állsz a kezdésre?',
+    ctaDescription: 'Kezdd el ingyen ajánlatokat készíteni még ma, bankkártya nélkül.',
+    ctaButton: 'Ingyenes próba indítása',
+    trustBadges: {
+      freeTrial: 'Ingyenes próba',
+      noCreditCard: 'Nincs bankkártya szükséges',
+      instantAccess: 'Azonnali hozzáférés',
+    },
+  },
+  auth: {
+    initSession: {
+      invalidTokens: 'Érvénytelen hitelesítési tokenek',
+      userIdMismatch: 'Felhasználó ID eltérés',
     },
   },
 } as const;

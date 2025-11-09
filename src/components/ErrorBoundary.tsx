@@ -3,6 +3,7 @@
 import { Component, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { t } from '@/copy';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -46,15 +47,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <Card className="mx-auto max-w-2xl p-8">
           <div className="space-y-4 text-center">
-            <h2 className="text-xl font-semibold text-slate-900">Something went wrong</h2>
+            <h2 className="text-xl font-semibold text-slate-900">{t('errorBoundary.title')}</h2>
             <p className="text-sm text-slate-600">
-              An unexpected error occurred. Please try refreshing the page or contact support if the
-              problem persists.
+              {t('errorBoundary.description')}
             </p>
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 text-left">
                 <summary className="cursor-pointer text-sm font-medium text-slate-700">
-                  Error details (development only)
+                  {t('errorBoundary.errorDetails')}
                 </summary>
                 <pre className="mt-2 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
                   {this.state.error.toString()}
@@ -64,9 +64,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             )}
             <div className="flex justify-center gap-3">
               <Button onClick={this.handleReset} variant="secondary">
-                Try Again
+                {t('errorBoundary.tryAgain')}
               </Button>
-              <Button onClick={() => window.location.reload()}>Reload Page</Button>
+              <Button onClick={() => window.location.reload()}>{t('errorBoundary.reloadPage')}</Button>
             </div>
           </div>
         </Card>

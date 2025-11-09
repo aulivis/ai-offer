@@ -8,74 +8,68 @@ export const metadata = {
   description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat',
 };
 
-const caseStudies = [
-  {
-    company: 'Studio Fluo',
-    industry: 'Kreatív ügynökség',
-    challenge:
-      'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
-    solution:
-      'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, és a márkázott PDF-ek automatikusan készültek.',
-    results: [
-      { metric: 'Időmegtakarítás', value: '70%' },
-      { metric: 'Ajánlatok/hét', value: '25+' },
-      { metric: 'Elfogadási arány', value: '+35%' },
-    ],
-    quote:
-      'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
-    author: 'Kiss Júlia',
-    role: 'Ügynökségvezető',
-  },
-  {
-    company: 'Tech Solutions Kft.',
-    industry: 'IT szolgáltatás',
-    challenge:
-      'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
-    solution:
-      'A Vyndi moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
-    results: [
-      { metric: 'Ajánlatkészítési idő', value: '-65%' },
-      { metric: 'Sablonok száma', value: '50+' },
-      { metric: 'Ügyfél elégedettség', value: '98%' },
-    ],
-    quote:
-      'Az AI-alapú szöveg generálás és a moduláris rendszer lehetővé tette, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire.',
-    author: 'Nagy Péter',
-    role: 'Üzletfejlesztési vezető',
-  },
-  {
-    company: 'Creative Agency',
-    industry: 'Marketing ügynökség',
-    challenge:
-      'A marketing kampányokhoz rendszeresen kellett ajánlatokat készíteni, de a sablonok nehezen testreszabhatók voltak, és a vizuális megjelenés nem volt konzisztens.',
-    solution:
-      'A Vyndi sablonkönyvtára és márkaidentitás-kezelése lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsenek ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek.',
-    results: [
-      { metric: 'Sablon készítési idő', value: '-80%' },
-      { metric: 'Konzisztens megjelenés', value: '100%' },
-      { metric: 'Ajánlatok/hónap', value: '40+' },
-    ],
-    quote:
-      'A Vyndi segített, hogy minden ajánlatunk profi megjelenésű legyen, miközben jelentősen csökkent az elkészítésük ideje.',
-    author: 'Szabó Anna',
-    role: 'Projektmenedzser',
-  },
-];
+function getCaseStudies() {
+  return [
+    {
+      company: t('landing.caseStudiesInline.studioFluo.company'),
+      industry: t('landing.caseStudiesInline.studioFluo.industry'),
+      challenge: t('landing.caseStudiesInline.studioFluo.challenge'),
+      solution: t('landing.caseStudiesInline.studioFluo.solution'),
+      results: [
+        { metric: t('landing.caseStudiesInline.studioFluo.results.timeSaved'), value: '70%' },
+        { metric: t('landing.caseStudiesInline.studioFluo.results.offersPerWeek'), value: '25+' },
+        { metric: t('landing.caseStudiesInline.studioFluo.results.acceptanceRate'), value: '+35%' },
+      ],
+      quote: t('landing.caseStudiesInline.studioFluo.quote'),
+      author: t('landing.caseStudiesInline.studioFluo.author'),
+      role: t('landing.caseStudiesInline.studioFluo.role'),
+    },
+    {
+      company: t('landing.caseStudiesInline.techSolutions.company'),
+      industry: t('landing.caseStudiesInline.techSolutions.industry'),
+      challenge: t('landing.caseStudiesInline.techSolutions.challenge'),
+      solution: t('landing.caseStudiesInline.techSolutions.solution'),
+      results: [
+        { metric: t('landing.caseStudiesInline.techSolutions.results.offerTime'), value: '-65%' },
+        { metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'), value: '50+' },
+        { metric: t('landing.caseStudiesInline.techSolutions.results.satisfaction'), value: '98%' },
+      ],
+      quote: t('landing.caseStudiesInline.techSolutions.quote'),
+      author: t('landing.caseStudiesInline.techSolutions.author'),
+      role: t('landing.caseStudiesInline.techSolutions.role'),
+    },
+    {
+      company: t('landing.caseStudiesInline.creativeAgency.company'),
+      industry: t('landing.caseStudiesInline.creativeAgency.industry'),
+      challenge: t('landing.caseStudiesInline.creativeAgency.challenge'),
+      solution: t('landing.caseStudiesInline.creativeAgency.solution'),
+      results: [
+        { metric: t('landing.caseStudiesInline.creativeAgency.results.templateTime'), value: '-80%' },
+        { metric: t('landing.caseStudiesInline.creativeAgency.results.consistentAppearance'), value: '100%' },
+        { metric: t('landing.caseStudiesInline.creativeAgency.results.offersPerMonth'), value: '40+' },
+      ],
+      quote: t('landing.caseStudiesInline.creativeAgency.quote'),
+      author: t('landing.caseStudiesInline.creativeAgency.author'),
+      role: t('landing.caseStudiesInline.creativeAgency.role'),
+    },
+  ];
+}
 
 export default function SuccessStoriesPage() {
+  const caseStudies = getCaseStudies();
+
   return (
     <main id="main" className="mx-auto w-full max-w-7xl px-6 pb-24">
       {/* Hero Section */}
       <section className="mx-auto max-w-4xl pt-16 pb-16 text-center md:pt-24 md:pb-20">
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-          Sikertörténetek
+          {t('landing.successStories.badge')}
         </span>
         <h1 className="mt-6 text-4xl font-bold tracking-tight text-fg md:text-5xl lg:text-6xl">
-          Valós eredmények valós ügyfelektől
+          {t('landing.successStories.title')}
         </h1>
         <p className="mt-5 text-lg leading-relaxed text-fg-muted md:text-xl md:leading-relaxed">
-          Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat és
-          javítani az üzleti eredményeiket.
+          {t('landing.successStories.description')}
         </p>
       </section>
 
@@ -119,7 +113,7 @@ export default function SuccessStoriesPage() {
                 href="/login?redirect=/new"
                 className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
-                Ingyenes próba indítása
+                {t('landing.successStories.ctaButton')}
                 <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -128,7 +122,7 @@ export default function SuccessStoriesPage() {
                 href="/billing"
                 className="inline-flex items-center justify-center rounded-full border-2 border-primary/60 bg-transparent px-8 py-4 text-base font-semibold text-fg transition-all duration-200 hover:border-primary hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
-                Csomagok megtekintése
+                {t('landing.successStories.viewPackages')}
               </Link>
             </div>
           </div>
