@@ -76,12 +76,35 @@ export function createPdfOptions(
 }
 
 /**
+ * PDF options type that works with both puppeteer and puppeteer-core
+ */
+export type PuppeteerPdfOptions = {
+  format?: 'A4' | 'Letter' | 'Legal' | 'Tabloid' | 'Ledger' | string;
+  margin?: {
+    top?: string;
+    right?: string;
+    bottom?: string;
+    left?: string;
+  };
+  printBackground?: boolean;
+  preferCSSPageSize?: boolean;
+  displayHeaderFooter?: boolean;
+  headerTemplate?: string;
+  footerTemplate?: string;
+  scale?: number;
+  width?: string;
+  height?: string;
+  landscape?: boolean;
+};
+
+/**
  * Converts PDF options to Puppeteer PDF options
+ * Works with both puppeteer and puppeteer-core
  */
 export function toPuppeteerOptions(
   options: PdfGenerationOptions,
-): Parameters<import('puppeteer').Page['pdf']>[0] {
-  const puppeteerOptions: Parameters<import('puppeteer').Page['pdf']>[0] = {
+): PuppeteerPdfOptions {
+  const puppeteerOptions: PuppeteerPdfOptions = {
     format: options.format ?? 'A4',
     margin: options.margin ?? STANDARD_A4_MARGINS,
     printBackground: options.printBackground ?? true,
@@ -113,10 +136,27 @@ export function toPuppeteerOptions(
 }
 
 /**
+ * Puppeteer Page type that works with both puppeteer and puppeteer-core
+ */
+export type PuppeteerPage = {
+  evaluate: (fn: (title: string) => void, ...args: unknown[]) => Promise<unknown>;
+  title: () => Promise<string>;
+  setContent: (html: string, options: { waitUntil: 'networkidle0' | 'load' | 'domcontentloaded' }) => Promise<void>;
+  pdf: (options: PuppeteerPdfOptions) => Promise<Buffer | Uint8Array | ArrayBuffer>;
+  setViewport: (viewport: { width: number; height: number; deviceScaleFactor?: number }) => Promise<void>;
+  setDefaultNavigationTimeout: (timeout: number) => void;
+  setDefaultTimeout: (timeout: number) => void;
+  on: (event: string, handler: (...args: unknown[]) => void) => void;
+  off?: (event: string, handler: (...args: unknown[]) => void) => void;
+  close: () => Promise<void>;
+};
+
+/**
  * Sets PDF metadata on a Puppeteer page using CDP
+ * Works with both puppeteer and puppeteer-core
  */
 export async function setPdfMetadata(
-  page: import('puppeteer').Page,
+  page: PuppeteerPage,
   metadata: PdfMetadata,
 ): Promise<void> {
   try {

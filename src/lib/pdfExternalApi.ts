@@ -5,7 +5,8 @@
  * API clients (SDK, integrations, etc.) that don't require user authentication.
  * 
  * Industry Best Practices:
- * - Uses Supabase Edge Functions for PDF generation (Vercel-compatible)
+ * - Uses Vercel-native Puppeteer for PDF generation (industry best practice)
+ * - Falls back to Supabase Edge Functions if Vercel-native not available
  * - Implements async job queue pattern
  * - Supports webhook callbacks
  * - Provides job status polling
@@ -19,6 +20,7 @@ import { enqueuePdfJob, dispatchPdfJob, type PdfJobInput } from '@/lib/queue/pdf
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { renderRuntimePdfHtml, type RuntimePdfPayload } from '@/lib/pdfRuntime';
 import { envServer } from '@/env.server';
+import { processPdfJobVercelNative } from '@/lib/pdfVercelWorker';
 
 /**
  * System user ID for external API calls
@@ -130,8 +132,27 @@ export async function createExternalPdfJob(
   // Enqueue the PDF job
   await enqueuePdfJob(sb, pdfJobInput);
 
-  // Dispatch to Supabase Edge Function
-  await dispatchPdfJob(sb, jobId);
+  // Check if we're in a Vercel environment and should use Vercel-native processing
+  const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+  const useVercelNative = isVercel && process.env.USE_VERCEL_NATIVE_PDF !== 'false';
+
+  if (useVercelNative) {
+    // Process PDF job using Vercel-native Puppeteer (industry best practice)
+    // This runs directly in Vercel serverless functions without external dependencies
+    // Process asynchronously so we can return the job ID immediately
+    // The job will be processed in the background within the same function execution
+    processPdfJobVercelNative(sb, pdfJobInput).catch((error) => {
+      console.error('Vercel-native PDF generation failed:', error);
+      // Job status will be updated to 'failed' in the worker
+      // If processing fails, we could fall back to Supabase Edge Function here
+      // For now, we let it fail and the client can check the job status
+    });
+    // Don't await - return immediately so client can poll for status
+    // The job will continue processing in the background
+  } else {
+    // Use Supabase Edge Function (fallback or when explicitly disabled)
+    await dispatchPdfJob(sb, jobId);
+  }
 
   // Build URLs
   const baseUrl = envServer.APP_URL;
@@ -172,16 +193,26 @@ export async function getExternalPdfJobStatus(
   }
 
   const baseUrl = envServer.APP_URL;
-  const downloadUrl = job.pdf_url
+  const downloadUrl: string | undefined = job.pdf_url
     ? `${baseUrl}/api/pdf/export/${jobId}/download?token=${job.download_token}`
     : undefined;
 
-  return {
+  const result: {
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    pdfUrl?: string | null;
+    error?: string | null;
+    downloadUrl?: string;
+  } = {
     status: job.status as 'pending' | 'processing' | 'completed' | 'failed',
     pdfUrl: job.pdf_url,
     error: job.error_message,
-    downloadUrl,
   };
+  
+  if (downloadUrl) {
+    result.downloadUrl = downloadUrl;
+  }
+  
+  return result;
 }
 
 /**
@@ -197,18 +228,17 @@ export async function getExternalPdfDownloadUrl(
 ): Promise<string | null> {
   const sb = supabaseServiceRole();
 
-  const query = sb
+  let query = sb
     .from('pdf_jobs')
     .select('pdf_url, download_token, status')
-    .eq('id', jobId)
-    .maybeSingle();
+    .eq('id', jobId);
 
   // If token is provided, validate it
   if (token) {
-    query.eq('download_token', token);
+    query = query.eq('download_token', token);
   }
 
-  const { data: job, error } = await query;
+  const { data: job, error } = await query.maybeSingle();
 
   if (error || !job) {
     return null;

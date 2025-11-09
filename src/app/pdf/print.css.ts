@@ -1,7 +1,7 @@
 export const PRINT_BASE_CSS = `
   :root {
-    /* Industry standard margins: match Puppeteer PDF generation settings (20mm top/bottom, 15mm sides) */
-    /* These margins are used by Puppeteer when generating PDFs */
+    /* Industry standard margins: match Chrome/Puppeteer PDF generation settings (20mm top/bottom, 15mm sides) */
+    /* These margins work with any Chrome-based PDF generation (Puppeteer, Playwright, Browserless, etc.) */
     --page-margin-top: 20mm;
     --page-margin-right: 15mm;
     --page-margin-bottom: 20mm;
@@ -486,10 +486,10 @@ export const PRINT_BASE_CSS = `
       max-height: var(--slim-footer-height);
     }
 
-    /* Page numbering - ensure counter works with Puppeteer */
-    /* Puppeteer/Chrome automatically handles page and pages counters in @page context */
+    /* Page numbering - ensure counter works with Chrome-based PDF generation */
+    /* Chrome/Puppeteer/Playwright automatically handles page and pages counters in @page context */
     /* The counter(page) shows current page, counter(pages) shows total pages */
-    /* These counters are only available in the page margin context (@page) or fixed positioned elements */
+    /* These counters work with any Chrome-based PDF engine (Puppeteer, Playwright, Browserless, etc.) */
     .slim-footer__page-number::after {
       content: ' ' counter(page) ' / ' counter(pages);
       font-variant-numeric: tabular-nums;

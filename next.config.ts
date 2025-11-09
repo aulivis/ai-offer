@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
           }
         : false,
   },
+  // Externalize Puppeteer packages for serverless optimization
+  // These packages are large and should not be bundled with the Next.js app
+  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
 };
 
 const isProduction = process.env.NODE_ENV === 'production';

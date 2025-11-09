@@ -14,8 +14,8 @@ import { createExternalPdfJob } from '@/lib/pdfExternalApi';
  * This endpoint is designed for external use (SDK, integrations, etc.)
  * and does not require authentication.
  * 
- * This endpoint uses Supabase Edge Functions for PDF generation, which is
- * compatible with Vercel's serverless function limitations.
+ * This endpoint uses Vercel-native Puppeteer for PDF generation (industry best practice).
+ * Falls back to Supabase Edge Functions if Vercel-native is not available.
  * 
  * The endpoint returns a job ID immediately and provides status polling
  * and webhook callback support.
@@ -23,6 +23,7 @@ import { createExternalPdfJob } from '@/lib/pdfExternalApi';
  * @see {@link https://github.com/your-org/your-repo/wiki/PDF-Export-API Documentation}
  */
 export const runtime = 'nodejs';
+export const maxDuration = 60; // Vercel Pro plan: 60s timeout
 
 const HEX_COLOR_PATTERN = /^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 

@@ -1450,21 +1450,34 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       }
 
       // Only attempt inline fallback if job is not already completed or being processed
-      // NOTE: Inline fallback uses Puppeteer and is NOT compatible with Vercel serverless functions
-      // This should only be used in development or self-hosted environments
-      // On Vercel, the Supabase Edge Function should handle all PDF generation
+      // On Vercel, use Vercel-native Puppeteer (industry best practice)
+      // In other environments, use inline Puppeteer fallback
       if (!immediatePdfUrl && jobStatus?.status !== 'processing') {
-        // Check if we're in a Vercel-like environment (serverless)
-        const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+        // Check if we're in a Vercel environment
+        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+        const useVercelNative = isVercel && process.env.USE_VERCEL_NATIVE_PDF !== 'false';
         
-        if (isVercel) {
-          log.warn('Inline PDF fallback skipped on Vercel - Puppeteer not supported', {
-            jobId: downloadToken,
-          });
-          // On Vercel, we can't use inline fallback, so just return pending status
+        if (useVercelNative) {
+          // Use Vercel-native PDF processing (industry best practice)
+          try {
+            const { processPdfJobVercelNative } = await import('@/lib/pdfVercelWorker');
+            // Process asynchronously - don't await so we can return immediately
+            processPdfJobVercelNative(sb, pdfJobInput).catch((error) => {
+              log.error('Vercel-native PDF generation failed', { error, jobId: downloadToken });
+            });
+            responseStatus = 'pending';
+            responseNote = translator.t('api.pdf.processing');
+          } catch (error) {
+            log.error('Failed to start Vercel-native PDF processing', { error, jobId: downloadToken });
+            responseStatus = 'pending';
+            responseNote = translator.t('api.pdf.processing');
+          }
+        } else if (isVercel) {
+          // Vercel but Vercel-native disabled - use Supabase Edge Function (already dispatched)
           responseStatus = 'pending';
           responseNote = translator.t('api.pdf.processing');
         } else {
+          // Not Vercel - use inline Puppeteer fallback
           try {
             const inlineJob: PdfJobInput = {
               jobId: pdfJobInput.jobId,
