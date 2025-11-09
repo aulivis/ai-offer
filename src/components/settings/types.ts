@@ -29,6 +29,8 @@ export type Testimonial = {
   user_id: string;
   activity_id?: string | null;
   text: string;
+  star_rating?: number | null;
+  star_style?: 'filled' | 'outlined' | 'solid' | null;
   created_at: string;
   updated_at: string;
 };

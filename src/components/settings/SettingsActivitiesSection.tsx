@@ -4,7 +4,7 @@ import { t } from '@/copy';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { CubeIcon, CheckCircleIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { CubeIcon, CheckCircleIcon, PlusIcon, TrashIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import type { ActivityRow } from './types';
 import { ALL_INDUSTRIES_HU } from './types';
 import { ActivityImageManager } from './ActivityImageManager';
@@ -21,25 +21,28 @@ type SettingsActivitiesSectionProps = {
   activities: ActivityRow[];
   newActivity: NewActivity;
   saving: boolean;
-  enableReferencePhotos: boolean;
+  plan: 'free' | 'standard' | 'pro';
   onNewActivityChange: (updater: (prev: NewActivity) => NewActivity) => void;
   onToggleNewActivityIndustry: (industry: string) => void;
   onAddActivity: () => void;
   onDeleteActivity: (id: string) => void;
-  onActivityImagesChange: (activityId: string, imagePaths: string[]) => void;
+  onActivityImagesChange: (activityId: string, imagePaths: string[]) => Promise<void>;
+  onOpenPlanUpgradeDialog: (options: { description: string }) => void;
 };
 
 export function SettingsActivitiesSection({
   activities,
   newActivity,
   saving,
-  enableReferencePhotos,
+  plan,
   onNewActivityChange,
   onToggleNewActivityIndustry,
   onAddActivity,
   onDeleteActivity,
   onActivityImagesChange,
+  onOpenPlanUpgradeDialog,
 }: SettingsActivitiesSectionProps) {
+  const isPro = plan === 'pro';
   return (
     <Card
       id="activities"
@@ -172,14 +175,16 @@ export function SettingsActivitiesSection({
                     <TrashIcon className="h-4 w-4" />
                   </button>
                 </div>
-                {enableReferencePhotos && (
-                  <ActivityImageManager
-                    activityId={a.id}
-                    imagePaths={(a.reference_images as string[] | null) || []}
-                    enabled={enableReferencePhotos}
-                    onImagesChange={(paths) => onActivityImagesChange(a.id, paths)}
-                  />
-                )}
+                <ActivityImageManager
+                  activityId={a.id}
+                  imagePaths={(a.reference_images as string[] | null) || []}
+                  enabled={isPro}
+                  plan={plan}
+                  onImagesChange={async (paths) => {
+                    await onActivityImagesChange(a.id, paths);
+                  }}
+                  onOpenPlanUpgradeDialog={onOpenPlanUpgradeDialog}
+                />
               </div>
             ))}
           </div>

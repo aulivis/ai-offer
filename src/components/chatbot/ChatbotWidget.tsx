@@ -78,7 +78,7 @@ export default function ChatbotWidget() {
         <button
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group fixed bottom-24 right-6 z-[45] h-14 w-14 rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden bg-bg relative"
+          className="group fixed bottom-24 right-6 z-[45] h-14 w-14 rounded-full border-2 border-border bg-bg-muted shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden relative"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
@@ -114,13 +114,14 @@ export default function ChatbotWidget() {
                   className="object-cover"
                   priority
                   sizes="56px"
+                  onError={() => setImageError(true)}
                 />
               </div>
             )}
           </div>
           
           {/* Green dot - available indicator - on front layer */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm z-20" />
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg-muted shadow-sm z-20" />
         </button>
       )}
 

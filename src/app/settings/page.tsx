@@ -21,6 +21,7 @@ import { resolveProfileMutationAction } from './profilePersistence';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Card, CardHeader } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import {
   KeyIcon,
   BuildingOfficeIcon,
@@ -1011,42 +1012,47 @@ export default function SettingsPage() {
             activities={acts}
             newActivity={newAct}
             saving={actSaving}
-            enableReferencePhotos={profile.enable_reference_photos ?? false}
+            plan={plan}
             onNewActivityChange={setNewAct}
             onToggleNewActivityIndustry={toggleNewActIndustry}
             onAddActivity={addActivity}
             onDeleteActivity={deleteActivity}
             onActivityImagesChange={async (activityId, imagePaths) => {
               if (!user) return;
-              const { error } = await supabase
-                .from('activities')
-                .update({ reference_images: imagePaths })
-                .eq('id', activityId)
-                .eq('user_id', user.id);
-              if (!error) {
+              try {
+                const { error } = await supabase
+                  .from('activities')
+                  .update({ reference_images: imagePaths })
+                  .eq('id', activityId)
+                  .eq('user_id', user.id);
+                if (error) {
+                  throw error;
+                }
+                // Update local state only after successful database update
                 setActs((prev) =>
                   prev.map((a) => (a.id === activityId ? { ...a, reference_images: imagePaths } : a)),
                 );
+              } catch (error) {
+                console.error('Failed to save reference images:', error);
+                showToast({
+                  title: t('errors.settings.saveFailed', { message: 'Nem sikerült menteni a referenciafotókat' }),
+                  description: error instanceof Error ? error.message : 'Ismeretlen hiba',
+                  variant: 'error',
+                });
               }
             }}
-          />
-
-          <SettingsProFeaturesSection
-            profile={profile}
-            plan={plan}
-            onProfileChange={setProfile}
-            onSave={() => saveProfile('all')}
             onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-            saving={saving}
           />
 
-          {profile.enable_testimonials && (
-            <Card
-              id="testimonials"
-              as="section"
-              className="scroll-mt-24"
-              header={
-                <CardHeader>
+          <SettingsProFeaturesSection plan={plan} />
+
+          <Card
+            id="testimonials"
+            as="section"
+            className="scroll-mt-24"
+            header={
+              <CardHeader>
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                       <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary" />
@@ -1058,25 +1064,83 @@ export default function SettingsPage() {
                       <p className="text-sm text-slate-500">{t('settings.testimonials.subtitle')}</p>
                     </div>
                   </div>
-                </CardHeader>
-              }
-            >
-              <TestimonialsManager
-                testimonials={testimonials}
-                activities={acts}
-                enabled={profile.enable_testimonials ?? false}
-                onTestimonialsChange={async () => {
-                  if (!user) return;
-                  const { data: testimonialsList } = await supabase
-                    .from('testimonials')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
-                  setTestimonials((testimonialsList as typeof testimonials) || []);
-                }}
-              />
-            </Card>
-          )}
+                  {plan === 'pro' && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const newValue = !(profile.enable_testimonials ?? false);
+                        setProfile((p) => ({ ...p, enable_testimonials: newValue }));
+                        await saveProfile('all');
+                      }}
+                      disabled={saving}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                        profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          profile.enable_testimonials ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  )}
+                </div>
+              </CardHeader>
+            }
+          >
+            {plan === 'pro' ? (
+              profile.enable_testimonials ? (
+                <TestimonialsManager
+                  testimonials={testimonials}
+                  activities={acts}
+                  enabled={true}
+                  plan={plan}
+                  onTestimonialsChange={async () => {
+                    if (!user) return;
+                    const { data: testimonialsList } = await supabase
+                      .from('testimonials')
+                      .select('*')
+                      .eq('user_id', user.id)
+                      .order('created_at', { ascending: false });
+                    setTestimonials((testimonialsList as typeof testimonials) || []);
+                  }}
+                />
+              ) : (
+                <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
+                  <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-slate-400" />
+                  <p className="mt-4 text-sm font-medium text-slate-600">
+                    {t('settings.testimonials.empty')}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Kapcsold be a vásárlói visszajelzések funkciót a fejlécen lévő kapcsolóval.
+                  </p>
+                </div>
+              )
+            ) : (
+              <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                  <LockClosedIcon className="h-6 w-6 text-amber-600" />
+                </div>
+                <h3 className="mt-4 text-sm font-semibold text-slate-900">
+                  Pro előfizetés szükséges
+                </h3>
+                <p className="mt-2 text-xs text-slate-600">
+                  {t('settings.proFeatures.testimonials.upgradeDescription')}
+                </p>
+                <Button
+                  onClick={() =>
+                    openPlanUpgradeDialog({
+                      description: t('settings.proFeatures.testimonials.upgradeDescription'),
+                    })
+                  }
+                  variant="primary"
+                  className="mt-4"
+                >
+                  Pro csomag megtekintése
+                </Button>
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </AppFrame>
