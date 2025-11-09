@@ -12,13 +12,13 @@ type LoadingSpinnerProps = {
 
 /**
  * LoadingSpinner - Accessible loading spinner component
- * 
+ *
  * Provides visual feedback for loading states with proper ARIA attributes
  */
-export function LoadingSpinner({ 
-  size = 'md', 
+export function LoadingSpinner({
+  size = 'md',
   className,
-  'aria-label': ariaLabel = 'Loading...'
+  'aria-label': ariaLabel = 'Loading...',
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
@@ -37,14 +37,7 @@ export function LoadingSpinner({
       aria-label={ariaLabel}
       aria-live="polite"
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path
         className="opacity-75"
         fill="currentColor"
@@ -53,4 +46,3 @@ export function LoadingSpinner({
     </svg>
   );
 }
-

@@ -29,17 +29,3 @@ export const freeMinimalTokens: ThemeTokens = {
     lg: '0',
   },
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -322,17 +322,3 @@ export const templateStyles = `
     }
   }
 `;
-
-
-
-
-
-
-
-
-
-
-
-
-
-

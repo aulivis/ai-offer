@@ -6,7 +6,7 @@ import { addCacheHeaders, CACHE_CONFIGS } from '@/lib/cacheHeaders';
 
 /**
  * GET /api/templates
- * 
+ *
  * Returns list of available PDF templates with metadata.
  * Supports both SDK runtime templates and engine templates.
  */
@@ -33,8 +33,8 @@ export function GET() {
   }));
 
   // Combine and deduplicate by ID
-  const allTemplates = new Map<string, typeof engineTemplates[0]>();
-  
+  const allTemplates = new Map<string, (typeof engineTemplates)[0]>();
+
   // Add engine templates first (production templates)
   for (const template of engineTemplates) {
     allTemplates.set(template.id, template);
@@ -43,7 +43,7 @@ export function GET() {
   // Add SDK templates (may override if same ID)
   for (const template of sdkTemplates) {
     if (!allTemplates.has(template.id)) {
-      const sdkMeta: typeof engineTemplates[0] = {
+      const sdkMeta: (typeof engineTemplates)[0] = {
         id: template.id,
         name: template.name,
         version: template.version,

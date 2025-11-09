@@ -4,7 +4,13 @@ import { useState, useRef, useEffect } from 'react';
 import { t } from '@/copy';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useToast } from '@/components/ToastProvider';
-import { PhotoIcon, XMarkIcon, TrashIcon, InformationCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import {
+  PhotoIcon,
+  XMarkIcon,
+  TrashIcon,
+  InformationCircleIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { uploadWithProgress } from '@/lib/uploadWithProgress';
 import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
@@ -165,7 +171,8 @@ export function ActivityImageManager({
         throw new Error('Missing image path or URL in response');
       }
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : t('settings.activities.images.uploadFailed');
+      const message =
+        error instanceof ApiError ? error.message : t('settings.activities.images.uploadFailed');
       showToast({
         title: message,
         variant: 'error',
@@ -216,7 +223,8 @@ export function ActivityImageManager({
         throw new Error('Failed to delete image');
       }
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : t('settings.activities.images.deleteFailed');
+      const message =
+        error instanceof ApiError ? error.message : t('settings.activities.images.deleteFailed');
       showToast({
         title: message,
         variant: 'error',
@@ -263,7 +271,10 @@ export function ActivityImageManager({
           </div>
           <p className="mt-0.5 text-[10px] text-slate-500">
             {enabled
-              ? t('settings.activities.images.description', { current: imagePaths.length, max: MAX_IMAGES })
+              ? t('settings.activities.images.description', {
+                  current: imagePaths.length,
+                  max: MAX_IMAGES,
+                })
               : t('settings.proFeatures.referencePhotos.upgradeDescription')}
           </p>
         </div>
@@ -276,7 +287,9 @@ export function ActivityImageManager({
             size="sm"
           >
             <PhotoIcon className="h-4 w-4" />
-            {uploading ? t('settings.activities.images.uploading') : t('settings.activities.images.add')}
+            {uploading
+              ? t('settings.activities.images.uploading')
+              : t('settings.activities.images.add')}
           </Button>
         )}
       </div>
@@ -292,7 +305,10 @@ export function ActivityImageManager({
       {imagePaths.length > 0 && (
         <div className="grid grid-cols-3 gap-2">
           {imagePaths.map((path) => (
-            <div key={path} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-white">
+            <div
+              key={path}
+              className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-white"
+            >
               {loadingUrls ? (
                 <div className="flex h-full w-full items-center justify-center bg-slate-100">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -326,4 +342,3 @@ export function ActivityImageManager({
     </div>
   );
 }
-

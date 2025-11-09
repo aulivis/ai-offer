@@ -96,10 +96,7 @@ export default function NewOfferPage() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isActionBarVisible, setIsActionBarVisible] = useState(true);
-  const templateOptions = useMemo(
-    () => listTemplates() as Array<OfferTemplate>,
-    [],
-  );
+  const templateOptions = useMemo(() => listTemplates() as Array<OfferTemplate>, []);
   const defaultTemplateId = useMemo<TemplateId>(() => {
     // Find template matching default ID, or use first available
     const defaultMatch = templateOptions.find(
@@ -247,7 +244,7 @@ export default function NewOfferPage() {
     if (!success && attemptedSteps[step]) {
       // Track validation error
       const firstErrorField = Object.keys(validation.fields[step] || {}).find(
-        (key) => validation.fields[step]?.[key as keyof typeof validation.fields[1]],
+        (key) => validation.fields[step]?.[key as keyof (typeof validation.fields)[1]],
       );
       if (firstErrorField) {
         trackWizardEvent({
@@ -492,7 +489,11 @@ export default function NewOfferPage() {
 
             {step === 3 && (
               <StepErrorBoundary stepNumber={3}>
-                <OfferSummarySection title={title} projectDetails={projectDetails} totals={totals} />
+                <OfferSummarySection
+                  title={title}
+                  projectDetails={projectDetails}
+                  totals={totals}
+                />
               </StepErrorBoundary>
             )}
 

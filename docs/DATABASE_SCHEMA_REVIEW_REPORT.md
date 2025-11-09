@@ -7,6 +7,7 @@
 ## Executive Summary
 
 This report analyzes the database schema review provided by Supabase and cross-references it with the actual codebase to identify:
+
 - Obsolete tables and columns
 - RLS (Row Level Security) inconsistencies
 - Missing or unnecessary indexes
@@ -73,21 +74,25 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ❌ Should be removed
 
 **Evidence**:
+
 - 0 rows in database
 - NOT referenced in application code (only in migrations/indexes)
 - All code uses `clients` table instead
 - `offers.recipient_id` FK points to `clients.id`, not `recipients.id`
 
 **Code References**:
+
 - `web/src/app/api/ai-generate/route.ts:898` - Uses `clients` table
 - `web/src/app/new/page.tsx:793, 1626, 1635` - Uses `clients` table
 - `web/src/app/dashboard/page.tsx:609` - Joins `offers` with `clients` via `recipient_id`
 
 **Migration References**:
+
 - `web/supabase/migrations/20250102000000_add_query_optimization_indexes.sql:132-147` - Creates index on `recipients`
 - `web/supabase/migrations/20250127000002_add_missing_query_indexes.sql:94-95` - Comment mentions `recipients`
 
 **Recommendation**:
+
 1. Drop `recipients` table
 2. Remove index `idx_recipients_user_id`
 3. Update migration comments to remove `recipients` references
@@ -98,16 +103,19 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ⚠️ Needs RLS enabled
 
 **Current State**:
+
 - Has `user_id` column (FK to `auth.users`)
 - All queries filter by `user_id` (application-level filtering)
 - RLS is **DISABLED** (security risk)
 
 **Code References**:
+
 - `web/src/app/settings/page.tsx:405` - Queries with `.eq('user_id', user.id)`
 - `web/src/app/new/page.tsx:669` - Queries with `.eq('user_id', user.id)`
 - `web/src/components/offers/WizardStep2Pricing.tsx:193` - Inserts with `user_id`
 
 **Recommendation**:
+
 1. Enable RLS on `activities` table
 2. Add policies:
    - Users can SELECT their own activities: `auth.uid() = user_id`
@@ -121,16 +129,19 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ⚠️ Needs RLS enabled
 
 **Current State**:
+
 - Has `user_id` column (FK to `auth.users`)
 - All queries filter by `user_id` (application-level filtering)
 - RLS is **DISABLED** (security risk)
 
 **Code References**:
+
 - `web/src/app/api/ai-generate/route.ts:898` - Queries with `.eq('user_id', user.id)`
 - `web/src/app/new/page.tsx:793, 1626, 1635` - Queries/inserts with `user_id`
 - `web/src/app/dashboard/page.tsx:609` - Joins via `recipient_id` FK
 
 **Recommendation**:
+
 1. Enable RLS on `clients` table
 2. Add policies:
    - Users can SELECT their own clients: `auth.uid() = user_id`
@@ -145,6 +156,7 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ✅ Active (0 rows but used)
 
 **Evidence**:
+
 - Used in `web/src/app/new/page.tsx:803, 1146`
 - Has RLS enabled with proper policies
 - Has migrations and indexes
@@ -157,6 +169,7 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ✅ Active (0 rows but used)
 
 **Evidence**:
+
 - Used throughout codebase:
   - `web/src/app/settings/page.tsx:415-423` - Loads testimonials
   - `web/src/components/settings/TestimonialsManager.tsx` - Manages testimonials
@@ -173,6 +186,7 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ✅ Active (0 rows but used)
 
 **Evidence**:
+
 - Used in `web/src/app/api/chat/feedback/route.ts:85, 153`
 - Has RLS enabled with proper policies
 - Has migrations and indexes
@@ -185,6 +199,7 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ✅ Working correctly
 
 **Evidence**:
+
 - Edge Function exists: `web/supabase/functions/pdf-worker/index.ts`
 - Processes jobs correctly with status transitions
 - Has RLS enabled with proper policies
@@ -200,6 +215,7 @@ This report analyzes the database schema review provided by Supabase and cross-r
 **Status**: ✅ Working correctly
 
 **Evidence**:
+
 - Uses pgvector extension for embeddings
 - Has RLS enabled (public read, service role write)
 - Used in chatbot API: `web/src/app/api/chat/route.ts:419, 443`
@@ -385,12 +401,13 @@ After applying migrations:
 ## Conclusion
 
 The main issues identified are:
+
 1. **RLS disabled on user-scoped tables** (`activities`, `clients`) - Security risk
 2. **Obsolete `recipients` table** - Should be removed
 
 All other tables are either:
+
 - Working correctly (pdf_jobs, chatbot_documents)
 - Active features with 0 rows (offer_text_templates, testimonials, chatbot_feedback)
 
 The recommended actions are prioritized and can be implemented incrementally.
-

@@ -13,11 +13,11 @@ export type ContainerProps = React.HTMLAttributes<HTMLDivElement> & {
 
 /**
  * Container component for container queries
- * 
+ *
  * Wraps content in a container context that enables container queries.
  * Container queries allow components to respond to their container's size
  * rather than the viewport size.
- * 
+ *
  * @example
  * ```tsx
  * <Container type="inline-size" name="card">
@@ -49,4 +49,3 @@ export function Container({
     </div>
   );
 }
-

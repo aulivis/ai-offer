@@ -4,7 +4,8 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Bevezető videó - Ismerd meg a Vyndi-t | Vyndi',
-  description: 'Ismerd meg a Vyndi-t 5 percben. Ez a bevezető videó bemutatja a platform főbb funkcióit, és segít megérteni, hogyan segíthet a professzionális ajánlatok készítésében.',
+  description:
+    'Ismerd meg a Vyndi-t 5 percben. Ez a bevezető videó bemutatja a platform főbb funkcióit, és segít megérteni, hogyan segíthet a professzionális ajánlatok készítésében.',
   openGraph: {
     title: 'Bevezető videó - Ismerd meg a Vyndi-t | Vyndi',
     description: 'Ismerd meg a Vyndi-t 5 percben.',
@@ -43,19 +44,35 @@ export default function IntroVideoPage() {
           Bevezető videó
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Ismerd meg a Vyndi-t 5 percben. Ez a bevezető videó bemutatja a platform főbb funkcióit, és segít megérteni, hogyan segíthet a professzionális ajánlatok készítésében.
+          Ismerd meg a Vyndi-t 5 percben. Ez a bevezető videó bemutatja a platform főbb funkcióit,
+          és segít megérteni, hogyan segíthet a professzionális ajánlatok készítésében.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>5 perc</span>
           </div>
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>Bevezető</span>
           </div>
@@ -67,9 +84,24 @@ export default function IntroVideoPage() {
         <div className="relative aspect-video w-full bg-gradient-to-br from-gray-900 to-gray-800">
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <svg className="mx-auto h-20 w-20 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="mx-auto h-20 w-20 text-white/80"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <p className="mt-4 text-lg font-medium text-white">
                 [Helyőrző: Video player - Vyndi bevezető videó]
@@ -78,7 +110,8 @@ export default function IntroVideoPage() {
                 Videó hossza: 5 perc | Formátum: MP4 vagy YouTube embed
               </p>
               <p className="mt-4 text-xs text-white/60">
-                A videó tartalmazza: Platform áttekintés, főbb funkciók bemutatása, gyors demo, használati példák
+                A videó tartalmazza: Platform áttekintés, főbb funkciók bemutatása, gyors demo,
+                használati példák
               </p>
             </div>
           </div>
@@ -97,7 +130,8 @@ export default function IntroVideoPage() {
       <Card className="mb-12">
         <h2 className="mb-4 text-2xl font-bold text-fg">Videó tartalma</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          Ez a bevezető videó áttekintést nyújt a Vyndi platformról és bemutatja, hogyan segíthet neked professzionális ajánlatokat készíteni percek alatt.
+          Ez a bevezető videó áttekintést nyújt a Vyndi platformról és bemutatja, hogyan segíthet
+          neked professzionális ajánlatokat készíteni percek alatt.
         </p>
         <div className="space-y-4">
           <div>
@@ -120,14 +154,25 @@ export default function IntroVideoPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100">
-                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
               </div>
               <div>
                 <h3 className="mb-2 font-semibold text-fg">Gyors ajánlatkészítés</h3>
                 <p className="text-sm text-fg-muted">
-                  Tanuld meg, hogyan készíthetsz professzionális ajánlatot percek alatt a Vyndi segítségével.
+                  Tanuld meg, hogyan készíthetsz professzionális ajánlatot percek alatt a Vyndi
+                  segítségével.
                 </p>
               </div>
             </div>
@@ -136,14 +181,25 @@ export default function IntroVideoPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
-                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <svg
+                  className="h-6 w-6 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
                 </svg>
               </div>
               <div>
                 <h3 className="mb-2 font-semibold text-fg">AI-alapú szöveg generálás</h3>
                 <p className="text-sm text-fg-muted">
-                  Nézd meg, hogyan működik az AI funkció, és hogyan generálhatsz professzionális szövegeket másodpercek alatt.
+                  Nézd meg, hogyan működik az AI funkció, és hogyan generálhatsz professzionális
+                  szövegeket másodpercek alatt.
                 </p>
               </div>
             </div>
@@ -152,8 +208,18 @@ export default function IntroVideoPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-purple-100">
-                <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                <svg
+                  className="h-6 w-6 text-purple-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                  />
                 </svg>
               </div>
               <div>
@@ -168,8 +234,18 @@ export default function IntroVideoPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="h-6 w-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <div>
@@ -211,7 +287,12 @@ export default function IntroVideoPage() {
             >
               Ingyenes próba indítása
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </Link>
             <Link
@@ -235,12 +316,20 @@ export default function IntroVideoPage() {
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
                     Teljes funkció bemutató
                   </h3>
-                  <p className="text-sm text-fg-muted">
-                    Részletes útmutató minden funkcióról.
-                  </p>
+                  <p className="text-sm text-fg-muted">Részletes útmutató minden funkcióról.</p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -256,8 +345,18 @@ export default function IntroVideoPage() {
                     Komplett útmutató a tökéletes ajánlatok elkészítéséhez.
                   </p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -267,11 +366,3 @@ export default function IntroVideoPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-

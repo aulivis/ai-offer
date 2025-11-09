@@ -188,19 +188,19 @@ export async function processPdfJobInline(
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
-            
+
             // Set viewport for consistent rendering
             await page.setViewport({
               width: 1200,
               height: 1600,
               deviceScaleFactor: 2,
             });
-            
+
             await setContentWithNetworkIdleLogging(page, html, 'inline-pdf');
-            
+
             // Extract document title for metadata
             const documentTitle = await page.title().catch(() => 'Offer Document');
-            
+
             // Create PDF metadata
             const pdfMetadata: PdfMetadata = {
               title: documentTitle || 'Offer Document',
@@ -210,32 +210,32 @@ export async function processPdfJobInline(
               creator: 'AI Offer Platform',
               producer: 'AI Offer Platform',
             };
-            
+
             // Set PDF metadata
             await setPdfMetadata(page, pdfMetadata);
-            
+
             // Extract header/footer data for Puppeteer templates
             const headerFooterData = await page.evaluate(() => {
               const footer = document.querySelector('.slim-footer');
               const header = document.querySelector('.slim-header');
-              
+
               if (!footer) return null;
-              
+
               const companyEl = footer.querySelector('.slim-footer > div > span:first-child');
               const companyName = companyEl?.textContent?.trim() || 'Company';
-              
+
               const addressEl = footer.querySelector('.slim-footer > div > span:nth-child(2)');
               const companyAddress = addressEl?.textContent?.trim() || '';
-              
+
               const taxIdEl = footer.querySelector('.slim-footer > div > span:nth-child(3)');
               const companyTaxId = taxIdEl?.textContent?.trim() || '';
-              
+
               const pageNumberEl = footer.querySelector('.slim-footer__page-number');
               const pageLabel = pageNumberEl?.getAttribute('data-page-label') || 'Page';
-              
+
               return { companyName, companyAddress, companyTaxId, pageLabel };
             });
-            
+
             // Create footer template with page numbers (server-side)
             // Puppeteer templates support .pageNumber and .totalPages classes
             function escapeHtml(text: string): string {
@@ -246,8 +246,9 @@ export async function processPdfJobInline(
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
             }
-            
-            const footerTemplate = headerFooterData ? `
+
+            const footerTemplate = headerFooterData
+              ? `
               <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8pt; font-family: 'Work Sans', Arial, sans-serif; color: #334155; padding: 4mm 0; width: 100%; box-sizing: border-box;">
                 <div style="display: flex; flex-direction: column; gap: 2px; font-size: 7pt; min-width: 0; flex: 1; max-width: 70%; word-wrap: break-word;">
                   <span style="font-weight: 600;">${escapeHtml(headerFooterData.companyName)}</span>
@@ -258,8 +259,9 @@ export async function processPdfJobInline(
                   ${escapeHtml(headerFooterData.pageLabel)} <span class="pageNumber"></span> / <span class="totalPages"></span>
                 </span>
               </div>
-            ` : '<div></div>';
-            
+            `
+              : '<div></div>';
+
             // Generate PDF with margins and Puppeteer templates for page numbers
             const pdfOptions = createPdfOptions(pdfMetadata, {
               margin: {
@@ -272,7 +274,7 @@ export async function processPdfJobInline(
               headerTemplate: '<div></div>', // Empty header for now
               footerTemplate: footerTemplate,
             });
-            
+
             const puppeteerOptions = toPuppeteerOptions(pdfOptions);
             return await page.pdf(puppeteerOptions);
           } finally {
@@ -328,11 +330,11 @@ export async function processPdfJobInline(
       .eq('user_id', job.userId)
       .select('id, pdf_url')
       .single();
-    
+
     if (offerUpdateError) {
       throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
     }
-    
+
     if (!updatedOffer || updatedOffer.pdf_url !== pdfUrl) {
       console.error('Offer update verification failed', {
         offerId: job.offerId,
@@ -341,12 +343,12 @@ export async function processPdfJobInline(
       });
       throw new Error('Offer update verification failed - PDF URL was not set correctly');
     }
-    
+
     console.log('Offer updated successfully with PDF URL', {
       offerId: job.offerId,
       pdfUrl,
     });
-    
+
     // Double-check the update persisted by querying again
     const { data: doubleCheck, error: doubleCheckError } = await supabase
       .from('offers')
@@ -354,7 +356,7 @@ export async function processPdfJobInline(
       .eq('id', job.offerId)
       .eq('user_id', job.userId)
       .maybeSingle();
-    
+
     if (doubleCheckError) {
       console.error('Double-check query failed', { error: doubleCheckError });
     } else if (!doubleCheck || doubleCheck.pdf_url !== pdfUrl) {
@@ -385,7 +387,7 @@ export async function processPdfJobInline(
       } finally {
         clearTimeout(timeoutId);
       }
-      
+
       if (!verifyResponse.ok) {
         console.error('PDF verification failed - file not accessible', {
           offerId: job.offerId,
@@ -393,9 +395,11 @@ export async function processPdfJobInline(
           status: verifyResponse.status,
           statusText: verifyResponse.statusText,
         });
-        throw new Error(`PDF is not accessible: ${verifyResponse.status} ${verifyResponse.statusText}`);
+        throw new Error(
+          `PDF is not accessible: ${verifyResponse.status} ${verifyResponse.statusText}`,
+        );
       }
-      
+
       // Verify it's actually a PDF by checking Content-Type
       const contentType = verifyResponse.headers.get('content-type');
       if (contentType && !contentType.includes('application/pdf')) {
@@ -406,7 +410,7 @@ export async function processPdfJobInline(
         });
         throw new Error(`PDF has incorrect content type: ${contentType}`);
       }
-      
+
       console.log('Verified: PDF is accessible and downloadable', {
         offerId: job.offerId,
         pdfUrl,
@@ -435,7 +439,7 @@ export async function processPdfJobInline(
       limit: job.userLimit,
       periodStart: job.usagePeriodStart,
     });
-    
+
     const usageResult = await incrementUsage(
       supabase,
       'user',
@@ -444,13 +448,13 @@ export async function processPdfJobInline(
       job.usagePeriodStart,
       job.jobId, // Exclude this job from pending count
     );
-    
+
     console.log('User quota increment result', {
       allowed: usageResult.allowed,
       offersGenerated: usageResult.offersGenerated,
       periodStart: usageResult.periodStart,
     });
-    
+
     if (!usageResult.allowed) {
       console.error('User quota increment not allowed, rolling back offer update', {
         userId: job.userId,
@@ -478,7 +482,7 @@ export async function processPdfJobInline(
         limit: job.deviceLimit,
         periodStart: job.usagePeriodStart,
       });
-      
+
       const deviceResult = await incrementUsage(
         supabase,
         'device',
@@ -487,13 +491,13 @@ export async function processPdfJobInline(
         job.usagePeriodStart,
         job.jobId, // Exclude this job from pending count
       );
-      
+
       console.log('Device quota increment result', {
         allowed: deviceResult.allowed,
         offersGenerated: deviceResult.offersGenerated,
         periodStart: deviceResult.periodStart,
       });
-      
+
       if (!deviceResult.allowed) {
         console.error('Device quota increment not allowed, rolling back', {
           userId: job.userId,
@@ -573,7 +577,7 @@ export async function processPdfJobInline(
       userUsageIncremented,
       deviceUsageIncremented,
     });
-    
+
     return pdfUrl;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

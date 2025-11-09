@@ -19,7 +19,9 @@ export default function FeatureCard({
   return (
     <Card
       className={`group relative overflow-hidden p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-pop ${
-        highlight ? 'border-primary/40 bg-gradient-to-br from-primary/5 via-transparent to-accent/5' : ''
+        highlight
+          ? 'border-primary/40 bg-gradient-to-br from-primary/5 via-transparent to-accent/5'
+          : ''
       } ${className}`}
     >
       <div className="absolute -top-24 right-0 h-40 w-40 rounded-full bg-accent/20 blur-3xl transition-all duration-300 group-hover:scale-125" />
@@ -33,17 +35,3 @@ export default function FeatureCard({
     </Card>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -46,11 +46,7 @@ import { Button } from '@/components/ui/Button';
 ### With Loading State
 
 ```tsx
-<Button 
-  variant="primary" 
-  loading={isSubmitting}
-  onClick={handleSubmit}
->
+<Button variant="primary" loading={isSubmitting} onClick={handleSubmit}>
   Submit
 </Button>
 ```
@@ -90,7 +86,7 @@ import { Input } from '@/components/ui/Input';
   value={email}
   onChange={(e) => setEmail(e.target.value)}
   required
-/>
+/>;
 ```
 
 ### With Error State
@@ -142,15 +138,11 @@ import { Input } from '@/components/ui/Input';
 ```tsx
 import { Select } from '@/components/ui/Select';
 
-<Select
-  label="Country"
-  value={country}
-  onChange={(e) => setCountry(e.target.value)}
->
+<Select label="Country" value={country} onChange={(e) => setCountry(e.target.value)}>
   <option value="">Select a country</option>
   <option value="us">United States</option>
   <option value="uk">United Kingdom</option>
-</Select>
+</Select>;
 ```
 
 ### With Error State
@@ -178,7 +170,7 @@ import { Select } from '@/components/ui/Select';
   loading={isLoadingCountries}
 >
   <option value="">Loading...</option>
-  {countries.map(country => (
+  {countries.map((country) => (
     <option key={country.id} value={country.id}>
       {country.name}
     </option>
@@ -204,13 +196,11 @@ import { Card, CardHeader, CardBody, CardFooter } from '@/components/ui/Card';
   <CardHeader>
     <h3>Card Title</h3>
   </CardHeader>
-  <CardBody>
-    Card content goes here
-  </CardBody>
+  <CardBody>Card content goes here</CardBody>
   <CardFooter>
     <Button>Action</Button>
   </CardFooter>
-</Card>
+</Card>;
 ```
 
 ### Sizes
@@ -235,9 +225,7 @@ import { Card, CardHeader, CardBody, CardFooter } from '@/components/ui/Card';
     <h3>Title</h3>
     <p className="text-sm text-fg-muted">Subtitle</p>
   </CardHeader>
-  <CardBody>
-    Content
-  </CardBody>
+  <CardBody>Content</CardBody>
   <CardFooter>
     <Button variant="primary">Save</Button>
     <Button variant="secondary">Cancel</Button>
@@ -262,17 +250,11 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Moda
 
 const [isOpen, setIsOpen] = useState(false);
 
-<Modal 
-  open={isOpen} 
-  onClose={() => setIsOpen(false)}
-  size="lg"
->
+<Modal open={isOpen} onClose={() => setIsOpen(false)} size="lg">
   <ModalHeader>
     <h2>Modal Title</h2>
   </ModalHeader>
-  <ModalBody>
-    Modal content goes here
-  </ModalBody>
+  <ModalBody>Modal content goes here</ModalBody>
   <ModalFooter>
     <Button variant="secondary" onClick={() => setIsOpen(false)}>
       Cancel
@@ -281,7 +263,7 @@ const [isOpen, setIsOpen] = useState(false);
       Save
     </Button>
   </ModalFooter>
-</Modal>
+</Modal>;
 ```
 
 ### Sizes
@@ -501,9 +483,7 @@ const padding = getSpacing('md'); // '1rem'
 const gap = SPACING_SCALE.lg; // '1.5rem'
 
 // In Tailwind (aligns with spacing scale)
-<div className="p-4 gap-6 mb-8">
-  {/* p-4 = 1rem, gap-6 = 1.5rem, mb-8 = 2rem */}
-</div>
+<div className="p-4 gap-6 mb-8">{/* p-4 = 1rem, gap-6 = 1.5rem, mb-8 = 2rem */}</div>;
 ```
 
 ### Typography
@@ -513,7 +493,7 @@ import { TYPOGRAPHY_SCALE, getTypography } from '@/styles/typography';
 import { Heading } from '@/components/ui/Heading';
 
 // Use Heading component (recommended)
-<Heading level="h1">Title</Heading>
+<Heading level="h1">Title</Heading>;
 
 // Use typography values directly
 const h1Style = getTypography('h1');
@@ -528,12 +508,8 @@ import { getAnimationDuration } from '@/styles/animations';
 function MyComponent() {
   const reducedMotion = useReducedMotion();
   const duration = getAnimationDuration('smooth', true);
-  
-  return (
-    <div style={{ transitionDuration: `${duration}ms` }}>
-      Content
-    </div>
-  );
+
+  return <div style={{ transitionDuration: `${duration}ms` }}>Content</div>;
 }
 ```
 
@@ -558,10 +534,7 @@ function MyForm() {
         help="We'll never share your email"
         required
       />
-      <Button 
-        type="submit" 
-        loading={isSubmitting}
-      >
+      <Button type="submit" loading={isSubmitting}>
         Submit
       </Button>
     </form>
@@ -592,11 +565,7 @@ function EditModal({ open, onClose, item }) {
         <Button variant="secondary" onClick={onClose}>
           Cancel
         </Button>
-        <Button 
-          variant="primary" 
-          loading={isSaving}
-          onClick={handleSave}
-        >
+        <Button variant="primary" loading={isSaving} onClick={handleSave}>
           Save
         </Button>
       </ModalFooter>
@@ -641,18 +610,16 @@ function EditModal({ open, onClose, item }) {
 ### Loading Errors
 
 ```tsx
-{error && (
-  <div className="rounded-lg border border-danger bg-danger/10 p-4">
-    <p className="text-sm text-danger">{error.message}</p>
-    <Button 
-      variant="secondary" 
-      size="sm" 
-      onClick={handleRetry}
-    >
-      Retry
-    </Button>
-  </div>
-)}
+{
+  error && (
+    <div className="rounded-lg border border-danger bg-danger/10 p-4">
+      <p className="text-sm text-danger">{error.message}</p>
+      <Button variant="secondary" size="sm" onClick={handleRetry}>
+        Retry
+      </Button>
+    </div>
+  );
+}
 ```
 
 ## Performance Considerations
@@ -693,28 +660,27 @@ Components are already optimized for code splitting. Use dynamic imports for hea
 ### Migrating from HTML Elements
 
 **Before:**
+
 ```tsx
 <button onClick={handleClick}>Click me</button>
 ```
 
 **After:**
+
 ```tsx
 <Button onClick={handleClick}>Click me</Button>
 ```
 
 **Before:**
+
 ```tsx
 <input type="text" value={value} onChange={handleChange} />
 ```
 
 **After:**
+
 ```tsx
-<Input 
-  type="text" 
-  value={value} 
-  onChange={handleChange}
-  label="Label"
-/>
+<Input type="text" value={value} onChange={handleChange} label="Label" />
 ```
 
 ## View Transitions API
@@ -748,6 +714,7 @@ function MyComponent() {
 ### View Transition Names
 
 Key elements have view transition names applied:
+
 - `header` - Page header
 - `main-content` - Main content area
 - `footer` - Page footer
@@ -770,10 +737,8 @@ Use the `Container` component to create a container context:
 import { Container } from '@/components/ui/Container';
 
 <Container type="inline-size" name="card">
-  <div className="container-responsive">
-    Content that adapts to container size
-  </div>
-</Container>
+  <div className="container-responsive">Content that adapts to container size</div>
+</Container>;
 ```
 
 ### Container Query Classes
@@ -809,8 +774,8 @@ The `Card` component automatically enables container queries:
 ## Support
 
 For questions or issues, please refer to:
+
 - Component JSDoc comments
 - Design tokens documentation
 - Design system documentation
 - Accessibility guidelines
-

@@ -75,17 +75,18 @@ class Logger {
   }
 
   error(message: string, error?: unknown, extra?: Record<string, unknown>): void {
-    const errorData = error instanceof Error
-      ? {
-          error: {
-            name: error.name,
-            message: error.message,
-            stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,
-          },
-        }
-      : error !== undefined
-        ? { error: String(error) }
-        : {};
+    const errorData =
+      error instanceof Error
+        ? {
+            error: {
+              name: error.name,
+              message: error.message,
+              stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,
+            },
+          }
+        : error !== undefined
+          ? { error: String(error) }
+          : {};
 
     this.formatMessage('error', message, { ...errorData, ...extra });
   }
@@ -109,20 +110,3 @@ export function createLogger(requestId?: string): Logger {
  * Global logger for use outside of request context.
  */
 export const logger = new Logger();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

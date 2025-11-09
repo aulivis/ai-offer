@@ -1,9 +1,9 @@
 /**
  * Script to ingest the public knowledge base into the chatbot
- * 
+ *
  * This script processes the public-knowledge-base.md file and ingests it
  * into the Supabase chatbot_documents table for RAG retrieval.
- * 
+ *
  * Usage:
  *   npm run ingest-chatbot-knowledge-base
  *   or
@@ -96,15 +96,13 @@ async function main() {
       const embedding = response.data[0]?.embedding ?? [];
 
       // Store in database
-      const { error: insertError } = await supabase
-        .from('chatbot_documents')
-        .insert({
-          content: chunk.content,
-          metadata: chunk.metadata,
-          source_path: SOURCE_PATH,
-          chunk_index: chunk.metadata.chunkIndex,
-          embedding: embedding,
-        });
+      const { error: insertError } = await supabase.from('chatbot_documents').insert({
+        content: chunk.content,
+        metadata: chunk.metadata,
+        source_path: SOURCE_PATH,
+        chunk_index: chunk.metadata.chunkIndex,
+        embedding: embedding,
+      });
 
       if (insertError) {
         console.error(`❌ Failed to insert chunk ${i + 1}:`, insertError);
@@ -138,4 +136,3 @@ main().catch((error) => {
   console.error('❌ Fatal error:', error);
   process.exit(1);
 });
-

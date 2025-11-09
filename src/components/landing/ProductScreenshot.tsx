@@ -69,17 +69,3 @@ export default function ProductScreenshot({
     </figure>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

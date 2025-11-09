@@ -249,7 +249,14 @@ export function usePreviewGeneration({
 
       return () => clearTimeout(timer);
     }
-  }, [debouncedTitle, debouncedOverview, hasPreviewInputs, previewLocked, isQuotaExhausted, generatePreview]);
+  }, [
+    debouncedTitle,
+    debouncedOverview,
+    hasPreviewInputs,
+    previewLocked,
+    isQuotaExhausted,
+    generatePreview,
+  ]);
 
   const reset = useCallback(() => {
     abort();
@@ -270,17 +277,3 @@ export function usePreviewGeneration({
     setPreviewLocked,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

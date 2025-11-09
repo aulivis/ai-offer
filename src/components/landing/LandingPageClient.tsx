@@ -17,4 +17,3 @@ export function LandingPageClient() {
 
   return <ExitIntentPopup show={showPopup} onClose={() => setShowPopup(false)} />;
 }
-

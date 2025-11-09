@@ -131,34 +131,52 @@ export function WizardStep1Details({
     >
       {/* Header */}
       <div className="space-y-2 mb-6">
-        <h2 className="text-xl font-bold text-slate-900">
-          {t('offers.wizard.steps.details')}
-        </h2>
+        <h2 className="text-xl font-bold text-slate-900">{t('offers.wizard.steps.details')}</h2>
         <p className="text-sm text-slate-600 leading-relaxed">
           {t('offers.wizard.forms.details.sections.overviewHint')}
         </p>
       </div>
 
       {/* Error Summary */}
-      {validationErrors && (validationErrors.title || Object.keys(validationErrors.projectDetails || {}).length > 0) && (
-        <div className="mb-6 rounded-xl border-2 border-rose-300 bg-rose-50/90 p-4">
-          <div className="flex items-start gap-3">
-            <svg className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <div className="flex-1 space-y-2">
-              <p className="text-sm font-semibold text-rose-900">{t('offers.wizard.validation.errorSummaryTitle')}</p>
-              <ul className="list-disc list-inside space-y-1 text-xs text-rose-800">
-                {validationErrors.title && <li>{validationErrors.title}</li>}
-                {validationErrors.projectDetails?.overview && <li>{validationErrors.projectDetails.overview}</li>}
-                {validationErrors.projectDetails?.deliverables && <li>{validationErrors.projectDetails.deliverables}</li>}
-                {validationErrors.projectDetails?.timeline && <li>{validationErrors.projectDetails.timeline}</li>}
-                {validationErrors.projectDetails?.constraints && <li>{validationErrors.projectDetails.constraints}</li>}
-              </ul>
+      {validationErrors &&
+        (validationErrors.title ||
+          Object.keys(validationErrors.projectDetails || {}).length > 0) && (
+          <div className="mb-6 rounded-xl border-2 border-rose-300 bg-rose-50/90 p-4">
+            <div className="flex items-start gap-3">
+              <svg
+                className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-semibold text-rose-900">
+                  {t('offers.wizard.validation.errorSummaryTitle')}
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-xs text-rose-800">
+                  {validationErrors.title && <li>{validationErrors.title}</li>}
+                  {validationErrors.projectDetails?.overview && (
+                    <li>{validationErrors.projectDetails.overview}</li>
+                  )}
+                  {validationErrors.projectDetails?.deliverables && (
+                    <li>{validationErrors.projectDetails.deliverables}</li>
+                  )}
+                  {validationErrors.projectDetails?.timeline && (
+                    <li>{validationErrors.projectDetails.timeline}</li>
+                  )}
+                  {validationErrors.projectDetails?.constraints && (
+                    <li>{validationErrors.projectDetails.constraints}</li>
+                  )}
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Style Selection - More Prominent */}
       <section className="mb-6 space-y-3">
@@ -197,20 +215,30 @@ export function WizardStep1Details({
                 }`}
               >
                 <div className="flex items-center gap-3 w-full">
-                  <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    active ? 'border-primary bg-primary' : 'border-slate-300'
-                  }`}>
+                  <div
+                    className={`h-6 w-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      active ? 'border-primary bg-primary' : 'border-slate-300'
+                    }`}
+                  >
                     {active && (
                       <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className={`block text-sm font-bold ${active ? 'text-primary' : 'text-slate-700'}`}>
+                    <span
+                      className={`block text-sm font-bold ${active ? 'text-primary' : 'text-slate-700'}`}
+                    >
                       {option.label}
                     </span>
-                    <span className={`block text-xs leading-relaxed mt-1 ${active ? 'text-slate-700' : 'text-slate-500'}`}>
+                    <span
+                      className={`block text-xs leading-relaxed mt-1 ${active ? 'text-slate-700' : 'text-slate-500'}`}
+                    >
                       {option.description}
                     </span>
                   </div>
@@ -275,9 +303,7 @@ export function WizardStep1Details({
             value={selectedTemplateId}
             onChange={(e) => onTemplateSelect(e.target.value)}
           >
-            <option value="">
-              {t('offers.wizard.forms.details.templates.selectPlaceholder')}
-            </option>
+            <option value="">{t('offers.wizard.forms.details.templates.selectPlaceholder')}</option>
             {textTemplates.map((template) => (
               <option key={template.id} value={template.id}>
                 {template.name}
@@ -333,7 +359,7 @@ export function WizardStep1Details({
             aria-required="true"
           />
 
-              {form.style === 'detailed' && (
+          {form.style === 'detailed' && (
             <div className="space-y-4">
               <div className="space-y-3 rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -368,22 +394,24 @@ export function WizardStep1Details({
                 )}
               </div>
 
-              {projectDetailFields.filter((field) => field !== 'overview').map((field) => (
-                <Textarea
-                  key={field}
-                  value={form.projectDetails[field]}
-                  onChange={(event) => handleProjectDetailChange(field, event.target.value)}
-                  label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
-                  placeholder={t(
-                    `offers.wizard.forms.details.fields.${field}.placeholder` as const,
-                  )}
-                  help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
-                  maxLength={PROJECT_DETAIL_LIMITS[field]}
-                  error={validationErrors?.projectDetails?.[field]}
-                  showCounter
-                  className="min-h-[6rem]"
-                />
-              ))}
+              {projectDetailFields
+                .filter((field) => field !== 'overview')
+                .map((field) => (
+                  <Textarea
+                    key={field}
+                    value={form.projectDetails[field]}
+                    onChange={(event) => handleProjectDetailChange(field, event.target.value)}
+                    label={t(`offers.wizard.forms.details.fields.${field}.label` as const)}
+                    placeholder={t(
+                      `offers.wizard.forms.details.fields.${field}.placeholder` as const,
+                    )}
+                    help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
+                    maxLength={PROJECT_DETAIL_LIMITS[field]}
+                    error={validationErrors?.projectDetails?.[field]}
+                    showCounter
+                    className="min-h-[6rem]"
+                  />
+                ))}
             </div>
           )}
         </div>
@@ -418,19 +446,21 @@ export function WizardStep1Details({
             <Select
               label={t('offers.wizard.forms.details.voiceLabel')}
               value={form.brandVoice}
-              onChange={(e) => handleFieldChange('brandVoice', e.target.value as 'friendly' | 'formal')}
+              onChange={(e) =>
+                handleFieldChange('brandVoice', e.target.value as 'friendly' | 'formal')
+              }
             >
               <option value="friendly">
                 {t('offers.wizard.forms.details.voiceOptions.friendly')}
               </option>
-              <option value="formal">
-                {t('offers.wizard.forms.details.voiceOptions.formal')}
-              </option>
+              <option value="formal">{t('offers.wizard.forms.details.voiceOptions.formal')}</option>
             </Select>
             <Select
               label={t('offers.wizard.forms.details.formalityLabel')}
               value={form.formality}
-              onChange={(e) => handleFieldChange('formality', e.target.value as 'tegeződés' | 'magázódás')}
+              onChange={(e) =>
+                handleFieldChange('formality', e.target.value as 'tegeződés' | 'magázódás')
+              }
             >
               <option value="tegeződés">
                 {t('offers.wizard.forms.details.formalityOptions.tegeződés')}
@@ -442,8 +472,6 @@ export function WizardStep1Details({
           </div>
         </section>
       )}
-
     </Card>
   );
 }
-

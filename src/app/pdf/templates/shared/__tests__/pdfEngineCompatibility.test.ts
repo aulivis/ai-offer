@@ -1,6 +1,6 @@
 /**
  * PDF Engine Compatibility Tests
- * 
+ *
  * Tests that verify our templates work correctly with the PDF generation engine (Puppeteer/Chrome).
  * This ensures Flexbox, CSS Grid, and other CSS features are properly supported.
  */
@@ -97,8 +97,9 @@ describe('PDF Engine Compatibility', () => {
           await page.setContent(html, { waitUntil: 'networkidle0' });
 
           // Check for CSS errors (layout issues)
-          const cssErrors = errors.filter((error) =>
-            error.toLowerCase().includes('css') || error.toLowerCase().includes('layout'),
+          const cssErrors = errors.filter(
+            (error) =>
+              error.toLowerCase().includes('css') || error.toLowerCase().includes('layout'),
           );
 
           expect(cssErrors).toHaveLength(0);
@@ -156,16 +157,26 @@ describe('PDF Engine Compatibility', () => {
                   rect1.right > rect2.left
                 ) {
                   const overlapArea =
-                    Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left)) *
-                    Math.max(0, Math.min(rect1.bottom, rect2.bottom) - Math.max(rect1.top, rect2.top));
+                    Math.max(
+                      0,
+                      Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left),
+                    ) *
+                    Math.max(
+                      0,
+                      Math.min(rect1.bottom, rect2.bottom) - Math.max(rect1.top, rect2.top),
+                    );
                   const area1 = rect1.width * rect1.height;
                   const area2 = rect2.width * rect2.height;
                   const overlapRatio = overlapArea / Math.min(area1, area2);
 
                   if (overlapRatio > 0.5 && elements[i].textContent && elements[j].textContent) {
                     overlaps.push({
-                      el1: elements[i].tagName + (elements[i].className ? `.${elements[i].className}` : ''),
-                      el2: elements[j].tagName + (elements[j].className ? `.${elements[j].className}` : ''),
+                      el1:
+                        elements[i].tagName +
+                        (elements[i].className ? `.${elements[i].className}` : ''),
+                      el2:
+                        elements[j].tagName +
+                        (elements[j].className ? `.${elements[j].className}` : ''),
                     });
                   }
                 }
@@ -235,4 +246,3 @@ describe('PDF Engine Compatibility', () => {
     });
   }
 });
-

@@ -49,21 +49,18 @@ export function useClientAutocomplete(clientList: Client[] = []) {
     setClient((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const selectClient = useCallback(
-    (selectedClient: Client) => {
-      setClientId(selectedClient.id);
-      setClient({
-        company_name: selectedClient.company_name,
-        address: selectedClient.address || '',
-        tax_id: selectedClient.tax_id || '',
-        representative: selectedClient.representative || '',
-        phone: selectedClient.phone || '',
-        email: selectedClient.email || '',
-      });
-      setShowDropdown(false);
-    },
-    [],
-  );
+  const selectClient = useCallback((selectedClient: Client) => {
+    setClientId(selectedClient.id);
+    setClient({
+      company_name: selectedClient.company_name,
+      address: selectedClient.address || '',
+      tax_id: selectedClient.tax_id || '',
+      representative: selectedClient.representative || '',
+      phone: selectedClient.phone || '',
+      email: selectedClient.email || '',
+    });
+    setShowDropdown(false);
+  }, []);
 
   const reset = useCallback(() => {
     setClient(DEFAULT_CLIENT);
@@ -83,17 +80,3 @@ export function useClientAutocomplete(clientList: Client[] = []) {
     reset,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -14,12 +14,15 @@ export function renderMarketingFooter(
   const brandName = 'Vyndi AI';
   // Try to get translated messages, fallback to Hungarian defaults
   const generatedByText =
-    i18n.t('pdf.templates.marketing.generatedBy', { default: 'Ez az ajánlat a' }) || 'Ez az ajánlat a';
+    i18n.t('pdf.templates.marketing.generatedBy', { default: 'Ez az ajánlat a' }) ||
+    'Ez az ajánlat a';
   const upsellMessage =
     i18n.t('pdf.templates.marketing.upsell', {
       default: 'Frissíts Pro csomagra a prémium sablonokért és haladó funkciókért.',
     }) || 'Frissíts Pro csomagra a prémium sablonokért és haladó funkciókért.';
-  const linkText = i18n.t('pdf.templates.marketing.visitLink', { default: 'Látogasd meg a Vyndi AI-t' }) || 'Látogasd meg a Vyndi AI-t';
+  const linkText =
+    i18n.t('pdf.templates.marketing.visitLink', { default: 'Látogasd meg a Vyndi AI-t' }) ||
+    'Látogasd meg a Vyndi AI-t';
 
   return `
     <div class="offer-doc__marketing-footer">

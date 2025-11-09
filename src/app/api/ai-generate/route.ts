@@ -51,10 +51,7 @@ import {
 } from '@/lib/projectDetails';
 import { allowCategory } from '../../../../lib/consent/server';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
-import {
-  checkRateLimitMiddleware,
-  createRateLimitResponse,
-} from '@/lib/rateLimitMiddleware';
+import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 import { z } from 'zod';
@@ -72,17 +69,25 @@ function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';
 }
 
-
-function normalizeUsageLimitError(message: string | undefined, translator?: Translator): string | null {
+function normalizeUsageLimitError(
+  message: string | undefined,
+  translator?: Translator,
+): string | null {
   if (!message) return null;
   const normalized = message.toLowerCase();
 
   if (normalized.includes('eszközön elérted a havi ajánlatlimitálást')) {
-    return translator?.t('quotaWarningBar.message.device') ?? 'Elérted az eszközön a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.';
+    return (
+      translator?.t('quotaWarningBar.message.device') ??
+      'Elérted az eszközön a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.'
+    );
   }
 
   if (normalized.includes('havi ajánlatlimitálás')) {
-    return translator?.t('quotaWarningBar.message.user') ?? 'Elérted a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.';
+    return (
+      translator?.t('quotaWarningBar.message.user') ??
+      'Elérted a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.'
+    );
   }
 
   return null;
@@ -224,19 +229,22 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
     properties: {
       introduction: {
         type: 'string',
-        description: 'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely köszönti a címzettet (névvel vagy cégnévvel, ha elérhető) és bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet.',
+        description:
+          'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely köszönti a címzettet (névvel vagy cégnévvel, ha elérhető) és bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet.',
         minLength: 50,
         maxLength: 300,
       },
       project_summary: {
         type: 'string',
-        description: 'A projekt céljának és hátterének részletes összefoglalása (3-5 mondat). Kövesse a probléma-megoldás-eredmény keretrendszert: mutassa be a problémát/igényt, a javasolt megoldást, és a várható eredményeket. Legyen informatív és meggyőző.',
+        description:
+          'A projekt céljának és hátterének részletes összefoglalása (3-5 mondat). Kövesse a probléma-megoldás-eredmény keretrendszert: mutassa be a problémát/igényt, a javasolt megoldást, és a várható eredményeket. Legyen informatív és meggyőző.',
         minLength: 100,
         maxLength: 500,
       },
       value_proposition: {
         type: 'string',
-        description: 'Opcionális: Az egyedi értékpropozíció és főbb előnyök rövid összefoglalása (2-3 mondat). Hangsúlyozd ki, hogyan oldja meg az ajánlat a vevő problémáját és milyen konkrét előnyöket nyújt. Használj mérhető eredményeket, ahol lehetséges.',
+        description:
+          'Opcionális: Az egyedi értékpropozíció és főbb előnyök rövid összefoglalása (2-3 mondat). Hangsúlyozd ki, hogyan oldja meg az ajánlat a vevő problémáját és milyen konkrét előnyöket nyújt. Használj mérhető eredményeket, ahol lehetséges.',
         minLength: 80,
         maxLength: 300,
       },
@@ -246,7 +254,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 6,
         items: {
           type: 'string',
-          description: 'A projekt terjedelméhez tartozó kulcsfeladat vagy szolgáltatás. Minden pont legyen konkrét, mérhető és érthető (min. 20, max. 120 karakter).',
+          description:
+            'A projekt terjedelméhez tartozó kulcsfeladat vagy szolgáltatás. Minden pont legyen konkrét, mérhető és érthető (min. 20, max. 120 karakter).',
           minLength: 20,
           maxLength: 120,
         },
@@ -257,7 +266,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 6,
         items: {
           type: 'string',
-          description: 'Egy konkrét, szállítandó eredmény vagy deliverable. Legyen specifikus és mérhető. Említsd meg a minőségi követelményeket vagy szabványokat, ahol releváns (min. 20, max. 120 karakter).',
+          description:
+            'Egy konkrét, szállítandó eredmény vagy deliverable. Legyen specifikus és mérhető. Említsd meg a minőségi követelményeket vagy szabványokat, ahol releváns (min. 20, max. 120 karakter).',
           minLength: 20,
           maxLength: 120,
         },
@@ -268,7 +278,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 5,
         items: {
           type: 'string',
-          description: 'Opcionális: Egy mérhető, konkrét várható eredmény vagy előny (pl. "30% növekedés", "2 hét alatt"). Legyen specifikus és kvantifikálható (min. 20, max. 100 karakter).',
+          description:
+            'Opcionális: Egy mérhető, konkrét várható eredmény vagy előny (pl. "30% növekedés", "2 hét alatt"). Legyen specifikus és kvantifikálható (min. 20, max. 100 karakter).',
           minLength: 20,
           maxLength: 100,
         },
@@ -279,7 +290,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 5,
         items: {
           type: 'string',
-          description: 'Kulcs mérföldkő vagy ütemezési pont konkrét dátumokkal vagy időkerettel (pl. "2025. február 15-ig", "2 hét alatt"). Legyen konkrét és érthető (min. 25, max. 100 karakter).',
+          description:
+            'Kulcs mérföldkő vagy ütemezési pont konkrét dátumokkal vagy időkerettel (pl. "2025. február 15-ig", "2 hét alatt"). Legyen konkrét és érthető (min. 25, max. 100 karakter).',
           minLength: 25,
           maxLength: 100,
         },
@@ -290,7 +302,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 5,
         items: {
           type: 'string',
-          description: 'Feltételezés vagy kizárás, amely fontos a projekt értékeléséhez. Legyen világos és konkrét (min. 20, max. 120 karakter).',
+          description:
+            'Feltételezés vagy kizárás, amely fontos a projekt értékeléséhez. Legyen világos és konkrét (min. 20, max. 120 karakter).',
           minLength: 20,
           maxLength: 120,
         },
@@ -301,14 +314,16 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 4,
         items: {
           type: 'string',
-          description: 'Következő lépés vagy teendő, amely cselekvésre ösztönzi a címzettet. Használj konkrét, akcióorientált kifejezéseket határidővel (pl. "Kérjük, jelezze vissza a véleményét 2025. február 10-ig"). Legyen konkrét és akcióorientált (min. 20, max. 100 karakter).',
+          description:
+            'Következő lépés vagy teendő, amely cselekvésre ösztönzi a címzettet. Használj konkrét, akcióorientált kifejezéseket határidővel (pl. "Kérjük, jelezze vissza a véleményét 2025. február 10-ig"). Legyen konkrét és akcióorientált (min. 20, max. 100 karakter).',
           minLength: 20,
           maxLength: 100,
         },
       },
       closing: {
         type: 'string',
-        description: 'Udvarias, meggyőző záró bekezdés (2-3 mondat), amely összefoglalja az ajánlat értékét és erősen cselekvésre ösztönzi a címzettet. Tartalmazzon egyértelmű következő lépés javaslatot. Legyen pozitív és együttműködésre ösztönző.',
+        description:
+          'Udvarias, meggyőző záró bekezdés (2-3 mondat), amely összefoglalja az ajánlat értékét és erősen cselekvésre ösztönzi a címzettet. Tartalmazzon egyértelmű következő lépés javaslatot. Legyen pozitív és együttműködésre ösztönző.',
         minLength: 60,
         maxLength: 250,
       },
@@ -318,7 +333,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 3,
         items: {
           type: 'string',
-          description: 'Opcionális: Ügyfél vélemény vagy tesztimonál a bizalom építéséhez. Legyen rövid és meggyőző (min. 40, max. 200 karakter).',
+          description:
+            'Opcionális: Ügyfél vélemény vagy tesztimonál a bizalom építéséhez. Legyen rövid és meggyőző (min. 40, max. 200 karakter).',
           minLength: 40,
           maxLength: 200,
         },
@@ -329,14 +345,16 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
         maxItems: 3,
         items: {
           type: 'string',
-          description: 'Opcionális: Garancia vagy biztonsági jelző, amely csökkenti a vevő kockázatérzetét (pl. "100% elégedettségi garancia", "30 napos pénzvisszafizetési garancia"). Legyen rövid és meggyőző (min. 30, max. 120 karakter).',
+          description:
+            'Opcionális: Garancia vagy biztonsági jelző, amely csökkenti a vevő kockázatérzetét (pl. "100% elégedettségi garancia", "30 napos pénzvisszafizetési garancia"). Legyen rövid és meggyőző (min. 30, max. 120 karakter).',
           minLength: 30,
           maxLength: 120,
         },
       },
       client_context: {
         type: 'string',
-        description: 'Opcionális: Ügyfél-specifikus kontextus vagy kapcsolati információk, amelyek segíthetnek a személyre szabásban. Használd a bevezetőben vagy a projekt összefoglalóban, ha releváns (min. 30, max. 200 karakter).',
+        description:
+          'Opcionális: Ügyfél-specifikus kontextus vagy kapcsolati információk, amelyek segíthetnek a személyre szabásban. Használd a bevezetőben vagy a projekt összefoglalóban, ha releváns (min. 30, max. 200 karakter).',
         minLength: 30,
         maxLength: 200,
       },
@@ -440,12 +458,14 @@ function sectionsToHtml(
             ${nextSteps}
             ${closingNote}
           </div>
-          ${sections.guarantees && sections.guarantees.length > 0
-            ? `<div class="offer-doc__compact-card offer-doc__compact-card--closing">
+          ${
+            sections.guarantees && sections.guarantees.length > 0
+              ? `<div class="offer-doc__compact-card offer-doc__compact-card--closing">
                 ${renderSectionHeading(labels.guarantees, 'guarantees', { level: 'h3' })}
                 ${safeList(limitList(sections.guarantees, 3))}
               </div>`
-            : ''}
+              : ''
+          }
         </section>
       </div>
     `;
@@ -461,12 +481,14 @@ function sectionsToHtml(
         ${renderSectionHeading(labels.overview, 'overview')}
         ${safeParagraphGroup(overviewParts)}
       </section>
-      ${sections.value_proposition
-        ? `<section class="offer-doc__section">
+      ${
+        sections.value_proposition
+          ? `<section class="offer-doc__section">
             ${renderSectionHeading(labels.valueProposition, 'valueProposition')}
             ${safeParagraphGroup([sections.value_proposition])}
           </section>`
-        : ''}
+          : ''
+      }
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.scope, 'scope')}
         ${safeList(sections.scope)}
@@ -475,12 +497,14 @@ function sectionsToHtml(
         ${renderSectionHeading(labels.deliverables, 'deliverables')}
         ${safeList(sections.deliverables)}
       </section>
-      ${sections.expected_outcomes && sections.expected_outcomes.length > 0
-        ? `<section class="offer-doc__section">
+      ${
+        sections.expected_outcomes && sections.expected_outcomes.length > 0
+          ? `<section class="offer-doc__section">
             ${renderSectionHeading(labels.expectedOutcomes, 'expectedOutcomes')}
             ${safeList(sections.expected_outcomes)}
           </section>`
-        : ''}
+          : ''
+      }
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.timeline, 'timeline')}
         ${safeList(sections.schedule)}
@@ -489,18 +513,22 @@ function sectionsToHtml(
         ${renderSectionHeading(labels.assumptions, 'assumptions')}
         ${safeList(sections.assumptions)}
       </section>
-      ${sections.testimonials && sections.testimonials.length > 0
-        ? `<section class="offer-doc__section">
+      ${
+        sections.testimonials && sections.testimonials.length > 0
+          ? `<section class="offer-doc__section">
             ${renderSectionHeading(labels.testimonials, 'testimonials')}
             ${safeList(sections.testimonials)}
           </section>`
-        : ''}
-      ${sections.guarantees && sections.guarantees.length > 0
-        ? `<section class="offer-doc__section">
+          : ''
+      }
+      ${
+        sections.guarantees && sections.guarantees.length > 0
+          ? `<section class="offer-doc__section">
             ${renderSectionHeading(labels.guarantees, 'guarantees')}
             ${safeList(sections.guarantees)}
           </section>`
-        : ''}
+          : ''
+      }
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.nextSteps, 'nextSteps')}
         ${safeList(sections.next_steps)}
@@ -596,10 +624,7 @@ function normalizeImageAssets(
 
   if (input.length > MAX_IMAGE_COUNT) {
     const translator = createTranslator(undefined);
-    throw new ImageAssetError(
-      translator.t('api.image.maxCount', { count: MAX_IMAGE_COUNT }),
-      400,
-    );
+    throw new ImageAssetError(translator.t('api.image.maxCount', { count: MAX_IMAGE_COUNT }), 400);
   }
 
   const seenKeys = new Set<string>();
@@ -818,297 +843,302 @@ function applyImageAssetsToHtml(
 
 export const POST = withAuth(
   withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
-  const requestId = randomUUID();
-  const log = createLogger(requestId);
-  log.setContext({ userId: req.user.id });
-  
-  // Rate limiting for AI generation endpoint
-  const rateLimitResult = await checkRateLimitMiddleware(req, {
-    maxRequests: 20, // Higher limit for authenticated users
-    windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
-    keyPrefix: 'ai-generate',
-  });
+    const requestId = randomUUID();
+    const log = createLogger(requestId);
+    log.setContext({ userId: req.user.id });
 
-  if (rateLimitResult && !rateLimitResult.allowed) {
-    log.warn('AI generate rate limit exceeded', {
-      limit: rateLimitResult.limit,
-      remaining: rateLimitResult.remaining,
+    // Rate limiting for AI generation endpoint
+    const rateLimitResult = await checkRateLimitMiddleware(req, {
+      maxRequests: 20, // Higher limit for authenticated users
+      windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
+      keyPrefix: 'ai-generate',
     });
-    const translator = createTranslator(req.headers.get('accept-language'));
-    return createRateLimitResponse(
-      rateLimitResult,
-      translator.t('quotaWarningBar.message.user'),
-    );
-  }
 
-  try {
-    // Parse and sanitize the incoming JSON body.  Sanitizing early
-    // prevents any malicious scripts or HTML fragments from reaching
-    // our AI prompts or being persisted in the database.
-    const parsed = aiGenerateRequestSchema.safeParse(await req.json());
-    if (!parsed.success) {
-      return handleValidationError(parsed.error, requestId);
-    }
-
-    const {
-      title,
-      industry,
-      projectDetails,
-      deadline,
-      language,
-      brandVoice,
-      style,
-      formality,
-      prices,
-      aiOverrideHtml,
-      clientId,
-      templateId,
-      pdfWebhookUrl,
-      imageAssets,
-      testimonials,
-    } = parsed.data;
-
-    const sb = await supabaseServer();
-    const user = req.user;
-
-    // ---- Limit (havi) ----
-
-    const profile = await getUserProfile(sb, user.id);
-    const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null);
-
-    let sanitizedImageAssets: SanitizedImageAsset[] = [];
-    try {
-      sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
-    } catch (error) {
+    if (rateLimitResult && !rateLimitResult.allowed) {
+      log.warn('AI generate rate limit exceeded', {
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+      });
       const translator = createTranslator(req.headers.get('accept-language'));
-      const status = error instanceof ImageAssetError ? error.status : 400;
-      const message =
-        error instanceof ImageAssetError
-          ? error.message
-          : translator.t('api.error.invalidImageUpload');
-      return NextResponse.json({ error: message }, { status });
+      return createRateLimitResponse(rateLimitResult, translator.t('quotaWarningBar.message.user'));
     }
 
-    const planLimit = getMonthlyOfferLimit(plan);
+    try {
+      // Parse and sanitize the incoming JSON body.  Sanitizing early
+      // prevents any malicious scripts or HTML fragments from reaching
+      // our AI prompts or being persisted in the database.
+      const parsed = aiGenerateRequestSchema.safeParse(await req.json());
+      if (!parsed.success) {
+        return handleValidationError(parsed.error, requestId);
+      }
 
-    let clientCompanyName: string | null = null;
-    if (clientId) {
+      const {
+        title,
+        industry,
+        projectDetails,
+        deadline,
+        language,
+        brandVoice,
+        style,
+        formality,
+        prices,
+        aiOverrideHtml,
+        clientId,
+        templateId,
+        pdfWebhookUrl,
+        imageAssets,
+        testimonials,
+      } = parsed.data;
+
+      const sb = await supabaseServer();
+      const user = req.user;
+
+      // ---- Limit (havi) ----
+
+      const profile = await getUserProfile(sb, user.id);
+      const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null);
+
+      let sanitizedImageAssets: SanitizedImageAsset[] = [];
       try {
-        const { data: clientRow, error: clientError } = await sb
-          .from('clients')
-          .select('company_name')
-          .eq('id', clientId)
-          .eq('user_id', user.id)
-          .maybeSingle();
+        sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
+      } catch (error) {
+        const translator = createTranslator(req.headers.get('accept-language'));
+        const status = error instanceof ImageAssetError ? error.status : 400;
+        const message =
+          error instanceof ImageAssetError
+            ? error.message
+            : translator.t('api.error.invalidImageUpload');
+        return NextResponse.json({ error: message }, { status });
+      }
 
-        if (clientError) {
-          log.warn('Failed to load client for offer generation (non-blocking)', {
-            clientId,
-            error: clientError.message,
+      const planLimit = getMonthlyOfferLimit(plan);
+
+      let clientCompanyName: string | null = null;
+      if (clientId) {
+        try {
+          const { data: clientRow, error: clientError } = await sb
+            .from('clients')
+            .select('company_name')
+            .eq('id', clientId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (clientError) {
+            log.warn('Failed to load client for offer generation (non-blocking)', {
+              clientId,
+              error: clientError.message,
+            });
+          } else if (clientRow?.company_name && typeof clientRow.company_name === 'string') {
+            clientCompanyName = clientRow.company_name;
+          }
+        } catch (clientLookupError) {
+          log.warn('Unexpected client lookup error during offer generation', {
+            error: clientLookupError,
+            message:
+              clientLookupError instanceof Error
+                ? clientLookupError.message
+                : String(clientLookupError),
           });
-        } else if (clientRow?.company_name && typeof clientRow.company_name === 'string') {
-          clientCompanyName = clientRow.company_name;
         }
-      } catch (clientLookupError) {
-        log.warn('Unexpected client lookup error during offer generation', {
-          error: clientLookupError,
-          message: clientLookupError instanceof Error ? clientLookupError.message : String(clientLookupError),
-        });
       }
-    }
 
-    const cookieStore = await cookies();
-    let deviceId = cookieStore.get('propono_device_id')?.value;
-    if (!deviceId) {
-      const analyticsAllowed = allowCategory(req, 'analytics');
-      deviceId = randomUUID();
-      if (analyticsAllowed) {
-        cookieStore.set({
-          name: 'propono_device_id',
-          value: deviceId,
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 24 * 365,
-          path: '/',
-        });
+      const cookieStore = await cookies();
+      let deviceId = cookieStore.get('propono_device_id')?.value;
+      if (!deviceId) {
+        const analyticsAllowed = allowCategory(req, 'analytics');
+        deviceId = randomUUID();
+        if (analyticsAllowed) {
+          cookieStore.set({
+            name: 'propono_device_id',
+            value: deviceId,
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 60 * 60 * 24 * 365,
+            path: '/',
+          });
+        }
       }
-    }
 
-    const { iso: usagePeriodStart } = currentMonthStart();
-    const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
+      const { iso: usagePeriodStart } = currentMonthStart();
+      const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
 
-    if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+      if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+        try {
+          await syncUsageCounter(
+            supabaseServiceRole(),
+            user.id,
+            usageSnapshot.offersGenerated,
+            usagePeriodStart,
+          );
+        } catch (syncError) {
+          log.warn('Failed to sync usage counter before PDF generation', {
+            error: syncError,
+            message: syncError instanceof Error ? syncError.message : String(syncError),
+          });
+        }
+      }
+
+      let normalizedWebhookUrl: string | null = null;
       try {
-        await syncUsageCounter(
-          supabaseServiceRole(),
+        normalizedWebhookUrl = validatePdfWebhookUrl(pdfWebhookUrl);
+      } catch (error) {
+        if (error instanceof PdfWebhookValidationError) {
+          const message = mapPdfWebhookError(error);
+          return NextResponse.json({ error: message }, { status: 400 });
+        }
+        throw error;
+      }
+
+      // Atomically check quota including pending jobs to prevent race conditions
+      // This ensures accurate quota checking even under concurrent load
+      if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+        const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
+        if (!quotaCheck.allowed) {
+          log.warn('Quota limit exceeded', {
+            userId: user.id,
+            plan,
+            limit: planLimit,
+            confirmed: quotaCheck.confirmedCount,
+            pending: quotaCheck.pendingCount,
+            total: quotaCheck.totalCount,
+            periodStart: usagePeriodStart,
+          });
+          const translator = createTranslator(req.headers.get('accept-language'));
+          return NextResponse.json(
+            { error: translator.t('quotaWarningBar.message.user') },
+            { status: 402 },
+          );
+        }
+        // Update usageSnapshot with atomic values for logging
+        usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
+      }
+
+      const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
+      if (deviceLimit !== null && deviceId) {
+        // Recalculate device usage from actual successful PDFs before checking
+        try {
+          const { recalculateDeviceUsageFromPdfs } = await import('@/lib/services/usage');
+          await recalculateDeviceUsageFromPdfs(sb, user.id, deviceId, usagePeriodStart).catch(
+            (err) => {
+              log.warn(
+                'Failed to recalculate device usage from PDFs, continuing with counter value',
+                {
+                  error: err,
+                },
+              );
+            },
+          );
+        } catch (recalcError) {
+          log.warn('Failed to recalculate device usage from PDFs, continuing with counter value', {
+            error: recalcError,
+          });
+        }
+
+        const deviceQuotaCheck = await checkDeviceQuotaWithPending(
+          sb,
           user.id,
-          usageSnapshot.offersGenerated,
+          deviceId,
+          deviceLimit,
           usagePeriodStart,
         );
-      } catch (syncError) {
-        log.warn('Failed to sync usage counter before PDF generation', {
-          error: syncError,
-          message: syncError instanceof Error ? syncError.message : String(syncError),
-        });
-      }
-    }
-
-    let normalizedWebhookUrl: string | null = null;
-    try {
-      normalizedWebhookUrl = validatePdfWebhookUrl(pdfWebhookUrl);
-    } catch (error) {
-      if (error instanceof PdfWebhookValidationError) {
-        const message = mapPdfWebhookError(error);
-        return NextResponse.json({ error: message }, { status: 400 });
-      }
-      throw error;
-    }
-
-    // Atomically check quota including pending jobs to prevent race conditions
-    // This ensures accurate quota checking even under concurrent load
-    if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
-      const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
-      if (!quotaCheck.allowed) {
-        log.warn('Quota limit exceeded', {
-          userId: user.id,
-          plan,
-          limit: planLimit,
-          confirmed: quotaCheck.confirmedCount,
-          pending: quotaCheck.pendingCount,
-          total: quotaCheck.totalCount,
-          periodStart: usagePeriodStart,
-        });
-        const translator = createTranslator(req.headers.get('accept-language'));
-        return NextResponse.json(
-          { error: translator.t('quotaWarningBar.message.user') },
-          { status: 402 },
-        );
-      }
-      // Update usageSnapshot with atomic values for logging
-      usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
-    }
-
-    const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
-    if (deviceLimit !== null && deviceId) {
-      // Recalculate device usage from actual successful PDFs before checking
-      try {
-        const { recalculateDeviceUsageFromPdfs } = await import('@/lib/services/usage');
-        await recalculateDeviceUsageFromPdfs(sb, user.id, deviceId, usagePeriodStart).catch(
-          (err) => {
-            log.warn('Failed to recalculate device usage from PDFs, continuing with counter value', {
-              error: err,
-            });
-          },
-        );
-      } catch (recalcError) {
-        log.warn('Failed to recalculate device usage from PDFs, continuing with counter value', {
-          error: recalcError,
-        });
+        if (!deviceQuotaCheck.allowed) {
+          log.warn('Device quota limit exceeded', {
+            userId: user.id,
+            deviceId,
+            plan,
+            limit: deviceLimit,
+            confirmed: deviceQuotaCheck.confirmedCount,
+            pending: deviceQuotaCheck.pendingCount,
+            total: deviceQuotaCheck.totalCount,
+            periodStart: usagePeriodStart,
+          });
+          const deviceTranslator = createTranslator(req.headers.get('accept-language'));
+          return NextResponse.json(
+            { error: deviceTranslator.t('quotaWarningBar.message.device') },
+            { status: 402 },
+          );
+        }
       }
 
-      const deviceQuotaCheck = await checkDeviceQuotaWithPending(
-        sb,
-        user.id,
-        deviceId,
-        deviceLimit,
-        usagePeriodStart,
+      // Get pending count for logging (non-atomic, but only for logging)
+      const pendingCount = await countPendingPdfJobs(sb, {
+        userId: user.id,
+        periodStart: usagePeriodStart,
+      });
+      log.info('Usage quota snapshot', {
+        plan,
+        limit: planLimit,
+        confirmed: usageSnapshot.offersGenerated,
+        pendingCount,
+        periodStart: usagePeriodStart,
+      });
+
+      const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
+        (acc, key) => {
+          acc[key] = sanitizeInput(projectDetails[key]);
+          return acc;
+        },
+        { ...emptyProjectDetails },
       );
-      if (!deviceQuotaCheck.allowed) {
-        log.warn('Device quota limit exceeded', {
-          userId: user.id,
-          deviceId,
-          plan,
-          limit: deviceLimit,
-          confirmed: deviceQuotaCheck.confirmedCount,
-          pending: deviceQuotaCheck.pendingCount,
-          total: deviceQuotaCheck.totalCount,
-          periodStart: usagePeriodStart,
-        });
-        const deviceTranslator = createTranslator(req.headers.get('accept-language'));
-        return NextResponse.json(
-          { error: deviceTranslator.t('quotaWarningBar.message.device') },
-          { status: 402 },
-        );
-      }
-    }
 
-    // Get pending count for logging (non-atomic, but only for logging)
-    const pendingCount = await countPendingPdfJobs(sb, {
-      userId: user.id,
-      periodStart: usagePeriodStart,
-    });
-    log.info('Usage quota snapshot', {
-      plan,
-      limit: planLimit,
-      confirmed: usageSnapshot.offersGenerated,
-      pendingCount,
-      periodStart: usagePeriodStart,
-    });
+      const normalizedLanguage = sanitizeInput(language);
+      const resolvedLocale = resolveLocale(normalizedLanguage);
+      const translator = createTranslator(resolvedLocale);
 
-    const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
-      (acc, key) => {
-        acc[key] = sanitizeInput(projectDetails[key]);
-        return acc;
-      },
-      { ...emptyProjectDetails },
-    );
+      // ---- AI szöveg (override elsőbbség) ----
+      const safeTitle = sanitizeInput(title);
+      let aiHtml = '';
+      let structuredSections: OfferSections | null = null;
+      if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
+        // Sanitize override HTML to strip scripts
+        aiHtml = sanitizeHTML(aiOverrideHtml.trim());
+      } else {
+        // Check for OpenAI API key via typed env helper
+        if (!envServer.OPENAI_API_KEY) {
+          return NextResponse.json(
+            { error: 'OPENAI_API_KEY hiányzik az .env.local fájlból.' },
+            { status: 500 },
+          );
+        }
+        const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
 
-    const normalizedLanguage = sanitizeInput(language);
-    const resolvedLocale = resolveLocale(normalizedLanguage);
-    const translator = createTranslator(resolvedLocale);
+        const styleAddon =
+          style === 'compact'
+            ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
+            : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
 
-    // ---- AI szöveg (override elsőbbség) ----
-    const safeTitle = sanitizeInput(title);
-    let aiHtml = '';
-    let structuredSections: OfferSections | null = null;
-    if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
-      // Sanitize override HTML to strip scripts
-      aiHtml = sanitizeHTML(aiOverrideHtml.trim());
-    } else {
-      // Check for OpenAI API key via typed env helper
-      if (!envServer.OPENAI_API_KEY) {
-        return NextResponse.json(
-          { error: 'OPENAI_API_KEY hiányzik az .env.local fájlból.' },
-          { status: 500 },
-        );
-      }
-      const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
+        const toneGuidance =
+          brandVoice === 'formal'
+            ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
+            : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
 
-      const styleAddon =
-        style === 'compact'
-          ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
-          : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
+        const formalityGuidance =
+          formality === 'magázódás'
+            ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
+            : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
 
-      const toneGuidance =
-        brandVoice === 'formal'
-          ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
-          : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+        // Sanitize user inputs before passing to OpenAI
+        const safeIndustry = sanitizeInput(industry);
+        const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
+        const safeDeadline = sanitizeInput(deadline || '—');
+        const safeBrand = sanitizeInput(brandVoice);
 
-      const formalityGuidance =
-        formality === 'magázódás'
-          ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
-          : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+        const clientInfo = clientCompanyName
+          ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
+          : '';
+        const deadlineGuidance =
+          safeDeadline && safeDeadline !== '—'
+            ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
+            : '';
 
-      // Sanitize user inputs before passing to OpenAI
-      const safeIndustry = sanitizeInput(industry);
-      const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
-      const safeDeadline = sanitizeInput(deadline || '—');
-      const safeBrand = sanitizeInput(brandVoice);
+        // Include testimonials in prompt if provided
+        const testimonialsSection =
+          testimonials && testimonials.length > 0
+            ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
+            : '';
 
-      const clientInfo = clientCompanyName
-        ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
-        : '';
-      const deadlineGuidance = safeDeadline && safeDeadline !== '—'
-        ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
-        : '';
-
-      // Include testimonials in prompt if provided
-      const testimonialsSection = testimonials && testimonials.length > 0
-        ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
-        : '';
-
-      const userPrompt = `
+        const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
 Nyelv: ${normalizedLanguage}
@@ -1135,539 +1165,557 @@ Különös figyelmet fordít a következőkre:
 ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelzések, használd fel őket a testimonials szakaszban' : ''}
 `;
 
-      try {
-        const response = await openai.responses.parse({
-          model: 'gpt-4o-mini',
-          temperature: 0.7, // Increased for more natural, creative but still professional output
-          input: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: userPrompt },
-          ],
-          text: { format: OFFER_SECTIONS_FORMAT },
-        });
+        try {
+          const response = await openai.responses.parse({
+            model: 'gpt-4o-mini',
+            temperature: 0.7, // Increased for more natural, creative but still professional output
+            input: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: userPrompt },
+            ],
+            text: { format: OFFER_SECTIONS_FORMAT },
+          });
 
-        structuredSections = response.output_parsed as OfferSections | null;
-        if (!structuredSections) {
-          throw new Error('Structured output missing');
+          structuredSections = response.output_parsed as OfferSections | null;
+          if (!structuredSections) {
+            throw new Error('Structured output missing');
+          }
+
+          aiHtml = sectionsToHtml(
+            structuredSections,
+            style === 'compact' ? 'compact' : 'detailed',
+            translator,
+          );
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          log.error('OpenAI structured output error', error);
+          return NextResponse.json(
+            { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
+            { status: 502 },
+          );
         }
-
-        aiHtml = sectionsToHtml(
-          structuredSections,
-          style === 'compact' ? 'compact' : 'detailed',
-          translator,
-        );
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        log.error('OpenAI structured output error', error);
-        return NextResponse.json(
-          { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
-          { status: 502 },
-        );
       }
-    }
 
-    // ---- Ár tábla adatok ----
-    const rows: PriceRow[] = prices;
+      // ---- Ár tábla adatok ----
+      const rows: PriceRow[] = prices;
 
-    const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(
-      aiHtml,
-      sanitizedImageAssets,
-    );
+      const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(
+        aiHtml,
+        sanitizedImageAssets,
+      );
 
-    // ---- PDF queueing ----
-    const offerId = uuid();
-    const storagePath = createOfferStoragePath({
-      userId: user.id,
-      offerId,
-      customerName: clientCompanyName,
-      offerTitle: safeTitle,
-      fallbackCompany: typeof profile?.company_name === 'string' ? profile.company_name : null,
-    });
-    const brandingOptions = normalizeBranding({
-      primaryColor:
-        typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
-      secondaryColor:
-        typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
-      logoUrl: await getBrandLogoUrl(
-        sb,
-        typeof profile?.brand_logo_path === 'string' ? profile.brand_logo_path : null,
-        typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
-      ),
-    });
+      // ---- PDF queueing ----
+      const offerId = uuid();
+      const storagePath = createOfferStoragePath({
+        userId: user.id,
+        offerId,
+        customerName: clientCompanyName,
+        offerTitle: safeTitle,
+        fallbackCompany: typeof profile?.company_name === 'string' ? profile.company_name : null,
+      });
+      const brandingOptions = normalizeBranding({
+        primaryColor:
+          typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
+        secondaryColor:
+          typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
+        logoUrl: await getBrandLogoUrl(
+          sb,
+          typeof profile?.brand_logo_path === 'string' ? profile.brand_logo_path : null,
+          typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
+        ),
+      });
 
-    const planTier = planToTemplateTier(plan);
-    const allTemplates = listTemplates() as Array<OfferTemplate>;
-    const fallbackTemplate =
-      allTemplates.find((tpl) => tpl.id === DEFAULT_TEMPLATE_ID) ||
-      loadTemplate(DEFAULT_TEMPLATE_ID);
+      const planTier = planToTemplateTier(plan);
+      const allTemplates = listTemplates() as Array<OfferTemplate>;
+      const fallbackTemplate =
+        allTemplates.find((tpl) => tpl.id === DEFAULT_TEMPLATE_ID) ||
+        loadTemplate(DEFAULT_TEMPLATE_ID);
 
-    const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
-    const defaultTemplateForPlan =
-      planTier === 'premium'
-        ? allTemplates[0] || fallbackTemplate
-        : freeTemplates[0] || fallbackTemplate;
+      const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
+      const defaultTemplateForPlan =
+        planTier === 'premium'
+          ? allTemplates[0] || fallbackTemplate
+          : freeTemplates[0] || fallbackTemplate;
 
-    const normalizedRequestedTemplateId =
-      typeof templateId === 'string' && templateId.trim().length > 0
-        ? (templateId.trim() as TemplateId)
+      const normalizedRequestedTemplateId =
+        typeof templateId === 'string' && templateId.trim().length > 0
+          ? (templateId.trim() as TemplateId)
+          : null;
+
+      const requestedTemplate = normalizedRequestedTemplateId
+        ? allTemplates.find((tpl) => tpl.id === normalizedRequestedTemplateId) || null
         : null;
 
-    const requestedTemplate = normalizedRequestedTemplateId
-      ? allTemplates.find((tpl) => tpl.id === normalizedRequestedTemplateId) || null
-      : null;
+      if (normalizedRequestedTemplateId && !requestedTemplate) {
+        return NextResponse.json(
+          {
+            error: 'A kért sablon nem található. Kérlek válassz egy elérhető sablont.',
+          },
+          { status: 400 },
+        );
+      }
 
-    if (normalizedRequestedTemplateId && !requestedTemplate) {
-      return NextResponse.json(
-        {
-          error: 'A kért sablon nem található. Kérlek válassz egy elérhető sablont.',
-        },
-        { status: 400 },
+      const profileTemplateId = normalizeTemplateId(
+        typeof profile?.offer_template === 'string' ? profile.offer_template : null,
       );
-    }
+      const profileTemplate = profileTemplateId
+        ? allTemplates.find((tpl) => tpl.id === profileTemplateId) || null
+        : null;
 
-    const profileTemplateId = normalizeTemplateId(
-      typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-    );
-    const profileTemplate = profileTemplateId
-      ? allTemplates.find((tpl) => tpl.id === profileTemplateId) || null
-      : null;
+      const isTemplateAllowed = (tpl: OfferTemplate) =>
+        planTier === 'premium' || tpl.tier === 'free';
 
-    const isTemplateAllowed = (tpl: OfferTemplate) => planTier === 'premium' || tpl.tier === 'free';
+      let template = defaultTemplateForPlan;
+      let resolvedRequestedTemplateId: TemplateId;
 
-    let template = defaultTemplateForPlan;
-    let resolvedRequestedTemplateId: TemplateId;
+      if (requestedTemplate) {
+        resolvedRequestedTemplateId = requestedTemplate.id;
+        template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
+      } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
+        template = profileTemplate;
+        resolvedRequestedTemplateId = template.id;
+      } else {
+        template = defaultTemplateForPlan;
+        resolvedRequestedTemplateId = template.id;
+      }
 
-    if (requestedTemplate) {
-      resolvedRequestedTemplateId = requestedTemplate.id;
-      template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
-    } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
-      template = profileTemplate;
-      resolvedRequestedTemplateId = template.id;
-    } else {
-      template = defaultTemplateForPlan;
-      resolvedRequestedTemplateId = template.id;
-    }
+      const resolvedTemplateId = template.id;
+      // Use template ID directly (no legacy ID needed)
+      const resolvedLegacyTemplateId = template.id.includes('@')
+        ? template.id.split('@')[0]
+        : template.id;
 
-    const resolvedTemplateId = template.id;
-    // Use template ID directly (no legacy ID needed)
-    const resolvedLegacyTemplateId = template.id.includes('@') 
-      ? template.id.split('@')[0] 
-      : template.id;
+      const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 
-    const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
+      const galleryImages = sanitizedImageAssets
+        .slice(0, MAX_IMAGE_COUNT)
+        .map((asset) => ({ key: asset.key, src: asset.dataUrl, alt: asset.alt }));
 
-    const galleryImages = sanitizedImageAssets
-      .slice(0, MAX_IMAGE_COUNT)
-      .map((asset) => ({ key: asset.key, src: asset.dataUrl, alt: asset.alt }));
+      const renderStartedAt = performance.now();
+      let renderDuration: number | null = null;
+      let html: string;
 
-    const renderStartedAt = performance.now();
-    let renderDuration: number | null = null;
-    let html: string;
-
-    try {
-      html = buildOfferHtml({
-        offer: {
-          title: safeTitle || defaultTitle,
-          companyName: sanitizeInput(profile?.company_name || ''),
-          bodyHtml: aiHtmlForPdf,
+      try {
+        html = buildOfferHtml({
+          offer: {
+            title: safeTitle || defaultTitle,
+            companyName: sanitizeInput(profile?.company_name || ''),
+            bodyHtml: aiHtmlForPdf,
+            templateId: resolvedTemplateId,
+            legacyTemplateId: resolvedLegacyTemplateId,
+            locale: resolvedLocale,
+            issueDate: sanitizeInput(formatOfferIssueDate(new Date(), resolvedLocale)),
+            contactName: sanitizeInput(
+              (typeof profile?.company_contact_name === 'string'
+                ? profile.company_contact_name
+                : typeof profile?.representative === 'string'
+                  ? profile.representative
+                  : profile?.company_name) || '',
+            ),
+            contactEmail: sanitizeInput(
+              (typeof profile?.company_email === 'string'
+                ? profile.company_email
+                : req.user.email) || '',
+            ),
+            contactPhone: sanitizeInput(
+              (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
+            ),
+            companyWebsite: sanitizeInput(
+              (typeof profile?.company_website === 'string'
+                ? profile.company_website
+                : typeof profile?.website === 'string'
+                  ? profile.website
+                  : '') || '',
+            ),
+            companyAddress: sanitizeInput(
+              (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
+            ),
+            companyTaxId: sanitizeInput(
+              (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
+            ),
+          },
+          rows,
+          branding: brandingOptions,
+          i18n: translator,
           templateId: resolvedTemplateId,
-          legacyTemplateId: resolvedLegacyTemplateId,
-          locale: resolvedLocale,
-          issueDate: sanitizeInput(formatOfferIssueDate(new Date(), resolvedLocale)),
-          contactName: sanitizeInput(
-            (typeof profile?.company_contact_name === 'string'
-              ? profile.company_contact_name
-              : typeof profile?.representative === 'string'
-                ? profile.representative
-                : profile?.company_name) || '',
-          ),
-          contactEmail: sanitizeInput(
-            (typeof profile?.company_email === 'string'
-              ? profile.company_email
-              : req.user.email) || '',
-          ),
-          contactPhone: sanitizeInput(
-            (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
-          ),
-          companyWebsite: sanitizeInput(
-            (typeof profile?.company_website === 'string'
-              ? profile.company_website
-              : typeof profile?.website === 'string'
-                ? profile.website
-                : '') || '',
-          ),
-          companyAddress: sanitizeInput(
-            (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
-          ),
-          companyTaxId: sanitizeInput(
-            (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
-          ),
-        },
-        rows,
-        branding: brandingOptions,
-        i18n: translator,
-        templateId: resolvedTemplateId,
-        images: galleryImages,
-      });
-      renderDuration = performance.now() - renderStartedAt;
-    } catch (error) {
-      renderDuration = performance.now() - renderStartedAt;
+          images: galleryImages,
+        });
+        renderDuration = performance.now() - renderStartedAt;
+      } catch (error) {
+        renderDuration = performance.now() - renderStartedAt;
+        await recordTemplateRenderTelemetry({
+          templateId: resolvedTemplateId,
+          renderer: 'api.ai_generate.render',
+          outcome: 'failure',
+          renderMs: renderDuration,
+          errorCode: resolveTemplateRenderErrorCode(error),
+        });
+        throw error;
+      }
+
       await recordTemplateRenderTelemetry({
         templateId: resolvedTemplateId,
         renderer: 'api.ai_generate.render',
-        outcome: 'failure',
+        outcome: 'success',
         renderMs: renderDuration,
-        errorCode: resolveTemplateRenderErrorCode(error),
       });
-      throw error;
-    }
 
-    await recordTemplateRenderTelemetry({
-      templateId: resolvedTemplateId,
-      renderer: 'api.ai_generate.render',
-      outcome: 'success',
-      renderMs: renderDuration,
-    });
+      const downloadToken = uuid();
 
-    const downloadToken = uuid();
-
-    // ---- Ajánlat mentése ----
-    const { error: offerInsertError } = await sb.from('offers').insert({
-      id: offerId,
-      user_id: user.id,
-      title: safeTitle,
-      industry: sanitizeInput(industry),
-      recipient_id: clientId || null,
-      inputs: {
-        projectDetails: sanitizedDetails,
-        deadline,
-        language,
-        brandVoice,
-        style,
-        templateId: resolvedTemplateId,
-      },
-      ai_text: aiHtmlForStorage,
-      price_json: rows,
-      pdf_url: null,
-      status: 'draft',
-    });
-
-    if (offerInsertError) {
-      log.error('Offer insert error', offerInsertError);
-      return NextResponse.json(
-        {
-          error: t('errors.offer.saveFailed'),
-        },
-        { status: 500 },
-      );
-    }
-
-    const pdfJobInput: PdfJobInput = {
-      jobId: downloadToken,
-      offerId,
-      userId: user.id,
-      storagePath,
-      html,
-      callbackUrl: normalizedWebhookUrl ?? null,
-      usagePeriodStart,
-      userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
-      deviceId: deviceLimit !== null ? deviceId : null,
-      deviceLimit,
-      templateId: resolvedTemplateId,
-      requestedTemplateId: resolvedRequestedTemplateId,
-    };
-
-    try {
-      await enqueuePdfJob(sb, pdfJobInput);
-    } catch (error) {
-      log.error('PDF queue error (enqueue)', error);
-      // Offer text is already saved, return success with PDF failure indication
-      return NextResponse.json({
-        ok: true,
+      // ---- Ajánlat mentése ----
+      const { error: offerInsertError } = await sb.from('offers').insert({
         id: offerId,
-        pdfUrl: null,
-        downloadToken,
-        status: 'failed' as const,
-        note: translator.t('errors.offer.savePdfFailed'),
-        sections: structuredSections ? sanitizeSectionsOutput(structuredSections) : null,
-        textSaved: true, // Indicate that the text was saved even though PDF failed
-      });
-    }
-
-    let immediatePdfUrl: string | null = null;
-    let responseStatus: 'pending' | 'completed' = 'pending';
-    let responseNote = translator.t('api.pdf.generating');
-
-    try {
-      await dispatchPdfJob(sb, downloadToken);
-    } catch (dispatchError) {
-      const message =
-        dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
-      log.warn('PDF queue error (dispatch)', {
-        error: dispatchError,
-        message,
-        errorName: dispatchError instanceof Error ? dispatchError.name : undefined,
-        stack: dispatchError instanceof Error ? dispatchError.stack : undefined,
+        user_id: user.id,
+        title: safeTitle,
+        industry: sanitizeInput(industry),
+        recipient_id: clientId || null,
+        inputs: {
+          projectDetails: sanitizedDetails,
+          deadline,
+          language,
+          brandVoice,
+          style,
+          templateId: resolvedTemplateId,
+        },
+        ai_text: aiHtmlForStorage,
+        price_json: rows,
+        pdf_url: null,
+        status: 'draft',
       });
 
-      const dispatchLimitMessage = normalizeUsageLimitError(message, translator);
-      if (dispatchLimitMessage) {
-        return NextResponse.json({ error: dispatchLimitMessage }, { status: 402 });
+      if (offerInsertError) {
+        log.error('Offer insert error', offerInsertError);
+        return NextResponse.json(
+          {
+            error: t('errors.offer.saveFailed'),
+          },
+          { status: 500 },
+        );
       }
 
-      // Before falling back to inline processing, check if edge worker already claimed the job
-      // This prevents double processing and quota double-increment
-      const { data: jobStatus } = await sb
-        .from('pdf_jobs')
-        .select('status, pdf_url')
-        .eq('id', downloadToken)
-        .maybeSingle();
+      const pdfJobInput: PdfJobInput = {
+        jobId: downloadToken,
+        offerId,
+        userId: user.id,
+        storagePath,
+        html,
+        callbackUrl: normalizedWebhookUrl ?? null,
+        usagePeriodStart,
+        userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
+        deviceId: deviceLimit !== null ? deviceId : null,
+        deviceLimit,
+        templateId: resolvedTemplateId,
+        requestedTemplateId: resolvedRequestedTemplateId,
+      };
 
-      if (jobStatus?.status === 'completed' && jobStatus.pdf_url) {
-        // Edge worker already completed the job successfully
-        log.info('PDF job already completed by edge worker', { jobId: downloadToken });
-        immediatePdfUrl = jobStatus.pdf_url;
-        responseStatus = 'completed';
-        responseNote = translator.t('api.pdf.completed');
-      } else if (jobStatus?.status === 'processing') {
-        // Edge worker is currently processing - don't start inline fallback
-        // The edge worker will complete or fail, and the user can check status later
-        log.info('PDF job already being processed by edge worker', { jobId: downloadToken });
-        responseStatus = 'pending';
-        responseNote = translator.t('api.pdf.processing');
-      } else if (jobStatus?.status === 'failed') {
-        // Job already failed - try inline fallback as last resort
-        log.warn('PDF job failed in edge worker, attempting inline fallback', {
-          jobId: downloadToken,
-        });
-        // Continue to inline fallback below
-      } else {
-        // Job is still pending or status unknown - safe to try inline fallback
-        log.info('Attempting inline PDF fallback after dispatch failure', {
-          jobId: downloadToken,
-          currentStatus: jobStatus?.status,
+      try {
+        await enqueuePdfJob(sb, pdfJobInput);
+      } catch (error) {
+        log.error('PDF queue error (enqueue)', error);
+        // Offer text is already saved, return success with PDF failure indication
+        return NextResponse.json({
+          ok: true,
+          id: offerId,
+          pdfUrl: null,
+          downloadToken,
+          status: 'failed' as const,
+          note: translator.t('errors.offer.savePdfFailed'),
+          sections: structuredSections ? sanitizeSectionsOutput(structuredSections) : null,
+          textSaved: true, // Indicate that the text was saved even though PDF failed
         });
       }
 
-      // Only attempt inline fallback if job is not already completed or being processed
-      // On Vercel, use Vercel-native Puppeteer (industry best practice)
-      // In other environments, use inline Puppeteer fallback
-      if (!immediatePdfUrl && jobStatus?.status !== 'processing') {
-        // Check if we're in a Vercel environment
-        const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
-        const useVercelNative = isVercel && process.env.USE_VERCEL_NATIVE_PDF !== 'false';
-        
-        if (useVercelNative) {
-          // Use Vercel-native PDF processing (industry best practice)
-          try {
-            const { processPdfJobVercelNative } = await import('@/lib/pdfVercelWorker');
-            // Process asynchronously - don't await so we can return immediately
-            processPdfJobVercelNative(sb, pdfJobInput).catch((error) => {
-              log.error('Vercel-native PDF generation failed', { error, jobId: downloadToken });
-            });
-            responseStatus = 'pending';
-            responseNote = translator.t('api.pdf.processing');
-          } catch (error) {
-            log.error('Failed to start Vercel-native PDF processing', { error, jobId: downloadToken });
-            responseStatus = 'pending';
-            responseNote = translator.t('api.pdf.processing');
-          }
-        } else if (isVercel) {
-          // Vercel but Vercel-native disabled - use Supabase Edge Function (already dispatched)
+      let immediatePdfUrl: string | null = null;
+      let responseStatus: 'pending' | 'completed' = 'pending';
+      let responseNote = translator.t('api.pdf.generating');
+
+      try {
+        await dispatchPdfJob(sb, downloadToken);
+      } catch (dispatchError) {
+        const message =
+          dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
+        log.warn('PDF queue error (dispatch)', {
+          error: dispatchError,
+          message,
+          errorName: dispatchError instanceof Error ? dispatchError.name : undefined,
+          stack: dispatchError instanceof Error ? dispatchError.stack : undefined,
+        });
+
+        const dispatchLimitMessage = normalizeUsageLimitError(message, translator);
+        if (dispatchLimitMessage) {
+          return NextResponse.json({ error: dispatchLimitMessage }, { status: 402 });
+        }
+
+        // Before falling back to inline processing, check if edge worker already claimed the job
+        // This prevents double processing and quota double-increment
+        const { data: jobStatus } = await sb
+          .from('pdf_jobs')
+          .select('status, pdf_url')
+          .eq('id', downloadToken)
+          .maybeSingle();
+
+        if (jobStatus?.status === 'completed' && jobStatus.pdf_url) {
+          // Edge worker already completed the job successfully
+          log.info('PDF job already completed by edge worker', { jobId: downloadToken });
+          immediatePdfUrl = jobStatus.pdf_url;
+          responseStatus = 'completed';
+          responseNote = translator.t('api.pdf.completed');
+        } else if (jobStatus?.status === 'processing') {
+          // Edge worker is currently processing - don't start inline fallback
+          // The edge worker will complete or fail, and the user can check status later
+          log.info('PDF job already being processed by edge worker', { jobId: downloadToken });
           responseStatus = 'pending';
           responseNote = translator.t('api.pdf.processing');
+        } else if (jobStatus?.status === 'failed') {
+          // Job already failed - try inline fallback as last resort
+          log.warn('PDF job failed in edge worker, attempting inline fallback', {
+            jobId: downloadToken,
+          });
+          // Continue to inline fallback below
         } else {
-          // Not Vercel - use inline Puppeteer fallback
-          try {
-            const inlineJob: PdfJobInput = {
-              jobId: pdfJobInput.jobId,
-              offerId: pdfJobInput.offerId,
-              userId: pdfJobInput.userId,
-              storagePath: pdfJobInput.storagePath,
-              html: pdfJobInput.html,
-              usagePeriodStart: pdfJobInput.usagePeriodStart,
-              userLimit: pdfJobInput.userLimit,
-              ...(pdfJobInput.callbackUrl !== undefined
-                ? { callbackUrl: pdfJobInput.callbackUrl }
-                : {}),
-              ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
-              ...(pdfJobInput.deviceLimit !== undefined
-                ? { deviceLimit: pdfJobInput.deviceLimit }
-                : {}),
-              ...(pdfJobInput.templateId !== undefined ? { templateId: pdfJobInput.templateId } : {}),
-              ...(pdfJobInput.requestedTemplateId !== undefined
-                ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
-                : {}),
-              ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
-            };
+          // Job is still pending or status unknown - safe to try inline fallback
+          log.info('Attempting inline PDF fallback after dispatch failure', {
+            jobId: downloadToken,
+            currentStatus: jobStatus?.status,
+          });
+        }
 
-            const serviceClient = supabaseServiceRole();
-            immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
-            if (immediatePdfUrl) {
-              responseStatus = 'completed';
-              responseNote = translator.t('api.pdf.inlineCompleted');
-              log.info('Inline PDF fallback completed successfully', {
-                jobId: downloadToken,
-                pdfUrl: immediatePdfUrl,
+        // Only attempt inline fallback if job is not already completed or being processed
+        // On Vercel, use Vercel-native Puppeteer (industry best practice)
+        // In other environments, use inline Puppeteer fallback
+        if (!immediatePdfUrl && jobStatus?.status !== 'processing') {
+          // Check if we're in a Vercel environment
+          const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+          const useVercelNative = isVercel && process.env.USE_VERCEL_NATIVE_PDF !== 'false';
+
+          if (useVercelNative) {
+            // Use Vercel-native PDF processing (industry best practice)
+            try {
+              const { processPdfJobVercelNative } = await import('@/lib/pdfVercelWorker');
+              // Process asynchronously - don't await so we can return immediately
+              processPdfJobVercelNative(sb, pdfJobInput).catch((error) => {
+                log.error('Vercel-native PDF generation failed', { error, jobId: downloadToken });
               });
-            } else {
-              log.error('Inline PDF fallback returned null PDF URL', {
+              responseStatus = 'pending';
+              responseNote = translator.t('api.pdf.processing');
+            } catch (error) {
+              log.error('Failed to start Vercel-native PDF processing', {
+                error,
                 jobId: downloadToken,
               });
-              throw new Error('PDF generation completed but no PDF URL was returned');
+              responseStatus = 'pending';
+              responseNote = translator.t('api.pdf.processing');
             }
-          } catch (inlineError) {
-            const inlineMessage =
-              inlineError instanceof Error ? inlineError.message : String(inlineError);
-            log.error('Inline PDF fallback error', inlineError);
+          } else if (isVercel) {
+            // Vercel but Vercel-native disabled - use Supabase Edge Function (already dispatched)
+            responseStatus = 'pending';
+            responseNote = translator.t('api.pdf.processing');
+          } else {
+            // Not Vercel - use inline Puppeteer fallback
+            try {
+              const inlineJob: PdfJobInput = {
+                jobId: pdfJobInput.jobId,
+                offerId: pdfJobInput.offerId,
+                userId: pdfJobInput.userId,
+                storagePath: pdfJobInput.storagePath,
+                html: pdfJobInput.html,
+                usagePeriodStart: pdfJobInput.usagePeriodStart,
+                userLimit: pdfJobInput.userLimit,
+                ...(pdfJobInput.callbackUrl !== undefined
+                  ? { callbackUrl: pdfJobInput.callbackUrl }
+                  : {}),
+                ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
+                ...(pdfJobInput.deviceLimit !== undefined
+                  ? { deviceLimit: pdfJobInput.deviceLimit }
+                  : {}),
+                ...(pdfJobInput.templateId !== undefined
+                  ? { templateId: pdfJobInput.templateId }
+                  : {}),
+                ...(pdfJobInput.requestedTemplateId !== undefined
+                  ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
+                  : {}),
+                ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
+              };
 
-            const limitMessage = normalizeUsageLimitError(inlineMessage, translator);
-            if (limitMessage) {
-              return NextResponse.json({ error: limitMessage }, { status: 402 });
+              const serviceClient = supabaseServiceRole();
+              immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
+              if (immediatePdfUrl) {
+                responseStatus = 'completed';
+                responseNote = translator.t('api.pdf.inlineCompleted');
+                log.info('Inline PDF fallback completed successfully', {
+                  jobId: downloadToken,
+                  pdfUrl: immediatePdfUrl,
+                });
+              } else {
+                log.error('Inline PDF fallback returned null PDF URL', {
+                  jobId: downloadToken,
+                });
+                throw new Error('PDF generation completed but no PDF URL was returned');
+              }
+            } catch (inlineError) {
+              const inlineMessage =
+                inlineError instanceof Error ? inlineError.message : String(inlineError);
+              log.error('Inline PDF fallback error', inlineError);
+
+              const limitMessage = normalizeUsageLimitError(inlineMessage, translator);
+              if (limitMessage) {
+                return NextResponse.json({ error: limitMessage }, { status: 402 });
+              }
+
+              // Offer text is already saved, return success with PDF failure indication
+              const sectionsPayload = structuredSections
+                ? sanitizeSectionsOutput(structuredSections)
+                : null;
+              return NextResponse.json({
+                ok: true,
+                id: offerId,
+                pdfUrl: null,
+                downloadToken,
+                status: 'failed' as const,
+                note: translator.t('errors.offer.savePdfFailed'),
+                sections: sectionsPayload,
+                textSaved: true, // Indicate that the text was saved even though PDF failed
+              });
             }
-
-            // Offer text is already saved, return success with PDF failure indication
-            const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
-            return NextResponse.json({
-              ok: true,
-              id: offerId,
-              pdfUrl: null,
-              downloadToken,
-              status: 'failed' as const,
-              note: translator.t('errors.offer.savePdfFailed'),
-              sections: sectionsPayload,
-              textSaved: true, // Indicate that the text was saved even though PDF failed
-            });
           }
         }
       }
-    }
 
-    const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
+      const sectionsPayload = structuredSections
+        ? sanitizeSectionsOutput(structuredSections)
+        : null;
 
-    // Verify offer exists with PDF URL in database (using service role)
-    if (immediatePdfUrl) {
-      const { data: verifyOffer, error: verifyError } = await sb
-        .from('offers')
-        .select('id, title, pdf_url, created_at')
-        .eq('id', offerId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (verifyError) {
-        log.warn('Failed to verify offer after PDF generation', { error: verifyError });
-      } else if (verifyOffer) {
-        log.info('Offer verification after PDF generation', {
-          offerId: verifyOffer.id,
-          title: verifyOffer.title,
-          pdfUrl: verifyOffer.pdf_url,
-          created_at: verifyOffer.created_at,
-          matchesExpected: verifyOffer.pdf_url === immediatePdfUrl,
-        });
-        
-        // Also verify it's queryable by checking if it appears in a list query (service role)
-        const { data: listCheck, error: listError, count } = await sb
+      // Verify offer exists with PDF URL in database (using service role)
+      if (immediatePdfUrl) {
+        const { data: verifyOffer, error: verifyError } = await sb
           .from('offers')
-          .select('id, pdf_url', { count: 'exact' })
-          .eq('user_id', user.id)
+          .select('id, title, pdf_url, created_at')
           .eq('id', offerId)
+          .eq('user_id', user.id)
           .maybeSingle();
-        
-        if (listError) {
-          log.warn('Failed to verify offer in list query', { error: listError });
-        } else if (listCheck) {
-          log.info('Offer is queryable in list query (service role)', {
-            offerId: listCheck.id,
-            pdfUrl: listCheck.pdf_url,
+
+        if (verifyError) {
+          log.warn('Failed to verify offer after PDF generation', { error: verifyError });
+        } else if (verifyOffer) {
+          log.info('Offer verification after PDF generation', {
+            offerId: verifyOffer.id,
+            title: verifyOffer.title,
+            pdfUrl: verifyOffer.pdf_url,
+            created_at: verifyOffer.created_at,
+            matchesExpected: verifyOffer.pdf_url === immediatePdfUrl,
           });
-        } else {
-          log.error('Offer not found in list query - possible RLS issue', { offerId });
-        }
-        
-        // Also verify using authenticated user's context (simulate dashboard query)
-        // Create a client with the user's access token to test RLS
-        const { cookies } = await import('next/headers');
-        const cookieStore = await cookies();
-        const accessToken = cookieStore.get('propono_at')?.value;
-        
-        if (accessToken) {
-          const { createClient } = await import('@supabase/supabase-js');
-          const { envServer } = await import('@/env.server');
-          const userClient = createClient(
-            envServer.NEXT_PUBLIC_SUPABASE_URL,
-            envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            {
-              auth: { persistSession: false, autoRefreshToken: false },
-              global: {
-                headers: {
-                  apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-                  Authorization: `Bearer ${accessToken}`,
-                },
-              },
-            },
-          );
-          
-          const { data: userListCheck, error: userListError } = await userClient
+
+          // Also verify it's queryable by checking if it appears in a list query (service role)
+          const {
+            data: listCheck,
+            error: listError,
+            count,
+          } = await sb
             .from('offers')
-            .select('id, pdf_url')
+            .select('id, pdf_url', { count: 'exact' })
             .eq('user_id', user.id)
             .eq('id', offerId)
             .maybeSingle();
-          
-          if (userListError) {
-            log.error('Offer NOT queryable with authenticated user context - RLS issue!', {
-              offerId,
-              error: userListError,
-              errorMessage: userListError.message,
-              errorCode: userListError.code,
-            });
-          } else if (userListCheck) {
-            log.info('Offer is queryable with authenticated user context', {
-              offerId: userListCheck.id,
-              pdfUrl: userListCheck.pdf_url,
+
+          if (listError) {
+            log.warn('Failed to verify offer in list query', { error: listError });
+          } else if (listCheck) {
+            log.info('Offer is queryable in list query (service role)', {
+              offerId: listCheck.id,
+              pdfUrl: listCheck.pdf_url,
             });
           } else {
-            log.error('Offer not found with authenticated user context - RLS blocking!', { offerId });
+            log.error('Offer not found in list query - possible RLS issue', { offerId });
+          }
+
+          // Also verify using authenticated user's context (simulate dashboard query)
+          // Create a client with the user's access token to test RLS
+          const { cookies } = await import('next/headers');
+          const cookieStore = await cookies();
+          const accessToken = cookieStore.get('propono_at')?.value;
+
+          if (accessToken) {
+            const { createClient } = await import('@supabase/supabase-js');
+            const { envServer } = await import('@/env.server');
+            const userClient = createClient(
+              envServer.NEXT_PUBLIC_SUPABASE_URL,
+              envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+              {
+                auth: { persistSession: false, autoRefreshToken: false },
+                global: {
+                  headers: {
+                    apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                },
+              },
+            );
+
+            const { data: userListCheck, error: userListError } = await userClient
+              .from('offers')
+              .select('id, pdf_url')
+              .eq('user_id', user.id)
+              .eq('id', offerId)
+              .maybeSingle();
+
+            if (userListError) {
+              log.error('Offer NOT queryable with authenticated user context - RLS issue!', {
+                offerId,
+                error: userListError,
+                errorMessage: userListError.message,
+                errorCode: userListError.code,
+              });
+            } else if (userListCheck) {
+              log.info('Offer is queryable with authenticated user context', {
+                offerId: userListCheck.id,
+                pdfUrl: userListCheck.pdf_url,
+              });
+            } else {
+              log.error('Offer not found with authenticated user context - RLS blocking!', {
+                offerId,
+              });
+            }
+          } else {
+            log.warn(
+              'No access token found in cookies, skipping authenticated user context verification',
+            );
           }
         } else {
-          log.warn('No access token found in cookies, skipping authenticated user context verification');
+          log.error('Offer not found after PDF generation', { offerId });
         }
-      } else {
-        log.error('Offer not found after PDF generation', { offerId });
       }
-    }
 
-    // Log final response state for debugging
-    log.info('PDF generation response', {
-      offerId,
-      pdfUrl: immediatePdfUrl,
-      status: responseStatus,
-      note: responseNote,
-      hasPdfUrl: !!immediatePdfUrl,
-    });
+      // Log final response state for debugging
+      log.info('PDF generation response', {
+        offerId,
+        pdfUrl: immediatePdfUrl,
+        status: responseStatus,
+        note: responseNote,
+        hasPdfUrl: !!immediatePdfUrl,
+      });
 
-    const response = NextResponse.json({
-      ok: true,
-      id: offerId,
-      pdfUrl: immediatePdfUrl,
-      downloadToken,
-      status: responseStatus,
-      note: responseNote,
-      sections: sectionsPayload,
-    });
-    
-    // Add rate limit headers to response
-    if (rateLimitResult) {
-      const { addRateLimitHeaders } = await import('@/lib/rateLimitMiddleware');
-      addRateLimitHeaders(response, rateLimitResult);
+      const response = NextResponse.json({
+        ok: true,
+        id: offerId,
+        pdfUrl: immediatePdfUrl,
+        downloadToken,
+        status: responseStatus,
+        note: responseNote,
+        sections: sectionsPayload,
+      });
+
+      // Add rate limit headers to response
+      if (rateLimitResult) {
+        const { addRateLimitHeaders } = await import('@/lib/rateLimitMiddleware');
+        addRateLimitHeaders(response, rateLimitResult);
+      }
+
+      // Add request ID to response headers
+      response.headers.set('x-request-id', requestId);
+
+      return response;
+    } catch (error) {
+      return handleUnexpectedError(error, requestId, log);
     }
-    
-    // Add request ID to response headers
-    response.headers.set('x-request-id', requestId);
-    
-    return response;
-  } catch (error) {
-    return handleUnexpectedError(error, requestId, log);
-  }
   }),
 );

@@ -7,6 +7,7 @@ The quota system manages user and device-level usage limits for PDF generation. 
 ## Problem Statement
 
 The quota system had multiple issues causing inconsistent display across pages:
+
 1. **Billing page** queried `usage_counters` directly and recalculated, causing inconsistencies
 2. **Multiple quota sources**: Dashboard, QuotaWarningBar, and Billing used different methods
 3. **Period mismatch**: `get_quota_snapshot` was selecting by `user_id + period_start` instead of `user_id` only
@@ -58,6 +59,7 @@ The quota system had multiple issues causing inconsistent display across pages:
 #### 2. Database Function
 
 The `get_quota_snapshot` RPC function:
+
 - Selects by `user_id` only (PK), not `user_id + period_start`
 - Properly handles period mismatches (returns 0 for new period)
 - Always returns requested period (not stored period)
@@ -66,6 +68,7 @@ The `get_quota_snapshot` RPC function:
 #### 3. Components
 
 All components use the unified service:
+
 - **Dashboard**: Uses `getQuotaData()` instead of direct RPC call
 - **QuotaWarningBar**: Uses `getQuotaData()` and helper functions
 - **Billing Page**: Uses `getQuotaData()` instead of direct table queries
@@ -171,4 +174,3 @@ CREATE TABLE device_usage_counters (
 
 - [Architecture Documentation](./ARCHITECTURE.md) - System architecture overview
 - [API Documentation](./API.md) - API endpoints reference
-

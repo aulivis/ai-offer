@@ -2,10 +2,10 @@
 
 /**
  * Document Ingestion Script
- * 
+ *
  * This script processes markdown files from web/docs/ and ingests them
  * into Supabase for the chatbot RAG system.
- * 
+ *
  * Usage:
  *   npm run ingest-docs
  *   or
@@ -48,18 +48,18 @@ async function generateEmbeddings(
   chunks: DocumentChunk[],
 ): Promise<Array<{ chunk: DocumentChunk; embedding: number[] }>> {
   const results: Array<{ chunk: DocumentChunk; embedding: number[] }> = [];
-  
+
   // Process in batches to avoid rate limits
   const batchSize = 100;
   for (let i = 0; i < chunks.length; i += batchSize) {
     const batch = chunks.slice(i, i + batchSize);
-    
+
     try {
       const response = await openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: batch.map((chunk) => chunk.content),
       });
-      
+
       // Map embeddings to chunks
       for (let j = 0; j < batch.length; j++) {
         results.push({
@@ -67,7 +67,7 @@ async function generateEmbeddings(
           embedding: response.data[j]?.embedding ?? [],
         });
       }
-      
+
       // Rate limiting: wait a bit between batches
       if (i + batchSize < chunks.length) {
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -77,7 +77,7 @@ async function generateEmbeddings(
       throw error;
     }
   }
-  
+
   return results;
 }
 
@@ -98,16 +98,14 @@ async function storeEmbeddings(
     source_path: chunk.metadata.sourcePath,
     chunk_index: chunk.metadata.chunkIndex,
   }));
-  
+
   // Insert in batches to avoid payload size limits
   const batchSize = 50;
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
-    
-    const { error } = await supabase
-      .from('chatbot_documents')
-      .insert(batch);
-    
+
+    const { error } = await supabase.from('chatbot_documents').insert(batch);
+
     if (error) {
       console.error(`Error storing embeddings batch ${i}-${i + batchSize}:`, error);
       throw error;
@@ -120,13 +118,13 @@ async function storeEmbeddings(
  */
 function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
   const files: string[] = [];
-  
+
   try {
     const entries = readdirSync(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = join(dir, entry.name);
-      
+
       if (entry.isDirectory()) {
         // Skip node_modules and other excluded directories
         if (entry.name === 'node_modules' || entry.name.startsWith('.')) {
@@ -140,7 +138,7 @@ function findMarkdownFiles(dir: string, baseDir: string = dir): string[] {
   } catch (error) {
     console.error(`Error reading directory ${dir}:`, error);
   }
-  
+
   return files;
 }
 
@@ -157,25 +155,25 @@ function getRelativePath(fullPath: string, baseDir: string): string {
 async function processFile(filePath: string, docsDir: string): Promise<void> {
   const relativePath = getRelativePath(filePath, docsDir);
   console.log(`Processing: ${relativePath}`);
-  
+
   try {
     // Read file content
     const content = readFileSync(filePath, 'utf-8');
-    
+
     // Chunk the document
     const chunks = chunkMarkdown(content, relativePath, 1000, 200);
     console.log(`  → Created ${chunks.length} chunks`);
-    
+
     if (chunks.length === 0) {
       console.log(`  ⚠️  Skipping empty file`);
       return;
     }
-    
+
     // Generate embeddings
     console.log(`  → Generating embeddings...`);
     const embeddings = await generateEmbeddings(chunks);
     console.log(`  → Generated ${embeddings.length} embeddings`);
-    
+
     // Store in database
     console.log(`  → Storing in database...`);
     await storeEmbeddings(embeddings);
@@ -190,11 +188,8 @@ async function processFile(filePath: string, docsDir: string): Promise<void> {
  * Clears existing documents for a source file (for re-ingestion).
  */
 async function clearExistingDocuments(sourcePath: string): Promise<void> {
-  const { error } = await supabase
-    .from('chatbot_documents')
-    .delete()
-    .eq('source_path', sourcePath);
-  
+  const { error } = await supabase.from('chatbot_documents').delete().eq('source_path', sourcePath);
+
   if (error) {
     console.warn(`Warning: Could not clear existing documents for ${sourcePath}:`, error);
   }
@@ -205,33 +200,33 @@ async function clearExistingDocuments(sourcePath: string): Promise<void> {
  */
 async function ingestDocuments() {
   console.log('🚀 Starting document ingestion...\n');
-  
+
   // Find docs directory (web/docs relative to script location)
   // __dirname might not work in ts-node, so use process.cwd() instead
   const docsDir = join(process.cwd(), 'docs');
   console.log(`📁 Docs directory: ${docsDir}\n`);
-  
+
   // Find all markdown files
   const files = findMarkdownFiles(docsDir);
   console.log(`📄 Found ${files.length} markdown files\n`);
-  
+
   if (files.length === 0) {
     console.log('⚠️  No markdown files found. Exiting.');
     return;
   }
-  
+
   // Process each file
   for (const file of files) {
     const relativePath = getRelativePath(file, docsDir);
-    
+
     // Clear existing documents for this file (allows re-ingestion)
     await clearExistingDocuments(relativePath);
-    
+
     // Process file
     await processFile(file, docsDir);
     console.log(''); // Empty line for readability
   }
-  
+
   console.log('✅ Document ingestion complete!');
   console.log(`\n💡 Tip: Run the following SQL to rebuild the vector index:`);
   console.log(`   SELECT rebuild_chatbot_documents_vector_index();`);
@@ -244,4 +239,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-

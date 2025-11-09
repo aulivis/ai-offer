@@ -1,12 +1,12 @@
 /**
  * Chat API Route - Primary Chatbot Endpoint
- * 
+ *
  * Single, well-defined endpoint for chatbot functionality following 2025 industry best practices.
  * Implements RAG (Retrieval Augmented Generation) with streaming responses.
- * 
+ *
  * POST /api/chat
  * Body: { messages: Array<{ role: string; content: string }> }
- * 
+ *
  * Industry Best Practices Implemented:
  * - Single endpoint per resource (simplifies maintenance, enhances security)
  * - Comprehensive error handling with structured logging
@@ -47,13 +47,13 @@ export const runtime = 'nodejs';
 
 /**
  * GET /api/chat
- * 
+ *
  * Health check endpoint for chatbot API.
  * Follows best practice: provide health check endpoints for monitoring.
  */
 export async function GET() {
-  return NextResponse.json({ 
-    status: 'ok', 
+  return NextResponse.json({
+    status: 'ok',
     message: 'Chat API is running',
     version: '1.0.0',
     features: {
@@ -67,10 +67,10 @@ export async function GET() {
 
 /**
  * POST /api/chat
- * 
+ *
  * Handles chatbot queries with RAG (Retrieval Augmented Generation).
  * Public endpoint - no authentication required (for now).
- * 
+ *
  * Industry Best Practices:
  * - Comprehensive input validation
  * - Rate limiting
@@ -83,14 +83,14 @@ export async function POST(req: NextRequest) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
   const startTime = Date.now();
-  
+
   try {
     log.info('Chat API route called', {
       method: req.method,
       url: req.url,
       requestId,
     });
-    
+
     // Best Practice: Rate limiting (prevent abuse and DoS)
     let rateLimitResult;
     try {
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
         windowMs: 60 * 1000, // 1 minute window
         keyPrefix: 'chat',
       });
-      
+
       if (rateLimitResult && !rateLimitResult.allowed) {
         log.warn('Chat rate limit exceeded', {
           limit: rateLimitResult.limit,
@@ -113,12 +113,12 @@ export async function POST(req: NextRequest) {
       }
     } catch (rateLimitError) {
       // If rate limiting fails, log but continue (don't block the request)
-      log.warn('Rate limit check failed', { 
+      log.warn('Rate limit check failed', {
         error: rateLimitError instanceof Error ? rateLimitError.message : String(rateLimitError),
         requestId,
       });
     }
-    
+
     // Best Practice: Request size validation
     const contentLength = req.headers.get('content-length');
     if (contentLength && parseInt(contentLength) > MAX_REQUEST_SIZE) {
@@ -132,12 +132,12 @@ export async function POST(req: NextRequest) {
         { status: 413 },
       );
     }
-    
+
     // Best Practice: Input validation and parsing
     let body;
     try {
       body = await req.json();
-      log.info('Request body parsed', { 
+      log.info('Request body parsed', {
         bodyKeys: Object.keys(body || {}),
         requestId,
       });
@@ -147,17 +147,17 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       return NextResponse.json(
-        { 
+        {
           error: 'Érvénytelen kérés: nem sikerült feldolgozni a kérést',
           requestId,
         },
         { status: 400 },
       );
     }
-    
+
     // Best Practice: Validate message format
     const messages = body?.messages || (Array.isArray(body) ? body : []);
-    
+
     if (!Array.isArray(messages) || messages.length === 0) {
       log.warn('Invalid request: messages array missing or empty', {
         bodyKeys: Object.keys(body || {}),
@@ -166,14 +166,14 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       return NextResponse.json(
-        { 
+        {
           error: 'Érvénytelen kérés: üzenetek tömbje szükséges',
           requestId,
         },
         { status: 400 },
       );
     }
-    
+
     // Best Practice: Validate message count (prevent abuse)
     if (messages.length > MAX_MESSAGES * 2) {
       log.warn('Too many messages in request', {
@@ -182,14 +182,14 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       return NextResponse.json(
-        { 
+        {
           error: 'Túl sok üzenet a kérésben. Kérjük, kezdj új beszélgetést.',
           requestId,
         },
         { status: 400 },
       );
     }
-    
+
     // Helper to extract text content from message (handles multiple formats from useChat)
     const getMessageContent = (message: any): string => {
       // Format 1: { role: 'user', content: 'text' } - standard format
@@ -215,13 +215,13 @@ export async function POST(req: NextRequest) {
       log.warn('Could not extract message content', { message, requestId });
       return '';
     };
-    
+
     // Convert messages to format expected by streamText
     const convertedMessages = messages
       .map((m: any) => {
         const content = getMessageContent(m);
         if (!content) return null;
-        
+
         // Best Practice: Sanitize content (basic validation)
         if (content.length > 10000) {
           log.warn('Message content too long', {
@@ -230,44 +230,44 @@ export async function POST(req: NextRequest) {
           });
           return null;
         }
-        
+
         return {
           role: m.role === 'user' ? 'user' : 'assistant',
           content,
         };
       })
       .filter((m: any): m is { role: 'user' | 'assistant'; content: string } => m !== null);
-    
+
     if (convertedMessages.length === 0) {
       log.warn('Invalid request: no valid messages found after conversion', { requestId });
       return NextResponse.json(
-        { 
+        {
           error: 'Érvénytelen kérés: nem találhatók érvényes üzenetek',
           requestId,
         },
         { status: 400 },
       );
     }
-    
+
     // Get the last user message for RAG
     const userMessages = convertedMessages.filter((m: any) => m.role === 'user');
     const lastMessage = userMessages[userMessages.length - 1];
-    
+
     if (!lastMessage || !lastMessage.content) {
       log.warn('Invalid request: last message missing content', { requestId });
       return NextResponse.json(
-        { 
+        {
           error: 'Érvénytelen kérés: az utolsó üzenetnek tartalmaznia kell tartalmat',
           requestId,
         },
         { status: 400 },
       );
     }
-    
+
     // Initialize clients
     const supabase = supabaseServiceRole();
     const openaiClient = createOpenAIClient();
-    
+
     // Best Practice: Conversation summarization for long conversations
     let messagesToUse: Array<{ role: 'user' | 'assistant'; content: string }> = convertedMessages;
     if (ENABLE_SUMMARIZATION && shouldSummarize(convertedMessages)) {
@@ -298,19 +298,19 @@ export async function POST(req: NextRequest) {
       // Limit conversation history
       messagesToUse = convertedMessages.slice(-MAX_MESSAGES);
     }
-    
+
     log.info('Processing chat query', {
       messageCount: messages.length,
       messagesUsed: messagesToUse.length,
       queryLength: lastMessage.content.length,
       requestId,
     });
-    
+
     // Check for preset questions first (before vector search)
     // First try exact match (threshold 1.0 = exact match only, no similarity)
     // This handles clicked predefined questions instantly
     let presetMatch = matchPresetQuestion(lastMessage.content, 1.0);
-    
+
     // If no exact match, try similarity matching for free-text that might match predefined questions
     // Use a threshold of 0.75 for free-text matching (higher than before for better quality)
     if (!presetMatch) {
@@ -322,19 +322,19 @@ export async function POST(req: NextRequest) {
         query: lastMessage.content,
         requestId,
       });
-      
+
       // For preset questions, use streamText but with the actual user question
       // and include the preset answer in context to ensure it's returned
       try {
         const presetAnswer = presetMatch.answer;
-        
+
         log.info('Creating streamText for preset question', {
           question: presetMatch.question,
           answerLength: presetAnswer.length,
           answerPreview: presetAnswer.substring(0, 100),
           requestId,
         });
-        
+
         // Use streamText with the user's actual question and provide the answer
         // in a way that ensures GPT returns it. We use the conversation history
         // and provide the answer as context.
@@ -347,15 +347,15 @@ ${presetAnswer}`,
           messages: messagesToUse,
           temperature: 0,
         });
-        
+
         // Log that we're about to return the response
         log.info('StreamText result created, returning response', {
           requestId,
           hasToTextStreamResponse: typeof result.toTextStreamResponse === 'function',
         });
-        
+
         const responseTime = Date.now() - startTime;
-        
+
         // Track analytics (async, don't await)
         fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
           method: 'POST',
@@ -379,25 +379,29 @@ ${presetAnswer}`,
             requestId,
           });
         });
-        
+
         // Return using toTextStreamResponse which creates the correct format for useChat
         const response = result.toTextStreamResponse();
-        
+
         log.info('Preset answer response created and returned', {
           requestId,
           responseType: response.constructor.name,
           headers: Object.fromEntries(response.headers.entries()),
         });
-        
+
         return response;
       } catch (error) {
-        log.error('Failed to create stream response for preset question', error instanceof Error ? error : undefined, {
-          errorType: error instanceof Error ? error.constructor.name : typeof error,
-          errorMessage: error instanceof Error ? error.message : String(error),
-          errorStack: error instanceof Error ? error.stack : undefined,
-          requestId,
-        });
-        
+        log.error(
+          'Failed to create stream response for preset question',
+          error instanceof Error ? error : undefined,
+          {
+            errorType: error instanceof Error ? error.constructor.name : typeof error,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
+            requestId,
+          },
+        );
+
         // If streaming fails, fall through to regular RAG processing as backup
         log.warn('Streaming failed for preset question, falling through to RAG processing', {
           requestId,
@@ -405,23 +409,20 @@ ${presetAnswer}`,
         // Don't return here - let it fall through to regular processing
       }
     }
-    
+
     // Best Practice: Multi-query retrieval (improves recall)
     let allDocuments: Awaited<ReturnType<typeof retrieveSimilarDocuments>> = [];
-    
+
     if (ENABLE_MULTI_QUERY) {
       try {
         // Generate query variations
-        const queryVariations = await generateQueryVariations(
-          lastMessage.content,
-          openaiClient,
-        );
-        
+        const queryVariations = await generateQueryVariations(lastMessage.content, openaiClient);
+
         log.info('Generated query variations', {
           count: queryVariations.length,
           requestId,
         });
-        
+
         // Retrieve documents for each variation
         const retrievalPromises = queryVariations.map(async (query) => {
           const queryEmbedding = await generateQueryEmbedding(query, openaiClient);
@@ -432,14 +433,12 @@ ${presetAnswer}`,
             SIMILARITY_THRESHOLD,
           );
         });
-        
+
         const documentsArrays = await Promise.all(retrievalPromises);
         allDocuments = documentsArrays.flat();
-        
+
         // Deduplicate by document ID
-        const uniqueDocs = Array.from(
-          new Map(allDocuments.map(doc => [doc.id, doc])).values()
-        );
+        const uniqueDocs = Array.from(new Map(allDocuments.map((doc) => [doc.id, doc])).values());
         allDocuments = uniqueDocs;
       } catch (error) {
         log.warn('Multi-query retrieval failed, falling back to single query', {
@@ -448,10 +447,7 @@ ${presetAnswer}`,
         });
         // Fallback to single query
         try {
-          const queryEmbedding = await generateQueryEmbedding(
-            lastMessage.content,
-            openaiClient,
-          );
+          const queryEmbedding = await generateQueryEmbedding(lastMessage.content, openaiClient);
           allDocuments = await retrieveSimilarDocuments(
             supabase,
             queryEmbedding,
@@ -476,10 +472,7 @@ ${presetAnswer}`,
     } else {
       // Single query retrieval
       try {
-        const queryEmbedding = await generateQueryEmbedding(
-          lastMessage.content,
-          openaiClient,
-        );
+        const queryEmbedding = await generateQueryEmbedding(lastMessage.content, openaiClient);
         allDocuments = await retrieveSimilarDocuments(
           supabase,
           queryEmbedding,
@@ -500,7 +493,7 @@ ${presetAnswer}`,
         );
       }
     }
-    
+
     // Best Practice: Re-ranking documents (improves precision)
     let documents = allDocuments;
     if (ENABLE_RERANKING && documents.length > RETRIEVAL_LIMIT) {
@@ -510,11 +503,7 @@ ${presetAnswer}`,
           after: RETRIEVAL_LIMIT,
           requestId,
         });
-        documents = await rerankDocuments(
-          lastMessage.content,
-          documents,
-          RETRIEVAL_LIMIT,
-        );
+        documents = await rerankDocuments(lastMessage.content, documents, RETRIEVAL_LIMIT);
         log.info('Documents re-ranked', {
           count: documents.length,
           requestId,
@@ -525,17 +514,13 @@ ${presetAnswer}`,
           requestId,
         });
         // Fallback: just take top N by similarity
-        documents = documents
-          .sort((a, b) => b.similarity - a.similarity)
-          .slice(0, RETRIEVAL_LIMIT);
+        documents = documents.sort((a, b) => b.similarity - a.similarity).slice(0, RETRIEVAL_LIMIT);
       }
     } else {
       // Sort by similarity and take top N
-      documents = documents
-        .sort((a, b) => b.similarity - a.similarity)
-        .slice(0, RETRIEVAL_LIMIT);
+      documents = documents.sort((a, b) => b.similarity - a.similarity).slice(0, RETRIEVAL_LIMIT);
     }
-    
+
     log.info('Retrieved documents', {
       count: documents.length,
       sources: documents.map((d) => d.sourcePath),
@@ -543,18 +528,18 @@ ${presetAnswer}`,
       reranked: ENABLE_RERANKING,
       requestId,
     });
-    
+
     // Handle case when no documents are found
     // Best Practice: Provide helpful response even when no documents match
     let context: string;
     let systemPrompt: string;
-    
+
     if (documents.length === 0) {
       log.warn('No documents found for query', {
         query: lastMessage.content,
         requestId,
       });
-      
+
       // Still provide a response, but inform the user that no documentation was found
       context = 'No relevant documentation found for this query.';
       systemPrompt = `Te Vanda vagy, a Vyndi segítőasszisztense. Barátságos, segítőkész emberként válaszolsz, aki szívesen segít a felhasználóknak megérteni a Vyndi platformot.
@@ -580,7 +565,7 @@ Utasítások:
     } else {
       // Format context from retrieved documents (with markdown links)
       context = formatContext(documents, true);
-      
+
       // Build system prompt - Vanda as a person, friendly and helpful
       systemPrompt = `Te Vanda vagy, a Vyndi segítőasszisztense. Barátságos, segítőkész emberként válaszolsz, aki szívesen segít a felhasználóknak megérteni a Vyndi platformot.
 
@@ -608,7 +593,7 @@ Utasítások:
 Dokumentációs Kontextus:
 ${context}`;
     }
-    
+
     // Stream response using Vercel AI SDK
     let result;
     try {
@@ -621,13 +606,18 @@ ${context}`;
         // The model will use its default max token limit
       });
     } catch (streamError) {
-      log.error('Failed to create stream response', streamError instanceof Error ? streamError : undefined, {
-        errorType: streamError instanceof Error ? streamError.constructor.name : typeof streamError,
-        requestId,
-      });
+      log.error(
+        'Failed to create stream response',
+        streamError instanceof Error ? streamError : undefined,
+        {
+          errorType:
+            streamError instanceof Error ? streamError.constructor.name : typeof streamError,
+          requestId,
+        },
+      );
       throw streamError;
     }
-    
+
     // Best Practice: Analytics tracking (async, don't await)
     const responseTime = Date.now() - startTime;
     fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
@@ -651,7 +641,7 @@ ${context}`;
         requestId,
       });
     });
-    
+
     // Return text stream response compatible with @ai-sdk/react useChat hook
     // Use toTextStreamResponse() for useChat hook compatibility
     try {
@@ -664,28 +654,27 @@ ${context}`;
         });
         throw new Error('Invalid stream result: toTextStreamResponse method not found');
       }
-      
+
       return result.toTextStreamResponse();
     } catch (responseError) {
-      const errorMessage = responseError instanceof Error 
-        ? responseError.message 
-        : String(responseError);
-      const errorStack = responseError instanceof Error 
-        ? responseError.stack 
-        : undefined;
-      const errorName = responseError instanceof Error 
-        ? responseError.name 
-        : typeof responseError;
-      
-      log.error('Failed to convert stream to response', responseError instanceof Error ? responseError : undefined, {
-        errorMessage,
-        errorType: errorName,
-        errorStack,
-        resultType: typeof result,
-        resultExists: !!result,
-        requestId,
-      });
-      
+      const errorMessage =
+        responseError instanceof Error ? responseError.message : String(responseError);
+      const errorStack = responseError instanceof Error ? responseError.stack : undefined;
+      const errorName = responseError instanceof Error ? responseError.name : typeof responseError;
+
+      log.error(
+        'Failed to convert stream to response',
+        responseError instanceof Error ? responseError : undefined,
+        {
+          errorMessage,
+          errorType: errorName,
+          errorStack,
+          resultType: typeof result,
+          resultExists: !!result,
+          requestId,
+        },
+      );
+
       // Return a proper error response instead of throwing
       return NextResponse.json(
         {
@@ -697,14 +686,14 @@ ${context}`;
     }
   } catch (error) {
     const log = createLogger(requestId);
-    
+
     // Best Practice: Comprehensive error logging with proper serialization
     // Handle all error types, not just Error instances
     let errorMessage = 'Unknown error';
     let errorStack: string | undefined;
     let errorType = 'Unknown';
     let errorDetails: any = {};
-    
+
     if (error instanceof Error) {
       errorMessage = error.message;
       errorStack = error.stack;
@@ -731,7 +720,7 @@ ${context}`;
       errorMessage = String(error);
       errorType = typeof error;
     }
-    
+
     log.error('Chat API error', error instanceof Error ? error : undefined, {
       errorMessage,
       errorType,
@@ -739,7 +728,7 @@ ${context}`;
       errorDetails,
       requestId,
     });
-    
+
     // Best Practice: Track error analytics (non-blocking)
     fetch(`${req.nextUrl.origin}/api/chat/analytics`, {
       method: 'POST',
@@ -756,11 +745,12 @@ ${context}`;
       // Don't log analytics errors to avoid recursion - analytics failures are non-blocking
       // Silently fail - analytics table might not exist yet
     });
-    
+
     // Best Practice: Secure error messages (no sensitive data exposure)
-    let userErrorMessage = 'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.';
+    let userErrorMessage =
+      'Váratlan hiba történt a kérés feldolgozása során. Kérjük, próbáld meg újra.';
     let statusCode = 500;
-    
+
     const errorMsgLower = errorMessage.toLowerCase();
     if (errorMsgLower.includes('rate limit') || errorMsgLower.includes('429')) {
       userErrorMessage = 'Túl sok kérés. Kérjük, várj egy pillanatot, mielőtt újra kérdeznél.';
@@ -773,10 +763,11 @@ ${context}`;
       statusCode = 504;
     } else if (errorMsgLower.includes('no documents') || errorMsgLower.includes('no relevant')) {
       // This shouldn't happen as we handle it above, but just in case
-      userErrorMessage = 'Nem található releváns dokumentáció erre a kérdésre. Kérjük, próbáld más megfogalmazásban.';
+      userErrorMessage =
+        'Nem található releváns dokumentáció erre a kérdésre. Kérjük, próbáld más megfogalmazásban.';
       statusCode = 200; // Still return 200, but with a helpful message
     }
-    
+
     return NextResponse.json(
       {
         error: userErrorMessage,

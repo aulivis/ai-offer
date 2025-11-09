@@ -8,10 +8,7 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
-import {
-  checkRateLimitMiddleware,
-  createRateLimitResponse,
-} from '@/lib/rateLimitMiddleware';
+import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
@@ -39,7 +36,7 @@ type NormalizedImage = {
 
 async function ensureBucketExists() {
   const now = Date.now();
-  if (bucketExistsCache && (now - bucketExistsCache.timestamp) < BUCKET_CACHE_TTL_MS) {
+  if (bucketExistsCache && now - bucketExistsCache.timestamp < BUCKET_CACHE_TTL_MS) {
     if (bucketExistsCache.exists) {
       return;
     }
@@ -47,7 +44,7 @@ async function ensureBucketExists() {
 
   const adminClient = supabaseServiceRole();
   const { data: bucket, error } = await adminClient.storage.getBucket(BUCKET_ID);
-  
+
   if (error && !error.message?.toLowerCase().includes('not found')) {
     throw new Error('Nem sikerült lekérni a tárhely beállításait.');
   }
@@ -109,7 +106,7 @@ async function normalizeJpeg(buffer: Buffer): Promise<NormalizedImage | null> {
   // Optimize JPEG - resize if too large, maintain quality
   let image = sharp(buffer, { failOn: 'truncated' });
   const metadata = await image.metadata();
-  
+
   // Resize if width > 2000px or height > 2000px (maintain aspect ratio)
   const maxDimension = 2000;
   if (metadata.width && metadata.height) {
@@ -121,9 +118,7 @@ async function normalizeJpeg(buffer: Buffer): Promise<NormalizedImage | null> {
     }
   }
 
-  const normalizedBuffer = await image
-    .jpeg({ quality: 85, mozjpeg: true })
-    .toBuffer();
+  const normalizedBuffer = await image.jpeg({ quality: 85, mozjpeg: true }).toBuffer();
   return { ...detected, buffer: normalizedBuffer };
 }
 
@@ -146,7 +141,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
   log.setContext({ userId: request.user.id });
-  
+
   // Rate limiting
   const rateLimitResult = await checkRateLimitMiddleware(request, {
     maxRequests: 20, // Higher limit for reference photos
@@ -206,10 +201,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     }
 
     if (fileEntry.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: 'A fájl mérete legfeljebb 5 MB lehet.' },
-        { status: 413 },
-      );
+      return NextResponse.json({ error: 'A fájl mérete legfeljebb 5 MB lehet.' }, { status: 413 });
     }
 
     try {
@@ -226,17 +218,16 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const buffer = Buffer.from(arrayBuffer);
     const normalizedImage = await validateAndNormalizeImage(buffer);
     if (!normalizedImage) {
-      return NextResponse.json(
-        { error: 'Csak PNG vagy JPEG kép tölthető fel.' },
-        { status: 415 },
-      );
+      return NextResponse.json({ error: 'Csak PNG vagy JPEG kép tölthető fel.' }, { status: 415 });
     }
 
     const imageId = randomUUID();
     const path = `${userId}/activities/${activityId}/reference-${imageId}.${normalizedImage.extension}`;
 
     // Verify authentication
-    const { data: { user: authUser } } = await sb.auth.getUser();
+    const {
+      data: { user: authUser },
+    } = await sb.auth.getUser();
     if (!authUser || authUser.id !== userId) {
       log.error('Authentication mismatch in activity image upload', {
         expectedUserId: userId,
@@ -258,21 +249,21 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
 
     if (uploadError) {
       const errorMessage = uploadError.message?.toLowerCase() || '';
-      
+
       if (errorMessage.includes('not found') || errorMessage.includes('bucket')) {
         return NextResponse.json(
           { error: 'A tárhely nem elérhető. Kérjük, próbáld újra később.' },
           { status: 503 },
         );
       }
-      
+
       if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
         return NextResponse.json(
           { error: 'Nincs jogosultság a fájl feltöltéséhez.' },
           { status: 403 },
         );
       }
-      
+
       return NextResponse.json(
         { error: 'Nem sikerült feltölteni a képet. Kérjük, próbáld újra.' },
         { status: 500 },
@@ -283,7 +274,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const { data: signedData, error: signedError } = await sb.storage
       .from(BUCKET_ID)
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
-    
+
     if (signedError) {
       log.warn('Failed to generate signed URL', { error: signedError, path });
     }
@@ -313,20 +304,17 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba történt.';
-    log.error('Activity image upload failed', error instanceof Error ? error : new Error(String(error)));
-    
+    log.error(
+      'Activity image upload failed',
+      error instanceof Error ? error : new Error(String(error)),
+    );
+
     if (error instanceof Error) {
       if (error.message.includes('sharp') || error.message.includes('image')) {
-        return NextResponse.json(
-          { error: 'Nem sikerült feldolgozni a képet.' },
-          { status: 415 },
-        );
+        return NextResponse.json({ error: 'Nem sikerült feldolgozni a képet.' }, { status: 415 });
       }
     }
-    
+
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
-
-
-

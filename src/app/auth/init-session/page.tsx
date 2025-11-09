@@ -7,11 +7,11 @@ import InitSessionClient from './InitSessionClient';
 
 /**
  * Server component that reads authentication cookies during SSR.
- * 
+ *
  * This page is used after OAuth/magic link callbacks to ensure the Supabase client
  * session is properly initialized from cookies before redirecting to the
  * final destination (e.g., dashboard).
- * 
+ *
  * Flow:
  * 1. OAuth callback sets cookies server-side
  * 2. Redirects to this page
@@ -58,13 +58,18 @@ export default async function InitSessionPage({
         },
       );
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken!);
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser(accessToken!);
 
       if (userError || !user) {
         // Invalid tokens - redirect to login
         const log = createLogger();
         log.warn('Invalid tokens during SSR', { error: userError?.message });
-        redirect(`/login?error=${encodeURIComponent('Invalid authentication tokens')}&redirect=${encodeURIComponent(redirectTo)}`);
+        redirect(
+          `/login?error=${encodeURIComponent('Invalid authentication tokens')}&redirect=${encodeURIComponent(redirectTo)}`,
+        );
       }
 
       // Verify user ID matches if expected
@@ -74,7 +79,9 @@ export default async function InitSessionPage({
           expected: expectedUserId,
           actual: user.id,
         });
-        redirect(`/login?error=${encodeURIComponent('User ID mismatch')}&redirect=${encodeURIComponent(redirectTo)}`);
+        redirect(
+          `/login?error=${encodeURIComponent('User ID mismatch')}&redirect=${encodeURIComponent(redirectTo)}`,
+        );
       }
 
       // Cookies are valid - client component can now fetch tokens via API
@@ -103,4 +110,3 @@ export default async function InitSessionPage({
     />
   );
 }
-

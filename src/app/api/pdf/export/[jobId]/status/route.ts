@@ -7,7 +7,7 @@ import { uuidSchema } from '@/lib/validation/schemas';
 
 /**
  * GET /api/pdf/export/[jobId]/status
- * 
+ *
  * Get the status of a PDF generation job.
  * This endpoint is public and does not require authentication.
  */
@@ -17,10 +17,7 @@ const jobIdParamsSchema = z.object({
   jobId: uuidSchema,
 });
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ jobId: string }> }) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
 
@@ -71,4 +68,3 @@ export async function GET(
     );
   }
 }
-

@@ -1,24 +1,24 @@
 /**
  * Typography Scale Utility System
- * 
+ *
  * Provides a consistent typography scale for headings, body text, and UI elements.
  * Based on a modular scale with consistent line heights and font weights.
- * 
+ *
  * @module typography
- * 
+ *
  * @example
  * ```tsx
  * import { TYPOGRAPHY_SCALE, getTypography } from '@/styles/typography';
  * import { Heading, H1, H2 } from '@/components/ui/Heading';
- * 
+ *
  * // Use Heading component
  * <H1>Main Title</H1>
  * <H2>Section Title</H2>
- * 
+ *
  * // Use typography values directly
  * const h1Style = getTypography('h1');
  * ```
- * 
+ *
  * Usage:
  * - Use typography tokens in Tailwind classes: `text-2xl`, `text-base`, `font-semibold`
  * - Use typography values in inline styles: `style={{ fontSize: typography.h1.size }}`
@@ -181,4 +181,3 @@ export const LETTER_SPACING = {
   wider: '0.05em',
   widest: '0.1em',
 } as const;
-

@@ -45,7 +45,8 @@ export function sanitizeBrandLogoPath(value: string | null | undefined): string 
   }
 
   // Validate path format: should match "{uuid}/brand-logo.{ext}"
-  const pathPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/brand-logo\.(png|jpg|jpeg|svg)$/i;
+  const pathPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/brand-logo\.(png|jpg|jpeg|svg)$/i;
   if (!pathPattern.test(trimmed)) {
     return null;
   }
@@ -125,8 +126,10 @@ export async function getBrandLogoSignedUrl(
     // Catch all storage-related errors gracefully (bucket doesn't exist, network issues, etc.)
     // These are expected scenarios and shouldn't pollute error logs
     const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.toLowerCase().includes('not found') || 
-        errorMessage.toLowerCase().includes('does not exist')) {
+    if (
+      errorMessage.toLowerCase().includes('not found') ||
+      errorMessage.toLowerCase().includes('does not exist')
+    ) {
       // Silent handling for expected cases
       return null;
     }

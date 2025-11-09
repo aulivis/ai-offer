@@ -99,7 +99,7 @@ export async function POST(request: Request) {
   const confirmUrl = new URL('/api/auth/confirm', envServer.APP_URL);
   // Also keep callback URL for legacy compatibility during migration
   const callbackUrl = new URL('/auth/callback', envServer.APP_URL);
-  
+
   const supabase = supabaseAnonServer();
 
   logger.info('Requesting magic link', {

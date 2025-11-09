@@ -58,6 +58,7 @@ pnpm test:templates -u
 ### Template Registry
 
 The unified registry (`engineRegistry.ts`) provides:
+
 - Template validation with Zod schemas
 - Caching (1-hour TTL)
 - Metadata extraction
@@ -114,12 +115,12 @@ The context object passed to renderers:
 ```typescript
 export const myTemplateTokens: ThemeTokens = {
   color: {
-    primary: '#2563eb',      // Main brand color
-    secondary: '#60a5fa',    // Accent color
-    text: '#1e293b',         // Main text
-    muted: '#64748b',        // Secondary text
-    border: '#e2e8f0',       // Borders
-    bg: '#ffffff',           // Background
+    primary: '#2563eb', // Main brand color
+    secondary: '#60a5fa', // Accent color
+    text: '#1e293b', // Main text
+    muted: '#64748b', // Secondary text
+    border: '#e2e8f0', // Borders
+    bg: '#ffffff', // Background
   },
   // ... typography, spacing, etc.
 };
@@ -128,6 +129,7 @@ export const myTemplateTokens: ThemeTokens = {
 ### Typography
 
 Use semantic token names:
+
 - `tokens.typography.h1` - Main headings
 - `tokens.typography.h2` - Section headings
 - `tokens.typography.body` - Body text
@@ -136,6 +138,7 @@ Use semantic token names:
 ### Spacing
 
 Use the spacing scale:
+
 - `tokens.spacing.xs` - 4px
 - `tokens.spacing.sm` - 8px
 - `tokens.spacing.md` - 16px
@@ -168,14 +171,18 @@ function partialHeader(ctx: RenderCtx): string {
 
 ```typescript
 function partialGallery(ctx: RenderCtx): string {
-  const images = ctx.offer.images?.filter(img => img?.src) || [];
+  const images = ctx.offer.images?.filter((img) => img?.src) || [];
   if (images.length === 0) return '';
 
-  const items = images.map(image => `
+  const items = images
+    .map(
+      (image) => `
     <figure>
       <img src="${sanitizeInput(image.src)}" alt="${sanitizeInput(image.alt)}" />
     </figure>
-  `).join('');
+  `,
+    )
+    .join('');
 
   return `
     <section class="section-card">
@@ -196,7 +203,7 @@ export function renderBody(ctx: RenderCtx): string {
   const headerFooterCtx = buildHeaderFooterCtx(ctx);
   const slimHeader = renderSlimHeader(headerFooterCtx);
   const slimFooter = renderSlimFooter(headerFooterCtx);
-  
+
   return `
     ${slimHeader}
     ${slimFooter}
@@ -237,6 +244,7 @@ All customer-facing strings must use `ctx.i18n`:
 ```
 
 Common translation keys:
+
 - `pdf.templates.sections.pricing` - "Pricing"
 - `pdf.templates.sections.gallery` - "Gallery"
 - `pdf.templates.sections.nextSteps` - "Next Steps"
@@ -253,8 +261,8 @@ Update both `id` and `version` fields when bumping:
 
 ```typescript
 export const myTemplate: OfferTemplate = {
-  id: "premium.elegant@1.1.0",
-  version: "1.1.0",
+  id: 'premium.elegant@1.1.0',
+  version: '1.1.0',
   // ...
 };
 ```
@@ -293,6 +301,7 @@ export const myTemplate: OfferTemplate = {
 ## Caching
 
 Templates are automatically cached for 1 hour. The cache is:
+
 - **Automatic**: No manual management needed
 - **Invalidated on registration**: New registrations clear the cache
 - **Manual control**: Use `clearTemplateCache(id)` to force refresh

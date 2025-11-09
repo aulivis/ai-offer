@@ -19,7 +19,7 @@ export default function AuthCallbackPage() {
     const urlLength = fullUrl.length;
     const hashLength = window.location.hash.length;
     const searchLength = window.location.search.length;
-    
+
     console.log('[AuthCallback] URL analysis', {
       urlLength,
       hashLength,
@@ -29,7 +29,7 @@ export default function AuthCallbackPage() {
       // Log first 200 chars of URL for debugging (without exposing full tokens)
       urlPreview: fullUrl.substring(0, 200) + (fullUrl.length > 200 ? '...' : ''),
     });
-    
+
     const hashParams = parseHashParams(window.location.hash);
     const searchParams = new URLSearchParams(window.location.search);
 
@@ -51,7 +51,7 @@ export default function AuthCallbackPage() {
       }
       return `${token} (length: ${token.length})`;
     };
-    
+
     console.log('[AuthCallback] Parameters received', {
       hashParams: {
         access_token: redactToken(hashParams.get('access_token')),
@@ -72,7 +72,7 @@ export default function AuthCallbackPage() {
     for (const key of expected) {
       const fromHash = hashParams.get(key);
       if (fromHash && !searchParams.has(key)) {
-      searchParams.set(key, fromHash);
+        searchParams.set(key, fromHash);
       }
     }
 
@@ -80,22 +80,22 @@ export default function AuthCallbackPage() {
       searchParams.has('access_token') &&
       searchParams.has('refresh_token') &&
       searchParams.has('expires_in');
-    const hasTokenHash =
-      searchParams.has('token_hash') && searchParams.has('type');
+    const hasTokenHash = searchParams.has('token_hash') && searchParams.has('type');
 
     // Log token lengths to detect truncation
     if (hasImplicit) {
       const accessToken = searchParams.get('access_token') || '';
       const refreshToken = searchParams.get('refresh_token') || '';
       const expiresIn = searchParams.get('expires_in') || '';
-      
+
       console.log('[AuthCallback] Implicit flow detected', {
         accessTokenLength: accessToken.length,
         refreshTokenLength: refreshToken.length,
         expiresIn,
-        refreshTokenPreview: refreshToken.substring(0, 20) + (refreshToken.length > 20 ? '...' : ''),
+        refreshTokenPreview:
+          refreshToken.substring(0, 20) + (refreshToken.length > 20 ? '...' : ''),
       });
-      
+
       // Warn if refresh token seems truncated (Supabase refresh tokens are typically 100+ chars)
       if (refreshToken.length < 50) {
         console.warn('[AuthCallback] WARNING: Refresh token appears to be truncated!', {
@@ -104,7 +104,8 @@ export default function AuthCallbackPage() {
           fullUrlLength: urlLength,
           hashLength,
           searchLength,
-          message: 'Email clients or browsers may truncate long URLs. Consider using token_hash flow instead.',
+          message:
+            'Email clients or browsers may truncate long URLs. Consider using token_hash flow instead.',
         });
       }
     }
@@ -123,13 +124,13 @@ export default function AuthCallbackPage() {
     // Átirányítás a szerveres callbackre
     const qs = searchParams.toString();
     const callbackUrl = `/api/auth/callback${qs ? `?${qs}` : ''}`;
-    
+
     console.log('[AuthCallback] Redirecting to API callback', {
       callbackUrlLength: callbackUrl.length,
       usingTokenHash: hasTokenHash,
       usingImplicit: hasImplicit,
     });
-    
+
     window.location.replace(callbackUrl);
   }, []);
 

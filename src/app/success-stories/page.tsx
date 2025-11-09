@@ -5,7 +5,8 @@ import { t } from '@/copy';
 
 export const metadata = {
   title: 'Sikertörténetek - Vyndi',
-  description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat',
+  description:
+    'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat',
 };
 
 function getCaseStudies() {
@@ -31,7 +32,10 @@ function getCaseStudies() {
       solution: t('landing.caseStudiesInline.techSolutions.solution'),
       results: [
         { metric: t('landing.caseStudiesInline.techSolutions.results.offerTime'), value: '-65%' },
-        { metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'), value: '50+' },
+        {
+          metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'),
+          value: '50+',
+        },
         { metric: t('landing.caseStudiesInline.techSolutions.results.satisfaction'), value: '98%' },
       ],
       quote: t('landing.caseStudiesInline.techSolutions.quote'),
@@ -44,9 +48,18 @@ function getCaseStudies() {
       challenge: t('landing.caseStudiesInline.creativeAgency.challenge'),
       solution: t('landing.caseStudiesInline.creativeAgency.solution'),
       results: [
-        { metric: t('landing.caseStudiesInline.creativeAgency.results.templateTime'), value: '-80%' },
-        { metric: t('landing.caseStudiesInline.creativeAgency.results.consistentAppearance'), value: '100%' },
-        { metric: t('landing.caseStudiesInline.creativeAgency.results.offersPerMonth'), value: '40+' },
+        {
+          metric: t('landing.caseStudiesInline.creativeAgency.results.templateTime'),
+          value: '-80%',
+        },
+        {
+          metric: t('landing.caseStudiesInline.creativeAgency.results.consistentAppearance'),
+          value: '100%',
+        },
+        {
+          metric: t('landing.caseStudiesInline.creativeAgency.results.offersPerMonth'),
+          value: '40+',
+        },
       ],
       quote: t('landing.caseStudiesInline.creativeAgency.quote'),
       author: t('landing.caseStudiesInline.creativeAgency.author'),
@@ -76,10 +89,7 @@ export default function SuccessStoriesPage() {
       {/* Case Studies Grid - 2 columns on large screens, 1 on mobile */}
       <div className="mt-12 grid gap-8 md:gap-10 lg:grid-cols-2 lg:gap-12">
         {caseStudies.map((study, index) => (
-          <div
-            key={index}
-            className="transform transition-all duration-300 hover:scale-[1.02]"
-          >
+          <div key={index} className="transform transition-all duration-300 hover:scale-[1.02]">
             <CaseStudyCard
               company={study.company}
               industry={study.industry}
@@ -100,7 +110,7 @@ export default function SuccessStoriesPage() {
           {/* Decorative background elements */}
           <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-accent/10 blur-3xl" />
-          
+
           <div className="relative mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold text-fg md:text-4xl lg:text-5xl">
               {t('landing.successStories.ctaTitle')}
@@ -115,7 +125,12 @@ export default function SuccessStoriesPage() {
               >
                 {t('landing.successStories.ctaButton')}
                 <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </Link>
               <Link
@@ -131,4 +146,3 @@ export default function SuccessStoriesPage() {
     </main>
   );
 }
-

@@ -92,7 +92,8 @@ export function priceTableHtml(
   const footerNet = sanitizeInput(i18n.t('pdf.pricingTable.footer.net'));
   const footerVat = sanitizeInput(i18n.t('pdf.pricingTable.footer.vat'));
   const footerGross = sanitizeInput(i18n.t('pdf.pricingTable.footer.gross'));
-  const resolvedFootnote = typeof options.footnote === 'string' ? sanitizeInput(options.footnote) : '';
+  const resolvedFootnote =
+    typeof options.footnote === 'string' ? sanitizeInput(options.footnote) : '';
   const hasFootnote = resolvedFootnote.trim().length > 0;
 
   return `

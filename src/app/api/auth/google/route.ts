@@ -38,8 +38,8 @@ export async function GET(request: Request) {
   callbackUrl.searchParams.set('redirect_to', finalRedirect);
 
   // 3) PKCE: mi generáljuk a verifiert és a challenge-et
-  const codeVerifier = base64url(randomBytes(64));       // 43..128 char, URL-safe
-  const codeChallenge = sha256base64url(codeVerifier);   // S256
+  const codeVerifier = base64url(randomBytes(64)); // 43..128 char, URL-safe
+  const codeChallenge = sha256base64url(codeVerifier); // S256
 
   // 4) Verifier sütiben (HttpOnly), 5 perc élettartam
   const jar = await cookies();

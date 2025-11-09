@@ -43,4 +43,3 @@ export const FONT_SIZES = {
   '3xl': '1.875rem',
   '4xl': '2.25rem',
 } as const;
-

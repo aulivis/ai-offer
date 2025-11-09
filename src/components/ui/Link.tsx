@@ -30,19 +30,19 @@ const sizeClasses = {
 
 /**
  * Link component with loading state and variant support
- * 
+ *
  * Wraps Next.js Link component with additional styling and loading state support.
- * 
+ *
  * @example
  * ```tsx
  * <Link href="/dashboard" variant="primary" loading={isNavigating}>
  *   Go to Dashboard
  * </Link>
- * 
+ *
  * <Link href="/settings" variant="muted" size="sm">
  *   Settings
  * </Link>
- * 
+ *
  * <Link href="https://example.com" external>
  *   External Link
  * </Link>
@@ -58,7 +58,7 @@ export function Link({
   ...props
 }: LinkProps) {
   const isDisabled = loading;
-  
+
   // For external links, use regular <a> tag instead of Next.js Link
   if (external || (typeof props.href === 'string' && props.href.startsWith('http'))) {
     return (
@@ -89,7 +89,7 @@ export function Link({
       </a>
     );
   }
-  
+
   const cls = [
     'inline-flex items-center gap-2',
     variantClasses[variant],
@@ -119,4 +119,3 @@ export function Link({
     </NextLink>
   );
 }
-

@@ -165,9 +165,7 @@ export default function StepIndicator({ steps }: Props) {
             clickable
               ? 'cursor-pointer border-slate-300 bg-white hover:-translate-y-1 hover:border-slate-400 hover:shadow-lg active:translate-y-0 focus-visible:ring-primary'
               : 'cursor-default',
-            !clickable && !isCurrent
-              ? 'opacity-60'
-              : undefined,
+            !clickable && !isCurrent ? 'opacity-60' : undefined,
             tone === 'error'
               ? 'border-rose-200 bg-rose-50/80 ring-2 ring-rose-100'
               : isCurrent

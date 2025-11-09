@@ -1,9 +1,9 @@
 /**
  * External API PDF Generation Helper
- * 
+ *
  * This module provides utilities for handling PDF generation requests from external
  * API clients (SDK, integrations, etc.) that don't require user authentication.
- * 
+ *
  * Industry Best Practices:
  * - Uses Vercel-native Puppeteer for PDF generation (industry best practice)
  * - Falls back to Supabase Edge Functions if Vercel-native not available
@@ -27,7 +27,7 @@ import { processPdfJobVercelNative } from '@/lib/pdfVercelWorker';
  * This should be a dedicated system user created in the database
  * For production, set EXTERNAL_API_SYSTEM_USER_ID environment variable
  * with the UUID of a system user account
- * 
+ *
  * If not set, a placeholder UUID will be used. This will work but PDFs
  * will be associated with a non-existent user, which may cause issues
  * with RLS policies or user-based features.
@@ -37,7 +37,7 @@ const EXTERNAL_API_SYSTEM_USER_ID =
 
 /**
  * Creates a PDF job for external API requests
- * 
+ *
  * @param html - The HTML content to convert to PDF
  * @param runtimeTemplate - Optional runtime template payload
  * @param callbackUrl - Optional webhook URL to notify when PDF is ready
@@ -46,7 +46,7 @@ const EXTERNAL_API_SYSTEM_USER_ID =
 /**
  * Creates a minimal offer record for external API PDF jobs
  * This is required because pdf_jobs table has a foreign key constraint on offer_id
- * 
+ *
  * Uses service_role to bypass RLS policies for system operations
  */
 async function createExternalApiOffer(
@@ -94,16 +94,16 @@ export async function createExternalPdfJob(
   const sb = supabaseServiceRole();
   const jobId = randomUUID();
   const offerId = randomUUID();
-  
+
   // Extract title from runtime template or use default
   const title = runtimeTemplate?.slots?.doc?.title || 'External API PDF Export';
-  
+
   // Create a minimal offer record (required for foreign key constraint)
   await createExternalApiOffer(sb, offerId, title);
-  
+
   // Generate storage path
   const storagePath = `external-api/${jobId}.pdf`;
-  
+
   // Get current date for usage period
   const now = new Date();
   const usagePeriodStart = now.toISOString().slice(0, 10); // YYYY-MM-DD format
@@ -168,13 +168,11 @@ export async function createExternalPdfJob(
 
 /**
  * Gets the status of a PDF job
- * 
+ *
  * @param jobId - The job ID
  * @returns Job status and PDF URL if completed
  */
-export async function getExternalPdfJobStatus(
-  jobId: string,
-): Promise<{
+export async function getExternalPdfJobStatus(jobId: string): Promise<{
   status: 'pending' | 'processing' | 'completed' | 'failed';
   pdfUrl?: string | null;
   error?: string | null;
@@ -207,17 +205,17 @@ export async function getExternalPdfJobStatus(
     pdfUrl: job.pdf_url,
     error: job.error_message,
   };
-  
+
   if (downloadUrl) {
     result.downloadUrl = downloadUrl;
   }
-  
+
   return result;
 }
 
 /**
  * Gets the PDF download URL for a completed job
- * 
+ *
  * @param jobId - The job ID
  * @param token - Optional download token for security
  * @returns PDF URL or null if not ready
@@ -228,10 +226,7 @@ export async function getExternalPdfDownloadUrl(
 ): Promise<string | null> {
   const sb = supabaseServiceRole();
 
-  let query = sb
-    .from('pdf_jobs')
-    .select('pdf_url, download_token, status')
-    .eq('id', jobId);
+  let query = sb.from('pdf_jobs').select('pdf_url, download_token, status').eq('id', jobId);
 
   // If token is provided, validate it
   if (token) {
@@ -251,4 +246,3 @@ export async function getExternalPdfDownloadUrl(
 
   return job.pdf_url;
 }
-

@@ -42,7 +42,12 @@ export default function FAQ({ items, className = '' }: FAQProps) {
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               <div
@@ -50,7 +55,9 @@ export default function FAQ({ items, className = '' }: FAQProps) {
                   isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
-                <div className="px-6 pb-6 text-base leading-relaxed text-fg-muted">{item.answer}</div>
+                <div className="px-6 pb-6 text-base leading-relaxed text-fg-muted">
+                  {item.answer}
+                </div>
               </div>
             </Card>
           );
@@ -59,17 +66,3 @@ export default function FAQ({ items, className = '' }: FAQProps) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -60,7 +60,6 @@ function createSupabaseError(error: SupabaseErrorLike | null | undefined): Error
   return new Error(t('errors.settings.saveUnknown'));
 }
 
-
 export default function SettingsPage() {
   const supabase = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
@@ -88,14 +87,16 @@ export default function SettingsPage() {
     industries: [] as string[],
   });
   const [actSaving, setActSaving] = useState(false);
-  const [testimonials, setTestimonials] = useState<Array<{
-    id: string;
-    user_id: string;
-    activity_id?: string | null;
-    text: string;
-    created_at: string;
-    updated_at: string;
-  }>>([]);
+  const [testimonials, setTestimonials] = useState<
+    Array<{
+      id: string;
+      user_id: string;
+      activity_id?: string | null;
+      text: string;
+      created_at: string;
+      updated_at: string;
+    }>
+  >([]);
   const [newIndustry, setNewIndustry] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoUploadProgress, setLogoUploadProgress] = useState<number | null>(null);
@@ -222,28 +223,29 @@ export default function SettingsPage() {
   const secondaryPreview = normalizeBrandHex(profile.brand_color_secondary) ?? '#e2e8f0';
   const canUploadBrandLogo = plan !== 'free';
   // Use the template ID directly from profile for display (enforcement happens on save)
-  const selectedTemplateId = (profile.offer_template as TemplateId | null) ?? DEFAULT_OFFER_TEMPLATE_ID;
+  const selectedTemplateId =
+    (profile.offer_template as TemplateId | null) ?? DEFAULT_OFFER_TEMPLATE_ID;
 
   const handleTemplateSelect = useCallback(
     async (templateId: TemplateId) => {
       // Update profile state immediately for UI feedback
       setProfile((prev) => ({ ...prev, offer_template: templateId }));
-      
+
       // Save directly with the selected template ID
       try {
         setSaving(true);
         if (!user) return;
-        
+
         const primary = normalizeBrandHex(profile.brand_color_primary);
         const secondary = normalizeBrandHex(profile.brand_color_secondary);
         // Use the selected templateId directly, but still enforce plan restrictions
         const templateIdToSave = enforceTemplateForPlan(templateId, plan);
-        
+
         const mutationAction = resolveProfileMutationAction({
           hasProfile,
           loadError: profileLoadError,
         });
-        
+
         let brandingData:
           | {
               brand_logo_path: string | null;
@@ -254,7 +256,7 @@ export default function SettingsPage() {
             }
           | null
           | undefined;
-          
+
         if (mutationAction === 'update') {
           const response = await supabase
             .from('profiles')
@@ -266,7 +268,9 @@ export default function SettingsPage() {
               offer_template: templateIdToSave,
             })
             .eq('id', user.id)
-            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .select(
+              'brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template',
+            )
             .maybeSingle();
           if (response.error) {
             throw createSupabaseError(response.error);
@@ -297,14 +301,16 @@ export default function SettingsPage() {
               },
               { onConflict: 'id' },
             )
-            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .select(
+              'brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template',
+            )
             .maybeSingle();
           if (response.error) {
             throw createSupabaseError(response.error);
           }
           brandingData = response.data;
         }
-        
+
         setHasProfile(true);
         setProfileLoadError(null);
         // Update profile with the saved template ID (use what was actually saved)
@@ -316,7 +322,7 @@ export default function SettingsPage() {
           brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
           offer_template: brandingData?.offer_template ?? templateIdToSave,
         }));
-        
+
         showToast({
           title: t('toasts.settings.saveSuccess'),
           description: t('toasts.settings.saveSuccess'),
@@ -335,7 +341,17 @@ export default function SettingsPage() {
         setSaving(false);
       }
     },
-    [user, plan, profile, hasProfile, profileLoadError, email, selectedTemplateId, supabase, showToast],
+    [
+      user,
+      plan,
+      profile,
+      hasProfile,
+      profileLoadError,
+      email,
+      selectedTemplateId,
+      supabase,
+      showToast,
+    ],
   );
 
   useEffect(() => {
@@ -480,7 +496,9 @@ export default function SettingsPage() {
               offer_template: templateId,
             })
             .eq('id', user.id)
-            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .select(
+              'brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template',
+            )
             .maybeSingle();
           if (response.error) {
             throw createSupabaseError(response.error);
@@ -507,7 +525,9 @@ export default function SettingsPage() {
               },
               { onConflict: 'id' },
             )
-            .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+            .select(
+              'brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template',
+            )
             .maybeSingle();
           if (response.error) {
             throw createSupabaseError(response.error);
@@ -566,7 +586,9 @@ export default function SettingsPage() {
             default_activity_id: profile.default_activity_id ?? null,
           })
           .eq('id', user.id)
-          .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .select(
+            'brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template',
+          )
           .maybeSingle();
         if (response.error) {
           throw createSupabaseError(response.error);
@@ -593,7 +615,9 @@ export default function SettingsPage() {
             },
             { onConflict: 'id' },
           )
-          .select('brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template')
+          .select(
+            'brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary, offer_template',
+          )
           .maybeSingle();
         if (response.error) {
           throw createSupabaseError(response.error);
@@ -656,7 +680,7 @@ export default function SettingsPage() {
     if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
       return {
         valid: false,
-          error: t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }),
+        error: t('errors.settings.logoInvalidType', { types: 'PNG, JPEG, SVG' }),
       };
     }
 
@@ -745,7 +769,11 @@ export default function SettingsPage() {
       let logoUrl: string | null = null;
 
       if (payload && typeof payload === 'object') {
-        const typedPayload = payload as { path?: unknown; signedUrl?: unknown; publicUrl?: unknown };
+        const typedPayload = payload as {
+          path?: unknown;
+          signedUrl?: unknown;
+          publicUrl?: unknown;
+        };
 
         if ('path' in typedPayload && typeof typedPayload.path === 'string') {
           logoPath = typedPayload.path;
@@ -788,7 +816,9 @@ export default function SettingsPage() {
         showToast({
           title: t('toasts.settings.logoUploaded.title'),
           description:
-            t('toasts.settings.logoUploaded.description') + ' ' + t('errors.settings.autoSaveFailed'),
+            t('toasts.settings.logoUploaded.description') +
+            ' ' +
+            t('errors.settings.autoSaveFailed'),
           variant: 'error',
         });
       }
@@ -798,7 +828,8 @@ export default function SettingsPage() {
       }
 
       console.error('Logo upload error', error);
-      const message = error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
+      const message =
+        error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
       showToast({
         title: t('toasts.settings.logoUploadFailed.title'),
         description: message || t('toasts.settings.logoUploadFailed.description'),
@@ -844,7 +875,9 @@ export default function SettingsPage() {
         })
         .select();
       setActs((prev) =>
-        [...prev, ...((ins.data as ActivityRow[]) || [])].sort((a, b) => a.name.localeCompare(b.name)),
+        [...prev, ...((ins.data as ActivityRow[]) || [])].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
       );
       setNewAct({ name: '', unit: 'db', price: 0, vat: 27, industries: profile.industries || [] });
     } finally {
@@ -952,7 +985,11 @@ export default function SettingsPage() {
             <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
               {t('settings.sidebarTitle')}
             </h2>
-            <SectionNav sections={sections} activeSection={activeSection} onSectionChange={handleSectionChange} />
+            <SectionNav
+              sections={sections}
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
+            />
           </div>
         </aside>
 
@@ -1027,12 +1064,16 @@ export default function SettingsPage() {
                 }
                 // Update local state only after successful database update
                 setActs((prev) =>
-                  prev.map((a) => (a.id === activityId ? { ...a, reference_images: imagePaths } : a)),
+                  prev.map((a) =>
+                    a.id === activityId ? { ...a, reference_images: imagePaths } : a,
+                  ),
                 );
               } catch (error) {
                 console.error('Failed to save reference images:', error);
                 showToast({
-                  title: t('errors.settings.saveFailed', { message: 'Nem sikerült menteni a referenciafotókat' }),
+                  title: t('errors.settings.saveFailed', {
+                    message: 'Nem sikerült menteni a referenciafotókat',
+                  }),
                   description: error instanceof Error ? error.message : 'Ismeretlen hiba',
                   variant: 'error',
                 });
@@ -1056,7 +1097,9 @@ export default function SettingsPage() {
               } catch (error) {
                 console.error('Failed to save default activity:', error);
                 showToast({
-                  title: t('errors.settings.saveFailed', { message: 'Nem sikerült menteni az alapértelmezett tevékenységet' }),
+                  title: t('errors.settings.saveFailed', {
+                    message: 'Nem sikerült menteni az alapértelmezett tevékenységet',
+                  }),
                   description: error instanceof Error ? error.message : 'Ismeretlen hiba',
                   variant: 'error',
                 });
@@ -1064,7 +1107,6 @@ export default function SettingsPage() {
             }}
             onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
           />
-
 
           <Card
             id="testimonials"
@@ -1081,7 +1123,9 @@ export default function SettingsPage() {
                       <h2 className="text-xl font-bold text-slate-900">
                         {t('settings.testimonials.title')}
                       </h2>
-                      <p className="text-sm text-slate-500">{t('settings.testimonials.subtitle')}</p>
+                      <p className="text-sm text-slate-500">
+                        {t('settings.testimonials.subtitle')}
+                      </p>
                     </div>
                   </div>
                   {plan === 'pro' && (

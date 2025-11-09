@@ -1,6 +1,6 @@
 /**
  * SDK Runtime Template Registry
- * 
+ *
  * This registry provides a simplified interface for runtime PDF generation.
  * It uses the main engineRegistry as the backend while providing SDK-compatible types.
  */
@@ -26,7 +26,7 @@ export type TemplateMeta = {
 function createSDKTemplateAdapter(engineTemplateId: EngineTemplateId): OfferTemplate | null {
   try {
     const engineTemplate = loadEngineTemplate(engineTemplateId);
-    
+
     // For now, return null if it's not a runtime template
     // Runtime templates should be in SDK format
     return null;

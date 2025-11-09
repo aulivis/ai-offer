@@ -2,7 +2,7 @@
 
 /**
  * Vanda Avatar Component
- * 
+ *
  * A friendly, professional avatar for Vanda - the Vyndi chatbot assistant.
  * Uses PNG images for different states: welcome, waiting, and thinking.
  */
@@ -15,10 +15,10 @@ interface VandaAvatarProps {
   variant?: 'default' | 'online' | 'thinking';
 }
 
-export default function VandaAvatar({ 
-  size = 'md', 
+export default function VandaAvatar({
+  size = 'md',
   className = '',
-  variant = 'default'
+  variant = 'default',
 }: VandaAvatarProps) {
   const sizeClasses = {
     sm: 'h-8 w-8',
@@ -51,7 +51,7 @@ export default function VandaAvatar({
             priority={variant === 'online' || variant === 'default'}
           />
         </div>
-        
+
         {/* Online indicator */}
         {variant === 'online' && (
           <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success border-2 border-bg animate-pulse" />
@@ -60,4 +60,3 @@ export default function VandaAvatar({
     </div>
   );
 }
-

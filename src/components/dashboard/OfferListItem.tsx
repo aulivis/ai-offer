@@ -71,20 +71,27 @@ export function OfferListItem({
   return (
     <Card className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:shadow-md hover:border-primary/20">
       {/* Status indicator bar */}
-      <div className={`absolute top-0 left-0 right-0 h-0.5 ${
-        offer.status === 'draft' ? 'bg-amber-400' :
-        offer.status === 'sent' ? 'bg-blue-400' :
-        offer.status === 'accepted' ? 'bg-emerald-400' :
-        'bg-rose-400'
-      }`} />
-      
+      <div
+        className={`absolute top-0 left-0 right-0 h-0.5 ${
+          offer.status === 'draft'
+            ? 'bg-amber-400'
+            : offer.status === 'sent'
+              ? 'bg-blue-400'
+              : offer.status === 'accepted'
+                ? 'bg-emerald-400'
+                : 'bg-rose-400'
+        }`}
+      />
+
       <div className="flex items-center gap-3 p-4 pt-5">
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-2 -m-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-expanded={isExpanded}
-          aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
+          aria-label={
+            isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')
+          }
         >
           <div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm">
             {initials ? (
@@ -102,9 +109,7 @@ export function OfferListItem({
           <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <p className="truncate text-sm font-bold text-fg">
-                  {offer.title || '(névtelen)'}
-                </p>
+                <p className="truncate text-sm font-bold text-fg">{offer.title || '(névtelen)'}</p>
                 <StatusBadge status={offer.status} className="flex-none" />
               </div>
               <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
@@ -299,7 +304,9 @@ export function OfferListItem({
                       title={t('dashboard.statusSteps.decision.markAccepted')}
                     >
                       <CheckIcon aria-hidden="true" className="h-4 w-4" />
-                      <span className="sr-only">{t('dashboard.statusSteps.decision.markAccepted')}</span>
+                      <span className="sr-only">
+                        {t('dashboard.statusSteps.decision.markAccepted')}
+                      </span>
                     </Button>
                     <Button
                       onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
@@ -311,7 +318,9 @@ export function OfferListItem({
                       title={t('dashboard.statusSteps.decision.markLost')}
                     >
                       <XMarkIcon aria-hidden="true" className="h-4 w-4" />
-                      <span className="sr-only">{t('dashboard.statusSteps.decision.markLost')}</span>
+                      <span className="sr-only">
+                        {t('dashboard.statusSteps.decision.markLost')}
+                      </span>
                     </Button>
                   </div>
                 )}
@@ -473,4 +482,3 @@ function getInitials(name: string) {
   }
   return parts.map((part) => part.charAt(0).toUpperCase()).join('');
 }
-

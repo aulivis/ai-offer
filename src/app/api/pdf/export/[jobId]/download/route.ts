@@ -7,10 +7,10 @@ import { uuidSchema } from '@/lib/validation/schemas';
 
 /**
  * GET /api/pdf/export/[jobId]/download
- * 
+ *
  * Download a completed PDF.
  * This endpoint is public and does not require authentication.
- * 
+ *
  * Optional query parameter: token - Download token for additional security
  */
 export const runtime = 'nodejs';
@@ -23,10 +23,7 @@ const downloadQuerySchema = z.object({
   token: z.string().optional(),
 });
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ jobId: string }> }) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
 
@@ -97,4 +94,3 @@ export async function GET(
     );
   }
 }
-

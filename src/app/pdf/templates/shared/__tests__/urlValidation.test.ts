@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { isAbsoluteUrl, toAbsoluteUrl, validateImageUrl, validateImageAssets } from '../urlValidation';
+import {
+  isAbsoluteUrl,
+  toAbsoluteUrl,
+  validateImageUrl,
+  validateImageAssets,
+} from '../urlValidation';
 
 describe('urlValidation', () => {
   describe('isAbsoluteUrl', () => {
@@ -53,7 +58,9 @@ describe('urlValidation', () => {
 
   describe('validateImageUrl', () => {
     it('should return absolute URLs as-is', () => {
-      expect(validateImageUrl('https://example.com/image.png')).toBe('https://example.com/image.png');
+      expect(validateImageUrl('https://example.com/image.png')).toBe(
+        'https://example.com/image.png',
+      );
     });
 
     it('should return null for relative URLs', () => {
@@ -98,11 +105,3 @@ describe('urlValidation', () => {
     });
   });
 });
-
-
-
-
-
-
-
-

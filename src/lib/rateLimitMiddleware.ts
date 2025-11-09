@@ -2,11 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import {
-  consumeRateLimit,
-  getClientIdentifier,
-  type RateLimitResult,
-} from '@/lib/rateLimiting';
+import { consumeRateLimit, getClientIdentifier, type RateLimitResult } from '@/lib/rateLimiting';
 
 export type RateLimitConfig = {
   maxRequests: number;
@@ -23,12 +19,7 @@ export async function checkRateLimitMiddleware(
     const rateLimitKey = `${config.keyPrefix}:${clientId}`;
     const supabase = supabaseServiceRole();
 
-    return await consumeRateLimit(
-      supabase,
-      rateLimitKey,
-      config.maxRequests,
-      config.windowMs,
-    );
+    return await consumeRateLimit(supabase, rateLimitKey, config.maxRequests, config.windowMs);
   } catch (error) {
     console.error('Rate limit check failed', { error });
     // Return null to allow request to proceed if rate limiting fails
@@ -66,12 +57,14 @@ export function createRateLimitResponse(
   errorMessage: string,
 ): NextResponse {
   const retrySeconds = Math.max(1, Math.ceil(result.retryAfterMs / 1000));
-  return NextResponse.json({ error: errorMessage }, {
-    status: 429,
-    headers: {
-      'Retry-After': retrySeconds.toString(),
-      ...createRateLimitHeaders(result),
+  return NextResponse.json(
+    { error: errorMessage },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': retrySeconds.toString(),
+        ...createRateLimitHeaders(result),
+      },
     },
-  });
+  );
 }
-

@@ -47,17 +47,20 @@ További információk: https://vyndi.com/billing
 Az ajánlat készítése 3 lépésben történik:
 
 **1. Lépés: Részletek**
+
 - Add meg az ajánlat címét
 - Töltsd ki a projekt részleteit (leírás, iparág, határidő)
 - Add meg az ügyfél információkat (név, cím, adószám)
 - Válaszd ki a nyelvet (magyar)
 
 **2. Lépés: Árkalkuláció**
+
 - Add meg az ár tételeket (szolgáltatások, termékek)
 - Állítsd be a mennyiséget, egységárat és ÁFA-t minden tételhez
 - Az összesítés (nettó, ÁFA, bruttó) automatikusan számítódik
 
 **3. Lépés: Összefoglaló**
+
 - Nézd meg az ajánlat előnézetét
 - Válassz sablont (alap vagy prémium)
 - Generáld és töltsd le a PDF-et
@@ -72,18 +75,21 @@ A teljes folyamat percek alatt elkészül AI segítségével. További informác
 A Vyndi két típusú sablont kínál:
 
 **Alap Sablonok (Free/Standard/Pro):**
+
 - Minden csomagban elérhetők
 - Egyszerű, klasszikus, modern sablonok
 - Márkázható logóval és színekkel
 - Professzionális PDF export
 
 **Prémium Sablonok (Csak Pro):**
+
 - Csak a Pro csomagban elérhetők
 - Elegáns, kreatív, professzionális sablonok
 - Fejlett testreszabási lehetőségek
 - Prémium megjelenés
 
 Minden sablon támogatja:
+
 - Logó és színek testreszabását
 - PDF exportot
 - Valós idejű előnézetet
@@ -102,12 +108,14 @@ A Vyndi három előfizetési csomagot kínál különböző árakkal:
 3. **Pro:** 6 990 Ft / hó (korlátlan ajánlat)
 
 **Standard Csomag jellemzői:**
+
 - 5 ajánlat havonta
 - Márkázott PDF export
 - Alap sablonok + logó feltöltés
 - AI-alapú szöveg generálás
 
 **Pro Csomag jellemzői:**
+
 - Korlátlan ajánlat
 - Prémium sablonok
 - Verziókövetés
@@ -147,4 +155,3 @@ To update the expected answers:
 - Answers should cite sources when relevant
 - Answers should be concise but comprehensive
 - Answers should guide users to relevant documentation or support
-

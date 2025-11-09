@@ -24,18 +24,34 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { DeleteConfirmationDialog } from '@/components/dashboard/DeleteConfirmationDialog';
 
 // Lazy load heavy dashboard components for route-based code splitting
-const OfferCard = dynamic(() => import('@/components/dashboard/OfferCard').then(mod => mod.default), {
-  loading: () => <div className="h-48 animate-pulse rounded-xl bg-bg-muted" />,
-});
-const OfferListItem = dynamic(() => import('@/components/dashboard/OfferListItem').then(mod => mod.OfferListItem), {
-  loading: () => <div className="h-24 animate-pulse rounded-lg bg-bg-muted" />,
-});
-const OffersCardGrid = dynamic(() => import('@/components/dashboard/OffersCardGrid').then(mod => mod.OffersCardGrid), {
-  loading: () => <div className="grid grid-cols-1 gap-4 md:grid-cols-2"><div className="h-48 animate-pulse rounded-xl bg-bg-muted" /></div>,
-});
-const KeyboardShortcutsModal = dynamic(() => import('@/components/ui/KeyboardShortcutsModal').then(mod => mod.KeyboardShortcutsModal), {
-  ssr: false,
-});
+const OfferCard = dynamic(
+  () => import('@/components/dashboard/OfferCard').then((mod) => mod.default),
+  {
+    loading: () => <div className="h-48 animate-pulse rounded-xl bg-bg-muted" />,
+  },
+);
+const OfferListItem = dynamic(
+  () => import('@/components/dashboard/OfferListItem').then((mod) => mod.OfferListItem),
+  {
+    loading: () => <div className="h-24 animate-pulse rounded-lg bg-bg-muted" />,
+  },
+);
+const OffersCardGrid = dynamic(
+  () => import('@/components/dashboard/OffersCardGrid').then((mod) => mod.OffersCardGrid),
+  {
+    loading: () => (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="h-48 animate-pulse rounded-xl bg-bg-muted" />
+      </div>
+    ),
+  },
+);
+const KeyboardShortcutsModal = dynamic(
+  () => import('@/components/ui/KeyboardShortcutsModal').then((mod) => mod.KeyboardShortcutsModal),
+  {
+    ssr: false,
+  },
+);
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
@@ -70,7 +86,6 @@ function isSortByValue(value: string): value is SortByOption {
 function isSortDirectionValue(value: string): value is SortDirectionOption {
   return (SORT_DIRECTION_OPTIONS as readonly string[]).includes(value);
 }
-
 
 type UsageQuotaSnapshot = {
   plan: SubscriptionPlan;
@@ -232,7 +247,6 @@ function createOfferPdfFileName(offer: Offer): string {
   return `${safeBase}.pdf`;
 }
 
-
 export default function DashboardPage() {
   const { showToast } = useToast();
   const sb = useSupabase();
@@ -268,7 +282,9 @@ export default function DashboardPage() {
   const [metricsViewMode, setMetricsViewMode] = useState<'detailed' | 'compact'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dashboard-metrics-view-mode');
-      return (saved === 'compact' || saved === 'detailed' ? saved : 'detailed') as 'detailed' | 'compact';
+      return (saved === 'compact' || saved === 'detailed' ? saved : 'detailed') as
+        | 'detailed'
+        | 'compact';
     }
     return 'detailed';
   });
@@ -281,7 +297,11 @@ export default function DashboardPage() {
       if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
         // Only trigger if not typing in an input field
         const target = e.target as HTMLElement;
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+        if (
+          target.tagName !== 'INPUT' &&
+          target.tagName !== 'TEXTAREA' &&
+          !target.isContentEditable
+        ) {
           e.preventDefault();
           setShowKeyboardShortcuts(true);
         }
@@ -326,7 +346,7 @@ export default function DashboardPage() {
     async (user: string, pageNumber: number): Promise<{ items: Offer[]; count: number | null }> => {
       const from = pageNumber * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
-      
+
       // Ensure session is initialized from cookies before querying
       // This is critical for custom cookie-based auth (propono_at, propono_rt)
       // Pass the expected user ID to validate the session matches
@@ -341,26 +361,28 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('Failed to ensure Supabase session', error);
         // If session initialization fails, provide user-friendly error
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : 'Session initialization failed';
-        
+        const errorMessage =
+          error instanceof Error ? error.message : 'Session initialization failed';
+
         // Show user-friendly toast and throw error
         showToast({
           title: t('errors.auth.sessionFailed'),
           description: errorMessage,
           variant: 'error',
         });
-        
+
         throw new Error(errorMessage);
       }
-      
+
       // Verify the session one more time before querying
       // Give it a moment for the session to fully propagate
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const { data: { session }, error: sessionError } = await sb.auth.getSession();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const {
+        data: { session },
+        error: sessionError,
+      } = await sb.auth.getSession();
       const sessionMatches = session?.user?.id === user;
-      
+
       console.log('Dashboard auth session check', {
         userId: user,
         hasSession: !!session,
@@ -368,7 +390,7 @@ export default function DashboardPage() {
         sessionError,
         matchesUserId: sessionMatches,
       });
-      
+
       // If session doesn't match after ensureSession, this is unexpected
       // ensureSession should have thrown an error already, but check anyway
       if (!sessionMatches) {
@@ -376,25 +398,32 @@ export default function DashboardPage() {
           expectedUserId: user,
           sessionUserId: session?.user?.id,
         });
-        
+
         // Show user-friendly error
         showToast({
           title: t('errors.auth.sessionVerificationFailed'),
           description: t('errors.auth.sessionVerificationFailedDescription'),
           variant: 'error',
         });
-        
+
         throw new Error('Session verification failed. Please refresh the page.');
       }
-      
+
       // First, try a simple query without the join to see if that's the issue
-      const { data: simpleData, error: simpleError, count: simpleCount } = await sb
+      const {
+        data: simpleData,
+        error: simpleError,
+        count: simpleCount,
+      } = await sb
         .from('offers')
-        .select('id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id', { count: 'exact' })
+        .select(
+          'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id',
+          { count: 'exact' },
+        )
         .eq('user_id', user)
         .order('created_at', { ascending: false })
         .range(from, to);
-      
+
       console.log('Dashboard simple query (no join)', {
         userId: user,
         pageNumber,
@@ -404,9 +433,11 @@ export default function DashboardPage() {
         errorMessage: simpleError?.message,
         errorCode: simpleError?.code,
         errorDetails: simpleError?.details,
-        offerIds: Array.isArray(simpleData) ? simpleData.map((item: { id?: string }) => item.id).slice(0, 5) : [],
+        offerIds: Array.isArray(simpleData)
+          ? simpleData.map((item: { id?: string }) => item.id).slice(0, 5)
+          : [],
       });
-      
+
       // Now try with the join
       const { data, error, count } = await sb
         .from('offers')
@@ -436,7 +467,7 @@ export default function DashboardPage() {
         console.log('Using simple query results due to join error', {
           itemsCount: Array.isArray(finalData) ? finalData.length : 0,
         });
-        
+
         const rawItems = Array.isArray(finalData) ? finalData : [];
         const items: Offer[] = rawItems.map((entry) => ({
           id: String(entry.id),
@@ -451,7 +482,7 @@ export default function DashboardPage() {
           recipient_id: entry.recipient_id ?? null,
           recipient: null, // No recipient data due to join failure
         }));
-        
+
         return {
           items,
           count: typeof finalCount === 'number' ? finalCount : null,
@@ -463,10 +494,16 @@ export default function DashboardPage() {
         pageNumber,
         count,
         itemsCount: Array.isArray(data) ? data.length : 0,
-        offersWithPdf: Array.isArray(data) ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length : 0,
-        offerIds: Array.isArray(data) ? data.map((item: { id?: string }) => item.id).slice(0, 5) : [],
-        offersWithPdfIds: Array.isArray(data) 
-          ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).map((item: { id?: string }) => item.id)
+        offersWithPdf: Array.isArray(data)
+          ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length
+          : 0,
+        offerIds: Array.isArray(data)
+          ? data.map((item: { id?: string }) => item.id).slice(0, 5)
+          : [],
+        offersWithPdfIds: Array.isArray(data)
+          ? data
+              .filter((item: { pdf_url?: string | null }) => item.pdf_url)
+              .map((item: { id?: string }) => item.id)
           : [],
       });
 
@@ -531,16 +568,16 @@ export default function DashboardPage() {
     };
 
     loadInitialPage();
-    
+
     // Only refresh on visibility change if we're coming back from a hidden state
     // and enough time has passed (to avoid refreshing on quick tab switches)
     let wasHidden = false;
     let hiddenTimestamp = 0;
     const VISIBILITY_REFRESH_THRESHOLD_MS = 5000; // Only refresh if hidden for >5 seconds
-    
+
     const handleVisibilityChange = () => {
       if (!active) return;
-      
+
       if (document.visibilityState === 'hidden') {
         wasHidden = true;
         hiddenTimestamp = Date.now();
@@ -554,9 +591,9 @@ export default function DashboardPage() {
         wasHidden = false;
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       active = false;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -573,7 +610,7 @@ export default function DashboardPage() {
       if (params.has('refresh')) {
         // Remove the refresh parameter from URL without reload
         params.delete('refresh');
-        const newUrl = params.toString() 
+        const newUrl = params.toString()
           ? `${window.location.pathname}?${params.toString()}`
           : window.location.pathname;
         window.history.replaceState({}, '', newUrl);
@@ -599,7 +636,7 @@ export default function DashboardPage() {
 
       // Map to dashboard format
       const normalizedDevicePending = deviceId
-        ? quotaData.pendingDevice ?? 0
+        ? (quotaData.pendingDevice ?? 0)
         : quotaData.pendingDevice;
 
       setQuotaSnapshot({
@@ -689,7 +726,11 @@ export default function DashboardPage() {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          const job = (payload.new || payload.old) as { id?: string; status?: string; created_at?: string } | null;
+          const job = (payload.new || payload.old) as {
+            id?: string;
+            status?: string;
+            created_at?: string;
+          } | null;
           if (!job?.created_at) return;
 
           // Debounce rapid changes - refresh quota after job status changes
@@ -738,14 +779,9 @@ export default function DashboardPage() {
   }, [fetchPage, hasMore, isLoadingMore, pageIndex, showToast, userId]);
 
   // Auto-load more when scroll reaches bottom (progressive loading with intersection observer)
-  const loadMoreRef = useInfiniteScroll(
-    handleLoadMore,
-    hasMore,
-    isLoadingMore,
-    {
-      rootMargin: '200px', // Start loading 200px before reaching bottom
-    },
-  );
+  const loadMoreRef = useInfiniteScroll(handleLoadMore, hasMore, isLoadingMore, {
+    rootMargin: '200px', // Start loading 200px before reaching bottom
+  });
 
   const industries = useMemo(() => {
     const s = new Set<string>();
@@ -980,7 +1016,7 @@ export default function DashboardPage() {
     const drafts = offers.filter((offer) => offer.status === 'draft').length;
 
     const acceptanceRate = sent > 0 ? (accepted / sent) * 100 : null;
-    const winRate = (accepted + lost) > 0 ? (accepted / (accepted + lost)) * 100 : null;
+    const winRate = accepted + lost > 0 ? (accepted / (accepted + lost)) * 100 : null;
 
     const decisionDurations: number[] = [];
     offers.forEach((offer) => {
@@ -1026,7 +1062,7 @@ export default function DashboardPage() {
         (payload) => {
           const updated = payload.new as Partial<Offer> & { id?: string };
           if (!updated || typeof updated.id !== 'string') return;
-          
+
           // Log all updates for debugging
           console.log('Offer updated via realtime subscription', {
             offerId: updated.id,
@@ -1034,16 +1070,20 @@ export default function DashboardPage() {
             pdfUrl: updated.pdf_url,
             oldPdfUrl: payload.old ? (payload.old as { pdf_url?: string | null }).pdf_url : null,
           });
-          
+
           // Log PDF URL updates specifically
-          if (updated.pdf_url && payload.old && (payload.old as { pdf_url?: string | null }).pdf_url !== updated.pdf_url) {
+          if (
+            updated.pdf_url &&
+            payload.old &&
+            (payload.old as { pdf_url?: string | null }).pdf_url !== updated.pdf_url
+          ) {
             console.log('Offer PDF URL updated via realtime', {
               offerId: updated.id,
               oldPdfUrl: (payload.old as { pdf_url?: string | null }).pdf_url,
               newPdfUrl: updated.pdf_url,
             });
           }
-          
+
           setOffers((prev) => {
             let didChange = false;
             const next = prev.map((item) => {
@@ -1068,26 +1108,26 @@ export default function DashboardPage() {
         (payload) => {
           const inserted = payload.new as Partial<Offer> & { id?: string };
           if (!inserted || typeof inserted.id !== 'string') return;
-          
+
           console.log('New offer inserted via realtime', {
             offerId: inserted.id,
             pdfUrl: inserted.pdf_url,
             title: inserted.title,
             fullPayload: payload,
           });
-          
+
           // Add new offer to the beginning of the list if it's not already there
           setOffers((prev) => {
             const exists = prev.some((item) => item.id === inserted.id);
             if (exists) return prev;
-            
+
             const recipientValue =
               inserted.recipient !== undefined
                 ? Array.isArray(inserted.recipient)
                   ? (inserted.recipient[0] ?? null)
                   : (inserted.recipient ?? null)
                 : null;
-            
+
             const newOffer: Offer = {
               id: String(inserted.id),
               title: typeof inserted.title === 'string' ? inserted.title : '',
@@ -1101,12 +1141,10 @@ export default function DashboardPage() {
               recipient_id: inserted.recipient_id ?? null,
               recipient: recipientValue,
             };
-            
+
             // Add to beginning and update count
-            setTotalCount((prevCount) =>
-              typeof prevCount === 'number' ? prevCount + 1 : null,
-            );
-            
+            setTotalCount((prevCount) => (typeof prevCount === 'number' ? prevCount + 1 : null));
+
             return [newOffer, ...prev];
           });
         },
@@ -1167,7 +1205,7 @@ export default function DashboardPage() {
     } else {
       displayLimit = 2; // Free plan
     }
-    
+
     if (displayLimit === null) {
       return t('dashboard.metrics.quota.unlimitedValue');
     }
@@ -1240,14 +1278,19 @@ export default function DashboardPage() {
       : monthlyHelper;
 
   // Comparison calculations
-  const createdComparison = stats.createdLastMonth > 0
-    ? {
-        label: 'Előző hónap',
-        value: stats.createdLastMonth.toLocaleString('hu-HU'),
-        trend: stats.createdThisMonth > stats.createdLastMonth ? 'up' as const :
-               stats.createdThisMonth < stats.createdLastMonth ? 'down' as const : 'neutral' as const,
-      }
-    : undefined;
+  const createdComparison =
+    stats.createdLastMonth > 0
+      ? {
+          label: 'Előző hónap',
+          value: stats.createdLastMonth.toLocaleString('hu-HU'),
+          trend:
+            stats.createdThisMonth > stats.createdLastMonth
+              ? ('up' as const)
+              : stats.createdThisMonth < stats.createdLastMonth
+                ? ('down' as const)
+                : ('neutral' as const),
+        }
+      : undefined;
 
   // Click handlers for filtering
   const handleMetricClick = useCallback((filterStatus: StatusFilterOption) => {
@@ -1319,7 +1362,9 @@ export default function DashboardPage() {
             </div>
             <button
               type="button"
-              onClick={() => setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')}
+              onClick={() =>
+                setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
+              }
               className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
               title={metricsViewMode === 'compact' ? 'Részletes nézet' : 'Kompakt nézet'}
             >
@@ -1339,11 +1384,13 @@ export default function DashboardPage() {
 
           {/* Conversion Funnel Group - Mobile optimized: stack vertically on small screens */}
           <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
-            <div className={`grid gap-3 sm:gap-4 ${
-              metricsViewMode === 'compact' 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' 
-                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
-            }`}>
+            <div
+              className={`grid gap-3 sm:gap-4 ${
+                metricsViewMode === 'compact'
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
+              }`}
+            >
               {loading ? (
                 <>
                   {Array.from({ length: metricsViewMode === 'compact' ? 7 : 7 }).map((_, i) => (
@@ -1356,7 +1403,9 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.quota.label')}
                     value={quotaValue}
-                    {...(quotaHelper && metricsViewMode === 'detailed' ? { helper: quotaHelper } : {})}
+                    {...(quotaHelper && metricsViewMode === 'detailed'
+                      ? { helper: quotaHelper }
+                      : {})}
                     {...(quotaSnapshot && quotaSnapshot.plan !== 'pro'
                       ? {
                           progress: {
@@ -1379,8 +1428,16 @@ export default function DashboardPage() {
                     {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
                     icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
                     color="primary"
-                    trend={stats.createdThisMonth > 0 ? 'up' : stats.createdThisMonth === 0 && stats.createdLastMonth > 0 ? 'down' : 'neutral'}
-                    {...(stats.createdThisMonth > 0 ? { trendValue: `+${stats.createdThisMonth}` } : {})}
+                    trend={
+                      stats.createdThisMonth > 0
+                        ? 'up'
+                        : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
+                          ? 'down'
+                          : 'neutral'
+                    }
+                    {...(stats.createdThisMonth > 0
+                      ? { trendValue: `+${stats.createdThisMonth}` }
+                      : {})}
                     {...(createdComparison ? { comparison: createdComparison } : {})}
                     onClick={() => handleMetricClick('all')}
                     isEmpty={totalOffersCount === 0}
@@ -1391,9 +1448,13 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.inReview.label')}
                     value={stats.inReview.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.inReview.helper', {
-                      count: stats.inReview.toLocaleString('hu-HU'),
-                    }) } : {})}
+                    {...(metricsViewMode === 'detailed'
+                      ? {
+                          helper: t('dashboard.metrics.inReview.helper', {
+                            count: stats.inReview.toLocaleString('hu-HU'),
+                          }),
+                        }
+                      : {})}
                     icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
@@ -1405,10 +1466,14 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.sent.label')}
                     value={stats.sent.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.sent.helper', {
-                      sent: stats.sent.toLocaleString('hu-HU'),
-                      pending: stats.inReview.toLocaleString('hu-HU'),
-                    }) } : {})}
+                    {...(metricsViewMode === 'detailed'
+                      ? {
+                          helper: t('dashboard.metrics.sent.helper', {
+                            sent: stats.sent.toLocaleString('hu-HU'),
+                            pending: stats.inReview.toLocaleString('hu-HU'),
+                          }),
+                        }
+                      : {})}
                     icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
@@ -1420,13 +1485,23 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.accepted.label')}
                     value={stats.accepted.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.accepted.helper', {
-                      accepted: stats.accepted.toLocaleString('hu-HU'),
-                      rate: acceptanceLabel,
-                    }) } : {})}
+                    {...(metricsViewMode === 'detailed'
+                      ? {
+                          helper: t('dashboard.metrics.accepted.helper', {
+                            accepted: stats.accepted.toLocaleString('hu-HU'),
+                            rate: acceptanceLabel,
+                          }),
+                        }
+                      : {})}
                     icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
                     color="success"
-                    trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
+                    trend={
+                      stats.acceptanceRate !== null && stats.acceptanceRate > 50
+                        ? 'up'
+                        : stats.acceptanceRate !== null && stats.acceptanceRate < 30
+                          ? 'down'
+                          : 'neutral'
+                    }
                     {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
                     onClick={() => handleMetricClick('accepted')}
                     isEmpty={stats.accepted === 0}
@@ -1437,9 +1512,13 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.lost.label')}
                     value={stats.lost.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.lost.helper', {
-                      count: stats.lost.toLocaleString('hu-HU'),
-                    }) } : {})}
+                    {...(metricsViewMode === 'detailed'
+                      ? {
+                          helper: t('dashboard.metrics.lost.helper', {
+                            count: stats.lost.toLocaleString('hu-HU'),
+                          }),
+                        }
+                      : {})}
                     icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
                     color="danger"
                     onClick={() => handleMetricClick('lost')}
@@ -1451,12 +1530,28 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.winRate.label')}
                     value={winRateLabel}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.winRate.helper', {
-                      rate: winRateLabel !== '—' ? winRateLabel : '—',
-                    }) } : {})}
+                    {...(metricsViewMode === 'detailed'
+                      ? {
+                          helper: t('dashboard.metrics.winRate.helper', {
+                            rate: winRateLabel !== '—' ? winRateLabel : '—',
+                          }),
+                        }
+                      : {})}
                     icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
-                    color={stats.winRate !== null && stats.winRate > 50 ? 'success' : stats.winRate !== null && stats.winRate < 30 ? 'danger' : 'warning'}
-                    trend={stats.winRate !== null && stats.winRate > 50 ? 'up' : stats.winRate !== null && stats.winRate < 30 ? 'down' : 'neutral'}
+                    color={
+                      stats.winRate !== null && stats.winRate > 50
+                        ? 'success'
+                        : stats.winRate !== null && stats.winRate < 30
+                          ? 'danger'
+                          : 'warning'
+                    }
+                    trend={
+                      stats.winRate !== null && stats.winRate > 50
+                        ? 'up'
+                        : stats.winRate !== null && stats.winRate < 30
+                          ? 'down'
+                          : 'neutral'
+                    }
                     {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
                     isEmpty={stats.winRate === null}
                     emptyMessage="Nincs elég adat a számításhoz"
@@ -1466,10 +1561,19 @@ export default function DashboardPage() {
                   <MetricCard
                     label={t('dashboard.metrics.avgDecision.label')}
                     value={avgDecisionLabel}
-                    {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.avgDecision.helper', {
-                      days: stats.avgDecisionDays !== null ? stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 }) : '—',
-                      drafts: stats.drafts.toLocaleString('hu-HU'),
-                    }) } : {})}
+                    {...(metricsViewMode === 'detailed'
+                      ? {
+                          helper: t('dashboard.metrics.avgDecision.helper', {
+                            days:
+                              stats.avgDecisionDays !== null
+                                ? stats.avgDecisionDays.toLocaleString('hu-HU', {
+                                    maximumFractionDigits: 1,
+                                  })
+                                : '—',
+                            drafts: stats.drafts.toLocaleString('hu-HU'),
+                          }),
+                        }
+                      : {})}
                     icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
                     color="warning"
                     isEmpty={stats.avgDecisionDays === null}
@@ -1509,9 +1613,9 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick Filter Chips - Keyboard navigable */}
-            <div 
-              className="flex flex-wrap items-center gap-2" 
-              role="group" 
+            <div
+              className="flex flex-wrap items-center gap-2"
+              role="group"
               aria-label={t('dashboard.filters.status.label')}
             >
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted flex items-center gap-2">
@@ -1529,14 +1633,18 @@ export default function DashboardPage() {
                       e.preventDefault();
                       const currentIndex = STATUS_FILTER_OPTIONS.indexOf(status);
                       const direction = e.key === 'ArrowRight' ? 1 : -1;
-                      const nextIndex = (currentIndex + direction + STATUS_FILTER_OPTIONS.length) % STATUS_FILTER_OPTIONS.length;
+                      const nextIndex =
+                        (currentIndex + direction + STATUS_FILTER_OPTIONS.length) %
+                        STATUS_FILTER_OPTIONS.length;
                       const nextStatus = STATUS_FILTER_OPTIONS[nextIndex];
                       setStatusFilter(nextStatus);
                       // Focus the next button after state update
                       setTimeout(() => {
-                        const buttons = Array.from(e.currentTarget.parentElement?.querySelectorAll('button') || []);
-                        const nextButton = buttons.find((btn) => 
-                          btn.getAttribute('aria-pressed') === 'true'
+                        const buttons = Array.from(
+                          e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                        );
+                        const nextButton = buttons.find(
+                          (btn) => btn.getAttribute('aria-pressed') === 'true',
                         );
                         nextButton?.focus();
                       }, 0);
@@ -1546,7 +1654,9 @@ export default function DashboardPage() {
                       e.preventDefault();
                       setStatusFilter(STATUS_FILTER_OPTIONS[0]);
                       setTimeout(() => {
-                        const buttons = Array.from(e.currentTarget.parentElement?.querySelectorAll('button') || []);
+                        const buttons = Array.from(
+                          e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                        );
                         buttons[0]?.focus();
                       }, 0);
                     }
@@ -1555,14 +1665,16 @@ export default function DashboardPage() {
                       const lastStatus = STATUS_FILTER_OPTIONS[STATUS_FILTER_OPTIONS.length - 1];
                       setStatusFilter(lastStatus);
                       setTimeout(() => {
-                        const buttons = Array.from(e.currentTarget.parentElement?.querySelectorAll('button') || []);
+                        const buttons = Array.from(
+                          e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                        );
                         buttons[buttons.length - 1]?.focus();
                       }, 0);
                     }
                   }}
                   aria-pressed={statusFilter === status}
                   aria-label={`${t('dashboard.filters.status.label')}: ${
-                    status === 'all' 
+                    status === 'all'
                       ? t('dashboard.filters.status.options.all')
                       : t(STATUS_LABEL_KEYS[status])
                   }`}
@@ -1576,12 +1688,18 @@ export default function DashboardPage() {
                     t('dashboard.filters.status.options.all')
                   ) : (
                     <>
-                      <span className={`h-2 w-2 rounded-full ${
-                        status === 'draft' ? 'bg-amber-500' :
-                        status === 'sent' ? 'bg-blue-500' :
-                        status === 'accepted' ? 'bg-emerald-500' :
-                        'bg-rose-500'
-                      }`} aria-hidden="true" />
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          status === 'draft'
+                            ? 'bg-amber-500'
+                            : status === 'sent'
+                              ? 'bg-blue-500'
+                              : status === 'accepted'
+                                ? 'bg-emerald-500'
+                                : 'bg-rose-500'
+                        }`}
+                        aria-hidden="true"
+                      />
                       {t(STATUS_LABEL_KEYS[status])}
                     </>
                   )}
@@ -1621,7 +1739,9 @@ export default function DashboardPage() {
                   <option value="created">{t('dashboard.filters.sortBy.options.created')}</option>
                   <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
                   <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
-                  <option value="recipient">{t('dashboard.filters.sortBy.options.recipient')}</option>
+                  <option value="recipient">
+                    {t('dashboard.filters.sortBy.options.recipient')}
+                  </option>
                   <option value="industry">{t('dashboard.filters.sortBy.options.industry')}</option>
                 </Select>
                 <Select
@@ -1717,7 +1837,11 @@ export default function DashboardPage() {
 
         {/* Skeleton Loaders - Mobile optimized */}
         {loading && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2" aria-busy="true" aria-live="polite">
+          <div
+            className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            aria-busy="true"
+            aria-live="polite"
+          >
             {Array.from({ length: 6 }).map((_, i) => (
               <OfferCardSkeleton key={i} />
             ))}
@@ -1726,7 +1850,7 @@ export default function DashboardPage() {
 
         {/* Enhanced Empty State - Improved accessibility and mobile design */}
         {!loading && filtered.length === 0 && (
-          <Card 
+          <Card
             className="flex flex-col items-center justify-center gap-6 md:gap-8 p-12 md:p-16 text-center"
             role="status"
             aria-live="polite"
@@ -1734,10 +1858,16 @@ export default function DashboardPage() {
           >
             <div className="relative">
               <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-                <DocumentTextIcon className="h-10 w-10 md:h-12 md:w-12 text-primary" aria-hidden="true" />
+                <DocumentTextIcon
+                  className="h-10 w-10 md:h-12 md:w-12 text-primary"
+                  aria-hidden="true"
+                />
               </div>
               <div className="absolute -top-2 -right-2 flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
-                <MagnifyingGlassIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" aria-hidden="true" />
+                <MagnifyingGlassIcon
+                  className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary"
+                  aria-hidden="true"
+                />
               </div>
             </div>
             <div className="space-y-3 max-w-md">
@@ -1807,7 +1937,7 @@ export default function DashboardPage() {
                 onDownload={handleDownloadPdf}
               />
             ) : (
-              <div 
+              <div
                 className="flex flex-col gap-3"
                 role="region"
                 aria-label={t('dashboard.offersList.label') || 'Offers list'}
@@ -1834,11 +1964,15 @@ export default function DashboardPage() {
             {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}
             <div ref={loadMoreRef} className="mt-6 flex flex-col items-center gap-3 text-center">
               {paginationSummary ? (
-                <p className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted" role="status" aria-live="polite">
+                <p
+                  className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted"
+                  role="status"
+                  aria-live="polite"
+                >
                   {paginationSummary}
                 </p>
               ) : null}
-              
+
               {/* Load More Button - Also serves as intersection observer target for auto-loading */}
               {hasMore && (
                 <div className="w-full">
@@ -1851,16 +1985,20 @@ export default function DashboardPage() {
                   />
                 </div>
               )}
-              
+
               {!hasMore && offers.length > 0 && (
                 <p className="text-xs text-fg-muted" role="status" aria-live="polite">
                   {t('dashboard.pagination.allLoaded')}
                 </p>
               )}
-              
+
               {/* Loading indicator for progressive loading */}
               {isLoadingMore && (
-                <div className="flex items-center gap-2 text-sm text-fg-muted" aria-busy="true" aria-live="polite">
+                <div
+                  className="flex items-center gap-2 text-sm text-fg-muted"
+                  aria-busy="true"
+                  aria-live="polite"
+                >
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   <span>{t('dashboard.pagination.loading') || 'Loading more offers...'}</span>
                 </div>

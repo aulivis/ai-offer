@@ -54,7 +54,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const periodicSaveRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef(false);
@@ -81,72 +81,75 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
     }
   }, []);
 
-  const save = useCallback(async (dataToSave: T, isRetry = false): Promise<boolean> => {
-    if (!enabled || isSavingRef.current) {
-      return false;
-    }
-
-    // Skip if data hasn't changed
-    const dataString = JSON.stringify(dataToSave);
-    if (dataString === lastSavedDataRef.current && !isRetry) {
-      return true;
-    }
-
-    isSavingRef.current = true;
-    setStatus('saving');
-    setError(null);
-
-    try {
-      const saveFunction = saveFn || defaultSaveFn;
-      await saveFunction(key, dataToSave);
-      
-      lastSavedDataRef.current = dataString;
-      setStatus('saved');
-      setLastSaved(new Date());
-      retryCountRef.current = 0;
-      setRetryCount(0);
-      onSaveSuccess?.(dataToSave);
-      
-      // Reset to idle after 2 seconds (use functional update to avoid stale closure)
-      setTimeout(() => {
-        setStatus((currentStatus) => {
-          if (currentStatus === 'saved') {
-            return 'idle';
-          }
-          return currentStatus;
-        });
-      }, 2000);
-      
-      return true;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error during save');
-      setError(error);
-      setStatus('error');
-      onSaveError?.(error);
-
-      // Retry logic with exponential backoff
-      const currentRetryCount = retryCountRef.current;
-      if (currentRetryCount < MAX_RETRIES) {
-        retryCountRef.current = currentRetryCount + 1;
-        setRetryCount(currentRetryCount + 1);
-        const backoffDelay = 1000 * Math.pow(2, currentRetryCount); // Exponential backoff: 1s, 2s, 4s
-        setTimeout(() => {
-          save(dataToSave, true);
-        }, backoffDelay);
-      } else {
-        // Max retries reached, reset after delay
-        retryCountRef.current = 0;
-        setTimeout(() => {
-          setStatus('idle');
-          setRetryCount(0);
-        }, 5000);
+  const save = useCallback(
+    async (dataToSave: T, isRetry = false): Promise<boolean> => {
+      if (!enabled || isSavingRef.current) {
+        return false;
       }
-      
-      return false;
-    } finally {
-      isSavingRef.current = false;
-    }
-  }, [enabled, key, saveFn, defaultSaveFn, onSaveSuccess, onSaveError]);
+
+      // Skip if data hasn't changed
+      const dataString = JSON.stringify(dataToSave);
+      if (dataString === lastSavedDataRef.current && !isRetry) {
+        return true;
+      }
+
+      isSavingRef.current = true;
+      setStatus('saving');
+      setError(null);
+
+      try {
+        const saveFunction = saveFn || defaultSaveFn;
+        await saveFunction(key, dataToSave);
+
+        lastSavedDataRef.current = dataString;
+        setStatus('saved');
+        setLastSaved(new Date());
+        retryCountRef.current = 0;
+        setRetryCount(0);
+        onSaveSuccess?.(dataToSave);
+
+        // Reset to idle after 2 seconds (use functional update to avoid stale closure)
+        setTimeout(() => {
+          setStatus((currentStatus) => {
+            if (currentStatus === 'saved') {
+              return 'idle';
+            }
+            return currentStatus;
+          });
+        }, 2000);
+
+        return true;
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Unknown error during save');
+        setError(error);
+        setStatus('error');
+        onSaveError?.(error);
+
+        // Retry logic with exponential backoff
+        const currentRetryCount = retryCountRef.current;
+        if (currentRetryCount < MAX_RETRIES) {
+          retryCountRef.current = currentRetryCount + 1;
+          setRetryCount(currentRetryCount + 1);
+          const backoffDelay = 1000 * Math.pow(2, currentRetryCount); // Exponential backoff: 1s, 2s, 4s
+          setTimeout(() => {
+            save(dataToSave, true);
+          }, backoffDelay);
+        } else {
+          // Max retries reached, reset after delay
+          retryCountRef.current = 0;
+          setTimeout(() => {
+            setStatus('idle');
+            setRetryCount(0);
+          }, 5000);
+        }
+
+        return false;
+      } finally {
+        isSavingRef.current = false;
+      }
+    },
+    [enabled, key, saveFn, defaultSaveFn, onSaveSuccess, onSaveError],
+  );
 
   // Debounced save
   useEffect(() => {
@@ -268,4 +271,3 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
     save: manualSave,
   };
 }
-

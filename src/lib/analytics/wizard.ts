@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-type WizardEvent = 
+type WizardEvent =
   | { type: 'wizard_step_viewed'; step: 1 | 2 | 3 }
   | { type: 'wizard_step_completed'; step: 1 | 2 | 3 }
   | { type: 'wizard_preview_generated'; step: 2 | 3 }
@@ -44,19 +44,3 @@ export function trackWizardEvent(event: WizardEvent) {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

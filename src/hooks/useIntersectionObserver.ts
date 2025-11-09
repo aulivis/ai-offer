@@ -4,9 +4,9 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 
 /**
  * Hook for Intersection Observer API
- * 
+ *
  * Useful for progressive loading, infinite scroll, and lazy loading
- * 
+ *
  * @param options - IntersectionObserver options
  * @returns Tuple of [ref, isIntersecting]
  */
@@ -43,7 +43,7 @@ export function useIntersectionObserver<T extends HTMLElement = HTMLDivElement>(
 
 /**
  * Hook for auto-loading more items when scroll reaches bottom
- * 
+ *
  * @param onLoadMore - Callback to load more items
  * @param hasMore - Whether there are more items to load
  * @param isLoading - Whether currently loading
@@ -65,4 +65,3 @@ export function useInfiniteScroll(
 
   return ref;
 }
-

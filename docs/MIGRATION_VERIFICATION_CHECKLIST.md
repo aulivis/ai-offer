@@ -28,7 +28,7 @@ Or use the combined file: `APPLY_NEW_MIGRATIONS.sql` (includes migrations 1-3)
 
 ```sql
 -- Check RLS status
-SELECT 
+SELECT
   tablename,
   rowsecurity
 FROM pg_tables
@@ -42,7 +42,7 @@ Expected: Both tables should have `rowsecurity = true`
 
 ```sql
 -- Check policies for activities
-SELECT 
+SELECT
   policyname,
   cmd,
   qual
@@ -56,7 +56,7 @@ Expected: 4 policies (SELECT, INSERT, UPDATE, DELETE)
 
 ```sql
 -- Check policies for clients
-SELECT 
+SELECT
   policyname,
   cmd,
   qual
@@ -72,7 +72,7 @@ Expected: 4 policies (SELECT, INSERT, UPDATE, DELETE)
 
 ```sql
 -- Check indexes on clients table
-SELECT 
+SELECT
   indexname,
   indexdef
 FROM pg_indexes
@@ -84,7 +84,7 @@ Expected: At least `idx_clients_user_id` and `idx_clients_user_company`
 
 ```sql
 -- Check indexes on activities table
-SELECT 
+SELECT
   indexname,
   indexdef
 FROM pg_indexes
@@ -110,7 +110,7 @@ Expected: No rows (table should not exist)
 
 ```sql
 -- Check pdf_jobs status constraint
-SELECT 
+SELECT
   conname,
   pg_get_constraintdef(oid) as constraint_definition
 FROM pg_constraint
@@ -167,7 +167,7 @@ Run the data integrity migration (`20250128000004_data_integrity_checks.sql`) an
 
 ```sql
 -- Check pdf_jobs table structure
-SELECT 
+SELECT
   column_name,
   data_type,
   is_nullable
@@ -178,6 +178,7 @@ ORDER BY ordinal_position;
 ```
 
 Verify:
+
 - [ ] Status column exists
 - [ ] Status constraint allows: 'pending', 'processing', 'completed', 'failed'
 - [ ] Edge Function worker can process jobs (test PDF generation)
@@ -197,7 +198,7 @@ Test the following in your application:
 
 ```sql
 -- Check if cleanup functions exist
-SELECT 
+SELECT
   routine_name,
   routine_type
 FROM information_schema.routines
@@ -208,6 +209,7 @@ WHERE routine_schema = 'public'
 Expected: 5 cleanup functions should exist
 
 Test cleanup functions (optional):
+
 ```sql
 -- Test cleanup (dry run - check what would be deleted)
 SELECT COUNT(*) as old_events
@@ -233,6 +235,7 @@ After migrations, monitor:
 If something goes wrong:
 
 1. **RLS Issues**: Disable RLS temporarily (not recommended for production)
+
    ```sql
    ALTER TABLE public.activities DISABLE ROW LEVEL SECURITY;
    ALTER TABLE public.clients DISABLE ROW LEVEL SECURITY;
@@ -268,4 +271,3 @@ After verification:
 3. Document any custom changes
 4. Update team on new security policies
 5. Consider adding integration tests for RLS
-

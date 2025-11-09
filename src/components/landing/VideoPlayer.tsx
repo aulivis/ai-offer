@@ -93,17 +93,3 @@ export default function VideoPlayer({
     </button>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

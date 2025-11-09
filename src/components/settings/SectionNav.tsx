@@ -27,7 +27,9 @@ export function SectionNav({ sections, activeSection, onSectionChange }: Section
           }`}
           aria-current={activeSection === section.id ? 'page' : undefined}
         >
-          <span className={`flex-shrink-0 ${activeSection === section.id ? 'text-primary' : 'text-slate-400'}`}>
+          <span
+            className={`flex-shrink-0 ${activeSection === section.id ? 'text-primary' : 'text-slate-400'}`}
+          >
             {section.icon}
           </span>
           <span>{section.label}</span>
@@ -36,17 +38,3 @@ export function SectionNav({ sections, activeSection, onSectionChange }: Section
     </nav>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

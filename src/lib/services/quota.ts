@@ -1,9 +1,9 @@
 /**
  * Unified Quota Service
- * 
+ *
  * This is the SINGLE SOURCE OF TRUTH for all quota-related data.
  * All components should use this service instead of querying the database directly.
- * 
+ *
  * Design Principles:
  * 1. Single source of truth: Always use get_quota_snapshot RPC function
  * 2. Period handling: Always use currentMonthStart() for period calculation
@@ -28,7 +28,7 @@ export type QuotaData = {
 /**
  * Get quota snapshot for display purposes.
  * This is the ONLY function that should be used to fetch quota data for the UI.
- * 
+ *
  * @param sb Supabase client
  * @param deviceId Optional device ID for device-specific quota
  * @param periodStart Optional period start (defaults to current month)
@@ -64,23 +64,26 @@ export async function getQuotaData(
 
   return {
     plan: planValue as 'free' | 'standard' | 'pro',
-    limit: snapshot.quota_limit !== null && snapshot.quota_limit !== undefined 
-      ? Number(snapshot.quota_limit) 
-      : null,
+    limit:
+      snapshot.quota_limit !== null && snapshot.quota_limit !== undefined
+        ? Number(snapshot.quota_limit)
+        : null,
     confirmed: Number.isFinite(snapshot.confirmed) ? Number(snapshot.confirmed) : 0,
     pendingUser: Number.isFinite(snapshot.pending_user) ? Number(snapshot.pending_user) : 0,
-    pendingDevice: snapshot.pending_device !== null && snapshot.pending_device !== undefined
-      ? Number(snapshot.pending_device)
-      : null,
-    confirmedDevice: snapshot.confirmed_device !== null && snapshot.confirmed_device !== undefined
-      ? Number(snapshot.confirmed_device)
-      : null,
-    remaining: snapshot.remaining !== null && snapshot.remaining !== undefined
-      ? Number(snapshot.remaining)
-      : null,
-    periodStart: typeof snapshot.period_start === 'string' 
-      ? snapshot.period_start 
-      : normalizedPeriod,
+    pendingDevice:
+      snapshot.pending_device !== null && snapshot.pending_device !== undefined
+        ? Number(snapshot.pending_device)
+        : null,
+    confirmedDevice:
+      snapshot.confirmed_device !== null && snapshot.confirmed_device !== undefined
+        ? Number(snapshot.confirmed_device)
+        : null,
+    remaining:
+      snapshot.remaining !== null && snapshot.remaining !== undefined
+        ? Number(snapshot.remaining)
+        : null,
+    periodStart:
+      typeof snapshot.period_start === 'string' ? snapshot.period_start : normalizedPeriod,
   };
 }
 
@@ -129,11 +132,3 @@ export function getRemainingDeviceQuota(quota: QuotaData): number | null {
   const devicePending = quota.pendingDevice ?? 0;
   return Math.max(0, deviceLimit - deviceConfirmed - devicePending);
 }
-
-
-
-
-
-
-
-

@@ -332,7 +332,10 @@ export default function Home() {
       solution: t('landing.caseStudiesInline.techSolutions.solution'),
       results: [
         { metric: t('landing.caseStudiesInline.techSolutions.results.offerTime'), value: '-65%' },
-        { metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'), value: '50+' },
+        {
+          metric: t('landing.caseStudiesInline.techSolutions.results.templatesCount'),
+          value: '50+',
+        },
         { metric: t('landing.caseStudiesInline.techSolutions.results.satisfaction'), value: '98%' },
       ],
       quote: t('landing.caseStudiesInline.techSolutions.quote'),
@@ -354,7 +357,8 @@ export default function Home() {
           </span>
 
           <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-[-0.125rem] text-[#1c274c] md:text-5xl lg:text-6xl">
-            {t('landing.hero.titleLine1')} <HighlightUnderline>{t('landing.hero.highlighted')}</HighlightUnderline>.
+            {t('landing.hero.titleLine1')}{' '}
+            <HighlightUnderline>{t('landing.hero.highlighted')}</HighlightUnderline>.
             <br />
             <span className="text-primary">{t('landing.hero.titleLine2')}</span>
           </h1>
@@ -365,28 +369,35 @@ export default function Home() {
 
           {/* Pricing Display */}
           <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-fg-muted">
-            <span className="text-xl font-bold text-primary md:text-2xl">{t('landing.hero.pricing.starting')}</span>
+            <span className="text-xl font-bold text-primary md:text-2xl">
+              {t('landing.hero.pricing.starting')}
+            </span>
             <span className="hidden sm:inline">•</span>
             <span className="text-base md:text-sm">{t('landing.hero.pricing.standard')}</span>
             <span className="hidden sm:inline">•</span>
             <span className="text-base md:text-sm">{t('landing.hero.pricing.pro')}</span>
           </div>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Link
-                href="/login?redirect=/new"
-                className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/login?redirect=/new"
+              className="group inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 ease-out hover:shadow-pop hover:scale-105 active:scale-95"
+            >
+              <span>{t('landing.hero.primaryCta')}</span>
+              <svg
+                className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <span>{t('landing.hero.primaryCta')}</span>
-                <svg
-                  className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </Link>
             <a
               href="#product-demo"
               className="inline-flex items-center justify-center rounded-full border-2 border-border px-8 py-4 text-base font-semibold text-fg transition-all duration-200 ease-out hover:border-primary hover:text-primary hover:bg-primary/5"
@@ -398,7 +409,12 @@ export default function Home() {
                   strokeWidth={2}
                   d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
                 />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               {t('landing.hero.secondaryCta')}
             </a>
@@ -406,12 +422,11 @@ export default function Home() {
 
           {/* Trust badges in hero */}
           <TrustBadges badges={trustBadges} className="mt-8" />
-          
+
           {/* Customer ticker */}
           <CustomerTicker className="mt-6" />
         </div>
       </section>
-
 
       {/* PROBLEM-AGITATE-SOLVE SECTION */}
       <section className="mx-auto w-full max-w-6xl px-6">
@@ -502,7 +517,11 @@ export default function Home() {
                   t('landing.productVideo.features.3'),
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-base text-fg-muted">
-                    <svg className="h-5 w-5 flex-shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="h-5 w-5 flex-shrink-0 text-primary"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -519,8 +538,18 @@ export default function Home() {
                   className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:shadow-pop hover:scale-105"
                 >
                   {t('landing.productVideo.cta')}
-                  <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <svg
+                    className="ml-2 h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
                   </svg>
                 </Link>
               </div>
@@ -591,7 +620,12 @@ export default function Home() {
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </div>
                 )}
@@ -692,7 +726,12 @@ export default function Home() {
           >
             {t('landing.successStories.cta')}
             <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
         </div>
@@ -753,7 +792,12 @@ export default function Home() {
               >
                 <span>{t('landing.cta.primaryCta')}</span>
                 <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </Link>
               <Link
@@ -763,9 +807,7 @@ export default function Home() {
                 {t('landing.cta.secondaryCta')}
               </Link>
             </div>
-            <p className="mt-6 text-sm text-fg-muted">
-              {t('landing.finalCta.noCreditCard')}
-            </p>
+            <p className="mt-6 text-sm text-fg-muted">{t('landing.finalCta.noCreditCard')}</p>
           </div>
         </Card>
       </section>

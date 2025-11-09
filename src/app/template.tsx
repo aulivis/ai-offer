@@ -6,11 +6,11 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 /**
  * Template component for View Transitions API
- * 
+ *
  * This component enables smooth page transitions using the View Transitions API.
  * It automatically applies view transition names to key elements and respects
  * user's reduced motion preferences.
- * 
+ *
  * In Next.js App Router, template.tsx is called for each segment when navigating,
  * making it perfect for implementing view transitions.
  */
@@ -61,4 +61,3 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
-

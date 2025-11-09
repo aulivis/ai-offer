@@ -70,7 +70,10 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
           unoptimized // User uploaded images may not be optimized
           aria-hidden="false"
         />
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/5" aria-hidden="true" />
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/5"
+          aria-hidden="true"
+        />
       </div>
     );
   }
@@ -81,17 +84,3 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

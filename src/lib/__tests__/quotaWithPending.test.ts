@@ -1,8 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  checkQuotaWithPending,
-  checkDeviceQuotaWithPending,
-} from '../services/usage';
+import { checkQuotaWithPending, checkDeviceQuotaWithPending } from '../services/usage';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 describe('checkQuotaWithPending', () => {
@@ -124,9 +121,7 @@ describe('checkQuotaWithPending', () => {
       error: null,
     });
 
-    from
-      .mockReturnValueOnce(selectBuilder as never)
-      .mockReturnValueOnce(countBuilder as never);
+    from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(countBuilder as never);
 
     const result = await checkQuotaWithPending(mockClient, 'user-1', 10);
 
@@ -255,9 +250,7 @@ describe('checkDeviceQuotaWithPending', () => {
       error: null,
     });
 
-    from
-      .mockReturnValueOnce(selectBuilder as never)
-      .mockReturnValueOnce(countBuilder as never);
+    from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(countBuilder as never);
 
     const result = await checkDeviceQuotaWithPending(mockClient, 'user-1', 'device-1', 5);
 
@@ -269,17 +262,3 @@ describe('checkDeviceQuotaWithPending', () => {
     });
   });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-

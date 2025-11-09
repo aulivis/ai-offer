@@ -76,7 +76,9 @@ export default function ROICalculator({ className = '' }: ROICalculatorProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-base text-fg-muted">Megtakarított idő havonta:</span>
-              <span className="text-xl font-bold text-primary">{totalTimeSaved.toFixed(1)} óra</span>
+              <span className="text-xl font-bold text-primary">
+                {totalTimeSaved.toFixed(1)} óra
+              </span>
             </div>
             <div className="flex items-center justify-between border-t border-border/50 pt-4">
               <span className="text-base font-semibold text-fg">Havi megtakarítás:</span>
@@ -103,10 +105,3 @@ export default function ROICalculator({ className = '' }: ROICalculatorProps) {
     </Card>
   );
 }
-
-
-
-
-
-
-

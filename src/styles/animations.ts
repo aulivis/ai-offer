@@ -1,25 +1,25 @@
 /**
  * Animation Utility System
- * 
+ *
  * Provides consistent animations that respect prefers-reduced-motion.
  * All animations should check for reduced motion preference and provide
  * alternatives or disable animations when needed.
- * 
+ *
  * @module animations
- * 
+ *
  * @example
  * ```tsx
- * import { 
+ * import {
  *   getAnimationDuration,
  *   getAnimationStyle,
- *   useReducedMotion 
+ *   useReducedMotion
  * } from '@/styles/animations';
  * import { useReducedMotion } from '@/hooks/useReducedMotion';
- * 
+ *
  * function MyComponent() {
  *   const reducedMotion = useReducedMotion();
  *   const duration = getAnimationDuration('smooth', true);
- *   
+ *
  *   return (
  *     <div style={getAnimationStyle('smooth', 'easeOut', true)}>
  *       Content
@@ -27,7 +27,7 @@
  *   );
  * }
  * ```
- * 
+ *
  * Usage:
  * - Use animation classes in Tailwind: `transition-all duration-300`
  * - Use animation utilities in inline styles with reduced motion support
@@ -112,7 +112,7 @@ export function getAnimationStyle(
   respectReducedMotion = true,
 ): React.CSSProperties {
   const animDuration = getAnimationDuration(duration, respectReducedMotion);
-  
+
   return {
     transitionDuration: `${animDuration}ms`,
     transitionTimingFunction: ANIMATION_EASING[easing],
@@ -273,4 +273,3 @@ export function useReducedMotion(): boolean {
   // For now, we provide a utility function
   return prefersReducedMotion();
 }
-

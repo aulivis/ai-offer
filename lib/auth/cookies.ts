@@ -38,7 +38,7 @@ export async function setAuthCookies(
 ) {
   // Use provided cookie store or get a new one
   // In Next.js App Router, all calls to cookies() in the same request return the same store
-  const store = cookieStore ?? await cookies();
+  const store = cookieStore ?? (await cookies());
   const { accessTokenMaxAgeSeconds, rememberMe = false } = options;
 
   store.set({
@@ -57,8 +57,8 @@ export async function setAuthCookies(
     // Always set a maxAge to ensure cookie persists across redirects
     // Use rememberMe expiration if enabled, otherwise use a reasonable default (7 days)
     // Session cookies (no maxAge) can be lost during redirects in some browsers
-    maxAge: rememberMe 
-      ? REMEMBER_ME_MAX_AGE_SECONDS 
+    maxAge: rememberMe
+      ? REMEMBER_ME_MAX_AGE_SECONDS
       : Math.max(accessTokenMaxAgeSeconds || 3600, 7 * 24 * 60 * 60), // At least 7 days
   });
 

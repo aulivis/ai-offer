@@ -71,10 +71,10 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     return NextResponse.json({ ok: true });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba történt.';
-    log.error('Activity image deletion failed', error instanceof Error ? error : new Error(String(error)));
+    log.error(
+      'Activity image deletion failed',
+      error instanceof Error ? error : new Error(String(error)),
+    );
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
-
-
-

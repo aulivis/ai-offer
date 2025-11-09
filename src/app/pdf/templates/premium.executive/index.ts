@@ -10,7 +10,8 @@ export const premiumExecutiveTemplate: OfferTemplate = {
   tier: 'premium',
   label: 'Executive',
   version: '1.0.0',
-  marketingHighlight: 'Prémium dizájn logóval, dekoratív elemekkel és elegáns tipográfiával a legprofesszionálisabb ajánlatokhoz.',
+  marketingHighlight:
+    'Prémium dizájn logóval, dekoratív elemekkel és elegáns tipográfiával a legprofesszionálisabb ajánlatokhoz.',
   styles: {
     print: pdfStyles,
     template: templateStyles,
@@ -20,22 +21,8 @@ export const premiumExecutiveTemplate: OfferTemplate = {
     'branding.logo': true,
     'branding.colors': true,
     'pricing.table': true,
-    'gallery': true,
+    gallery: true,
   },
   renderHead,
   renderBody,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -152,7 +152,7 @@ export async function POST(request: Request) {
   }
 
   const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
-  
+
   if (sessionList.length === 0) {
     log.warn('No active sessions found');
     await clearAuthCookies();
@@ -228,7 +228,7 @@ export async function POST(request: Request) {
     ? new Date(activeSession.expires_at).getTime() - new Date(activeSession.issued_at).getTime()
     : 0;
   const isRememberMeSession = sessionDuration > 7 * 24 * 60 * 60 * 1000; // > 7 days
-  
+
   // Use the same expiration strategy: if remember me, extend to 30 days; otherwise use token expiration
   const newExpiresAt = isRememberMeSession
     ? new Date(issuedAt.getTime() + REMEMBER_ME_EXPIRES_IN_SECONDS * 1000)
@@ -258,7 +258,7 @@ export async function POST(request: Request) {
 
   log.info('Session refreshed successfully');
   const accessTokenMaxAgeSeconds = expiresIn > 0 ? expiresIn : 3600;
-  await setAuthCookies(accessToken, newRefreshToken, { 
+  await setAuthCookies(accessToken, newRefreshToken, {
     accessTokenMaxAgeSeconds,
     rememberMe: isRememberMeSession,
   });

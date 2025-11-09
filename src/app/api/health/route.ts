@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
-  
+
   try {
     // Check database connectivity
     const supabase = supabaseServiceRole();
@@ -39,4 +39,3 @@ export async function GET(request: Request) {
     );
   }
 }
-

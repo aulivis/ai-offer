@@ -177,7 +177,9 @@ describe('GET /api/auth/google', () => {
     const generatedState = redirectUrl?.searchParams.get('state');
     expect(generatedState).toBeTruthy();
 
-    const authStateCall = cookiesSetMock.mock.calls.find(([options]) => options?.name === 'auth_state');
+    const authStateCall = cookiesSetMock.mock.calls.find(
+      ([options]) => options?.name === 'auth_state',
+    );
     expect(authStateCall).toBeTruthy();
     if (authStateCall && generatedState) {
       const [options] = authStateCall as [{ name: string; value: string }];

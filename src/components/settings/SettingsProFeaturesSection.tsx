@@ -8,9 +8,7 @@ type SettingsProFeaturesSectionProps = {
   plan: 'free' | 'standard' | 'pro';
 };
 
-export function SettingsProFeaturesSection({
-  plan,
-}: SettingsProFeaturesSectionProps) {
+export function SettingsProFeaturesSection({ plan }: SettingsProFeaturesSectionProps) {
   // This section is now empty as reference images and testimonials have been moved
   // Keeping the card structure for potential future pro features
   return (
@@ -25,7 +23,9 @@ export function SettingsProFeaturesSection({
               <LockClosedIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">{t('settings.proFeatures.title')}</h2>
+              <h2 className="text-xl font-bold text-slate-900">
+                {t('settings.proFeatures.title')}
+              </h2>
               <p className="text-sm text-slate-500">{t('settings.proFeatures.subtitle')}</p>
             </div>
           </div>
@@ -33,13 +33,8 @@ export function SettingsProFeaturesSection({
       }
     >
       <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
-        <p className="text-sm text-slate-600">
-          További Pro funkciók hamarosan...
-        </p>
+        <p className="text-sm text-slate-600">További Pro funkciók hamarosan...</p>
       </div>
     </Card>
   );
 }
-
-
-

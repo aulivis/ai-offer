@@ -37,7 +37,7 @@ export default function InitSessionClient({
         // This gives the browser time to process cookies from redirect
         // Cookies should be available immediately after redirect, so minimal delay is needed
         if (!hasCookiesAvailable) {
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
         }
 
         // Fetch tokens from API endpoint
@@ -56,7 +56,7 @@ export default function InitSessionClient({
             // Wait before each retry attempt (short delay, cookies should be available quickly)
             if (attempt > 0) {
               const delay = Math.min(100 * attempt, 500); // Max 500ms delay
-              await new Promise(resolve => setTimeout(resolve, delay));
+              await new Promise((resolve) => setTimeout(resolve, delay));
             }
 
             const verifyResponse = await fetch('/api/auth/init-session', {
@@ -133,14 +133,17 @@ export default function InitSessionClient({
 
             if (expectedUserId && data.session.user.id !== expectedUserId) {
               throw new Error(
-                `Session user ID mismatch: expected ${expectedUserId}, got ${data.session.user.id}`
+                `Session user ID mismatch: expected ${expectedUserId}, got ${data.session.user.id}`,
               );
             }
 
             // Verify session is persisted (brief delay to ensure it's saved)
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
 
-            const { data: { session: verifySession }, error: verifyError } = await client.auth.getSession();
+            const {
+              data: { session: verifySession },
+              error: verifyError,
+            } = await client.auth.getSession();
 
             if (verifyError) {
               throw new Error(`Session verification failed: ${verifyError.message}`);
@@ -162,7 +165,7 @@ export default function InitSessionClient({
 
             // Only retry once with a short delay
             if (attempt < 1) {
-              await new Promise(resolve => setTimeout(resolve, 100));
+              await new Promise((resolve) => setTimeout(resolve, 100));
             }
           }
         }
@@ -173,7 +176,7 @@ export default function InitSessionClient({
 
         if (mounted) {
           setStatus('success');
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
           router.replace(redirectTo);
         }
       } catch (err) {
@@ -200,35 +203,58 @@ export default function InitSessionClient({
 
   if (status === 'error') {
     return (
-      <div style={{
-        display: 'grid',
-        placeItems: 'center',
-        minHeight: '100vh',
-        padding: '2rem',
-        textAlign: 'center'
-      }}>
+      <div
+        style={{
+          display: 'grid',
+          placeItems: 'center',
+          minHeight: '100vh',
+          padding: '2rem',
+          textAlign: 'center',
+        }}
+      >
         <div style={{ maxWidth: '500px' }}>
-          <div style={{
-            marginBottom: '1.5rem',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              backgroundColor: '#fee2e2',
+          <div
+            style={{
+              marginBottom: '1.5rem',
               display: 'flex',
+              justifyContent: 'center',
               alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <svg style={{ width: '24px', height: '24px', color: '#ef4444' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            }}
+          >
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#fee2e2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg
+                style={{ width: '24px', height: '24px', color: '#ef4444' }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </div>
           </div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#111827' }}>
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              color: '#111827',
+            }}
+          >
             {t('errors.initSession.error')}
           </h1>
           <p style={{ color: '#ef4444', marginBottom: '1rem' }}>
@@ -243,37 +269,52 @@ export default function InitSessionClient({
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      placeItems: 'center',
-      minHeight: '100vh',
-      padding: '2rem',
-      textAlign: 'center',
-      backgroundColor: '#f9fafb'
-    }}>
+    <div
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        minHeight: '100vh',
+        padding: '2rem',
+        textAlign: 'center',
+        backgroundColor: '#f9fafb',
+      }}
+    >
       <div style={{ maxWidth: '500px' }}>
-        <div style={{
-          marginBottom: '1.5rem',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            border: '4px solid #e5e7eb',
-            borderTopColor: '#3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
+        <div
+          style={{
+            marginBottom: '1.5rem',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              border: '4px solid #e5e7eb',
+              borderTopColor: '#3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
           <style>{`
             @keyframes spin {
               to { transform: rotate(360deg); }
             }
           `}</style>
         </div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.75rem', color: '#111827' }}>
-          {status === 'success' ? t('errors.initSession.success') : t('errors.initSession.initializing')}
+        <h1
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            marginBottom: '0.75rem',
+            color: '#111827',
+          }}
+        >
+          {status === 'success'
+            ? t('errors.initSession.success')
+            : t('errors.initSession.initializing')}
         </h1>
         <p style={{ color: '#6b7280', fontSize: '0.9375rem', lineHeight: '1.6' }}>
           {status === 'success'
@@ -281,19 +322,25 @@ export default function InitSessionClient({
             : t('errors.initSession.pleaseWait')}
         </p>
         {status === 'success' && (
-          <div style={{
-            marginTop: '1.5rem',
-            padding: '0.75rem 1rem',
-            backgroundColor: '#d1fae5',
-            borderRadius: '0.5rem',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#065f46',
-            fontSize: '0.875rem'
-          }}>
+          <div
+            style={{
+              marginTop: '1.5rem',
+              padding: '0.75rem 1rem',
+              backgroundColor: '#d1fae5',
+              borderRadius: '0.5rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#065f46',
+              fontSize: '0.875rem',
+            }}
+          >
             <svg style={{ width: '16px', height: '16px' }} fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             <span>{t('errors.initSession.redirecting')}</span>
           </div>

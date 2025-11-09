@@ -4,7 +4,8 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Teljes funkció bemutató - Vyndi | Vyndi',
-  description: 'Részletes útmutató a Vyndi minden funkciójáról. Tanuld meg, hogyan használd hatékonyan a platformot az ajánlatkészítés minden lépésében.',
+  description:
+    'Részletes útmutató a Vyndi minden funkciójáról. Tanuld meg, hogyan használd hatékonyan a platformot az ajánlatkészítés minden lépésében.',
   openGraph: {
     title: 'Teljes funkció bemutató - Vyndi | Vyndi',
     description: 'Részletes útmutató minden funkcióról.',
@@ -86,18 +87,29 @@ export default function FullTourPage() {
           Teljes funkció bemutató
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Részletes útmutató a Vyndi minden funkciójáról. Tanuld meg, hogyan használd hatékonyan a platformot az ajánlatkészítés minden lépésében.
+          Részletes útmutató a Vyndi minden funkciójáról. Tanuld meg, hogyan használd hatékonyan a
+          platformot az ajánlatkészítés minden lépésében.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>22 perc</span>
           </div>
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
             </svg>
             <span>Részletes útmutató</span>
           </div>
@@ -109,9 +121,24 @@ export default function FullTourPage() {
         <div className="relative aspect-video w-full bg-gradient-to-br from-gray-900 to-gray-800">
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <svg className="mx-auto h-20 w-20 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="mx-auto h-20 w-20 text-white/80"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <p className="mt-4 text-lg font-medium text-white">
                 [Helyőrző: Video player - Vyndi teljes funkció bemutató]
@@ -120,7 +147,8 @@ export default function FullTourPage() {
                 Videó hossza: 22 perc | Formátum: MP4 vagy YouTube embed
               </p>
               <p className="mt-4 text-xs text-white/60">
-                A videó tartalmazza: Platform áttekintés, részletes funkció bemutatások, lépésről lépésre útmutatók, pro tippek
+                A videó tartalmazza: Platform áttekintés, részletes funkció bemutatások, lépésről
+                lépésre útmutatók, pro tippek
               </p>
             </div>
           </div>
@@ -140,7 +168,10 @@ export default function FullTourPage() {
         <h2 className="mb-6 text-2xl font-bold text-fg">Videó fejezetek</h2>
         <div className="space-y-4">
           {chapters.map((chapter, index) => (
-            <div key={index} className="flex gap-4 rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5">
+            <div
+              key={index}
+              className="flex gap-4 rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5"
+            >
               <div className="flex-shrink-0">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 font-mono text-sm font-bold text-red-600">
                   {chapter.time}
@@ -160,8 +191,16 @@ export default function FullTourPage() {
         <h2 className="mb-4 text-2xl font-bold text-fg">Mit fogsz megtanulni?</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="flex items-start gap-3">
-            <svg className="h-6 w-6 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            <svg
+              className="h-6 w-6 flex-shrink-0 text-green-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             <div>
               <h3 className="font-semibold text-fg">Platform használata</h3>
@@ -169,8 +208,16 @@ export default function FullTourPage() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <svg className="h-6 w-6 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            <svg
+              className="h-6 w-6 flex-shrink-0 text-green-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             <div>
               <h3 className="font-semibold text-fg">AI funkciók</h3>
@@ -178,8 +225,16 @@ export default function FullTourPage() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <svg className="h-6 w-6 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            <svg
+              className="h-6 w-6 flex-shrink-0 text-green-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             <div>
               <h3 className="font-semibold text-fg">Sablon testreszabás</h3>
@@ -187,8 +242,16 @@ export default function FullTourPage() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <svg className="h-6 w-6 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            <svg
+              className="h-6 w-6 flex-shrink-0 text-green-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
             </svg>
             <div>
               <h3 className="font-semibold text-fg">Pro tippek</h3>
@@ -205,22 +268,52 @@ export default function FullTourPage() {
           A videó megtekintése után olvasd el ezeket a részletes útmutatókat is:
         </p>
         <div className="space-y-3">
-          <Link href="/resources/guide" className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5">
+          <Link
+            href="/resources/guide"
+            className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5"
+          >
             <div>
               <h3 className="font-semibold text-fg">Ajánlatkészítési útmutató</h3>
-              <p className="text-sm text-fg-muted">Komplett útmutató a tökéletes ajánlatok elkészítéséhez</p>
+              <p className="text-sm text-fg-muted">
+                Komplett útmutató a tökéletes ajánlatok elkészítéséhez
+              </p>
             </div>
-            <svg className="h-5 w-5 text-fg-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <svg
+              className="h-5 w-5 text-fg-muted"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
-          <Link href="/resources/ai-guide" className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5">
+          <Link
+            href="/resources/ai-guide"
+            className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5"
+          >
             <div>
               <h3 className="font-semibold text-fg">AI-alapú szöveg generálás</h3>
-              <p className="text-sm text-fg-muted">Részletes útmutató az AI funkciók használatához</p>
+              <p className="text-sm text-fg-muted">
+                Részletes útmutató az AI funkciók használatához
+              </p>
             </div>
-            <svg className="h-5 w-5 text-fg-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            <svg
+              className="h-5 w-5 text-fg-muted"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
             </svg>
           </Link>
         </div>
@@ -240,7 +333,12 @@ export default function FullTourPage() {
             >
               Ingyenes próba indítása
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </Link>
             <Link
@@ -264,12 +362,20 @@ export default function FullTourPage() {
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
                     Bevezető videó
                   </h3>
-                  <p className="text-sm text-fg-muted">
-                    Ismerd meg a Vyndi-t 5 percben.
-                  </p>
+                  <p className="text-sm text-fg-muted">Ismerd meg a Vyndi-t 5 percben.</p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -285,8 +391,18 @@ export default function FullTourPage() {
                     Komplett útmutató a tökéletes ajánlatok elkészítéséhez.
                   </p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -296,11 +412,3 @@ export default function FullTourPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-

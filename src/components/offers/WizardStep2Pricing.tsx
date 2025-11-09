@@ -93,11 +93,13 @@ export function WizardStep2Pricing({
   const [activityImageUrls, setActivityImageUrls] = useState<Record<string, string>>({});
   const [loadingImageUrls, setLoadingImageUrls] = useState(false);
   const [showTestimonialsModal, setShowTestimonialsModal] = useState(false);
-  const [availableTestimonials, setAvailableTestimonials] = useState<Array<{
-    id: string;
-    text: string;
-    activity_id?: string | null;
-  }>>([]);
+  const [availableTestimonials, setAvailableTestimonials] = useState<
+    Array<{
+      id: string;
+      text: string;
+      activity_id?: string | null;
+    }>
+  >([]);
   const hasShownInitialModalRef = useRef(false);
 
   const filteredActivities = useMemo(() => {
@@ -109,16 +111,15 @@ export function WizardStep2Pricing({
   // Check if first row matches a default activity with reference images
   useEffect(() => {
     if (hasShownInitialModalRef.current || rows.length === 0 || !enableReferencePhotos) return;
-    
+
     const firstRow = rows[0];
     if (!firstRow || !firstRow.name) return;
-    
+
     // Find matching activity
     const matchingActivity = activities.find(
-      (a) => a.name === firstRow.name && 
-      (a.reference_images as string[] | null)?.length > 0
+      (a) => a.name === firstRow.name && (a.reference_images as string[] | null)?.length > 0,
     );
-    
+
     if (matchingActivity && !showImageModal && selectedImages.length === 0) {
       // Show image modal for default activity
       hasShownInitialModalRef.current = true;
@@ -186,8 +187,8 @@ export function WizardStep2Pricing({
     ]);
 
     // Check if activity has images and feature is enabled
-    const hasImages = enableReferencePhotos && 
-      (activity.reference_images as string[] | null)?.length > 0;
+    const hasImages =
+      enableReferencePhotos && (activity.reference_images as string[] | null)?.length > 0;
 
     if (hasImages) {
       setPendingActivity(activity);
@@ -229,7 +230,9 @@ export function WizardStep2Pricing({
 
       showToast({
         title: t('toasts.settings.activitySaved.title') || 'Tevékenység mentve',
-        description: t('toasts.settings.activitySaved.description') || 'A tevékenység sikeresen mentve a beállításokba.',
+        description:
+          t('toasts.settings.activitySaved.description') ||
+          'A tevékenység sikeresen mentve a beállításokba.',
         variant: 'success',
       });
 
@@ -239,7 +242,10 @@ export function WizardStep2Pricing({
       console.error('Failed to save activity:', error);
       showToast({
         title: t('errors.settings.saveFailed') || 'Hiba',
-        description: error instanceof Error ? error.message : t('errors.settings.saveUnknown') || 'Ismeretlen hiba történt.',
+        description:
+          error instanceof Error
+            ? error.message
+            : t('errors.settings.saveUnknown') || 'Ismeretlen hiba történt.',
         variant: 'error',
       });
     } finally {
@@ -260,9 +266,7 @@ export function WizardStep2Pricing({
     <div className="space-y-6" aria-label={t('wizard.pricing.ariaLabel')}>
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-slate-900">
-          {t('offers.wizard.steps.pricing')}
-        </h2>
+        <h2 className="text-xl font-bold text-slate-900">{t('offers.wizard.steps.pricing')}</h2>
         <p className="text-sm text-slate-600 leading-relaxed">
           {t('offers.wizard.forms.pricing.helper')}
         </p>
@@ -272,8 +276,16 @@ export function WizardStep2Pricing({
       {validationError && (
         <div className="rounded-xl border-2 border-rose-300 bg-rose-50/90 p-4">
           <div className="flex items-start gap-3">
-            <svg className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            <svg
+              className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
             </svg>
             <p className="text-sm font-semibold text-rose-900">{validationError}</p>
           </div>
@@ -289,7 +301,8 @@ export function WizardStep2Pricing({
                 {t('offers.wizard.forms.details.quickInsertTitle')}
               </h3>
               <p className="text-xs text-slate-600 mt-1">
-                {t('offers.wizard.forms.details.quickInsertIndustryLabel')}: <span className="font-semibold">{industry}</span>
+                {t('offers.wizard.forms.details.quickInsertIndustryLabel')}:{' '}
+                <span className="font-semibold">{industry}</span>
               </p>
             </div>
             <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -318,8 +331,8 @@ export function WizardStep2Pricing({
             {t('offers.wizard.steps.pricing')}
           </h3>
         </div>
-        <EditablePriceTable 
-          rows={rows} 
+        <EditablePriceTable
+          rows={rows}
           onChange={onRowsChange}
           activities={activities}
           onSaveActivity={handleSaveActivity}
@@ -419,9 +432,7 @@ export function WizardStep2Pricing({
             <h3 className="text-lg font-bold text-slate-900">
               {t('offers.wizard.images.modalTitle', { activity: pendingActivity.name })}
             </h3>
-            <p className="text-sm text-slate-600">
-              {t('offers.wizard.images.modalDescription')}
-            </p>
+            <p className="text-sm text-slate-600">{t('offers.wizard.images.modalDescription')}</p>
             {loadingImageUrls ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -486,10 +497,7 @@ export function WizardStep2Pricing({
 
       {/* Testimonials Selection Modal */}
       {showTestimonialsModal && (
-        <Modal
-          open={showTestimonialsModal}
-          onClose={() => setShowTestimonialsModal(false)}
-        >
+        <Modal open={showTestimonialsModal} onClose={() => setShowTestimonialsModal(false)}>
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-900">
               {t('offers.wizard.testimonials.modalTitle')}
@@ -532,9 +540,7 @@ export function WizardStep2Pricing({
                       <div className="flex items-start gap-3">
                         <div
                           className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
-                            isSelected
-                              ? 'border-primary bg-primary'
-                              : 'border-slate-300 bg-white'
+                            isSelected ? 'border-primary bg-primary' : 'border-slate-300 bg-white'
                           }`}
                         >
                           {isSelected && <CheckIcon className="h-3 w-3 text-white" />}

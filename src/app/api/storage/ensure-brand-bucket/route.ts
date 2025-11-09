@@ -13,7 +13,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
   log.setContext({ userId: request.user.id });
-  
+
   try {
     const sb = supabaseServiceRole();
     const { data: bucket, error: getError } = await sb.storage.getBucket(BUCKET_ID);

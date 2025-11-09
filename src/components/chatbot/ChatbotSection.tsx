@@ -2,7 +2,7 @@
 
 /**
  * Chatbot Section Wrapper
- * 
+ *
  * Client component wrapper for the Chatbot component.
  * Handles dynamic import to avoid SSR issues.
  */
@@ -35,9 +35,7 @@ export default function ChatbotSection({ className = '' }: ChatbotSectionProps) 
             <span className="normal-case tracking-normal">{t('chatbot.subtitle')}</span>
           </span>
         </div>
-        <h2 className="text-3xl font-semibold text-fg md:text-4xl">
-          {t('chatbot.welcomeTitle')}
-        </h2>
+        <h2 className="text-3xl font-semibold text-fg md:text-4xl">{t('chatbot.welcomeTitle')}</h2>
         <p className="mx-auto max-w-2xl text-lg text-fg-muted leading-relaxed">
           {t('chatbot.welcomeDescription')}
         </p>
@@ -48,4 +46,3 @@ export default function ChatbotSection({ className = '' }: ChatbotSectionProps) 
     </section>
   );
 }
-

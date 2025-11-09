@@ -2,7 +2,7 @@
 
 /**
  * Chatbot Component - Redesigned with Vanda Avatar
- * 
+ *
  * Interactive chatbot interface using Vercel AI SDK for streaming responses.
  * Features Vanda as a personalized assistant with improved UI/UX design.
  */
@@ -19,15 +19,11 @@ interface ChatbotProps {
   placeholder?: string;
 }
 
-export default function Chatbot({
-  className = '',
-  title,
-  placeholder,
-}: ChatbotProps) {
+export default function Chatbot({ className = '', title, placeholder }: ChatbotProps) {
   const defaultTitle = title || t('chatbot.title');
   const defaultPlaceholder = placeholder || t('chatbot.placeholder');
   const [input, setInput] = useState('');
-  
+
   // Get suggested questions from dictionary directly (t() only returns strings)
   const suggestedQuestions = useMemo(() => {
     try {
@@ -47,7 +43,7 @@ export default function Chatbot({
       };
     }
   }, []);
-  
+
   // useChat hook configuration
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chat',
@@ -77,46 +73,46 @@ export default function Chatbot({
       }
     },
   });
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const isLoading = status === 'streaming' || status === 'submitted';
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down' | null>>({});
-  
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    
+
     // useChat's sendMessage accepts { content: string } format
     sendMessage({ content: input.trim() });
     setInput('');
   };
-  
+
   // Handle suggested question click
   const handleQuestionClick = (question: string) => {
     if (isLoading) return;
     // useChat's sendMessage accepts { content: string } format
     sendMessage({ content: question.trim() });
   };
-  
+
   // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
-  
+
   // Helper to extract text content from message parts
-  const getMessageText = (message: typeof messages[0]): string => {
+  const getMessageText = (message: (typeof messages)[0]): string => {
     // Handle format 1: content property (from useChat text streams)
     if (message.content && typeof message.content === 'string') {
       return message.content;
     }
-    
+
     // Handle format 2: parts array (legacy format)
     if (message.parts && Array.isArray(message.parts) && message.parts.length > 0) {
       return message.parts
@@ -124,31 +120,33 @@ export default function Chatbot({
         .map((part: any) => part.text || '')
         .join('');
     }
-    
+
     // Handle format 3: text property (alternative format)
     if (message.text && typeof message.text === 'string') {
       return message.text;
     }
-    
+
     return '';
   };
-  
+
   // Debug: Log messages changes (after getMessageText is defined)
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log('[Chatbot] Messages updated:', {
         count: messages.length,
-        lastMessage: messages[messages.length - 1] ? {
-          id: messages[messages.length - 1].id,
-          role: messages[messages.length - 1].role,
-          contentLength: getMessageText(messages[messages.length - 1]).length,
-          contentPreview: getMessageText(messages[messages.length - 1]).substring(0, 50),
-        } : null,
+        lastMessage: messages[messages.length - 1]
+          ? {
+              id: messages[messages.length - 1].id,
+              role: messages[messages.length - 1].role,
+              contentLength: getMessageText(messages[messages.length - 1]).length,
+              contentPreview: getMessageText(messages[messages.length - 1]).substring(0, 50),
+            }
+          : null,
         status,
       });
     }
   }, [messages, status]);
-  
+
   // Helper to parse markdown links and render them
   const renderMessageWithLinks = (text: string): React.ReactNode => {
     // Simple markdown link parser: [text](url)
@@ -157,13 +155,13 @@ export default function Chatbot({
     let lastIndex = 0;
     let match;
     let key = 0;
-    
+
     while ((match = linkRegex.exec(text)) !== null) {
       // Add text before the link
       if (match.index > lastIndex) {
         parts.push(text.slice(lastIndex, match.index));
       }
-      
+
       // Add the link
       const linkText = match[1];
       const linkUrl = match[2];
@@ -183,47 +181,47 @@ export default function Chatbot({
           }}
         >
           {linkText}
-        </a>
+        </a>,
       );
-      
+
       lastIndex = match.index + match[0].length;
     }
-    
+
     // Add remaining text
     if (lastIndex < text.length) {
       parts.push(text.slice(lastIndex));
     }
-    
+
     return parts.length > 0 ? <>{parts}</> : text;
   };
-  
+
   // Handle feedback submission
   const handleFeedback = async (messageId: string, type: 'up' | 'down') => {
     // Update local state immediately for UI feedback
-    setFeedback(prev => ({ ...prev, [messageId]: type }));
-    
+    setFeedback((prev) => ({ ...prev, [messageId]: type }));
+
     try {
       const response = await fetch('/api/chat/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, type }),
       });
-      
+
       if (!response.ok) {
         console.error('Failed to submit feedback');
         // Revert feedback on error
-        setFeedback(prev => ({ ...prev, [messageId]: null }));
+        setFeedback((prev) => ({ ...prev, [messageId]: null }));
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
       // Revert feedback on error
-      setFeedback(prev => ({ ...prev, [messageId]: null }));
+      setFeedback((prev) => ({ ...prev, [messageId]: null }));
     }
   };
-  
+
   // If className includes h-full, don't wrap in Card (it's already in a container)
   const isStandalone = className.includes('h-full');
-  
+
   const content = (
     <>
       {/* Header - only show if NOT standalone (when in Card) */}
@@ -249,12 +247,17 @@ export default function Chatbot({
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
       )}
-      
+
       {/* Messages */}
       <div
         className={`flex-1 overflow-y-auto ${isExpanded ? 'h-[500px]' : 'h-[400px]'} transition-all duration-300 scroll-smooth`}
@@ -272,7 +275,7 @@ export default function Chatbot({
                   {t('chatbot.emptyState.description')}
                 </p>
               </div>
-              
+
               {/* Suggested Questions */}
               <div className="space-y-3">
                 <p className="text-[0.7rem] font-medium text-fg text-center">
@@ -280,7 +283,8 @@ export default function Chatbot({
                 </p>
                 <div className="flex flex-col gap-2.5">
                   {Object.entries(suggestedQuestions).map(([key, question]) => {
-                    const questionText = typeof question === 'string' ? question : String(question || '');
+                    const questionText =
+                      typeof question === 'string' ? question : String(question || '');
                     return (
                       <button
                         key={key}
@@ -317,7 +321,7 @@ export default function Chatbot({
               const messageText = getMessageText(message);
               const isUser = message.role === 'user';
               const showAvatar = !isUser;
-              
+
               return (
                 <div
                   key={message.id}
@@ -327,16 +331,18 @@ export default function Chatbot({
                   {/* Avatar for Vanda's messages */}
                   {showAvatar && (
                     <div className="flex-shrink-0">
-                      <VandaAvatar 
-                        size="md" 
+                      <VandaAvatar
+                        size="md"
                         variant={index === messages.length - 1 && isLoading ? 'thinking' : 'online'}
                         className="mb-1"
                       />
                     </div>
                   )}
-                  
+
                   {/* Message Bubble */}
-                  <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%] sm:max-w-[70%]`}>
+                  <div
+                    className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%] sm:max-w-[70%]`}
+                  >
                     <div
                       className={`rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
                         isUser
@@ -345,18 +351,18 @@ export default function Chatbot({
                       }`}
                     >
                       <div className="whitespace-pre-wrap break-words text-[0.7rem] leading-relaxed">
-                        {isUser 
-                          ? messageText
-                          : renderMessageWithLinks(messageText)
-                        }
+                        {isUser ? messageText : renderMessageWithLinks(messageText)}
                       </div>
                     </div>
-                    
+
                     {/* Feedback and Timestamp for Assistant Messages */}
                     {!isUser && (
                       <div className="mt-2 flex items-center gap-3 text-[0.6rem] text-fg-muted">
                         <span className="opacity-60">
-                          {new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date().toLocaleTimeString('hu-HU', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </span>
                         <div className="flex items-center gap-1">
                           <button
@@ -412,21 +418,24 @@ export default function Chatbot({
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Timestamp for User Messages */}
                     {isUser && (
                       <span className="mt-1.5 text-[0.6rem] text-fg-muted opacity-60">
-                        {new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date().toLocaleTimeString('hu-HU', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </span>
                     )}
                   </div>
-                  
+
                   {/* Spacer for user messages to align with avatar */}
                   {isUser && <div className="w-8 flex-shrink-0" />}
                 </div>
               );
             })}
-            
+
             {/* Typing Indicator */}
             {isLoading && (
               <div className="flex items-end gap-2.5 justify-start animate-in fade-in slide-in-from-bottom-2">
@@ -445,31 +454,38 @@ export default function Chatbot({
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         )}
-        
+
         {/* Error Message */}
         {error && (
           <div className="px-4 pb-4">
-            <div 
+            <div
               className="rounded-xl border border-danger/30 bg-danger/10 p-3.5 text-[0.7rem] text-danger shadow-sm animate-in fade-in slide-in-from-top-2"
               role="alert"
               aria-live="assertive"
             >
               <p className="font-medium flex items-center gap-2">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 {t('chatbot.error')}
               </p>
-              <p className="mt-1.5 text-[0.6rem] opacity-90">{error.message || t('common.status.error')}</p>
+              <p className="mt-1.5 text-[0.6rem] opacity-90">
+                {error.message || t('common.status.error')}
+              </p>
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Input Form */}
       <form onSubmit={handleSubmit} className="border-t border-border bg-bg-muted/30 p-4">
         <div className="flex gap-2.5">
@@ -496,11 +512,7 @@ export default function Chatbot({
             aria-label={t('chatbot.send')}
           >
             {isLoading ? (
-              <svg
-                className="h-5 w-5 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -516,12 +528,7 @@ export default function Chatbot({
                 />
               </svg>
             ) : (
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

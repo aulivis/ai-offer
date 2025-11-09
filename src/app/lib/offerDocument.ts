@@ -1,7 +1,4 @@
-import {
-  DEFAULT_OFFER_TEMPLATE_ID,
-  normalizeTemplateId,
-} from './offerTemplates';
+import { DEFAULT_OFFER_TEMPLATE_ID, normalizeTemplateId } from './offerTemplates';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { renderSectionHeading } from './offerSections';
 import { PRINT_BASE_CSS } from '@/app/pdf/print.css';

@@ -34,10 +34,10 @@ export type MetricCardProps = {
 
 /**
  * MetricCard component for displaying KPIs and metrics
- * 
+ *
  * Displays a metric with optional icon, trend, progress, and actions.
  * Supports empty states and interactive behavior.
- * 
+ *
  * @example
  * ```tsx
  * <MetricCard
@@ -48,7 +48,7 @@ export type MetricCardProps = {
  *   trendValue="+12%"
  *   onClick={() => navigate('/offers')}
  * />
- * 
+ *
  * <MetricCard
  *   label="Usage"
  *   value="75%"
@@ -128,16 +128,49 @@ export function MetricCard({
                     className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ${trendColors[trend]}`}
                   >
                     {trend === 'up' ? (
-                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      <svg
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                        />
                       </svg>
                     ) : trend === 'down' ? (
-                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                      <svg
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
+                        />
                       </svg>
                     ) : (
-                      <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
+                      <svg
+                        className="h-3 w-3 sm:h-4 sm:w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 12h14"
+                        />
                       </svg>
                     )}
                     {trendValue}
@@ -228,4 +261,3 @@ export function MetricCard({
     </Card>
   );
 }
-

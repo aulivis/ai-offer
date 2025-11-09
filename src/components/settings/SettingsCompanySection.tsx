@@ -4,7 +4,12 @@ import { t } from '@/copy';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { BuildingOfficeIcon, CheckCircleIcon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import {
+  BuildingOfficeIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  PlusIcon,
+} from '@heroicons/react/24/outline';
 import type { Profile } from './types';
 import { ALL_INDUSTRIES_HU, validatePhoneHU, validateTaxHU, validateAddress } from './types';
 
@@ -137,7 +142,11 @@ export function SettingsCompanySection({
                 }}
               />
             </div>
-            <Button variant="secondary" onClick={() => onAddManualIndustry(newIndustry)} className="sm:w-auto">
+            <Button
+              variant="secondary"
+              onClick={() => onAddManualIndustry(newIndustry)}
+              className="sm:w-auto"
+            >
               <PlusIcon className="h-4 w-4" />
               {t('settings.company.industries.addButton')}
             </Button>
@@ -166,7 +175,13 @@ export function SettingsCompanySection({
         </div>
 
         <div className="flex items-center justify-end border-t border-border pt-6">
-          <Button type="button" onClick={onSave} disabled={saving || hasErrors} loading={saving} size="lg">
+          <Button
+            type="button"
+            onClick={onSave}
+            disabled={saving || hasErrors}
+            loading={saving}
+            size="lg"
+          >
             {saving ? t('settings.company.saving') : t('settings.company.save')}
           </Button>
         </div>
@@ -174,4 +189,3 @@ export function SettingsCompanySection({
     </Card>
   );
 }
-

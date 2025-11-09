@@ -106,7 +106,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
-  
+
   let rawBody = '';
   try {
     rawBody = await req.text();
@@ -281,5 +281,5 @@ async function handlePost(req: AuthenticatedNextRequest) {
 export const POST = withAuth(
   withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
     return handlePost(req);
-  })
+  }),
 );

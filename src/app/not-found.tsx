@@ -14,7 +14,10 @@ export default async function NotFound() {
   const language = await getRequestLanguage();
 
   return withLanguage(language, () => (
-    <main id="main" className="mx-auto flex min-h-[80vh] w-full max-w-7xl items-center justify-center px-6 py-20">
+    <main
+      id="main"
+      className="mx-auto flex min-h-[80vh] w-full max-w-7xl items-center justify-center px-6 py-20"
+    >
       <div className="w-full max-w-4xl">
         <Card className="relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-white via-slate-50/50 to-primary/5 p-8 md:p-12 shadow-2xl">
           {/* Decorative background elements */}
@@ -36,7 +39,7 @@ export default async function NotFound() {
                       404
                     </div>
                   </div>
-                  
+
                   {/* Floating elements */}
                   <div className="absolute -right-8 top-8 h-16 w-16 animate-pulse rounded-full bg-primary/20 blur-xl" />
                   <div className="absolute -bottom-4 -left-4 h-12 w-12 animate-pulse rounded-full bg-accent/20 blur-xl delay-300" />
@@ -48,7 +51,12 @@ export default async function NotFound() {
                 <div>
                   <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
                     </svg>
                     {t('app.notFound.title')}
                   </span>
@@ -81,7 +89,12 @@ export default async function NotFound() {
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                         <span className="text-sm text-slate-700">{suggestion}</span>
                       </li>
@@ -96,7 +109,12 @@ export default async function NotFound() {
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                      />
                     </svg>
                     {t('app.notFound.ctaHome')}
                   </Link>
@@ -105,7 +123,12 @@ export default async function NotFound() {
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-bg px-7 py-3 text-base font-semibold text-fg transition-all duration-200 hover:border-primary hover:bg-bgMuted hover:scale-105 active:scale-95"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
                     </svg>
                     {t('app.notFound.ctaDashboard')}
                   </Link>
@@ -115,7 +138,10 @@ export default async function NotFound() {
 
             {/* Bottom decorative logo/brand */}
             <div className="mt-12 flex items-center justify-center border-t border-slate-200/50 pt-8">
-              <Link href="/" className="group flex items-center gap-3 transition-opacity hover:opacity-80">
+              <Link
+                href="/"
+                className="group flex items-center gap-3 transition-opacity hover:opacity-80"
+              >
                 <div className="relative h-10 w-10">
                   <Image
                     src="/vyndi-logo.png"
@@ -137,4 +163,3 @@ export default async function NotFound() {
     </main>
   ));
 }
-

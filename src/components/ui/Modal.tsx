@@ -45,7 +45,7 @@ const sizeClasses = {
 
 /**
  * Modal component with focus trap, keyboard navigation, and accessibility support
- * 
+ *
  * @example
  * ```tsx
  * <Modal open={isOpen} onClose={() => setIsOpen(false)} size="lg">
@@ -61,12 +61,12 @@ const sizeClasses = {
  * </Modal>
  * ```
  */
-export function Modal({ 
-  open, 
-  onClose, 
-  labelledBy, 
-  describedBy, 
-  children, 
+export function Modal({
+  open,
+  onClose,
+  labelledBy,
+  describedBy,
+  children,
   className = '',
   showCloseButton = true,
   preventBodyScroll = true,
@@ -185,7 +185,8 @@ export function Modal({
   const sizeMaxWidth = hasCustomMaxWidth ? '' : sizeClasses[size];
 
   // Check for reduced motion preference
-  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return createPortal(
     <div
@@ -224,9 +225,7 @@ export function Modal({
             <XMarkIcon className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
-        <div className={showCloseButton ? 'pr-10' : ''}>
-          {children}
-        </div>
+        <div className={showCloseButton ? 'pr-10' : ''}>{children}</div>
       </div>
     </div>,
     document.body,
@@ -236,9 +235,16 @@ export function Modal({
 /**
  * Modal header component
  */
-export function ModalHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function ModalHeader({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`mb-4 flex items-center justify-between border-b border-border pb-4 ${className || ''}`} {...props}>
+    <div
+      className={`mb-4 flex items-center justify-between border-b border-border pb-4 ${className || ''}`}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -258,9 +264,16 @@ export function ModalBody({ className, children, ...props }: React.HTMLAttribute
 /**
  * Modal footer component
  */
-export function ModalFooter({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function ModalFooter({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`mt-4 flex items-center justify-end gap-2 border-t border-border pt-4 ${className || ''}`} {...props}>
+    <div
+      className={`mt-4 flex items-center justify-end gap-2 border-t border-border pt-4 ${className || ''}`}
+      {...props}
+    >
       {children}
     </div>
   );

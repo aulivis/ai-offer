@@ -16,7 +16,7 @@ type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
 
 /**
  * Select component with error handling, help text, and loading state support
- * 
+ *
  * @example
  * ```tsx
  * <Select
@@ -88,7 +88,7 @@ export function Select({
           {children}
         </select>
         {loading && (
-          <div 
+          <div
             id={`${selectId}-loading`}
             className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
             aria-hidden="true"

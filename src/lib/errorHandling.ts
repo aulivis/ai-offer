@@ -70,10 +70,7 @@ export function handleUnexpectedError(
  * Wraps an API route handler with standardized error handling and logging.
  */
 export function withErrorHandling<T extends unknown[]>(
-  handler: (
-    req: NextRequest,
-    ...args: T
-  ) => Promise<NextResponse> | NextResponse,
+  handler: (req: NextRequest, ...args: T) => Promise<NextResponse> | NextResponse,
 ) {
   return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
     const requestId = getRequestId(req);
@@ -93,4 +90,3 @@ export function withErrorHandling<T extends unknown[]>(
     }
   };
 }
-

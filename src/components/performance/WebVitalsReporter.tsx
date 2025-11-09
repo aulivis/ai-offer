@@ -6,12 +6,12 @@ import { reportWebVitals } from '@/lib/performance/webVitals';
 
 /**
  * WebVitalsReporter Component
- * 
+ *
  * Reports Web Vitals metrics to Google Analytics and console.
  * Automatically tracks Core Web Vitals and other performance metrics.
- * 
+ *
  * Note: FID is deprecated and replaced by INP in newer versions of web-vitals.
- * 
+ *
  * @example
  * ```tsx
  * <WebVitalsReporter />
@@ -34,4 +34,3 @@ export function WebVitalsReporter() {
 
   return null;
 }
-

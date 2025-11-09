@@ -20,21 +20,21 @@ function getLuminance(r: number, g: number, b: number): number {
 export function getContrastRatio(color1: string, color2: string): number {
   const hex1 = color1.replace('#', '');
   const hex2 = color2.replace('#', '');
-  
+
   const r1 = parseInt(hex1.substring(0, 2), 16);
   const g1 = parseInt(hex1.substring(2, 4), 16);
   const b1 = parseInt(hex1.substring(4, 6), 16);
-  
+
   const r2 = parseInt(hex2.substring(0, 2), 16);
   const g2 = parseInt(hex2.substring(2, 4), 16);
   const b2 = parseInt(hex2.substring(4, 6), 16);
-  
+
   const lum1 = getLuminance(r1, g1, b1);
   const lum2 = getLuminance(r2, g2, b2);
-  
+
   const lighter = Math.max(lum1, lum2);
   const darker = Math.min(lum1, lum2);
-  
+
   return (lighter + 0.05) / (darker + 0.05);
 }
 
@@ -64,25 +64,11 @@ export function toGrayscale(hex: string): string {
 export function ensurePrintSafe(foreground: string, background: string = '#ffffff'): string {
   const grayFg = toGrayscale(foreground);
   const grayBg = toGrayscale(background);
-  
+
   if (!meetsWCAGAA(grayFg, grayBg)) {
     // Darken foreground if needed
     return '#000000';
   }
-  
+
   return foreground;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

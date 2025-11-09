@@ -6,7 +6,7 @@ import { sanitizeInput } from '@/lib/sanitize';
 export function generateAriaLabel(type: string, context?: string): string {
   const safeType = sanitizeInput(type);
   const safeContext = context ? sanitizeInput(context) : '';
-  
+
   const labels: Record<string, string> = {
     logo: `Logo${safeContext ? ` for ${safeContext}` : ''}`,
     header: `Document header${safeContext ? ` for ${safeContext}` : ''}`,
@@ -16,7 +16,7 @@ export function generateAriaLabel(type: string, context?: string): string {
     contact: 'Contact information',
     company: 'Company information',
   };
-  
+
   return labels[safeType] || safeType;
 }
 
@@ -55,21 +55,13 @@ export function renderSkipLinks(): string {
 export function addColorIndicators(html: string): string {
   // Add text indicators for status colors
   return html
-    .replace(/<span[^>]*class="[^"]*success[^"]*"[^>]*>/gi, '<span class="$&" aria-label="Success">')
+    .replace(
+      /<span[^>]*class="[^"]*success[^"]*"[^>]*>/gi,
+      '<span class="$&" aria-label="Success">',
+    )
     .replace(/<span[^>]*class="[^"]*error[^"]*"[^>]*>/gi, '<span class="$&" aria-label="Error">')
-    .replace(/<span[^>]*class="[^"]*warning[^"]*"[^>]*>/gi, '<span class="$&" aria-label="Warning">');
+    .replace(
+      /<span[^>]*class="[^"]*warning[^"]*"[^>]*>/gi,
+      '<span class="$&" aria-label="Warning">',
+    );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

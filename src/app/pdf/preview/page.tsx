@@ -80,7 +80,11 @@ function TemplateError({ message }: { message: string }) {
   );
 }
 
-export default async function PdfPreviewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function PdfPreviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const resolvedSearchParams = await searchParams;
   const templateId = getFirst(resolvedSearchParams.templateId);
 

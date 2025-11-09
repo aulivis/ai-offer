@@ -12,20 +12,5 @@ export const WIZARD_CONFIG = {
   AUTO_SAVE_DELAY_MS: 2000,
 } as const;
 
-export const MAX_IMAGE_SIZE_MB = Math.round(
-  (WIZARD_CONFIG.MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10,
-) / 10;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export const MAX_IMAGE_SIZE_MB =
+  Math.round((WIZARD_CONFIG.MAX_IMAGE_SIZE_BYTES / (1024 * 1024)) * 10) / 10;

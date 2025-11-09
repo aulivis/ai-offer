@@ -57,9 +57,7 @@ export default function StickyCTABar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-4">
             <div className="flex-1 text-center sm:text-left">
-              <p className="text-sm font-semibold text-fg">
-                {t('landing.stickyBar.title')}
-              </p>
+              <p className="text-sm font-semibold text-fg">{t('landing.stickyBar.title')}</p>
             </div>
             <div className="flex items-center gap-2">
               <Link
@@ -84,7 +82,12 @@ export default function StickyCTABar() {
             aria-label={t('landing.stickyBar.closeAria')}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -92,4 +95,3 @@ export default function StickyCTABar() {
     </div>
   );
 }
-

@@ -131,12 +131,7 @@ export async function consumeRateLimit(
     result = data;
   } else {
     // Use atomic increment function to prevent race conditions
-    const { data, error } = await incrementExistingAtomic(
-      client,
-      key,
-      maxRequests,
-      windowMs,
-    );
+    const { data, error } = await incrementExistingAtomic(client, key, maxRequests, windowMs);
     if (error) {
       // Fallback to non-atomic increment if function doesn't exist (backward compatibility)
       const currentCount = existing?.count ?? 0;
@@ -177,4 +172,3 @@ export function getClientIdentifier(req: Request): string {
 
   return 'unknown';
 }
-

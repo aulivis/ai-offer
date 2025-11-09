@@ -88,7 +88,9 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('company_name, brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary')
+          .select(
+            'company_name, brand_logo_path, brand_logo_url, brand_color_primary, brand_color_secondary',
+          )
           .eq('id', userId)
           .maybeSingle();
 
@@ -106,7 +108,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
           typeof data?.company_name === 'string' ? data.company_name.trim() || null : null;
         const primaryColor = normalizeBrandHex(data?.brand_color_primary ?? null);
         const secondaryColor = normalizeBrandHex(data?.brand_color_secondary ?? null);
-        
+
         // Generate signed URL on-demand from path (preferred) or use legacy URL
         let logoUrl: string | null = null;
         try {
@@ -121,7 +123,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
           console.debug('Could not load brand logo URL:', error);
           logoUrl = null;
         }
-        
+
         // Fallback to default Vyndi logo if no user logo is available
         if (!logoUrl) {
           logoUrl = '/vyndi-logo.png';

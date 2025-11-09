@@ -18,13 +18,16 @@ const base = [
 ].join(' ');
 
 const variantClasses: Record<NonNullable<Props['variant']>, string> = {
-  primary: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
+  primary:
+    'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
   secondary: [
     'border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]',
     'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
   ].join(' '),
-  ghost: 'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
-  danger: 'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
+  ghost:
+    'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
+  danger:
+    'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
 };
 
 const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {
@@ -54,23 +57,23 @@ const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {
 
 const sizes = {
   sm: 'px-4 py-2.5 text-sm min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
-  md: 'px-5 py-3 text-sm min-h-[44px]',   // WCAG 2.1 AAA: minimum 44x44px touch target
+  md: 'px-5 py-3 text-sm min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
   lg: 'px-7 py-4 text-base min-h-[48px]', // Enhanced for primary CTAs
 };
 
 /**
  * Button component with variants, sizes, and loading state support
- * 
+ *
  * @example
  * ```tsx
  * <Button variant="primary" size="lg" loading={isSubmitting}>
  *   Submit
  * </Button>
- * 
+ *
  * <Button variant="secondary" size="md">
  *   Cancel
  * </Button>
- * 
+ *
  * <Button variant="danger" loading={isDeleting}>
  *   Delete
  * </Button>
@@ -91,9 +94,9 @@ export function Button({
   const spinnerSize = size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : 'md';
 
   return (
-    <button 
-      className={cls} 
-      style={{ ...variantStyles[variant], ...style }} 
+    <button
+      className={cls}
+      style={{ ...variantStyles[variant], ...style }}
       disabled={isDisabled}
       aria-busy={loading}
       {...props}

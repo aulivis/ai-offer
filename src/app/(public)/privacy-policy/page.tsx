@@ -22,9 +22,8 @@ const sections: Section[] = [
       <div className="space-y-3 text-base leading-relaxed text-muted-foreground">
         <p>
           Az adatkezelő a <strong>Propono Labs Kft.</strong> (székhely: 1053 Budapest,
-          Magyarország), amely a Vyndi ajánlatkészítő szolgáltatás működtetéséért felel. A
-          társaság felelős minden, a szolgáltatás igénybevétele során történő adatkezelési
-          műveletért.
+          Magyarország), amely a Vyndi ajánlatkészítő szolgáltatás működtetéséért felel. A társaság
+          felelős minden, a szolgáltatás igénybevétele során történő adatkezelési műveletért.
         </p>
         <p>
           Kapcsolattartó e-mail:{' '}

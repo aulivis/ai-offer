@@ -2,16 +2,12 @@
 
 /**
  * Color Contrast Audit Script
- * 
+ *
  * Audits all color combinations in the application for WCAG 2.1 compliance
  * Run with: npx tsx scripts/audit-color-contrast.ts
  */
 
-import {
-  auditColorPairs,
-  getContrastRatio,
-  type ColorPair,
-} from '../src/lib/colorContrast';
+import { auditColorPairs, getContrastRatio, type ColorPair } from '../src/lib/colorContrast';
 
 // Color definitions from globals.css and design tokens
 const COLORS = {
@@ -19,24 +15,24 @@ const COLORS = {
   primary: '#00e5b0',
   primaryInk: '#04251a',
   accent: '#c3b3ff',
-  
+
   // Background colors
   bg: '#f7f9fb',
   bgMuted: '#ffffff',
-  
+
   // Foreground colors
   fg: '#0f172a',
   fgMuted: '#475569', // Improved contrast (was #4b5563)
-  
+
   // Border colors
   border: '#e5e7eb',
-  
+
   // Status colors
   success: '#16a34a',
   warning: '#f59e0b',
   danger: '#dc2626',
   dangerInk: '#ffffff',
-  
+
   // Brand colors
   brandPrimary: '#1c274c',
   brandSecondary: '#e2e8f0',
@@ -62,7 +58,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Primary button text (large)',
     isLargeText: true,
   },
-  
+
   // Regular text on background
   {
     foreground: COLORS.fg,
@@ -76,7 +72,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Body text on background (large)',
     isLargeText: true,
   },
-  
+
   // Muted text on background
   {
     foreground: COLORS.fgMuted,
@@ -90,7 +86,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Muted text on muted background',
     isLargeText: false,
   },
-  
+
   // Text on primary background
   {
     foreground: COLORS.brandPrimaryContrast,
@@ -98,7 +94,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'White text on brand primary',
     isLargeText: false,
   },
-  
+
   // Danger button text
   {
     foreground: COLORS.dangerInk,
@@ -106,7 +102,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Danger button text',
     isLargeText: false,
   },
-  
+
   // Text on card/muted background
   {
     foreground: COLORS.fg,
@@ -120,7 +116,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Muted text on card background',
     isLargeText: false,
   },
-  
+
   // Link text (assuming it uses primary color)
   {
     foreground: COLORS.primary,
@@ -134,7 +130,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Link text on card background',
     isLargeText: false,
   },
-  
+
   // Border visibility
   {
     foreground: COLORS.border,
@@ -142,7 +138,7 @@ const COLOR_PAIRS: ColorPair[] = [
     name: 'Border on background (for visibility check)',
     isLargeText: false,
   },
-  
+
   // Success/Warning colors (if used as text)
   {
     foreground: COLORS.success,
@@ -160,21 +156,21 @@ const COLOR_PAIRS: ColorPair[] = [
 
 function main() {
   console.log('🎨 Color Contrast Audit\n');
-  console.log('=' .repeat(80));
-  
+  console.log('='.repeat(80));
+
   const results = auditColorPairs(COLOR_PAIRS);
-  
+
   // Group by pass/fail
   const passing = results.filter((r) => r.passesAA);
   const failing = results.filter((r) => !r.passesAA);
   const aaa = results.filter((r) => r.passesAAA);
-  
+
   console.log('\n📊 Summary:');
   console.log(`  Total combinations: ${results.length}`);
   console.log(`  ✅ Passing WCAG AA: ${passing.length}`);
   console.log(`  ❌ Failing WCAG AA: ${failing.length}`);
   console.log(`  🌟 Meeting WCAG AAA: ${aaa.length}`);
-  
+
   if (failing.length > 0) {
     console.log('\n❌ Failing Combinations (WCAG AA):');
     failing.forEach((result) => {
@@ -186,16 +182,16 @@ function main() {
       console.log('');
     });
   }
-  
+
   console.log('\n✅ Passing Combinations:');
   passing.forEach((result) => {
     const level = result.passesAAA ? 'AAA' : 'AA';
     const icon = result.passesAAA ? '🌟' : '✓';
     console.log(`  ${icon} ${result.name} (${result.contrastRatio.toFixed(2)}:1, WCAG ${level})`);
   });
-  
+
   console.log('\n' + '='.repeat(80));
-  
+
   if (failing.length > 0) {
     console.log('\n⚠️  Action required: Some color combinations fail WCAG AA requirements.');
     console.log('   Please update the failing combinations to meet accessibility standards.');
@@ -211,4 +207,3 @@ if (require.main === module) {
 }
 
 export { main };
-

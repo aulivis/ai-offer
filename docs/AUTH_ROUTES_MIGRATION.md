@@ -23,6 +23,7 @@ This document describes the migration from `/api/auth/callback` to `/api/auth/co
 ### Features
 
 Both routes now have equivalent behavior:
+
 - ✅ Session persistence with UPSERT (deduplication)
 - ✅ Route usage tracking (metrics)
 - ✅ CSRF token support
@@ -34,24 +35,28 @@ Both routes now have equivalent behavior:
 ## Migration Status
 
 ### Phase 1: Dual Support ✅ Complete
+
 - Both routes operational with equivalent behavior
 - Session deduplication implemented (UPSERT)
 - Route usage tracking implemented
 - Backward compatibility maintained
 
 ### Phase 2: Email Template Update ✅ Complete
+
 - Email template updated to use `/api/auth/confirm`
 - Template supports token_hash flow (shorter URLs)
 - Fallback to implicit flow for backward compatibility
 - Template deployed to Supabase
 
 ### Phase 3: Monitoring Period 📊 Ongoing
+
 - Monitor route usage metrics
 - Track callback vs confirm route usage
 - Monitor error rates
 - Verify session deduplication
 
 ### Phase 4: Consolidation ⏳ Pending
+
 - Deprecate callback route when usage drops below 5%
 - Update all documentation
 - Remove callback route code
@@ -75,12 +80,14 @@ RETURNS uuid
 ```
 
 **Behavior**:
+
 - Inserts new session if `rt_hash` doesn't exist
 - Updates existing session if `rt_hash` already exists
 - Prevents duplicate sessions during migration
 - Handles concurrent requests gracefully
 
 **Migration**: Apply database migration:
+
 ```bash
 cd web
 supabase migration up
@@ -89,12 +96,14 @@ supabase migration up
 ### Route Usage Tracking
 
 Metrics are tracked via `recordAuthRouteUsage()`:
+
 - Tracks route name (`callback` vs `confirm`)
 - Tracks flow type (`implicit`, `token_hash`, `oauth_pkce`)
 - Tracks success/failure outcomes with error reasons
 - Enables migration monitoring and decision-making
 
 **Metric**: `auth.route.usage_total`
+
 - `route`: `callback` | `confirm`
 - `outcome`: `success` | `failure`
 - `flow`: `implicit` | `token_hash` | `oauth_pkce`
@@ -106,23 +115,23 @@ The email template uses Go template syntax with conditional logic:
 
 ```html
 {{ if .TokenHash }}
-  <!-- PKCE flow: Use token_hash for shorter URLs -->
-  <a href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard">
-    Bejelentkezés
-  </a>
+<!-- PKCE flow: Use token_hash for shorter URLs -->
+<a href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard">
+  Bejelentkezés
+</a>
 {{ else }}
-  <!-- Fallback to implicit flow if token_hash not available -->
-  <a href="{{ .ConfirmationURL }}">
-    Bejelentkezés
-  </a>
+<!-- Fallback to implicit flow if token_hash not available -->
+<a href="{{ .ConfirmationURL }}"> Bejelentkezés </a>
 {{ end }}
 ```
 
 **URL Formats**:
+
 - Token_hash flow: `https://app.example.com/api/auth/confirm?token_hash=xxx&type=email&next=/dashboard` (~200 chars)
 - Implicit flow: `https://app.example.com/auth/callback?access_token=xxx&refresh_token=xxx&expires_in=3600` (~1200+ chars)
 
 **Deployment**: Template is deployed via:
+
 ```bash
 cd web
 npm run email:templates:update
@@ -148,6 +157,7 @@ npm run email:templates:update
 #### Environment Variables
 
 Required for email template deployment:
+
 - `SUPABASE_ACCESS_TOKEN` - Personal Access Token from Supabase account
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 
@@ -299,18 +309,22 @@ If issues are detected:
 ## Files Modified
 
 ### Database
+
 - `web/supabase/migrations/20250110000000_add_session_upsert_function.sql` - UPSERT function
 
 ### Code
+
 - `web/src/app/api/auth/callback/route.ts` - UPSERT + route tracking
 - `web/src/app/api/auth/confirm/route.ts` - UPSERT + route tracking
 - `web/src/app/api/auth/magic-link/route.ts` - Updated emailRedirectTo
 - `web/src/lib/observability/metrics.ts` - Route usage tracking
 
 ### Templates
+
 - `web/templates/magic-link-email-hu.html` - Updated with token_hash support
 
 ### Scripts
+
 - `web/scripts/update-email-templates.ts` - Template deployment script
 
 ## Related Documentation
@@ -322,8 +336,8 @@ If issues are detected:
 ## Support
 
 For issues or questions:
+
 - Check metrics: `auth.route.usage_total`
 - Check logs: Structured logs with route name
 - Check database: Session deduplication
 - Contact: Supabase support if token_hash flow issues
-

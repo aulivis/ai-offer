@@ -1,6 +1,6 @@
 /**
  * Color contrast utility functions for WCAG compliance
- * 
+ *
  * Calculates contrast ratios and checks WCAG 2.1 compliance
  * WCAG AA requires 4.5:1 for normal text, 3:1 for large text
  * WCAG AAA requires 7:1 for normal text, 4.5:1 for large text
@@ -56,11 +56,7 @@ export function getContrastRatio(color1: string, color2: string): number {
 /**
  * Check if contrast ratio meets WCAG AA requirements
  */
-export function meetsWCAGAA(
-  color1: string,
-  color2: string,
-  isLargeText = false,
-): boolean {
+export function meetsWCAGAA(color1: string, color2: string, isLargeText = false): boolean {
   const ratio = getContrastRatio(color1, color2);
   // WCAG AA: 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt+ bold)
   return isLargeText ? ratio >= 3 : ratio >= 4.5;
@@ -69,11 +65,7 @@ export function meetsWCAGAA(
 /**
  * Check if contrast ratio meets WCAG AAA requirements
  */
-export function meetsWCAGAAA(
-  color1: string,
-  color2: string,
-  isLargeText = false,
-): boolean {
+export function meetsWCAGAAA(color1: string, color2: string, isLargeText = false): boolean {
   const ratio = getContrastRatio(color1, color2);
   // WCAG AAA: 7:1 for normal text, 4.5:1 for large text
   return isLargeText ? ratio >= 4.5 : ratio >= 7;
@@ -109,29 +101,19 @@ export type ColorPair = {
 /**
  * Audit color pairs for WCAG compliance
  */
-export function auditColorPairs(pairs: ColorPair[]): Array<ColorPair & {
-  contrastRatio: number;
-  level: 'fail' | 'AA' | 'AAA';
-  passesAA: boolean;
-  passesAAA: boolean;
-}> {
+export function auditColorPairs(pairs: ColorPair[]): Array<
+  ColorPair & {
+    contrastRatio: number;
+    level: 'fail' | 'AA' | 'AAA';
+    passesAA: boolean;
+    passesAAA: boolean;
+  }
+> {
   return pairs.map((pair) => {
     const contrastRatio = getContrastRatio(pair.foreground, pair.background);
-    const level = getContrastLevel(
-      pair.foreground,
-      pair.background,
-      pair.isLargeText,
-    );
-    const passesAA = meetsWCAGAA(
-      pair.foreground,
-      pair.background,
-      pair.isLargeText,
-    );
-    const passesAAA = meetsWCAGAAA(
-      pair.foreground,
-      pair.background,
-      pair.isLargeText,
-    );
+    const level = getContrastLevel(pair.foreground, pair.background, pair.isLargeText);
+    const passesAA = meetsWCAGAA(pair.foreground, pair.background, pair.isLargeText);
+    const passesAAA = meetsWCAGAAA(pair.foreground, pair.background, pair.isLargeText);
 
     return {
       ...pair,
@@ -142,4 +124,3 @@ export function auditColorPairs(pairs: ColorPair[]): Array<ColorPair & {
     };
   });
 }
-

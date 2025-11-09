@@ -24,7 +24,12 @@ export default function ProductGif({
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-              <svg className="h-8 w-8 animate-pulse text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="h-8 w-8 animate-pulse text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -64,17 +69,3 @@ export default function ProductGif({
     </figure>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

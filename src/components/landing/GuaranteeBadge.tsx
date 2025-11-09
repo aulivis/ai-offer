@@ -4,10 +4,17 @@ interface GuaranteeBadgeProps {
 
 export default function GuaranteeBadge({ className = '' }: GuaranteeBadgeProps) {
   return (
-    <div className={`flex items-center gap-4 rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 p-6 ${className}`}>
+    <div
+      className={`flex items-center gap-4 rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10 p-6 ${className}`}
+    >
       <div className="flex-shrink-0">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-          <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="h-8 w-8 text-primary"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -27,10 +34,3 @@ export default function GuaranteeBadge({ className = '' }: GuaranteeBadgeProps) 
     </div>
   );
 }
-
-
-
-
-
-
-

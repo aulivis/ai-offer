@@ -19,7 +19,7 @@ type KeyboardShortcutsModalProps = {
 
 /**
  * KeyboardShortcutsModal - Modal displaying keyboard shortcuts
- * 
+ *
  * Provides an accessible modal showing available keyboard shortcuts
  * with proper ARIA attributes and keyboard navigation.
  */
@@ -106,8 +106,22 @@ export function KeyboardShortcutsModal({
   }, [open, onClose]);
 
   const renderKey = (key: string) => {
-    const isSpecial = ['⌘', 'Ctrl', 'Shift', 'Alt', 'Enter', 'Esc', 'Tab', 'Arrow Keys', 'Home', 'End', '/', 'F', '?'].includes(key);
-    
+    const isSpecial = [
+      '⌘',
+      'Ctrl',
+      'Shift',
+      'Alt',
+      'Enter',
+      'Esc',
+      'Tab',
+      'Arrow Keys',
+      'Home',
+      'End',
+      '/',
+      'F',
+      '?',
+    ].includes(key);
+
     return (
       <kbd
         key={key}
@@ -129,24 +143,19 @@ export function KeyboardShortcutsModal({
     >
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2
-            id="keyboard-shortcuts-title"
-            className="text-2xl font-bold text-fg"
-          >
+          <h2 id="keyboard-shortcuts-title" className="text-2xl font-bold text-fg">
             Keyboard Shortcuts
           </h2>
-          <p
-            id="keyboard-shortcuts-description"
-            className="text-sm text-fg-muted"
-          >
-            Use these keyboard shortcuts to navigate and interact with the application more efficiently.
+          <p id="keyboard-shortcuts-description" className="text-sm text-fg-muted">
+            Use these keyboard shortcuts to navigate and interact with the application more
+            efficiently.
           </p>
         </div>
 
         <div className="space-y-6">
           {categories.map((category) => {
             const categoryShortcuts = shortcuts.filter((s) => s.category === category);
-            
+
             return (
               <div key={category} className="space-y-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-fg-muted">
@@ -164,7 +173,9 @@ export function KeyboardShortcutsModal({
                           <React.Fragment key={keyIndex}>
                             {renderKey(key)}
                             {keyIndex < shortcut.keys.length - 1 && (
-                              <span className="text-fg-muted" aria-hidden="true">+</span>
+                              <span className="text-fg-muted" aria-hidden="true">
+                                +
+                              </span>
                             )}
                           </React.Fragment>
                         ))}
@@ -189,4 +200,3 @@ export function KeyboardShortcutsModal({
     </Modal>
   );
 }
-

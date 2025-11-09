@@ -146,15 +146,17 @@ export function TestimonialsManager({
         user_id: user?.id,
         text: newTestimonial.text.trim(),
         activity_id: newTestimonial.activityId || null,
-        star_rating: newTestimonial.showStars ? (newTestimonial.starRating || null) : null,
-        star_style: newTestimonial.showStars ? (newTestimonial.starStyle || null) : null,
+        star_rating: newTestimonial.showStars ? newTestimonial.starRating || null : null,
+        star_style: newTestimonial.showStars ? newTestimonial.starStyle || null : null,
       });
 
       if (error) {
         if (error.message.includes('Maximum 10 testimonials')) {
           showToast({
             title: t('settings.testimonials.maxReached'),
-            description: t('settings.testimonials.maxReachedDescription', { max: MAX_TESTIMONIALS }),
+            description: t('settings.testimonials.maxReachedDescription', {
+              max: MAX_TESTIMONIALS,
+            }),
             variant: 'error',
           });
         } else {
@@ -163,7 +165,13 @@ export function TestimonialsManager({
         return;
       }
 
-      setNewTestimonial({ text: '', activityId: '', starRating: 5, starStyle: 'filled', showStars: true });
+      setNewTestimonial({
+        text: '',
+        activityId: '',
+        starRating: 5,
+        starStyle: 'filled',
+        showStars: true,
+      });
       onTestimonialsChange();
       showToast({
         title: t('settings.testimonials.addSuccess'),
@@ -228,7 +236,9 @@ export function TestimonialsManager({
             <Select
               label={t('settings.testimonials.activityLabel')}
               value={newTestimonial.activityId}
-              onChange={(e) => setNewTestimonial((prev) => ({ ...prev, activityId: e.target.value }))}
+              onChange={(e) =>
+                setNewTestimonial((prev) => ({ ...prev, activityId: e.target.value }))
+              }
             >
               <option value="">{t('settings.testimonials.noActivity')}</option>
               {activities.map((activity) => (
@@ -244,7 +254,9 @@ export function TestimonialsManager({
                 </label>
                 <button
                   type="button"
-                  onClick={() => setNewTestimonial((prev) => ({ ...prev, showStars: !prev.showStars }))}
+                  onClick={() =>
+                    setNewTestimonial((prev) => ({ ...prev, showStars: !prev.showStars }))
+                  }
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                     newTestimonial.showStars ? 'bg-primary' : 'bg-slate-300'
                   }`}
@@ -266,9 +278,13 @@ export function TestimonialsManager({
                           <button
                             key={rating}
                             type="button"
-                            onClick={() => setNewTestimonial((prev) => ({ ...prev, starRating: rating }))}
+                            onClick={() =>
+                              setNewTestimonial((prev) => ({ ...prev, starRating: rating }))
+                            }
                             className={`text-lg transition-colors ${
-                              newTestimonial.starRating >= rating ? 'text-yellow-400' : 'text-gray-300'
+                              newTestimonial.starRating >= rating
+                                ? 'text-yellow-400'
+                                : 'text-gray-300'
                             } hover:text-yellow-500`}
                           >
                             ★
@@ -302,7 +318,10 @@ export function TestimonialsManager({
                     </div>
                   </div>
                   <div className="pt-2">
-                    <StarRating rating={newTestimonial.starRating} style={newTestimonial.starStyle} />
+                    <StarRating
+                      rating={newTestimonial.starRating}
+                      style={newTestimonial.starStyle}
+                    />
                   </div>
                 </>
               )}
@@ -320,7 +339,10 @@ export function TestimonialsManager({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-900">
-              {t('settings.testimonials.listTitle', { count: testimonials.length, max: MAX_TESTIMONIALS })}
+              {t('settings.testimonials.listTitle', {
+                count: testimonials.length,
+                max: MAX_TESTIMONIALS,
+              })}
             </h3>
           </div>
           <div className="grid gap-3">
@@ -343,7 +365,8 @@ export function TestimonialsManager({
                     <p className="text-sm text-slate-700">{testimonial.text}</p>
                     {testimonial.activity_id && (
                       <p className="text-xs text-slate-500">
-                        {t('settings.testimonials.linkedTo')}: {getActivityName(testimonial.activity_id)}
+                        {t('settings.testimonials.linkedTo')}:{' '}
+                        {getActivityName(testimonial.activity_id)}
                       </p>
                     )}
                   </div>
@@ -372,6 +395,3 @@ export function TestimonialsManager({
     </div>
   );
 }
-
-
-

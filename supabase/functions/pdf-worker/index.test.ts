@@ -43,24 +43,20 @@ describe('incrementUsage', () => {
   });
 
   it('falls back when RPC reports ambiguous signature', async () => {
-    const selectMaybeSingle = vi
-      .fn()
-      .mockResolvedValue({
-        data: { period_start: '2024-07-01', offers_generated: 1 },
-        error: null,
-      });
+    const selectMaybeSingle = vi.fn().mockResolvedValue({
+      data: { period_start: '2024-07-01', offers_generated: 1 },
+      error: null,
+    });
     const selectBuilder = {
       eq: vi.fn().mockReturnThis(),
       maybeSingle: selectMaybeSingle,
     };
     const selectMock = vi.fn().mockReturnValue(selectBuilder);
 
-    const updateMaybeSingle = vi
-      .fn()
-      .mockResolvedValue({
-        data: { period_start: '2024-07-01', offers_generated: 2 },
-        error: null,
-      });
+    const updateMaybeSingle = vi.fn().mockResolvedValue({
+      data: { period_start: '2024-07-01', offers_generated: 2 },
+      error: null,
+    });
     const updateSelect = vi.fn().mockReturnValue({ maybeSingle: updateMaybeSingle });
     const updateBuilder = {
       eq: vi.fn().mockReturnThis(),

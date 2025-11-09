@@ -58,12 +58,12 @@ type Props = {
   savingActivityId?: string | null;
 };
 
-export default function EditablePriceTable({ 
-  rows, 
-  onChange, 
+export default function EditablePriceTable({
+  rows,
+  onChange,
   activities = [],
   onSaveActivity,
-  savingActivityId = null 
+  savingActivityId = null,
 }: Props) {
   const totals = useMemo(() => {
     const net = rows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0);
@@ -96,8 +96,11 @@ export default function EditablePriceTable({
       {/* Mobile-optimized table with horizontal scroll indicator */}
       <div className="relative overflow-x-auto">
         {/* Scroll indicator for mobile */}
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden" aria-hidden="true" />
-        <table 
+        <div
+          className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent sm:hidden"
+          aria-hidden="true"
+        />
+        <table
           className="w-full text-sm text-slate-600"
           role="table"
           aria-label={t('editablePriceTable.ariaLabel') || 'Pricing table'}
@@ -122,7 +125,10 @@ export default function EditablePriceTable({
               <th className="min-w-[8rem] px-2 py-3 text-right font-medium sm:min-w-[9rem] sm:px-4">
                 {t('editablePriceTable.columns.netTotal')}
               </th>
-              <th className="w-12 px-2 py-3 sm:w-16 sm:px-4" aria-label={t('editablePriceTable.columns.actions') || 'Actions'} />
+              <th
+                className="w-12 px-2 py-3 sm:w-16 sm:px-4"
+                aria-label={t('editablePriceTable.columns.actions') || 'Actions'}
+              />
             </tr>
           </thead>
           <tbody>
@@ -130,14 +136,18 @@ export default function EditablePriceTable({
               const lineNet = (Number(r.qty) || 0) * (Number(r.unitPrice) || 0);
               // Check if this row matches an existing activity
               const matchesActivity = activities.some(
-                (a) => a.name.trim().toLowerCase() === r.name.trim().toLowerCase() && a.unit === r.unit
+                (a) =>
+                  a.name.trim().toLowerCase() === r.name.trim().toLowerCase() && a.unit === r.unit,
               );
               // Show save button if row has a name and doesn't match existing activity
               const canSaveActivity = onSaveActivity && r.name.trim() && !matchesActivity;
               const isSaving = savingActivityId === r.id;
-              
+
               return (
-                <tr key={r.id} className="border-b border-slate-200/80 bg-white even:bg-slate-50/60 last:border-b-0">
+                <tr
+                  key={r.id}
+                  className="border-b border-slate-200/80 bg-white even:bg-slate-50/60 last:border-b-0"
+                >
                   <td className="sticky left-0 z-10 bg-white px-3 py-3 align-top even:bg-slate-50/60 sm:px-4">
                     <Input
                       placeholder={t('editablePriceTable.placeholders.name')}
@@ -211,7 +221,10 @@ export default function EditablePriceTable({
                             title={t('editablePriceTable.actions.saveActivity')}
                           >
                             {isSaving ? (
-                              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                              <span
+                                className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                                aria-hidden="true"
+                              />
                             ) : (
                               <PlusIcon className="h-4 w-4" aria-hidden="true" />
                             )}
@@ -226,7 +239,10 @@ export default function EditablePriceTable({
           </tbody>
           <tfoot className="bg-gradient-to-br from-slate-50 to-slate-100/50 text-slate-700">
             <tr className="border-t-2 border-slate-300">
-              <td className="sticky left-0 z-10 bg-slate-50/80 px-3 py-3 text-right font-semibold sm:px-4" colSpan={5}>
+              <td
+                className="sticky left-0 z-10 bg-slate-50/80 px-3 py-3 text-right font-semibold sm:px-4"
+                colSpan={5}
+              >
                 {t('editablePriceTable.totals.net')}
               </td>
               <td className="px-2 py-3 text-right font-bold text-slate-900 tabular-nums text-base sm:px-4">
@@ -235,7 +251,10 @@ export default function EditablePriceTable({
               <td className="px-2 py-3 sm:px-4" />
             </tr>
             <tr className="border-t border-slate-200">
-              <td className="sticky left-0 z-10 bg-slate-50/80 px-3 py-2 text-right font-semibold sm:px-4" colSpan={5}>
+              <td
+                className="sticky left-0 z-10 bg-slate-50/80 px-3 py-2 text-right font-semibold sm:px-4"
+                colSpan={5}
+              >
                 {t('editablePriceTable.totals.vat')}
               </td>
               <td className="px-2 py-2 text-right font-semibold text-slate-800 tabular-nums sm:px-4">
@@ -244,7 +263,10 @@ export default function EditablePriceTable({
               <td className="px-2 py-2 sm:px-4" />
             </tr>
             <tr className="border-t-2 border-slate-400 bg-slate-200/50">
-              <td className="sticky left-0 z-10 bg-slate-200/50 px-3 py-3 text-right font-bold text-base sm:px-4" colSpan={5}>
+              <td
+                className="sticky left-0 z-10 bg-slate-200/50 px-3 py-3 text-right font-bold text-base sm:px-4"
+                colSpan={5}
+              >
                 {t('editablePriceTable.totals.gross')}
               </td>
               <td className="px-2 py-3 text-right font-bold text-lg text-slate-900 tabular-nums sm:px-4">

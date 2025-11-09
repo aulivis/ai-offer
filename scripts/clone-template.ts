@@ -10,7 +10,9 @@ import path from 'path';
 
 const args = process.argv.slice(2);
 if (args.length < 2) {
-  console.error('Usage: pnpm template:clone <source-template-id> "<New Template Name>" [tier] [legacy-id]');
+  console.error(
+    'Usage: pnpm template:clone <source-template-id> "<New Template Name>" [tier] [legacy-id]',
+  );
   console.error('  source-template-id: e.g., free.minimal or premium.executive');
   console.error('  tier: free (default) or premium');
   console.error('  legacy-id: optional legacy template identifier');
@@ -78,10 +80,7 @@ if (fs.existsSync(assetsDir)) {
   fs.mkdirSync(targetAssetsDir, { recursive: true });
   const assets = fs.readdirSync(assetsDir);
   assets.forEach((asset) => {
-    fs.copyFileSync(
-      path.join(assetsDir, asset),
-      path.join(targetAssetsDir, asset),
-    );
+    fs.copyFileSync(path.join(assetsDir, asset), path.join(targetAssetsDir, asset));
   });
   console.log(`✅ Cloned ${assets.length} asset file(s)`);
 }
@@ -101,18 +100,15 @@ filesToClone.forEach(({ src, dest, transform }) => {
     const newVarName = newId.replace(/\./g, '_');
 
     // Replace variable names
-    content = content.replace(
-      new RegExp(`\\b${sourceVarName}\\w*`, 'g'),
-      (match) => {
-        if (match.includes('Template')) {
-          return match.replace(sourceVarName, newVarName);
-        }
-        if (match.includes('Tokens')) {
-          return match.replace(sourceVarName, newVarName);
-        }
+    content = content.replace(new RegExp(`\\b${sourceVarName}\\w*`, 'g'), (match) => {
+      if (match.includes('Template')) {
         return match.replace(sourceVarName, newVarName);
-      },
-    );
+      }
+      if (match.includes('Tokens')) {
+        return match.replace(sourceVarName, newVarName);
+      }
+      return match.replace(sourceVarName, newVarName);
+    });
 
     // Replace template ID
     const sourceFullId = `${sourceTemplateId}@`;
@@ -145,15 +141,9 @@ filesToClone.forEach(({ src, dest, transform }) => {
 
     // Update capabilities based on tier
     if (tier === 'free') {
-      content = content.replace(
-        /'branding\.logo':\s*true/g,
-        "'branding.logo': false",
-      );
+      content = content.replace(/'branding\.logo':\s*true/g, "'branding.logo': false");
     } else {
-      content = content.replace(
-        /'branding\.logo':\s*false/g,
-        "'branding.logo': true",
-      );
+      content = content.replace(/'branding\.logo':\s*false/g, "'branding.logo': true");
     }
 
     // Add or update legacy ID
@@ -162,24 +152,15 @@ filesToClone.forEach(({ src, dest, transform }) => {
         content = content.replace(/legacyId:\s*['"][^'"]+['"]/, `legacyId: '${legacyId}'`);
       } else {
         // Add legacyId after id
-        content = content.replace(
-          /(id:\s*['"][^'"]+['"])/,
-          `$1,\n  legacyId: '${legacyId}'`,
-        );
+        content = content.replace(/(id:\s*['"][^'"]+['"])/, `$1,\n  legacyId: '${legacyId}'`);
       }
     }
 
     // Update CSS class names to use new template name
     const cssClassName = newId.replace(/\./g, '-');
     const oldCssClassName = sourceName.replace(/\./g, '-');
-    content = content.replace(
-      new RegExp(`--${oldCssClassName}`, 'g'),
-      `--${cssClassName}`,
-    );
-    content = content.replace(
-      new RegExp(`__${oldCssClassName}`, 'g'),
-      `__${cssClassName}`,
-    );
+    content = content.replace(new RegExp(`--${oldCssClassName}`, 'g'), `--${cssClassName}`);
+    content = content.replace(new RegExp(`__${oldCssClassName}`, 'g'), `__${cssClassName}`);
   }
 
   const targetPath = path.join(targetDir, dest);
@@ -199,12 +180,6 @@ console.log(`   6. Register template in engineRegistry.ts:`);
 console.log(`      import { ${newId.replace(/\./g, '_')}Template } from './${tier}.${newId}';`);
 console.log(`      registerTemplate(${newId.replace(/\./g, '_')}Template);`);
 console.log(`   7. Run tests: pnpm test:templates`);
-console.log(`\n💡 Tip: Search for "${sourceName}" in the cloned files to find remaining references to update.\n`);
-
-
-
-
-
-
-
-
+console.log(
+  `\n💡 Tip: Search for "${sourceName}" in the cloned files to find remaining references to update.\n`,
+);

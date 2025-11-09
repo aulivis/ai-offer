@@ -17,7 +17,7 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
 
 /**
  * Input component with error handling, help text, and loading state support
- * 
+ *
  * @example
  * ```tsx
  * <Input
@@ -30,16 +30,16 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
  * />
  * ```
  */
-export function Input({ 
-  error, 
-  label, 
-  help, 
-  id, 
-  className, 
+export function Input({
+  error,
+  label,
+  help,
+  id,
+  className,
   wrapperClassName,
   loading,
   disabled,
-  ...props 
+  ...props
 }: Props) {
   const inputId = useId();
   const describedByIds: string[] = [];
@@ -60,15 +60,20 @@ export function Input({
 
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
 
-  const isRequired = props.required || props['aria-required'] === 'true' || props['aria-required'] === true;
+  const isRequired =
+    props.required || props['aria-required'] === 'true' || props['aria-required'] === true;
   const isDisabled = disabled || loading;
-  
+
   return (
     <label htmlFor={inputId} className={wrapperClasses}>
       {label && (
         <span className="text-sm font-medium text-fg">
           {label}
-          {isRequired && <span className="ml-1 text-danger" aria-label="required">*</span>}
+          {isRequired && (
+            <span className="ml-1 text-danger" aria-label="required">
+              *
+            </span>
+          )}
         </span>
       )}
       <div className="relative">
@@ -92,7 +97,7 @@ export function Input({
           {...props}
         />
         {loading && (
-          <div 
+          <div
             id={`${inputId}-loading`}
             className="absolute right-3 top-1/2 -translate-y-1/2"
             aria-hidden="true"

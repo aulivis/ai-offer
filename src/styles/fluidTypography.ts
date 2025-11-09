@@ -1,18 +1,18 @@
 /**
  * Fluid Typography Utilities
- * 
+ *
  * Provides fluid typography using clamp() for responsive font sizes.
  * Font sizes scale smoothly between breakpoints without media queries.
- * 
+ *
  * @module fluidTypography
- * 
+ *
  * @example
  * ```tsx
  * import { fluidFontSize, getFluidTypography } from '@/styles/fluidTypography';
- * 
+ *
  * // Use fluid font size
  * const fontSize = fluidFontSize(16, 24, 320, 1920); // Scales from 16px to 24px
- * 
+ *
  * // Get fluid typography scale
  * const h1Fluid = getFluidTypography('h1');
  * ```
@@ -20,13 +20,13 @@
 
 /**
  * Calculate fluid font size using clamp()
- * 
+ *
  * @param minSize - Minimum font size in pixels (mobile)
  * @param maxSize - Maximum font size in pixels (desktop)
  * @param minViewport - Minimum viewport width in pixels (default: 320)
  * @param maxViewport - Maximum viewport width in pixels (default: 1920)
  * @returns CSS clamp() value
- * 
+ *
  * @example
  * ```tsx
  * // Scale from 16px on mobile to 24px on desktop
@@ -43,18 +43,18 @@ export function fluidFontSize(
   // Convert pixels to rem (assuming 16px base)
   const minRem = minSize / 16;
   const maxRem = maxSize / 16;
-  
+
   // Calculate viewport width range
   const viewportRange = maxViewport - minViewport;
   const sizeRange = maxRem - minRem;
-  
+
   // Calculate preferred value (vw-based)
   // Formula: preferred = min + (max - min) * ((100vw - minViewport) / (maxViewport - minViewport))
   // Simplified: preferred = min + sizeRange * (100vw - minViewport) / viewportRange
   // Convert to vw: preferred = min + sizeRange * 100vw / viewportRange - sizeRange * minViewport / viewportRange
   const vwMultiplier = (sizeRange * 100) / viewportRange;
   const vwOffset = minRem - (sizeRange * minViewport) / viewportRange;
-  
+
   return `clamp(${minRem}rem, ${vwOffset}rem + ${vwMultiplier}vw, ${maxRem}rem)`;
 }
 
@@ -218,4 +218,3 @@ export const FLUID_TYPOGRAPHY_CSS_VARS = Object.entries(FLUID_TYPOGRAPHY_SCALE)
   --fluid-typography-${key}-letter-spacing: ${value.letterSpacing};`;
   })
   .join('\n  ');
-

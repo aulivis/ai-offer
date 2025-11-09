@@ -45,25 +45,25 @@ export function OfferProjectDetailsSection({
   const toggleTips = () => setTipsOpen((value) => !value);
 
   // Inline validation for title
-  const titleValidation = useFieldValidation(
-    title,
-    (val) => (val.trim().length === 0 ? t('offers.wizard.validation.titleRequired') : undefined),
+  const titleValidation = useFieldValidation(title, (val) =>
+    val.trim().length === 0 ? t('offers.wizard.validation.titleRequired') : undefined,
   );
 
   // Inline validation for overview (required field)
-  const overviewValidation = useFieldValidation(
-    projectDetails.overview,
-    (val) => (val.trim().length === 0 ? t('offers.wizard.validation.overviewRequired') : undefined),
+  const overviewValidation = useFieldValidation(projectDetails.overview, (val) =>
+    val.trim().length === 0 ? t('offers.wizard.validation.overviewRequired') : undefined,
   );
 
   // Determine which error to show (inline validation takes precedence if enabled and field is touched)
-  const titleError = showInlineValidation && titleValidation.touched
-    ? titleValidation.error || errors?.title
-    : errors?.title;
+  const titleError =
+    showInlineValidation && titleValidation.touched
+      ? titleValidation.error || errors?.title
+      : errors?.title;
 
-  const overviewError = showInlineValidation && overviewValidation.touched
-    ? overviewValidation.error || errors?.projectDetails?.overview
-    : errors?.projectDetails?.overview;
+  const overviewError =
+    showInlineValidation && overviewValidation.touched
+      ? overviewValidation.error || errors?.projectDetails?.overview
+      : errors?.projectDetails?.overview;
 
   return (
     <Card
@@ -179,13 +179,9 @@ export function OfferProjectDetailsSection({
         <div className="space-y-6">
           {fieldOrder.map((field) => {
             const isRequired = field === 'overview';
-            const fieldValidation = isRequired && showInlineValidation
-              ? overviewValidation
-              : null;
+            const fieldValidation = isRequired && showInlineValidation ? overviewValidation : null;
             const fieldError =
-              field === 'overview'
-                ? overviewError
-                : errors?.projectDetails?.[field];
+              field === 'overview' ? overviewError : errors?.projectDetails?.[field];
             const fieldId = `field-${field}`;
 
             return (

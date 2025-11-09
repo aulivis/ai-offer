@@ -85,10 +85,10 @@ function buildValidation({
 
 /**
  * Custom hook for managing offer wizard state and validation
- * 
+ *
  * @param initialRows - Initial pricing rows (defaults to one empty row)
  * @returns Wizard state and navigation functions
- * 
+ *
  * @example
  * ```tsx
  * const {

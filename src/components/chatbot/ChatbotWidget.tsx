@@ -2,7 +2,7 @@
 
 /**
  * Chatbot Widget - Industry Standard Slide-Up Chat Window
- * 
+ *
  * Floating chatbot button that opens a slide-up chat window (like Intercom/Drift).
  * Features Vanda as the personalized assistant.
  */
@@ -18,13 +18,13 @@ export default function ChatbotWidget() {
   // Check if chatbot is enabled via environment variable
   // Defaults to true if not set (enabled by default)
   const isEnabled = envClient.NEXT_PUBLIC_ENABLE_CHATBOT;
-  
+
   // Debug logging (remove in production if needed)
   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     console.log('[ChatbotWidget] NEXT_PUBLIC_ENABLE_CHATBOT value:', isEnabled);
     console.log('[ChatbotWidget] Widget will render:', isEnabled !== false);
   }
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);
@@ -32,7 +32,11 @@ export default function ChatbotWidget() {
 
   // Debug: Log button visibility
   useEffect(() => {
-    if (buttonRef.current && typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    if (
+      buttonRef.current &&
+      typeof window !== 'undefined' &&
+      process.env.NODE_ENV === 'development'
+    ) {
       const rect = buttonRef.current.getBoundingClientRect();
       const styles = window.getComputedStyle(buttonRef.current);
       console.log('[ChatbotWidget] Button mounted:', {
@@ -104,7 +108,7 @@ export default function ChatbotWidget() {
         >
           {/* Subtle pulse animation for attention - behind the image with very low opacity */}
           <div className="absolute inset-0 rounded-full bg-primary/10 animate-gentle-pulse z-0 pointer-events-none" />
-          
+
           {/* Vanda Avatar Image Container - fills the whole button */}
           <div className="absolute inset-0 z-10 rounded-full overflow-hidden">
             {imageError ? (
@@ -138,9 +142,12 @@ export default function ChatbotWidget() {
               </div>
             )}
           </div>
-          
+
           {/* Green dot - available indicator - on front layer with highest z-index */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg-muted shadow-sm z-[100]" style={{ zIndex: 100 }} />
+          <div
+            className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg-muted shadow-sm z-[100]"
+            style={{ zIndex: 100 }}
+          />
         </button>
       )}
 
@@ -149,9 +156,7 @@ export default function ChatbotWidget() {
         ref={chatWindowRef}
         id="chatbot-window"
         className={`fixed bottom-6 right-6 z-[60] w-[380px] max-w-[calc(100vw-3rem)] transition-all duration-300 ease-out ${
-          isOpen
-            ? 'translate-y-0 opacity-100'
-            : 'translate-y-full opacity-0 pointer-events-none'
+          isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
         }`}
         role="dialog"
         aria-modal="true"
@@ -167,12 +172,7 @@ export default function ChatbotWidget() {
                 className="rounded-lg p-1.5 text-fg-muted transition-all duration-200 hover:bg-bg-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-primary"
                 aria-label="Vissza a főoldalra"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -186,9 +186,7 @@ export default function ChatbotWidget() {
                 <h2 id="chatbot-window-title" className="text-[1.024rem] font-semibold text-fg">
                   {t('chatbot.title')}
                 </h2>
-                <p className="text-[0.6rem] text-fg-muted">
-                  {t('chatbot.status.online')}
-                </p>
+                <p className="text-[0.6rem] text-fg-muted">{t('chatbot.status.online')}</p>
               </div>
             </div>
             <button
@@ -197,12 +195,7 @@ export default function ChatbotWidget() {
               aria-label={t('chatbot.closeAria')}
               aria-controls="chatbot-window"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

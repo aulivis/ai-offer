@@ -244,4 +244,3 @@ describe('getClientIdentifier', () => {
     expect(getClientIdentifier(req)).toBe('unknown');
   });
 });
-

@@ -49,17 +49,3 @@ export function SettingsTemplatesSection({
     </Card>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

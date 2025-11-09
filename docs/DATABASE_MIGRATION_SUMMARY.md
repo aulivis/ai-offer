@@ -10,7 +10,8 @@ This document summarizes the database schema review findings and the migrations 
 
 **Issue**: `activities` and `clients` tables had RLS disabled, relying only on application-level filtering.
 
-**Fix**: 
+**Fix**:
+
 - Migration: `20250128000000_enable_rls_on_activities.sql`
 - Migration: `20250128000001_enable_rls_on_clients.sql`
 - Added RLS policies using `auth.uid() = user_id` pattern
@@ -21,6 +22,7 @@ This document summarizes the database schema review findings and the migrations 
 **Issue**: `recipients` table exists but is not used in application code. All code uses `clients` table.
 
 **Fix**:
+
 - Migration: `20250128000002_remove_obsolete_recipients_table.sql`
 - Safely removes table after checking for data and foreign key dependencies
 - Code verification: No application code references `recipients` table
@@ -31,6 +33,7 @@ This document summarizes the database schema review findings and the migrations 
 **Issue**: Some tables lacked optimal indexes for common queries.
 
 **Fix**:
+
 - Migration: `20250128000003_verify_rls_and_indexes.sql`
 - Creates `idx_clients_user_id` index
 - Creates `idx_clients_user_company` index for autocomplete
@@ -41,6 +44,7 @@ This document summarizes the database schema review findings and the migrations 
 **Issue**: Need to check for orphaned records and invalid foreign keys.
 
 **Fix**:
+
 - Migration: `20250128000004_data_integrity_checks.sql`
 - Checks for orphaned offers (invalid recipient_id)
 - Checks for null user_id values
@@ -52,6 +56,7 @@ This document summarizes the database schema review findings and the migrations 
 **Issue**: Telemetry and log tables can grow indefinitely, increasing costs.
 
 **Fix**:
+
 - Migration: `20250128000005_retention_policies.sql`
 - Creates cleanup functions for:
   - `template_render_events` (90 days)
@@ -64,6 +69,7 @@ This document summarizes the database schema review findings and the migrations 
 ### ✅ 6. PDF Jobs Worker (VERIFIED)
 
 **Status**: Working correctly
+
 - Edge Function exists: `web/supabase/functions/pdf-worker/index.ts`
 - Status values match: 'pending', 'processing', 'completed', 'failed'
 - RLS policies allow service role to update jobs
@@ -71,6 +77,7 @@ This document summarizes the database schema review findings and the migrations 
 ### ✅ 7. Vector Embeddings (VERIFIED)
 
 **Status**: Working correctly
+
 - `pgvector` extension enabled
 - `chatbot_documents` table uses vector(1536)
 - Vector similarity search function exists
@@ -120,6 +127,7 @@ This document summarizes the database schema review findings and the migrations 
 ### Recipients Table References
 
 ✅ **No application code references `recipients` table**
+
 - All code uses `clients` table
 - Dashboard join uses `recipient:recipient_id` syntax (Supabase FK join)
 - Migration files and documentation updated
@@ -127,6 +135,7 @@ This document summarizes the database schema review findings and the migrations 
 ### RLS Policy Verification
 
 ✅ **RLS policies use correct pattern**
+
 - All policies use `auth.uid() = user_id`
 - Service role has full access
 - Policies are idempotent (safe to run multiple times)
@@ -134,6 +143,7 @@ This document summarizes the database schema review findings and the migrations 
 ### PDF Jobs Worker
 
 ✅ **Worker matches database constraints**
+
 - Status values: 'pending', 'processing', 'completed', 'failed'
 - Worker processes jobs correctly
 - RLS allows service role updates
@@ -141,6 +151,7 @@ This document summarizes the database schema review findings and the migrations 
 ### Indexes
 
 ✅ **Indexes created for common queries**
+
 - `activities`: user_id, (user_id, created_at)
 - `clients`: user_id, (user_id, company_name)
 - `offers`: user_id, (user_id, status), (user_id, created_at)
@@ -192,4 +203,3 @@ If issues occur:
 - Service role retains full access for background jobs
 - RLS policies use standard `auth.uid() = user_id` pattern
 - Retention policies should be run periodically (weekly recommended)
-

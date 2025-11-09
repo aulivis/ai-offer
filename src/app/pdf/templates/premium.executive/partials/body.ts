@@ -197,10 +197,3 @@ ${content}
   ensureSafeHtml(html, 'premium executive template body');
   return html;
 }
-
-
-
-
-
-
-

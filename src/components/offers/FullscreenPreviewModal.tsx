@@ -126,7 +126,7 @@ export function FullscreenPreviewModal({
           {t('wizard.preview.fullscreenClose')}
         </Button>
       </div>
-      
+
       {/* Controls Panel */}
       {(onZoomChange || onToggleMarginGuides || onTemplateChange) && (
         <div className="border-b border-slate-700 bg-slate-800/50 p-4">
@@ -252,4 +252,3 @@ export function FullscreenPreviewModal({
     document.body,
   );
 }
-

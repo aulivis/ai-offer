@@ -12,25 +12,16 @@ type HelpTextProps = {
 
 /**
  * HelpText - Contextual help text component for forms
- * 
+ *
  * Provides accessible help text for form fields with multiple display variants
  */
-export function HelpText({ 
-  text, 
-  className = '',
-  variant = 'inline',
-  id,
-}: HelpTextProps) {
+export function HelpText({ text, className = '', variant = 'inline', id }: HelpTextProps) {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const helpTextId = id || `help-text-${Math.random().toString(36).slice(2)}`;
 
   if (variant === 'inline') {
     return (
-      <p 
-        id={helpTextId}
-        className={`text-xs text-fg-muted ${className}`}
-        role="note"
-      >
+      <p id={helpTextId} className={`text-xs text-fg-muted ${className}`} role="note">
         {text}
       </p>
     );
@@ -72,7 +63,7 @@ export function HelpText({
         <InformationCircleIcon className="h-4 w-4" aria-hidden="true" />
         <span>Help</span>
       </summary>
-      <div 
+      <div
         id={helpTextId}
         className="mt-2 rounded-lg border border-border bg-bg-muted p-3 text-sm text-fg"
         role="note"
@@ -82,4 +73,3 @@ export function HelpText({
     </details>
   );
 }
-

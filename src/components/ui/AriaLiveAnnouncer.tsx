@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 /**
  * AriaLiveAnnouncer - Provides accessible announcements for dynamic content changes
- * 
+ *
  * Use this component to announce important updates to screen readers.
  * Announcements are automatically cleared after a short delay to prevent
  * screen reader clutter.
@@ -52,7 +52,10 @@ export function AriaLiveAnnouncer() {
 
     return () => {
       window.removeEventListener('aria-live-polite', handlePoliteAnnouncement as EventListener);
-      window.removeEventListener('aria-live-assertive', handleAssertiveAnnouncement as EventListener);
+      window.removeEventListener(
+        'aria-live-assertive',
+        handleAssertiveAnnouncement as EventListener,
+      );
     };
   }, []);
 
@@ -78,12 +81,14 @@ export function AriaLiveAnnouncer() {
 
 /**
  * Utility function to announce messages to screen readers
- * 
+ *
  * @param message - The message to announce
  * @param priority - 'polite' (default) or 'assertive' for urgent messages
  */
-export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
+export function announceToScreenReader(
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite',
+) {
   const event = new CustomEvent(`aria-live-${priority}`, { detail: message });
   window.dispatchEvent(event);
 }
-

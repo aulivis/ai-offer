@@ -10,7 +10,8 @@ export const freeMinimalTemplate: OfferTemplate = {
   tier: 'free',
   label: 'Minimális',
   version: '1.0.0',
-  marketingHighlight: 'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz.',
+  marketingHighlight:
+    'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz.',
   styles: {
     print: pdfStyles,
     template: templateStyles,
@@ -22,17 +23,3 @@ export const freeMinimalTemplate: OfferTemplate = {
   renderHead,
   renderBody,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-

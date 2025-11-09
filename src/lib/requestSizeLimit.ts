@@ -9,7 +9,7 @@ const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10MB
 /**
  * Middleware to enforce request size limits.
  * Checks Content-Length header and rejects oversized requests early.
- * 
+ *
  * Works with both NextRequest and AuthenticatedNextRequest.
  * When used with withAuth, the handler receives AuthenticatedNextRequest.
  */
@@ -42,7 +42,10 @@ export function withRequestSizeLimit<
     if (typeof handler !== 'function') {
       const requestId = getRequestId(req);
       const log = createLogger(requestId);
-      log.error('withRequestSizeLimit: handler is not a function', { handler, type: typeof handler });
+      log.error('withRequestSizeLimit: handler is not a function', {
+        handler,
+        type: typeof handler,
+      });
       return NextResponse.json(
         { error: 'Belső szerver hiba: érvénytelen kéréskezelő.' },
         { status: 500 },
@@ -52,4 +55,3 @@ export function withRequestSizeLimit<
     return handler(req, ...args);
   };
 }
-

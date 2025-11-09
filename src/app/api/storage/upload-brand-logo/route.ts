@@ -7,10 +7,7 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
-import {
-  checkRateLimitMiddleware,
-  createRateLimitResponse,
-} from '@/lib/rateLimitMiddleware';
+import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
@@ -39,7 +36,7 @@ type NormalizedImage = {
 async function ensureBucketExists() {
   // Check cache first
   const now = Date.now();
-  if (bucketExistsCache && (now - bucketExistsCache.timestamp) < BUCKET_CACHE_TTL_MS) {
+  if (bucketExistsCache && now - bucketExistsCache.timestamp < BUCKET_CACHE_TTL_MS) {
     if (!bucketExistsCache.exists) {
       // If cache says bucket doesn't exist, still try to create it
       // (bucket might have been created by another instance)
@@ -51,7 +48,7 @@ async function ensureBucketExists() {
 
   const adminClient = supabaseServiceRole();
   const { data: bucket, error } = await adminClient.storage.getBucket(BUCKET_ID);
-  
+
   if (error && !error.message?.toLowerCase().includes('not found')) {
     // Don't cache errors - retry next time
     throw new Error('Nem sikerült lekérni a tárhely beállításait.');
@@ -183,7 +180,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
   log.setContext({ userId: request.user.id });
-  
+
   // Rate limiting for file upload endpoint
   const rateLimitResult = await checkRateLimitMiddleware(request, {
     maxRequests: 10, // Limit uploads per user
@@ -241,7 +238,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     // Verify the Supabase client has user context
     // The supabaseServer() function should include the access token from cookies
     // but we need to ensure it's properly authenticated
-    const { data: { user: authUser } } = await sb.auth.getUser();
+    const {
+      data: { user: authUser },
+    } = await sb.auth.getUser();
     if (!authUser || authUser.id !== userId) {
       log.error('Authentication mismatch in logo upload', {
         expectedUserId: userId,
@@ -270,47 +269,62 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         error: uploadError.error || 'unknown',
         name: uploadError.name || 'StorageError',
       };
-      
-      log.error('Logo upload failed', uploadError instanceof Error ? uploadError : new Error(uploadError.message || 'Storage upload failed'), {
-        path,
-        userId,
-        errorDetails,
-        contentType: normalizedImage.contentType,
-        fileSize: normalizedImage.buffer.length,
-      });
-      
+
+      log.error(
+        'Logo upload failed',
+        uploadError instanceof Error
+          ? uploadError
+          : new Error(uploadError.message || 'Storage upload failed'),
+        {
+          path,
+          userId,
+          errorDetails,
+          contentType: normalizedImage.contentType,
+          fileSize: normalizedImage.buffer.length,
+        },
+      );
+
       // Provide more specific error messages
       const errorMessage = uploadError.message?.toLowerCase() || '';
-      if (errorMessage.includes('not found') || 
-          errorMessage.includes('bucket') ||
-          errorMessage.includes('does not exist')) {
+      if (
+        errorMessage.includes('not found') ||
+        errorMessage.includes('bucket') ||
+        errorMessage.includes('does not exist')
+      ) {
         return NextResponse.json(
           { error: 'A tárhely nem elérhető. Kérjük, próbáld újra később.' },
           { status: 503 },
         );
       }
-      
+
       // Check for permission errors
-      if (errorMessage.includes('permission') || 
-          errorMessage.includes('unauthorized') ||
-          errorMessage.includes('forbidden') ||
-          uploadError.statusCode === 403) {
+      if (
+        errorMessage.includes('permission') ||
+        errorMessage.includes('unauthorized') ||
+        errorMessage.includes('forbidden') ||
+        uploadError.statusCode === 403
+      ) {
         return NextResponse.json(
-          { error: 'Nincs jogosultság a fájl feltöltéséhez. Kérjük, lépj kapcsolatba az ügyfélszolgálattal.' },
+          {
+            error:
+              'Nincs jogosultság a fájl feltöltéséhez. Kérjük, lépj kapcsolatba az ügyfélszolgálattal.',
+          },
           { status: 403 },
         );
       }
-      
+
       // Check for file size errors
-      if (errorMessage.includes('too large') || 
-          errorMessage.includes('file size') ||
-          uploadError.statusCode === 413) {
+      if (
+        errorMessage.includes('too large') ||
+        errorMessage.includes('file size') ||
+        uploadError.statusCode === 413
+      ) {
         return NextResponse.json(
           { error: 'A fájl mérete túl nagy. Maximum 4 MB.' },
           { status: 413 },
         );
       }
-      
+
       return NextResponse.json(
         { error: 'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.' },
         { status: 500 },
@@ -321,12 +335,12 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const { data: signedData, error: signedError } = await sb.storage
       .from(BUCKET_ID)
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
-    
+
     if (signedError) {
       log.warn('Failed to generate signed URL', { error: signedError, path });
       // Still return the path even if signed URL generation fails - upload was successful
     }
-    
+
     // Return both path (for storage) and signed URL (for immediate use)
     // The path should be stored in brand_logo_path column
     // The signed URL is for immediate UI preview
@@ -336,25 +350,32 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     });
   } catch (error) {
     // Log full error details for debugging
-    const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    log.error('Brand logo upload failed', error instanceof Error ? error : new Error(String(error)), {
-      errorMessage,
-      errorStack: process.env.NODE_ENV === 'production' ? undefined : errorStack,
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-    });
-    
+
+    log.error(
+      'Brand logo upload failed',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        errorMessage,
+        errorStack: process.env.NODE_ENV === 'production' ? undefined : errorStack,
+        errorType: error instanceof Error ? error.constructor.name : typeof error,
+      },
+    );
+
     // Check for specific error types
     if (error instanceof Error) {
       // Sharp/image processing errors
       if (error.message.includes('sharp') || error.message.includes('image')) {
         return NextResponse.json(
-          { error: 'Nem sikerült feldolgozni a képet. Kérjük, ellenőrizd, hogy érvényes képfájl-e.' },
+          {
+            error: 'Nem sikerült feldolgozni a képet. Kérjük, ellenőrizd, hogy érvényes képfájl-e.',
+          },
           { status: 415 },
         );
       }
-      
+
       // Buffer/array buffer errors
       if (error.message.includes('buffer') || error.message.includes('ArrayBuffer')) {
         return NextResponse.json(
@@ -363,7 +384,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         );
       }
     }
-    
+
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });

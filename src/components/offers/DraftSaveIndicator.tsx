@@ -64,7 +64,9 @@ export function DraftSaveIndicator({
       {isSaving ? (
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span className="text-xs font-medium text-fg">{t('wizard.draft.saving') || 'Mentés...'}</span>
+          <span className="text-xs font-medium text-fg">
+            {t('wizard.draft.saving') || 'Mentés...'}
+          </span>
         </div>
       ) : hasError && showError ? (
         <div className="flex items-center gap-2">
@@ -98,7 +100,8 @@ export function DraftSaveIndicator({
                     hour: '2-digit',
                     minute: '2-digit',
                   }),
-                }) || `Mentve: ${lastSaved.toLocaleTimeString('hu-HU', {
+                }) ||
+                `Mentve: ${lastSaved.toLocaleTimeString('hu-HU', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}`
@@ -109,5 +112,3 @@ export function DraftSaveIndicator({
     </div>
   );
 }
-
-

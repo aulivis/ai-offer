@@ -26,14 +26,14 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
-  
+
   // Validate route parameters
   const resolvedParams = await params;
   const parsed = pdfJobIdParamsSchema.safeParse(resolvedParams);
   if (!parsed.success) {
     return handleValidationError(parsed.error, requestId);
   }
-  
+
   const jobId = parsed.data.jobId;
 
   const sb = await supabaseServer();

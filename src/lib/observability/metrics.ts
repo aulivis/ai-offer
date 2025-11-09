@@ -13,7 +13,8 @@ const magicLinkCallbackCounter = meter.createCounter('auth.magic_link.callback_t
 });
 
 const authRouteUsageCounter = meter.createCounter('auth.route.usage_total', {
-  description: 'Counts usage of different auth routes (callback vs confirm) for migration tracking.',
+  description:
+    'Counts usage of different auth routes (callback vs confirm) for migration tracking.',
 });
 
 function mergeAttributes(

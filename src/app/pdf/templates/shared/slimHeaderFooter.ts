@@ -37,4 +37,3 @@ export function renderSlimFooter(ctx: HeaderFooterCtx): string {
     </div>
   `;
 }
-

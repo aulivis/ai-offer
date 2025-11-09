@@ -42,11 +42,17 @@ export default function LoginClient() {
   useEffect(() => {
     const errorParam = searchParams?.get('error');
     const messageParam = searchParams?.get('message');
-    
+
     if (errorParam || messageParam) {
       // Show error message
-      setError(errorParam ? decodeURIComponent(errorParam) : messageParam ? decodeURIComponent(messageParam) : null);
-      
+      setError(
+        errorParam
+          ? decodeURIComponent(errorParam)
+          : messageParam
+            ? decodeURIComponent(messageParam)
+            : null,
+      );
+
       // Set a minimum cooldown (15 seconds) to prevent immediate retry
       // This prevents rapid-fire requests when session init fails
       const minCooldownAfterFailure = 15;
@@ -123,10 +129,10 @@ export default function LoginClient() {
           typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error?: string }).error as string)
             : t('errors.network');
-        
+
         // Handle rate limit errors (429)
         if (response.status === 429) {
-          const retryAfter = 
+          const retryAfter =
             payload &&
             typeof payload === 'object' &&
             'retryAfter' in payload &&
@@ -135,11 +141,11 @@ export default function LoginClient() {
               : response.headers.get('Retry-After')
                 ? parseInt(response.headers.get('Retry-After')!, 10)
                 : MAGIC_LINK_COOLDOWN_SECONDS;
-          
+
           setCooldownRemaining(Math.max(retryAfter, cooldownRemaining));
           throw new Error(message || 'Too many requests. Please wait before trying again.');
         }
-        
+
         throw new Error(message);
       }
 
@@ -221,12 +227,8 @@ export default function LoginClient() {
         {/* Left Side - Benefits & Value Props */}
         <div className="hidden lg:block space-y-8">
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-[#1c274c]">
-              {t('login.benefits.title')}
-            </h2>
-            <p className="text-lg text-fg-muted leading-relaxed">
-              {t('login.benefits.subtitle')}
-            </p>
+            <h2 className="text-3xl font-bold text-[#1c274c]">{t('login.benefits.title')}</h2>
+            <p className="text-lg text-fg-muted leading-relaxed">{t('login.benefits.subtitle')}</p>
           </div>
           <ul className="space-y-4">
             {[
@@ -251,7 +253,7 @@ export default function LoginClient() {
               </li>
             ))}
           </ul>
-          
+
           {/* Trust Indicators */}
           <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-6">
             <div className="space-y-3">
@@ -263,7 +265,9 @@ export default function LoginClient() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-semibold text-fg">{t('login.trust.noCreditCard')}</span>
+                <span className="text-sm font-semibold text-fg">
+                  {t('login.trust.noCreditCard')}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -273,7 +277,9 @@ export default function LoginClient() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-semibold text-fg">{t('login.trust.instantAccess')}</span>
+                <span className="text-sm font-semibold text-fg">
+                  {t('login.trust.instantAccess')}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="h-5 w-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -284,7 +290,9 @@ export default function LoginClient() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-semibold text-fg">{t('login.trust.cancelAnytime')}</span>
+                <span className="text-sm font-semibold text-fg">
+                  {t('login.trust.cancelAnytime')}
+                </span>
               </div>
             </div>
           </div>
@@ -292,134 +300,142 @@ export default function LoginClient() {
 
         {/* Right Side - Login Form */}
         <Card className="w-full space-y-6 rounded-3xl border border-border/70 bg-bg/90 p-8 md:p-10 text-fg shadow-card backdrop-blur">
-        <div className="space-y-3 text-center">
-          <div className="inline-flex items-center justify-center">
-            <Image
-              src="/vyndi-logo.png"
-              alt="Vyndi"
-              width={48}
-              height={48}
-              className="h-12 w-12 object-contain"
-            />
-          </div>
-          <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c] md:text-4xl">
-            {t('login.title')}
-          </h1>
-          <p className="text-sm text-fg-muted leading-relaxed md:text-base">
-            {t('login.description')}
-          </p>
-          {/* Account Creation Notice */}
-          <div className="mx-auto max-w-md rounded-xl border border-emerald-200/50 bg-emerald-50/50 p-3 text-left">
-            <p className="text-xs font-medium text-emerald-800 md:text-sm">
-              {t('login.accountCreationNotice')}
+          <div className="space-y-3 text-center">
+            <div className="inline-flex items-center justify-center">
+              <Image
+                src="/vyndi-logo.png"
+                alt="Vyndi"
+                width={48}
+                height={48}
+                className="h-12 w-12 object-contain"
+              />
+            </div>
+            <h1 className="font-sans text-3xl font-bold tracking-[-0.125rem] text-[#1c274c] md:text-4xl">
+              {t('login.title')}
+            </h1>
+            <p className="text-sm text-fg-muted leading-relaxed md:text-base">
+              {t('login.description')}
             </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <Input
-            label={t('login.emailLabel')}
-            type="email"
-            placeholder={t('login.emailPlaceholder')}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <div className="space-y-2">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-5 w-5 rounded border border-border bg-bg text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary accent-primary"
-              />
-              <span className="text-sm text-fg">{t('login.rememberMe')}</span>
-              <HelpIcon
-                content={t('login.rememberMeHelp')}
-                label={t('login.rememberMeHelp')}
-              />
-            </label>
+            {/* Account Creation Notice */}
+            <div className="mx-auto max-w-md rounded-xl border border-emerald-200/50 bg-emerald-50/50 p-3 text-left">
+              <p className="text-xs font-medium text-emerald-800 md:text-sm">
+                {t('login.accountCreationNotice')}
+              </p>
+            </div>
           </div>
 
-          <Button
-            onClick={sendMagic}
-            className="w-full group"
-            size="lg"
-            disabled={!email || isCooldownActive || isMagicLoading}
-            aria-busy={isMagicLoading}
-            aria-label={t('login.magicLinkAria')}
-          >
-            <span>{magicButtonLabel}</span>
-            {!isMagicLoading && !isCooldownActive && (
-              <svg
-                className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            )}
-          </Button>
+          <div className="space-y-4">
+            <Input
+              label={t('login.emailLabel')}
+              type="email"
+              placeholder={t('login.emailPlaceholder')}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          <div className="relative py-1 text-center text-xs uppercase tracking-[0.3em] text-fg-muted">
-            <span className="bg-bg px-2">{t('login.divider')}</span>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-5 w-5 rounded border border-border bg-bg text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary accent-primary"
+                />
+                <span className="text-sm text-fg">{t('login.rememberMe')}</span>
+                <HelpIcon content={t('login.rememberMeHelp')} label={t('login.rememberMeHelp')} />
+              </label>
+            </div>
+
+            <Button
+              onClick={sendMagic}
+              className="w-full group"
+              size="lg"
+              disabled={!email || isCooldownActive || isMagicLoading}
+              aria-busy={isMagicLoading}
+              aria-label={t('login.magicLinkAria')}
+            >
+              <span>{magicButtonLabel}</span>
+              {!isMagicLoading && !isCooldownActive && (
+                <svg
+                  className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              )}
+            </Button>
+
+            <div className="relative py-1 text-center text-xs uppercase tracking-[0.3em] text-fg-muted">
+              <span className="bg-bg px-2">{t('login.divider')}</span>
+            </div>
+
+            <Button
+              onClick={signInWithGoogle}
+              className="flex w-full items-center justify-center gap-3 text-base font-semibold"
+              size="lg"
+              variant="secondary"
+              style={GOOGLE_BUTTON_STYLES}
+              disabled={isGoogleLoading || !isGoogleAvailable}
+              aria-busy={isGoogleLoading}
+              aria-label={t('login.googleButton')}
+            >
+              {isGoogleLoading ? (
+                t('login.googleJoining')
+              ) : (
+                <>
+                  <span className="flex h-5 w-5 items-center justify-center">
+                    <Image
+                      src="/google-logo.svg"
+                      alt=""
+                      width={18}
+                      height={18}
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="leading-none">{t('login.googleButton')}</span>
+                </>
+              )}
+            </Button>
+
+            <div aria-live="polite" className="space-y-2">
+              {googleStatusMessage && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-700"
+                >
+                  {googleStatusMessage}
+                </div>
+              )}
+              {error && (
+                <div
+                  role="alert"
+                  className="rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-sm text-rose-600"
+                >
+                  {error}
+                </div>
+              )}
+              {sent && (
+                <div
+                  role="status"
+                  className="rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700"
+                >
+                  <p className="font-medium">{MAGIC_LINK_MESSAGE}</p>
+                  {isCooldownActive && (
+                    <p className="mt-1 text-xs text-emerald-600">
+                      {t('login.messages.magicLinkResendTimer', { seconds: cooldownRemaining })}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-
-          <Button
-            onClick={signInWithGoogle}
-            className="flex w-full items-center justify-center gap-3 text-base font-semibold"
-            size="lg"
-            variant="secondary"
-            style={GOOGLE_BUTTON_STYLES}
-            disabled={isGoogleLoading || !isGoogleAvailable}
-            aria-busy={isGoogleLoading}
-            aria-label={t('login.googleButton')}
-          >
-            {isGoogleLoading ? (
-              t('login.googleJoining')
-            ) : (
-              <>
-                <span className="flex h-5 w-5 items-center justify-center">
-                  <Image src="/google-logo.svg" alt="" width={18} height={18} aria-hidden="true" />
-                </span>
-                <span className="leading-none">{t('login.googleButton')}</span>
-              </>
-            )}
-          </Button>
-
-          <div aria-live="polite" className="space-y-2">
-            {googleStatusMessage && (
-              <div
-                role="alert"
-                className="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-700"
-              >
-                {googleStatusMessage}
-              </div>
-            )}
-            {error && (
-              <div
-                role="alert"
-                className="rounded-xl border border-rose-200/80 bg-rose-50/80 px-3 py-2 text-sm text-rose-600"
-              >
-                {error}
-              </div>
-            )}
-            {sent && (
-              <div
-                role="status"
-                className="rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-700"
-              >
-                <p className="font-medium">{MAGIC_LINK_MESSAGE}</p>
-                {isCooldownActive && (
-                  <p className="mt-1 text-xs text-emerald-600">
-                    {t('login.messages.magicLinkResendTimer', { seconds: cooldownRemaining })}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
         </Card>
       </div>
     </main>

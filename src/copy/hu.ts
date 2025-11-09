@@ -21,7 +21,8 @@ export const hu = {
   },
   app: {
     title: 'AI Ajánlatkészítő | Professzionális Ajánlatok Percek Alatt',
-    description: 'Készíts professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével. Automatikus árkalkuláció, magyar nyelvű támogatás. Ideális kis- és középvállalkozásoknak, freelancereknek és ügynökségeknek.',
+    description:
+      'Készíts professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével. Automatikus árkalkuláció, magyar nyelvű támogatás. Ideális kis- és középvállalkozásoknak, freelancereknek és ügynökségeknek.',
     skipToContent: 'Ugrás a tartalomra',
     authErrorTitle: 'Hitelesítés sikertelen',
     authErrorFallback: 'Nem sikerült hitelesíteni a felhasználói állapotot.',
@@ -101,7 +102,8 @@ export const hu = {
   quotaWarningBar: {
     message: {
       user: 'Elérted a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
-      device: 'Elérted az eszközön a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
+      device:
+        'Elérted az eszközön a havi ajánlatlimitálást. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
       both: 'Elérted a havi ajánlatlimitálást és az eszközön is. Frissíts előfizetésedet, hogy továbbra is készíthess ajánlatokat.',
     },
     cta: 'Frissíts most',
@@ -281,27 +283,33 @@ export const hu = {
       },
       sent: {
         label: 'Kiküldött ajánlatok',
-        helper: '{sent} ajánlat kiküldve • {pending} döntésre vár. A kiküldött ajánlatok azon ajánlatok száma, amelyeket már elküldtél az ügyfeleidnek.',
+        helper:
+          '{sent} ajánlat kiküldve • {pending} döntésre vár. A kiküldött ajánlatok azon ajánlatok száma, amelyeket már elküldtél az ügyfeleidnek.',
       },
       accepted: {
         label: 'Elfogadott ajánlatok',
-        helper: '{accepted} elfogadott ajánlat • Elfogadási arány: {rate}. Ez az összes kiküldött ajánlatodhoz képest az elfogadottak százalékos aránya.',
+        helper:
+          '{accepted} elfogadott ajánlat • Elfogadási arány: {rate}. Ez az összes kiküldött ajánlatodhoz képest az elfogadottak százalékos aránya.',
       },
       avgDecision: {
         label: 'Átlagos döntési idő',
-        helper: 'Átlagosan {days} nap alatt döntöttek az ajánlataidról. {drafts} vázlat még nem küldött el. Ez az időmutató segít megbecsülni, mikor várható válasz az ügyfelektől.',
+        helper:
+          'Átlagosan {days} nap alatt döntöttek az ajánlataidról. {drafts} vázlat még nem küldött el. Ez az időmutató segít megbecsülni, mikor várható válasz az ügyfelektől.',
       },
       inReview: {
         label: 'Döntésre vár',
-        helper: '{count} ajánlat vár ügyfeleid döntésére. Ezek az ajánlatok már kiküldve lettek, de még nincs rájuk válasz.',
+        helper:
+          '{count} ajánlat vár ügyfeleid döntésére. Ezek az ajánlatok már kiküldve lettek, de még nincs rájuk válasz.',
       },
       lost: {
         label: 'Elutasított ajánlatok',
-        helper: '{count} ajánlat lett elutasítva. Fontos visszajelzés az ajánlataidra, segíthet a jövőbeli ajánlatok javításában.',
+        helper:
+          '{count} ajánlat lett elutasítva. Fontos visszajelzés az ajánlataidra, segíthet a jövőbeli ajánlatok javításában.',
       },
       winRate: {
         label: 'Sikeres arány',
-        helper: 'A sikeres arány = Elfogadott / (Elfogadott + Elutasított). Jelenleg {rate}. Átlagosan 40-60% között jó eredménynek számít. Ez a mutató azt mutatja, hogy az elfogadott és elutasított ajánlatok közül hány százalékot fogadnak el.',
+        helper:
+          'A sikeres arány = Elfogadott / (Elfogadott + Elutasított). Jelenleg {rate}. Átlagosan 40-60% között jó eredménynek számít. Ez a mutató azt mutatja, hogy az elfogadott és elutasított ajánlatok közül hány százalékot fogadnak el.',
       },
     },
     viewSwitcher: {
@@ -895,7 +903,8 @@ export const hu = {
       titleAlt: 'Három egyszerű lépés a sikerhez',
       description:
         'A Vyndi intuitív felülete percek alatt megtanulható. Az AI mindig egységes, márkádhoz illeszkedő arculatot tart fenn, így nem kell aggódnod a formázás miatt.',
-      descriptionAlt: 'A Vyndi felülete egyszerű és áttekinthető. Az AI mindig egységes arculatot tart.',
+      descriptionAlt:
+        'A Vyndi felülete egyszerű és áttekinthető. Az AI mindig egységes arculatot tart.',
       steps: [
         {
           title: 'Projekt brief megadása',
@@ -946,7 +955,8 @@ export const hu = {
     productVideo: {
       badge: 'Bemutató',
       title: 'Nézd meg, hogyan működik a Vyndi',
-      description: 'Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével.',
+      description:
+        'Tekintsd meg a Vyndi működését egy rövid bemutatóban. Láthatod, hogyan készíthetsz professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével.',
       features: {
         0: 'Magyar nyelvű AI-alapú szöveg generálás',
         1: 'Reszponzív szerkesztés azonnali frissítéssel',
@@ -957,10 +967,12 @@ export const hu = {
     },
     successStories: {
       title: 'Valós eredmények valós ügyfelektől',
-      description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat akár 70%-kal. Valós sikertörténetek, valós számok.',
+      description:
+        'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat akár 70%-kal. Valós sikertörténetek, valós számok.',
       cta: 'Sikertörténetek megtekintése',
       ctaTitle: 'Készen állsz, hogy te is ilyen eredményeket érj el?',
-      ctaDescription: 'Kezdd el ingyen még ma, bankkártya nélkül, és tapasztald meg, hogyan növelheted az ajánlatkészítési hatékonyságodat és az elfogadási arányt.',
+      ctaDescription:
+        'Kezdd el ingyen még ma, bankkártya nélkül, és tapasztald meg, hogyan növelheted az ajánlatkészítési hatékonyságodat és az elfogadási arányt.',
     },
     stickyBar: {
       title: 'Készen állsz, hogy profibb ajánlatokat készíts percek alatt?',
@@ -970,7 +982,8 @@ export const hu = {
     },
     emailCapture: {
       title: 'Kapj ingyenes tippeket a professzionális ajánlatkészítéshez',
-      description: "Iratkozz fel hírlevelünkre és kapd meg az ingyenes útmutatót: '10 tipp a tökéletes ajánlathoz'. Konverzióoptimalizált, gyakorlati tanácsok azonnal.",
+      description:
+        "Iratkozz fel hírlevelünkre és kapd meg az ingyenes útmutatót: '10 tipp a tökéletes ajánlathoz'. Konverzióoptimalizált, gyakorlati tanácsok azonnal.",
       leadMagnet: '10 tipp a tökéletes ajánlathoz',
       placeholder: 'email@example.com',
       cta: 'Feliratkozás ingyen',
@@ -979,24 +992,29 @@ export const hu = {
     problemSection: {
       badge: 'A probléma',
       title: 'Túl sok időt töltesz az ajánlatkészítéssel?',
-      description: 'A hagyományos ajánlatkészítés lassú, hibára hajlamos és nem skálázható. Minden projektnél újra kell kezdened a nulláról, újra kell formázni a dokumentumokat, és nehéz követni az ajánlatok státuszát.',
+      description:
+        'A hagyományos ajánlatkészítés lassú, hibára hajlamos és nem skálázható. Minden projektnél újra kell kezdened a nulláról, újra kell formázni a dokumentumokat, és nehéz követni az ajánlatok státuszát.',
       solutionTitle: 'A megoldás: Vyndi AI-alapú ajánlatkészítő',
-      solutionDescription: 'Automatizáld az ajánlatkészítést, spórolj órákat minden ajánlaton, és növeld az üzleti eredményeidet akár 70%-kal. Mindezt egyetlen, intuitív eszközzel, amely percek alatt megtanulható.',
+      solutionDescription:
+        'Automatizáld az ajánlatkészítést, spórolj órákat minden ajánlaton, és növeld az üzleti eredményeidet akár 70%-kal. Mindezt egyetlen, intuitív eszközzel, amely percek alatt megtanulható.',
     },
     featuresSection: {
       badge: 'Funkciók',
       title: 'Minden, amire szükséged van egy helyen',
-      description: 'A Vyndi minden eszközt biztosít a professzionális ajánlatkészítéshez: AI-alapú szöveg generálás, márkázott PDF export, tételes árkalkuláció, sablonkönyvtár és valós idejű követés.',
+      description:
+        'A Vyndi minden eszközt biztosít a professzionális ajánlatkészítéshez: AI-alapú szöveg generálás, márkázott PDF export, tételes árkalkuláció, sablonkönyvtár és valós idejű követés.',
     },
     demoSection: {
       badge: 'Bemutató',
       title: 'Nézd meg, hogyan működik a Vyndi',
-      description: 'Tekintsd meg a Vyndi működését egy rövid, interaktív bemutatóban. Láthatod, hogyan készíthetsz professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével.',
+      description:
+        'Tekintsd meg a Vyndi működését egy rövid, interaktív bemutatóban. Láthatod, hogyan készíthetsz professzionális, márkázott PDF ajánlatokat percek alatt AI segítségével.',
     },
     roiCalculator: {
       badge: 'ROI számológép',
       title: 'Mennyit takaríthatnál meg a Vyndi-val?',
-      description: 'Számítsd ki, mennyi időt és pénzt takaríthatnál meg, ha automatikusan készítenéd az ajánlataidat AI segítségével. Átlagosan 70%-os időmegtakarítás érhető el.',
+      description:
+        'Számítsd ki, mennyi időt és pénzt takaríthatnál meg, ha automatikusan készítenéd az ajánlataidat AI segítségével. Átlagosan 70%-os időmegtakarítás érhető el.',
     },
     faq: {
       badge: 'Gyakran ismételt kérdések',
@@ -1005,7 +1023,8 @@ export const hu = {
     finalCta: {
       badge: 'Kezdd el még ma',
       title: 'Spórolj órákat minden ajánlaton – kezdd el most, ingyen',
-      description: 'Regisztrálj ingyen, bankkártya nélkül. Azonnal hozzáférsz az AI-alapú ajánlatkészítőhöz. A Vyndi az eddigi ajánlataidból tanul, így minden új dokumentum egyre pontosabb, esztétikusabb és márkahűbb lesz.',
+      description:
+        'Regisztrálj ingyen, bankkártya nélkül. Azonnal hozzáférsz az AI-alapú ajánlatkészítőhöz. A Vyndi az eddigi ajánlataidból tanul, így minden új dokumentum egyre pontosabb, esztétikusabb és márkahűbb lesz.',
       noCreditCard: 'Nem szükséges bankkártya • Azonnali hozzáférés • Bármikor lemondható',
     },
     stats: {
@@ -1026,11 +1045,13 @@ export const hu = {
     useCases: {
       badge: 'Használati esetek',
       title: 'Minden iparághoz megfelelő megoldás',
-      description: 'A Vyndi-t sikeresen használják kreatív ügynökségek, IT szolgáltatók, konzultánsok és freelancerek a hatékony, professzionális ajánlatkészítéshez',
+      description:
+        'A Vyndi-t sikeresen használják kreatív ügynökségek, IT szolgáltatók, konzultánsok és freelancerek a hatékony, professzionális ajánlatkészítéshez',
       items: {
         0: {
           title: 'Kreatív ügynökségek',
-          description: 'Gyors, professzionális ajánlatok ügyfeleknek egységes márkaidentitással. Növeld az elfogadási arányt prémium megjelenéssel.',
+          description:
+            'Gyors, professzionális ajánlatok ügyfeleknek egységes márkaidentitással. Növeld az elfogadási arányt prémium megjelenéssel.',
           features: {
             0: 'Márkázott PDF export logóval és színekkel',
             1: 'AI-alapú szöveg generálás magyar nyelven',
@@ -1040,7 +1061,8 @@ export const hu = {
         },
         1: {
           title: 'IT szolgáltatók',
-          description: 'Technikai ajánlatok és részletes árkalkulációk komplex projektekhez. Strukturált leírások és tételes bontás.',
+          description:
+            'Technikai ajánlatok és részletes árkalkulációk komplex projektekhez. Strukturált leírások és tételes bontás.',
           features: {
             0: 'Moduláris blokkrendszer testreszabható részekkel',
             1: 'Tételes árkalkuláció automatikus összesítéssel',
@@ -1050,7 +1072,8 @@ export const hu = {
         },
         2: {
           title: 'Konzultánsok és freelancerek',
-          description: 'Egyszerű, hatékony ajánlatkészítés egyedülálló projektekhez. Professzionális megjelenés, amit az ügyfelek szeretnek.',
+          description:
+            'Egyszerű, hatékony ajánlatkészítés egyedülálló projektekhez. Professzionális megjelenés, amit az ügyfelek szeretnek.',
           features: {
             0: 'Gyors ajánlatkészítés percek alatt',
             1: 'Professzionális, márkázott megjelenés',
@@ -1063,7 +1086,8 @@ export const hu = {
     resources: {
       badge: 'Erőforrások',
       title: 'Tanulj és fejlődj az ajánlatkészítésben',
-      description: 'Hozzáférhetsz ingyenes útmutatókhoz, letölthető sablonokhoz, hasznos blog cikkekhez és video oktatóanyagokhoz, amelyek segítenek még hatékonyabbá tenni az ajánlatkészítésed',
+      description:
+        'Hozzáférhetsz ingyenes útmutatókhoz, letölthető sablonokhoz, hasznos blog cikkekhez és video oktatóanyagokhoz, amelyek segítenek még hatékonyabbá tenni az ajánlatkészítésed',
       viewAll: 'Összes erőforrás megtekintése',
       open: 'Megnyitás',
       ctaTitle: 'Készen állsz a kezdésre?',
@@ -1077,26 +1101,31 @@ export const hu = {
       items: {
         0: {
           title: 'Ajánlatkészítési útmutató',
-          description: 'Gyakorlati tippek és trükkök a tökéletes, konverzióoptimalizált ajánlatok elkészítéséhez.',
+          description:
+            'Gyakorlati tippek és trükkök a tökéletes, konverzióoptimalizált ajánlatok elkészítéséhez.',
         },
         1: {
           title: 'Ingyenes ajánlat sablonok',
-          description: 'Letölthető, professzionális sablonok különböző iparágakhoz és projekttípusokhoz. Használd őket kiindulási pontként.',
+          description:
+            'Letölthető, professzionális sablonok különböző iparágakhoz és projekttípusokhoz. Használd őket kiindulási pontként.',
         },
         2: {
           title: 'Blog és cikkek',
-          description: 'Hasznos cikkek az ajánlatkészítésről, értékesítési pszichológiáról és üzleti növekedésről.',
+          description:
+            'Hasznos cikkek az ajánlatkészítésről, értékesítési pszichológiáról és üzleti növekedésről.',
         },
         3: {
           title: 'Video útmutatók',
-          description: 'Részletes, lépésről lépésre video oktatóanyagok a Vyndi minden funkciójának használatáról.',
+          description:
+            'Részletes, lépésről lépésre video oktatóanyagok a Vyndi minden funkciójának használatáról.',
         },
       },
     },
     enterprise: {
       badge: 'Nagycsapatoknak',
       title: 'Szükséged van nagyobb csomagra?',
-      description: 'Testreszabott megoldások nagyobb csapatoknak, korlátlan ajánlatokkal és dedikált támogatással.',
+      description:
+        'Testreszabott megoldások nagyobb csapatoknak, korlátlan ajánlatokkal és dedikált támogatással.',
       features: {
         0: 'Korlátlan ajánlatgenerálás',
         1: 'Dedikált fiókkezelő',
@@ -1140,21 +1169,25 @@ export const hu = {
     featuresInline: {
       unifiedInterface: {
         title: 'Egyetlen esztétikus felület',
-        description: 'A Vyndi sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
+        description:
+          'A Vyndi sötét és világos témában is igazodik a márkád színeihez, így minden ajánlat magabiztos, prémium hatást kelt.',
       },
       aiBrief: {
         title: 'AI, ami érti a briefet',
-        description: 'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
+        description:
+          'A magyar nyelvű AI lépésről lépésre állítja össze a szöveget és az árkalkulációt.',
       },
       clientSharing: {
         title: 'Ügyfélközpontú megosztás',
-        description: 'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
+        description:
+          'Élő link, interaktív visszajelzések, aláírás – minden egy irányítópulton, automatikus státuszokkal.',
       },
     },
     stepsInline: {
       brief: {
         title: 'Brief & mood',
-        description: 'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
+        description:
+          'Importáld a projekt részleteit vagy illessz be egy e-mailt – az AI azonnal kiemeli a lényeges pontokat.',
       },
       aiTemplates: {
         title: 'AI-szöveg és sablonok',
@@ -1162,49 +1195,59 @@ export const hu = {
       },
       share: {
         title: 'Megosztás & mérés',
-        description: 'Egy kattintással készül a márkázott PDF ajánlat. Letöltheted vagy megoszthatod. Az irányítópulton követheted az ajánlatok státuszát.',
+        description:
+          'Egy kattintással készül a márkázott PDF ajánlat. Letöltheted vagy megoszthatod. Az irányítópulton követheted az ajánlatok státuszát.',
       },
     },
     caseStudiesInline: {
       studioFluo: {
         company: 'Studio Fluo',
         industry: 'Kreatív ügynökség',
-        challenge: 'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
-        solution: 'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, és a márkázott PDF-ek automatikusan készültek.',
+        challenge:
+          'A csapat hetente 15-20 ajánlatot készített, és mindegyik 4-6 órát vett igénybe. A dizájn inkonzisztens volt, és a csapat tagjai nem tudtak hatékonyan együttműködni.',
+        solution:
+          'A Vyndi bevezetése után az ajánlatkészítési idő 70%-kal csökkent. Az AI segítségével gyorsan generáltak szövegeket, és a márkázott PDF-ek automatikusan készültek.',
         results: {
           timeSaved: 'Időmegtakarítás',
           offersPerWeek: 'Ajánlatok/hét',
           acceptanceRate: 'Elfogadási arány',
         },
-        quote: 'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
+        quote:
+          'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
         author: 'Kiss Júlia',
         role: 'Ügynökségvezető',
       },
       techSolutions: {
         company: 'Tech Solutions Kft.',
         industry: 'IT szolgáltatás',
-        challenge: 'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
-        solution: 'A Vyndi moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
+        challenge:
+          'A technikai ajánlatok összetettek voltak, és sok időt vettek igénybe. A különböző projektekhez különböző sablonokra volt szükség, és nehéz volt követni az ajánlatok státuszát.',
+        solution:
+          'A Vyndi moduláris blokkrendszere lehetővé tette a gyors testreszabást, az AI segített a technikai leírások generálásában, és a valós idejű státusz követés segített a projektmenedzsmentben.',
         results: {
           offerTime: 'Ajánlatkészítési idő',
           templatesCount: 'Sablonok száma',
           satisfaction: 'Ügyfél elégedettség',
         },
-        quote: 'Az AI-alapú szöveg generálás és a moduláris rendszer lehetővé tette, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire.',
+        quote:
+          'Az AI-alapú szöveg generálás és a moduláris rendszer lehetővé tette, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire.',
         author: 'Nagy Péter',
         role: 'Üzletfejlesztési vezető',
       },
       creativeAgency: {
         company: 'Creative Agency',
         industry: 'Marketing ügynökség',
-        challenge: 'A marketing kampányokhoz rendszeresen kellett ajánlatokat készíteni, de a sablonok nehezen testreszabhatók voltak, és a vizuális megjelenés nem volt konzisztens.',
-        solution: 'A Vyndi sablonkönyvtára és márkaidentitás-kezelése lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsenek ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek.',
+        challenge:
+          'A marketing kampányokhoz rendszeresen kellett ajánlatokat készíteni, de a sablonok nehezen testreszabhatók voltak, és a vizuális megjelenés nem volt konzisztens.',
+        solution:
+          'A Vyndi sablonkönyvtára és márkaidentitás-kezelése lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsenek ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek.',
         results: {
           templateTime: 'Sablon készítési idő',
           consistentAppearance: 'Konzisztens megjelenés',
           offersPerMonth: 'Ajánlatok/hónap',
         },
-        quote: 'A Vyndi segített, hogy minden ajánlatunk profi megjelenésű legyen, miközben jelentősen csökkent az elkészítésük ideje.',
+        quote:
+          'A Vyndi segített, hogy minden ajánlatunk profi megjelenésű legyen, miközben jelentősen csökkent az elkészítésük ideje.',
         author: 'Szabó Anna',
         role: 'Projektmenedzser',
       },
@@ -1212,7 +1255,8 @@ export const hu = {
     successStories: {
       badge: 'Sikertörténetek',
       title: 'Valós eredmények valós ügyfelektől',
-      description: 'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat és javítani az üzleti eredményeiket.',
+      description:
+        'Nézd meg, hogyan segítettünk más vállalatoknak növelni az ajánlatkészítési hatékonyságukat és javítani az üzleti eredményeiket.',
       ctaButton: 'Ingyenes próba indítása',
       viewPackages: 'Csomagok megtekintése',
     },
@@ -1232,7 +1276,8 @@ export const hu = {
     title: 'Készíts ajánlatokat néhány perc alatt - teljesen ingyen',
     description:
       'Írd be az e-mail címed, és azonnal elkezdheted a professzionális ajánlatok készítését. Jelszó nélkül, gyorsan és biztonságosan. Bankkártyára nincs szükséges a regisztrációhoz.',
-    accountCreationNotice: '✨ Nincs még fiókod? Nem probléma! Automatikusan létrehozunk egyet, amikor először bejelentkezel.',
+    accountCreationNotice:
+      '✨ Nincs még fiókod? Nem probléma! Automatikusan létrehozunk egyet, amikor először bejelentkezel.',
     emailLabel: 'E-mail cím',
     emailPlaceholder: 'email@cimed.hu',
     magicLinkButton: 'Belépési link küldése',
@@ -1330,7 +1375,7 @@ export const hu = {
         goToSummaryReminder:
           'A továbblépéshez előbb generáld le az AI előnézetet az első lépésben.',
       },
-        preview: {
+      preview: {
         idle: 'Írd be fent a projekt részleteit, és megjelenik az előnézet.',
         loading: 'Kapcsolódás az AI szolgáltatáshoz…',
         streaming: 'Az AI most készíti az előnézetet…',
@@ -1469,11 +1514,13 @@ export const hu = {
           },
           images: {
             modalTitle: 'Referenciafotók hozzáadása: {activity}',
-            modalDescription: 'Válassz ki képeket, amelyeket az ajánlatban szeretnél megjeleníteni.',
+            modalDescription:
+              'Válassz ki képeket, amelyeket az ajánlatban szeretnél megjeleníteni.',
           },
           testimonials: {
             modalTitle: 'Vásárlói visszajelzések hozzáadása',
-            modalDescription: 'Válassz ki maximum 3 visszajelzést, amelyeket az ajánlatban szeretnél megjeleníteni.',
+            modalDescription:
+              'Válassz ki maximum 3 visszajelzést, amelyeket az ajánlatban szeretnél megjeleníteni.',
             noTestimonials: 'Még nincs elérhető visszajelzés.',
             maxReached: 'Maximum elérve',
             maxReachedDescription: 'Maximum 3 visszajelzés választható ki.',
@@ -1536,19 +1583,27 @@ export const hu = {
           },
         },
       },
-        statuses: {
+      statuses: {
         previewRequired: 'Generáld le az AI előnézetet a továbblépéshez.',
         notLoggedIn: 'Nem vagy bejelentkezve.',
         previewMissing: 'Írd be fent a projekt részleteit, és megjelenik az előnézet.',
-        aiNoData: 'Az AI nem küldött adatot az előnézethez. Próbáld újra vagy ellenőrizd a kapcsolatot.',
-        aiUnknownError: 'Hiba történt az előnézet generálása során. Próbáld újra vagy frissítsd az oldalt.',
-        aiTimeout: 'Az előnézet generálása túl sokáig tartott. Próbáld újra vagy ellenőrizd a kapcsolatot.',
-        aiStreamingError: 'Hiba történt az előnézet generálása során. Próbáld újra vagy frissítsd az oldalt.',
-        aiPreviewError: 'Hiba az előnézet betöltésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
+        aiNoData:
+          'Az AI nem küldött adatot az előnézethez. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+        aiUnknownError:
+          'Hiba történt az előnézet generálása során. Próbáld újra vagy frissítsd az oldalt.',
+        aiTimeout:
+          'Az előnézet generálása túl sokáig tartott. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+        aiStreamingError:
+          'Hiba történt az előnézet generálása során. Próbáld újra vagy frissítsd az oldalt.',
+        aiPreviewError:
+          'Hiba az előnézet betöltésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
         authError: 'Nem sikerült hitelesíteni az előnézet lekérését. Jelentkezz be újra.',
-        generateError: 'Hiba történt az ajánlat generálása során. Próbáld újra vagy ellenőrizd a kapcsolatot.',
-        generateStatusError: 'Hiba a generálásnál ({status}). Próbáld újra vagy frissítsd az oldalt.',
-        structuredResponseMissing: 'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
+        generateError:
+          'Hiba történt az ajánlat generálása során. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+        generateStatusError:
+          'Hiba a generálásnál ({status}). Próbáld újra vagy frissítsd az oldalt.',
+        structuredResponseMissing:
+          'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
       },
       summarySidebar: {
         priceTotals: {
@@ -1779,7 +1834,8 @@ export const hu = {
       },
       textSaved: {
         title: 'Szöveg mentve, PDF generálás sikertelen',
-        description: 'Az ajánlat szövege elmentve, de a PDF generálása nem sikerült. Később újra megpróbálhatod a PDF generálását.',
+        description:
+          'Az ajánlat szövege elmentve, de a PDF generálása nem sikerült. Később újra megpróbálhatod a PDF generálását.',
       },
       saveFailed: {
         title: 'Ajánlat mentése sikertelen',
@@ -1869,7 +1925,7 @@ export const hu = {
         'Többszöri próbálkozás után sem sikerült befejezni az előnézetet. Próbáld meg később.',
     },
   },
-    errors: {
+  errors: {
     unauthorized: 'Nincs jogosultságod ehhez a művelethez. Jelentkezz be újra.',
     network: 'Hálózati hiba történt. Ellenőrizd az internetkapcsolatot és próbáld újra.',
     unknown: 'Hiba történt. Próbáld újra vagy frissítsd az oldalt.',
@@ -1878,17 +1934,22 @@ export const hu = {
     auth: {
       requestFailed: 'Nem sikerült hitelesíteni a kérést. Próbáld újra vagy jelentkezz be újra.',
       sessionInvalid: 'A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra.',
-      sessionCheckFailed: 'Nem sikerült ellenőrizni a bejelentkezést. Próbáld újra vagy frissítsd az oldalt.',
-      verificationUnknown: 'Hiba történt a hitelesítés során. Próbáld újra vagy jelentkezz be újra.',
+      sessionCheckFailed:
+        'Nem sikerült ellenőrizni a bejelentkezést. Próbáld újra vagy frissítsd az oldalt.',
+      verificationUnknown:
+        'Hiba történt a hitelesítés során. Próbáld újra vagy jelentkezz be újra.',
       notLoggedIn: 'Nem vagy bejelentkezve. Jelentkezz be a folytatáshoz.',
       logoutMissingCsrf: 'Hiányzó hitelesítési token. Töltsd újra az oldalt, majd próbáld újra.',
       logoutFailed: 'Nem sikerült kijelentkezni. Próbáld újra vagy frissítsd az oldalt.',
       logoutUnknown: 'Hiba történt kijelentkezés közben. Próbáld újra vagy frissítsd az oldalt.',
-      sessionFailed: 'Nem sikerült inicializálni a munkamenetet. Próbáld újra vagy frissítsd az oldalt.',
+      sessionFailed:
+        'Nem sikerült inicializálni a munkamenetet. Próbáld újra vagy frissítsd az oldalt.',
       sessionVerificationFailed: 'A munkamenet ellenőrzése sikertelen',
-      sessionVerificationFailedDescription: 'Nem sikerült ellenőrizni a munkamenetet. Kérjük, frissítsd az oldalt vagy jelentkezz be újra.',
+      sessionVerificationFailedDescription:
+        'Nem sikerült ellenőrizni a munkamenetet. Kérjük, frissítsd az oldalt vagy jelentkezz be újra.',
       sessionInitFailed: 'Nem sikerült inicializálni a munkamenetet',
-      sessionInitFailedDescription: 'Hiba történt a munkamenet inicializálása során. Kérjük, próbáld újra bejelentkezni.',
+      sessionInitFailedDescription:
+        'Hiba történt a munkamenet inicializálása során. Kérjük, próbáld újra bejelentkezni.',
       cookiesNotFound: 'A hitelesítési sütik nem találhatók. Kérjük, jelentkezz be újra.',
     },
     initSession: {
@@ -1910,7 +1971,8 @@ export const hu = {
       logoUploadFailed: 'Nem sikerült feltölteni a logót. Próbáld újra.',
       logoUploadMissingUrl: 'A Supabase nem adott vissza használható URL-t a logóhoz.',
       logoInvalidType: 'Csak {types} fájl tölthető fel.',
-      logoInvalidExtension: 'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
+      logoInvalidExtension:
+        'A fájl kiterjesztése nem megfelelő. Csak PNG, JPEG vagy SVG fájl tölthető fel.',
       logoTooLarge: 'A fájl mérete túl nagy. Maximum 4 MB.',
       logoStorageUnavailable: 'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.',
       autoSaveFailed: 'Nem sikerült automatikusan menteni.',
@@ -1918,26 +1980,34 @@ export const hu = {
     },
     preview: {
       authError: 'Nem sikerült hitelesíteni az előnézet lekérését. Jelentkezz be újra.',
-      fetchStatus: 'Hiba az előnézet betöltésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
-      fetchUnknown: 'Hiba történt az előnézet lekérése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
-      streamUnknown: 'Hiba történt az AI előnézet frissítése közben. Próbáld újra vagy frissítsd az oldalt.',
-      noData: 'Az AI nem küldött adatot az előnézethez. Próbáld újra vagy ellenőrizd a projekt adatokat.',
+      fetchStatus:
+        'Hiba az előnézet betöltésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
+      fetchUnknown:
+        'Hiba történt az előnézet lekérése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      streamUnknown:
+        'Hiba történt az AI előnézet frissítése közben. Próbáld újra vagy frissítsd az oldalt.',
+      noData:
+        'Az AI nem küldött adatot az előnézethez. Próbáld újra vagy ellenőrizd a projekt adatokat.',
       aborted: 'Az előnézet frissítése megszakadt. Próbáld újra.',
-      timeout: 'Az előnézet generálása túl sokáig tartott. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      timeout:
+        'Az előnézet generálása túl sokáig tartott. Próbáld újra vagy ellenőrizd a kapcsolatot.',
     },
     offer: {
       generateStatus: 'Hiba a generálásnál ({status}). Próbáld újra vagy frissítsd az oldalt.',
-      generateUnknown: 'Hiba történt az ajánlat generálása közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      generateUnknown:
+        'Hiba történt az ajánlat generálása közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
       saveStatus: 'Hiba az ajánlat mentésekor ({status}). Próbáld újra vagy frissítsd az oldalt.',
       saveAuth: 'Nem sikerült hitelesíteni az ajánlat mentését. Jelentkezz be újra.',
-      saveUnknown: 'Hiba történt az ajánlat mentése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+      saveUnknown:
+        'Hiba történt az ajánlat mentése közben. Próbáld újra vagy ellenőrizd a kapcsolatot.',
       saveFailed: 'Nem sikerült elmenteni az ajánlatot.',
       savePdfFailed: 'Nem sikerült elindítani a PDF generálását.',
       loadFailed: 'Nem sikerült betölteni az ajánlatot.',
       deleteFailed: 'Nem sikerült törölni az ajánlatot.',
       notFound: 'Az ajánlat nem található.',
       unauthorizedDelete: 'Nincs jogosultságod az ajánlat törléséhez.',
-      missingStructure: 'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
+      missingStructure:
+        'Az AI válasz hiányos. Próbáld újra a generálást vagy ellenőrizd a projekt adatokat.',
       imageBase64Only: 'Csak base64-es képek tölthetők fel.',
       imageFormatUnsupported: 'A kép formátuma nem támogatott (PNG, JPEG vagy WEBP szükséges).',
       imageDataCorrupted: 'A kép base64 adat sérült.',
@@ -2046,7 +2116,8 @@ export const hu = {
         keepShort: 'Tartsd a szöveget rövid és tömören, könnyen olvasható részekre bontva',
         useHeadings: 'Használj alcímeket a tartalom szervezéséhez',
       },
-      longContentWarning: '⚠️ A szöveg hosszú ({length} karakter). A PDF több oldalt is tartalmazhat.',
+      longContentWarning:
+        '⚠️ A szöveg hosszú ({length} karakter). A PDF több oldalt is tartalmazhat.',
       fullscreenTitle: 'PDF előnézet',
       fullscreenClose: 'Bezárás (Esc)',
       fullscreenCloseAria: 'Előnézet bezárása',
@@ -2099,7 +2170,8 @@ export const hu = {
     title: 'Vanda',
     subtitle: 'Vyndi segítőasszisztens',
     welcomeTitle: 'Szia! Vanda vagyok 👋',
-    welcomeDescription: 'Segítek neked a Vyndi-vel kapcsolatos kérdésekben. Kérdezz bátran a funkciókról, sablonokról, csomagokról vagy bármiről, ami érdekel!',
+    welcomeDescription:
+      'Segítek neked a Vyndi-vel kapcsolatos kérdésekben. Kérdezz bátran a funkciókról, sablonokról, csomagokról vagy bármiről, ami érdekel!',
     placeholder: 'Kérdezz tőlem bármit...',
     thinking: 'Gondolkozom...',
     typing: 'Írok...',
@@ -2117,7 +2189,8 @@ export const hu = {
     disclaimer: 'Válaszaim a Vyndi dokumentációján alapulnak. Ha valami nem világos, szólj bátran!',
     emptyState: {
       greeting: 'Szia! 👋 Vanda vagyok, a Te virtuális asszisztensed.',
-      description: 'Kérdezz bármit a funkciókról, sablonokról, csomagokról vagy a platform használatáról. Szívesen segítek!',
+      description:
+        'Kérdezz bármit a funkciókról, sablonokról, csomagokról vagy a platform használatáról. Szívesen segítek!',
     },
     suggestedQuestions: {
       title: 'Gyakori kérdések:',
@@ -2136,7 +2209,8 @@ export const hu = {
   },
   errorBoundary: {
     title: 'Valami hiba történt',
-    description: 'Váratlan hiba lépett fel. Kérjük, frissítsd az oldalt, vagy lépj kapcsolatba az ügyfélszolgálattal, ha a probléma továbbra is fennáll.',
+    description:
+      'Váratlan hiba lépett fel. Kérjük, frissítsd az oldalt, vagy lépj kapcsolatba az ügyfélszolgálattal, ha a probléma továbbra is fennáll.',
     tryAgain: 'Újrapróbálás',
     reloadPage: 'Oldal újratöltése',
     errorDetails: 'Hibareszletek (csak fejlesztési módban)',
@@ -2144,7 +2218,8 @@ export const hu = {
   resources: {
     badge: 'Erőforrások',
     title: 'Tanulj és fejlődj',
-    description: 'Hozzáférhetsz útmutatókhoz, sablonokhoz, cikkekhez és videókhoz az ajánlatkészítésről.',
+    description:
+      'Hozzáférhetsz útmutatókhoz, sablonokhoz, cikkekhez és videókhoz az ajánlatkészítésről.',
     categories: {
       guides: 'Útmutatók',
       templates: 'Sablonok',

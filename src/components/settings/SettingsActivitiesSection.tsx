@@ -4,7 +4,13 @@ import { t } from '@/copy';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { CubeIcon, CheckCircleIcon, PlusIcon, TrashIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import {
+  CubeIcon,
+  CheckCircleIcon,
+  PlusIcon,
+  TrashIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline';
 import type { ActivityRow } from './types';
 import { ALL_INDUSTRIES_HU } from './types';
 import { ActivityImageManager } from './ActivityImageManager';
@@ -76,7 +82,8 @@ export function SettingsActivitiesSection({
               </label>
             </div>
             <p className="text-xs text-slate-600 mb-4">
-              Ez a tevékenység jelenik meg alapértelmezetten az ajánlatkészítő 2. lépésében a "Konzultáció" helyett.
+              Ez a tevékenység jelenik meg alapértelmezetten az ajánlatkészítő 2. lépésében a
+              "Konzultáció" helyett.
             </p>
             <select
               value={defaultActivityId || ''}
@@ -116,7 +123,9 @@ export function SettingsActivitiesSection({
               type="number"
               min={0}
               value={newActivity.price}
-              onChange={(e) => onNewActivityChange((a) => ({ ...a, price: Number(e.target.value) }))}
+              onChange={(e) =>
+                onNewActivityChange((a) => ({ ...a, price: Number(e.target.value) }))
+              }
             />
             <Input
               label={t('settings.activities.fields.vat')}
@@ -220,7 +229,9 @@ export function SettingsActivitiesSection({
         ) : (
           <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
             <CubeIcon className="mx-auto h-12 w-12 text-slate-400" />
-            <p className="mt-4 text-sm font-medium text-slate-600">{t('settings.activities.empty')}</p>
+            <p className="mt-4 text-sm font-medium text-slate-600">
+              {t('settings.activities.empty')}
+            </p>
             <p className="mt-1 text-xs text-slate-500">{t('settings.activities.emptyHelper')}</p>
           </div>
         )}
@@ -228,4 +239,3 @@ export function SettingsActivitiesSection({
     </Card>
   );
 }
-

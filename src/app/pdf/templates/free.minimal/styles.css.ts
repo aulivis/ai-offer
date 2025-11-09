@@ -408,10 +408,3 @@ export const templateStyles = `
     }
   }
 `;
-
-
-
-
-
-
-

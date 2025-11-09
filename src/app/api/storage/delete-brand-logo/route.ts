@@ -9,7 +9,7 @@ const BUCKET_ID = 'brand-assets';
 
 /**
  * DELETE /api/storage/delete-brand-logo
- * 
+ *
  * Deletes a user's brand logo from storage.
  * Used for cleanup when upload succeeds but profile save fails.
  */
@@ -42,18 +42,3 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

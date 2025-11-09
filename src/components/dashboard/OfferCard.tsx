@@ -81,13 +81,18 @@ export function OfferCard({
       {/* Enhanced Header with Status Indicator */}
       <div className="relative">
         {/* Status indicator bar */}
-        <div className={`absolute top-0 left-0 right-0 h-1 ${
-          offer.status === 'draft' ? 'bg-amber-400' :
-          offer.status === 'sent' ? 'bg-blue-400' :
-          offer.status === 'accepted' ? 'bg-emerald-400' :
-          'bg-rose-400'
-        }`} />
-        
+        <div
+          className={`absolute top-0 left-0 right-0 h-1 ${
+            offer.status === 'draft'
+              ? 'bg-amber-400'
+              : offer.status === 'sent'
+                ? 'bg-blue-400'
+                : offer.status === 'accepted'
+                  ? 'bg-emerald-400'
+                  : 'bg-rose-400'
+          }`}
+        />
+
         <div className="flex items-start gap-2 p-4 pt-5">
           <div className="relative flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm shrink-0">
             {initials ? (
@@ -104,7 +109,10 @@ export function OfferCard({
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="flex items-start gap-2 mb-1.5">
-              <p className="truncate text-sm font-bold text-fg leading-tight flex-1 min-w-0" title={offer.title || undefined}>
+              <p
+                className="truncate text-sm font-bold text-fg leading-tight flex-1 min-w-0"
+                title={offer.title || undefined}
+              >
                 {offer.title || '(névtelen)'}
               </p>
               <StatusBadge status={offer.status} className="flex-none shrink-0 mt-0.5" />
@@ -113,7 +121,9 @@ export function OfferCard({
               {companyName && (
                 <>
                   <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                  <span className="truncate font-medium max-w-[140px]" title={companyName}>{companyName}</span>
+                  <span className="truncate font-medium max-w-[140px]" title={companyName}>
+                    {companyName}
+                  </span>
                 </>
               )}
               {offer.created_at && (
@@ -127,7 +137,9 @@ export function OfferCard({
                 <>
                   <span className="text-fg-muted/50 shrink-0">•</span>
                   <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                  <span className="truncate max-w-[120px]" title={offer.industry}>{offer.industry}</span>
+                  <span className="truncate max-w-[120px]" title={offer.industry}>
+                    {offer.industry}
+                  </span>
                 </>
               )}
             </div>
@@ -183,7 +195,9 @@ export function OfferCard({
               onClick={() => setIsExpanded(!isExpanded)}
               className={`${actionButtonClass} hover:bg-bg-muted`}
               aria-expanded={isExpanded}
-              aria-label={isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')}
+              aria-label={
+                isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')
+              }
             >
               <ChevronDownIcon
                 className={`h-4 w-4 text-fg-muted transition-transform duration-200 ${
@@ -206,11 +220,15 @@ export function OfferCard({
                 {/* Draft Status - Always shown */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                      timelineStates.draft === 'complete' ? 'bg-primary' :
-                      timelineStates.draft === 'current' ? 'bg-primary ring-2 ring-primary/30' :
-                      'bg-border/60'
-                    }`} />
+                    <div
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        timelineStates.draft === 'complete'
+                          ? 'bg-primary'
+                          : timelineStates.draft === 'current'
+                            ? 'bg-primary ring-2 ring-primary/30'
+                            : 'bg-border/60'
+                      }`}
+                    />
                     <span className="text-xs font-semibold text-fg truncate">
                       {t(STATUS_LABEL_KEYS.draft)}
                     </span>
@@ -223,11 +241,15 @@ export function OfferCard({
                 {/* Sent Status */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                      timelineStates.sent === 'complete' ? 'bg-primary' :
-                      timelineStates.sent === 'current' ? 'bg-primary ring-2 ring-primary/30' :
-                      'bg-border/60'
-                    }`} />
+                    <div
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        timelineStates.sent === 'complete'
+                          ? 'bg-primary'
+                          : timelineStates.sent === 'current'
+                            ? 'bg-primary ring-2 ring-primary/30'
+                            : 'bg-border/60'
+                      }`}
+                    />
                     <span className="text-xs font-semibold text-fg truncate">
                       {t('dashboard.statusSteps.sent.title')}
                     </span>
@@ -271,11 +293,15 @@ export function OfferCard({
                 {/* Decision Status */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                      timelineStates.decision === 'complete' ? 'bg-primary' :
-                      timelineStates.decision === 'current' ? 'bg-primary ring-2 ring-primary/30' :
-                      'bg-border/60'
-                    }`} />
+                    <div
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        timelineStates.decision === 'complete'
+                          ? 'bg-primary'
+                          : timelineStates.decision === 'current'
+                            ? 'bg-primary ring-2 ring-primary/30'
+                            : 'bg-border/60'
+                      }`}
+                    />
                     <span className="text-xs font-semibold text-fg truncate">
                       {t('dashboard.statusSteps.decision.title')}
                     </span>
@@ -315,7 +341,9 @@ export function OfferCard({
                           disabled={isBusy}
                         />
                         <Button
-                          onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
+                          onClick={() =>
+                            onMarkDecision(offer, 'accepted', decisionDate || undefined)
+                          }
                           disabled={isBusy}
                           variant="secondary"
                           size="sm"
@@ -363,9 +391,7 @@ export function OfferCard({
                     <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
                       {t('dashboard.offerCard.industry')}
                     </p>
-                    <p className="text-xs font-semibold text-fg truncate">
-                      {offer.industry}
-                    </p>
+                    <p className="text-xs font-semibold text-fg truncate">{offer.industry}</p>
                   </div>
                 </div>
               )}

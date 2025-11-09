@@ -49,7 +49,7 @@ async function handleGet(req: AuthenticatedNextRequest) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
-  
+
   const client = supabaseServiceRole();
   const { data, error } = await client
     .from('template_render_metrics')
@@ -59,7 +59,10 @@ async function handleGet(req: AuthenticatedNextRequest) {
 
   if (error) {
     log.error('Failed to load template render metrics', error);
-    return NextResponse.json({ error: 'Nem sikerült betölteni a telemetria adatokat.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Nem sikerült betölteni a telemetria adatokat.' },
+      { status: 500 },
+    );
   }
 
   const rows = (data ?? []).map((row: TemplateRenderMetricRow) => {

@@ -1,10 +1,10 @@
 /**
  * Vercel-Native PDF Generation Utility
- * 
+ *
  * This module provides PDF generation using puppeteer-core + @sparticuz/chromium
  * directly in Vercel serverless functions. This is the industry best practice
  * for PDF generation on Vercel.
- * 
+ *
  * Industry Best Practices:
  * - Uses puppeteer-core (lightweight, no bundled Chromium)
  * - Uses @sparticuz/chromium (optimized for serverless/AWS Lambda/Vercel)
@@ -36,7 +36,7 @@ function isServerlessEnvironment(): boolean {
 
 /**
  * Gets the Chromium executable path for the current environment
- * 
+ *
  * In serverless (Vercel), uses @sparticuz/chromium
  * In local development, can use local Puppeteer or @sparticuz/chromium
  */
@@ -47,7 +47,7 @@ async function getChromiumExecutablePath(): Promise<string | undefined> {
     chromium.setGraphicsMode(false); // Disable graphics for serverless
     return await chromium.executablePath();
   }
-  
+
   // In local development, try to use local Puppeteer first
   // Fall back to @sparticuz/chromium if local Puppeteer not available
   try {
@@ -178,7 +178,7 @@ async function setContentWithNetworkIdleLogging(
 
 /**
  * Generates a PDF from HTML using Vercel-native Puppeteer
- * 
+ *
  * @param html - The HTML content to convert to PDF
  * @param options - PDF generation options (metadata, margins, etc.)
  * @returns PDF binary data as Buffer
@@ -204,7 +204,7 @@ export async function generatePdfVercelNative(
 
   try {
     const page = (await browser.newPage()) as unknown as PuppeteerPage;
-    
+
     // Set timeouts
     page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
     page.setDefaultTimeout(JOB_TIMEOUT_MS);
@@ -251,7 +251,7 @@ export async function generatePdfVercelNative(
     // Generate PDF
     // Type assertion needed because puppeteer-core types may differ
     const pdfResult = await (page as any).pdf(puppeteerOptions);
-    
+
     // Close page
     await page.close();
 
@@ -278,7 +278,7 @@ export async function generatePdfVercelNative(
 
 /**
  * Generates a PDF from HTML with timeout protection
- * 
+ *
  * @param html - The HTML content to convert to PDF
  * @param options - PDF generation options
  * @param timeoutMs - Timeout in milliseconds (default: 90 seconds)
@@ -301,4 +301,3 @@ export async function generatePdfVercelNativeWithTimeout(
     }),
   ]);
 }
-

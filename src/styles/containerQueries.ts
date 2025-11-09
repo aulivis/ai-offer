@@ -1,16 +1,16 @@
 /**
  * Container Queries Utilities
- * 
+ *
  * Provides utilities for using CSS container queries in components.
  * Container queries allow components to respond to their container's size
  * rather than the viewport size, enabling more flexible responsive design.
- * 
+ *
  * @module containerQueries
- * 
+ *
  * @example
  * ```tsx
  * import { Container } from '@/components/ui/Container';
- * 
+ *
  * <Container className="container-card">
  *   <div className="container-query-responsive">
  *     Content that adapts to container size
@@ -51,11 +51,11 @@ export const CONTAINER_NAMES = {
 
 /**
  * Get container query string
- * 
+ *
  * @param minWidth - Minimum width for the container query
  * @param containerName - Optional container name
  * @returns Container query string
- * 
+ *
  * @example
  * ```tsx
  * const query = getContainerQuery('640px', 'card');
@@ -83,4 +83,3 @@ export const CONTAINER_QUERY_CLASSES = {
   /** Container query for extra large screens */
   'container-xl': '@container (min-width: 1280px)',
 } as const;
-

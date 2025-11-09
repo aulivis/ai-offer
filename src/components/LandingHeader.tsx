@@ -229,7 +229,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               {t(item.labelKey)}
             </Link>
           ))}
-          
+
           <div className="mt-2 border-t border-border pt-4">
             {isAuthenticated ? (
               <div className="flex flex-col gap-3">

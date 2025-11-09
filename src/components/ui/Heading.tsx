@@ -23,10 +23,10 @@ export type HeadingProps = React.ComponentPropsWithoutRef<'h1'> & {
 
 /**
  * Heading component with consistent typography scale
- * 
+ *
  * Provides consistent heading styles based on the typography scale.
  * Automatically maps heading levels to appropriate typography styles.
- * 
+ *
  * @example
  * ```tsx
  * <Heading level="h1">Page Title</Heading>
@@ -45,34 +45,36 @@ export function Heading({
   ...props
 }: HeadingProps) {
   // Determine typography scale based on level or size
-  const typographyKey = scale || (() => {
-    if (size) {
-      return size === 'display' ? 'display' : size;
-    }
-    // Map heading level to typography scale
-    switch (level) {
-      case 'h1':
-        return 'h1';
-      case 'h2':
-        return 'h2';
-      case 'h3':
-        return 'h3';
-      case 'h4':
-        return 'h4';
-      case 'h5':
-        return 'h5';
-      case 'h6':
-        return 'h6';
-      default:
-        return 'h2';
-    }
-  })();
+  const typographyKey =
+    scale ||
+    (() => {
+      if (size) {
+        return size === 'display' ? 'display' : size;
+      }
+      // Map heading level to typography scale
+      switch (level) {
+        case 'h1':
+          return 'h1';
+        case 'h2':
+          return 'h2';
+        case 'h3':
+          return 'h3';
+        case 'h4':
+          return 'h4';
+        case 'h5':
+          return 'h5';
+        case 'h6':
+          return 'h6';
+        default:
+          return 'h2';
+      }
+    })();
 
   // Use fluid or fixed typography based on prop
-  const typography = fluid 
+  const typography = fluid
     ? getFluidTypography(typographyKey as FluidTypographyScale)
     : getTypography(typographyKey as TypographyScale);
-  
+
   // Use the appropriate HTML heading element
   const Component = level;
 
@@ -124,4 +126,3 @@ export const H6 = React.forwardRef<HTMLHeadingElement, Omit<HeadingProps, 'level
   (props, ref) => <Heading {...props} level="h6" ref={ref} />,
 );
 H6.displayName = 'H6';
-

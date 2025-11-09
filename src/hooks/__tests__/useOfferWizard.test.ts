@@ -28,9 +28,7 @@ describe('useOfferWizard', () => {
     });
 
     it('should accept custom initial rows', () => {
-      const customRows: PriceRow[] = [
-        { ...createPriceRow(), name: 'Custom Item', unitPrice: 100 },
-      ];
+      const customRows: PriceRow[] = [{ ...createPriceRow(), name: 'Custom Item', unitPrice: 100 }];
       const { result } = renderHook(() => useOfferWizard(customRows));
       expect(result.current.pricingRows).toEqual(customRows);
     });
@@ -119,15 +117,13 @@ describe('useOfferWizard', () => {
           overview: 'Test',
         });
         result.current.goNext(); // Step 2
-        result.current.setPricingRows([
-          { ...createPriceRow(), name: 'Item', unitPrice: 100 },
-        ]);
+        result.current.setPricingRows([{ ...createPriceRow(), name: 'Item', unitPrice: 100 }]);
         result.current.goNext(); // Step 3
       });
 
       // Verify we're on step 3
       expect(result.current.step).toBe(3);
-      
+
       // Try to go further - should stay on step 3
       act(() => {
         const success = result.current.goNext();
@@ -255,9 +251,7 @@ describe('useOfferWizard', () => {
           ...emptyProjectDetails,
           overview: 'Test overview',
         });
-        result.current.setPricingRows([
-          { ...createPriceRow(), name: 'Test Item', unitPrice: 100 },
-        ]);
+        result.current.setPricingRows([{ ...createPriceRow(), name: 'Test Item', unitPrice: 100 }]);
       });
 
       expect(result.current.isCurrentStepValid).toBe(true);
@@ -395,4 +389,3 @@ describe('useOfferWizard', () => {
     });
   });
 });
-

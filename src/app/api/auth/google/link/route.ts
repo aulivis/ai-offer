@@ -19,7 +19,7 @@ function buildRedirect(target: string) {
 export async function GET(request: Request) {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
-  
+
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('propono_at')?.value ?? null;
   const refreshToken = cookieStore.get('propono_rt')?.value ?? null;
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   const queryParams = {
     redirect_to: url.searchParams.get('redirect_to') || undefined,
   };
-  
+
   const parsed = googleLinkQuerySchema.safeParse(queryParams);
   if (!parsed.success) {
     // Invalid redirect URL - use default

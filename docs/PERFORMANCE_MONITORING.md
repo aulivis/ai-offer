@@ -19,7 +19,7 @@ The application uses Web Vitals to track Core Web Vitals and other performance m
   - Target: < 200ms (good)
   - Needs improvement: 200ms - 500ms
   - Poor: > 500ms
-  
+
   Note: FID (First Input Delay) is deprecated and replaced by INP in newer versions of web-vitals.
 
 - **CLS (Cumulative Layout Shift)**: Measures visual stability
@@ -53,7 +53,7 @@ The `WebVitalsReporter` component automatically tracks Web Vitals metrics on pag
 ```tsx
 import { WebVitalsReporter } from '@/components/performance/WebVitalsReporter';
 
-<WebVitalsReporter />
+<WebVitalsReporter />;
 ```
 
 ### Web Vitals Utilities
@@ -99,6 +99,7 @@ Performance monitoring respects user consent preferences. Metrics are only sent 
 ## Development
 
 In development mode, Web Vitals metrics are:
+
 - Logged to the console
 - Stored in `window.__webVitals` for debugging
 - Sent to Google Analytics (if consent is given)
@@ -143,6 +144,7 @@ console.log('Web Vitals:', webVitals);
 ## Monitoring Dashboard
 
 Web Vitals metrics can be viewed in:
+
 - Google Analytics: Events → Web Vitals category
 - Browser DevTools: Performance tab
 - Development console: `window.__webVitals` (development only)
@@ -160,4 +162,3 @@ Web Vitals metrics can be viewed in:
 - [Web Vitals](https://web.dev/vitals/)
 - [Core Web Vitals](https://web.dev/vitals/#core-web-vitals)
 - [Google Analytics Web Vitals](https://support.google.com/analytics/answer/12057884)
-

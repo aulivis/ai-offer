@@ -50,12 +50,17 @@ const ServerEnvSchema = z.object({
     .string()
     .uuid()
     .optional()
-    .describe('System user ID for external API PDF generation jobs. If not set, a placeholder UUID will be used.'),
+    .describe(
+      'System user ID for external API PDF generation jobs. If not set, a placeholder UUID will be used.',
+    ),
 });
 
 type ServerEnv = Omit<
   z.infer<typeof ServerEnvSchema>,
-  'STRIPE_PRICE_ALLOWLIST' | 'OAUTH_REDIRECT_ALLOWLIST' | 'PDF_WEBHOOK_ALLOWLIST' | 'EXTERNAL_API_SYSTEM_USER_ID'
+  | 'STRIPE_PRICE_ALLOWLIST'
+  | 'OAUTH_REDIRECT_ALLOWLIST'
+  | 'PDF_WEBHOOK_ALLOWLIST'
+  | 'EXTERNAL_API_SYSTEM_USER_ID'
 > & {
   STRIPE_PRICE_ALLOWLIST: string[];
   OAUTH_REDIRECT_ALLOWLIST: string[];
@@ -122,16 +127,14 @@ const envWithDefaults: RawServerEnv = {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? serverEnvDefaults.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY:
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? serverEnvDefaults.SUPABASE_SERVICE_ROLE_KEY,
-  AUTH_COOKIE_SECRET:
-    process.env.AUTH_COOKIE_SECRET ?? serverEnvDefaults.AUTH_COOKIE_SECRET,
+  AUTH_COOKIE_SECRET: process.env.AUTH_COOKIE_SECRET ?? serverEnvDefaults.AUTH_COOKIE_SECRET,
   CSRF_SECRET: process.env.CSRF_SECRET ?? serverEnvDefaults.CSRF_SECRET,
   MAGIC_LINK_RATE_LIMIT_SALT:
     process.env.MAGIC_LINK_RATE_LIMIT_SALT ?? serverEnvDefaults.MAGIC_LINK_RATE_LIMIT_SALT,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? serverEnvDefaults.OPENAI_API_KEY,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ?? serverEnvDefaults.STRIPE_SECRET_KEY,
   APP_URL: process.env.APP_URL ?? serverEnvDefaults.APP_URL,
-  PUBLIC_CONTACT_EMAIL:
-    process.env.PUBLIC_CONTACT_EMAIL ?? serverEnvDefaults.PUBLIC_CONTACT_EMAIL,
+  PUBLIC_CONTACT_EMAIL: process.env.PUBLIC_CONTACT_EMAIL ?? serverEnvDefaults.PUBLIC_CONTACT_EMAIL,
   STRIPE_PRICE_ALLOWLIST:
     process.env.STRIPE_PRICE_ALLOWLIST ?? serverEnvDefaults.STRIPE_PRICE_ALLOWLIST,
   OAUTH_REDIRECT_ALLOWLIST:

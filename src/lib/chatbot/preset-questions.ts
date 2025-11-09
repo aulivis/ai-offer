@@ -1,6 +1,6 @@
 /**
  * Preset Questions Handler
- * 
+ *
  * Handles predefined questions with direct answers, bypassing vector search.
  * This ensures fast and accurate responses for common questions.
  */
@@ -31,19 +31,19 @@ function normalizeText(text: string): string {
  */
 function createExactLookupMap(presets: PresetQuestion[]): Map<string, PresetQuestion> {
   const lookupMap = new Map<string, PresetQuestion>();
-  
+
   for (const preset of presets) {
     // Add the main question
     const normalizedQuestion = normalizeText(preset.question);
     lookupMap.set(normalizedQuestion, preset);
-    
+
     // Add all variations
     for (const variation of preset.variations) {
       const normalizedVariation = normalizeText(variation);
       lookupMap.set(normalizedVariation, preset);
     }
   }
-  
+
   return lookupMap;
 }
 
@@ -54,25 +54,25 @@ function createExactLookupMap(presets: PresetQuestion[]): Map<string, PresetQues
 function calculateSimilarity(str1: string, str2: string): number {
   const normalized1 = normalizeText(str1);
   const normalized2 = normalizeText(str2);
-  
+
   // Exact match after normalization
   if (normalized1 === normalized2) {
     return 1.0;
   }
-  
+
   // Check if one contains the other
   if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) {
     return 0.9;
   }
-  
+
   // Simple word overlap similarity
   const words1 = normalized1.split(' ');
   const words2 = normalized2.split(' ');
   const allWords = new Set([...words1, ...words2]);
-  const commonWords = words1.filter(w => words2.includes(w));
-  
+  const commonWords = words1.filter((w) => words2.includes(w));
+
   if (allWords.size === 0) return 0;
-  
+
   return commonWords.length / allWords.size;
 }
 
@@ -228,10 +228,10 @@ function getExactLookupMap(): Map<string, PresetQuestion> {
 
 /**
  * Checks if a query matches any preset question
- * 
+ *
  * For predefined questions (clicked buttons), this does an exact match lookup.
  * For free-text user input, it uses similarity matching with the given threshold.
- * 
+ *
  * @param query - The user's query
  * @param similarityThreshold - Minimum similarity threshold for free-text matching (default: 0.7)
  *                              Only used if exact match fails. Set to 1.0 to disable similarity matching.
@@ -242,23 +242,23 @@ export function matchPresetQuestion(
   similarityThreshold: number = 0.7,
 ): PresetQuestion | null {
   const normalizedQuery = normalizeText(query);
-  
+
   // STEP 1: Exact match lookup (for predefined questions that were clicked)
   // This is instant and requires no similarity calculation
   const exactMatch = getExactLookupMap().get(normalizedQuery);
   if (exactMatch) {
     return exactMatch;
   }
-  
+
   // STEP 2: If similarity threshold is 1.0, skip similarity matching entirely
   // This is useful when we know it's a predefined question but want to skip fuzzy matching
   if (similarityThreshold >= 1.0) {
     return null;
   }
-  
+
   // STEP 3: Similarity matching (for free-text user input that might be similar to predefined questions)
   // Only do this if exact match failed and similarity threshold allows it
-  
+
   // Check similarity with original questions
   for (const preset of PRESET_QUESTIONS) {
     const similarity = calculateSimilarity(query, preset.question);
@@ -266,7 +266,7 @@ export function matchPresetQuestion(
       return preset;
     }
   }
-  
+
   // Check similarity with variations (use slightly higher threshold for quality)
   const variationThreshold = Math.max(0.75, similarityThreshold);
   for (const preset of PRESET_QUESTIONS) {
@@ -277,27 +277,39 @@ export function matchPresetQuestion(
       }
     }
   }
-  
+
   // STEP 4: Keyword-based matching (for free-text that uses similar keywords)
   for (const preset of PRESET_QUESTIONS) {
     const normalizedQuestion = normalizeText(preset.question);
-    
+
     // Extract meaningful words (longer than 2 characters, exclude common words)
-    const commonWords = new Set(['van', 'vannak', 'milyen', 'hogyan', 'mit', 'mi', 'egy', 'vagy', 'a', 'az', 'és']);
+    const commonWords = new Set([
+      'van',
+      'vannak',
+      'milyen',
+      'hogyan',
+      'mit',
+      'mi',
+      'egy',
+      'vagy',
+      'a',
+      'az',
+      'és',
+    ]);
     const questionWords = normalizedQuestion
       .split(' ')
-      .filter(w => w.length > 2 && !commonWords.has(w));
+      .filter((w) => w.length > 2 && !commonWords.has(w));
     const queryWords = normalizedQuery
       .split(' ')
-      .filter(w => w.length > 2 && !commonWords.has(w));
-    
+      .filter((w) => w.length > 2 && !commonWords.has(w));
+
     if (questionWords.length === 0) continue;
-    
+
     // Count matching words (allowing partial matches)
-    const matchingWords = questionWords.filter(qWord => 
-      queryWords.some(qw => qw === qWord || qw.includes(qWord) || qWord.includes(qw))
+    const matchingWords = questionWords.filter((qWord) =>
+      queryWords.some((qw) => qw === qWord || qw.includes(qWord) || qWord.includes(qw)),
     );
-    
+
     // If majority of key words match, it's likely the same question
     const matchRatio = matchingWords.length / questionWords.length;
     // Use threshold-based matching: if threshold is lower, require more word matches
@@ -306,7 +318,6 @@ export function matchPresetQuestion(
       return preset;
     }
   }
-  
+
   return null;
 }
-

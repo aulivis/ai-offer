@@ -81,17 +81,3 @@ export function ActivitiesSkeleton() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

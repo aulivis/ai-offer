@@ -48,4 +48,3 @@ export function useExitIntent() {
 
   return { showPopup, setShowPopup };
 }
-

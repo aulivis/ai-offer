@@ -7,12 +7,14 @@ This application is a Next.js-based SaaS platform for generating professional bu
 ## Architecture Components
 
 ### Frontend
+
 - **Framework:** Next.js 15.5.6 (React 19)
 - **Styling:** Tailwind CSS 4
 - **State Management:** React hooks and context
 - **Type Safety:** TypeScript with strict mode
 
 ### Backend
+
 - **Runtime:** Next.js API Routes (Node.js)
 - **Database:** Supabase (PostgreSQL)
 - **Authentication:** Supabase Auth with custom session management
@@ -21,6 +23,7 @@ This application is a Next.js-based SaaS platform for generating professional bu
 - **AI Integration:** OpenAI API
 
 ### Infrastructure
+
 - **Hosting:** Vercel (presumed)
 - **Database:** Supabase PostgreSQL
 - **Edge Functions:** Supabase Edge Functions (Deno runtime)
@@ -120,6 +123,7 @@ This application is a Next.js-based SaaS platform for generating professional bu
 ### Standardized Error Responses
 
 All errors follow consistent format:
+
 ```json
 {
   "error": "Human-readable message",
@@ -189,6 +193,7 @@ All errors follow consistent format:
 ### Environment Variables
 
 **Required (Production):**
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -202,6 +207,7 @@ All errors follow consistent format:
 - `SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI`
 
 **Optional:**
+
 - `STRIPE_PRICE_ALLOWLIST` (comma-separated)
 - `OAUTH_REDIRECT_ALLOWLIST` (comma-separated)
 - `PDF_WEBHOOK_ALLOWLIST` (comma-separated)
@@ -238,20 +244,3 @@ All errors follow consistent format:
 - [ ] API documentation with OpenAPI/Swagger
 - [ ] Performance monitoring and alerting
 - [ ] Rate limit tuning based on usage patterns
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

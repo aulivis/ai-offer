@@ -30,8 +30,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { 
-      hasError: false, 
+    this.state = {
+      hasError: false,
       error: null,
       retryCount: 0,
       isRetrying: false,
@@ -57,18 +57,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   handleReset = async () => {
     this.setState({ isRetrying: true });
-    
+
     try {
       // Call custom retry handler if provided
       if (this.props.onRetry) {
         await this.props.onRetry();
       }
-      
+
       // Reset error state after a short delay to allow state to settle
       const delay = this.props.retryDelay || 100;
       this.retryTimeoutId = setTimeout(() => {
-        this.setState({ 
-          hasError: false, 
+        this.setState({
+          hasError: false,
           error: null,
           retryCount: this.state.retryCount + 1,
           isRetrying: false,
@@ -96,7 +96,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const isRetrying = this.state.isRetrying;
 
       return (
-        <Card 
+        <Card
           className="mx-auto max-w-2xl p-6 md:p-8"
           role="alert"
           aria-live="assertive"
@@ -120,9 +120,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-fg">{t('errorBoundary.title')}</h2>
-            <p className="text-sm text-fg-muted">
-              {t('errorBoundary.description')}
-            </p>
+            <p className="text-sm text-fg-muted">{t('errorBoundary.description')}</p>
             {!canRetry && (
               <p className="text-xs text-fg-muted/80">
                 Maximum retry attempts reached. Please reload the page.
@@ -136,26 +134,26 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-bg-muted p-4 text-xs text-fg">
                   {this.state.error.toString()}
                   {this.state.error.stack && `\n\n${this.state.error.stack}`}
-                  {this.state.errorInfo && `\n\nComponent Stack:\n${this.state.errorInfo.componentStack}`}
+                  {this.state.errorInfo &&
+                    `\n\nComponent Stack:\n${this.state.errorInfo.componentStack}`}
                 </pre>
               </details>
             )}
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               {canRetry && (
-                <Button 
-                  onClick={this.handleReset} 
+                <Button
+                  onClick={this.handleReset}
                   variant="secondary"
                   disabled={isRetrying}
                   loading={isRetrying}
                   className="min-w-[140px]"
                 >
-                  {isRetrying ? t('errorBoundary.retrying') || 'Retrying...' : t('errorBoundary.tryAgain')}
+                  {isRetrying
+                    ? t('errorBoundary.retrying') || 'Retrying...'
+                    : t('errorBoundary.tryAgain')}
                 </Button>
               )}
-              <Button 
-                onClick={this.handleReload}
-                className="min-w-[140px]"
-              >
+              <Button onClick={this.handleReload} className="min-w-[140px]">
                 {t('errorBoundary.reloadPage')}
               </Button>
             </div>

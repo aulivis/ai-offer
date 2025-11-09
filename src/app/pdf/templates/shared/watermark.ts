@@ -13,12 +13,7 @@ export interface WatermarkOptions {
  * Generate watermark HTML and CSS
  */
 export function renderWatermark(options: WatermarkOptions = {}): { html: string; css: string } {
-  const {
-    type = 'draft',
-    text,
-    opacity = 0.1,
-    rotation = -45,
-  } = options;
+  const { type = 'draft', text, opacity = 0.1, rotation = -45 } = options;
 
   const watermarkText = text || getDefaultWatermarkText(type);
   const safeText = sanitizeInput(watermarkText);
@@ -73,17 +68,3 @@ function getDefaultWatermarkText(type: WatermarkType): string {
       return 'DRAFT';
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

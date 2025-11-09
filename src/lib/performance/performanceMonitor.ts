@@ -1,12 +1,12 @@
 /**
  * Performance Monitor Utilities
- * 
+ *
  * Additional performance monitoring utilities beyond Web Vitals:
  * - Resource timing
  * - Navigation timing
  * - Long tasks
  * - Custom performance marks/measures
- * 
+ *
  * @module performanceMonitor
  */
 
@@ -57,7 +57,7 @@ export function getNavigationTiming(): PerformanceNavigationTiming | null {
 
 /**
  * Calculate Time to Interactive (TTI) from performance timing
- * 
+ *
  * TTI is the time when the page becomes fully interactive.
  * This is an approximation based on DOMContentLoaded and resource loading.
  */
@@ -128,7 +128,11 @@ export function mark(name: string): void {
 /**
  * Measure performance between two marks
  */
-export function measure(name: string, startMark: string, endMark?: string): PerformanceMeasure | null {
+export function measure(
+  name: string,
+  startMark: string,
+  endMark?: string,
+): PerformanceMeasure | null {
   if (typeof window === 'undefined' || !window.performance) {
     return null;
   }
@@ -189,4 +193,3 @@ export function clearPerformanceData(): void {
     // Fail silently
   }
 }
-

@@ -28,7 +28,7 @@ export function createThemeTokens(baseTokens: ThemeTokens, branding?: Branding):
 
 export function createThemeCssVariables(tokens: ThemeTokens): string {
   const primaryContrast = contrastColor(tokens.color.primary);
-  
+
   // Ensure print-safe colors
   const printSafeText = ensurePrintSafeColor(tokens.color.text, tokens.color.bg);
   const printSafePrimary = ensurePrintSafeColor(tokens.color.primary, tokens.color.bg);
@@ -81,26 +81,29 @@ function ensurePrintSafeColor(color: string, background: string = '#ffffff'): st
   try {
     // Basic check - if color is too light, darken it
     let hex = color.replace('#', '');
-    
+
     // Handle 3-character hex codes
     if (hex.length === 3) {
-      hex = hex.split('').map(char => char + char).join('');
+      hex = hex
+        .split('')
+        .map((char) => char + char)
+        .join('');
     }
-    
+
     if (hex.length !== 6) {
       return color; // Return original if invalid
     }
-    
+
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    
+
     // If too light, return darker version
     if (brightness > 200) {
       return '#000000';
     }
-    
+
     return color;
   } catch {
     return color; // Return original on error

@@ -37,14 +37,19 @@ export function Textarea({
   const valueLength = typeof props.value === 'string' ? props.value.length : 0;
   const maxLength = props.maxLength;
 
-  const isRequired = props.required || props['aria-required'] === 'true' || props['aria-required'] === true;
-  
+  const isRequired =
+    props.required || props['aria-required'] === 'true' || props['aria-required'] === true;
+
   return (
     <label htmlFor={textareaId} className={wrapperClasses}>
       {label && (
         <span className="text-sm font-medium text-fg">
           {label}
-          {isRequired && <span className="ml-1 text-danger" aria-label="required">*</span>}
+          {isRequired && (
+            <span className="ml-1 text-danger" aria-label="required">
+              *
+            </span>
+          )}
         </span>
       )}
       <div className="relative">

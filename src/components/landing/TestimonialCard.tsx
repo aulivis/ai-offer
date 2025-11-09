@@ -69,17 +69,3 @@ export default function TestimonialCard({
     </Card>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

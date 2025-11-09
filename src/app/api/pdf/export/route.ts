@@ -9,17 +9,17 @@ import { createExternalPdfJob } from '@/lib/pdfExternalApi';
 
 /**
  * POST /api/pdf/export
- * 
+ *
  * Public API endpoint for exporting PDFs using the runtime template system.
  * This endpoint is designed for external use (SDK, integrations, etc.)
  * and does not require authentication.
- * 
+ *
  * This endpoint uses Vercel-native Puppeteer for PDF generation (industry best practice).
  * Falls back to Supabase Edge Functions if Vercel-native is not available.
- * 
+ *
  * The endpoint returns a job ID immediately and provides status polling
  * and webhook callback support.
- * 
+ *
  * @see {@link https://github.com/your-org/your-repo/wiki/PDF-Export-API Documentation}
  */
 export const runtime = 'nodejs';
@@ -160,7 +160,7 @@ function internalError(message: string) {
 export async function POST(req: NextRequest) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
-  
+
   let json: unknown;
   try {
     json = await req.json();
@@ -222,7 +222,8 @@ export async function POST(req: NextRequest) {
         status: 'pending',
         statusUrl,
         downloadUrl,
-        message: 'PDF generation job created successfully. Use the statusUrl to check job status, or wait for webhook callback if callbackUrl was provided.',
+        message:
+          'PDF generation job created successfully. Use the statusUrl to check job status, or wait for webhook callback if callbackUrl was provided.',
       },
       { status: 202 }, // 202 Accepted - async processing
     );
@@ -230,9 +231,9 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error && /invalid hex color/i.test(error.message)) {
       return badRequest('One or more brand colors are invalid hex values.');
     }
-    
+
     log.error('Failed to create external PDF job', error);
-    
+
     const errorMessage = error instanceof Error ? error.message : 'Failed to create PDF job';
     return internalError(errorMessage);
   }

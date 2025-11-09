@@ -5,6 +5,7 @@ This document describes the design token system used throughout the application 
 ## Overview
 
 The design token system provides:
+
 - **Spacing Scale**: Consistent spacing values based on 4px base unit
 - **Typography Scale**: Consistent font sizes, line heights, and weights
 - **Animation System**: Consistent animations that respect `prefers-reduced-motion`
@@ -26,27 +27,25 @@ const cardPadding = SPACING_PRESETS.cardPadding; // '1.5rem'
 
 ### Scale Values
 
-| Key | Value | Pixels | Use Case |
-|-----|-------|--------|----------|
-| `xs` | 0.25rem | 4px | Minimal spacing |
-| `sm` | 0.5rem | 8px | Small spacing |
-| `sm-md` | 0.75rem | 12px | Small-medium spacing |
-| `md` | 1rem | 16px | Medium spacing (base) |
-| `lg` | 1.5rem | 24px | Large spacing |
-| `xl` | 2rem | 32px | Extra large spacing |
-| `2xl` | 2.75rem | 44px | Touch target size (WCAG AAA) |
-| `3xl` | 3rem | 48px | Extra extra large spacing |
-| `4xl` | 4rem | 64px | Huge spacing |
-| `5xl` | 5rem | 80px | Maximum spacing |
+| Key     | Value   | Pixels | Use Case                     |
+| ------- | ------- | ------ | ---------------------------- |
+| `xs`    | 0.25rem | 4px    | Minimal spacing              |
+| `sm`    | 0.5rem  | 8px    | Small spacing                |
+| `sm-md` | 0.75rem | 12px   | Small-medium spacing         |
+| `md`    | 1rem    | 16px   | Medium spacing (base)        |
+| `lg`    | 1.5rem  | 24px   | Large spacing                |
+| `xl`    | 2rem    | 32px   | Extra large spacing          |
+| `2xl`   | 2.75rem | 44px   | Touch target size (WCAG AAA) |
+| `3xl`   | 3rem    | 48px   | Extra extra large spacing    |
+| `4xl`   | 4rem    | 64px   | Huge spacing                 |
+| `5xl`   | 5rem    | 80px   | Maximum spacing              |
 
 ### Tailwind Integration
 
 The spacing scale aligns with Tailwind's default spacing scale. Use Tailwind classes directly:
 
 ```tsx
-<div className="p-4 gap-6 mb-8">
-  {/* p-4 = 1rem, gap-6 = 1.5rem, mb-8 = 2rem */}
-</div>
+<div className="p-4 gap-6 mb-8">{/* p-4 = 1rem, gap-6 = 1.5rem, mb-8 = 2rem */}</div>
 ```
 
 ## Typography Scale
@@ -69,22 +68,22 @@ const h1Style = getTypography('h1');
 
 ### Scale Values
 
-| Key | Size | Line Height | Weight | Use Case |
-|-----|------|-------------|--------|----------|
-| `display` | 4rem | 1.1 | 700 | Large hero headings |
-| `h1` | 3rem | 1.2 | 700 | Main page headings |
-| `h2` | 2.25rem | 1.25 | 600 | Section headings |
-| `h3` | 1.875rem | 1.3 | 600 | Subsection headings |
-| `h4` | 1.5rem | 1.35 | 600 | Minor headings |
-| `h5` | 1.25rem | 1.4 | 600 | Small headings |
-| `h6` | 1.125rem | 1.4 | 600 | Smallest headings |
-| `bodyLarge` | 1.125rem | 1.6 | 400 | Emphasis text |
-| `body` | 1rem | 1.6 | 400 | Default body text |
-| `bodySmall` | 0.875rem | 1.5 | 400 | Secondary text |
-| `caption` | 0.75rem | 1.4 | 400 | Small labels |
-| `uiLarge` | 1.125rem | 1.5 | 600 | Large UI text |
-| `ui` | 1rem | 1.5 | 600 | Default UI text |
-| `uiSmall` | 0.875rem | 1.4 | 600 | Small UI text |
+| Key         | Size     | Line Height | Weight | Use Case            |
+| ----------- | -------- | ----------- | ------ | ------------------- |
+| `display`   | 4rem     | 1.1         | 700    | Large hero headings |
+| `h1`        | 3rem     | 1.2         | 700    | Main page headings  |
+| `h2`        | 2.25rem  | 1.25        | 600    | Section headings    |
+| `h3`        | 1.875rem | 1.3         | 600    | Subsection headings |
+| `h4`        | 1.5rem   | 1.35        | 600    | Minor headings      |
+| `h5`        | 1.25rem  | 1.4         | 600    | Small headings      |
+| `h6`        | 1.125rem | 1.4         | 600    | Smallest headings   |
+| `bodyLarge` | 1.125rem | 1.6         | 400    | Emphasis text       |
+| `body`      | 1rem     | 1.6         | 400    | Default body text   |
+| `bodySmall` | 0.875rem | 1.5         | 400    | Secondary text      |
+| `caption`   | 0.75rem  | 1.4         | 400    | Small labels        |
+| `uiLarge`   | 1.125rem | 1.5         | 600    | Large UI text       |
+| `ui`        | 1rem     | 1.5         | 600    | Default UI text     |
+| `uiSmall`   | 0.875rem | 1.4         | 600    | Small UI text       |
 
 ### Heading Component
 
@@ -108,12 +107,12 @@ import { Heading, H1, H2, H3 } from '@/components/ui/Heading';
 ### Usage
 
 ```typescript
-import { 
-  ANIMATION_DURATION, 
-  ANIMATION_EASING, 
+import {
+  ANIMATION_DURATION,
+  ANIMATION_EASING,
   getAnimationDuration,
   getAnimationStyle,
-  useReducedMotion 
+  useReducedMotion
 } from '@/styles/animations';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -121,7 +120,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 function MyComponent() {
   const reducedMotion = useReducedMotion();
   const duration = getAnimationDuration('smooth', true); // Returns 0 if reduced motion
-  
+
   return (
     <div style={getAnimationStyle('smooth', 'easeOut', true)}>
       Content
@@ -132,24 +131,24 @@ function MyComponent() {
 
 ### Duration Scale
 
-| Key | Value | Use Case |
-|-----|-------|----------|
-| `instant` | 75ms | Instant feedback |
-| `fast` | 150ms | Quick transitions |
-| `base` | 200ms | Standard transitions |
-| `smooth` | 300ms | Smooth transitions |
-| `slow` | 500ms | Slow transitions |
-| `slower` | 1000ms | Very slow transitions |
+| Key       | Value  | Use Case              |
+| --------- | ------ | --------------------- |
+| `instant` | 75ms   | Instant feedback      |
+| `fast`    | 150ms  | Quick transitions     |
+| `base`    | 200ms  | Standard transitions  |
+| `smooth`  | 300ms  | Smooth transitions    |
+| `slow`    | 500ms  | Slow transitions      |
+| `slower`  | 1000ms | Very slow transitions |
 
 ### Easing Functions
 
-| Key | Value | Use Case |
-|-----|-------|----------|
-| `linear` | linear | Constant speed |
-| `easeIn` | cubic-bezier(0.4, 0, 1, 1) | Slow start |
-| `easeOut` | cubic-bezier(0, 0, 0.2, 1) | Slow end |
-| `easeInOut` | cubic-bezier(0.4, 0, 0.2, 1) | Slow start and end |
-| `spring` | cubic-bezier(0.68, -0.55, 0.265, 1.55) | Spring-like motion |
+| Key         | Value                                  | Use Case           |
+| ----------- | -------------------------------------- | ------------------ |
+| `linear`    | linear                                 | Constant speed     |
+| `easeIn`    | cubic-bezier(0.4, 0, 1, 1)             | Slow start         |
+| `easeOut`   | cubic-bezier(0, 0, 0.2, 1)             | Slow end           |
+| `easeInOut` | cubic-bezier(0.4, 0, 0.2, 1)           | Slow start and end |
+| `spring`    | cubic-bezier(0.68, -0.55, 0.265, 1.55) | Spring-like motion |
 
 ### Reduced Motion Support
 
@@ -160,9 +159,9 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 function AnimatedComponent() {
   const reducedMotion = useReducedMotion();
-  
+
   return (
-    <div 
+    <div
       className={reducedMotion ? '' : 'animate-fadeIn'}
       style={reducedMotion ? {} : { transition: 'opacity 300ms ease-out' }}
     >
@@ -223,24 +222,28 @@ The `Button` component already supports size variants (`sm`, `md`, `lg`) and var
 ### Migrating to Heading Component
 
 **Before:**
+
 ```tsx
 <h1 className="text-4xl font-bold">Title</h1>
 ```
 
 **After:**
+
 ```tsx
 import { H1 } from '@/components/ui/Heading';
-<H1>Title</H1>
+<H1>Title</H1>;
 ```
 
 ### Migrating to Spacing Scale
 
 **Before:**
+
 ```tsx
 <div className="p-6 gap-4 mb-8">
 ```
 
 **After:**
+
 ```tsx
 // Already using Tailwind classes (which align with spacing scale)
 <div className="p-6 gap-4 mb-8">
@@ -257,4 +260,3 @@ import { H1 } from '@/components/ui/Heading';
 - `web/src/components/ui/Heading.tsx` - Heading component
 - `web/src/components/ui/Card.tsx` - Card component (with size/variant props)
 - `web/src/hooks/useReducedMotion.ts` - Reduced motion hook
-

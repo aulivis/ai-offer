@@ -27,7 +27,7 @@ const variantClasses = {
 
 /**
  * Card component with size and variant options
- * 
+ *
  * @example
  * ```tsx
  * <Card size="md" variant="default">
@@ -94,7 +94,9 @@ export function CardBody({ className, ...props }: React.HTMLAttributes<HTMLDivEl
  * Card footer component
  */
 export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  const cls = ['mt-4 flex items-center gap-2 pt-4 border-t border-border/60', className].filter(Boolean).join(' ');
+  const cls = ['mt-4 flex items-center gap-2 pt-4 border-t border-border/60', className]
+    .filter(Boolean)
+    .join(' ');
 
   return <div className={cls} {...props} />;
 }

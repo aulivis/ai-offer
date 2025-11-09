@@ -78,32 +78,32 @@ function partialFooter(ctx: RenderCtx): string {
 
   // For placeholder fields, show "-" (em dash) instead of placeholder text for better UX
   const notProvided = ctx.i18n.t('pdf.templates.common.notProvided') || '—';
-  
+
   const contactValue = contactName.isPlaceholder ? notProvided : contactName.value;
   const contactClass = contactName.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
-  
+
   const emailValue = contactEmail.isPlaceholder ? notProvided : contactEmail.value;
   const emailClass = contactEmail.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
-  
+
   const phoneValue = contactPhone.isPlaceholder ? notProvided : contactPhone.value;
   const phoneClass = contactPhone.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
-  
+
   const websiteValue = companyWebsite.isPlaceholder ? notProvided : companyWebsite.value;
   const websiteClass = companyWebsite.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
-  
+
   const addressValue = companyAddress.isPlaceholder ? notProvided : companyAddress.value;
   const addressClass = companyAddress.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
-  
+
   const taxValue = companyTaxId.isPlaceholder ? notProvided : companyTaxId.value;
   const taxClass = companyTaxId.isPlaceholder
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
@@ -168,10 +168,3 @@ ${content}
   ensureSafeHtml(html, 'free minimal template body');
   return html;
 }
-
-
-
-
-
-
-

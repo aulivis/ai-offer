@@ -4,7 +4,8 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Ingyenes ajánlat sablonok | Vyndi',
-  description: 'Böngészd át ingyenes, letölthető ajánlat sablonjainkat. Professzionális, testreszabható sablonok különböző iparágakhoz és projekttípusokhoz. Azonnal használható, PDF formátumban.',
+  description:
+    'Böngészd át ingyenes, letölthető ajánlat sablonjainkat. Professzionális, testreszabható sablonok különböző iparágakhoz és projekttípusokhoz. Azonnal használható, PDF formátumban.',
   openGraph: {
     title: 'Ingyenes ajánlat sablonok | Vyndi',
     description: 'Professzionális, letölthető ajánlat sablonok ingyen.',
@@ -18,7 +19,8 @@ export default function TemplatesPage() {
     {
       id: 'free.minimal',
       name: 'Minimális',
-      description: 'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz. Egyszerű és elegáns.',
+      description:
+        'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz. Egyszerű és elegáns.',
       category: 'Általános',
       tags: ['minimális', 'professzionális', 'egyszerű'],
       preview: '/templates/minimal-preview.png',
@@ -50,7 +52,8 @@ export default function TemplatesPage() {
           Ingyenes ajánlat sablonok
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
-          Böngészd át ingyenes, professzionális ajánlat sablonjainkat. Minden sablon testreszabható, azonnal használható, és tökéletesen megfelel az üzleti ajánlatok készítéséhez.
+          Böngészd át ingyenes, professzionális ajánlat sablonjainkat. Minden sablon testreszabható,
+          azonnal használható, és tökéletesen megfelel az üzleti ajánlatok készítéséhez.
         </p>
       </header>
 
@@ -65,8 +68,18 @@ export default function TemplatesPage() {
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                  <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="mx-auto h-16 w-16 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   <p className="mt-4 text-xs font-medium text-gray-500">
                     [Helyőrző: {template.name} sablon előnézet képe]
@@ -87,9 +100,7 @@ export default function TemplatesPage() {
               <h3 className="mb-2 text-xl font-bold text-fg group-hover:text-primary transition-colors">
                 {template.name}
               </h3>
-              <p className="mb-4 text-sm leading-relaxed text-fg-muted">
-                {template.description}
-              </p>
+              <p className="mb-4 text-sm leading-relaxed text-fg-muted">{template.description}</p>
 
               {/* Features */}
               <div className="mb-4 flex flex-wrap gap-2">
@@ -125,7 +136,8 @@ export default function TemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">Válassz sablont</h3>
             <p className="text-sm text-fg-muted">
-              Böngészd át az ingyenes sablonokat, és válaszd ki azt, amelyik a legjobban illeszkedik a stílusodhoz.
+              Böngészd át az ingyenes sablonokat, és válaszd ki azt, amelyik a legjobban illeszkedik
+              a stílusodhoz.
             </p>
           </div>
           <div>
@@ -134,7 +146,8 @@ export default function TemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">Testreszabd</h3>
             <p className="text-sm text-fg-muted">
-              Add meg a saját információidat, színeidet, logódat, és az AI segít generálni a szövegeket.
+              Add meg a saját információidat, színeidet, logódat, és az AI segít generálni a
+              szövegeket.
             </p>
           </div>
           <div>
@@ -156,14 +169,25 @@ export default function TemplatesPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="h-6 w-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
               <div>
                 <h3 className="mb-2 font-semibold text-fg">Professzionális dizájn</h3>
                 <p className="text-sm text-fg-muted">
-                  Minden sablonunk professzionális dizájner által készült, és követi a legjobb UX/UI gyakorlatokat.
+                  Minden sablonunk professzionális dizájner által készült, és követi a legjobb UX/UI
+                  gyakorlatokat.
                 </p>
               </div>
             </div>
@@ -172,14 +196,25 @@ export default function TemplatesPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
-                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                <svg
+                  className="h-6 w-6 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                  />
                 </svg>
               </div>
               <div>
                 <h3 className="mb-2 font-semibold text-fg">Teljes testreszabhatóság</h3>
                 <p className="text-sm text-fg-muted">
-                  Módosíthatod a színeket, logót, szövegeket, és még sok mindent, hogy tökéletesen illeszkedjen a brandhez.
+                  Módosíthatod a színeket, logót, szövegeket, és még sok mindent, hogy tökéletesen
+                  illeszkedjen a brandhez.
                 </p>
               </div>
             </div>
@@ -188,14 +223,25 @@ export default function TemplatesPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-purple-100">
-                <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <svg
+                  className="h-6 w-6 text-purple-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
               </div>
               <div>
                 <h3 className="mb-2 font-semibold text-fg">AI segítség</h3>
                 <p className="text-sm text-fg-muted">
-                  Használd az AI funkciót, hogy másodpercek alatt generálj professzionális szövegeket a sablonokhoz.
+                  Használd az AI funkciót, hogy másodpercek alatt generálj professzionális
+                  szövegeket a sablonokhoz.
                 </p>
               </div>
             </div>
@@ -204,14 +250,25 @@ export default function TemplatesPage() {
           <Card>
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-amber-100">
-                <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="h-6 w-6 text-amber-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <div>
                 <h3 className="mb-2 font-semibold text-fg">Gyors és egyszerű</h3>
                 <p className="text-sm text-fg-muted">
-                  Percek alatt készíthetsz professzionális ajánlatot. Nincs szükség tervezői tapasztalatra.
+                  Percek alatt készíthetsz professzionális ajánlatot. Nincs szükség tervezői
+                  tapasztalatra.
                 </p>
               </div>
             </div>
@@ -233,7 +290,12 @@ export default function TemplatesPage() {
             >
               Ingyenes próba indítása
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </Link>
             <Link
@@ -261,8 +323,18 @@ export default function TemplatesPage() {
                     Tanuld meg, hogyan készíts tökéletes ajánlatokat.
                   </p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -278,8 +350,18 @@ export default function TemplatesPage() {
                     Használd az AI-t a sablonokhoz szövegek generálásához.
                   </p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -289,11 +371,3 @@ export default function TemplatesPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-

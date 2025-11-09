@@ -9,11 +9,7 @@ import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback, recordAuthRouteUsage } from '@/lib/observability/metrics';
-import {
-  Argon2Algorithm,
-  argon2Hash,
-  type Argon2Options,
-} from '@/lib/auth/argon2';
+import { Argon2Algorithm, argon2Hash, type Argon2Options } from '@/lib/auth/argon2';
 
 const AUTH_CONFIRM_ERROR_REDIRECT = '/login?message=Unable%20to%20authenticate';
 const DEFAULT_FALLBACK_PATH = '/dashboard';
@@ -29,14 +25,12 @@ const ARGON2_OPTIONS: Argon2Options = {
 
 // Email OTP types allowed for token_hash flow
 const EMAIL_OTP_TYPES = ['email', 'recovery'] as const;
-type EmailOtpType = typeof EMAIL_OTP_TYPES[number];
+type EmailOtpType = (typeof EMAIL_OTP_TYPES)[number];
 
 function normalizeOtpType(type: string | null): EmailOtpType | null {
   if (!type) return null;
   const normalized = type.trim().toLowerCase() as EmailOtpType | string;
-  return EMAIL_OTP_TYPES.includes(normalized as EmailOtpType)
-    ? (normalized as EmailOtpType)
-    : null;
+  return EMAIL_OTP_TYPES.includes(normalized as EmailOtpType) ? (normalized as EmailOtpType) : null;
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
@@ -79,10 +73,9 @@ function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
     return null;
   }
   try {
-    const json = Buffer.from(
-      parts[1].replace(/-/g, '+').replace(/_/g, '/'),
-      'base64',
-    ).toString('utf8');
+    const json = Buffer.from(parts[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString(
+      'utf8',
+    );
     return JSON.parse(json) as T;
   } catch {
     return null;
@@ -111,7 +104,7 @@ async function persistSessionOpaque(
 
   const hashedRefresh = await argon2Hash(refreshToken, ARGON2_OPTIONS);
   const supabase = supabaseServiceRole();
-  
+
   // Use UPSERT function to handle deduplication (same refresh token hash from different routes)
   // This prevents duplicate session records during migration from callback to confirm route
   const { data, error } = await supabase.rpc('upsert_session', {
@@ -127,7 +120,7 @@ async function persistSessionOpaque(
     logger.error('Failed to persist session record during auth confirm', error);
     throw new Error('Unable to persist session record.');
   }
-  
+
   logger.info('Session persisted or updated', {
     sessionId: data,
     userId,
@@ -138,7 +131,7 @@ async function persistSessionOpaque(
  * Creates a redirect response with authentication cookies set.
  * Uses Next.js's built-in cookie API to properly set cookies on redirect responses.
  * This matches the pattern used in the callback route.
- * 
+ *
  * For reliability, redirects to /auth/init-session first, which provides
  * client-side session initialization and cookie validation before final redirect.
  */
@@ -196,7 +189,7 @@ function redirectToWithCookies(
 
   // Use APP_URL scheme as primary check, fallback to NODE_ENV for resilience
   // This handles cases where APP_URL may not reflect runtime transport (e.g., HTTPS on localhost)
-  const isSecure = envServer.APP_URL?.startsWith('https') ?? (process.env.NODE_ENV !== 'development');
+  const isSecure = envServer.APP_URL?.startsWith('https') ?? process.env.NODE_ENV !== 'development';
 
   // Set access token cookie
   response.cookies.set('propono_at', accessToken, {
@@ -230,11 +223,11 @@ function redirectToWithCookies(
 
 /**
  * PKCE / token-hash token exchange endpoint for Next.js App Router.
- * 
+ *
  * Handles:
  * - token_hash + type (email | recovery) for PKCE Magic Link / password recovery
  * - code for OAuth PKCE code exchange
- * 
+ *
  * Sets session cookies and redirects to validated next URL or error page.
  */
 export async function GET(request: NextRequest) {
@@ -275,19 +268,21 @@ export async function GET(request: NextRequest) {
     // Handle token_hash flow (PKCE Magic Link / password recovery)
     if (tokenHash && typeParam) {
       const otpType = normalizeOtpType(typeParam);
-      
+
       if (!otpType) {
         logger.error('Invalid OTP type in auth confirm', {
           type: typeParam,
           allowedTypes: EMAIL_OTP_TYPES,
         });
         recordMagicLinkCallback('failure', { reason: 'invalid_token_type' });
-        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'invalid_token_type' });
+        recordAuthRouteUsage('confirm', 'failure', {
+          flow: 'token_hash',
+          error: 'invalid_token_type',
+        });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       logger.info('Processing token_hash flow', {
@@ -307,12 +302,15 @@ export async function GET(request: NextRequest) {
           otpType,
         });
         recordMagicLinkCallback('failure', { reason: 'verify_failed' });
-        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'verify_failed', otpType });
+        recordAuthRouteUsage('confirm', 'failure', {
+          flow: 'token_hash',
+          error: 'verify_failed',
+          otpType,
+        });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       const session = data.session;
@@ -328,10 +326,9 @@ export async function GET(request: NextRequest) {
         recordMagicLinkCallback('failure', { reason: 'missing_tokens' });
         recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'missing_tokens' });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       // Extract user ID from access token
@@ -340,33 +337,27 @@ export async function GET(request: NextRequest) {
       if (!userId) {
         logger.error('Failed to extract user ID from access token');
         recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
-        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'user_lookup_failed' });
+        recordAuthRouteUsage('confirm', 'failure', {
+          flow: 'token_hash',
+          error: 'user_lookup_failed',
+        });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       // Persist session to database (critical for session management)
       try {
-        await persistSessionOpaque(
-          userId,
-          refreshToken,
-          expiresIn,
-          request,
-          logger,
-          rememberMe,
-        );
+        await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger, rememberMe);
       } catch (error) {
         logger.error('Failed to persist session in auth confirm', error);
         recordMagicLinkCallback('failure', { reason: 'persist_failed' });
         recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'persist_failed' });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       // Create CSRF token for the session
@@ -383,7 +374,11 @@ export async function GET(request: NextRequest) {
       });
 
       recordMagicLinkCallback('success');
-      recordAuthRouteUsage('confirm', 'success', { flow: 'token_hash', userId, otpType: typeParam });
+      recordAuthRouteUsage('confirm', 'success', {
+        flow: 'token_hash',
+        userId,
+        otpType: typeParam,
+      });
 
       // Redirect to init-session page with cookies set
       return redirectToWithCookies(
@@ -411,12 +406,14 @@ export async function GET(request: NextRequest) {
         logger.error('exchangeCodeForSession failed in auth confirm', {
           error: error?.message,
         });
-        recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'exchange_failed' });
+        recordAuthRouteUsage('confirm', 'failure', {
+          flow: 'oauth_pkce',
+          error: 'exchange_failed',
+        });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       const session = data.session;
@@ -431,10 +428,9 @@ export async function GET(request: NextRequest) {
         });
         recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'missing_tokens' });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       // Extract user ID from access token
@@ -442,32 +438,26 @@ export async function GET(request: NextRequest) {
       const userId = payload?.sub ?? '';
       if (!userId) {
         logger.error('Failed to extract user ID from access token');
-        recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'user_lookup_failed' });
+        recordAuthRouteUsage('confirm', 'failure', {
+          flow: 'oauth_pkce',
+          error: 'user_lookup_failed',
+        });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       // Persist session to database (critical for session management)
       try {
-        await persistSessionOpaque(
-          userId,
-          refreshToken,
-          expiresIn,
-          request,
-          logger,
-          rememberMe,
-        );
+        await persistSessionOpaque(userId, refreshToken, expiresIn, request, logger, rememberMe);
       } catch (error) {
         logger.error('Failed to persist session in auth confirm (OAuth)', error);
         recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'persist_failed' });
         await clearAuthCookies();
-        return NextResponse.redirect(
-          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-          { status: 302 }
-        );
+        return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+          status: 302,
+        });
       }
 
       // Create CSRF token for the session
@@ -505,17 +495,14 @@ export async function GET(request: NextRequest) {
       hasCode: !!code,
     });
     await clearAuthCookies();
-    return NextResponse.redirect(
-      new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-      { status: 302 }
-    );
+    return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+      status: 302,
+    });
   } catch (error) {
     logger.error('Unexpected error in /api/auth/confirm', error);
     await clearAuthCookies();
-    return NextResponse.redirect(
-      new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
-      { status: 302 }
-    );
+    return NextResponse.redirect(new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(), {
+      status: 302,
+    });
   }
 }
-

@@ -101,17 +101,17 @@ import { Heading, H1, H2 } from '@/components/ui/Heading';
 
 ### Typography Scale Values
 
-| Key | Fixed Size | Fluid Size (Mobile → Desktop) | Use Case |
-|-----|------------|-------------------------------|----------|
-| `display` | 4rem (64px) | 48px → 64px | Large hero headings |
-| `h1` | 3rem (48px) | 32px → 48px | Main page headings |
-| `h2` | 2.25rem (36px) | 24px → 36px | Section headings |
-| `h3` | 1.875rem (30px) | 20px → 30px | Subsection headings |
-| `h4` | 1.5rem (24px) | 18px → 24px | Minor headings |
-| `h5` | 1.25rem (20px) | 16px → 20px | Small headings |
-| `h6` | 1.125rem (18px) | 14px → 18px | Smallest headings |
-| `body` | 1rem (16px) | 14px → 16px | Default body text |
-| `bodySmall` | 0.875rem (14px) | 12px → 14px | Secondary text |
+| Key         | Fixed Size      | Fluid Size (Mobile → Desktop) | Use Case            |
+| ----------- | --------------- | ----------------------------- | ------------------- |
+| `display`   | 4rem (64px)     | 48px → 64px                   | Large hero headings |
+| `h1`        | 3rem (48px)     | 32px → 48px                   | Main page headings  |
+| `h2`        | 2.25rem (36px)  | 24px → 36px                   | Section headings    |
+| `h3`        | 1.875rem (30px) | 20px → 30px                   | Subsection headings |
+| `h4`        | 1.5rem (24px)   | 18px → 24px                   | Minor headings      |
+| `h5`        | 1.25rem (20px)  | 16px → 20px                   | Small headings      |
+| `h6`        | 1.125rem (18px) | 14px → 18px                   | Smallest headings   |
+| `body`      | 1rem (16px)     | 14px → 16px                   | Default body text   |
+| `bodySmall` | 0.875rem (14px) | 12px → 14px                   | Secondary text      |
 
 ### Best Practices
 
@@ -127,15 +127,15 @@ import { Heading, H1, H2 } from '@/components/ui/Heading';
 
 The spacing scale is based on a 4px base unit, aligned with Tailwind CSS:
 
-| Key | Value | Pixels | Use Case |
-|-----|-------|--------|----------|
-| `xs` | 0.25rem | 4px | Minimal spacing |
-| `sm` | 0.5rem | 8px | Small spacing |
-| `md` | 1rem | 16px | Medium spacing (base) |
-| `lg` | 1.5rem | 24px | Large spacing |
-| `xl` | 2rem | 32px | Extra large spacing |
-| `2xl` | 2.75rem | 44px | Touch target size (WCAG AAA) |
-| `3xl` | 3.5rem | 56px | Extra extra large spacing |
+| Key   | Value   | Pixels | Use Case                     |
+| ----- | ------- | ------ | ---------------------------- |
+| `xs`  | 0.25rem | 4px    | Minimal spacing              |
+| `sm`  | 0.5rem  | 8px    | Small spacing                |
+| `md`  | 1rem    | 16px   | Medium spacing (base)        |
+| `lg`  | 1.5rem  | 24px   | Large spacing                |
+| `xl`  | 2rem    | 32px   | Extra large spacing          |
+| `2xl` | 2.75rem | 44px   | Touch target size (WCAG AAA) |
+| `3xl` | 3.5rem  | 56px   | Extra extra large spacing    |
 
 ### Fluid Spacing
 
@@ -152,15 +152,11 @@ const padding = FLUID_SPACING_SCALE.md;
 
 ```tsx
 // Use Tailwind classes (aligns with spacing scale)
-<div className="p-4 gap-6 mb-8">
-  {/* p-4 = 1rem, gap-6 = 1.5rem, mb-8 = 2rem */}
-</div>
+<div className="p-4 gap-6 mb-8">{/* p-4 = 1rem, gap-6 = 1.5rem, mb-8 = 2rem */}</div>;
 
 // Use spacing tokens for inline styles
 import { SPACING_SCALE } from '@/styles/spacing';
-<div style={{ padding: SPACING_SCALE.md, gap: SPACING_SCALE.lg }}>
-  Content
-</div>
+<div style={{ padding: SPACING_SCALE.md, gap: SPACING_SCALE.lg }}>Content</div>;
 ```
 
 ## Colors
@@ -231,7 +227,7 @@ import { Button } from '@/components/ui/Button';
 
 <Button variant="primary" size="md" loading={isSubmitting}>
   Submit
-</Button>
+</Button>;
 ```
 
 #### Input
@@ -246,7 +242,7 @@ import { Input } from '@/components/ui/Input';
   onChange={(e) => setEmail(e.target.value)}
   error={errors.email}
   loading={isLoading}
-/>
+/>;
 ```
 
 #### Card
@@ -258,13 +254,11 @@ import { Card, CardHeader, CardBody, CardFooter } from '@/components/ui/Card';
   <CardHeader>
     <h3>Card Title</h3>
   </CardHeader>
-  <CardBody>
-    Content
-  </CardBody>
+  <CardBody>Content</CardBody>
   <CardFooter>
     <Button>Action</Button>
   </CardFooter>
-</Card>
+</Card>;
 ```
 
 #### Modal
@@ -276,13 +270,11 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Moda
   <ModalHeader>
     <h2>Modal Title</h2>
   </ModalHeader>
-  <ModalBody>
-    Modal content
-  </ModalBody>
+  <ModalBody>Modal content</ModalBody>
   <ModalFooter>
     <Button onClick={() => setIsOpen(false)}>Close</Button>
   </ModalFooter>
-</Modal>
+</Modal>;
 ```
 
 ### Component Patterns
@@ -339,7 +331,9 @@ All interactive components support loading states:
 ```tsx
 // Responsive grid
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  {items.map(item => <Card key={item.id}>{item.content}</Card>)}
+  {items.map((item) => (
+    <Card key={item.id}>{item.content}</Card>
+  ))}
 </div>
 ```
 
@@ -439,10 +433,8 @@ Use the `Container` component to create a container context:
 import { Container } from '@/components/ui/Container';
 
 <Container type="inline-size" name="card">
-  <div className="container-responsive">
-    Content that adapts to container size
-  </div>
-</Container>
+  <div className="container-responsive">Content that adapts to container size</div>
+</Container>;
 ```
 
 ### Container Types
@@ -513,9 +505,7 @@ Use fluid typography for headings that need to scale:
 Use Tailwind's responsive utilities for spacing:
 
 ```tsx
-<div className="p-4 md:p-6 lg:p-8">
-  Responsive padding
-</div>
+<div className="p-4 md:p-6 lg:p-8">Responsive padding</div>
 ```
 
 ### Container Queries
@@ -524,9 +514,7 @@ Use container queries for component-level responsiveness:
 
 ```tsx
 <Container type="inline-size" name="card">
-  <div className="container-responsive">
-    Content that adapts to container size
-  </div>
+  <div className="container-responsive">Content that adapts to container size</div>
 </Container>
 ```
 
@@ -566,31 +554,33 @@ Use container queries for component-level responsiveness:
 ### Migrating to Fluid Typography
 
 **Before:**
+
 ```tsx
 <h1 className="text-3xl md:text-4xl lg:text-5xl">Title</h1>
 ```
 
 **After:**
+
 ```tsx
-<Heading level="h1" fluid>Title</Heading>
+<Heading level="h1" fluid>
+  Title
+</Heading>
 ```
 
 ### Migrating to Design Tokens
 
 **Before:**
+
 ```tsx
-<div style={{ padding: '24px', fontSize: '18px' }}>
-  Content
-</div>
+<div style={{ padding: '24px', fontSize: '18px' }}>Content</div>
 ```
 
 **After:**
+
 ```tsx
 import { SPACING_SCALE, TYPOGRAPHY_SCALE } from '@/styles/designTokens';
 
-<div style={{ padding: SPACING_SCALE.lg, fontSize: TYPOGRAPHY_SCALE.bodyLarge.size }}>
-  Content
-</div>
+<div style={{ padding: SPACING_SCALE.lg, fontSize: TYPOGRAPHY_SCALE.bodyLarge.size }}>Content</div>;
 ```
 
 ## Resources
@@ -607,4 +597,3 @@ import { SPACING_SCALE, TYPOGRAPHY_SCALE } from '@/styles/designTokens';
 - `web/src/styles/animations.ts` - Animation utilities
 - `web/src/styles/designTokens.ts` - Design tokens index
 - `web/src/components/ui/*` - UI component library
-

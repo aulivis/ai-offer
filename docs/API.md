@@ -7,6 +7,7 @@ This document describes the REST API endpoints available in the application.
 ## Authentication
 
 All endpoints except `/api/auth/*` require authentication via HTTP-only cookies:
+
 - `propono_at` - Access token
 - `propono_rt` - Refresh token
 - `XSRF-TOKEN` - CSRF token (sent in header as `x-csrf-token`)
@@ -21,6 +22,7 @@ All endpoints except `/api/auth/*` require authentication via HTTP-only cookies:
 ## Rate Limiting
 
 All API endpoints implement rate limiting with the following headers in responses:
+
 - `X-RateLimit-Limit` - Maximum requests allowed
 - `X-RateLimit-Remaining` - Remaining requests in window
 - `X-RateLimit-Reset` - ISO timestamp when limit resets
@@ -29,6 +31,7 @@ All API endpoints implement rate limiting with the following headers in response
 ## Error Responses
 
 All errors follow this format:
+
 ```json
 {
   "error": "Error message",
@@ -42,9 +45,11 @@ All errors follow this format:
 ### Authentication
 
 #### POST /api/auth/magic-link
+
 Request magic link authentication email.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com"
@@ -52,6 +57,7 @@ Request magic link authentication email.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -59,12 +65,15 @@ Request magic link authentication email.
 ```
 
 #### POST /api/auth/refresh
+
 Refresh access token using refresh token.
 
 **Headers:**
+
 - `x-csrf-token` (required)
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -72,12 +81,15 @@ Refresh access token using refresh token.
 ```
 
 #### POST /api/auth/logout
+
 Log out current user and revoke session.
 
 **Headers:**
+
 - `x-csrf-token` (required)
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -85,9 +97,11 @@ Log out current user and revoke session.
 ```
 
 #### GET /api/auth/session
+
 Get current user session.
 
 **Response:**
+
 ```json
 {
   "user": {
@@ -100,9 +114,11 @@ Get current user session.
 ### Offers
 
 #### POST /api/ai-generate
+
 Generate an AI-powered offer and create PDF.
 
 **Request:**
+
 ```json
 {
   "title": "Project Title",
@@ -120,6 +136,7 @@ Generate an AI-powered offer and create PDF.
 ```
 
 **Response:**
+
 ```json
 {
   "ok": true,
@@ -131,12 +148,15 @@ Generate an AI-powered offer and create PDF.
 ```
 
 #### DELETE /api/offers/[offerId]
+
 Delete an offer and associated PDFs.
 
 **Headers:**
+
 - `x-csrf-token` (required)
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -146,9 +166,11 @@ Delete an offer and associated PDFs.
 ### AI Preview
 
 #### POST /api/ai-preview
+
 Generate AI preview of offer content (streaming).
 
 **Request:**
+
 ```json
 {
   "title": "Project Title",
@@ -162,6 +184,7 @@ Generate AI preview of offer content (streaming).
 ```
 
 **Response:** Server-Sent Events stream
+
 ```
 data: {"type":"delta","html":"<p>Content...</p>"}
 data: {"type":"done","html":"<p>Final content</p>","summary":{},"issues":[]}
@@ -170,12 +193,15 @@ data: {"type":"done","html":"<p>Final content</p>","summary":{},"issues":[]}
 ### Storage
 
 #### POST /api/storage/upload-brand-logo
+
 Upload brand logo image.
 
 **Request:** `multipart/form-data`
+
 - `file` - Image file (PNG, JPEG, or SVG, max 4MB)
 
 **Response:**
+
 ```json
 {
   "signedUrl": "https://..."
@@ -185,9 +211,11 @@ Upload brand logo image.
 ### Templates
 
 #### GET /api/templates
+
 List available PDF templates.
 
 **Response:**
+
 ```json
 [
   {
@@ -201,9 +229,11 @@ List available PDF templates.
 ### Health
 
 #### GET /api/health
+
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -232,16 +262,7 @@ Health check endpoint.
 ## Caching
 
 GET endpoints include cache headers:
+
 - Public data: `Cache-Control: max-age=3600, stale-while-revalidate=86400`
 - User data: `Cache-Control: max-age=300, stale-while-revalidate=3600`
 - Dynamic data: `Cache-Control: no-store, no-cache, must-revalidate`
-
-
-
-
-
-
-
-
-
-

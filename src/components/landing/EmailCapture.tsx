@@ -29,7 +29,7 @@ export default function EmailCapture({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !email.includes('@')) {
       setErrorMessage('Kérjük, adj meg egy érvényes email címet');
       setStatus('error');
@@ -60,7 +60,12 @@ export default function EmailCapture({
     return (
       <Card className={`p-6 text-center ${className}`}>
         <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-          <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="h-6 w-6 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -80,7 +85,12 @@ export default function EmailCapture({
         <div className="mb-4 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             Ingyenes letöltés
           </span>
@@ -124,4 +134,3 @@ export default function EmailCapture({
     </Card>
   );
 }
-

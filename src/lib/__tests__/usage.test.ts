@@ -398,9 +398,7 @@ describe('rollbackUsageIncrement', () => {
     updateBuilder.update.mockReturnValue(updateBuilder);
     updateBuilder.eq.mockReturnValue(updateBuilder);
 
-    from
-      .mockReturnValueOnce(selectBuilder as never)
-      .mockReturnValueOnce(updateBuilder as never);
+    from.mockReturnValueOnce(selectBuilder as never).mockReturnValueOnce(updateBuilder as never);
 
     await rollbackUsageIncrement(mockClient, 'user-1', '2024-07-01', { deviceId: 'device-1' });
 

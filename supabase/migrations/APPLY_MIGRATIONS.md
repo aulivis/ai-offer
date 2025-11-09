@@ -56,17 +56,20 @@ supabase db push
 ## What These Migrations Do
 
 ### Migration 1: Enable RLS on Activities Table
+
 - Enables Row Level Security on the `activities` table
 - Adds policies so users can only access their own activities
 - Grants service role full access for background jobs
 
 ### Migration 2: Enable RLS on Clients Table
+
 - Enables Row Level Security on the `clients` table
 - Adds policies so users can only access their own clients
 - Grants service role full access for background jobs
 - Note: The `offers.recipient_id` FK will still work correctly
 
 ### Migration 3: Remove Obsolete Recipients Table
+
 - Safely removes the `recipients` table (which is not used)
 - Checks for data and foreign key dependencies before dropping
 - Drops related indexes and policies
@@ -77,30 +80,36 @@ supabase db push
 After applying migrations, verify:
 
 1. **RLS is Enabled**
+
    ```sql
-   SELECT tablename, rowsecurity 
-   FROM pg_tables 
-   WHERE schemaname = 'public' 
+   SELECT tablename, rowsecurity
+   FROM pg_tables
+   WHERE schemaname = 'public'
    AND tablename IN ('activities', 'clients');
    ```
+
    Both tables should have `rowsecurity = true`
 
 2. **Policies Exist**
+
    ```sql
-   SELECT tablename, policyname 
-   FROM pg_policies 
-   WHERE schemaname = 'public' 
+   SELECT tablename, policyname
+   FROM pg_policies
+   WHERE schemaname = 'public'
    AND tablename IN ('activities', 'clients');
    ```
+
    You should see 4 policies for each table (SELECT, INSERT, UPDATE, DELETE)
 
 3. **Recipients Table Removed**
+
    ```sql
-   SELECT tablename 
-   FROM pg_tables 
-   WHERE schemaname = 'public' 
+   SELECT tablename
+   FROM pg_tables
+   WHERE schemaname = 'public'
    AND tablename = 'recipients';
    ```
+
    This should return no rows
 
 4. **Application Still Works**
@@ -112,14 +121,17 @@ After applying migrations, verify:
 ## Troubleshooting
 
 ### Migration Fails with "table does not exist"
+
 - Ensure the `activities` and `clients` tables exist
 - These tables are typically created outside of migrations
 
 ### Migration Fails with "policy already exists"
+
 - This is safe to ignore - migrations are idempotent
 - The `IF NOT EXISTS` checks prevent duplicate policies
 
 ### Recipients Table Cannot Be Dropped
+
 - Check if the table has data: `SELECT COUNT(*) FROM recipients;`
 - Check for foreign key references
 - The migration will warn and skip if there are dependencies
@@ -129,6 +141,7 @@ After applying migrations, verify:
 If you need to rollback these migrations:
 
 1. **Disable RLS on activities** (not recommended for security)
+
    ```sql
    ALTER TABLE public.activities DISABLE ROW LEVEL SECURITY;
    DROP POLICY IF EXISTS "Users can select their own activities" ON public.activities;
@@ -151,8 +164,8 @@ If you need to rollback these migrations:
 ## Support
 
 If you encounter any issues:
+
 1. Check the migration output for error messages
 2. Verify your Supabase project has the required permissions
 3. Ensure you're using the service role key or have admin access
 4. Check the Supabase logs for additional details
-

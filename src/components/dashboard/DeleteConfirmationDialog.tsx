@@ -24,10 +24,10 @@ export type DeleteConfirmationDialogProps = {
 
 /**
  * DeleteConfirmationDialog component
- * 
+ *
  * A reusable confirmation dialog for deleting items.
  * Provides accessible modal with proper ARIA attributes.
- * 
+ *
  * @example
  * ```tsx
  * <DeleteConfirmationDialog
@@ -65,7 +65,13 @@ export function DeleteConfirmationDialog({
     });
 
   return (
-    <Modal open={open} onClose={handleClose} labelledBy={labelId} describedBy={descriptionId} size="sm">
+    <Modal
+      open={open}
+      onClose={handleClose}
+      labelledBy={labelId}
+      describedBy={descriptionId}
+      size="sm"
+    >
       {open && (
         <>
           <ModalHeader>
@@ -88,7 +94,9 @@ export function DeleteConfirmationDialog({
               {t('dashboard.deleteModal.cancel')}
             </Button>
             <Button type="button" variant="danger" onClick={onConfirm} loading={isDeleting}>
-              {isDeleting ? t('dashboard.deleteModal.deleting') : t('dashboard.deleteModal.confirm')}
+              {isDeleting
+                ? t('dashboard.deleteModal.deleting')
+                : t('dashboard.deleteModal.confirm')}
             </Button>
           </ModalFooter>
         </>
@@ -96,4 +104,3 @@ export function DeleteConfirmationDialog({
     </Modal>
   );
 }
-

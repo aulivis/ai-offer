@@ -1,24 +1,24 @@
 /**
  * Design Tokens
- * 
+ *
  * Centralized design tokens for the application.
  * These tokens are used across components to ensure consistency.
- * 
+ *
  * This file exports spacing, typography, and animation utilities
  * that can be used throughout the application.
- * 
+ *
  * @module designTokens
- * 
+ *
  * @example
  * ```tsx
  * import { SPACING_SCALE, TYPOGRAPHY_SCALE, ANIMATION_DURATION } from '@/styles/designTokens';
- * 
+ *
  * // Use spacing
  * const padding = SPACING_SCALE.md; // '1rem'
- * 
+ *
  * // Use typography
  * const h1Style = TYPOGRAPHY_SCALE.h1; // { size: '3rem', lineHeight: '1.2', ... }
- * 
+ *
  * // Use animations
  * const duration = ANIMATION_DURATION.base; // 200
  * ```
@@ -65,4 +65,3 @@ export const Z_INDEX = {
   tooltip: 1070,
   notification: 1080,
 } as const;
-

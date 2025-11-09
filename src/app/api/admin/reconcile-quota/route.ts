@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import { recalculateUsageFromPdfs, countSuccessfulPdfs, recalculateDeviceUsageFromPdfs } from '@/lib/services/usage';
+import {
+  recalculateUsageFromPdfs,
+  countSuccessfulPdfs,
+  recalculateDeviceUsageFromPdfs,
+} from '@/lib/services/usage';
 import { currentMonthStart } from '@/lib/services/usage';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 import { createLogger } from '@/lib/logger';
@@ -8,11 +12,11 @@ import { getRequestId } from '@/lib/requestId';
 
 /**
  * Admin endpoint to reconcile quota discrepancies.
- * 
+ *
  * This endpoint compares usage_counters.offers_generated with the actual
  * count of successful PDFs (offers with pdf_url IS NOT NULL) and fixes
  * any discrepancies.
- * 
+ *
  * Query params:
  * - userId: Optional user ID to reconcile (if not provided, reconciles all users)
  * - periodStart: Optional period start date (defaults to current month)
@@ -102,7 +106,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
               try {
                 const deviceId = deviceCounter.device_id;
                 const deviceCounterValue = Number(deviceCounter.offers_generated ?? 0);
-                
+
                 // Count actual PDFs for this device by joining offers with pdf_jobs
                 const { data: deviceOffers } = await sb
                   .from('offers')
@@ -115,7 +119,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
                 // Filter by device ID from pdf_jobs
                 let deviceActualCount = 0;
                 if (deviceOffers && deviceOffers.length > 0) {
-                  const offerIds = deviceOffers.map(o => o.id);
+                  const offerIds = deviceOffers.map((o) => o.id);
                   const { data: deviceJobs } = await sb
                     .from('pdf_jobs')
                     .select('offer_id')
@@ -124,14 +128,19 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
                     .eq('status', 'completed')
                     .not('payload->>deviceId', 'is', null)
                     .eq('payload->>deviceId', deviceId);
-                  
+
                   deviceActualCount = deviceJobs?.length ?? 0;
                 }
                 const deviceDiscrepancy = deviceActualCount - deviceCounterValue;
 
                 if (deviceDiscrepancy !== 0) {
                   if (!dryRun) {
-                    const deviceResult = await recalculateDeviceUsageFromPdfs(sb, userId, deviceId, normalizedPeriod);
+                    const deviceResult = await recalculateDeviceUsageFromPdfs(
+                      sb,
+                      userId,
+                      deviceId,
+                      normalizedPeriod,
+                    );
                     deviceResults.push({
                       deviceId,
                       counterValue: deviceCounterValue,
@@ -175,7 +184,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
               fixed: result.updated,
               deviceResults: deviceResults.length > 0 ? deviceResults : undefined,
             });
-            
+
             log.info('User quota reconciled', {
               userId,
               oldCount: result.oldCount,
@@ -268,7 +277,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
                 discrepancy,
                 fixed: result.updated,
               });
-              
+
               if (result.updated) {
                 log.info('User quota reconciled (bulk)', {
                   userId: uid,
@@ -322,4 +331,3 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 });
-

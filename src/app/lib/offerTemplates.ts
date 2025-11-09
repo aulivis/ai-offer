@@ -1,5 +1,9 @@
 import type { TemplateId, TemplateTier } from '@/app/pdf/templates/types';
-import { listTemplateMetadata, getOfferTemplateByLegacyId, loadTemplate } from '@/app/pdf/templates/engineRegistry';
+import {
+  listTemplateMetadata,
+  getOfferTemplateByLegacyId,
+  loadTemplate,
+} from '@/app/pdf/templates/engineRegistry';
 
 export type SubscriptionPlan = 'free' | 'standard' | 'pro';
 
@@ -8,11 +12,11 @@ export const DEFAULT_OFFER_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
 
 // Legacy ID mappings for backward compatibility during migration
 const LEGACY_ID_MAP: Record<string, TemplateId> = {
-  'modern': 'free.minimal@1.0.0',
+  modern: 'free.minimal@1.0.0',
   'free.base': 'free.minimal@1.0.0',
   'premium-banner': 'premium.executive@1.0.0',
-  'premium': 'premium.executive@1.0.0',
-  'premium_banner': 'premium.executive@1.0.0',
+  premium: 'premium.executive@1.0.0',
+  premium_banner: 'premium.executive@1.0.0',
   'premium.elegant': 'premium.executive@1.0.0',
   'premium.modern': 'premium.executive@1.0.0',
 };
@@ -24,17 +28,17 @@ export function normalizeTemplateId(id: string | null | undefined): TemplateId {
   if (!id) {
     return DEFAULT_OFFER_TEMPLATE_ID;
   }
-  
+
   // Check if it's already a new template ID (contains @)
   if (id.includes('@')) {
     return id as TemplateId;
   }
-  
+
   // Check legacy ID mapping
   if (LEGACY_ID_MAP[id]) {
     return LEGACY_ID_MAP[id];
   }
-  
+
   // Try to load by legacy ID (for templates that still have legacyId property)
   try {
     const template = getOfferTemplateByLegacyId(id);
@@ -65,12 +69,12 @@ export function enforceTemplateForPlan(
   plan: SubscriptionPlan,
 ): TemplateId {
   const normalizedId = normalizeTemplateId(requested);
-  
+
   // If template requires pro and user doesn't have pro plan, use default
   if (templateRequiresPro(normalizedId) && plan !== 'pro') {
     return DEFAULT_OFFER_TEMPLATE_ID;
   }
-  
+
   return normalizedId;
 }
 

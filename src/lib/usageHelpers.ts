@@ -67,9 +67,11 @@ function buildSelectQuery<K extends CounterKind>(
   target: CounterTargets[K],
 ) {
   let builder = supabase.from(config.table).select('period_start, offers_generated');
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-    builder = builder.eq(column, target[key]);
-  });
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      builder = builder.eq(column, target[key]);
+    },
+  );
   return builder;
 }
 
@@ -93,9 +95,11 @@ async function ensureUsageCounter<K extends CounterKind>(
       period_start: periodStart,
       offers_generated: 0,
     };
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      insertPayload[column] = target[key];
-    });
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        insertPayload[column] = target[key];
+      },
+    );
     const { data: inserted, error: insertError } = await supabase
       .from(config.table)
       .insert(insertPayload)
@@ -114,9 +118,11 @@ async function ensureUsageCounter<K extends CounterKind>(
     let updateBuilder = supabase
       .from(config.table)
       .update({ period_start: periodStart, offers_generated: 0 });
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      updateBuilder = updateBuilder.eq(column, target[key]);
-    });
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        updateBuilder = updateBuilder.eq(column, target[key]);
+      },
+    );
     const { data: resetRow, error: resetError } = await updateBuilder
       .select('period_start, offers_generated')
       .maybeSingle();
@@ -151,9 +157,11 @@ async function fallbackIncrement<K extends CounterKind>(
   let updateBuilder = supabase
     .from(config.table)
     .update({ offers_generated: state.offersGenerated + 1, period_start: state.periodStart });
-  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-    updateBuilder = updateBuilder.eq(column, target[key]);
-  });
+  (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+    ([key, column]) => {
+      updateBuilder = updateBuilder.eq(column, target[key]);
+    },
+  );
   const { data: updatedRow, error: updateError } = await updateBuilder
     .select('period_start, offers_generated')
     .maybeSingle();
@@ -213,7 +221,7 @@ export async function incrementUsage<K extends CounterKind>(
     const message = error.message ?? '';
     const details = (error as { details?: string }).details ?? '';
     const combined = `${message} ${details}`.toLowerCase();
-    
+
     console.error('Quota increment RPC error', {
       rpc: config.rpc,
       kind,
@@ -227,7 +235,7 @@ export async function incrementUsage<K extends CounterKind>(
         hint: (error as { hint?: string }).hint,
       },
     });
-    
+
     if (
       combined.includes(config.rpc) ||
       combined.includes('multiple function variants') ||
@@ -249,14 +257,14 @@ export async function incrementUsage<K extends CounterKind>(
     offersGenerated: Number(result?.offers_generated ?? 0),
     periodStart: String(result?.period_start ?? periodStart),
   };
-  
+
   console.log('Quota increment RPC result', {
     rpc: config.rpc,
     kind,
     target,
     result: incrementResult,
   });
-  
+
   if (!incrementResult.allowed) {
     console.warn('Quota increment not allowed', {
       rpc: config.rpc,
@@ -267,7 +275,7 @@ export async function incrementUsage<K extends CounterKind>(
       periodStart: incrementResult.periodStart,
     });
   }
-  
+
   return incrementResult;
 }
 
@@ -282,9 +290,11 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const buildQuery = () => {
     let builder = supabase.from(config.table).select('offers_generated, period_start');
-    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(([key, column]) => {
-      builder = builder.eq(column, target[key]);
-    });
+    (Object.entries(config.columnMap) as [keyof CounterTargets[K], string][]).forEach(
+      ([key, column]) => {
+        builder = builder.eq(column, target[key]);
+      },
+    );
     return builder;
   };
 
@@ -295,12 +305,19 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
   }
 
   if (!existing) {
-    console.warn('Usage rollback skipped: counter not found', { kind, target, expectedPeriod: normalizedExpected });
+    console.warn('Usage rollback skipped: counter not found', {
+      kind,
+      target,
+      expectedPeriod: normalizedExpected,
+    });
     return;
   }
 
   let record = existing;
-  let periodStart = normalizeDate((record as { period_start?: unknown }).period_start, normalizedExpected);
+  let periodStart = normalizeDate(
+    (record as { period_start?: unknown }).period_start,
+    normalizedExpected,
+  );
 
   if (periodStart !== normalizedExpected) {
     let normalizedQuery = buildQuery();
@@ -328,7 +345,10 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     }
 
     record = normalizedRow;
-    periodStart = normalizeDate((record as { period_start?: unknown }).period_start, normalizedExpected);
+    periodStart = normalizeDate(
+      (record as { period_start?: unknown }).period_start,
+      normalizedExpected,
+    );
 
     if (periodStart !== normalizedExpected) {
       console.warn('Usage rollback skipped: period mismatch', {
@@ -358,7 +378,10 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
   (Object.entries(config.columnMap) as [keyof typeof target, string][]).forEach(([key, column]) => {
     updateBuilder = updateBuilder.eq(column, target[key]);
   });
-  updateBuilder = updateBuilder.eq('period_start', (record as { period_start?: unknown }).period_start ?? normalizedExpected);
+  updateBuilder = updateBuilder.eq(
+    'period_start',
+    (record as { period_start?: unknown }).period_start ?? normalizedExpected,
+  );
 
   const { error: updateError } = await updateBuilder;
   if (updateError) {
@@ -383,14 +406,14 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
   maxRetries: number = 3,
 ): Promise<void> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       await rollbackUsageIncrementForKind(supabase, kind, target, expectedPeriod);
       return; // Success
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt < maxRetries - 1) {
         // Exponential backoff: 100ms, 200ms, 400ms
         const delayMs = 100 * Math.pow(2, attempt);
@@ -399,7 +422,7 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
       }
     }
   }
-  
+
   // All retries failed - log but don't throw to prevent cascading failures
   console.error(`Failed to rollback usage increment after ${maxRetries} attempts`, {
     kind,
@@ -416,7 +439,12 @@ export async function rollbackUsageIncrement(
   options: RollbackOptions = {},
 ): Promise<void> {
   if (typeof options.deviceId === 'string' && options.deviceId.length > 0) {
-    return rollbackUsageIncrementWithRetry(supabase, 'device', { userId, deviceId: options.deviceId }, expectedPeriod);
+    return rollbackUsageIncrementWithRetry(
+      supabase,
+      'device',
+      { userId, deviceId: options.deviceId },
+      expectedPeriod,
+    );
   }
 
   return rollbackUsageIncrementWithRetry(supabase, 'user', { userId }, expectedPeriod);

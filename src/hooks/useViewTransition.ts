@@ -5,16 +5,16 @@ import { useReducedMotion } from './useReducedMotion';
 
 /**
  * Hook to use View Transitions API programmatically
- * 
+ *
  * Provides a wrapper around the View Transitions API that automatically
  * respects user's reduced motion preference.
- * 
+ *
  * @returns Function to start a view transition
- * 
+ *
  * @example
  * ```tsx
  * const startTransition = useViewTransition();
- * 
+ *
  * const handleNavigation = () => {
  *   startTransition(() => {
  *     router.push('/dashboard');
@@ -52,4 +52,3 @@ export function useViewTransition() {
     [reducedMotion, isSupported],
   );
 }
-

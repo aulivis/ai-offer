@@ -5,7 +5,8 @@ import { t } from '@/copy';
 
 export const metadata: Metadata = {
   title: 'Ajánlatkészítési útmutató | Vyndi',
-  description: 'Komplett útmutató a tökéletes ajánlatok elkészítéséhez. Tanulj meg professzionális, konverzióoptimalizált ajánlatokat készíteni tippekkel, trükkökkel és best practice-ekkel.',
+  description:
+    'Komplett útmutató a tökéletes ajánlatok elkészítéséhez. Tanulj meg professzionális, konverzióoptimalizált ajánlatokat készíteni tippekkel, trükkökkel és best practice-ekkel.',
   openGraph: {
     title: 'Ajánlatkészítési útmutató | Vyndi',
     description: 'Komplett útmutató a tökéletes ajánlatok elkészítéséhez.',
@@ -38,18 +39,29 @@ export default function GuidePage() {
           Ajánlatkészítési útmutató
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Tanulj meg professzionális, konverzióoptimalizált ajánlatokat készíteni, amelyek segítenek több megbízást szerezni és az üzleti növekedést gyorsítani.
+          Tanulj meg professzionális, konverzióoptimalizált ajánlatokat készíteni, amelyek segítenek
+          több megbízást szerezni és az üzleti növekedést gyorsítani.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>10 perc olvasás</span>
           </div>
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
             </svg>
             <span>Gyakorlati útmutató</span>
           </div>
@@ -66,7 +78,10 @@ export default function GuidePage() {
           <a href="#struktura" className="block text-fg-muted hover:text-primary transition-colors">
             2. Az ajánlat struktúrája
           </a>
-          <a href="#szovegiras" className="block text-fg-muted hover:text-primary transition-colors">
+          <a
+            href="#szovegiras"
+            className="block text-fg-muted hover:text-primary transition-colors"
+          >
             3. Szövegírás és kommunikáció
           </a>
           <a href="#arak" className="block text-fg-muted hover:text-primary transition-colors">
@@ -75,7 +90,10 @@ export default function GuidePage() {
           <a href="#vizualis" className="block text-fg-muted hover:text-primary transition-colors">
             5. Vizuális prezentáció
           </a>
-          <a href="#kovetkezmenyek" className="block text-fg-muted hover:text-primary transition-colors">
+          <a
+            href="#kovetkezmenyek"
+            className="block text-fg-muted hover:text-primary transition-colors"
+          >
             6. Következő lépések és CTA
           </a>
           <a href="#osszegzes" className="block text-fg-muted hover:text-primary transition-colors">
@@ -90,16 +108,29 @@ export default function GuidePage() {
         <section id="bevezetes" className="mb-12 scroll-mt-8">
           <h2 className="mb-4 text-3xl font-bold text-fg">1. Bevezetés</h2>
           <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-            Az ajánlatkészítés nem csupán árak és szolgáltatások listája. Ez egy stratégiai üzleti dokumentum, amely bemutatja vállalkozásodat, kommunikálja az értéket, és meggyőzi a potenciális ügyfeleket, hogy veled dolgozzanak.
+            Az ajánlatkészítés nem csupán árak és szolgáltatások listája. Ez egy stratégiai üzleti
+            dokumentum, amely bemutatja vállalkozásodat, kommunikálja az értéket, és meggyőzi a
+            potenciális ügyfeleket, hogy veled dolgozzanak.
           </p>
           <p className="mb-6 text-lg leading-relaxed text-fg-muted">
-            Jól elkészített ajánlat jelentősen növelheti a megbízások számát és az üzleti sikereket. Ebben az útmutatóban végigvezetünk az ajánlatkészítés minden fontos lépésén.
+            Jól elkészített ajánlat jelentősen növelheti a megbízások számát és az üzleti sikereket.
+            Ebben az útmutatóban végigvezetünk az ajánlatkészítés minden fontos lépésén.
           </p>
-          
+
           {/* Placeholder for hero image */}
           <div className="my-8 rounded-lg border-2 border-dashed border-border bg-gray-50 p-12 text-center">
-            <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="mx-auto h-16 w-16 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
             <p className="mt-4 text-sm font-medium text-gray-600">
               [Helyőrző: Kép egy professzionális ajánlatról, amely a Vyndi platformon készült]
@@ -135,12 +166,14 @@ export default function GuidePage() {
             <Card className="border-l-4 border-l-blue-500">
               <h3 className="mb-2 text-xl font-semibold text-fg">2.2. Probléma azonosítása</h3>
               <p className="mb-3 text-fg-muted">
-                Mutasd be, hogy érted az ügyfél problémáját és kihívásait. Ez bizalmat épít és személyre szabott megoldást kínálsz.
+                Mutasd be, hogy érted az ügyfél problémáját és kihívásait. Ez bizalmat épít és
+                személyre szabott megoldást kínálsz.
               </p>
               <div className="rounded-lg bg-blue-50 p-4">
                 <p className="text-sm font-medium text-blue-900">💡 Tipp:</p>
                 <p className="mt-1 text-sm text-blue-800">
-                  Kérdezd meg az ügyfelet a projekt indításakor, hogy mi a legnagyobb kihívásuk, és használd ezt az ajánlatban!
+                  Kérdezd meg az ügyfelet a projekt indításakor, hogy mi a legnagyobb kihívásuk, és
+                  használd ezt az ajánlatban!
                 </p>
               </div>
             </Card>
@@ -148,14 +181,18 @@ export default function GuidePage() {
             <Card className="border-l-4 border-l-purple-500">
               <h3 className="mb-2 text-xl font-semibold text-fg">2.3. Megoldás bemutatása</h3>
               <p className="mb-3 text-fg-muted">
-                Részletesen ismertesd, hogyan oldod meg az ügyfél problémáját. Használj konkrét példákat és mérhető eredményeket.
+                Részletesen ismertesd, hogyan oldod meg az ügyfél problémáját. Használj konkrét
+                példákat és mérhető eredményeket.
               </p>
             </Card>
 
             <Card className="border-l-4 border-l-amber-500">
-              <h3 className="mb-2 text-xl font-semibold text-fg">2.4. Szolgáltatások részletezése</h3>
+              <h3 className="mb-2 text-xl font-semibold text-fg">
+                2.4. Szolgáltatások részletezése
+              </h3>
               <p className="mb-3 text-fg-muted">
-                Listázd pontosan, mit kapsz az ajánlatban. Legyen egyértelmű, átlátható és részletes.
+                Listázd pontosan, mit kapsz az ajánlatban. Legyen egyértelmű, átlátható és
+                részletes.
               </p>
             </Card>
           </div>
@@ -164,14 +201,17 @@ export default function GuidePage() {
         {/* Section 3: Szövegírás */}
         <section id="szovegiras" className="mb-12 scroll-mt-8">
           <h2 className="mb-4 text-3xl font-bold text-fg">3. Szövegírás és kommunikáció</h2>
-          
+
           <div className="space-y-6">
             <div>
-              <h3 className="mb-3 text-xl font-semibold text-fg">3.1. Ügyfélközpontú nyelvhasználat</h3>
+              <h3 className="mb-3 text-xl font-semibold text-fg">
+                3.1. Ügyfélközpontú nyelvhasználat
+              </h3>
               <p className="mb-4 text-fg-muted">
-                Írj az ügyfél szemszögéből. Helyett, hogy "Mi ezt és ezt kínáljuk", használd a "Ön ezt és ezt kapja" megközelítést.
+                Írj az ügyfél szemszögéből. Helyett, hogy "Mi ezt és ezt kínáljuk", használd a "Ön
+                ezt és ezt kapja" megközelítést.
               </p>
-              
+
               <div className="grid gap-4 md:grid-cols-2">
                 <Card className="border-red-200 bg-red-50">
                   <p className="mb-2 text-xs font-semibold uppercase text-red-700">❌ Kerüld</p>
@@ -189,15 +229,28 @@ export default function GuidePage() {
             </div>
 
             <div>
-              <h3 className="mb-3 text-xl font-semibold text-fg">3.2. Konkrét értékek kommunikálása</h3>
+              <h3 className="mb-3 text-xl font-semibold text-fg">
+                3.2. Konkrét értékek kommunikálása
+              </h3>
               <p className="mb-4 text-fg-muted">
-                Kerüld a floskulákat. Használj konkrét számokat, mérhető eredményeket és valós példákat.
+                Kerüld a floskulákat. Használj konkrét számokat, mérhető eredményeket és valós
+                példákat.
               </p>
-              
+
               {/* Placeholder for comparison chart */}
               <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
                 </svg>
                 <p className="mt-4 text-sm font-medium text-gray-600">
                   [Helyőrző: Infografika - "Flozkulák vs. konkrét értékek" összehasonlító táblázat]
@@ -211,15 +264,21 @@ export default function GuidePage() {
             <div>
               <h3 className="mb-3 text-xl font-semibold text-fg">3.3. AI-alapú szöveg generálás</h3>
               <p className="mb-4 text-fg-muted">
-                A Vyndi AI funkciója segít professzionális szövegeket generálni másodpercek alatt. Tanuld meg a hatékony használatát:
+                A Vyndi AI funkciója segít professzionális szövegeket generálni másodpercek alatt.
+                Tanuld meg a hatékony használatát:
               </p>
-              <Link 
-                href="/resources/ai-guide" 
+              <Link
+                href="/resources/ai-guide"
                 className="inline-flex items-center gap-2 text-primary hover:underline"
               >
                 Olvass tovább az AI útmutatóban
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </Link>
             </div>
@@ -229,7 +288,7 @@ export default function GuidePage() {
         {/* Section 4: Árazás */}
         <section id="arak" className="mb-12 scroll-mt-8">
           <h2 className="mb-4 text-3xl font-bold text-fg">4. Árazás és csomagolás</h2>
-          
+
           <div className="space-y-6">
             <Card>
               <h3 className="mb-3 text-xl font-semibold text-fg">4.1. Árazási stratégiák</h3>
@@ -237,23 +296,44 @@ export default function GuidePage() {
                 Az árazás nem csak a számokról szól. Íme néhány hatékony stratégia:
               </p>
               <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-                <li><strong>Csomagolás:</strong> Kínálj 3 opciót (alap, prémium, enterprise) - a középső általában a legnépszerűbb</li>
-                <li><strong>Értékajánlat:</strong> Mutasd be, mennyi időt és pénzt takarít meg az ügyfél</li>
-                <li><strong>Transzparencia:</strong> Törj le az árakat konkrét szolgáltatásokra</li>
-                <li><strong>ROI mutatása:</strong> Számold ki és mutasd be a megtérülési időt</li>
+                <li>
+                  <strong>Csomagolás:</strong> Kínálj 3 opciót (alap, prémium, enterprise) - a
+                  középső általában a legnépszerűbb
+                </li>
+                <li>
+                  <strong>Értékajánlat:</strong> Mutasd be, mennyi időt és pénzt takarít meg az
+                  ügyfél
+                </li>
+                <li>
+                  <strong>Transzparencia:</strong> Törj le az árakat konkrét szolgáltatásokra
+                </li>
+                <li>
+                  <strong>ROI mutatása:</strong> Számold ki és mutasd be a megtérülési időt
+                </li>
               </ul>
             </Card>
 
             <Card>
               <h3 className="mb-3 text-xl font-semibold text-fg">4.2. Árazási táblázat design</h3>
               <p className="mb-4 text-fg-muted">
-                A jól tervezett árazási táblázat segít az ügyfeleknek könnyen összehasonlítani az opciókat.
+                A jól tervezett árazási táblázat segít az ügyfeleknek könnyen összehasonlítani az
+                opciókat.
               </p>
-              
+
               {/* Placeholder for pricing table example */}
               <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
                 </svg>
                 <p className="mt-4 text-sm font-medium text-gray-600">
                   [Helyőrző: Képernyőkép egy professzionális árazási táblázatról a Vyndi sablonból]
@@ -269,15 +349,25 @@ export default function GuidePage() {
         {/* Section 5: Vizuális */}
         <section id="vizualis" className="mb-12 scroll-mt-8">
           <h2 className="mb-4 text-3xl font-bold text-fg">5. Vizuális prezentáció</h2>
-          
+
           <div className="space-y-6">
             <Card>
               <h3 className="mb-3 text-xl font-semibold text-fg">5.1. Dizájn elvek</h3>
               <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-                <li><strong>Konzisztencia:</strong> Használj következetes színeket, betűtípusokat és stílust</li>
-                <li><strong>Fehér tér:</strong> Ne tömj tele az oldalt információval</li>
-                <li><strong>Hierarchia:</strong> Emeld ki a fontos információkat</li>
-                <li><strong>Olvashatóság:</strong> Használj nagyobb betűméreteket és megfelelő kontrasztot</li>
+                <li>
+                  <strong>Konzisztencia:</strong> Használj következetes színeket, betűtípusokat és
+                  stílust
+                </li>
+                <li>
+                  <strong>Fehér tér:</strong> Ne tömj tele az oldalt információval
+                </li>
+                <li>
+                  <strong>Hierarchia:</strong> Emeld ki a fontos információkat
+                </li>
+                <li>
+                  <strong>Olvashatóság:</strong> Használj nagyobb betűméreteket és megfelelő
+                  kontrasztot
+                </li>
               </ul>
             </Card>
 
@@ -286,14 +376,25 @@ export default function GuidePage() {
               <p className="mb-4 text-fg-muted">
                 A megfelelő képek és infografikák jelentősen fokozhatják az ajánlat hatékonyságát.
               </p>
-              
+
               {/* Placeholder for visual examples */}
               <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
                 <p className="mt-4 text-sm font-medium text-gray-600">
-                  [Helyőrző: Kollázs különböző ajánlat sablonokról, infografikákról és vizuális elemekről]
+                  [Helyőrző: Kollázs különböző ajánlat sablonokról, infografikákról és vizuális
+                  elemekről]
                 </p>
                 <p className="mt-2 text-xs text-gray-500">
                   Mutasd be a Vyndi sablonok vizuális elemeit
@@ -306,11 +407,12 @@ export default function GuidePage() {
         {/* Section 6: CTA */}
         <section id="kovetkezmenyek" className="mb-12 scroll-mt-8">
           <h2 className="mb-4 text-3xl font-bold text-fg">6. Következő lépések és CTA</h2>
-          
+
           <Card className="border-l-4 border-l-primary bg-primary/5">
             <h3 className="mb-3 text-xl font-semibold text-fg">Hatékony Call-to-Action (CTA)</h3>
             <p className="mb-4 text-fg-muted">
-              Minden ajánlatnak egyértelműen kell kommunikálnia, mit kell tennie az ügyfélnek tovább.
+              Minden ajánlatnak egyértelműen kell kommunikálnia, mit kell tennie az ügyfélnek
+              tovább.
             </p>
             <ul className="ml-6 list-disc space-y-2 text-fg-muted">
               <li>Használj aktív, cselekvési szavakat ("Kezdjük el", "Foglald le", "Válaszolj")</li>
@@ -344,7 +446,8 @@ export default function GuidePage() {
         <div className="text-center">
           <h2 className="mb-4 text-3xl font-bold text-fg">Készítsd el első ajánlatodat ma!</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            A Vyndi segít neked professzionális ajánlatokat készíteni percek alatt. Próbáld ki ingyenesen!
+            A Vyndi segít neked professzionális ajánlatokat készíteni percek alatt. Próbáld ki
+            ingyenesen!
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -353,7 +456,12 @@ export default function GuidePage() {
             >
               Ingyenes próba indítása
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </Link>
             <Link
@@ -381,8 +489,18 @@ export default function GuidePage() {
                     Tanuld meg, hogyan használd hatékonyan az AI funkciókat az ajánlatkészítésben.
                   </p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -398,8 +516,18 @@ export default function GuidePage() {
                     Iparági best practice-ek és trendek az ajánlatkészítésben.
                   </p>
                 </div>
-                <svg className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <svg
+                  className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </div>
             </Card>
@@ -409,11 +537,3 @@ export default function GuidePage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-

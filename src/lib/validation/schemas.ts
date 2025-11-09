@@ -22,19 +22,16 @@ export const dateSchema = z
 /**
  * Validates an optional date string in ISO format
  */
-export const optionalDateSchema = z.preprocess(
-  (value) => {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      return trimmed.length > 0 ? trimmed : undefined;
-    }
+export const optionalDateSchema = z.preprocess((value) => {
+  if (value === null || value === undefined || value === '') {
     return undefined;
-  },
-  dateSchema.optional(),
-);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  return undefined;
+}, dateSchema.optional());
 
 /**
  * Validates a device ID (alphanumeric, max 100 chars)
@@ -49,8 +46,31 @@ export const deviceIdSchema = z
 /**
  * Validates an optional device ID
  */
-export const optionalDeviceIdSchema = z.preprocess(
-  (value) => {
+export const optionalDeviceIdSchema = z.preprocess((value) => {
+  if (value === null || value === undefined || value === '') {
+    return undefined;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  return undefined;
+}, deviceIdSchema.optional());
+
+/**
+ * Validates a URL string
+ */
+export const urlSchema = (message?: string) =>
+  z
+    .string()
+    .trim()
+    .url(message || t('validation.urlInvalid'));
+
+/**
+ * Validates an optional URL string
+ */
+export const optionalUrlSchema = (message?: string) =>
+  z.preprocess((value) => {
     if (value === null || value === undefined || value === '') {
       return undefined;
     }
@@ -59,33 +79,7 @@ export const optionalDeviceIdSchema = z.preprocess(
       return trimmed.length > 0 ? trimmed : undefined;
     }
     return undefined;
-  },
-  deviceIdSchema.optional(),
-);
-
-/**
- * Validates a URL string
- */
-export const urlSchema = (message?: string) =>
-  z.string().trim().url(message || t('validation.urlInvalid'));
-
-/**
- * Validates an optional URL string
- */
-export const optionalUrlSchema = (message?: string) =>
-  z.preprocess(
-    (value) => {
-      if (value === null || value === undefined || value === '') {
-        return undefined;
-      }
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        return trimmed.length > 0 ? trimmed : undefined;
-      }
-      return undefined;
-    },
-    urlSchema(message).optional(),
-  );
+  }, urlSchema(message).optional());
 
 /**
  * Validates a non-negative integer
@@ -98,24 +92,21 @@ export const nonNegativeIntegerSchema = z
 /**
  * Validates an optional non-negative integer
  */
-export const optionalNonNegativeIntegerSchema = z.preprocess(
-  (value) => {
-    if (value === null || value === undefined) {
-      return undefined;
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-    if (typeof value === 'string') {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) {
-        return parsed;
-      }
-    }
+export const optionalNonNegativeIntegerSchema = z.preprocess((value) => {
+  if (value === null || value === undefined) {
     return undefined;
-  },
-  nonNegativeIntegerSchema.optional(),
-);
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return undefined;
+}, nonNegativeIntegerSchema.optional());
 
 /**
  * Validates a trimmed string with optional min/max length
@@ -161,17 +152,3 @@ export const usageQuerySchema = z.object({
  * Validates OAuth redirect URL
  */
 export const oauthRedirectSchema = optionalUrlSchema('Redirect URL must be a valid URL.');
-
-
-
-
-
-
-
-
-
-
-
-
-
-

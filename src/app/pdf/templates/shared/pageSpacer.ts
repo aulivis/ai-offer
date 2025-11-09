@@ -14,11 +14,3 @@ export function renderPageSpacer(): string {
     <div class="offer-doc__page-spacer" aria-hidden="true" style="height: 0; break-before: auto;"></div>
   `;
 }
-
-
-
-
-
-
-
-

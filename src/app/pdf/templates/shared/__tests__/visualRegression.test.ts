@@ -1,6 +1,6 @@
 /**
  * Visual Regression Tests for PDF Templates
- * 
+ *
  * These tests generate PDFs and compare them against golden files to detect
  * visual regressions in template rendering.
  */
@@ -133,4 +133,3 @@ describe('Visual Regression Tests', () => {
     });
   }
 });
-

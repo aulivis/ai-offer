@@ -86,7 +86,7 @@ export function useQuotaManagement() {
     setQuotaLoading(true);
     try {
       const quotaData = await getQuotaData(sb, null, null);
-      
+
       setPlan(quotaData.plan);
       setQuotaSnapshot({
         limit: quotaData.limit,
@@ -107,7 +107,7 @@ export function useQuotaManagement() {
         const { resolveEffectivePlan } = await import('@/lib/subscription');
         const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
         setPlan(normalizedPlan);
-        
+
         if (normalizedPlan === 'pro') {
           setQuotaSnapshot({ limit: null, used: 0, pending: 0, periodStart: null });
           setQuotaError(null);
@@ -217,10 +217,3 @@ export function useQuotaManagement() {
     refreshQuota,
   };
 }
-
-
-
-
-
-
-

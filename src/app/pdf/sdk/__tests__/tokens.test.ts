@@ -52,30 +52,23 @@ function contrastRatio(foreground: string, background: string) {
 
 describe('buildTokens', () => {
   it('normalizes short and long hex values', () => {
-    const tokens = buildTokens(
-      createBrand({ primaryHex: 'abc', secondaryHex: '123456' }),
-    );
+    const tokens = buildTokens(createBrand({ primaryHex: 'abc', secondaryHex: '123456' }));
 
     expect(tokens.primary['500']).toBe('#aabbcc');
     expect(tokens.secondary['500']).toBe('#123456');
   });
 
   it('throws when hex input is invalid', () => {
-    expect(() =>
-      buildTokens(createBrand({ primaryHex: 'not-a-color' })),
-    ).toThrowError('Invalid hex color: not-a-color');
+    expect(() => buildTokens(createBrand({ primaryHex: 'not-a-color' }))).toThrowError(
+      'Invalid hex color: not-a-color',
+    );
   });
 
   it('guarantees minimum contrast for onPrimary/onSecondary', () => {
-    const tokens = buildTokens(
-      createBrand({ primaryHex: '#ffffff', secondaryHex: '#000000' }),
-    );
+    const tokens = buildTokens(createBrand({ primaryHex: '#ffffff', secondaryHex: '#000000' }));
 
     const primaryContrast = contrastRatio(tokens.text.onPrimary, tokens.brand.primary);
-    const secondaryContrast = contrastRatio(
-      tokens.text.onSecondary,
-      tokens.brand.secondary,
-    );
+    const secondaryContrast = contrastRatio(tokens.text.onSecondary, tokens.brand.secondary);
 
     expect(primaryContrast).toBeGreaterThanOrEqual(4.5);
     expect(secondaryContrast).toBeGreaterThanOrEqual(4.5);

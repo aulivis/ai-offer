@@ -6,11 +6,11 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { t } from '@/copy';
 import { getDeviceIdFromCookie } from '@/lib/deviceId';
-import { 
-  getQuotaData, 
-  isUserQuotaExhausted as checkUserQuotaExhausted, 
-  isDeviceQuotaExhausted as checkDeviceQuotaExhausted, 
-  type QuotaData 
+import {
+  getQuotaData,
+  isUserQuotaExhausted as checkUserQuotaExhausted,
+  isDeviceQuotaExhausted as checkDeviceQuotaExhausted,
+  type QuotaData,
 } from '@/lib/services/quota';
 
 export default function QuotaWarningBar() {
@@ -35,7 +35,10 @@ export default function QuotaWarningBar() {
       setQuotaSnapshot(quotaData);
     } catch (error) {
       // Silently handle auth errors - user is not authenticated, which is expected
-      if (error instanceof Error && (error.message?.includes('authenticated') || error.message?.includes('PGRST301'))) {
+      if (
+        error instanceof Error &&
+        (error.message?.includes('authenticated') || error.message?.includes('PGRST301'))
+      ) {
         setQuotaSnapshot(null);
         return;
       }

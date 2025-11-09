@@ -77,21 +77,9 @@ export function useRealTimeValidation({
 
   return {
     errors: combinedErrors,
-    isValid: !combinedErrors.title && !combinedErrors.pricing && 
-             !Object.keys(combinedErrors.projectDetails).length,
+    isValid:
+      !combinedErrors.title &&
+      !combinedErrors.pricing &&
+      !Object.keys(combinedErrors.projectDetails).length,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

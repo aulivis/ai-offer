@@ -1,6 +1,6 @@
 /**
  * Web Vitals Performance Monitoring
- * 
+ *
  * Tracks Core Web Vitals and other performance metrics:
  * - LCP (Largest Contentful Paint)
  * - FID (First Input Delay) / INP (Interaction to Next Paint)
@@ -8,9 +8,9 @@
  * - TTI (Time to Interactive)
  * - FCP (First Contentful Paint)
  * - TTFB (Time to First Byte)
- * 
+ *
  * Integrates with Google Analytics and respects user consent preferences.
- * 
+ *
  * @module webVitals
  */
 
@@ -65,10 +65,10 @@ export function getPerformanceRating(
 
 /**
  * Check if analytics consent is given
- * 
+ *
  * Uses a synchronous check by reading from cookies.
  * The consent system stores consent in cookies with the name 'consent'.
- * 
+ *
  * This is a simplified check that reads directly from cookies to avoid
  * circular dependencies with the consent gate system.
  */
@@ -80,14 +80,17 @@ function hasAnalyticsConsent(): boolean {
   try {
     // Check cookie for consent (matches consent system pattern)
     // The consent cookie contains a JSON object with granted categories
-    const cookies = document.cookie.split(';').reduce((acc, cookie) => {
-      const [key, ...valueParts] = cookie.trim().split('=');
-      const value = valueParts.join('='); // Handle values with '=' in them
-      if (key && value) {
-        acc[key] = decodeURIComponent(value);
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const cookies = document.cookie.split(';').reduce(
+      (acc, cookie) => {
+        const [key, ...valueParts] = cookie.trim().split('=');
+        const value = valueParts.join('='); // Handle values with '=' in them
+        if (key && value) {
+          acc[key] = decodeURIComponent(value);
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 
     if (cookies.consent) {
       try {
@@ -191,10 +194,10 @@ function logMetric(metric: Metric) {
 
 /**
  * Report Web Vitals metrics
- * 
+ *
  * This function should be called from Next.js's reportWebVitals function
  * in _app.tsx or a custom App component.
- * 
+ *
  * @param metric - Web Vitals metric
  */
 export function reportWebVitals(metric: Metric) {
@@ -250,4 +253,3 @@ export const PERFORMANCE_CONFIG = {
   /** Metrics to track (FID is deprecated, replaced by INP) */
   metrics: ['LCP', 'CLS', 'FCP', 'TTFB', 'INP'] as const,
 } as const;
-

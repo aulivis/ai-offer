@@ -31,11 +31,19 @@ export default function CaseStudyCard({
   className = '',
 }: CaseStudyCardProps) {
   return (
-    <Card className={`h-full overflow-hidden p-8 transition-all duration-300 hover:shadow-pop md:p-10 ${className}`}>
+    <Card
+      className={`h-full overflow-hidden p-8 transition-all duration-300 hover:shadow-pop md:p-10 ${className}`}
+    >
       <div className="mb-8 flex items-start justify-between">
         <div>
           {logo ? (
-            <Image src={logo} alt={company} width={120} height={48} className="h-12 w-auto object-contain" />
+            <Image
+              src={logo}
+              alt={company}
+              width={120}
+              height={48}
+              className="h-12 w-auto object-contain"
+            />
           ) : (
             <div className="flex h-12 items-center">
               <span className="text-2xl font-bold text-fg">{company}</span>
@@ -50,23 +58,33 @@ export default function CaseStudyCard({
 
       <div className="space-y-7">
         <div>
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">Kihívás</h3>
-          <p className="text-base leading-relaxed text-fg-muted md:text-[15px] md:leading-relaxed">{challenge}</p>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
+            Kihívás
+          </h3>
+          <p className="text-base leading-relaxed text-fg-muted md:text-[15px] md:leading-relaxed">
+            {challenge}
+          </p>
         </div>
 
         <div>
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">Megoldás</h3>
-          <p className="text-base leading-relaxed text-fg-muted md:text-[15px] md:leading-relaxed">{solution}</p>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
+            Megoldás
+          </h3>
+          <p className="text-base leading-relaxed text-fg-muted md:text-[15px] md:leading-relaxed">
+            {solution}
+          </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           {results.map((result, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="rounded-lg border border-border/50 bg-gradient-to-br from-bg-muted/40 to-bg-muted/20 p-4 text-center transition-all duration-200 hover:border-primary/30 hover:shadow-sm"
             >
               <div className="text-2xl font-bold text-primary md:text-3xl">{result.value}</div>
-              <div className="mt-2 text-xs font-medium text-fg-muted md:text-sm">{result.metric}</div>
+              <div className="mt-2 text-xs font-medium text-fg-muted md:text-sm">
+                {result.metric}
+              </div>
             </div>
           ))}
         </div>
@@ -87,15 +105,3 @@ export default function CaseStudyCard({
     </Card>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-

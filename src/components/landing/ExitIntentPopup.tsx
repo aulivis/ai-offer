@@ -42,13 +42,13 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
 
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !email.includes('@')) {
       return;
     }
 
     setStatus('loading');
-    
+
     try {
       // Here you would integrate with your email service
       // For now, simulate API call
@@ -80,15 +80,30 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
           aria-label="Bezárás"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         {status === 'success' ? (
           <div className="p-8 text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="h-8 w-8 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
             <h2 id="exit-popup-title" className="mb-3 text-2xl font-bold text-fg">
@@ -108,7 +123,12 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
         ) : (
           <div className="p-8 text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="h-8 w-8 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -156,4 +176,3 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
     </div>
   );
 }
-

@@ -104,7 +104,9 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
   if (!isVisible) return null;
 
   return (
-    <div className={`flex flex-wrap items-center justify-center gap-4 text-sm text-fg-muted ${className}`}>
+    <div
+      className={`flex flex-wrap items-center justify-center gap-4 text-sm text-fg-muted ${className}`}
+    >
       <div className="flex items-center gap-2">
         <div className="flex -space-x-2">
           {[0, 1, 2].map((i) => (
@@ -115,7 +117,8 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
           ))}
         </div>
         <span className="font-medium text-fg">
-          <strong className="text-primary">{count}+</strong> {t('landing.customerTicker.activeUsers')}
+          <strong className="text-primary">{count}+</strong>{' '}
+          {t('landing.customerTicker.activeUsers')}
         </span>
       </div>
       <span className="hidden text-fg-muted sm:inline">•</span>
@@ -133,4 +136,3 @@ export default function CustomerTicker({ className = '' }: CustomerTickerProps) 
     </div>
   );
 }
-

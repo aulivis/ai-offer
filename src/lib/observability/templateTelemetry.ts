@@ -48,7 +48,9 @@ function normaliseDuration(value: number | null | undefined): number | null {
   return Math.max(0, Math.round(value));
 }
 
-export async function recordTemplateRenderTelemetry(event: TemplateRenderTelemetryEvent): Promise<void> {
+export async function recordTemplateRenderTelemetry(
+  event: TemplateRenderTelemetryEvent,
+): Promise<void> {
   const templateId = normaliseIdentifier(event.templateId);
   const renderer = normaliseIdentifier(event.renderer);
 

@@ -345,11 +345,7 @@ function UsageStatCard({
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
             <div
               className={`h-full transition-all duration-500 ${
-                progress.isDanger
-                  ? 'bg-danger'
-                  : progress.isWarning
-                    ? 'bg-warning'
-                    : 'bg-primary'
+                progress.isDanger ? 'bg-danger' : progress.isWarning ? 'bg-warning' : 'bg-primary'
               }`}
               style={{ width: `${Math.min(progress.percentage, 100)}%` }}
               aria-label={`${progress.percentage}% használva`}
@@ -409,7 +405,7 @@ export default function BillingPage() {
         if (!active) {
           return;
         }
-        
+
         setPlan(quotaData.plan);
         setUsage({
           offersGenerated: quotaData.confirmed,
@@ -623,7 +619,9 @@ export default function BillingPage() {
           header={
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">{t('billing.currentPlan.title')}</h2>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {t('billing.currentPlan.title')}
+                </h2>
                 <p className="mt-1 text-sm text-slate-600">{t('billing.currentPlan.subtitle')}</p>
               </div>
               {isLoadingData ? (
@@ -883,7 +881,9 @@ export default function BillingPage() {
           header={
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">{t('billing.invoices.title')}</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  {t('billing.invoices.title')}
+                </h2>
                 <p className="text-xs text-slate-500">{t('billing.invoices.subtitle')}</p>
               </div>
             </CardHeader>
@@ -998,7 +998,12 @@ function PublicBillingLanding() {
               >
                 {t('billing.public.hero.ctaPrimary')}
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
                 </svg>
               </Link>
               <Link
@@ -1093,7 +1098,9 @@ function PublicBillingLanding() {
                   {t('billing.plans.popularBadge')}
                 </span>
               </div>
-              <h3 className="mt-2 text-3xl font-bold text-slate-900">{t('billing.plans.pro.name')}</h3>
+              <h3 className="mt-2 text-3xl font-bold text-slate-900">
+                {t('billing.plans.pro.name')}
+              </h3>
               <p className="mt-4 text-base leading-relaxed text-slate-600">
                 {t('billing.public.pro.description')}
               </p>
@@ -1180,7 +1187,9 @@ function PublicBillingLanding() {
               <span className="inline-block text-xs font-semibold uppercase tracking-[0.36em] text-primary">
                 {t('billing.public.steps.badge')}
               </span>
-              <h2 className="text-4xl font-bold text-slate-900">{t('billing.public.steps.title')}</h2>
+              <h2 className="text-4xl font-bold text-slate-900">
+                {t('billing.public.steps.title')}
+              </h2>
               <p className="text-lg leading-relaxed text-slate-600">
                 {t('billing.public.steps.description')}
               </p>
@@ -1214,7 +1223,9 @@ function PublicBillingLanding() {
                 <span className="inline-block text-xs font-semibold uppercase tracking-[0.36em] text-primary">
                   {t('billing.public.cta.badge')}
                 </span>
-                <h2 className="text-4xl font-bold text-slate-900">{t('billing.public.cta.title')}</h2>
+                <h2 className="text-4xl font-bold text-slate-900">
+                  {t('billing.public.cta.title')}
+                </h2>
                 <p className="text-lg leading-relaxed text-slate-600">
                   {t('billing.public.cta.description')}
                 </p>
@@ -1226,7 +1237,12 @@ function PublicBillingLanding() {
                 >
                   {t('billing.public.cta.primary')}
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
                   </svg>
                 </Link>
                 <Link
@@ -1294,8 +1310,18 @@ function PublicBillingLanding() {
                     className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
                   >
                     {t('landing.enterprise.ctaPrimary')}
-                    <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <svg
+                      className="ml-2 h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
                     </svg>
                   </a>
                   <Link

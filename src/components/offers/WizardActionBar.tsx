@@ -83,9 +83,7 @@ export const WizardActionBar = memo(function WizardActionBar({
             aria-label={`Continue to next step${step < 3 ? ` (Step ${step + 1})` : ''}`}
           >
             {nextButtonLabel} →
-            <span className="ml-2 hidden text-xs opacity-70 sm:inline">
-              (Ctrl+Enter)
-            </span>
+            <span className="ml-2 hidden text-xs opacity-70 sm:inline">(Ctrl+Enter)</span>
           </Button>
         ) : null}
       </div>

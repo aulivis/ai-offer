@@ -4,11 +4,11 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 /**
  * Hook for implementing roving tabindex pattern
- * 
+ *
  * This enables keyboard navigation (Arrow keys) in a grid/list of interactive elements.
  * Only one item has tabindex=0 (focusable), others have tabindex=-1.
  * Arrow keys move focus between items.
- * 
+ *
  * @param itemCount - Total number of items in the grid/list
  * @param orientation - 'horizontal' | 'vertical' | 'both' (default: 'both')
  * @returns Object with tabindex getter and keydown handler
@@ -111,4 +111,3 @@ export function useRovingTabindex(
     focusedIndex,
   };
 }
-

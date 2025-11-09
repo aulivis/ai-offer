@@ -1,13 +1,13 @@
 /**
  * PDF Page Number Injection Utility
- * 
+ *
  * This module provides utilities for injecting page numbers into PDF documents.
  * Since Chrome/Puppeteer does not support CSS page counters (counter(page), counter(pages)),
  * we use a two-pass approach:
  * 1. Generate PDF once to count pages using a PDF parser
  * 2. Inject page numbers into the DOM
  * 3. Generate final PDF with page numbers
- * 
+ *
  * Alternatively, we can use Puppeteer's headerTemplate/footerTemplate which natively
  * supports page numbers, but this requires restructuring the HTML.
  */
@@ -21,7 +21,11 @@ import { PDFDocument } from 'pdf-lib';
  */
 export async function injectPageNumbersTwoPass(
   page: {
-    evaluate: (fn: (totalPages: number, pageLabel: string) => void, totalPages: number, pageLabel: string) => Promise<void>;
+    evaluate: (
+      fn: (totalPages: number, pageLabel: string) => void,
+      totalPages: number,
+      pageLabel: string,
+    ) => Promise<void>;
     pdf: (options: unknown) => Promise<Buffer | Uint8Array>;
   },
   pdfOptions: unknown,
@@ -29,7 +33,7 @@ export async function injectPageNumbersTwoPass(
 ): Promise<Buffer | Uint8Array> {
   // First pass: Generate PDF to count pages
   const firstPassPdf = await page.pdf(pdfOptions);
-  
+
   // Parse PDF to count pages accurately using pdf-lib
   let totalPages = 1;
   try {
@@ -43,24 +47,24 @@ export async function injectPageNumbersTwoPass(
     // Rough estimate: ~50KB per page for typical documents
     totalPages = Math.max(1, Math.ceil(pdfSize / 50000));
   }
-  
+
   // Inject page numbers into HTML using JavaScript
   // Since we have fixed footers, we need to update the page number display
   // The challenge is that fixed elements appear on every page, so we can't easily
   // know which page number to show for each instance.
   // Solution: Use a data attribute and let CSS/JS handle it, or restructure to use
   // Puppeteer's headerTemplate/footerTemplate.
-  
+
   // For now, we'll update the footer to show the page number format
   // The actual page numbers will need to be handled differently since fixed
   // elements are duplicated on each page by the browser.
-  
+
   // Alternative: Remove fixed positioning and use page-break-based footers
   // This is more complex but allows accurate page numbering.
-  
+
   // For the current implementation, we'll use Puppeteer's headerTemplate/footerTemplate
   // which is the standard way to add page numbers to PDFs.
-  
+
   return firstPassPdf;
 }
 
@@ -183,4 +187,3 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-

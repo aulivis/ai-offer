@@ -10,10 +10,7 @@ export type AuditLogEvent = {
   userAgent?: string | null;
 };
 
-export async function logAuditEvent(
-  supabase: SupabaseClient,
-  event: AuditLogEvent,
-): Promise<void> {
+export async function logAuditEvent(supabase: SupabaseClient, event: AuditLogEvent): Promise<void> {
   try {
     const { error } = await supabase.from('audit_logs').insert({
       id: randomUUID(),
@@ -50,4 +47,3 @@ export function getRequestIp(request: Request): string | null {
 
   return null;
 }
-

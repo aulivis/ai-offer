@@ -24,7 +24,7 @@ export type BottomSheetProps = {
 
 /**
  * BottomSheet component for mobile navigation
- * 
+ *
  * Features:
  * - Slide-up animation from bottom
  * - Swipe-to-close gesture support
@@ -162,12 +162,13 @@ export function BottomSheet({
     if (!enableSwipeToClose) return;
     // Only start drag from the top area (header/drag handle)
     const target = e.target as HTMLElement;
-    const isHeaderArea = target.closest('[data-sheet-header]') || 
-                         target.closest('[data-drag-handle]') ||
-                         e.touches[0].clientY < 100; // Top 100px of sheet
-    
+    const isHeaderArea =
+      target.closest('[data-sheet-header]') ||
+      target.closest('[data-drag-handle]') ||
+      e.touches[0].clientY < 100; // Top 100px of sheet
+
     if (!isHeaderArea) return;
-    
+
     const touch = e.touches[0];
     touchStartYRef.current = touch.clientY;
     isDraggingRef.current = true;
@@ -179,7 +180,7 @@ export function BottomSheet({
     if (!enableSwipeToClose || !isDraggingRef.current) return;
     const touch = e.touches[0];
     const deltaY = touch.clientY - touchStartYRef.current;
-    
+
     // Only allow downward swipes
     if (deltaY > 0) {
       setDragY(deltaY);
@@ -189,15 +190,15 @@ export function BottomSheet({
 
   const handleTouchEnd = () => {
     if (!enableSwipeToClose || !isDraggingRef.current) return;
-    
+
     const sheetHeight = sheetRef.current?.offsetHeight || 0;
     const threshold = sheetHeight * swipeThreshold;
-    
+
     if (dragY > threshold) {
       // Close the sheet
       onClose();
     }
-    
+
     isDraggingRef.current = false;
     setIsDragging(false);
     setDragY(0);
@@ -260,7 +261,7 @@ export function BottomSheet({
       >
         {/* Drag handle indicator */}
         {enableSwipeToClose && (
-          <div 
+          <div
             className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
             data-drag-handle
             aria-hidden="true"
@@ -271,7 +272,7 @@ export function BottomSheet({
 
         {/* Header */}
         {(title || header || showCloseButton) && (
-          <div 
+          <div
             className="flex items-center justify-between border-b border-border px-4 py-3"
             data-sheet-header
           >
@@ -308,4 +309,3 @@ export function BottomSheet({
     document.body,
   );
 }
-

@@ -9,55 +9,56 @@ import { clearAuthCookies } from '@/lib/auth/cookies';
 /**
  * API endpoint to initialize Supabase client session from HttpOnly cookies.
  * This is needed because HttpOnly cookies cannot be read by client-side JavaScript.
- * 
+ *
  * POST /api/auth/init-session
- * 
+ *
  * Body: { expectedUserId?: string }
  */
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
   const cookieStore = await cookies();
-  
+
   try {
     const body = await request.json().catch(() => ({}));
-    const expectedUserId = typeof body.expectedUserId === 'string' ? body.expectedUserId : undefined;
-    
+    const expectedUserId =
+      typeof body.expectedUserId === 'string' ? body.expectedUserId : undefined;
+
     // Read HttpOnly cookies (server-side can access them)
     const accessToken = cookieStore.get('propono_at')?.value ?? null;
     const refreshToken = cookieStore.get('propono_rt')?.value ?? null;
-    
+
     // Debug: log all cookies to help diagnose the issue
     const allCookies = cookieStore.getAll();
     log.info('Session initialization request', {
       hasAccessToken: !!accessToken,
       hasRefreshToken: !!refreshToken,
       expectedUserId,
-      cookieNames: allCookies.map(c => c.name),
+      cookieNames: allCookies.map((c) => c.name),
       cookieCount: allCookies.length,
     });
-    
+
     if (!accessToken || !refreshToken) {
       log.warn('Session initialization requested but cookies not found', {
-        allCookies: allCookies.map(c => ({ name: c.name, hasValue: !!c.value })),
+        allCookies: allCookies.map((c) => ({ name: c.name, hasValue: !!c.value })),
         requestHeaders: {
           cookie: request.headers.get('cookie'),
           referer: request.headers.get('referer'),
         },
       });
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'No authentication cookies found',
           hasCookies: false,
           debug: {
-            cookieNames: allCookies.map(c => c.name),
+            cookieNames: allCookies.map((c) => c.name),
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
-    
+
     // Create a Supabase client to verify the tokens and get user info
     const supabase = createClient(
       envServer.NEXT_PUBLIC_SUPABASE_URL,
@@ -75,24 +76,27 @@ export async function POST(request: Request) {
         },
       },
     );
-    
+
     // Verify the access token and get user info
-    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(accessToken);
+
     if (userError || !user) {
       log.warn('Failed to verify access token', { error: userError?.message });
       // Clear invalid cookies
       await clearAuthCookies();
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Invalid access token',
           hasCookies: false,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
-    
+
     // Verify user ID matches if expected
     if (expectedUserId && user.id !== expectedUserId) {
       log.warn('User ID mismatch', {
@@ -102,21 +106,21 @@ export async function POST(request: Request) {
       // Clear cookies on user ID mismatch
       await clearAuthCookies();
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'User ID mismatch',
           hasCookies: false,
           userId: user.id,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
-    
+
     log.info('Session initialization verified', {
       userId: user.id,
       matchesExpected: expectedUserId ? user.id === expectedUserId : true,
     });
-    
+
     // Return tokens to client so it can initialize Supabase session
     // Note: This is safe because:
     // 1. Only accessible to same-origin requests (CORS)
@@ -136,12 +140,11 @@ export async function POST(request: Request) {
   } catch (error) {
     log.error('Session initialization API error', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Internal server error during session initialization',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

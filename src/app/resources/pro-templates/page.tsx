@@ -4,7 +4,8 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pro sablonok könyvtár | Vyndi',
-  description: 'Hozzáférj a prémium ajánlat sablonokhoz Pro előfizetéssel. Exkluzív, professzionális dizájnok, fejlett funkciók és korlátlan testreszabhatóság.',
+  description:
+    'Hozzáférj a prémium ajánlat sablonokhoz Pro előfizetéssel. Exkluzív, professzionális dizájnok, fejlett funkciók és korlátlan testreszabhatóság.',
   openGraph: {
     title: 'Pro sablonok könyvtár | Vyndi',
     description: 'Prémium ajánlat sablonok Pro előfizetőink számára.',
@@ -18,27 +19,40 @@ export default function ProTemplatesPage() {
     {
       id: 'pro.modern',
       name: 'Modern',
-      description: 'Korszerű, dinamikus dizájn, amely kiemeli a szolgáltatásokat és az értékajánlatot. Ideális tech cégeknek és start-upoknak.',
+      description:
+        'Korszerű, dinamikus dizájn, amely kiemeli a szolgáltatásokat és az értékajánlatot. Ideális tech cégeknek és start-upoknak.',
       category: 'Tech & Start-up',
       tags: ['modern', 'dinamikus', 'tech'],
       preview: '/templates/pro-modern-preview.png',
-      features: ['Interaktív elemek', 'Animált grafika', 'Fejlett árazási táblázat', 'Logo animáció'],
+      features: [
+        'Interaktív elemek',
+        'Animált grafika',
+        'Fejlett árazási táblázat',
+        'Logo animáció',
+      ],
       exclusive: true,
     },
     {
       id: 'pro.elegant',
       name: 'Elegáns',
-      description: 'Raffinált, luxus dizájn, amely tökéletesen megfelel a prémium szolgáltatások és brandek számára.',
+      description:
+        'Raffinált, luxus dizájn, amely tökéletesen megfelel a prémium szolgáltatások és brandek számára.',
       category: 'Luxury & Premium',
       tags: ['elegáns', 'luxus', 'prémium'],
       preview: '/templates/pro-elegant-preview.png',
-      features: ['Prémium tipográfia', 'Egyedi illusztrációk', 'Fénykép galéria', 'Interaktív timeline'],
+      features: [
+        'Prémium tipográfia',
+        'Egyedi illusztrációk',
+        'Fénykép galéria',
+        'Interaktív timeline',
+      ],
       exclusive: true,
     },
     {
       id: 'pro.bold',
       name: 'Merész',
-      description: 'Hangulatos, figyelemfelkeltő dizájn, amely segít kiemelkedni a versenytársak közül.',
+      description:
+        'Hangulatos, figyelemfelkeltő dizájn, amely segít kiemelkedni a versenytársak közül.',
       category: 'Kreatív',
       tags: ['merész', 'kreatív', 'figyelemfelkeltő'],
       preview: '/templates/pro-bold-preview.png',
@@ -71,7 +85,8 @@ export default function ProTemplatesPage() {
           Pro sablonok könyvtár
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
-          Hozzáférj exkluzív, prémium ajánlat sablonokhoz Pro előfizetéssel. Fejlett funkciók, egyedi dizájnok és korlátlan testreszabhatóság vár rád.
+          Hozzáférj exkluzív, prémium ajánlat sablonokhoz Pro előfizetéssel. Fejlett funkciók,
+          egyedi dizájnok és korlátlan testreszabhatóság vár rád.
         </p>
       </header>
 
@@ -81,7 +96,8 @@ export default function ProTemplatesPage() {
           <div>
             <h2 className="mb-2 text-2xl font-bold text-fg">Pro előfizetés szükséges</h2>
             <p className="text-fg-muted">
-              A prémium sablonok eléréséhez Pro előfizetésre van szükség. Fizess elő még ma, és azonnal hozzáférsz az összes exkluzív sablonhoz!
+              A prémium sablonok eléréséhez Pro előfizetésre van szükség. Fizess elő még ma, és
+              azonnal hozzáférsz az összes exkluzív sablonhoz!
             </p>
           </div>
           <Link
@@ -109,8 +125,18 @@ export default function ProTemplatesPage() {
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-br from-amber-100 to-orange-200">
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                  <svg className="mx-auto h-16 w-16 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="mx-auto h-16 w-16 text-amber-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   <p className="mt-4 text-xs font-medium text-amber-700">
                     [Helyőrző: {template.name} Pro sablon előnézet képe]
@@ -131,9 +157,7 @@ export default function ProTemplatesPage() {
               <h3 className="mb-2 text-xl font-bold text-fg group-hover:text-amber-600 transition-colors">
                 {template.name}
               </h3>
-              <p className="mb-4 text-sm leading-relaxed text-fg-muted">
-                {template.description}
-              </p>
+              <p className="mb-4 text-sm leading-relaxed text-fg-muted">{template.description}</p>
 
               {/* Features */}
               <div className="mb-4 space-y-2">
@@ -141,8 +165,16 @@ export default function ProTemplatesPage() {
                 <ul className="space-y-1">
                   {template.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2 text-sm text-fg-muted">
-                      <svg className="h-4 w-4 flex-shrink-0 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <svg
+                        className="h-4 w-4 flex-shrink-0 text-amber-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                       {feature}
                     </li>
@@ -169,8 +201,18 @@ export default function ProTemplatesPage() {
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100">
-                <svg className="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                <svg
+                  className="h-8 w-8 text-amber-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                  />
                 </svg>
               </div>
             </div>
@@ -183,8 +225,18 @@ export default function ProTemplatesPage() {
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-cyan-100">
-                <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <svg
+                  className="h-8 w-8 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
               </div>
             </div>
@@ -197,8 +249,18 @@ export default function ProTemplatesPage() {
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-pink-100">
-                <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                <svg
+                  className="h-8 w-8 text-purple-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                  />
                 </svg>
               </div>
             </div>
@@ -211,8 +273,18 @@ export default function ProTemplatesPage() {
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100">
-                <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="h-8 w-8 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
             </div>
@@ -226,7 +298,9 @@ export default function ProTemplatesPage() {
 
       {/* Comparison Table */}
       <Card className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Összehasonlítás: Ingyenes vs. Pro sablonok</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">
+          Összehasonlítás: Ingyenes vs. Pro sablonok
+        </h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -286,7 +360,12 @@ export default function ProTemplatesPage() {
             >
               Pro csomag megtekintése
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </Link>
             <Link
@@ -301,11 +380,3 @@ export default function ProTemplatesPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-

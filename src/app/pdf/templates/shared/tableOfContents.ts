@@ -18,13 +18,13 @@ export function renderTableOfContents(
   }
 
   const tocTitle = sanitizeInput(i18n.t('pdf.templates.common.tocTitle') || 'Table of Contents');
-  
+
   const tocItems = entries
     .map((entry) => {
       const safeId = sanitizeInput(entry.id);
       const safeTitle = sanitizeInput(entry.title);
       const indent = entry.level > 1 ? ` style="padding-left: ${(entry.level - 1) * 1.5}rem;"` : '';
-      
+
       return `
         <li class="offer-toc__item offer-toc__item--level-${entry.level}">
           <a href="#${safeId}"${indent}>${safeTitle}</a>
@@ -65,17 +65,3 @@ export function extractHeadings(html: string): TOCEntry[] {
 
   return entries;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -16,7 +16,9 @@ type StepErrorBoundaryProps = {
  * Error boundary specifically for wizard steps with step-specific fallback UI
  */
 export function StepErrorBoundary({ children, stepNumber, onRetry }: StepErrorBoundaryProps) {
-  const stepName = t(`offers.wizard.steps.${stepNumber === 1 ? 'details' : stepNumber === 2 ? 'pricing' : 'summary'}`);
+  const stepName = t(
+    `offers.wizard.steps.${stepNumber === 1 ? 'details' : stepNumber === 2 ? 'pricing' : 'summary'}`,
+  );
 
   return (
     <ErrorBoundary
@@ -45,19 +47,3 @@ export function StepErrorBoundary({ children, stepNumber, onRetry }: StepErrorBo
     </ErrorBoundary>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

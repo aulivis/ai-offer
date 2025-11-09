@@ -110,7 +110,7 @@ function getHungarianMagicLinkTemplate(templatePath?: string): EmailTemplate {
   // Always try to load from file first (preferred)
   const defaultPath = 'templates/magic-link-email-hu.html';
   const pathToLoad = templatePath || defaultPath;
-  
+
   try {
     const content = loadTemplateFromFile(pathToLoad);
     return {
@@ -123,7 +123,7 @@ function getHungarianMagicLinkTemplate(templatePath?: string): EmailTemplate {
       console.warn(`⚠️  Could not load template from ${templatePath}:`, error);
       console.warn(`⚠️  Falling back to default template location: ${defaultPath}`);
     }
-    
+
     // Try default location as fallback
     try {
       const content = loadTemplateFromFile(defaultPath);
@@ -134,7 +134,7 @@ function getHungarianMagicLinkTemplate(templatePath?: string): EmailTemplate {
     } catch (fallbackError) {
       throw new Error(
         `Failed to load email template. Tried: ${pathToLoad} and ${defaultPath}. ` +
-        `Make sure the template file exists. Error: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`
+          `Make sure the template file exists. Error: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
       );
     }
   }
@@ -184,19 +184,25 @@ Examples:
   }
 
   if (!accessToken) {
-    console.error('❌ Error: SUPABASE_ACCESS_TOKEN environment variable or --token argument is required');
+    console.error(
+      '❌ Error: SUPABASE_ACCESS_TOKEN environment variable or --token argument is required',
+    );
     console.error('');
     console.error('🔍 Debugging:');
     console.error(`   Current working directory: ${process.cwd()}`);
     console.error(`   Looking for .env.local in: ${path.join(process.cwd(), '.env.local')}`);
-    console.error(`   SUPABASE_ACCESS_TOKEN is ${process.env.SUPABASE_ACCESS_TOKEN ? 'SET' : 'NOT SET'}`);
-    console.error(`   NEXT_PUBLIC_SUPABASE_URL is ${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET'}`);
+    console.error(
+      `   SUPABASE_ACCESS_TOKEN is ${process.env.SUPABASE_ACCESS_TOKEN ? 'SET' : 'NOT SET'}`,
+    );
+    console.error(
+      `   NEXT_PUBLIC_SUPABASE_URL is ${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET'}`,
+    );
     console.error('');
     console.error('📝 How to get your Supabase Personal Access Token:');
     console.error('   1. Go to https://supabase.com/dashboard/account/tokens');
     console.error('   2. Click "Generate new token"');
     console.error('   3. Give it a name (e.g., "Email Template Management")');
-    console.error('   4. Copy the token immediately (it won\'t be shown again)');
+    console.error("   4. Copy the token immediately (it won't be shown again)");
     console.error('   5. Store it securely');
     console.error('');
     console.error('💡 Setting the token:');
@@ -205,16 +211,20 @@ Examples:
     console.error('      NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co');
     console.error('');
     console.error('   Option 2: Pass as command-line arguments:');
-    console.error('      npm run email:templates:update -- --token your-token --url https://your-project.supabase.co');
+    console.error(
+      '      npm run email:templates:update -- --token your-token --url https://your-project.supabase.co',
+    );
     console.error('');
     console.error('   Note: This is a Personal Access Token (PAT) from your account settings,');
-    console.error('         NOT the same as your project\'s API keys (anon key, service role key).');
-    console.error('         PATs don\'t have scopes - they provide full access to your account.');
+    console.error("         NOT the same as your project's API keys (anon key, service role key).");
+    console.error("         PATs don't have scopes - they provide full access to your account.");
     process.exit(1);
   }
 
   if (!supabaseUrl) {
-    console.error('❌ Error: NEXT_PUBLIC_SUPABASE_URL environment variable or --url argument is required');
+    console.error(
+      '❌ Error: NEXT_PUBLIC_SUPABASE_URL environment variable or --url argument is required',
+    );
     process.exit(1);
   }
 
@@ -268,4 +278,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-

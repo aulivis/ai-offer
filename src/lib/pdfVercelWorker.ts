@@ -1,10 +1,10 @@
 /**
  * Vercel-Native PDF Worker
- * 
+ *
  * This module provides PDF job processing using Vercel-native Puppeteer.
  * It processes PDF jobs directly in Vercel serverless functions without
  * requiring Supabase Edge Functions.
- * 
+ *
  * Industry Best Practices:
  * - Uses puppeteer-core + @sparticuz/chromium
  * - Processes jobs directly in Vercel
@@ -26,7 +26,7 @@ const JOB_TIMEOUT_MS = 90_000;
 
 /**
  * Processes a PDF job using Vercel-native Puppeteer
- * 
+ *
  * @param supabase - Supabase client (should use service role for system operations)
  * @param job - PDF job input
  * @returns PDF URL if successful, null if job was already processed
@@ -77,11 +77,11 @@ export async function processPdfJobVercelNative(
       .select('status, pdf_url')
       .eq('id', job.jobId)
       .maybeSingle();
-    
+
     if (checkJob?.status === 'completed' && checkJob.pdf_url) {
       return checkJob.pdf_url;
     }
-    
+
     throw new Error('PDF job was already claimed by another worker');
   }
 
@@ -113,17 +113,17 @@ export async function processPdfJobVercelNative(
     // Upload PDF to Supabase Storage
     // Use the storage path from job, or generate one based on job ID
     const storagePath = job.storagePath || `${job.userId}/${job.jobId}.pdf`;
-    
+
     // Convert Buffer to Uint8Array for Supabase Storage
-    const pdfUint8 = Buffer.isBuffer(pdfBuffer) 
-      ? new Uint8Array(pdfBuffer) 
-      : pdfBuffer instanceof Uint8Array 
-        ? pdfBuffer 
+    const pdfUint8 = Buffer.isBuffer(pdfBuffer)
+      ? new Uint8Array(pdfBuffer)
+      : pdfBuffer instanceof Uint8Array
+        ? pdfBuffer
         : new Uint8Array(pdfBuffer);
-    
+
     const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
     new Uint8Array(pdfArrayBuffer).set(pdfUint8);
-    
+
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('offers')
       .upload(storagePath, pdfArrayBuffer, {
@@ -136,12 +136,10 @@ export async function processPdfJobVercelNative(
     }
 
     // Get public URL for the PDF
-    const { data: urlData } = supabase.storage
-      .from('offers')
-      .getPublicUrl(storagePath);
+    const { data: urlData } = supabase.storage.from('offers').getPublicUrl(storagePath);
 
     const pdfUrl = urlData?.publicUrl;
-    
+
     if (!pdfUrl) {
       throw new Error('Failed to get public URL for generated PDF');
     }
@@ -192,7 +190,9 @@ export async function processPdfJobVercelNative(
         });
 
         if (!webhookResponse.ok) {
-          console.warn(`Webhook callback failed: ${webhookResponse.status} ${webhookResponse.statusText}`);
+          console.warn(
+            `Webhook callback failed: ${webhookResponse.status} ${webhookResponse.statusText}`,
+          );
         }
       } catch (webhookError) {
         // Don't fail the job if webhook fails
@@ -204,7 +204,7 @@ export async function processPdfJobVercelNative(
   } catch (error) {
     // Update job status to failed
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     await supabase
       .from('pdf_jobs')
       .update({
@@ -237,4 +237,3 @@ export async function processPdfJobVercelNative(
     throw error;
   }
 }
-

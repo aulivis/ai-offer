@@ -275,49 +275,49 @@ serve(async (request) => {
             page = await browser.newPage();
             page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);
             page.setDefaultTimeout(JOB_TIMEOUT_MS);
-            
+
             // Set viewport for consistent rendering
             await page.setViewport({
               width: 1200,
               height: 1600,
               deviceScaleFactor: 2,
             });
-            
+
             await setContentWithNetworkIdleLogging(page, html, 'edge-pdf');
-            
+
             // Extract document title from HTML if possible
             const documentTitle = await page.title().catch(() => 'Offer Document');
             if (documentTitle) {
               await page.setTitle(documentTitle);
             }
-            
+
             // Extract header/footer data for Puppeteer templates
             const headerFooterData = await page.evaluate(() => {
               const footer = document.querySelector('.slim-footer');
               const header = document.querySelector('.slim-header');
-              
+
               if (!footer) return null;
-              
+
               const companyEl = footer.querySelector('.slim-footer > div > span:first-child');
               const companyName = companyEl?.textContent?.trim() || 'Company';
-              
+
               const addressEl = footer.querySelector('.slim-footer > div > span:nth-child(2)');
               const companyAddress = addressEl?.textContent?.trim() || '';
-              
+
               const taxIdEl = footer.querySelector('.slim-footer > div > span:nth-child(3)');
               const companyTaxId = taxIdEl?.textContent?.trim() || '';
-              
+
               const pageNumberEl = footer.querySelector('.slim-footer__page-number');
               const pageLabel = pageNumberEl?.getAttribute('data-page-label') || 'Page';
-              
+
               let title = '';
               let issueDate = '';
               let dateLabel = '';
-              
+
               if (header) {
                 const titleEl = header.querySelector('.slim-header__title');
                 title = titleEl?.textContent?.trim() || '';
-                
+
                 const metaEl = header.querySelector('.slim-header__meta');
                 const metaText = metaEl?.textContent?.trim() || '';
                 const dateMatch = metaText.match(/^(.+?):\s*(.+)$/);
@@ -326,13 +326,22 @@ serve(async (request) => {
                   issueDate = dateMatch[2]?.trim() || '';
                 }
               }
-              
-              return { companyName, companyAddress, companyTaxId, pageLabel, title, issueDate, dateLabel };
+
+              return {
+                companyName,
+                companyAddress,
+                companyTaxId,
+                pageLabel,
+                title,
+                issueDate,
+                dateLabel,
+              };
             });
-            
+
             // Create footer template with page numbers (server-side)
             // Puppeteer templates support .pageNumber and .totalPages classes
-            const footerTemplate = headerFooterData ? `
+            const footerTemplate = headerFooterData
+              ? `
               <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8pt; font-family: 'Work Sans', Arial, sans-serif; color: #334155; padding: 4mm 0; width: 100%; box-sizing: border-box;">
                 <div style="display: flex; flex-direction: column; gap: 2px; font-size: 7pt; min-width: 0; flex: 1; max-width: 70%; word-wrap: break-word;">
                   <span style="font-weight: 600;">${escapeHtml(headerFooterData.companyName)}</span>
@@ -343,8 +352,9 @@ serve(async (request) => {
                   ${escapeHtml(headerFooterData.pageLabel)} <span class="pageNumber"></span> / <span class="totalPages"></span>
                 </span>
               </div>
-            ` : '<div></div>';
-            
+            `
+              : '<div></div>';
+
             // Generate PDF with margins that account for header/footer templates
             // Using @page margins (20mm top, 15mm sides, 25mm bottom) plus space for templates
             return await page.pdf({
@@ -420,7 +430,7 @@ serve(async (request) => {
       } finally {
         clearTimeout(timeoutId);
       }
-      
+
       if (!verifyResponse.ok) {
         console.error('PDF verification failed - file not accessible (edge worker)', {
           offerId: job.offer_id,
@@ -428,9 +438,11 @@ serve(async (request) => {
           status: verifyResponse.status,
           statusText: verifyResponse.statusText,
         });
-        throw new Error(`PDF is not accessible: ${verifyResponse.status} ${verifyResponse.statusText}`);
+        throw new Error(
+          `PDF is not accessible: ${verifyResponse.status} ${verifyResponse.statusText}`,
+        );
       }
-      
+
       // Verify it's actually a PDF by checking Content-Type
       const contentType = verifyResponse.headers.get('content-type');
       if (contentType && !contentType.includes('application/pdf')) {
@@ -441,7 +453,7 @@ serve(async (request) => {
         });
         throw new Error(`PDF has incorrect content type: ${contentType}`);
       }
-      
+
       console.log('Verified: PDF is accessible and downloadable (edge worker)', {
         offerId: job.offer_id,
         pdfUrl,
@@ -471,7 +483,7 @@ serve(async (request) => {
       periodStart: usagePeriodStart,
       offerId: job.offer_id,
     });
-    
+
     const usageResult = await incrementUsage(
       supabase,
       'user',
@@ -480,7 +492,7 @@ serve(async (request) => {
       usagePeriodStart,
       jobId, // Exclude this job from pending count
     );
-    
+
     console.log('User quota increment result (edge worker)', {
       userId: job.user_id,
       allowed: usageResult.allowed,
@@ -488,7 +500,7 @@ serve(async (request) => {
       periodStart: usageResult.periodStart,
       limit: userLimit,
     });
-    
+
     if (!usageResult.allowed) {
       console.error('User quota increment not allowed (edge worker), rolling back offer update', {
         userId: job.user_id,
@@ -519,7 +531,7 @@ serve(async (request) => {
         periodStart: usagePeriodStart,
         offerId: job.offer_id,
       });
-      
+
       const deviceResult = await incrementUsage(
         supabase,
         'device',
@@ -528,7 +540,7 @@ serve(async (request) => {
         usagePeriodStart,
         jobId, // Exclude this job from pending count
       );
-      
+
       console.log('Device quota increment result (edge worker)', {
         userId: job.user_id,
         deviceId,
@@ -537,7 +549,7 @@ serve(async (request) => {
         periodStart: deviceResult.periodStart,
         limit: deviceLimit,
       });
-      
+
       if (!deviceResult.allowed) {
         console.error('Device quota increment not allowed (edge worker), rolling back', {
           userId: job.user_id,
@@ -578,12 +590,15 @@ serve(async (request) => {
     if (jobCompleteError) {
       // Job completion failed, but quota was already incremented
       // This is a critical error - log it but don't rollback quota since PDF is accessible
-      console.error('CRITICAL: Failed to mark job as completed after quota increment (edge worker)', {
-        jobId,
-        offerId: job.offer_id,
-        error: jobCompleteError.message,
-        pdfUrl,
-      });
+      console.error(
+        'CRITICAL: Failed to mark job as completed after quota increment (edge worker)',
+        {
+          jobId,
+          offerId: job.offer_id,
+          error: jobCompleteError.message,
+          pdfUrl,
+        },
+      );
       // Don't throw - quota is incremented and PDF is accessible, so this is a data consistency issue
       // but the user should still have access to their PDF
       // The job status will remain 'processing', which is acceptable
@@ -655,7 +670,12 @@ serve(async (request) => {
 
     if (deviceUsageIncremented && deviceId) {
       try {
-        await rollbackUsageIncrement(supabase, 'device', { userId: job.user_id, deviceId }, usagePeriodStart);
+        await rollbackUsageIncrement(
+          supabase,
+          'device',
+          { userId: job.user_id, deviceId },
+          usagePeriodStart,
+        );
       } catch (rollbackError) {
         console.error('Failed to rollback device usage increment:', rollbackError);
       }
@@ -769,7 +789,9 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     const { data: normalizedRow, error: normalizedError } = await normalizedQuery.maybeSingle();
 
     if (normalizedError) {
-      throw new Error(`Failed to load normalized usage counter for rollback: ${normalizedError.message}`);
+      throw new Error(
+        `Failed to load normalized usage counter for rollback: ${normalizedError.message}`,
+      );
     }
 
     if (!normalizedRow) {
@@ -832,17 +854,21 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
   maxRetries: number = 3,
 ): Promise<void> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       await rollbackUsageIncrementForKind(supabase, kind, target, expectedPeriod);
       if (attempt > 0) {
-        console.log(`Rollback succeeded on attempt ${attempt + 1}`, { kind, target, expectedPeriod });
+        console.log(`Rollback succeeded on attempt ${attempt + 1}`, {
+          kind,
+          target,
+          expectedPeriod,
+        });
       }
       return; // Success
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
+
       if (attempt < maxRetries - 1) {
         // Exponential backoff: 100ms, 200ms, 400ms
         const delayMs = 100 * Math.pow(2, attempt);
@@ -857,7 +883,7 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
       }
     }
   }
-  
+
   // All retries failed - log but don't throw to prevent cascading failures
   console.error(`Failed to rollback usage increment after ${maxRetries} attempts`, {
     kind,
@@ -1045,7 +1071,7 @@ export async function incrementUsage<K extends CounterKind>(
     const message = error.message ?? '';
     const details = error.details ?? '';
     const combined = `${message} ${details}`.toLowerCase();
-    
+
     console.error('Quota increment RPC error (edge worker)', {
       rpc: config.rpc,
       kind,
@@ -1059,7 +1085,7 @@ export async function incrementUsage<K extends CounterKind>(
         hint: (error as { hint?: string }).hint,
       },
     });
-    
+
     if (
       combined.includes(config.rpc) ||
       combined.includes('multiple function variants') ||
@@ -1081,14 +1107,14 @@ export async function incrementUsage<K extends CounterKind>(
     offersGenerated: Number(result?.offers_generated ?? 0),
     periodStart: String(result?.period_start ?? periodStart),
   };
-  
+
   console.log('Quota increment RPC result (edge worker)', {
     rpc: config.rpc,
     kind,
     target,
     result: incrementResult,
   });
-  
+
   if (!incrementResult.allowed) {
     console.warn('Quota increment not allowed (edge worker)', {
       rpc: config.rpc,
@@ -1099,7 +1125,7 @@ export async function incrementUsage<K extends CounterKind>(
       periodStart: incrementResult.periodStart,
     });
   }
-  
+
   return incrementResult;
 }
 

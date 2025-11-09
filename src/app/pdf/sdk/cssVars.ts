@@ -16,7 +16,7 @@ export function tokensToCssVars(tokens: TemplateTokens): string {
     (step) => {
       kv[`--primary-${step}`] = tokens.primary[step];
       kv[`--secondary-${step}`] = tokens.secondary[step];
-    }
+    },
   );
 
   const lines = Object.entries(kv)

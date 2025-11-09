@@ -5,20 +5,20 @@ import { prefersReducedMotion } from '@/styles/animations';
 
 /**
  * React hook for reduced motion preference
- * 
+ *
  * Returns true if the user prefers reduced motion, false otherwise.
  * Updates automatically when the preference changes.
- * 
+ *
  * @returns {boolean} True if user prefers reduced motion, false otherwise
- * 
+ *
  * @example
  * ```tsx
  * import { useReducedMotion } from '@/hooks/useReducedMotion';
- * 
+ *
  * function MyComponent() {
  *   const reducedMotion = useReducedMotion();
  *   const animationDuration = reducedMotion ? 0 : 300;
- *   
+ *
  *   return (
  *     <div style={{ transitionDuration: `${animationDuration}ms` }}>
  *       Content
@@ -36,7 +36,7 @@ export function useReducedMotion(): boolean {
 
     // Listen for changes
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    
+
     const handleChange = (event: MediaQueryListEvent) => {
       setReducedMotion(event.matches);
     };
@@ -46,7 +46,7 @@ export function useReducedMotion(): boolean {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-    
+
     // Fallback for older browsers
     if (mediaQuery.addListener) {
       mediaQuery.addListener(handleChange);
@@ -56,4 +56,3 @@ export function useReducedMotion(): boolean {
 
   return reducedMotion;
 }
-

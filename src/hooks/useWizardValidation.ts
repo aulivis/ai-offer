@@ -57,11 +57,7 @@ export function useWizardValidation() {
   }, []);
 
   const validateAll = useCallback(
-    (
-      title: string,
-      projectDetails: ProjectDetails,
-      pricingRows: PriceRow[],
-    ): ValidationResult => {
+    (title: string, projectDetails: ProjectDetails, pricingRows: PriceRow[]): ValidationResult => {
       const step1Errors = validateStep1(title, projectDetails);
       const step2Errors = validateStep2(pricingRows);
 
@@ -97,17 +93,3 @@ export function useWizardValidation() {
     validateAll,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

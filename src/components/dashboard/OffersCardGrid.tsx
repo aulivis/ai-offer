@@ -19,7 +19,7 @@ type OffersCardGridProps = {
 
 /**
  * OffersCardGrid - Card grid with enhanced accessibility
- * 
+ *
  * Provides a grid layout for offer cards with proper ARIA attributes
  * and keyboard navigation support. Cards contain multiple interactive
  * elements, so focus management is handled within each card.
@@ -37,20 +37,15 @@ export function OffersCardGrid({
   onDownload,
 }: OffersCardGridProps) {
   return (
-    <div 
-      className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start" 
+    <div
+      className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start"
       data-offers-section
       role="list"
       aria-label={t('dashboard.offersList.label') || 'Offers list'}
       aria-busy={updatingId !== null || deletingId !== null}
     >
       {offers.map((offer, index) => (
-        <div
-          key={offer.id}
-          role="listitem"
-          aria-posinset={index + 1}
-          aria-setsize={offers.length}
-        >
+        <div key={offer.id} role="listitem" aria-posinset={index + 1} aria-setsize={offers.length}>
           <OfferCard
             offer={offer}
             isUpdating={updatingId === offer.id}
@@ -68,4 +63,3 @@ export function OffersCardGrid({
     </div>
   );
 }
-

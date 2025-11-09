@@ -45,8 +45,7 @@ export function useWizardKeyboardShortcuts({
 
       if (isInputElement) {
         // Allow Ctrl/Cmd + Enter even in inputs for quick submission
-        const isModifierEnter =
-          (event.ctrlKey || event.metaKey) && event.key === 'Enter';
+        const isModifierEnter = (event.ctrlKey || event.metaKey) && event.key === 'Enter';
         if (!isModifierEnter) {
           return;
         }

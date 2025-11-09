@@ -49,20 +49,3 @@ export const API_TIMEOUTS = {
   FILE_UPLOAD: 60_000, // 1 minute for file uploads
   DATABASE: 10_000, // 10 seconds for database operations
 } as const;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

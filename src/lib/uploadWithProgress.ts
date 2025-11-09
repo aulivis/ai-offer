@@ -85,7 +85,9 @@ export async function uploadWithProgress(
           .then((refreshed) => {
             if (refreshed) {
               // Retry the request once
-              uploadWithProgress(url, { ...options, authErrorMessage: undefined }).then(resolve).catch(reject);
+              uploadWithProgress(url, { ...options, authErrorMessage: undefined })
+                .then(resolve)
+                .catch(reject);
             } else {
               const message = authErrorMessage ?? defaultErrorMessage ?? t(DEFAULT_AUTH_ERROR_KEY);
               reject(new ApiError(message, { status: 401 }));
@@ -125,8 +127,7 @@ export async function uploadWithProgress(
     });
 
     xhr.addEventListener('error', () => {
-      const message =
-        defaultErrorMessage ?? (xhr.statusText || t('errors.requestFailed'));
+      const message = defaultErrorMessage ?? (xhr.statusText || t('errors.requestFailed'));
       reject(new ApiError(message, { cause: new Error('Network error') }));
     });
 
@@ -159,4 +160,3 @@ export async function uploadWithProgress(
     }
   });
 }
-
