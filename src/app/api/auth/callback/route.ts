@@ -8,7 +8,7 @@ import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf'
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
-import { recordMagicLinkCallback } from '@/lib/observability/metrics';
+import { recordMagicLinkCallback, recordAuthRouteUsage } from '@/lib/observability/metrics';
 import {
   Argon2Algorithm,
   argon2Hash,
@@ -366,19 +366,27 @@ async function persistSessionOpaque(
 
   const hashedRefresh = await argon2Hash(refreshToken, ARGON2_OPTIONS);
   const supabase = supabaseServiceRole();
-  const { error } = await supabase.from('sessions').insert({
-    user_id: userId,
-    rt_hash: hashedRefresh,
-    issued_at: issuedAt.toISOString(),
-    expires_at: expiresAt.toISOString(),
-    ip: getClientIp(request),
-    ua: request.headers.get('user-agent'),
+  
+  // Use UPSERT function to handle deduplication (same refresh token hash from different routes)
+  // This prevents duplicate session records during migration from callback to confirm route
+  const { data, error } = await supabase.rpc('upsert_session', {
+    p_user_id: userId,
+    p_rt_hash: hashedRefresh,
+    p_issued_at: issuedAt.toISOString(),
+    p_expires_at: expiresAt.toISOString(),
+    p_ip: getClientIp(request),
+    p_ua: request.headers.get('user-agent'),
   });
 
   if (error) {
     logger.error('Failed to persist session record during login.', error);
     throw new Error('Unable to persist session record.');
   }
+  
+  logger.info('Session persisted or updated', {
+    sessionId: data,
+    userId,
+  });
 }
 
 /** Magic link tokenek kezelése (implicit vagy verifyOtp) */
@@ -408,6 +416,9 @@ async function handleMagicLinkTokens(
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const cookieStore = await cookies();
+
+  // Track route usage for migration monitoring
+  recordAuthRouteUsage('callback', 'success', { flow: 'started' });
 
   // A végső redirect: először sütiből olvassuk (post_auth_redirect), ha nincs, a queryből, végül fallback
   const cookieRedirect = cookieStore.get('post_auth_redirect')?.value ?? '';
@@ -495,6 +506,9 @@ export async function GET(request: Request) {
         // We need to generate it here so we can include it in the redirect
         const { value: csrfTokenValue } = createCsrfToken();
         
+        // Track successful callback route usage
+        recordAuthRouteUsage('callback', 'success', { flow: 'implicit', userId });
+        
         // Redirect to init-session page for client-side session initialization
         // Build the redirect path (will be converted to absolute URL by redirectTo)
         const redirectPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
@@ -507,6 +521,7 @@ export async function GET(request: Request) {
           expiresIn: tokens.expiresIn,
           rememberMe,
           hasCsrfToken: !!csrfTokenValue,
+          route: 'callback',
         });
         
         // Pass tokens directly to redirectTo to set cookies on redirect response
@@ -523,6 +538,7 @@ export async function GET(request: Request) {
         });
       } catch (error) {
         logger.error('Error in magic link token handling', error);
+        recordAuthRouteUsage('callback', 'failure', { flow: 'implicit', error: 'token_handling_failed' });
         // Ensure cookies are cleared on error
         await clearAuthCookies();
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
@@ -594,6 +610,9 @@ export async function GET(request: Request) {
         // Create CSRF token for the session
         const { value: csrfTokenValue } = createCsrfToken();
         
+        // Track successful callback route usage
+        recordAuthRouteUsage('callback', 'success', { flow: 'token_hash', userId });
+        
         // Redirect to init-session page for client-side session initialization
         // Build redirect path (will be converted to absolute URL by redirectTo)
         const redirectPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
@@ -606,6 +625,7 @@ export async function GET(request: Request) {
           accessTokenLength: accessToken.length,
           refreshTokenLength: refreshToken.length,
           hasCsrfToken: !!csrfTokenValue,
+          route: 'callback',
         });
         
         // Pass tokens directly to ensure they're set on the redirect response
@@ -621,6 +641,7 @@ export async function GET(request: Request) {
         });
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
+        recordAuthRouteUsage('callback', 'failure', { flow: 'token_hash', error: 'token_handling_failed' });
         // Ensure cookies are cleared on error
         await clearAuthCookies();
         return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
@@ -690,6 +711,9 @@ export async function GET(request: Request) {
     // Create CSRF token for the session
     const { value: csrfTokenValue } = createCsrfToken();
     
+    // Track successful callback route usage
+    recordAuthRouteUsage('callback', 'success', { flow: 'oauth_pkce', userId });
+    
     // For OAuth flows, redirect to client-side session initialization page
     // This ensures the Supabase client session is properly initialized before
     // redirecting to the final destination (dashboard, etc.)
@@ -703,6 +727,7 @@ export async function GET(request: Request) {
       accessTokenLength: accessToken.length,
       refreshTokenLength: refreshToken.length,
       hasCsrfToken: !!csrfTokenValue,
+      route: 'callback',
     });
     
     // Pass tokens directly to ensure they're set on the redirect response
@@ -718,6 +743,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     logger.error('Failed to complete OAuth callback', error);
+    recordAuthRouteUsage('callback', 'failure', { flow: 'oauth_pkce', error: 'oauth_callback_failed' });
     await clearAuthCookies();
     return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
   }

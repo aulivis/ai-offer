@@ -6,12 +6,26 @@ import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { clearAuthCookies } from '@/lib/auth/cookies';
 import { CSRF_COOKIE_NAME, createCsrfToken } from '@/lib/auth/csrf';
 import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
-import { createAuthRequestLogger } from '@/lib/observability/authLogging';
-import { recordMagicLinkCallback } from '@/lib/observability/metrics';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
+import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
+import { recordMagicLinkCallback, recordAuthRouteUsage } from '@/lib/observability/metrics';
+import {
+  Argon2Algorithm,
+  argon2Hash,
+  type Argon2Options,
+} from '@/lib/auth/argon2';
 
 const AUTH_CONFIRM_ERROR_REDIRECT = '/login?message=Unable%20to%20authenticate';
 const DEFAULT_FALLBACK_PATH = '/dashboard';
 const REMEMBER_ME_EXPIRES_IN_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const FALLBACK_EXPIRES_IN = 3600;
+
+const ARGON2_OPTIONS: Argon2Options = {
+  algorithm: Argon2Algorithm.Argon2id,
+  memoryCost: 19456,
+  timeCost: 2,
+  parallelism: 1,
+};
 
 // Email OTP types allowed for token_hash flow
 const EMAIL_OTP_TYPES = ['email', 'recovery'] as const;
@@ -35,13 +49,98 @@ function parseExpiresIn(value: string | number | null | undefined): number {
       return parsed;
     }
   }
-  return 3600; // Default 1 hour
+  return FALLBACK_EXPIRES_IN;
+}
+
+/**
+ * Extract client IP address from request headers.
+ * Checks x-forwarded-for (first IP) and x-real-ip headers.
+ */
+function getClientIp(request: Request): string | null {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const [first] = forwarded.split(',');
+    if (first) {
+      return first.trim();
+    }
+  }
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) return realIp;
+  return null;
+}
+
+/**
+ * Decode JWT payload without verification (for access token only).
+ * Used to extract user ID from access token.
+ */
+function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
+  const parts = jwt.split('.');
+  if (parts.length !== 3) {
+    return null;
+  }
+  try {
+    const json = Buffer.from(
+      parts[1].replace(/-/g, '+').replace(/_/g, '/'),
+      'base64',
+    ).toString('utf8');
+    return JSON.parse(json) as T;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persist session to database with hashed refresh token.
+ * This enables session revocation, auditing, and quota enforcement.
+ * Uses UPSERT to handle deduplication (same refresh token hash from different routes).
+ */
+async function persistSessionOpaque(
+  userId: string,
+  refreshToken: string,
+  expiresInSec: number,
+  request: Request,
+  logger: RequestLogger,
+  rememberMe: boolean = false,
+) {
+  const issuedAt = new Date();
+  // If remember me is enabled, use longer expiration; otherwise use the token's expiration
+  const sessionExpiresIn = rememberMe
+    ? REMEMBER_ME_EXPIRES_IN_SECONDS
+    : Math.max(1, expiresInSec || FALLBACK_EXPIRES_IN);
+  const expiresAt = new Date(issuedAt.getTime() + sessionExpiresIn * 1000);
+
+  const hashedRefresh = await argon2Hash(refreshToken, ARGON2_OPTIONS);
+  const supabase = supabaseServiceRole();
+  
+  // Use UPSERT function to handle deduplication (same refresh token hash from different routes)
+  // This prevents duplicate session records during migration from callback to confirm route
+  const { data, error } = await supabase.rpc('upsert_session', {
+    p_user_id: userId,
+    p_rt_hash: hashedRefresh,
+    p_issued_at: issuedAt.toISOString(),
+    p_expires_at: expiresAt.toISOString(),
+    p_ip: getClientIp(request),
+    p_ua: request.headers.get('user-agent'),
+  });
+
+  if (error) {
+    logger.error('Failed to persist session record during auth confirm', error);
+    throw new Error('Unable to persist session record.');
+  }
+  
+  logger.info('Session persisted or updated', {
+    sessionId: data,
+    userId,
+  });
 }
 
 /**
  * Creates a redirect response with authentication cookies set.
  * Uses Next.js's built-in cookie API to properly set cookies on redirect responses.
  * This matches the pattern used in the callback route.
+ * 
+ * For reliability, redirects to /auth/init-session first, which provides
+ * client-side session initialization and cookie validation before final redirect.
  */
 function redirectToWithCookies(
   path: string,
@@ -50,6 +149,7 @@ function redirectToWithCookies(
   refreshToken: string,
   expiresIn: number,
   csrfToken: string,
+  userId: string,
   rememberMe: boolean = false,
 ): NextResponse {
   // Construct absolute URL from relative path
@@ -69,8 +169,20 @@ function redirectToWithCookies(
     }
   }
 
+  // Redirect to /auth/init-session first for reliable cookie validation
+  // This matches the pattern used in the callback route
+  const initSessionPath = `/auth/init-session?redirect=${encodeURIComponent(absoluteUrl)}&user_id=${encodeURIComponent(userId)}`;
+  let initSessionUrl: string;
+  try {
+    const url = new URL(request.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
+    initSessionUrl = `${baseUrl}${initSessionPath}`;
+  } catch {
+    initSessionUrl = `${envServer.APP_URL}${initSessionPath}`;
+  }
+
   // Create redirect response
-  const response = NextResponse.redirect(absoluteUrl, { status: 302 });
+  const response = NextResponse.redirect(initSessionUrl, { status: 302 });
 
   // Set cookies on the redirect response using Next.js API
   // Calculate maxAge values
@@ -82,7 +194,9 @@ function redirectToWithCookies(
     ? REMEMBER_ME_EXPIRES_IN_SECONDS
     : Math.max(accessTokenMaxAge, 7 * 24 * 60 * 60); // At least 7 days
 
-  const isSecure = envServer.APP_URL.startsWith('https');
+  // Use APP_URL scheme as primary check, fallback to NODE_ENV for resilience
+  // This handles cases where APP_URL may not reflect runtime transport (e.g., HTTPS on localhost)
+  const isSecure = envServer.APP_URL?.startsWith('https') ?? (process.env.NODE_ENV !== 'development');
 
   // Set access token cookie
   response.cookies.set('propono_at', accessToken, {
@@ -129,6 +243,9 @@ export async function GET(request: NextRequest) {
   const logger = createAuthRequestLogger();
   const cookieStore = await cookies();
 
+  // Track route usage for migration monitoring
+  recordAuthRouteUsage('confirm', 'success', { flow: 'started' });
+
   // Get parameters
   const tokenHash = searchParams.get('token_hash');
   const typeParam = searchParams.get('type');
@@ -149,6 +266,7 @@ export async function GET(request: NextRequest) {
     nextParam,
     finalRedirect,
     rememberMe,
+    route: 'confirm',
   });
 
   const supabase = supabaseAnonServer();
@@ -164,6 +282,7 @@ export async function GET(request: NextRequest) {
           allowedTypes: EMAIL_OTP_TYPES,
         });
         recordMagicLinkCallback('failure', { reason: 'invalid_token_type' });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'invalid_token_type' });
         await clearAuthCookies();
         return NextResponse.redirect(
           new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
@@ -188,6 +307,7 @@ export async function GET(request: NextRequest) {
           otpType,
         });
         recordMagicLinkCallback('failure', { reason: 'verify_failed' });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'verify_failed', otpType });
         await clearAuthCookies();
         return NextResponse.redirect(
           new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
@@ -206,6 +326,42 @@ export async function GET(request: NextRequest) {
           hasRefreshToken: !!refreshToken,
         });
         recordMagicLinkCallback('failure', { reason: 'missing_tokens' });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'missing_tokens' });
+        await clearAuthCookies();
+        return NextResponse.redirect(
+          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
+          { status: 302 }
+        );
+      }
+
+      // Extract user ID from access token
+      const payload = decodeJwtPayload<{ sub?: string }>(accessToken);
+      const userId = payload?.sub ?? '';
+      if (!userId) {
+        logger.error('Failed to extract user ID from access token');
+        recordMagicLinkCallback('failure', { reason: 'user_lookup_failed' });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'user_lookup_failed' });
+        await clearAuthCookies();
+        return NextResponse.redirect(
+          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
+          { status: 302 }
+        );
+      }
+
+      // Persist session to database (critical for session management)
+      try {
+        await persistSessionOpaque(
+          userId,
+          refreshToken,
+          expiresIn,
+          request,
+          logger,
+          rememberMe,
+        );
+      } catch (error) {
+        logger.error('Failed to persist session in auth confirm', error);
+        recordMagicLinkCallback('failure', { reason: 'persist_failed' });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'token_hash', error: 'persist_failed' });
         await clearAuthCookies();
         return NextResponse.redirect(
           new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
@@ -217,16 +373,19 @@ export async function GET(request: NextRequest) {
       const { value: csrfToken } = createCsrfToken();
 
       logger.info('Token_hash verification successful', {
+        userId,
         accessTokenLength: accessToken.length,
         refreshTokenLength: refreshToken.length,
         expiresIn,
         rememberMe,
         finalRedirect,
+        route: 'confirm',
       });
 
       recordMagicLinkCallback('success');
+      recordAuthRouteUsage('confirm', 'success', { flow: 'token_hash', userId, otpType: typeParam });
 
-      // Redirect with cookies set
+      // Redirect to init-session page with cookies set
       return redirectToWithCookies(
         finalRedirect,
         request,
@@ -234,6 +393,7 @@ export async function GET(request: NextRequest) {
         refreshToken,
         expiresIn,
         csrfToken,
+        userId,
         rememberMe,
       );
     }
@@ -251,6 +411,7 @@ export async function GET(request: NextRequest) {
         logger.error('exchangeCodeForSession failed in auth confirm', {
           error: error?.message,
         });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'exchange_failed' });
         await clearAuthCookies();
         return NextResponse.redirect(
           new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
@@ -268,6 +429,40 @@ export async function GET(request: NextRequest) {
           hasAccessToken: !!accessToken,
           hasRefreshToken: !!refreshToken,
         });
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'missing_tokens' });
+        await clearAuthCookies();
+        return NextResponse.redirect(
+          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
+          { status: 302 }
+        );
+      }
+
+      // Extract user ID from access token
+      const payload = decodeJwtPayload<{ sub?: string }>(accessToken);
+      const userId = payload?.sub ?? '';
+      if (!userId) {
+        logger.error('Failed to extract user ID from access token');
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'user_lookup_failed' });
+        await clearAuthCookies();
+        return NextResponse.redirect(
+          new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
+          { status: 302 }
+        );
+      }
+
+      // Persist session to database (critical for session management)
+      try {
+        await persistSessionOpaque(
+          userId,
+          refreshToken,
+          expiresIn,
+          request,
+          logger,
+          rememberMe,
+        );
+      } catch (error) {
+        logger.error('Failed to persist session in auth confirm (OAuth)', error);
+        recordAuthRouteUsage('confirm', 'failure', { flow: 'oauth_pkce', error: 'persist_failed' });
         await clearAuthCookies();
         return NextResponse.redirect(
           new URL(AUTH_CONFIRM_ERROR_REDIRECT, request.url).toString(),
@@ -279,14 +474,18 @@ export async function GET(request: NextRequest) {
       const { value: csrfToken } = createCsrfToken();
 
       logger.info('OAuth PKCE code exchange successful', {
+        userId,
         accessTokenLength: accessToken.length,
         refreshTokenLength: refreshToken.length,
         expiresIn,
         rememberMe,
         finalRedirect,
+        route: 'confirm',
       });
 
-      // Redirect with cookies set
+      recordAuthRouteUsage('confirm', 'success', { flow: 'oauth_pkce', userId });
+
+      // Redirect to init-session page with cookies set
       return redirectToWithCookies(
         finalRedirect,
         request,
@@ -294,6 +493,7 @@ export async function GET(request: NextRequest) {
         refreshToken,
         expiresIn,
         csrfToken,
+        userId,
         rememberMe,
       );
     }

@@ -12,6 +12,10 @@ const magicLinkCallbackCounter = meter.createCounter('auth.magic_link.callback_t
   description: 'Counts Supabase magic link callback handling outcomes.',
 });
 
+const authRouteUsageCounter = meter.createCounter('auth.route.usage_total', {
+  description: 'Counts usage of different auth routes (callback vs confirm) for migration tracking.',
+});
+
 function mergeAttributes(
   outcome: 'success' | 'failure',
   attributes?: MetricAttributes,
@@ -28,4 +32,19 @@ export function recordMagicLinkCallback(
   attributes?: MetricAttributes,
 ) {
   magicLinkCallbackCounter.add(1, mergeAttributes(outcome, attributes));
+}
+
+/**
+ * Track which auth route is being used (callback vs confirm) for migration monitoring.
+ * This helps identify when it's safe to deprecate the old callback route.
+ */
+export function recordAuthRouteUsage(
+  route: 'callback' | 'confirm',
+  outcome: 'success' | 'failure',
+  attributes?: MetricAttributes,
+) {
+  authRouteUsageCounter.add(1, {
+    route,
+    ...mergeAttributes(outcome, attributes),
+  });
 }

@@ -46,16 +46,30 @@
               </p>
               
               <!-- CTA Button -->
+              <!-- 
+                Note: Using token_hash flow for shorter URLs and better reliability.
+                If TokenHash is available (PKCE flow), use it; otherwise fall back to ConfirmationURL (implicit flow).
+                Supabase will automatically determine which flow to use based on Site URL configuration.
+              -->
               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 0 0 40px 0;">
                 <tr>
                   <td align="center" style="padding: 0;">
                     <table role="presentation" border="0" cellspacing="0" cellpadding="0">
                       <tr>
                         <td align="center" bgcolor="#1c274c" style="border-radius: 8px; padding: 0;">
+                          {{ if .TokenHash }}
+                          <!-- PKCE flow: Use token_hash for shorter URLs -->
+                          <a href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard" 
+                             style="display: inline-block; padding: 18px 48px; background-color: #1c274c; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; line-height: 1.5; border-radius: 8px; border: 2px solid #1c274c;">
+                            Bejelentkezés
+                          </a>
+                          {{ else }}
+                          <!-- Fallback to implicit flow if token_hash not available -->
                           <a href="{{ .ConfirmationURL }}" 
                              style="display: inline-block; padding: 18px 48px; background-color: #1c274c; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; line-height: 1.5; border-radius: 8px; border: 2px solid #1c274c;">
                             Bejelentkezés
                           </a>
+                          {{ end }}
                         </td>
                       </tr>
                     </table>
@@ -72,13 +86,26 @@
                   Másold be az alábbi linket a böngésződbe (a teljes linket, ne csak egy részét):
                 </p>
                 <p style="margin: 0; padding: 12px; background-color: #ffffff; border-radius: 4px; border: 1px solid #e2e8f0; overflow-x: auto;">
+                  {{ if .TokenHash }}
+                  <!-- PKCE flow: Use token_hash for shorter URLs -->
+                  <a href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard" 
+                     style="color: #1c274c; text-decoration: underline; font-size: 11px; font-family: 'Courier New', Courier, monospace; display: block; word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap; line-height: 1.5;">
+                    {{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard
+                  </a>
+                  {{ else }}
+                  <!-- Fallback to implicit flow if token_hash not available -->
                   <a href="{{ .ConfirmationURL }}" 
                      style="color: #1c274c; text-decoration: underline; font-size: 11px; font-family: 'Courier New', Courier, monospace; display: block; word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap; line-height: 1.5;">
                     {{ .ConfirmationURL }}
                   </a>
+                  {{ end }}
                 </p>
                 <p style="margin: 8px 0 0 0; padding: 0; color: #a0aec0; font-size: 11px; line-height: 1.4;">
+                  {{ if .TokenHash }}
+                  ✅ A link rövid és biztonságos. Másold be a teljes linket a böngésződbe.
+                  {{ else }}
                   ⚠️ Fontos: Ha a link túl hosszúnak tűnik, akkor is másold be a teljes linket. A hosszú linkek biztonságosak és szükségesek a bejelentkezéshez.
+                  {{ end }}
                 </p>
               </div>
               

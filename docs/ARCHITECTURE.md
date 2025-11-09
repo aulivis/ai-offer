@@ -32,9 +32,12 @@ This application is a Next.js-based SaaS platform for generating professional bu
 
 1. **Magic Link Authentication:**
    - User requests magic link via `/api/auth/magic-link`
-   - Email sent with authentication token
-   - Token validated, cookies set
-   - Refresh token stored in database with Argon2 hash
+   - Email sent with authentication token (token_hash flow preferred for shorter URLs)
+   - Token validated via `/api/auth/confirm` (primary) or `/api/auth/callback` (legacy)
+   - Session persisted to database with UPSERT (deduplication)
+   - Cookies set (access token, refresh token, CSRF token)
+   - Redirect to `/auth/init-session` for client-side initialization
+   - See [Auth Routes Migration](./AUTH_ROUTES_MIGRATION.md) for details
 
 2. **Session Management:**
    - Access tokens stored in HTTP-only cookies
