@@ -13,6 +13,7 @@ import Footer from '@/components/layout/Footer';
 import { AppProviders } from '@/components/AppProviders';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import ChatbotWidget from '@/components/chatbot/ChatbotWidget';
+import { AriaLiveAnnouncer } from '@/components/ui/AriaLiveAnnouncer';
 
 import { LanguageProvider } from '@/state/LanguageProvider';
 import { withLanguage } from '@/state/lang';
@@ -48,6 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="pointer-events-none absolute -right-28 bottom-40 h-72 w-72 rounded-full bg-primary/14 blur-3xl" />
 
                 <div className="relative z-10 flex min-h-screen flex-col">
+                  <AriaLiveAnnouncer />
                   <AnnouncementBar />
                   <QuotaWarningBar />
                   <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { tokens } from '@/styles/tokens.preset';
 import { t } from '@/copy';
+import { LoadingSpinner } from './LoadingSpinner';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -52,9 +53,9 @@ const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {
 };
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-5 py-2.5 text-sm',
-  lg: 'px-7 py-3 text-base',
+  sm: 'px-4 py-2.5 text-sm min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
+  md: 'px-5 py-3 text-sm min-h-[44px]',   // WCAG 2.1 AAA: minimum 44x44px touch target
+  lg: 'px-7 py-4 text-base min-h-[48px]', // Enhanced for primary CTAs
 };
 
 export function Button({
@@ -64,13 +65,29 @@ export function Button({
   loading,
   children,
   style,
+  disabled,
   ...props
 }: Props) {
   const cls = [base, variantClasses[variant], sizes[size], className].filter(Boolean).join(' ');
+  const isDisabled = disabled || loading;
+  const spinnerSize = size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : 'md';
 
   return (
-    <button className={cls} style={{ ...variantStyles[variant], ...style }} {...props}>
-      {loading ? '…' : children}
+    <button 
+      className={cls} 
+      style={{ ...variantStyles[variant], ...style }} 
+      disabled={isDisabled}
+      aria-busy={loading}
+      {...props}
+    >
+      {loading ? (
+        <>
+          <LoadingSpinner size={spinnerSize} aria-label="Loading" />
+          <span className="sr-only">Loading...</span>
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }

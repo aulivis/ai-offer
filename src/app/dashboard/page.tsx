@@ -1512,12 +1512,12 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Conversion Funnel Group */}
-          <div className="relative">
+          {/* Conversion Funnel Group - Mobile optimized: stack vertically on small screens */}
+          <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
             <div className={`grid gap-3 sm:gap-4 ${
               metricsViewMode === 'compact' 
-                ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' 
-                : 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' 
+                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
             }`}>
               {loading ? (
                 <>
@@ -1540,7 +1540,7 @@ export default function DashboardPage() {
                           },
                         }
                       : {})}
-                    icon={<ChartBarIcon className="h-7 w-7" />}
+                    icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
                     color="info"
                     isEmpty={totalOffersCount === 0}
                     emptyMessage={t('dashboard.emptyStates.noOffersMessage')}
@@ -1551,7 +1551,7 @@ export default function DashboardPage() {
                     label={t('dashboard.metrics.created.label')}
                     value={totalOffersCount.toLocaleString('hu-HU')}
                     {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
-                    icon={<DocumentTextIcon className="h-7 w-7" />}
+                    icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
                     color="primary"
                     trend={stats.createdThisMonth > 0 ? 'up' : stats.createdThisMonth === 0 && stats.createdLastMonth > 0 ? 'down' : 'neutral'}
                     {...(stats.createdThisMonth > 0 ? { trendValue: `+${stats.createdThisMonth}` } : {})}
@@ -1568,7 +1568,7 @@ export default function DashboardPage() {
                     {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.inReview.helper', {
                       count: stats.inReview.toLocaleString('hu-HU'),
                     }) } : {})}
-                    icon={<EyeIcon className="h-7 w-7" />}
+                    icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
                     isEmpty={stats.inReview === 0}
@@ -1583,7 +1583,7 @@ export default function DashboardPage() {
                       sent: stats.sent.toLocaleString('hu-HU'),
                       pending: stats.inReview.toLocaleString('hu-HU'),
                     }) } : {})}
-                    icon={<PaperAirplaneIcon className="h-7 w-7" />}
+                    icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
                     color="info"
                     onClick={() => handleMetricClick('sent')}
                     isEmpty={stats.sent === 0}
@@ -1598,7 +1598,7 @@ export default function DashboardPage() {
                       accepted: stats.accepted.toLocaleString('hu-HU'),
                       rate: acceptanceLabel,
                     }) } : {})}
-                    icon={<DocumentCheckIcon className="h-7 w-7" />}
+                    icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
                     color="success"
                     trend={stats.acceptanceRate !== null && stats.acceptanceRate > 50 ? 'up' : stats.acceptanceRate !== null && stats.acceptanceRate < 30 ? 'down' : 'neutral'}
                     {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
@@ -1614,7 +1614,7 @@ export default function DashboardPage() {
                     {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.lost.helper', {
                       count: stats.lost.toLocaleString('hu-HU'),
                     }) } : {})}
-                    icon={<XCircleIcon className="h-7 w-7" />}
+                    icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
                     color="danger"
                     onClick={() => handleMetricClick('lost')}
                     isEmpty={stats.lost === 0}
@@ -1628,7 +1628,7 @@ export default function DashboardPage() {
                     {...(metricsViewMode === 'detailed' ? { helper: t('dashboard.metrics.winRate.helper', {
                       rate: winRateLabel !== '—' ? winRateLabel : '—',
                     }) } : {})}
-                    icon={<ChartBarIcon className="h-7 w-7" />}
+                    icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
                     color={stats.winRate !== null && stats.winRate > 50 ? 'success' : stats.winRate !== null && stats.winRate < 30 ? 'danger' : 'warning'}
                     trend={stats.winRate !== null && stats.winRate > 50 ? 'up' : stats.winRate !== null && stats.winRate < 30 ? 'down' : 'neutral'}
                     {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
@@ -1644,7 +1644,7 @@ export default function DashboardPage() {
                       days: stats.avgDecisionDays !== null ? stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 }) : '—',
                       drafts: stats.drafts.toLocaleString('hu-HU'),
                     }) } : {})}
-                    icon={<ClockIcon className="h-7 w-7" />}
+                    icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
                     color="warning"
                     isEmpty={stats.avgDecisionDays === null}
                     emptyMessage="Nincs elég adat a számításhoz"
@@ -1682,18 +1682,65 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Quick Filter Chips */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Quick Filter Chips - Keyboard navigable */}
+            <div 
+              className="flex flex-wrap items-center gap-2" 
+              role="group" 
+              aria-label={t('dashboard.filters.status.label')}
+            >
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted flex items-center gap-2">
-                <FunnelIcon className="h-4 w-4" />
+                <FunnelIcon className="h-4 w-4" aria-hidden="true" />
                 {t('dashboard.filters.status.label')}:
               </span>
-              {STATUS_FILTER_OPTIONS.map((status) => (
+              {STATUS_FILTER_OPTIONS.map((status, index) => (
                 <button
                   key={status}
                   type="button"
                   onClick={() => setStatusFilter(status)}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  onKeyDown={(e) => {
+                    // Keyboard navigation: Arrow keys to navigate between filter chips
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                      e.preventDefault();
+                      const currentIndex = STATUS_FILTER_OPTIONS.indexOf(status);
+                      const direction = e.key === 'ArrowRight' ? 1 : -1;
+                      const nextIndex = (currentIndex + direction + STATUS_FILTER_OPTIONS.length) % STATUS_FILTER_OPTIONS.length;
+                      const nextStatus = STATUS_FILTER_OPTIONS[nextIndex];
+                      setStatusFilter(nextStatus);
+                      // Focus the next button after state update
+                      setTimeout(() => {
+                        const buttons = Array.from(e.currentTarget.parentElement?.querySelectorAll('button') || []);
+                        const nextButton = buttons.find((btn) => 
+                          btn.getAttribute('aria-pressed') === 'true'
+                        );
+                        nextButton?.focus();
+                      }, 0);
+                    }
+                    // Home/End keys to jump to first/last
+                    if (e.key === 'Home') {
+                      e.preventDefault();
+                      setStatusFilter(STATUS_FILTER_OPTIONS[0]);
+                      setTimeout(() => {
+                        const buttons = Array.from(e.currentTarget.parentElement?.querySelectorAll('button') || []);
+                        buttons[0]?.focus();
+                      }, 0);
+                    }
+                    if (e.key === 'End') {
+                      e.preventDefault();
+                      const lastStatus = STATUS_FILTER_OPTIONS[STATUS_FILTER_OPTIONS.length - 1];
+                      setStatusFilter(lastStatus);
+                      setTimeout(() => {
+                        const buttons = Array.from(e.currentTarget.parentElement?.querySelectorAll('button') || []);
+                        buttons[buttons.length - 1]?.focus();
+                      }, 0);
+                    }
+                  }}
+                  aria-pressed={statusFilter === status}
+                  aria-label={`${t('dashboard.filters.status.label')}: ${
+                    status === 'all' 
+                      ? t('dashboard.filters.status.options.all')
+                      : t(STATUS_LABEL_KEYS[status])
+                  }`}
+                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                     statusFilter === status
                       ? 'bg-primary text-primary-ink shadow-md scale-105'
                       : 'bg-bg-muted text-fg-muted hover:bg-bg hover:text-fg border border-border/60'
@@ -1708,7 +1755,7 @@ export default function DashboardPage() {
                         status === 'sent' ? 'bg-blue-500' :
                         status === 'accepted' ? 'bg-emerald-500' :
                         'bg-rose-500'
-                      }`} />
+                      }`} aria-hidden="true" />
                       {t(STATUS_LABEL_KEYS[status])}
                     </>
                   )}
@@ -1842,68 +1889,92 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Skeletonok */}
+        {/* Skeleton Loaders - Mobile optimized */}
         {loading && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2" aria-busy="true" aria-live="polite">
             {Array.from({ length: 6 }).map((_, i) => (
               <OfferCardSkeleton key={i} />
             ))}
           </div>
         )}
 
-        {/* Enhanced Empty State */}
+        {/* Enhanced Empty State - Improved accessibility and mobile design */}
         {!loading && filtered.length === 0 && (
-          <Card className="flex flex-col items-center justify-center gap-8 p-16 text-center">
+          <Card 
+            className="flex flex-col items-center justify-center gap-6 md:gap-8 p-12 md:p-16 text-center"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             <div className="relative">
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-                <DocumentTextIcon className="h-12 w-12 text-primary" aria-hidden="true" />
+              <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+                <DocumentTextIcon className="h-10 w-10 md:h-12 md:w-12 text-primary" aria-hidden="true" />
               </div>
-              <div className="absolute -top-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
-                <MagnifyingGlassIcon className="h-4 w-4 text-primary" aria-hidden="true" />
+              <div className="absolute -top-2 -right-2 flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
+                <MagnifyingGlassIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary" aria-hidden="true" />
               </div>
             </div>
             <div className="space-y-3 max-w-md">
-              <h3 className="text-xl font-bold text-fg">{emptyMessage}</h3>
+              <h3 className="text-lg md:text-xl font-bold text-fg">{emptyMessage}</h3>
               {noOffersLoaded ? (
-                <p className="text-sm leading-relaxed text-fg-muted">
-                  {t('dashboard.emptyStates.noOffersMessage')}
-                </p>
+                <>
+                  <p className="text-sm md:text-base leading-relaxed text-fg-muted">
+                    {t('dashboard.emptyStates.noOffersMessage')}
+                  </p>
+                  <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
+                    Kezdj el egy új ajánlatot, hogy láthasd azokat itt.
+                  </p>
+                </>
               ) : (
-                <p className="text-sm leading-relaxed text-fg-muted">
-                  {t('dashboard.emptyStates.noResultsMessage')}
-                </p>
+                <>
+                  <p className="text-sm md:text-base leading-relaxed text-fg-muted">
+                    {t('dashboard.emptyStates.noResultsMessage')}
+                  </p>
+                  <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
+                    Próbálj meg más szűrőket használni vagy töröld a keresést.
+                  </p>
+                </>
               )}
             </div>
-            {noOffersLoaded && (
-              <Link
-                href="/new"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                <DocumentTextIcon className="h-5 w-5" />
-                {t('dashboard.actions.newOffer')}
-              </Link>
-            )}
-            {!noOffersLoaded && (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setQ('');
-                  setStatusFilter('all');
-                  setIndustryFilter('all');
-                }}
-              >
-                Szűrők törlése
-              </Button>
-            )}
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
+              {noOffersLoaded && (
+                <Link
+                  href="/new"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
+                >
+                  <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
+                  {t('dashboard.actions.newOffer')}
+                </Link>
+              )}
+              {!noOffersLoaded && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setQ('');
+                    setStatusFilter('all');
+                    setIndustryFilter('all');
+                  }}
+                  className="min-w-[140px]"
+                >
+                  Szűrők törlése
+                </Button>
+              )}
+            </div>
           </Card>
         )}
 
-        {/* Lista */}
+        {/* Offers List - Mobile optimized with accessibility */}
         {!loading && filtered.length > 0 && (
           <>
             {viewMode === 'card' ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start" data-offers-section>
+              <div 
+                className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start" 
+                data-offers-section
+                role="region"
+                aria-label={t('dashboard.offersList.label') || 'Offers list'}
+                aria-busy={updatingId !== null || deletingId !== null}
+              >
                 {filtered.map((o) => (
                   <OfferCard
                     key={o.id}
@@ -1921,7 +1992,12 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div 
+                className="flex flex-col gap-3"
+                role="region"
+                aria-label={t('dashboard.offersList.label') || 'Offers list'}
+                aria-busy={updatingId !== null || deletingId !== null}
+              >
                 {filtered.map((o) => (
                   <OfferListItem
                     key={o.id}

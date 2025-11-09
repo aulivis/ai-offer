@@ -30,7 +30,7 @@
   --color-bg: #f7f9fb;
   --color-bg-muted: #ffffff;
   --color-fg: #0f172a;
-  --color-fg-muted: #4b5563;
+  --color-fg-muted: #475569; /* Improved contrast for WCAG AA compliance (was #4b5563) */
   --color-border: #e5e7eb;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
@@ -57,7 +57,7 @@
   --color-bg: #f7f9fb;
   --color-bg-muted: #ffffff;
   --color-fg: #0f172a;
-  --color-fg-muted: #4b5563;
+  --color-fg-muted: #475569; /* Improved contrast for WCAG AA compliance (was #4b5563) */
   --color-border: #e5e7eb;
   --color-primary-ink: #04251a;
   --color-success: #16a34a;
@@ -81,7 +81,7 @@
   --color-bg-rgb: 247 249 251;
   --color-bg-muted-rgb: 255 255 255;
   --color-fg-rgb: 15 23 42;
-  --color-fg-muted-rgb: 75 85 99;
+  --color-fg-muted-rgb: 71 85 105; /* Improved contrast for WCAG AA compliance (was 75 85 99) */
   --color-border-rgb: 229 231 235;
   --color-primary-ink-rgb: 4 37 26;
   --color-success-rgb: 22 163 74;
@@ -105,12 +105,27 @@
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 }
 
+html {
+  /* Enable smooth scrolling only if user hasn't requested reduced motion */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 html,
 body {
   @apply font-sans antialiased;
   background-color: var(--color-bg);
   color: var(--color-fg);
   min-height: 100%;
+  /* Improve text rendering on mobile */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .skip-link {
@@ -190,11 +205,63 @@ p {
 
 .focus-ring:focus-visible,
 :where(a, button, input, textarea, select, summary, [role='button']):focus-visible {
-  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-bg;
+  @apply outline-none ring-2 ring-primary ring-offset-4 ring-offset-bg;
+  /* Enhanced offset for better visibility (WCAG 2.1) */
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* iOS Safe Area Support */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  /* Apply to fixed/sticky elements */
+  .sticky-cta {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Screen reader only - visually hidden but accessible to assistive technologies */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
 }
 
 .card {

@@ -110,9 +110,16 @@ export function Modal({ open, onClose, labelledBy, describedBy, children, classN
   return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-fg/20 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-fg/20 p-0 backdrop-blur-sm sm:items-center sm:p-4 md:p-6"
       role="presentation"
       onMouseDown={handleOverlayMouseDown}
+      onClick={(e) => {
+        // Close on overlay click (mobile-friendly)
+        if (e.target === overlayRef.current) {
+          onClose();
+        }
+      }}
+      aria-hidden={!open}
     >
       <div
         ref={panelRef}
@@ -120,8 +127,9 @@ export function Modal({ open, onClose, labelledBy, describedBy, children, classN
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
-        className={`w-full ${defaultMaxWidth} rounded-3xl border border-border bg-bg p-4 sm:p-5 shadow-pop focus:outline-none ${className || ''}`}
+        className={`w-full ${defaultMaxWidth} max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl md:rounded-3xl border border-border bg-bg p-4 sm:p-5 md:p-6 shadow-pop focus:outline-none transition-transform duration-300 ease-out ${className || ''}`}
         tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>

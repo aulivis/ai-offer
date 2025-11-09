@@ -44,6 +44,8 @@ export function Skeleton({
       style={style}
       aria-busy="true"
       aria-label="Loading..."
+      role="status"
+      aria-live="polite"
     />
   );
 }
