@@ -4,7 +4,11 @@ export type Language = LocaleKey;
 
 type LanguageListener = (language: Language) => void;
 
-type AsyncLocalStorageModule = typeof import('node:async_hooks');
+// Define minimal interface for AsyncLocalStorage to avoid importing node:async_hooks types
+interface AsyncLocalStorage<T> {
+  run<R>(store: T, callback: () => R): R;
+  getStore(): T | undefined;
+}
 
 const LANGUAGE_COOKIE_NAME = 'language';
 
@@ -13,21 +17,23 @@ const SUPPORTED_LANGUAGES: readonly Language[] = ['hu', 'en'];
 let clientLanguage: Language = 'hu';
 const listeners = new Set<LanguageListener>();
 
-let asyncLocalStorageModule: AsyncLocalStorageModule | null = null;
-let languageStorage: import('node:async_hooks').AsyncLocalStorage<Language> | null = null;
+let languageStorage: AsyncLocalStorage<Language> | null = null;
 
-function getAsyncLocalStorage(): import('node:async_hooks').AsyncLocalStorage<Language> | null {
+function getAsyncLocalStorage(): AsyncLocalStorage<Language> | null {
   if (typeof window !== 'undefined') {
     return null;
   }
 
   if (!languageStorage) {
-    if (!asyncLocalStorageModule) {
+    try {
+      // Dynamically require async_hooks only on server side
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      asyncLocalStorageModule = require('node:async_hooks') as AsyncLocalStorageModule;
+      const asyncHooks = require('node:async_hooks');
+      languageStorage = new asyncHooks.AsyncLocalStorage<Language>();
+    } catch {
+      // If async_hooks is not available (shouldn't happen in Node.js), return null
+      return null;
     }
-
-    languageStorage = new asyncLocalStorageModule.AsyncLocalStorage<Language>();
   }
 
   return languageStorage;
