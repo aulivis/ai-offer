@@ -10,7 +10,6 @@ import AppFrame from '@/components/AppFrame';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
-import { resolveEffectivePlan } from '@/lib/subscription';
 import { Button } from '@/components/ui/Button';
 import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -167,7 +166,6 @@ function PlanCard({
   isPopular,
   isDowngrade,
   cta,
-  plan,
   isLoading,
 }: {
   planType: 'standard' | 'pro';
@@ -1151,7 +1149,7 @@ function PublicBillingLanding() {
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
-            {MARKETING_FEATURE_KEYS.map((feature, idx) => (
+            {MARKETING_FEATURE_KEYS.map((feature) => (
               <Card
                 key={feature.title}
                 className="group relative overflow-hidden p-8 transition-all duration-300 hover:-translate-y-2 hover:border-primary/40 hover:shadow-xl"

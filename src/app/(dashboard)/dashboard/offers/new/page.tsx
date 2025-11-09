@@ -28,8 +28,6 @@ import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
 import type { WizardStep } from '@/types/wizard';
 
 const PREVIEW_DEBOUNCE_MS = 600;
-const SUCCESS_MESSAGE_TIMEOUT_MS = 4000;
-const PREVIEW_MIN_HEIGHT_PX = 720;
 
 export default function NewOfferPage() {
   const {
@@ -95,7 +93,6 @@ export default function NewOfferPage() {
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isActionBarVisible, setIsActionBarVisible] = useState(true);
   const templateOptions = useMemo(() => listTemplates() as Array<OfferTemplate>, []);
   const defaultTemplateId = useMemo<TemplateId>(() => {
     // Find template matching default ID, or use first available
@@ -209,21 +206,7 @@ export default function NewOfferPage() {
   ]);
 
   // Simplified mobile action bar - always visible on mobile
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const updateIsMobile = () => {
-      const isMobile = window.innerWidth < 640;
-      // Always show action bar on mobile for better UX
-      setIsActionBarVisible(true);
-    };
-    updateIsMobile();
-    window.addEventListener('resize', updateIsMobile);
-    return () => {
-      window.removeEventListener('resize', updateIsMobile);
-    };
-  }, []);
+  // Note: Action bar visibility is handled by component logic, no need for resize listener
 
   // Track step views
   useEffect(() => {
@@ -263,7 +246,7 @@ export default function NewOfferPage() {
       // Track step completion
       trackWizardEvent({ type: 'wizard_step_completed', step });
     }
-  }, [goNextInternal, attemptedSteps, step, validation.fields]);
+  }, [goNextInternal, attemptedSteps, step, validation]);
 
   useWizardKeyboardShortcuts({
     onNext: goNext,

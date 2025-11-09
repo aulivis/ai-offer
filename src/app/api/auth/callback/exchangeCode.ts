@@ -1,5 +1,5 @@
 import { envServer } from '@/env.server';
-import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
+import type { RequestLogger } from '@/lib/observability/authLogging';
 
 export type ExchangeCodeParams = {
   code: string;

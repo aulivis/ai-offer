@@ -16,7 +16,7 @@ vi.mock('@/app/lib/supabaseServiceRole', () => ({
 }));
 
 vi.mock('../../../../../../middleware/auth', () => ({
-  withAuth: (handler: any) => handler,
+  withAuth: <T>(handler: T) => handler,
 }));
 
 describe('GET /api/admin/template-telemetry', () => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
@@ -9,12 +9,10 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useInfiniteScroll } from '@/hooks/useIntersectionObserver';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { Modal } from '@/components/ui/Modal';
 import { currentMonthStart } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
@@ -24,12 +22,6 @@ import { MetricCard } from '@/components/dashboard/MetricCard';
 import { DeleteConfirmationDialog } from '@/components/dashboard/DeleteConfirmationDialog';
 
 // Lazy load heavy dashboard components for route-based code splitting
-const OfferCard = dynamic(
-  () => import('@/components/dashboard/OfferCard').then((mod) => mod.default),
-  {
-    loading: () => <div className="h-48 animate-pulse rounded-xl bg-bg-muted" />,
-  },
-);
 const OfferListItem = dynamic(
   () => import('@/components/dashboard/OfferListItem').then((mod) => mod.OfferListItem),
   {
@@ -67,7 +59,6 @@ import XCircleIcon from '@heroicons/react/24/outline/XCircleIcon';
 import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
 import ArrowsPointingOutIcon from '@heroicons/react/24/outline/ArrowsPointingOutIcon';
 import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIcon';
-import PlusIcon from '@heroicons/react/24/outline/PlusIcon';
 import QuestionMarkCircleIcon from '@heroicons/react/24/outline/QuestionMarkCircleIcon';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
@@ -77,9 +68,6 @@ type SortByOption = (typeof SORT_BY_OPTIONS)[number];
 const SORT_DIRECTION_OPTIONS = ['desc', 'asc'] as const;
 type SortDirectionOption = (typeof SORT_DIRECTION_OPTIONS)[number];
 
-function isStatusFilterValue(value: string): value is StatusFilterOption {
-  return (STATUS_FILTER_OPTIONS as readonly string[]).includes(value);
-}
 function isSortByValue(value: string): value is SortByOption {
   return (SORT_BY_OPTIONS as readonly string[]).includes(value);
 }
@@ -95,73 +83,6 @@ type UsageQuotaSnapshot = {
   devicePending: number | null;
   periodStart: string | null;
 };
-
-type UsageWithPendingResponse = {
-  plan: SubscriptionPlan;
-  limit: number | null;
-  confirmed: number;
-  pendingUser: number;
-  pendingDevice: number | null;
-  periodStart: string;
-};
-
-function isSubscriptionPlan(value: unknown): value is SubscriptionPlan {
-  return value === 'free' || value === 'standard' || value === 'pro';
-}
-
-function parseUsageResponse(payload: unknown): UsageWithPendingResponse | null {
-  if (!payload || typeof payload !== 'object') {
-    return null;
-  }
-
-  const record = payload as Record<string, unknown>;
-  if (!isSubscriptionPlan(record.plan)) {
-    return null;
-  }
-
-  let limit: number | null = null;
-  if (record.limit === null) {
-    limit = null;
-  } else if (record.limit !== undefined) {
-    const numericLimit = Number(record.limit);
-    if (Number.isFinite(numericLimit)) {
-      limit = numericLimit;
-    } else {
-      return null;
-    }
-  }
-
-  const confirmedValue = Number(record.confirmed);
-  const confirmed = Number.isFinite(confirmedValue) ? confirmedValue : 0;
-
-  const pendingUserValue = Number(record.pendingUser);
-  const pendingUser = Number.isFinite(pendingUserValue) ? pendingUserValue : 0;
-
-  let pendingDevice: number | null = null;
-  if (record.pendingDevice === null) {
-    pendingDevice = null;
-  } else if (record.pendingDevice !== undefined) {
-    const numericPendingDevice = Number(record.pendingDevice);
-    if (Number.isFinite(numericPendingDevice)) {
-      pendingDevice = numericPendingDevice;
-    }
-  }
-
-  const periodStart = typeof record.periodStart === 'string' ? record.periodStart : '';
-
-  if (!periodStart) {
-    return null;
-  }
-
-  return {
-    plan: record.plan,
-    limit,
-    confirmed,
-    pendingUser,
-    pendingDevice,
-    periodStart,
-  };
-}
 
 function parsePeriodStart(value: string | null | undefined): Date | null {
   if (!value) {
@@ -250,7 +171,6 @@ function createOfferPdfFileName(offer: Offer): string {
 export default function DashboardPage() {
   const { showToast } = useToast();
   const sb = useSupabase();
-  const router = useRouter();
   const { status: authStatus, user } = useRequireAuth();
 
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -992,7 +912,6 @@ export default function DashboardPage() {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-    const lastMonthEnd = monthStart - 1;
 
     // Current period stats
     const createdThisMonth = offers.filter((offer) => {
@@ -1622,7 +1541,7 @@ export default function DashboardPage() {
                 <FunnelIcon className="h-4 w-4" aria-hidden="true" />
                 {t('dashboard.filters.status.label')}:
               </span>
-              {STATUS_FILTER_OPTIONS.map((status, index) => (
+              {STATUS_FILTER_OPTIONS.map((status) => (
                 <button
                   key={status}
                   type="button"
