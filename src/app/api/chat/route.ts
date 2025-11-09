@@ -765,7 +765,7 @@ ${context}`;
           requestId,
         },
       }),
-    }).catch((analyticsError) => {
+    }).catch(() => {
       // Don't log analytics errors to avoid recursion - analytics failures are non-blocking
       // Silently fail - analytics table might not exist yet
     });

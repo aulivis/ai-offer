@@ -53,7 +53,7 @@ vi.mock('stripe', () => ({
   })),
 }));
 
-const { POST, __test } = await import('../route');
+const { POST } = await import('../route');
 
 function createRequest(
   body: Record<string, unknown>,
@@ -102,7 +102,7 @@ describe('Stripe checkout route', () => {
   beforeEach(() => {
     anonGetUserMock.mockReset();
     createSessionMock.mockReset();
-    __test.resetRateLimiter();
+    // Rate limiter is now database-backed, no reset needed for tests
   });
 
   afterEach(() => {

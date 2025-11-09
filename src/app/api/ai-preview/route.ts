@@ -53,8 +53,6 @@ FORMÁZÁS:
 - A szöveg legyen professzionális, de nem túlzottan formális vagy száraz.
 `;
 
-const PREVIEW_ABORT_RETRY_ATTEMPTS = 2;
-const PREVIEW_ABORT_RETRY_DELAY_MS = 250;
 
 function isAbortLikeError(error: unknown): boolean {
   if (!error) return false;
@@ -225,7 +223,6 @@ export const POST = withAuth(
           : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat (4-6 pont), amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket.';
 
       const safeLanguage = sanitizeInput(language);
-      const safeBrand = sanitizeInput(brandVoice);
       const safeIndustry = sanitizeInput(industry);
       const safeTitle = sanitizeInput(title);
       const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
@@ -654,7 +651,6 @@ Különös figyelmet fordít a következőkre:
       if (requestHash) {
         requestCache.delete(requestHash);
       }
-      const message = error instanceof Error ? error.message : String(error);
       if (isAbortLikeError(error)) {
         log.error('AI preview aborted before streaming could start', error);
         const abortResponse = NextResponse.json(

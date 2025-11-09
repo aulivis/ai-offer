@@ -6,7 +6,6 @@ import { randomUUID } from 'node:crypto';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
@@ -17,7 +16,7 @@ const BUCKET_ID = 'brand-assets'; // Using same bucket as brand logos
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for reference photos
 const MAX_IMAGES_PER_ACTIVITY = 3;
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days for reference images
-const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/jpg'] as const; // No SVG for reference photos
+type AllowedMimeType = 'image/png' | 'image/jpeg' | 'image/jpg'; // No SVG for reference photos
 
 // Cache bucket existence check per server instance
 let bucketExistsCache: { exists: boolean; timestamp: number } | null = null;
@@ -25,8 +24,6 @@ const BUCKET_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const JPEG_SIGNATURE = Buffer.from([0xff, 0xd8, 0xff]);
-
-type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
 type NormalizedImage = {
   buffer: Buffer;

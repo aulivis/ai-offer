@@ -10,6 +10,7 @@ import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback, recordAuthRouteUsage } from '@/lib/observability/metrics';
 import { Argon2Algorithm, argon2Hash, type Argon2Options } from '../../../../../lib/auth/argon2';
+import { exchangeCode } from './exchangeCode';
 
 const MAGIC_LINK_FAILURE_REDIRECT = '/login?message=Unable%20to%20authenticate';
 const MISSING_AUTH_CODE_REDIRECT = '/login?message=Missing%20auth%20code';
@@ -43,17 +44,6 @@ type MagicLinkTokens = {
   expiresIn: number;
 };
 
-type ExchangeCodeParams = {
-  code: string;
-  codeVerifier: string;
-  redirectUri: string;
-};
-
-type ExchangeCodeResult = {
-  access_token?: string;
-  refresh_token?: string;
-  expires_in?: number;
-};
 
 type RedirectCookieOptions = {
   accessTokenMaxAge?: number;
@@ -223,43 +213,6 @@ function getClientIp(request: Request): string | null {
   return null;
 }
 
-function redactJsonTokens(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map((item) => redactJsonTokens(item));
-  }
-  if (value && typeof value === 'object') {
-    return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>(
-      (acc, [key, entryValue]) => {
-        if (/token|secret|key/i.test(key)) {
-          acc[key] = '[REDACTED]';
-          return acc;
-        }
-        acc[key] = redactJsonTokens(entryValue);
-        return acc;
-      },
-      {},
-    );
-  }
-  return value;
-}
-
-function sanitizeErrorBody(contentType: string, rawBody: string): unknown {
-  if (!rawBody) {
-    return null;
-  }
-  if (contentType.includes('application/json')) {
-    try {
-      const parsed = JSON.parse(rawBody) as unknown;
-      return redactJsonTokens(parsed);
-    } catch {
-      return '[INVALID JSON]';
-    }
-  }
-  if (/token|secret|key/i.test(rawBody)) {
-    return '[REDACTED SENSITIVE CONTENT]';
-  }
-  return rawBody;
-}
 
 /** Gyors JWT payload decode (csak ACCESS tokenhez; REFRESH tokent nem dekódoljuk) */
 function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
@@ -277,47 +230,6 @@ function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
   }
 }
 
-/** PKCE token csere a Supabase GoTrue felé (JSON formátum, grant_type=pkce) */
-async function exchangeCode(
-  { code, codeVerifier, redirectUri }: ExchangeCodeParams,
-  logger: RequestLogger,
-) {
-  const url = new URL('/auth/v1/token', envServer.NEXT_PUBLIC_SUPABASE_URL);
-  url.searchParams.set('grant_type', 'pkce');
-
-  const response = await fetch(url.toString(), {
-    method: 'POST',
-    headers: {
-      apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      'content-type': 'application/json',
-      accept: 'application/json',
-    },
-    body: JSON.stringify({
-      auth_code: code,
-      code_verifier: codeVerifier,
-      redirect_uri: redirectUri,
-    }),
-  });
-
-  const contentType = response.headers.get('content-type') ?? '';
-  const rawBody = await response.text();
-
-  if (!response.ok) {
-    logger.error('Supabase token exchange failed', {
-      status: response.status,
-      statusText: response.statusText,
-      body: sanitizeErrorBody(contentType, rawBody),
-    });
-    throw new Error(`Supabase token exchange failed with status ${response.status}`);
-  }
-
-  try {
-    return rawBody ? (JSON.parse(rawBody) as ExchangeCodeResult) : ({} as ExchangeCodeResult);
-  } catch (error) {
-    logger.error('Supabase token exchange returned invalid JSON', error);
-    throw new Error('Supabase token exchange returned invalid JSON.');
-  }
-}
 
 type VerifyEmailTokenHashParams = { token_hash: string; type: EmailOtpTypeOnly };
 type SupabaseAuthSession = {
@@ -392,7 +304,6 @@ async function handleMagicLinkTokens(
   request: Request,
   logger: RequestLogger,
   rememberMe: boolean = false,
-  cookieStore?: Awaited<ReturnType<typeof cookies>>,
 ): Promise<void> {
   try {
     // Only persist session - don't set cookies here since we'll set them on redirect response
@@ -510,7 +421,6 @@ export async function GET(request: Request) {
         request,
         logger,
         rememberMe,
-        cookieStore,
       );
 
       // Create CSRF token for the session
@@ -618,7 +528,6 @@ export async function GET(request: Request) {
           request,
           logger,
           rememberMe,
-          cookieStore,
         );
 
         // Create CSRF token for the session
@@ -769,6 +678,3 @@ export async function GET(request: Request) {
   }
 }
 
-export const __test = {
-  exchangeCode,
-};

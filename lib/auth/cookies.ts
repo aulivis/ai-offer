@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import { CSRF_COOKIE_NAME, createCsrfToken } from './csrf';
 import { envServer } from '@/env.server';
 
-const isProduction = process.env.NODE_ENV === 'production';
 const isSecure = envServer.APP_URL.startsWith('https');
 // Always use 'lax' for SameSite to allow cookies on same-site redirects
 // This is necessary for magic link flows where we redirect after setting cookies

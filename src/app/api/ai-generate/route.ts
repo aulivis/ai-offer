@@ -22,7 +22,6 @@ import { formatOfferIssueDate } from '@/lib/datetime';
 import { getUserProfile } from '@/lib/services/user';
 import {
   currentMonthStart,
-  getDeviceUsageSnapshot,
   getUsageSnapshot,
   syncUsageCounter,
   checkQuotaWithPending,
@@ -541,21 +540,13 @@ function sectionsToHtml(
 }
 
 function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
-  return {
+  const sanitized: OfferSections = {
     introduction: sanitizeInput((sections.introduction || '').trim()),
     project_summary: sanitizeInput((sections.project_summary || '').trim()),
-    value_proposition: sections.value_proposition
-      ? sanitizeInput((sections.value_proposition || '').trim())
-      : undefined,
     scope: (sections.scope || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
     deliverables: (sections.deliverables || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
-    expected_outcomes: sections.expected_outcomes
-      ? (sections.expected_outcomes || [])
-          .map((item) => sanitizeInput((item || '').trim()))
-          .filter(Boolean)
-      : undefined,
     schedule: (sections.schedule || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
@@ -566,20 +557,32 @@ function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
     closing: sanitizeInput((sections.closing || '').trim()),
-    testimonials: sections.testimonials
-      ? (sections.testimonials || [])
-          .map((item) => sanitizeInput((item || '').trim()))
-          .filter(Boolean)
-      : undefined,
-    guarantees: sections.guarantees
-      ? (sections.guarantees || [])
-          .map((item) => sanitizeInput((item || '').trim()))
-          .filter(Boolean)
-      : undefined,
-    client_context: sections.client_context
-      ? sanitizeInput((sections.client_context || '').trim())
-      : undefined,
   };
+
+  // Conditionally add optional properties only if they have values (for exactOptionalPropertyTypes)
+  if (sections.value_proposition) {
+    sanitized.value_proposition = sanitizeInput((sections.value_proposition || '').trim());
+  }
+  if (sections.expected_outcomes && sections.expected_outcomes.length > 0) {
+    sanitized.expected_outcomes = sections.expected_outcomes
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean);
+  }
+  if (sections.testimonials && sections.testimonials.length > 0) {
+    sanitized.testimonials = sections.testimonials
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean);
+  }
+  if (sections.guarantees && sections.guarantees.length > 0) {
+    sanitized.guarantees = sections.guarantees
+      .map((item) => sanitizeInput((item || '').trim()))
+      .filter(Boolean);
+  }
+  if (sections.client_context) {
+    sanitized.client_context = sanitizeInput((sections.client_context || '').trim());
+  }
+
+  return sanitized;
 }
 
 const MAX_IMAGE_COUNT = 3;
@@ -1122,7 +1125,6 @@ export const POST = withAuth(
         const safeIndustry = sanitizeInput(industry);
         const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
         const safeDeadline = sanitizeInput(deadline || '—');
-        const safeBrand = sanitizeInput(brandVoice);
 
         const clientInfo = clientCompanyName
           ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
@@ -1187,7 +1189,6 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             translator,
           );
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
           log.error('OpenAI structured output error', error);
           return NextResponse.json(
             { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
@@ -1609,7 +1610,6 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           const {
             data: listCheck,
             error: listError,
-            count,
           } = await sb
             .from('offers')
             .select('id, pdf_url', { count: 'exact' })

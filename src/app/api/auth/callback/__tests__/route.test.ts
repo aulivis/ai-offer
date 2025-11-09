@@ -1,6 +1,8 @@
 /* @vitest-environment node */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { exchangeCode } from '../exchangeCode';
+import { createAuthRequestLogger } from '@/lib/observability/authLogging';
 
 const fetchMock = vi.hoisted(() => vi.fn());
 
@@ -23,8 +25,6 @@ vi.mock('@/env.server', () => ({
 
 vi.stubGlobal('fetch', fetchMock);
 
-const { __test } = await import('../route');
-
 describe('Supabase token exchange logging', () => {
   afterEach(() => {
     fetchMock.mockReset();
@@ -32,6 +32,7 @@ describe('Supabase token exchange logging', () => {
 
   it('logs structured error details with sanitized JSON bodies', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const logger = createAuthRequestLogger();
 
     fetchMock.mockResolvedValue(
       new Response(
@@ -50,11 +51,14 @@ describe('Supabase token exchange logging', () => {
 
     try {
       await expect(
-        __test.exchangeCode({ code: 'test-code', codeVerifier: 'verifier' }),
+        exchangeCode(
+          { code: 'test-code', codeVerifier: 'verifier', redirectUri: 'https://example.com' },
+          logger,
+        ),
       ).rejects.toThrow(/Supabase token exchange failed/);
 
       expect(consoleError).toHaveBeenCalledWith(
-        'Supabase token exchange failed.',
+        'Supabase token exchange failed',
         expect.objectContaining({
           status: 400,
           statusText: 'Bad Request',
@@ -72,6 +76,7 @@ describe('Supabase token exchange logging', () => {
 
   it('logs sanitized text bodies without leaking tokens', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const logger = createAuthRequestLogger();
 
     fetchMock.mockResolvedValue(
       new Response('error=invalid_grant&token=secret-value', {
@@ -81,12 +86,15 @@ describe('Supabase token exchange logging', () => {
     );
 
     try {
-      await expect(__test.exchangeCode({ code: 'test-code' })).rejects.toThrow(
-        /Supabase token exchange failed/,
-      );
+      await expect(
+        exchangeCode(
+          { code: 'test-code', codeVerifier: 'verifier', redirectUri: 'https://example.com' },
+          logger,
+        ),
+      ).rejects.toThrow(/Supabase token exchange failed/);
 
       expect(consoleError).toHaveBeenCalledWith(
-        'Supabase token exchange failed.',
+        'Supabase token exchange failed',
         expect.objectContaining({
           status: 500,
           statusText: 'Internal Server Error',

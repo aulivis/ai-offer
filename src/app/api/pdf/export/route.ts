@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { getTemplateMeta } from '@/app/pdf/templates/registry';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
@@ -28,7 +27,7 @@ export const maxDuration = 60; // Vercel Pro plan: 60s timeout
 const HEX_COLOR_PATTERN = /^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 const hexColorSchema = z
-  .string({ required_error: 'Color is required.' })
+  .string({ message: 'Color is required.' })
   .trim()
   .min(1, 'Color is required.')
   .refine((value) => HEX_COLOR_PATTERN.test(value), {
@@ -56,7 +55,7 @@ function optionalUrlSchema(message: string) {
 const brandSchema = z
   .object({
     name: z
-      .string({ required_error: 'Brand name is required.' })
+      .string({ message: 'Brand name is required.' })
       .trim()
       .min(1, 'Brand name is required.'),
     logoUrl: optionalUrlSchema('Brand logo URL must be a valid URL.'),
@@ -68,7 +67,7 @@ const brandSchema = z
 const brandSlotSchema = z
   .object({
     name: z
-      .string({ required_error: 'Brand display name is required.' })
+      .string({ message: 'Brand display name is required.' })
       .trim()
       .min(1, 'Brand display name is required.'),
     logoUrl: optionalUrlSchema('Brand slot logo URL must be a valid URL.'),
@@ -78,12 +77,12 @@ const brandSlotSchema = z
 const docSchema = z
   .object({
     title: z
-      .string({ required_error: 'Document title is required.' })
+      .string({ message: 'Document title is required.' })
       .trim()
       .min(1, 'Document title is required.'),
     subtitle: optionalTrimmedString,
     date: z
-      .string({ required_error: 'Document date is required.' })
+      .string({ message: 'Document date is required.' })
       .trim()
       .min(1, 'Document date is required.'),
   })
@@ -92,7 +91,7 @@ const docSchema = z
 const customerSchema = z
   .object({
     name: z
-      .string({ required_error: 'Customer name is required.' })
+      .string({ message: 'Customer name is required.' })
       .trim()
       .min(1, 'Customer name is required.'),
     address: optionalTrimmedString,
@@ -103,23 +102,23 @@ const customerSchema = z
 const itemSchema = z
   .object({
     name: z
-      .string({ required_error: 'Item name is required.' })
+      .string({ message: 'Item name is required.' })
       .trim()
       .min(1, 'Item name is required.'),
-    qty: z.number({ required_error: 'Item quantity must be a number.' }),
-    unitPrice: z.number({ required_error: 'Item unit price must be a number.' }),
-    total: z.number({ required_error: 'Item total must be a number.' }),
+    qty: z.number({ message: 'Item quantity must be a number.' }),
+    unitPrice: z.number({ message: 'Item unit price must be a number.' }),
+    total: z.number({ message: 'Item total must be a number.' }),
     note: optionalTrimmedString,
   })
   .strict();
 
 const totalsSchema = z
   .object({
-    net: z.number({ required_error: 'Net total must be a number.' }),
-    vat: z.number({ required_error: 'VAT total must be a number.' }),
-    gross: z.number({ required_error: 'Gross total must be a number.' }),
+    net: z.number({ message: 'Net total must be a number.' }),
+    vat: z.number({ message: 'VAT total must be a number.' }),
+    gross: z.number({ message: 'Gross total must be a number.' }),
     currency: z
-      .string({ required_error: 'Currency is required.' })
+      .string({ message: 'Currency is required.' })
       .trim()
       .min(1, 'Currency is required.'),
   })
@@ -139,7 +138,7 @@ const docSlotsSchema = z
 const exportRequestSchema = z
   .object({
     templateId: z
-      .string({ required_error: 'templateId is required.' })
+      .string({ message: 'templateId is required.' })
       .trim()
       .min(1, 'templateId is required.'),
     brand: brandSchema,
@@ -188,6 +187,46 @@ export async function POST(req: NextRequest) {
   }
 
   // Create runtime template payload
+  // Ensure optional properties are conditionally included (for exactOptionalPropertyTypes)
+  const brandSlot: { name: string; logoUrl?: string | null } = {
+    name: slots.brand.name,
+  };
+  if (slots.brand.logoUrl !== undefined) {
+    brandSlot.logoUrl = slots.brand.logoUrl ?? null;
+  }
+
+  const docSlot: { title: string; date: string; subtitle?: string } = {
+    title: slots.doc.title,
+    date: slots.doc.date,
+  };
+  if (slots.doc.subtitle) {
+    docSlot.subtitle = slots.doc.subtitle;
+  }
+
+  const customerSlot: { name: string; address?: string; taxId?: string } = {
+    name: slots.customer.name,
+  };
+  if (slots.customer.address) {
+    customerSlot.address = slots.customer.address;
+  }
+  if (slots.customer.taxId) {
+    customerSlot.taxId = slots.customer.taxId;
+  }
+
+  // Process items to conditionally include optional note property
+  const processedItems = slots.items.map((item) => {
+    const processedItem: { name: string; qty: number; unitPrice: number; total: number; note?: string } = {
+      name: item.name,
+      qty: item.qty,
+      unitPrice: item.unitPrice,
+      total: item.total,
+    };
+    if (item.note) {
+      processedItem.note = item.note;
+    }
+    return processedItem;
+  });
+
   const runtimeTemplate = {
     templateId,
     locale: locale ?? null,
@@ -197,7 +236,14 @@ export async function POST(req: NextRequest) {
       primaryHex: brand.primaryHex,
       secondaryHex: brand.secondaryHex,
     },
-    slots,
+    slots: {
+      brand: brandSlot,
+      doc: docSlot,
+      customer: customerSlot,
+      items: processedItems,
+      totals: slots.totals,
+      ...(slots.notes && { notes: slots.notes }),
+    },
   };
 
   try {

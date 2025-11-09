@@ -13,6 +13,7 @@ import { addCacheHeaders, CACHE_CONFIGS } from '@/lib/cacheHeaders';
 export function GET() {
   // Get SDK templates (for runtime export)
   const sdkTemplates = listTemplates().map((template) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { factory, ...meta } = template;
     return meta;
   });

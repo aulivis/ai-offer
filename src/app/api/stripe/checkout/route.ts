@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { envServer } from '@/env.server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
@@ -150,6 +150,3 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
   }
 });
 
-export const __test = {
-  // Rate limiter is now database-backed, no reset needed for tests
-};

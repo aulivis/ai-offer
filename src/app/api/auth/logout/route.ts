@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import { randomUUID } from 'node:crypto';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { clearAuthCookies } from '../../../../../lib/auth/cookies';
