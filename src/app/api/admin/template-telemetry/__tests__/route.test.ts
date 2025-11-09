@@ -1,6 +1,7 @@
 /* @vitest-environment node */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 
 const { fromMock, selectMock, orderMock, limitMock } = vi.hoisted(() => ({
   fromMock: vi.fn(),
@@ -59,7 +60,13 @@ describe('GET /api/admin/template-telemetry', () => {
     });
 
     const { GET } = await import('../route');
-    const response = await GET(new Request('http://localhost/api/admin/template-telemetry'));
+    const request = new NextRequest('http://localhost/api/admin/template-telemetry');
+    // Mock the user property that AuthenticatedNextRequest requires
+    (request as unknown as { user: { id: string; email: string | null } }).user = {
+      id: 'test-user-id',
+      email: 'test@example.com',
+    };
+    const response = await GET(request as Parameters<typeof GET>[0]);
 
     expect(response.status).toBe(200);
 
@@ -101,7 +108,13 @@ describe('GET /api/admin/template-telemetry', () => {
     limitMock.mockResolvedValueOnce({ data: null, error: { message: 'boom' } });
 
     const { GET } = await import('../route');
-    const response = await GET(new Request('http://localhost/api/admin/template-telemetry'));
+    const request = new NextRequest('http://localhost/api/admin/template-telemetry');
+    // Mock the user property that AuthenticatedNextRequest requires
+    (request as unknown as { user: { id: string; email: string | null } }).user = {
+      id: 'test-user-id',
+      email: 'test@example.com',
+    };
+    const response = await GET(request as Parameters<typeof GET>[0]);
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({

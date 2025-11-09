@@ -148,9 +148,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   loading={isRetrying}
                   className="min-w-[140px]"
                 >
-                  {isRetrying
-                    ? t('errorBoundary.retrying') || 'Retrying...'
-                    : t('errorBoundary.tryAgain')}
+                  {isRetrying ? t('errorBoundary.retrying') : t('errorBoundary.tryAgain')}
                 </Button>
               )}
               <Button onClick={this.handleReload} className="min-w-[140px]">

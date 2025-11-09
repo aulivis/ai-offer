@@ -1276,8 +1276,8 @@ export default function DashboardPage() {
           {/* Header with View Toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-fg">Teljesítmény mutatók</h2>
-              <p className="text-sm text-fg-muted mt-1">Kattints egy metrikára a szűréshez</p>
+              <h2 className="text-lg font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
+              <p className="text-sm text-fg-muted mt-1">{t('dashboard.metricsView.description')}</p>
             </div>
             <button
               type="button"
@@ -1285,17 +1285,21 @@ export default function DashboardPage() {
                 setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
               }
               className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
-              title={metricsViewMode === 'compact' ? 'Részletes nézet' : 'Kompakt nézet'}
+              title={
+                metricsViewMode === 'compact'
+                  ? t('dashboard.metricsView.detailedTitle')
+                  : t('dashboard.metricsView.compactTitle')
+              }
             >
               {metricsViewMode === 'compact' ? (
                 <>
                   <ArrowsPointingOutIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Részletes</span>
+                  <span className="hidden sm:inline">{t('dashboard.metricsView.detailed')}</span>
                 </>
               ) : (
                 <>
                   <ArrowsPointingInIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Kompakt</span>
+                  <span className="hidden sm:inline">{t('dashboard.metricsView.compact')}</span>
                 </>
               )}
             </button>
@@ -1360,7 +1364,7 @@ export default function DashboardPage() {
                     {...(createdComparison ? { comparison: createdComparison } : {})}
                     onClick={() => handleMetricClick('all')}
                     isEmpty={totalOffersCount === 0}
-                    emptyMessage="Még nincs ajánlatod"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
                   />
 
                   {/* Active Offers (In Review) */}
@@ -1378,7 +1382,7 @@ export default function DashboardPage() {
                     color="info"
                     onClick={() => handleMetricClick('sent')}
                     isEmpty={stats.inReview === 0}
-                    emptyMessage="Nincs döntésre váró ajánlat"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
                   />
 
                   {/* Sent Offers */}
@@ -1397,7 +1401,7 @@ export default function DashboardPage() {
                     color="info"
                     onClick={() => handleMetricClick('sent')}
                     isEmpty={stats.sent === 0}
-                    emptyMessage="Még nem küldtél el ajánlatot"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
                   />
 
                   {/* Accepted Offers */}
@@ -1424,7 +1428,7 @@ export default function DashboardPage() {
                     {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
                     onClick={() => handleMetricClick('accepted')}
                     isEmpty={stats.accepted === 0}
-                    emptyMessage="Még nincs elfogadott ajánlatod"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
                   />
 
                   {/* Lost Offers - NEW */}
@@ -1442,7 +1446,7 @@ export default function DashboardPage() {
                     color="danger"
                     onClick={() => handleMetricClick('lost')}
                     isEmpty={stats.lost === 0}
-                    emptyMessage="Nincs elutasított ajánlat"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
                   />
 
                   {/* Win Rate - NEW */}
@@ -1473,7 +1477,7 @@ export default function DashboardPage() {
                     }
                     {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
                     isEmpty={stats.winRate === null}
-                    emptyMessage="Nincs elég adat a számításhoz"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
                   />
 
                   {/* Average Decision Time */}
@@ -1496,7 +1500,7 @@ export default function DashboardPage() {
                     icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
                     color="warning"
                     isEmpty={stats.avgDecisionDays === null}
-                    emptyMessage="Nincs elég adat a számításhoz"
+                    emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
                   />
                 </>
               )}

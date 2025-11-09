@@ -314,6 +314,23 @@ export const hu = {
         helper:
           'A sikeres arány = Elfogadott / (Elfogadott + Elutasított). Jelenleg {rate}. Átlagosan 40-60% között jó eredménynek számít. Ez a mutató azt mutatja, hogy az elfogadott és elutasított ajánlatok közül hány százalékot fogadnak el.',
       },
+      emptyMessages: {
+        noOffers: 'Még nincs ajánlatod',
+        noInReview: 'Nincs döntésre váró ajánlat',
+        noSent: 'Még nem küldtél el ajánlatot',
+        noAccepted: 'Még nincs elfogadott ajánlatod',
+        noLost: 'Nincs elutasított ajánlat',
+        insufficientData: 'Nincs elég adat a számításhoz',
+      },
+    },
+    metricsView: {
+      title: 'Teljesítmény mutatók',
+      description: 'Kattints egy metrikára a szűréshez',
+      toggleLabel: 'Nézet váltása',
+      detailed: 'Részletes',
+      compact: 'Kompakt',
+      detailedTitle: 'Részletes nézet',
+      compactTitle: 'Kompakt nézet',
     },
     viewSwitcher: {
       label: 'Nézet váltása',
@@ -2222,6 +2239,7 @@ export const hu = {
     description:
       'Váratlan hiba lépett fel. Kérjük, frissítsd az oldalt, vagy lépj kapcsolatba az ügyfélszolgálattal, ha a probléma továbbra is fennáll.',
     tryAgain: 'Újrapróbálás',
+    retrying: 'Újrapróbálás…',
     reloadPage: 'Oldal újratöltése',
     errorDetails: 'Hibareszletek (csak fejlesztési módban)',
   },
