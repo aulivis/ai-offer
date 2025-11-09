@@ -149,4 +149,3 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     return buildErrorResponse('Nem sikerült elindítani a Stripe fizetést.', 500);
   }
 });
-

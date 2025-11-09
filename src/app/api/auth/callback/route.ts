@@ -44,7 +44,6 @@ type MagicLinkTokens = {
   expiresIn: number;
 };
 
-
 type RedirectCookieOptions = {
   accessTokenMaxAge?: number;
   refreshTokenMaxAge?: number;
@@ -213,7 +212,6 @@ function getClientIp(request: Request): string | null {
   return null;
 }
 
-
 /** Gyors JWT payload decode (csak ACCESS tokenhez; REFRESH tokent nem dekódoljuk) */
 function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
   const parts = jwt.split('.');
@@ -229,7 +227,6 @@ function decodeJwtPayload<T = Record<string, unknown>>(jwt: string): T | null {
     return null;
   }
 }
-
 
 type VerifyEmailTokenHashParams = { token_hash: string; type: EmailOtpTypeOnly };
 type SupabaseAuthSession = {
@@ -414,14 +411,7 @@ export async function GET(request: Request) {
       });
 
       // Persist session (but don't set cookies here - they'll be set on redirect response)
-      await handleMagicLinkTokens(
-        tokens,
-        userId,
-        finalRedirect,
-        request,
-        logger,
-        rememberMe,
-      );
+      await handleMagicLinkTokens(tokens, userId, finalRedirect, request, logger, rememberMe);
 
       // Create CSRF token for the session
       // We need to generate it here so we can include it in the redirect
@@ -677,4 +667,3 @@ export async function GET(request: Request) {
     return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
   }
 }
-

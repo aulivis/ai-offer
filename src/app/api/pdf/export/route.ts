@@ -54,10 +54,7 @@ function optionalUrlSchema(message: string) {
 
 const brandSchema = z
   .object({
-    name: z
-      .string({ message: 'Brand name is required.' })
-      .trim()
-      .min(1, 'Brand name is required.'),
+    name: z.string({ message: 'Brand name is required.' }).trim().min(1, 'Brand name is required.'),
     logoUrl: optionalUrlSchema('Brand logo URL must be a valid URL.'),
     primaryHex: hexColorSchema,
     secondaryHex: hexColorSchema,
@@ -101,10 +98,7 @@ const customerSchema = z
 
 const itemSchema = z
   .object({
-    name: z
-      .string({ message: 'Item name is required.' })
-      .trim()
-      .min(1, 'Item name is required.'),
+    name: z.string({ message: 'Item name is required.' }).trim().min(1, 'Item name is required.'),
     qty: z.number({ message: 'Item quantity must be a number.' }),
     unitPrice: z.number({ message: 'Item unit price must be a number.' }),
     total: z.number({ message: 'Item total must be a number.' }),
@@ -117,10 +111,7 @@ const totalsSchema = z
     net: z.number({ message: 'Net total must be a number.' }),
     vat: z.number({ message: 'VAT total must be a number.' }),
     gross: z.number({ message: 'Gross total must be a number.' }),
-    currency: z
-      .string({ message: 'Currency is required.' })
-      .trim()
-      .min(1, 'Currency is required.'),
+    currency: z.string({ message: 'Currency is required.' }).trim().min(1, 'Currency is required.'),
   })
   .strict();
 
@@ -215,7 +206,13 @@ export async function POST(req: NextRequest) {
 
   // Process items to conditionally include optional note property
   const processedItems = slots.items.map((item) => {
-    const processedItem: { name: string; qty: number; unitPrice: number; total: number; note?: string } = {
+    const processedItem: {
+      name: string;
+      qty: number;
+      unitPrice: number;
+      total: number;
+      note?: string;
+    } = {
       name: item.name,
       qty: item.qty,
       unitPrice: item.unitPrice,

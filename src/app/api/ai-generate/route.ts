@@ -1607,10 +1607,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           });
 
           // Also verify it's queryable by checking if it appears in a list query (service role)
-          const {
-            data: listCheck,
-            error: listError,
-          } = await sb
+          const { data: listCheck, error: listError } = await sb
             .from('offers')
             .select('id, pdf_url', { count: 'exact' })
             .eq('user_id', user.id)

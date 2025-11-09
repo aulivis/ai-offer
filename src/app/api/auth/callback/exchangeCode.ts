@@ -92,4 +92,3 @@ export async function exchangeCode(
     throw new Error('Supabase token exchange returned invalid JSON.');
   }
 }
-

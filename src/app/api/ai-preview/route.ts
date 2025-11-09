@@ -53,7 +53,6 @@ FORMÁZÁS:
 - A szöveg legyen professzionális, de nem túlzottan formális vagy száraz.
 `;
 
-
 function isAbortLikeError(error: unknown): boolean {
   if (!error) return false;
 
