@@ -3,15 +3,9 @@ import { z } from 'zod';
 
 import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { getTemplateMeta } from '@/app/pdf/templates/registry';
-import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
-import {
-  createPdfOptions,
-  toPuppeteerOptions,
-  setPdfMetadata,
-  type PdfMetadata,
-} from '@/lib/pdfConfig';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
+import { createExternalPdfJob } from '@/lib/pdfExternalApi';
 
 /**
  * POST /api/pdf/export
@@ -20,8 +14,11 @@ import { getRequestId } from '@/lib/requestId';
  * This endpoint is designed for external use (SDK, integrations, etc.)
  * and does not require authentication.
  * 
- * Note: This route is not currently used by the frontend application,
- * but is available for external integrations and SDK usage.
+ * This endpoint uses Supabase Edge Functions for PDF generation, which is
+ * compatible with Vercel's serverless function limitations.
+ * 
+ * The endpoint returns a job ID immediately and provides status polling
+ * and webhook callback support.
  * 
  * @see {@link https://github.com/your-org/your-repo/wiki/PDF-Export-API Documentation}
  */
@@ -146,6 +143,8 @@ const exportRequestSchema = z
       .min(1, 'templateId is required.'),
     brand: brandSchema,
     slots: docSlotsSchema,
+    callbackUrl: optionalUrlSchema('Callback URL must be a valid URL.').optional(),
+    locale: z.string().optional(),
   })
   .strict();
 
@@ -173,8 +172,9 @@ export async function POST(req: NextRequest) {
     return badRequest('Invalid request payload.', parsed.error.flatten());
   }
 
-  const { templateId, brand, slots } = parsed.data;
+  const { templateId, brand, slots, callbackUrl, locale } = parsed.data;
 
+  // Validate template
   const templateMeta = getTemplateMeta(templateId);
   if (!templateMeta) {
     return NextResponse.json(
@@ -186,110 +186,53 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let html: string;
+  // Create runtime template payload
+  const runtimeTemplate = {
+    templateId,
+    locale: locale ?? null,
+    brand: {
+      name: brand.name,
+      logoUrl: brand.logoUrl ?? null,
+      primaryHex: brand.primaryHex,
+      secondaryHex: brand.secondaryHex,
+    },
+    slots,
+  };
+
   try {
-    html = renderRuntimePdfHtml({ templateId, brand, slots });
-    assertPdfEngineHtml(html, 'pdf-export');
+    // Create PDF job using Supabase Edge Functions
+    // This is Vercel-compatible and doesn't require Puppeteer in Next.js routes
+    const { jobId, statusUrl, downloadUrl } = await createExternalPdfJob(
+      '', // HTML will be generated from runtime template
+      runtimeTemplate,
+      callbackUrl ?? null,
+    );
+
+    log.info('External API PDF job created', {
+      jobId,
+      templateId,
+      hasCallbackUrl: !!callbackUrl,
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        jobId,
+        status: 'pending',
+        statusUrl,
+        downloadUrl,
+        message: 'PDF generation job created successfully. Use the statusUrl to check job status, or wait for webhook callback if callbackUrl was provided.',
+      },
+      { status: 202 }, // 202 Accepted - async processing
+    );
   } catch (error) {
     if (error instanceof Error && /invalid hex color/i.test(error.message)) {
       return badRequest('One or more brand colors are invalid hex values.');
     }
-    log.error('Failed to render PDF HTML', error);
-    return internalError('Failed to render the requested PDF template.');
+    
+    log.error('Failed to create external PDF job', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create PDF job';
+    return internalError(errorMessage);
   }
-
-  let pdfBinary: Uint8Array | Buffer;
-  try {
-    const { default: puppeteer } = await import('puppeteer');
-    const browser = await puppeteer.launch({
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu',
-      ],
-      headless: true,
-    });
-
-    try {
-      const page = await browser.newPage();
-      try {
-        page.setDefaultNavigationTimeout(30_000);
-        page.setDefaultTimeout(30_000);
-        
-        // Set viewport for consistent rendering
-        await page.setViewport({
-          width: 1200,
-          height: 1600,
-          deviceScaleFactor: 2,
-        });
-
-        // Set content and wait for resources to load
-        await page.setContent(html, {
-          waitUntil: 'networkidle0',
-          timeout: 30_000,
-        });
-
-        // Extract document title for metadata
-        const documentTitle = slots.doc.title || 'Offer Document';
-
-        // Create PDF metadata
-        const pdfMetadata: PdfMetadata = {
-          title: documentTitle,
-          author: brand.name,
-          subject: `Offer: ${documentTitle}`,
-          keywords: `offer,${brand.name},${slots.doc.date}`,
-          creator: 'AI Offer Platform',
-          producer: 'AI Offer Platform',
-        };
-
-        // Set PDF metadata
-        await setPdfMetadata(page, pdfMetadata);
-
-        // Generate PDF with professional settings
-        const pdfOptions = createPdfOptions(pdfMetadata);
-        pdfBinary = await page.pdf(toPuppeteerOptions(pdfOptions));
-      } finally {
-        try {
-          await page.close();
-        } catch (pageError) {
-          log.warn('Failed to close Puppeteer page for pdf-export route', pageError);
-        }
-      }
-    } finally {
-      try {
-        await browser.close();
-      } catch (browserError) {
-        log.warn('Failed to close Puppeteer browser for pdf-export route', browserError);
-      }
-    }
-  } catch (error) {
-    log.error('Failed to generate PDF binary', error);
-    return internalError('Failed to render PDF.');
-  }
-
-  const pdfBuffer = Buffer.isBuffer(pdfBinary) ? pdfBinary : Buffer.from(pdfBinary);
-
-  // Generate filename from document title
-  const sanitizedTitle = slots.doc.title
-    .replace(/[^a-z0-9]+/gi, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase()
-    .slice(0, 50);
-  const filename = sanitizedTitle ? `${sanitizedTitle}.pdf` : 'offer.pdf';
-
-  return new NextResponse(pdfBuffer, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="${filename}"`,
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-      'X-Content-Type-Options': 'nosniff',
-    },
-  });
 }

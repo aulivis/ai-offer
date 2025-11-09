@@ -46,15 +46,21 @@ const ServerEnvSchema = z.object({
       : [],
   ),
   SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: z.string().url(),
+  EXTERNAL_API_SYSTEM_USER_ID: z
+    .string()
+    .uuid()
+    .optional()
+    .describe('System user ID for external API PDF generation jobs. If not set, a placeholder UUID will be used.'),
 });
 
 type ServerEnv = Omit<
   z.infer<typeof ServerEnvSchema>,
-  'STRIPE_PRICE_ALLOWLIST' | 'OAUTH_REDIRECT_ALLOWLIST' | 'PDF_WEBHOOK_ALLOWLIST'
+  'STRIPE_PRICE_ALLOWLIST' | 'OAUTH_REDIRECT_ALLOWLIST' | 'PDF_WEBHOOK_ALLOWLIST' | 'EXTERNAL_API_SYSTEM_USER_ID'
 > & {
   STRIPE_PRICE_ALLOWLIST: string[];
   OAUTH_REDIRECT_ALLOWLIST: string[];
   PDF_WEBHOOK_ALLOWLIST: string[];
+  EXTERNAL_API_SYSTEM_USER_ID?: string;
 };
 
 const serverEnvDefaults = {
@@ -72,6 +78,7 @@ const serverEnvDefaults = {
   OAUTH_REDIRECT_ALLOWLIST: undefined,
   PDF_WEBHOOK_ALLOWLIST: undefined,
   SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: 'http://localhost:3000/api/auth/callback',
+  EXTERNAL_API_SYSTEM_USER_ID: undefined,
 } as const satisfies Record<keyof z.input<typeof ServerEnvSchema>, string | undefined>;
 
 type RawServerEnv = z.input<typeof ServerEnvSchema>;
@@ -134,6 +141,7 @@ const envWithDefaults: RawServerEnv = {
   SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI:
     process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI ??
     serverEnvDefaults.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI,
+  EXTERNAL_API_SYSTEM_USER_ID: process.env.EXTERNAL_API_SYSTEM_USER_ID,
 };
 
 export const envServer: ServerEnv = ServerEnvSchema.parse(envWithDefaults);

@@ -1450,67 +1450,82 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       }
 
       // Only attempt inline fallback if job is not already completed or being processed
+      // NOTE: Inline fallback uses Puppeteer and is NOT compatible with Vercel serverless functions
+      // This should only be used in development or self-hosted environments
+      // On Vercel, the Supabase Edge Function should handle all PDF generation
       if (!immediatePdfUrl && jobStatus?.status !== 'processing') {
-        try {
-          const inlineJob: PdfJobInput = {
-            jobId: pdfJobInput.jobId,
-            offerId: pdfJobInput.offerId,
-            userId: pdfJobInput.userId,
-            storagePath: pdfJobInput.storagePath,
-            html: pdfJobInput.html,
-            usagePeriodStart: pdfJobInput.usagePeriodStart,
-            userLimit: pdfJobInput.userLimit,
-            ...(pdfJobInput.callbackUrl !== undefined
-              ? { callbackUrl: pdfJobInput.callbackUrl }
-              : {}),
-            ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
-            ...(pdfJobInput.deviceLimit !== undefined
-              ? { deviceLimit: pdfJobInput.deviceLimit }
-              : {}),
-            ...(pdfJobInput.templateId !== undefined ? { templateId: pdfJobInput.templateId } : {}),
-            ...(pdfJobInput.requestedTemplateId !== undefined
-              ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
-              : {}),
-            ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
-          };
-
-          const serviceClient = supabaseServiceRole();
-          immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
-          if (immediatePdfUrl) {
-            responseStatus = 'completed';
-            responseNote = translator.t('api.pdf.inlineCompleted');
-            log.info('Inline PDF fallback completed successfully', {
-              jobId: downloadToken,
-              pdfUrl: immediatePdfUrl,
-            });
-          } else {
-            log.error('Inline PDF fallback returned null PDF URL', {
-              jobId: downloadToken,
-            });
-            throw new Error('PDF generation completed but no PDF URL was returned');
-          }
-        } catch (inlineError) {
-          const inlineMessage =
-            inlineError instanceof Error ? inlineError.message : String(inlineError);
-          log.error('Inline PDF fallback error', inlineError);
-
-          const limitMessage = normalizeUsageLimitError(inlineMessage, translator);
-          if (limitMessage) {
-            return NextResponse.json({ error: limitMessage }, { status: 402 });
-          }
-
-          // Offer text is already saved, return success with PDF failure indication
-          const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
-          return NextResponse.json({
-            ok: true,
-            id: offerId,
-            pdfUrl: null,
-            downloadToken,
-            status: 'failed' as const,
-            note: translator.t('errors.offer.savePdfFailed'),
-            sections: sectionsPayload,
-            textSaved: true, // Indicate that the text was saved even though PDF failed
+        // Check if we're in a Vercel-like environment (serverless)
+        const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+        
+        if (isVercel) {
+          log.warn('Inline PDF fallback skipped on Vercel - Puppeteer not supported', {
+            jobId: downloadToken,
           });
+          // On Vercel, we can't use inline fallback, so just return pending status
+          responseStatus = 'pending';
+          responseNote = translator.t('api.pdf.processing');
+        } else {
+          try {
+            const inlineJob: PdfJobInput = {
+              jobId: pdfJobInput.jobId,
+              offerId: pdfJobInput.offerId,
+              userId: pdfJobInput.userId,
+              storagePath: pdfJobInput.storagePath,
+              html: pdfJobInput.html,
+              usagePeriodStart: pdfJobInput.usagePeriodStart,
+              userLimit: pdfJobInput.userLimit,
+              ...(pdfJobInput.callbackUrl !== undefined
+                ? { callbackUrl: pdfJobInput.callbackUrl }
+                : {}),
+              ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
+              ...(pdfJobInput.deviceLimit !== undefined
+                ? { deviceLimit: pdfJobInput.deviceLimit }
+                : {}),
+              ...(pdfJobInput.templateId !== undefined ? { templateId: pdfJobInput.templateId } : {}),
+              ...(pdfJobInput.requestedTemplateId !== undefined
+                ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
+                : {}),
+              ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
+            };
+
+            const serviceClient = supabaseServiceRole();
+            immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
+            if (immediatePdfUrl) {
+              responseStatus = 'completed';
+              responseNote = translator.t('api.pdf.inlineCompleted');
+              log.info('Inline PDF fallback completed successfully', {
+                jobId: downloadToken,
+                pdfUrl: immediatePdfUrl,
+              });
+            } else {
+              log.error('Inline PDF fallback returned null PDF URL', {
+                jobId: downloadToken,
+              });
+              throw new Error('PDF generation completed but no PDF URL was returned');
+            }
+          } catch (inlineError) {
+            const inlineMessage =
+              inlineError instanceof Error ? inlineError.message : String(inlineError);
+            log.error('Inline PDF fallback error', inlineError);
+
+            const limitMessage = normalizeUsageLimitError(inlineMessage, translator);
+            if (limitMessage) {
+              return NextResponse.json({ error: limitMessage }, { status: 402 });
+            }
+
+            // Offer text is already saved, return success with PDF failure indication
+            const sectionsPayload = structuredSections ? sanitizeSectionsOutput(structuredSections) : null;
+            return NextResponse.json({
+              ok: true,
+              id: offerId,
+              pdfUrl: null,
+              downloadToken,
+              status: 'failed' as const,
+              note: translator.t('errors.offer.savePdfFailed'),
+              sections: sectionsPayload,
+              textSaved: true, // Indicate that the text was saved even though PDF failed
+            });
+          }
         }
       }
     }
