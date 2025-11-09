@@ -323,23 +323,22 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       
-      // For preset questions, use AI SDK's streamText with a simple prompt
-      // that returns the preset answer directly - this ensures proper streaming format
+      // For preset questions, use streamText with the actual user question
+      // but provide the answer in the system prompt to guide the response
       try {
-        const openaiClient = createOpenAIClient();
         const presetAnswer = presetMatch.answer;
         
-        // Use streamText with a system prompt that returns the preset answer
-        // This ensures compatibility with useChat hook
-        // Temperature is set to 0 to ensure consistent output, and we explicitly instruct
-        // the model to return the answer exactly as provided
+        // Use streamText with the user's actual question and provide the answer
+        // in the system prompt. The model should return the preset answer.
+        // We use a very explicit instruction to return the exact answer.
         const result = streamText({
-          model: openai('gpt-3.5-turbo'),
+          model: openai('gpt-3.5-turbo'), // Use gpt-3.5-turbo for cost efficiency
           system: `You are Vanda, a helpful assistant for Vyndi.
 
-CRITICAL INSTRUCTION: The user has asked a predefined question. You MUST return the following answer EXACTLY as written below. Do not add, remove, or modify any text. Return ONLY the answer text, nothing else.
+The user has asked: "${presetMatch.question}"
 
-PRESET ANSWER:
+You MUST respond with the following answer EXACTLY as written. Do not modify, add, or remove any text. Return the answer verbatim:
+
 ${presetAnswer}`,
           messages: [
             {

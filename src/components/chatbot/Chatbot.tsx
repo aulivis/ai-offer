@@ -61,6 +61,13 @@ export default function Chatbot({
       });
     },
     onResponse: (response) => {
+      console.log('[Chatbot] API response received:', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
       if (!response.ok) {
         console.error('[Chatbot] API response not OK:', {
           status: response.status,
@@ -125,6 +132,22 @@ export default function Chatbot({
     
     return '';
   };
+  
+  // Debug: Log messages changes (after getMessageText is defined)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Chatbot] Messages updated:', {
+        count: messages.length,
+        lastMessage: messages[messages.length - 1] ? {
+          id: messages[messages.length - 1].id,
+          role: messages[messages.length - 1].role,
+          contentLength: getMessageText(messages[messages.length - 1]).length,
+          contentPreview: getMessageText(messages[messages.length - 1]).substring(0, 50),
+        } : null,
+        status,
+      });
+    }
+  }, [messages, status]);
   
   // Helper to parse markdown links and render them
   const renderMessageWithLinks = (text: string): React.ReactNode => {
