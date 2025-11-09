@@ -323,30 +323,35 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       
-      // For preset questions, use streamText with the actual user question
-      // but provide the answer in the system prompt to guide the response
+      // For preset questions, use streamText but with the actual user question
+      // and include the preset answer in context to ensure it's returned
       try {
         const presetAnswer = presetMatch.answer;
         
+        log.info('Creating streamText for preset question', {
+          question: presetMatch.question,
+          answerLength: presetAnswer.length,
+          answerPreview: presetAnswer.substring(0, 100),
+          requestId,
+        });
+        
         // Use streamText with the user's actual question and provide the answer
-        // in the system prompt. The model should return the preset answer.
-        // We use a very explicit instruction to return the exact answer.
+        // in a way that ensures GPT returns it. We use the conversation history
+        // and provide the answer as context.
         const result = streamText({
-          model: openai('gpt-3.5-turbo'), // Use gpt-3.5-turbo for cost efficiency
-          system: `You are Vanda, a helpful assistant for Vyndi.
+          model: openai('gpt-3.5-turbo'),
+          system: `You are Vanda, a helpful assistant for Vyndi. The user has asked a question, and you have the exact answer prepared. Return ONLY the answer text below, without any modifications, additions, or explanations.
 
-The user has asked: "${presetMatch.question}"
-
-You MUST respond with the following answer EXACTLY as written. Do not modify, add, or remove any text. Return the answer verbatim:
-
+ANSWER TO RETURN:
 ${presetAnswer}`,
-          messages: [
-            {
-              role: 'user',
-              content: lastMessage.content,
-            },
-          ],
-          temperature: 0, // Use temperature 0 for deterministic output
+          messages: messagesToUse,
+          temperature: 0,
+        });
+        
+        // Log that we're about to return the response
+        log.info('StreamText result created, returning response', {
+          requestId,
+          hasToTextStreamResponse: typeof result.toTextStreamResponse === 'function',
         });
         
         const responseTime = Date.now() - startTime;
@@ -375,17 +380,21 @@ ${presetAnswer}`,
           });
         });
         
-        log.info('Returning preset answer via AI SDK stream', {
-          answerLength: presetAnswer.length,
+        // Return using toTextStreamResponse which creates the correct format for useChat
+        const response = result.toTextStreamResponse();
+        
+        log.info('Preset answer response created and returned', {
           requestId,
+          responseType: response.constructor.name,
+          headers: Object.fromEntries(response.headers.entries()),
         });
         
-        // Return the stream response using AI SDK's format
-        return result.toTextStreamResponse();
+        return response;
       } catch (error) {
         log.error('Failed to create stream response for preset question', error instanceof Error ? error : undefined, {
           errorType: error instanceof Error ? error.constructor.name : typeof error,
           errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
           requestId,
         });
         
