@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { getTypography, type TypographyScale } from '@/styles/typography';
+import { getFluidTypography, type FluidTypographyScale } from '@/styles/fluidTypography';
 
 type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
@@ -12,6 +13,8 @@ export type HeadingProps = React.ComponentPropsWithoutRef<'h1'> & {
   scale?: TypographyScale;
   /** Visual size (overrides level/scale) */
   size?: 'display' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  /** Use fluid/responsive typography (default: false) */
+  fluid?: boolean;
   /** Custom className */
   className?: string;
   /** Children */
@@ -36,12 +39,13 @@ export function Heading({
   level = 'h2',
   scale,
   size,
+  fluid = false,
   className = '',
   children,
   ...props
 }: HeadingProps) {
   // Determine typography scale based on level or size
-  const typographyKey: TypographyScale = scale || (() => {
+  const typographyKey = scale || (() => {
     if (size) {
       return size === 'display' ? 'display' : size;
     }
@@ -64,7 +68,10 @@ export function Heading({
     }
   })();
 
-  const typography = getTypography(typographyKey);
+  // Use fluid or fixed typography based on prop
+  const typography = fluid 
+    ? getFluidTypography(typographyKey as FluidTypographyScale)
+    : getTypography(typographyKey as TypographyScale);
   
   // Use the appropriate HTML heading element
   const Component = level;
