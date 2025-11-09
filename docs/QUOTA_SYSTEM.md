@@ -1,4 +1,8 @@
-# Quota System Complete Redesign
+# Quota System Design
+
+## Overview
+
+The quota system manages user and device-level usage limits for PDF generation. This document describes the unified quota service architecture.
 
 ## Problem Statement
 
@@ -42,55 +46,69 @@ The quota system had multiple issues causing inconsistent display across pages:
    └─────────┘        └─────────────┘      └─────────────┘
 ```
 
-### Key Changes
+### Key Components
 
-#### 1. **Unified Quota Service** (`web/src/lib/services/quota.ts`)
+#### 1. Unified Quota Service (`web/src/lib/services/quota.ts`)
+
 - Single function: `getQuotaData()` - the ONLY way to fetch quota for UI
 - Always uses `get_quota_snapshot` RPC function
 - Consistent period handling (defaults to current month)
 - Helper functions for quota exhaustion checks
 
-#### 2. **Fixed Database Function** (`20251107210000_fix_get_quota_snapshot_period_handling.sql`)
+#### 2. Database Function
+
+The `get_quota_snapshot` RPC function:
 - Selects by `user_id` only (PK), not `user_id + period_start`
 - Properly handles period mismatches (returns 0 for new period)
 - Always returns requested period (not stored period)
 - Consistent with `check_and_increment_usage` logic
 
-#### 3. **Updated All Components**
+#### 3. Components
+
+All components use the unified service:
 - **Dashboard**: Uses `getQuotaData()` instead of direct RPC call
 - **QuotaWarningBar**: Uses `getQuotaData()` and helper functions
 - **Billing Page**: Uses `getQuotaData()` instead of direct table queries
 - **useQuotaManagement Hook**: Uses `getQuotaData()` for consistency
 
-#### 4. **Simplified Real-time Subscriptions**
+#### 4. Real-time Subscriptions
+
 - Removed period checks from subscriptions (handled by `get_quota_snapshot`)
 - Refresh quota on any `usage_counters` or `pdf_jobs` change
 - Debounced rapid changes to prevent excessive refreshes
 
-## Migration Steps
+## Usage
 
-### Step 1: Run Database Migration
-```bash
-supabase migration up
+### Fetching Quota Data
+
+```typescript
+import { getQuotaData } from '@/lib/services/quota';
+
+const quotaData = await getQuotaData(userId, periodStart);
 ```
 
-This applies:
-- `20251107210000_fix_get_quota_snapshot_period_handling.sql` - Fixes period handling
+### Checking Quota Exhaustion
 
-### Step 2: Deploy Code Changes
-All TypeScript changes are already made:
-- ✅ `web/src/lib/services/quota.ts` - New unified service
-- ✅ `web/src/app/dashboard/page.tsx` - Updated to use service
-- ✅ `web/src/app/billing/page.tsx` - Updated to use service
-- ✅ `web/src/components/QuotaWarningBar.tsx` - Updated to use service
-- ✅ `web/src/hooks/useQuotaManagement.ts` - Updated to use service
+```typescript
+import { isUserQuotaExhausted, isDeviceQuotaExhausted } from '@/lib/services/quota';
 
-### Step 3: Test
-1. Clear browser cache/cookies
-2. Log in and check quota on dashboard
-3. Navigate to billing - quota should match
-4. Generate a PDF - quota should update consistently
-5. Check QuotaWarningBar - should show/hide correctly
+if (isUserQuotaExhausted(quotaData)) {
+  // Handle exhausted quota
+}
+
+if (isDeviceQuotaExhausted(quotaData, deviceId)) {
+  // Handle device quota exhausted
+}
+```
+
+### Getting Remaining Quota
+
+```typescript
+import { getRemainingUserQuota, getRemainingDeviceQuota } from '@/lib/services/quota';
+
+const remaining = getRemainingUserQuota(quotaData);
+const deviceRemaining = getRemainingDeviceQuota(quotaData, deviceId);
+```
 
 ## Benefits
 
@@ -101,11 +119,37 @@ All TypeScript changes are already made:
 5. **Performance**: Single RPC call instead of multiple queries
 6. **Real-time Updates**: Simplified subscriptions that work reliably
 
-## Breaking Changes
+## Database Schema
 
-None - this is a refactoring that maintains the same API surface for components, just changes the implementation.
+### Usage Counters
 
-## Testing Checklist
+```sql
+CREATE TABLE usage_counters (
+  user_id UUID PRIMARY KEY,
+  period_start DATE NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0,
+  limit_value INTEGER,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Device Usage Counters
+
+```sql
+CREATE TABLE device_usage_counters (
+  user_id UUID NOT NULL,
+  device_id TEXT NOT NULL,
+  period_start DATE NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0,
+  limit_value INTEGER,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (user_id, device_id, period_start)
+);
+```
+
+## Testing
+
+### Checklist
 
 - [ ] Dashboard shows correct quota on initial load
 - [ ] Billing page shows same quota as dashboard
@@ -123,10 +167,8 @@ None - this is a refactoring that maintains the same API surface for components,
 3. **Add analytics**: Track quota usage patterns
 4. **Add alerts**: Alert when quota inconsistencies are detected
 
+## Related Documentation
 
-
-
-
-
-
+- [Architecture Documentation](./ARCHITECTURE.md) - System architecture overview
+- [API Documentation](./API.md) - API endpoints reference
 

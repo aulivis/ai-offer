@@ -115,10 +115,21 @@ if additional attributes need to be supported for future content.
 - **Registering scripts behind consent** – Route any analytics or marketing pixel through a gate component under `src/components/consent`. Follow the pattern in `AnalyticsScriptGate.tsx`: check `gate.canRun()` before rendering the script and subscribe to `onConsentChange` so the embed reacts to live preference updates.
 - **Proving consent** – Capture both the client cookie and server acceptance trail. The browser writes a JSON payload to the `consent` cookie (see `lib/consent/client.ts` for structure); pair that with the server log entry (or reverse-proxy trace) that issued the `Set-Cookie` header so you can prove which endpoint recorded the visitor’s choice and when.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Architecture](./docs/ARCHITECTURE.md)** - System architecture and design
+- **[API Documentation](./docs/API.md)** - REST API endpoints reference
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Vercel deployment instructions
+- **[Chatbot](./docs/CHATBOT.md)** - Chatbot setup and configuration
+- **[Templates](./docs/TEMPLATES.md)** - PDF template creation guide
+- **[Quota System](./docs/QUOTA_SYSTEM.md)** - Quota management system design
 
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See the [Deployment Guide](./docs/DEPLOYMENT.md) for detailed instructions.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!

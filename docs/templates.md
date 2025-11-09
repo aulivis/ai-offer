@@ -1,177 +1,365 @@
-# Template Author Handbook
+# Template Documentation
 
-This guide walks new template authors through the core concepts, file layout, and release process for shipping an Offer template. Follow it end-to-end and you should be able to publish a compliant template in under an hour.
+## Overview
 
-## Architecture Overview
+The template system provides a unified way to create and manage PDF offer templates. Templates are versioned, cached, and support both free and premium tiers.
 
-The template system uses a **unified registry** (`engineRegistry.ts`) that:
-- Validates templates with Zod schemas
-- Caches templates for performance (1-hour TTL)
-- Provides metadata for UI and discovery
-- Supports both free and premium tiers
-- Maintains backward compatibility with legacy IDs
+## Quick Start
 
-The SDK runtime templates (`registry.ts`) provide a simplified interface for runtime PDF export and automatically bridge to the main registry.
+### Creating a Template
 
-## Engine concepts
+**Option 1: Clone an Existing Template (Recommended)**
 
-### OfferTemplate contract
-Templates export an `OfferTemplate` object from their `index.ts`. The object declares:
+```bash
+# Clone a template and modify it
+pnpm template:clone free.minimal "Modern Clean" premium
+```
 
-- `id`: A unique identifier in the form `name@semver` (for example `premium.elegant@1.1.0`).
-- `tier`: Either `free` or `premium`, which gates template visibility by customer plan.
-- `label`, `marketingHighlight`, and optional `capabilities` flags used by the app for selection UI.
-- `tokens`: A `ThemeTokens` record describing colors, typography, spacing, and radii consumed by the renderer.
-- `styles`: Print styles and template-specific CSS.
-- `renderHead(ctx)` and `renderBody(ctx)`: Functions that receive a `RenderCtx` and return HTML strings for the `<head>` and `<main>` of the PDF document respectively.
+**Option 2: Create from Scratch**
 
-See [`src/app/pdf/templates/types.ts`](../src/app/pdf/templates/types.ts) for the full interface.
+```bash
+# Create a new template
+pnpm template:new "Template Name" premium
+```
 
-### RenderCtx
-`RenderCtx` is the context object passed into `renderHead` and `renderBody`. It contains:
-
-- `offer`: Metadata about the offer (title, company name, template id, and optional locale/legacy id).
-- `rows`: An array of price rows ready to display.
-- `branding`: Optional logo/color overrides selected by the customer.
-- `i18n`: A typed translator, so you can localize labels via `ctx.i18n('key.path')`.
-- `tokens`: The same theme token object declared on the template, already merged with user branding overrides when available.
-- `images`: Up to three image assets (key, src, alt) that the customer attached to the offer. Use them to build optional galleries
-  without mutating the main body HTML.
-
-Because the renderer runs in a server context, avoid browser-only APIs and rely on the data passed in through `RenderCtx`.
-
-### Tokens and theming
-`tokens` is a strictly typed theme contract that keeps typography and colors consistent across templates. Define your token palette in `tokens.ts` and import it into `index.ts`. Stick to semantic names—`tokens.color.primary` drives CTA elements, `tokens.typography.h1` styles main headings, etc. Avoid hard-coding colors or fonts inside partials; use the token values instead.
-
-### Internationalization helpers
-All customer-facing strings must come from `ctx.i18n`. Existing copy keys cover headings like "Pricing" and "Next steps". If you need a new key, add it to the copy catalog before shipping. Do not inline English strings in templates, or they will fail localization QA.
-
-## PDF markup audit
-
-When we reviewed the legacy `partialHeader`, `partialSections`, and `partialPriceTable` implementations we found a few recurring layout issues:
-
-- **Unstructured sections.** The body renderer simply injected raw HTML into `.offer-doc__content`, so headings, cards, and spacing varied wildly between templates and were hard to restyle in CSS.
-- **Metadata without semantics.** Header metadata relied on anonymous `<div>`/`<span>` pairs (`.offer-doc__meta`), which made it difficult to align labels, apply placeholder styling, or translate to assistive technologies.
-- **Pricing tables as monoliths.** All pricing layout lived in an inline `<style>` block and the markup could not express zebra striping, currency totals, or contextual notes without custom rewrites per template.
-
-These gaps drove the refactor below: we now wrap each major block in semantic `.section-card` containers, expose reusable `.key-metrics` and `.pricing-table` primitives, and move presentation into shared CSS utilities so templates stay consistent.
-
-## Folder conventions
-
-Each template lives in `src/app/pdf/templates/<template-name>/` and must follow this structure:
+### Template Structure
 
 ```
 <template-name>/
-├── index.ts          # exports the OfferTemplate object
-├── tokens.ts         # defines the ThemeTokens for the template
-├── styles.css.ts     # optional CSS-in-TypeScript helpers shared across partials
-├── partials/
-│   ├── head.ts       # renderHead implementation
-│   └── body.ts       # renderBody implementation
-└── assets/           # optional static assets (SVGs, images, etc.) served by the renderer
+├── index.ts          # Template definition & registration
+├── tokens.ts         # Colors, typography, spacing
+├── styles.css.ts     # Template-specific CSS
+└── partials/
+    ├── head.ts       # <head> content (meta tags, fonts)
+    └── body.ts       # <main> content (header, sections, footer)
 ```
 
-- Keep all rendering logic inside `partials/`. `index.ts` should only wire up tokens, metadata, and the partial exports.
-- Store reusable markup fragments in additional files under `partials/` if the body grows large.
-- Put any binary assets (logos, background textures) under `assets/` and import them via `new URL('./assets/foo.svg', import.meta.url)` so bundlers can track them.
-- Expose any shared CSS primitives through `styles.css.ts`, using vanilla-extract or string helpers as needed.
+### Registration
 
-## Versioning and lifecycle
-
-### Naming and semantic versioning
-Template IDs must follow `package-name@semver` so the renderer can resolve and compare versions. Increment the semver when you make visual or behavioral changes:
-
-- **Patch** (`1.0.1`): Minor spacing tweaks, copy fixes, or asset optimization.
-- **Minor** (`1.1.0`): New optional sections, additional capabilities flags, or token updates.
-- **Major** (`2.0.0`): Breaking layout changes or required data changes.
-
-Update both the `id` and `version` fields in `index.ts` when bumping.
-
-### Plan tiers
-Set `tier` to `free` for templates available on the free plan, or `premium` for paid tiers. Premium templates must provide a compelling `marketingHighlight` string to display in upsell modals. Free templates should avoid premium-only capabilities (for example, advanced branding options) unless explicitly approved.
-
-### Template Registration
-All templates must be registered in `engineRegistry.ts`:
+Register your template in `engineRegistry.ts`:
 
 ```typescript
-import { yourTemplate } from './your-template';
-import { registerTemplate } from './engineRegistry';
-
-registerTemplate(yourTemplate);
+import { myTemplateTemplate } from './my-template';
+registerTemplate(myTemplateTemplate);
 ```
 
-The registry automatically:
-- Validates template structure
-- Extracts metadata
-- Sets up caching
-- Handles legacy ID mapping
-
-### Testing and linting
-Every template must pass the repository lint rules and golden tests:
-
-1. `npm run lint` to ensure code style and template exports conform.
-2. `npm run test:templates` to render templates against golden snapshots.
-3. Optionally `npm run test` to run the full suite before submitting a PR.
-
-If golden tests fail, update the snapshots intentionally (`npx vitest -u src/app/pdf/templates/__tests__/golden.test.ts`) and double-check the rendered HTML before committing.
-
-## Quick Start: Creating a New Template
-
-### Fastest Method: Clone an Existing Template
-
-For the fastest workflow, clone an existing template:
+### Testing
 
 ```bash
-# Clone a template (recommended for similar designs)
-pnpm template:clone free.minimal "Your Template Name" premium
+# Run template tests
+pnpm test:templates
 
-# Then customize the cloned files
+# Update snapshots if needed
+pnpm test:templates -u
 ```
 
-See [TEMPLATE_QUICK_START.md](./TEMPLATE_QUICK_START.md) for a streamlined guide.
+## Architecture
 
-### Alternative: Create from Scratch
+### Template Registry
+
+The unified registry (`engineRegistry.ts`) provides:
+- Template validation with Zod schemas
+- Caching (1-hour TTL)
+- Metadata extraction
+- Support for free and premium tiers
+- Legacy ID mapping
+
+### OfferTemplate Contract
+
+Templates export an `OfferTemplate` object:
+
+```typescript
+{
+  id: "premium.elegant@1.1.0",  // Unique identifier with semver
+  tier: "premium",               // "free" or "premium"
+  label: "Elegant",              // Display name
+  marketingHighlight: "...",     // Premium template highlight
+  capabilities: {                // Feature flags
+    "branding.logo": true,
+    "gallery": true
+  },
+  tokens: ThemeTokens,           // Colors, typography, spacing
+  styles: string,                // CSS styles
+  renderHead: (ctx) => string,   // <head> renderer
+  renderBody: (ctx) => string    // <main> renderer
+}
+```
+
+### RenderCtx
+
+The context object passed to renderers:
+
+```typescript
+{
+  offer: {                        // Offer metadata
+    title: string,
+    companyName: string,
+    templateId: string
+  },
+  rows: PriceRow[],              // Pricing data
+  branding: {                    // User branding overrides
+    logoUrl?: string,
+    colors?: Record<string, string>
+  },
+  i18n: I18nTranslator,          // Translation helper
+  tokens: ThemeTokens,           // Merged theme tokens
+  images: ImageAsset[]           // Up to 3 image assets
+}
+```
+
+## Design Tokens
+
+### Color Palette
+
+```typescript
+export const myTemplateTokens: ThemeTokens = {
+  color: {
+    primary: '#2563eb',      // Main brand color
+    secondary: '#60a5fa',    // Accent color
+    text: '#1e293b',         // Main text
+    muted: '#64748b',        // Secondary text
+    border: '#e2e8f0',       // Borders
+    bg: '#ffffff',           // Background
+  },
+  // ... typography, spacing, etc.
+};
+```
+
+### Typography
+
+Use semantic token names:
+- `tokens.typography.h1` - Main headings
+- `tokens.typography.h2` - Section headings
+- `tokens.typography.body` - Body text
+- `tokens.typography.small` - Small text
+
+### Spacing
+
+Use the spacing scale:
+- `tokens.spacing.xs` - 4px
+- `tokens.spacing.sm` - 8px
+- `tokens.spacing.md` - 16px
+- `tokens.spacing.lg` - 24px
+- `tokens.spacing.xl` - 32px
+
+## Common Patterns
+
+### Header with Logo
+
+```typescript
+function partialHeader(ctx: RenderCtx): string {
+  const safeCtx = buildHeaderFooterCtx(ctx);
+  const { company, title, logoUrl, logoAlt, monogram } = safeCtx;
+
+  const logoSlot = logoUrl
+    ? `<div class="offer-doc__logo-wrap"><img class="offer-doc__logo" src="${logoUrl}" alt="${logoAlt}" /></div>`
+    : `<div class="offer-doc__logo-wrap"><span class="offer-doc__monogram">${monogram}</span></div>`;
+
+  return `
+    <header class="offer-doc__header">
+      ${logoSlot}
+      <h1>${title}</h1>
+    </header>
+  `;
+}
+```
+
+### Image Gallery
+
+```typescript
+function partialGallery(ctx: RenderCtx): string {
+  const images = ctx.offer.images?.filter(img => img?.src) || [];
+  if (images.length === 0) return '';
+
+  const items = images.map(image => `
+    <figure>
+      <img src="${sanitizeInput(image.src)}" alt="${sanitizeInput(image.alt)}" />
+    </figure>
+  `).join('');
+
+  return `
+    <section class="section-card">
+      <h2>${ctx.i18n.t('pdf.templates.sections.gallery')}</h2>
+      <div class="gallery">${items}</div>
+    </section>
+  `;
+}
+```
+
+### Fixed Header/Footer
+
+```typescript
+import { renderSlimHeader, renderSlimFooter } from '../shared/slimHeaderFooter';
+import { buildHeaderFooterCtx } from '../shared/headerFooter';
+
+export function renderBody(ctx: RenderCtx): string {
+  const headerFooterCtx = buildHeaderFooterCtx(ctx);
+  const slimHeader = renderSlimHeader(headerFooterCtx);
+  const slimFooter = renderSlimFooter(headerFooterCtx);
+  
+  return `
+    ${slimHeader}
+    ${slimFooter}
+    <main class="offer-doc__content">
+      <!-- Your content here -->
+    </main>
+  `;
+}
+```
+
+### Pricing Table
+
+Use the shared pricing table component:
+
+```typescript
+import { renderPricingTable } from '../shared/pricingTable';
+
+function partialPricing(ctx: RenderCtx): string {
+  return `
+    <section class="section-card">
+      <h2>${ctx.i18n.t('pdf.templates.sections.pricing')}</h2>
+      ${renderPricingTable(ctx.rows, ctx.tokens)}
+    </section>
+  `;
+}
+```
+
+## Internationalization
+
+All customer-facing strings must use `ctx.i18n`:
+
+```typescript
+// ✅ Correct
+<h2>${ctx.i18n.t('pdf.templates.sections.pricing')}</h2>
+
+// ❌ Incorrect
+<h2>Pricing</h2>
+```
+
+Common translation keys:
+- `pdf.templates.sections.pricing` - "Pricing"
+- `pdf.templates.sections.gallery` - "Gallery"
+- `pdf.templates.sections.nextSteps` - "Next Steps"
+
+## Versioning
+
+Templates use semantic versioning:
+
+- **Patch** (`1.0.1`): Minor spacing tweaks, copy fixes
+- **Minor** (`1.1.0`): New optional sections, token updates
+- **Major** (`2.0.0`): Breaking layout changes
+
+Update both `id` and `version` fields when bumping:
+
+```typescript
+export const myTemplate: OfferTemplate = {
+  id: "premium.elegant@1.1.0",
+  version: "1.1.0",
+  // ...
+};
+```
+
+## Tier Configuration
+
+### Free Templates
+
+```typescript
+{
+  tier: "free",
+  label: "Minimal",
+  // No marketingHighlight needed
+  capabilities: {
+    "branding.logo": false,  // Free templates have limited capabilities
+    "gallery": false
+  }
+}
+```
+
+### Premium Templates
+
+```typescript
+{
+  tier: "premium",
+  label: "Elegant",
+  marketingHighlight: "Professional design with advanced branding options",
+  capabilities: {
+    "branding.logo": true,
+    "gallery": true,
+    "watermark": true
+  }
+}
+```
+
+## Caching
+
+Templates are automatically cached for 1 hour. The cache is:
+- **Automatic**: No manual management needed
+- **Invalidated on registration**: New registrations clear the cache
+- **Manual control**: Use `clearTemplateCache(id)` to force refresh
+
+## Testing
+
+### Golden File Tests
+
+Templates are tested against golden snapshots:
 
 ```bash
-# Create a new template with all common patterns included
-pnpm template:new "Your Template Name" [tier] [legacy-id]
+# Run tests
+pnpm test:templates
+
+# Update snapshots
+pnpm test:templates -u
 ```
 
-The generator now includes:
-- ✅ Common patterns (header, footer, pricing table, sections)
-- ✅ Working CSS styles ready to customize
-- ✅ Helper functions already imported
-- ✅ Proper TypeScript types
+### Linting
 
-## Add a new template in 10 steps
+```bash
+# Check code style
+pnpm lint
 
-1. **Clone the repo & install deps** – `npm install` if you have not already.
-2. **Run the template generator** – `pnpm template:new "Your Template Name" [tier] [legacy-id]` to create the scaffold, or `pnpm template:clone <source> "Name" [tier]` to clone an existing template.
-3. **Customize tokens** – Edit `tokens.ts` to define your color palette, typography, and spacing.
-4. **Define styles** – Update `styles.css.ts` with template-specific CSS and print styles.
-5. **Build the head partial** – Edit `partials/head.ts` to include fonts, CSS variables, and meta tags your layout requires.
-6. **Compose the body partial** – Implement `renderBody` using `ctx.offer`, `ctx.rows`, `ctx.tokens`, and `ctx.i18n` for localized copy. (The generator now includes common patterns, so you may only need to adjust styling.)
-7. **Wire optional assets** – Add any supporting images or SVGs under `assets/` and import them from your partials.
-8. **Declare capabilities** – Set the `capabilities` map in `index.ts` (e.g. `'branding.logo': true`) so the app can toggle features correctly.
-9. **Register template** – Import and register your template in `engineRegistry.ts` using `registerTemplate()`.
-10. **Run quality checks** – Execute `npm run lint` and `npm run test:templates`, review diffs, and submit your PR.
+# Fix formatting
+pnpm format:fix
+```
 
-Following these steps keeps templates consistent with the rendering engine, meets localization requirements, and ensures QA can approve your work quickly.
+## Troubleshooting
 
-## Template Caching
+### Template not showing in UI
 
-Templates are automatically cached for 1 hour to improve performance. The cache is:
-- **Automatic**: No manual cache management needed
-- **Invalidated on registration**: New template registrations clear the cache
-- **Manual control**: Use `clearTemplateCache(id)` to force refresh if needed
+- Check registration in `engineRegistry.ts`
+- Verify template ID format: `tier.name@1.0.0`
+- Check tier matches user's plan
 
-## Template Metadata
+### Styles not applying
 
-The registry automatically extracts metadata from templates:
-- `id`, `name`, `version`, `tier`, `label`
-- `marketingHighlight` (for premium templates)
-- `capabilities` (feature flags)
-- `preview` (preview image URL - optional)
-- `description`, `category`, `tags` (can be added via `updateTemplateMetadata()`)
+- Verify CSS class names match between HTML and CSS
+- Check CSS variables (tokens) are defined
+- Test print styles separately
 
-Metadata is exposed via `getTemplateMetadata()` and `listTemplateMetadata()` functions.
+### Test failures
+
+- Update snapshots: `pnpm test:templates -u`
+- Check HTML structure matches expected format
+- Verify all required fields are present
+
+### TypeScript errors
+
+- Ensure all imports are correct
+- Check function signatures match `RenderCtx` type
+- Verify template exports match `OfferTemplate` interface
+
+## Best Practices
+
+1. **Use semantic HTML**: Use proper heading hierarchy, semantic elements
+2. **Token-based styling**: Avoid hard-coding colors/fonts, use tokens
+3. **Internationalization**: Always use `ctx.i18n` for user-facing text
+4. **Accessibility**: Include proper ARIA labels, alt text for images
+5. **Print optimization**: Test print styles, use `@media print` queries
+6. **Error handling**: Sanitize all user input, handle missing data gracefully
+7. **Performance**: Keep templates lightweight, avoid complex computations
+
+## Reference
+
+- **Template Types**: `src/app/pdf/templates/types.ts`
+- **Shared Utilities**: `src/app/pdf/templates/shared/`
+- **Example Templates**: `src/app/pdf/templates/free.minimal/`, `src/app/pdf/templates/premium.executive/`
+- **Registry**: `src/app/pdf/templates/engineRegistry.ts`
