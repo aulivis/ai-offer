@@ -220,7 +220,6 @@ DO $$
 DECLARE
   row_count INTEGER;
   has_foreign_keys BOOLEAN;
-  policy_rec RECORD;
 BEGIN
   -- Check if table exists
   IF EXISTS (
@@ -264,15 +263,22 @@ BEGIN
     RAISE NOTICE 'Dropped index: idx_recipients_user_id';
     
     -- Drop RLS policies on recipients table (if any)
-    FOR policy_rec IN
-      SELECT policyname
-      FROM pg_policies
-      WHERE schemaname = 'public'
-        AND tablename = 'recipients'
-    LOOP
-      EXECUTE format('DROP POLICY IF EXISTS %I ON public.recipients', policy_rec.policyname);
-      RAISE NOTICE 'Dropped policy: % on recipients table', policy_rec.policyname;
-    END LOOP;
+    -- Use a separate DO block to avoid variable name conflicts
+    DO $$
+    DECLARE
+      policy_rec RECORD;
+    BEGIN
+      FOR policy_rec IN
+        SELECT policyname
+        FROM pg_policies
+        WHERE schemaname = 'public'
+          AND tablename = 'recipients'
+      LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.recipients', policy_rec.policyname);
+        RAISE NOTICE 'Dropped policy: % on recipients table', policy_rec.policyname;
+      END LOOP;
+    END
+    $$;
     
     -- Drop recipients table
     DROP TABLE IF EXISTS public.recipients CASCADE;
