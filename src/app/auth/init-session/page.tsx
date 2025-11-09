@@ -96,7 +96,10 @@ export default async function InitSessionPage({
     } catch (error) {
       // If validation fails, log and let client component handle retry
       const log = createLogger();
-      log.warn('Failed to validate tokens during SSR', error);
+      log.warn('Failed to validate tokens during SSR', {
+        error:
+          error instanceof Error ? { name: error.name, message: error.message } : String(error),
+      });
     }
   }
 

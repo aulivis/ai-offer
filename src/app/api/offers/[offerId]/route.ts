@@ -94,7 +94,14 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest, context
       .eq('user_id', offer.user_id);
 
     if (jobError) {
-      log.warn('Failed to load offer PDF job storage paths (non-blocking)', jobError);
+      log.warn('Failed to load offer PDF job storage paths (non-blocking)', {
+        error: {
+          message: jobError.message,
+          code: jobError.code,
+          details: jobError.details,
+          hint: jobError.hint,
+        },
+      });
     } else {
       jobRows?.forEach(({ storage_path }) => {
         const rawPath = typeof storage_path === 'string' ? storage_path.trim() : '';

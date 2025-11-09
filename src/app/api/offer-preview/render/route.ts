@@ -114,7 +114,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
     if (req.signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
       return new NextResponse(null, { status: 499 });
     }
-    log.warn('Failed to read request body', error);
+    log.warn('Failed to read request body', {
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+    });
     return NextResponse.json(
       {
         error: 'Érvénytelen előnézeti kérés.',
@@ -150,7 +152,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
   try {
     json = JSON.parse(rawBody);
   } catch (error) {
-    log.warn('Failed to parse request JSON body', error);
+    log.warn('Failed to parse request JSON body', {
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+    });
     return NextResponse.json(
       {
         error: 'Érvénytelen előnézeti kérés.',

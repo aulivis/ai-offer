@@ -88,7 +88,12 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest, { params }: R
       try {
         responseText = await response.text();
       } catch (readError) {
-        log.warn('Webhook replay response read error', readError);
+        log.warn('Webhook replay response read error', {
+          error:
+            readError instanceof Error
+              ? { name: readError.name, message: readError.message }
+              : String(readError),
+        });
       }
 
       const truncatedBody =

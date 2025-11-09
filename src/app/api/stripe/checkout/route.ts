@@ -82,7 +82,9 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     const body = await req.json();
     parsedBody = parseRequestBody(body);
   } catch (error) {
-    log.warn('Checkout request payload parse failed', error);
+    log.warn('Checkout request payload parse failed', {
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+    });
     return buildErrorResponse('Érvénytelen kérés törzs.', 400);
   }
 
