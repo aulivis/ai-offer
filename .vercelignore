@@ -1,0 +1,34 @@
+# Vercel ignore file
+# Files and directories that should not be deployed to Vercel
+
+# Development files
+*.md
+!README.md
+!VERCEL_IMPLEMENTATION_GUIDE.md
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Test files
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Scripts (not needed in production)
+scripts/
+
+# Supabase (handled separately)
+supabase/
+
+# Migration files (not needed in runtime)
+supabase/migrations/
+
+# Test data
+**/__snapshots__/**
+
+# Development dependencies are handled by package.json
+
