@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { BLUR_PLACEHOLDERS } from '@/lib/imageUtils';
 
 interface ProductScreenshotProps {
   src?: string;
@@ -57,6 +58,8 @@ export default function ProductScreenshot({
           fill
           className="object-cover"
           priority={priority}
+          placeholder="blur"
+          blurDataURL={priority ? BLUR_PLACEHOLDERS.gradient : undefined}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
         />
       </div>

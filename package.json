@@ -19,6 +19,7 @@
     "email:templates:update": "ts-node scripts/update-email-templates.ts",
     "test": "vitest run",
     "test:templates": "vitest run src/app/pdf/templates/__tests__/golden.test.ts",
+    "analyze": "ANALYZE=true next build",
     "prepare": "husky"
   },
   "dependencies": {

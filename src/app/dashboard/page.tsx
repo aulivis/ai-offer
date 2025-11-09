@@ -18,11 +18,22 @@ import { Modal } from '@/components/ui/Modal';
 import { currentMonthStart } from '@/lib/services/usage';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
-import OfferCard from '@/components/dashboard/OfferCard';
-import { OfferListItem } from '@/components/dashboard/OfferListItem';
-import { OffersCardGrid } from '@/components/dashboard/OffersCardGrid';
+import dynamic from 'next/dynamic';
 import { ViewSwitcher, type ViewMode } from '@/components/dashboard/ViewSwitcher';
-import { KeyboardShortcutsModal } from '@/components/ui/KeyboardShortcutsModal';
+
+// Lazy load heavy dashboard components for route-based code splitting
+const OfferCard = dynamic(() => import('@/components/dashboard/OfferCard').then(mod => mod.default), {
+  loading: () => <div className="h-48 animate-pulse rounded-xl bg-bg-muted" />,
+});
+const OfferListItem = dynamic(() => import('@/components/dashboard/OfferListItem').then(mod => mod.OfferListItem), {
+  loading: () => <div className="h-24 animate-pulse rounded-lg bg-bg-muted" />,
+});
+const OffersCardGrid = dynamic(() => import('@/components/dashboard/OffersCardGrid').then(mod => mod.OffersCardGrid), {
+  loading: () => <div className="grid grid-cols-1 gap-4 md:grid-cols-2"><div className="h-48 animate-pulse rounded-xl bg-bg-muted" /></div>,
+});
+const KeyboardShortcutsModal = dynamic(() => import('@/components/ui/KeyboardShortcutsModal').then(mod => mod.KeyboardShortcutsModal), {
+  ssr: false,
+});
 import type { Offer } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
