@@ -14,6 +14,7 @@ import { AppProviders } from '@/components/AppProviders';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import ChatbotWidget from '@/components/chatbot/ChatbotWidget';
 import { AriaLiveAnnouncer } from '@/components/ui/AriaLiveAnnouncer';
+import { WebVitalsReporter } from '@/components/performance/WebVitalsReporter';
 
 import { LanguageProvider } from '@/state/LanguageProvider';
 import { withLanguage } from '@/state/lang';
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
                 <div className="relative z-10 flex min-h-screen flex-col">
                   <AriaLiveAnnouncer />
+                  <WebVitalsReporter />
                   <AnnouncementBar />
                   <QuotaWarningBar />
                   <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
