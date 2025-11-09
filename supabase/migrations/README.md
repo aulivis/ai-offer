@@ -49,10 +49,12 @@ Migrations are executed in chronological order (by timestamp). Current order:
 
 ## Notes
 
-- The `offers` and `recipients` tables are referenced but not created in migrations (likely created via Supabase dashboard or separate schema file)
+- The `offers` and `clients` tables are referenced but not created in migrations (likely created via Supabase dashboard or separate schema file)
+- The `recipients` table has been removed (migration `20250128000002_remove_obsolete_recipients_table.sql`) - all code uses `clients` table instead
 - Index migrations handle missing tables gracefully
 - Legacy policies are cleaned up in `20250627120000_cleanup_legacy_usage_artifacts.sql`
 - Newer migrations use "owners" naming convention, older ones use "users can read own files"
+- RLS has been enabled on `activities` and `clients` tables (migrations `20250128000000_enable_rls_on_activities.sql` and `20250128000001_enable_rls_on_clients.sql`)
 
 ## Testing Recommendations
 

@@ -105,7 +105,7 @@ This application is a Next.js-based SaaS platform for generating professional bu
 - **device_usage_counters:** Device-level usage tracking
 - **audit_logs:** Security audit trail
 - **api_rate_limits:** Rate limiting storage
-- **recipients:** Client/recipient information
+- **clients:** Client/recipient information (recipients table has been removed)
 - **profiles:** User profile and subscription data
 
 ### Key Indexes

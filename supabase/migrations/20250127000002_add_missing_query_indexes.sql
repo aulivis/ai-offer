@@ -91,8 +91,9 @@ begin
     end if;
   end if;
 
-  -- Index for offers table by recipient lookups (if recipients table exists)
-  -- This optimizes queries that join offers with recipients
+  -- Index for offers table by client lookups (offers.recipient_id -> clients.id)
+  -- Note: recipients table has been removed, all code uses clients table
+  -- This index optimizes queries that join offers with clients
   if exists (
     select 1 from information_schema.tables 
     where table_schema = 'public' and table_name = 'offers'

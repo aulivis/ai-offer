@@ -294,7 +294,8 @@ $$;
 -- - sessions (used for session management)
 -- - device_usage_counters (used for device quota)
 -- - pdf_jobs (used for PDF generation)
--- - profiles, offers, recipients, clients, activities (created outside migrations but actively used)
+-- - profiles, offers, clients, activities (created outside migrations but actively used)
+-- - recipients table has been removed (use clients table instead)
 
 -- Functions that are kept (actively used):
 -- - check_and_increment_usage(uuid, integer, date)

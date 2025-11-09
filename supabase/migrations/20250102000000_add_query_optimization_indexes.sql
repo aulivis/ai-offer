@@ -129,8 +129,9 @@ begin
     end if;
   end if;
 
-  -- Index for recipients by user_id (for client listing)
-  -- Only create if table exists (may be created outside migrations)
+  -- Note: recipients table has been removed (use clients table instead)
+  -- This index creation is kept for backwards compatibility but will be a no-op
+  -- if recipients table doesn't exist (which is expected)
   if exists (
     select 1 from information_schema.tables 
     where table_schema = 'public' and table_name = 'recipients'
