@@ -69,10 +69,16 @@
                   💡 Ha a gomb nem működik
                 </p>
                 <p style="margin: 0 0 8px 0; padding: 0; color: #718096; font-size: 13px; line-height: 1.6;">
-                  Másold be az alábbi linket a böngésződbe:
+                  Másold be az alábbi linket a böngésződbe (a teljes linket, ne csak egy részét):
                 </p>
-                <p style="margin: 0; padding: 0;">
-                  <a href="{{ .ConfirmationURL }}" style="color: #1c274c; text-decoration: underline; font-size: 12px; font-family: monospace; word-break: break-all;">{{ .ConfirmationURL }}</a>
+                <p style="margin: 0; padding: 12px; background-color: #ffffff; border-radius: 4px; border: 1px solid #e2e8f0; overflow-x: auto;">
+                  <a href="{{ .ConfirmationURL }}" 
+                     style="color: #1c274c; text-decoration: underline; font-size: 11px; font-family: 'Courier New', Courier, monospace; display: block; word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap; line-height: 1.5;">
+                    {{ .ConfirmationURL }}
+                  </a>
+                </p>
+                <p style="margin: 8px 0 0 0; padding: 0; color: #a0aec0; font-size: 11px; line-height: 1.4;">
+                  ⚠️ Fontos: Ha a link túl hosszúnak tűnik, akkor is másold be a teljes linket. A hosszú linkek biztonságosak és szükségesek a bejelentkezéshez.
                 </p>
               </div>
               

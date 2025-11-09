@@ -20,14 +20,8 @@ export default function ChatbotWidget() {
   const isEnabled = envClient.NEXT_PUBLIC_ENABLE_CHATBOT;
   
   const [isOpen, setIsOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);
-
-  // Show widget after page load
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Handle click outside to close
   useEffect(() => {
@@ -70,8 +64,6 @@ export default function ChatbotWidget() {
 
   // Don't render if chatbot is disabled
   if (!isEnabled) return null;
-  
-  if (!isVisible) return null;
 
   return (
     <>
@@ -80,7 +72,7 @@ export default function ChatbotWidget() {
         <button
           data-chatbot-button
           onClick={() => setIsOpen(true)}
-          className="group fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden bg-bg relative"
+          className="group fixed bottom-24 right-6 z-[45] h-14 w-14 rounded-full border-2 border-bg shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-95 overflow-hidden bg-bg relative"
           aria-label={t('chatbot.openAria')}
           aria-expanded={isOpen}
           aria-controls="chatbot-window"
@@ -90,16 +82,35 @@ export default function ChatbotWidget() {
           
           {/* Vanda Avatar Image Container - fills the whole button */}
           <div className="absolute inset-0 z-10 rounded-full overflow-hidden">
-            <div className="relative h-full w-full">
-              <Image
-                src="/images/vanda-waiting.png"
-                alt="Vanda"
-                fill
-                className="object-cover"
-                priority
-                sizes="56px"
-              />
-            </div>
+            {imageError ? (
+              // Fallback icon if image fails to load
+              <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/20">
+                <svg
+                  className="h-8 w-8 text-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
+                  />
+                </svg>
+              </div>
+            ) : (
+              <div className="relative h-full w-full">
+                <Image
+                  src="/images/vanda-waiting.png"
+                  alt="Vanda"
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="56px"
+                />
+              </div>
+            )}
           </div>
           
           {/* Green dot - available indicator - on front layer */}

@@ -69,6 +69,18 @@ type RedirectCookieOptions = {
   csrfToken?: string;
 };
 
+/**
+ * Creates a redirect response with authentication cookies set.
+ * 
+ * This function uses Next.js's built-in cookie API to properly set cookies
+ * on the redirect response. This is the recommended approach for Next.js App Router.
+ * 
+ * Key points:
+ * - Cookies are set using response.cookies.set() which ensures they're properly
+ *   included in the redirect response headers
+ * - Uses SameSite=Lax to allow cookies on same-site redirects (required for magic link flows)
+ * - Sets appropriate maxAge values based on rememberMe preference
+ */
 async function redirectTo(
   path: string, 
   request?: Request, 
@@ -104,13 +116,20 @@ async function redirectTo(
     absoluteUrl = `${baseUrl}${normalizedPath}`;
   }
   
-  // Get the cookie store if not provided
-  const store = cookieStore ?? await cookies();
+  // Get tokens from options or cookie store
+  const accessToken = cookieOptions?.accessToken;
+  const refreshToken = cookieOptions?.refreshToken;
+  const csrfToken = cookieOptions?.csrfToken;
+  
+  if (!accessToken || !refreshToken) {
+    // No tokens to set - just redirect
+    return NextResponse.redirect(absoluteUrl, { status: 302 });
+  }
+  
   const isSecure = envServer.APP_URL.startsWith('https');
   const REMEMBER_ME_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
   
   // Calculate maxAge values based on options or defaults
-  // These determine how long the cookies will persist in the browser
   const accessTokenMaxAge = cookieOptions?.accessTokenMaxAge ?? 3600; // 1 hour default
   const refreshTokenMaxAge = cookieOptions?.rememberMe
     ? REMEMBER_ME_MAX_AGE
@@ -119,106 +138,57 @@ async function redirectTo(
     ? REMEMBER_ME_MAX_AGE
     : Math.max(accessTokenMaxAge, 7 * 24 * 60 * 60); // At least 7 days
   
-  // CRITICAL: If tokens are provided directly, use them (most reliable)
-  // Otherwise, try to get them from the cookie store
-  const accessToken = cookieOptions?.accessToken ?? store.get('propono_at')?.value;
-  const refreshToken = cookieOptions?.refreshToken ?? store.get('propono_rt')?.value;
-  const csrfToken = cookieOptions?.csrfToken ?? store.get(CSRF_COOKIE_NAME)?.value;
-  
-  // Build Set-Cookie headers manually to ensure they're included in redirect response
-  // Next.js response.cookies.set() may not work reliably with redirects in some cases
-  const setCookieHeaders: string[] = [];
-  
-  // Helper function to build Set-Cookie header string
-  // Cookie values should NOT be URL-encoded in Set-Cookie headers
-  // But we need to ensure special characters are handled correctly
-  const buildCookieHeader = (
-    name: string,
-    value: string,
-    options: {
-      httpOnly?: boolean;
-      secure?: boolean;
-      sameSite?: 'strict' | 'lax' | 'none';
-      path?: string;
-      maxAge?: number;
-    }
-  ): string => {
-    // Cookie name and value are set as-is (no URL encoding in Set-Cookie header)
-    // Values containing special characters like commas, spaces, etc. should be quoted
-    // But JWT tokens are base64-encoded and safe
-    const cookieValue = value.includes(',') || value.includes(';') || value.includes(' ')
-      ? `"${value.replace(/"/g, '\\"')}"` // Quote if contains special chars, escape quotes
-      : value;
-    
-    const parts: string[] = [`${name}=${cookieValue}`];
-    if (options.path) parts.push(`Path=${options.path}`);
-    if (options.maxAge !== undefined) parts.push(`Max-Age=${options.maxAge}`);
-    if (options.httpOnly) parts.push('HttpOnly');
-    if (options.secure) parts.push('Secure');
-    if (options.sameSite) parts.push(`SameSite=${options.sameSite}`);
-    return parts.join('; ');
-  };
-  
-  // Set auth cookies with proper attributes
-  if (accessToken) {
-    setCookieHeaders.push(
-      buildCookieHeader('propono_at', accessToken, {
-        httpOnly: true,
-        secure: isSecure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: accessTokenMaxAge,
-      })
-    );
-  }
-  
-  if (refreshToken) {
-    setCookieHeaders.push(
-      buildCookieHeader('propono_rt', refreshToken, {
-        httpOnly: true,
-        secure: isSecure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: refreshTokenMaxAge,
-      })
-    );
-  }
-  
-  if (csrfToken) {
-    setCookieHeaders.push(
-      buildCookieHeader(CSRF_COOKIE_NAME, csrfToken, {
-        httpOnly: false,
-        secure: isSecure,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: csrfMaxAge,
-      })
-    );
-  }
-  
-  // Create redirect response
+  // Create redirect response first
   const response = NextResponse.redirect(absoluteUrl, { status: 302 });
   
-  // CRITICAL: Manually set Set-Cookie headers to ensure they're included in redirect response
-  // Next.js response.cookies.set() may not work reliably with redirects in App Router
-  // By manually constructing and appending Set-Cookie headers, we ensure the browser receives them
-  for (const cookieHeader of setCookieHeaders) {
-    response.headers.append('Set-Cookie', cookieHeader);
-  }
+  // CRITICAL: Use Next.js's response.cookies.set() API to set cookies on the redirect response
+  // This is the recommended approach and ensures cookies are properly included in the response
+  // The cookies will be sent with the redirect response, and the browser will store them
+  // before following the redirect to the target URL
   
-  // Log cookie headers for debugging (redact sensitive values)
-  if (accessToken || refreshToken) {
-    const logger = createAuthRequestLogger();
-    logger.info('Setting cookies on redirect response', {
-      cookieCount: setCookieHeaders.length,
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
-      hasCsrfToken: !!csrfToken,
-      accessTokenLength: accessToken?.length ?? 0,
-      refreshTokenLength: refreshToken?.length ?? 0,
-      redirectUrl: absoluteUrl,
+  // Set access token cookie
+  response.cookies.set('propono_at', accessToken, {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: accessTokenMaxAge,
+  });
+  
+  // Set refresh token cookie
+  response.cookies.set('propono_rt', refreshToken, {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: refreshTokenMaxAge,
+  });
+  
+  // Set CSRF token cookie (not httpOnly so client can read it)
+  if (csrfToken) {
+    response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
+      httpOnly: false,
+      secure: isSecure,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: csrfMaxAge,
     });
   }
+  
+  // Log for debugging
+  const logger = createAuthRequestLogger();
+  logger.info('Setting cookies on redirect response using Next.js API', {
+    cookieCount: csrfToken ? 3 : 2,
+    hasAccessToken: !!accessToken,
+    hasRefreshToken: !!refreshToken,
+    hasCsrfToken: !!csrfToken,
+    accessTokenLength: accessToken.length,
+    refreshTokenLength: refreshToken.length,
+    redirectUrl: absoluteUrl,
+    accessTokenMaxAge,
+    refreshTokenMaxAge,
+    rememberMe: cookieOptions?.rememberMe ?? false,
+  });
   
   return response;
 }
@@ -455,12 +425,37 @@ export async function GET(request: Request) {
   const accessTokenFromLink = url.searchParams.get('access_token') ?? url.searchParams.get('token');
   const refreshTokenFromLink = url.searchParams.get('refresh_token');
   const expiresInFromLink = url.searchParams.get('expires_in');
+  
+  // Log raw URL parameters for debugging
+  logger.info('Magic link callback URL parameters', {
+    hasAccessToken: !!accessTokenFromLink,
+    hasRefreshToken: !!refreshTokenFromLink,
+    hasExpiresIn: !!expiresInFromLink,
+    accessTokenLength: accessTokenFromLink?.length ?? 0,
+    refreshTokenLength: refreshTokenFromLink?.length ?? 0,
+    refreshTokenPreview: refreshTokenFromLink ? refreshTokenFromLink.substring(0, 50) : null,
+    expiresIn: expiresInFromLink,
+    urlSearchParams: Object.fromEntries(url.searchParams.entries()),
+  });
 
   if (accessTokenFromLink) {
     if (!refreshTokenFromLink) {
+      logger.error('Missing refresh_token in magic link callback', {
+        urlSearchParams: Object.fromEntries(url.searchParams.entries()),
+      });
       recordMagicLinkCallback('failure', { reason: 'missing_refresh_token' });
       await clearAuthCookies();
       return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
+    }
+    
+    // Validate refresh token length (Supabase refresh tokens should be reasonably long)
+    // A 12-character token is suspiciously short and might indicate a parsing issue
+    if (refreshTokenFromLink.length < 20) {
+      logger.warn('Refresh token appears to be unusually short', {
+        refreshTokenLength: refreshTokenFromLink.length,
+        refreshTokenPreview: refreshTokenFromLink.substring(0, 50),
+        fullUrl: request.url,
+      });
     }
 
     const payload = decodeJwtPayload<{ sub?: string }>(accessTokenFromLink);
