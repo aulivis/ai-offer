@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { t } from '@/copy';
 import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
-import type { TemplateId, TemplateTier } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/app/pdf/templates/types';
 import { CheckCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
@@ -17,10 +17,6 @@ export interface TemplateSelectorProps {
   className?: string;
   showDescription?: boolean;
   gridCols?: 1 | 2 | 3 | 4;
-}
-
-function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
-  return plan === 'pro' ? 'premium' : 'free';
 }
 
 export function TemplateSelector({

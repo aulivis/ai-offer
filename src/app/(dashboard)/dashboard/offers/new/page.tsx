@@ -226,9 +226,31 @@ export default function NewOfferPage() {
     const success = goNextInternal();
     if (!success && attemptedSteps[step]) {
       // Track validation error
-      const firstErrorField = Object.keys(validation.fields[step] || {}).find(
-        (key) => validation.fields[step]?.[key as keyof (typeof validation.fields)[1]],
-      );
+      const stepFields = validation.fields[step];
+      let firstErrorField: string | undefined;
+      if (stepFields) {
+        if (step === 1) {
+          // Step 1 has title and projectDetails
+          const step1Fields = stepFields as {
+            title?: string;
+            projectDetails?: Record<string, string>;
+          };
+          if (step1Fields.title) {
+            firstErrorField = 'title';
+          } else if (
+            step1Fields.projectDetails &&
+            Object.keys(step1Fields.projectDetails).length > 0
+          ) {
+            firstErrorField = Object.keys(step1Fields.projectDetails)[0];
+          }
+        } else if (step === 2) {
+          // Step 2 has pricing
+          const step2Fields = stepFields as { pricing?: string };
+          if (step2Fields.pricing) {
+            firstErrorField = 'pricing';
+          }
+        }
+      }
       if (firstErrorField) {
         trackWizardEvent({
           type: 'wizard_validation_error',
@@ -247,12 +269,6 @@ export default function NewOfferPage() {
       trackWizardEvent({ type: 'wizard_step_completed', step });
     }
   }, [goNextInternal, attemptedSteps, step, validation]);
-
-  useWizardKeyboardShortcuts({
-    onNext: goNext,
-    onPrev: goPrev,
-    enabled: !isSubmitting && !isStreaming,
-  });
 
   // Reset preview tab when step changes
   useEffect(() => {
@@ -416,7 +432,17 @@ export default function NewOfferPage() {
     clearDraft,
   ]);
 
-  const columnWidthStyle: CSSProperties = { '--column-width': 'min(100%, 42rem)' };
+  useWizardKeyboardShortcuts({
+    step,
+    onNext: goNext,
+    onPrev: goPrev,
+    onSubmit: handleSubmit,
+    isNextDisabled,
+    isSubmitDisabled,
+    enabled: !isSubmitting && !isStreaming,
+  });
+
+  const columnWidthStyle: CSSProperties = { '--column-width': 'min(100%, 42rem)' } as CSSProperties;
   const validationPreviewIssues = useMemo(
     () =>
       validation.issues
@@ -425,13 +451,24 @@ export default function NewOfferPage() {
     [attemptedSteps, validation.issues],
   );
 
-  const detailFieldErrors = attemptedSteps[1]
-    ? {
-        title: validation.fields[1].title,
-        projectDetails: validation.fields[1].projectDetails,
-      }
-    : undefined;
-  const pricingSectionError = attemptedSteps[2] ? validation.fields[2].pricing : undefined;
+  const detailFieldErrors =
+    attemptedSteps[1] && validation.fields[1]
+      ? (() => {
+          const fields = validation.fields[1];
+          const errors: {
+            title?: string;
+            projectDetails?: Partial<Record<string, string>>;
+          } = {};
+          if (fields.title) {
+            errors.title = fields.title;
+          }
+          if (fields.projectDetails && Object.keys(fields.projectDetails).length > 0) {
+            errors.projectDetails = fields.projectDetails;
+          }
+          return Object.keys(errors).length > 0 ? errors : undefined;
+        })()
+      : undefined;
+  const pricingSectionError = attemptedSteps[2] ? validation.fields[2]?.pricing : undefined;
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
@@ -455,7 +492,7 @@ export default function NewOfferPage() {
                     setProjectDetails((prev) => ({ ...prev, [field]: value }))
                   }
                   showInlineValidation={true}
-                  errors={detailFieldErrors}
+                  {...(detailFieldErrors ? { errors: detailFieldErrors } : {})}
                 />
               </StepErrorBoundary>
             )}
@@ -465,7 +502,7 @@ export default function NewOfferPage() {
                 <OfferPricingSection
                   rows={pricingRows}
                   onChange={setPricingRows}
-                  error={pricingSectionError}
+                  {...(pricingSectionError ? { error: pricingSectionError } : {})}
                 />
               </StepErrorBoundary>
             )}
@@ -488,7 +525,6 @@ export default function NewOfferPage() {
               isNextDisabled={isNextDisabled}
               isSubmitDisabled={isSubmitDisabled}
               isSubmitting={isSubmitting}
-              stepLabels={stepLabels}
             />
           </div>
         </div>

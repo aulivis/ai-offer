@@ -40,12 +40,16 @@ export async function injectPageNumbersTwoPass(
     const pdfDoc = await PDFDocument.load(pdfBytes);
     // Page count is determined but not used in current implementation
     void pdfDoc.getPageCount();
+    // Page label parameter is accepted for API consistency but not currently used
+    void _pageLabel;
   } catch (error) {
     console.warn('Failed to parse PDF for page count, using estimation:', error);
     // Fallback: estimate from PDF size (rough approximation)
     const pdfSize = firstPassPdf instanceof Buffer ? firstPassPdf.length : firstPassPdf.byteLength;
     // Rough estimate: ~50KB per page for typical documents
     void Math.max(1, Math.ceil(pdfSize / 50000));
+    // Page label parameter is accepted for API consistency but not currently used
+    void _pageLabel;
   }
 
   // Inject page numbers into HTML using JavaScript

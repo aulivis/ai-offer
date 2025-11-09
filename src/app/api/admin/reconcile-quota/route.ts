@@ -182,7 +182,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
               actualPdfCount,
               discrepancy,
               fixed: result.updated,
-              deviceResults: deviceResults.length > 0 ? deviceResults : undefined,
+              ...(deviceResults.length > 0 ? { deviceResults } : {}),
             });
 
             log.info('User quota reconciled', {
@@ -199,7 +199,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
               actualPdfCount,
               discrepancy,
               fixed: false,
-              deviceResults: deviceResults.length > 0 ? deviceResults : undefined,
+              ...(deviceResults.length > 0 ? { deviceResults } : {}),
             });
           }
         }

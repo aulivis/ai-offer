@@ -116,7 +116,7 @@ const previewRequestSchema = z
 // Request deduplication cache - stores request hash -> promise mapping
 // Prevents duplicate requests within short time window
 // Uses LRU-style eviction to prevent memory leaks
-const requestCache = new Map<string, { promise: Promise<Response>; timestamp: number }>();
+const requestCache = new Map<string, { promise: Promise<NextResponse>; timestamp: number }>();
 const REQUEST_CACHE_TTL_MS = 5000; // 5 seconds
 const REQUEST_CACHE_MAX_SIZE = 1000; // Maximum cache entries
 const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 30000; // Cleanup every 30 seconds

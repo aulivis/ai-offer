@@ -411,6 +411,14 @@ const eslintConfig = [
       'no-hardcoded-ui-strings/pdf-templates-no-untrusted-assets': 'error',
       'no-hardcoded-ui-strings/pdf-templates-no-inline-styles-outside-tokens': 'error',
       'no-hardcoded-ui-strings/pdf-no-plain-html': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   {

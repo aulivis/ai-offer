@@ -13,7 +13,7 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
-import { ComponentType, ReactNode, SVGProps, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
@@ -432,33 +432,6 @@ export function OfferCard({
 
 export default OfferCard;
 
-function MetaItem({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-white/80 px-3 py-2 shadow-sm">
-      <span
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary"
-        title={label}
-      >
-        <Icon aria-hidden="true" className="h-4 w-4" />
-      </span>
-      <div className="min-w-0">
-        <dt className="text-[11px] font-medium uppercase tracking-[0.2em] text-fg-muted">
-          {label}
-        </dt>
-        <dd className="truncate text-sm font-semibold text-fg">{value}</dd>
-      </div>
-    </div>
-  );
-}
-
 function StatusBadge({ status, className }: { status: Offer['status']; className?: string }) {
   const map: Record<Offer['status'], string> = {
     draft: 'border-amber-200 bg-amber-100/70 text-amber-700',
@@ -500,77 +473,6 @@ const STATUS_CARD_THEMES: Record<
     accentIcon: 'text-rose-600',
   },
 };
-
-const indicatorRing: Record<TimelineStatus, string> = {
-  complete: 'border-primary/60 shadow-[0_0_0_4px_rgba(59,130,246,0.12)]',
-  current: 'border-primary shadow-[0_0_0_4px_rgba(59,130,246,0.18)]',
-  upcoming: 'border-border/60 shadow-[0_0_0_4px_rgba(148,163,184,0.12)]',
-};
-
-const indicatorDot: Record<TimelineStatus, string> = {
-  complete: 'bg-primary',
-  current: 'bg-primary',
-  upcoming: 'bg-border/60',
-};
-
-const trackStyles: Record<TimelineStatus, string> = {
-  complete: 'bg-gradient-to-b from-primary/40 via-primary/10 to-transparent',
-  current: 'bg-gradient-to-b from-primary/30 via-border/50 to-transparent',
-  upcoming: 'bg-border/40',
-};
-
-const panelStyles: Record<TimelineStatus, string> = {
-  complete: 'border-primary/25 bg-white/95 shadow-sm',
-  current: 'border-primary/40 bg-white shadow-md',
-  upcoming: 'border-border/50 bg-white/80',
-};
-
-function TimelineStep({
-  title,
-  description,
-  dateLabel,
-  status,
-  isLast = false,
-  children,
-}: {
-  title: string;
-  description: string;
-  dateLabel: string;
-  status: TimelineStatus;
-  isLast?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <li className={`relative flex items-stretch gap-4 ${isLast ? '' : 'pb-6'}`}>
-      <div className="flex flex-col items-center">
-        <span
-          className={`flex h-7 w-7 items-center justify-center rounded-full border-2 bg-white ${indicatorRing[status]}`}
-        >
-          <span className={`h-2.5 w-2.5 rounded-full ${indicatorDot[status]}`} />
-        </span>
-        {!isLast ? (
-          <span aria-hidden="true" className={`mt-1 flex-1 w-px ${trackStyles[status]}`} />
-        ) : null}
-      </div>
-      <div className="flex-1">
-        <div
-          className={`rounded-2xl border p-4 backdrop-blur-sm transition ${panelStyles[status]}`}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-fg">{title}</p>
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-fg-muted">
-              {dateLabel || '—'}
-            </span>
-          </div>
-          <p className="text-xs text-fg-muted">{description}</p>
-          {children ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-fg">{children}</div>
-          ) : null}
-        </div>
-      </div>
-    </li>
-  );
-}
 
 function CompactDatePicker({
   label,

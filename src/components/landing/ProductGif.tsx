@@ -8,12 +8,7 @@ interface ProductGifProps {
   autoplay?: boolean;
 }
 
-export default function ProductGif({
-  src,
-  alt,
-  caption,
-  className = '',
-}: ProductGifProps) {
+export default function ProductGif({ src, alt, caption, className = '' }: ProductGifProps) {
   // Placeholder if no GIF provided
   if (!src) {
     return (
