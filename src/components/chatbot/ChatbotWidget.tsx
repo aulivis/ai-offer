@@ -19,6 +19,12 @@ export default function ChatbotWidget() {
   // Defaults to true if not set (enabled by default)
   const isEnabled = envClient.NEXT_PUBLIC_ENABLE_CHATBOT;
   
+  // Debug logging (remove in production if needed)
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    console.log('[ChatbotWidget] NEXT_PUBLIC_ENABLE_CHATBOT value:', isEnabled);
+    console.log('[ChatbotWidget] Widget will render:', isEnabled !== false);
+  }
+  
   const [isOpen, setIsOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);

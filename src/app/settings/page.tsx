@@ -20,7 +20,7 @@ import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Card } from '@/components/ui/Card';
+import { Card, CardHeader } from '@/components/ui/Card';
 import {
   KeyIcon,
   BuildingOfficeIcon,
