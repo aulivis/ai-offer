@@ -26,6 +26,31 @@ function normalizeText(text: string): string {
 }
 
 /**
+ * Creates a lookup map for exact question text matching
+ * Maps normalized question text and variations to preset questions
+ */
+function createExactLookupMap(): Map<string, PresetQuestion> {
+  const lookupMap = new Map<string, PresetQuestion>();
+  
+  for (const preset of PRESET_QUESTIONS) {
+    // Add the main question
+    const normalizedQuestion = normalizeText(preset.question);
+    lookupMap.set(normalizedQuestion, preset);
+    
+    // Add all variations
+    for (const variation of preset.variations) {
+      const normalizedVariation = normalizeText(variation);
+      lookupMap.set(normalizedVariation, preset);
+    }
+  }
+  
+  return lookupMap;
+}
+
+// Create the lookup map once at module load
+const EXACT_LOOKUP_MAP = createExactLookupMap();
+
+/**
  * Calculates simple similarity between two strings
  * Returns a value between 0 and 1, where 1 is an exact match
  */
@@ -193,50 +218,56 @@ Az előfizetés havonta automatikusan megújul. Bármikor lemondhatod vagy vált
 /**
  * Checks if a query matches any preset question
  * 
+ * For predefined questions (clicked buttons), this does an exact match lookup.
+ * For free-text user input, it uses similarity matching with the given threshold.
+ * 
  * @param query - The user's query
- * @param similarityThreshold - Minimum similarity threshold (default: 0.6 for more lenient matching)
+ * @param similarityThreshold - Minimum similarity threshold for free-text matching (default: 0.7)
+ *                              Only used if exact match fails. Set to 1.0 to disable similarity matching.
  * @returns The matching preset question, or null if no match
  */
 export function matchPresetQuestion(
   query: string,
-  similarityThreshold: number = 0.6,
+  similarityThreshold: number = 0.7,
 ): PresetQuestion | null {
   const normalizedQuery = normalizeText(query);
   
-  // First, try exact match (case-insensitive, punctuation-ignored)
-  for (const preset of PRESET_QUESTIONS) {
-    const normalizedPreset = normalizeText(preset.question);
-    if (normalizedQuery === normalizedPreset) {
-      return preset;
-    }
+  // STEP 1: Exact match lookup (for predefined questions that were clicked)
+  // This is instant and requires no similarity calculation
+  const exactMatch = EXACT_LOOKUP_MAP.get(normalizedQuery);
+  if (exactMatch) {
+    return exactMatch;
   }
   
-  // Then try variations
-  for (const preset of PRESET_QUESTIONS) {
-    for (const variation of preset.variations) {
-      const normalizedVariation = normalizeText(variation);
-      if (normalizedQuery === normalizedVariation) {
-        return preset;
-      }
-      // Also check similarity for close matches - use threshold but require higher confidence for variations
-      const similarity = calculateSimilarity(query, variation);
-      // Use a slightly higher threshold (0.75) for variations to ensure quality matches
-      if (similarity >= Math.max(0.75, similarityThreshold)) {
-        return preset;
-      }
-    }
+  // STEP 2: If similarity threshold is 1.0, skip similarity matching entirely
+  // This is useful when we know it's a predefined question but want to skip fuzzy matching
+  if (similarityThreshold >= 1.0) {
+    return null;
   }
+  
+  // STEP 3: Similarity matching (for free-text user input that might be similar to predefined questions)
+  // Only do this if exact match failed and similarity threshold allows it
   
   // Check similarity with original questions
   for (const preset of PRESET_QUESTIONS) {
     const similarity = calculateSimilarity(query, preset.question);
-    // Use threshold for original questions - more lenient
     if (similarity >= similarityThreshold) {
       return preset;
     }
   }
   
-  // Finally, try keyword-based matching for more lenient matching
+  // Check similarity with variations (use slightly higher threshold for quality)
+  const variationThreshold = Math.max(0.75, similarityThreshold);
+  for (const preset of PRESET_QUESTIONS) {
+    for (const variation of preset.variations) {
+      const similarity = calculateSimilarity(query, variation);
+      if (similarity >= variationThreshold) {
+        return preset;
+      }
+    }
+  }
+  
+  // STEP 4: Keyword-based matching (for free-text that uses similar keywords)
   for (const preset of PRESET_QUESTIONS) {
     const normalizedQuestion = normalizeText(preset.question);
     
@@ -261,10 +292,6 @@ export function matchPresetQuestion(
     // Use threshold-based matching: if threshold is lower, require more word matches
     const requiredRatio = similarityThreshold >= 0.7 ? 0.7 : 0.8;
     if (matchRatio >= requiredRatio && matchingWords.length > 0) {
-      // For "Milyen csomagok vannak?" vs "Milyen csomagok vannak?"
-      // questionWords: ["csomagok"]
-      // queryWords: ["csomagok"]
-      // matchRatio: 1.0
       return preset;
     }
   }

@@ -307,8 +307,15 @@ export async function POST(req: NextRequest) {
     });
     
     // Check for preset questions first (before vector search)
-    // Use a lower threshold (0.6) to catch more variations
-    const presetMatch = matchPresetQuestion(lastMessage.content, 0.6);
+    // First try exact match (threshold 1.0 = exact match only, no similarity)
+    // This handles clicked predefined questions instantly
+    let presetMatch = matchPresetQuestion(lastMessage.content, 1.0);
+    
+    // If no exact match, try similarity matching for free-text that might match predefined questions
+    // Use a threshold of 0.75 for free-text matching (higher than before for better quality)
+    if (!presetMatch) {
+      presetMatch = matchPresetQuestion(lastMessage.content, 0.75);
+    }
     if (presetMatch) {
       log.info('Matched preset question', {
         question: presetMatch.question,
