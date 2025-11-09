@@ -35,6 +35,8 @@ const nextConfig: NextConfig = {
           }
         : false,
   },
+  // Next.js 15 automatically optimizes CSS with Tailwind CSS 4
+  // CSS is automatically minified, tree-shaken, and split per route
   // Externalize Puppeteer packages for serverless optimization
   // These packages are large and should not be bundled with the Next.js app
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],

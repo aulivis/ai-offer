@@ -75,7 +75,7 @@ import {
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { WIZARD_CONFIG, MAX_IMAGE_SIZE_MB } from '@/constants/wizard';
-import { useDraftPersistence } from '@/hooks/useDraftPersistence';
+import { useEnhancedAutosave } from '@/hooks/useEnhancedAutosave';
 import { PreviewMarginGuides } from '@/components/offers/PreviewMarginGuides';
 import { WizardProgressIndicator } from '@/components/offers/WizardProgressIndicator';
 import { DraftSaveIndicator } from '@/components/offers/DraftSaveIndicator';
@@ -456,7 +456,7 @@ export default function NewOfferWizard() {
   const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
   const [previewLocked, setPreviewLocked] = useState(false);
 
-  // Draft persistence
+  // Enhanced autosave with error handling and retry logic
   const wizardDraftData = useMemo(
     () => ({
       step,
@@ -470,77 +470,51 @@ export default function NewOfferWizard() {
     }),
     [step, form, client, rows, editedHtml, previewHtml, previewLocked, selectedPdfTemplateId],
   );
-  const { loadDraft, clearDraft } = useDraftPersistence('new-offer', wizardDraftData);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [draftSaving, setDraftSaving] = useState(false);
 
-  // Update last saved timestamp when draft data changes
-  useEffect(() => {
-    if (step > 0) {
-      setDraftSaving(true);
-      const timer = setTimeout(() => {
-        setLastSaved(new Date());
-        setDraftSaving(false);
-      }, 2100); // Slightly after the 2s debounce
-      return () => clearTimeout(timer);
-    }
-  }, [wizardDraftData, step]);
+  const {
+    status: autosaveStatus,
+    lastSaved,
+    error: autosaveError,
+    retryCount,
+    load: loadDraft,
+    clear: clearDraft,
+    save: manualSave,
+  } = useEnhancedAutosave({
+    data: wizardDraftData,
+    key: 'new-offer',
+    debounceMs: 2000,
+    enabled: step > 0, // Only enable autosave after step 1
+    enablePeriodicSave: true,
+    periodicSaveInterval: 30000, // Save every 30 seconds as backup
+    saveOnVisibilityChange: true,
+    saveOnBeforeUnload: true,
+    onSaveSuccess: () => {
+      // Optional: Track save success
+    },
+    onSaveError: (error) => {
+      console.warn('Autosave failed:', error);
+    },
+  });
 
   // Load draft on mount (only once)
   useEffect(() => {
-    const saved = loadDraft();
-    if (saved && saved.step) {
-      // Restore draft state
-      setStep(saved.step);
-      if (saved.form) setForm(saved.form);
-      if (saved.client) setClient(saved.client);
-      if (saved.rows) setRows(saved.rows);
-      if (saved.editedHtml) setEditedHtml(saved.editedHtml);
-      if (saved.previewHtml) setPreviewHtml(saved.previewHtml);
-      if (typeof saved.previewLocked === 'boolean') setPreviewLocked(saved.previewLocked);
-      if (saved.selectedPdfTemplateId) setSelectedPdfTemplateId(saved.selectedPdfTemplateId);
-    }
+    const loadSavedDraft = async () => {
+      const saved = await loadDraft();
+      if (saved && saved.step) {
+        // Restore draft state
+        setStep(saved.step);
+        if (saved.form) setForm(saved.form);
+        if (saved.client) setClient(saved.client);
+        if (saved.rows) setRows(saved.rows);
+        if (saved.editedHtml) setEditedHtml(saved.editedHtml);
+        if (saved.previewHtml) setPreviewHtml(saved.previewHtml);
+        if (typeof saved.previewLocked === 'boolean') setPreviewLocked(saved.previewLocked);
+        if (saved.selectedPdfTemplateId) setSelectedPdfTemplateId(saved.selectedPdfTemplateId);
+      }
+    };
+    loadSavedDraft();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
-
-  // Save draft on beforeunload and route changes to ensure AI-generated text is saved
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Save draft immediately when user is about to leave
-      try {
-        localStorage.setItem(
-          'offer-wizard-draft-new-offer',
-          JSON.stringify(wizardDraftData),
-        );
-      } catch (err) {
-        console.warn('Failed to save draft on navigation:', err);
-      }
-    };
-
-    // Save draft before page unload
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    // Save draft on visibility change (when user switches tabs/apps)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        try {
-          localStorage.setItem(
-            'offer-wizard-draft-new-offer',
-            JSON.stringify(wizardDraftData),
-          );
-        } catch (err) {
-          console.warn('Failed to save draft on visibility change:', err);
-        }
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [wizardDraftData]);
 
   // Real-time validation with debouncing (must be after form and rows declarations)
   const { errors: validationErrors, isValid: isStepValid } = useRealTimeValidation({
@@ -1831,7 +1805,7 @@ export default function NewOfferWizard() {
       
       // Clear draft on successful generation
       const clearDraftOnSuccess = () => {
-        clearDraft();
+        clearDraft(); // Enhanced autosave hook's clear function
         handleSuccessfulGeneration();
       };
       try {
@@ -2112,8 +2086,14 @@ export default function NewOfferWizard() {
             />
           </Card>
           
-          {/* Draft save indicator */}
-          <DraftSaveIndicator isSaving={draftSaving} lastSaved={lastSaved} />
+          {/* Enhanced draft save indicator with error handling */}
+          <DraftSaveIndicator
+            status={autosaveStatus}
+            lastSaved={lastSaved}
+            error={autosaveError}
+            retryCount={retryCount}
+            onRetry={manualSave}
+          />
 
         {step === 1 && (
           <section className="space-y-6">
