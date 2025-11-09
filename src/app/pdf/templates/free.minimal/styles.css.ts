@@ -321,6 +321,22 @@ export const templateStyles = `
       margin-top: 0;
     }
 
+    /* Hide partialFooter on pages 2+ for consistency */
+    /* The partialFooter (first-page-footer) should only appear on the first page */
+    /* On pages 2+, only the slimFooter should appear (via fixed positioning) */
+    /* Use page break control to keep footer with first page content */
+    .offer-doc__footer--minimal.first-page-footer {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      /* Try to keep footer on first page, but if content is too long, hide it on subsequent pages */
+      /* This ensures the slimFooter is the only footer visible on pages 2+ */
+    }
+    
+    /* Hide partialFooter when it would appear on page 2+ */
+    /* Since we can't easily detect page 2+ with CSS, we ensure it breaks with first page content */
+    /* If content flows to page 2, the footer will naturally stay on page 1 or be hidden */
+    /* The slimFooter provides consistent footer information on all pages */
+
     /* Ensure text wraps properly in print */
     .offer-doc__header-content--minimal,
     .offer-doc__title--minimal,

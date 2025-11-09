@@ -67,6 +67,15 @@ const config = {
         pop: '0 12px 32px rgba(15, 23, 42, 0.16)',
       },
       borderRadius: { lg: '16px', '2xl': '24px', '3xl': '32px' },
+      keyframes: {
+        'gentle-pulse': {
+          '0%, 100%': { opacity: '0.05', transform: 'scale(1)' },
+          '50%': { opacity: '0.15', transform: 'scale(1.05)' },
+        },
+      },
+      animation: {
+        'gentle-pulse': 'gentle-pulse 3s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

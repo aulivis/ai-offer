@@ -29,10 +29,10 @@ function normalizeText(text: string): string {
  * Creates a lookup map for exact question text matching
  * Maps normalized question text and variations to preset questions
  */
-function createExactLookupMap(): Map<string, PresetQuestion> {
+function createExactLookupMap(presets: PresetQuestion[]): Map<string, PresetQuestion> {
   const lookupMap = new Map<string, PresetQuestion>();
   
-  for (const preset of PRESET_QUESTIONS) {
+  for (const preset of presets) {
     // Add the main question
     const normalizedQuestion = normalizeText(preset.question);
     lookupMap.set(normalizedQuestion, preset);
@@ -46,9 +46,6 @@ function createExactLookupMap(): Map<string, PresetQuestion> {
   
   return lookupMap;
 }
-
-// Create the lookup map once at module load
-const EXACT_LOOKUP_MAP = createExactLookupMap();
 
 /**
  * Calculates simple similarity between two strings
@@ -215,6 +212,20 @@ Az előfizetés havonta automatikusan megújul. Bármikor lemondhatod vagy vált
   },
 ];
 
+// Create the lookup map lazily (after PRESET_QUESTIONS is defined)
+let EXACT_LOOKUP_MAP: Map<string, PresetQuestion> | null = null;
+
+/**
+ * Gets or creates the exact lookup map
+ * Lazy initialization to avoid circular dependency
+ */
+function getExactLookupMap(): Map<string, PresetQuestion> {
+  if (!EXACT_LOOKUP_MAP) {
+    EXACT_LOOKUP_MAP = createExactLookupMap(PRESET_QUESTIONS);
+  }
+  return EXACT_LOOKUP_MAP;
+}
+
 /**
  * Checks if a query matches any preset question
  * 
@@ -234,7 +245,7 @@ export function matchPresetQuestion(
   
   // STEP 1: Exact match lookup (for predefined questions that were clicked)
   // This is instant and requires no similarity calculation
-  const exactMatch = EXACT_LOOKUP_MAP.get(normalizedQuery);
+  const exactMatch = getExactLookupMap().get(normalizedQuery);
   if (exactMatch) {
     return exactMatch;
   }

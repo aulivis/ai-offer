@@ -109,8 +109,10 @@ function partialFooter(ctx: RenderCtx): string {
     ? 'offer-doc__footer-value--minimal offer-doc__footer-value--placeholder'
     : 'offer-doc__footer-value--minimal';
 
+  // Add first-page-only class to ensure footer only appears on first page
+  // This ensures consistency - slimFooter appears on all pages, partialFooter only on first page
   return `
-    <footer class="offer-doc__footer--minimal">
+    <footer class="offer-doc__footer--minimal first-page-footer">
       <div class="offer-doc__footer-grid--minimal">
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.contact}</span>

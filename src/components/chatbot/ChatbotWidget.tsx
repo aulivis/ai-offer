@@ -95,11 +95,11 @@ export default function ChatbotWidget() {
             priority
           />
           
-          {/* Pulse animation for attention */}
-          <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
+          {/* Subtle pulse animation for attention - much more gentle */}
+          <div className="absolute inset-0 rounded-full bg-primary animate-gentle-pulse" />
           
-          {/* Green dot - available indicator */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm animate-pulse z-10" />
+          {/* Green dot - available indicator - on front layer */}
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-success border-2 border-bg shadow-sm z-50" />
         </button>
       )}
 
@@ -123,10 +123,10 @@ export default function ChatbotWidget() {
             <div className="flex items-center gap-3">
               <VandaAvatar size="lg" variant="online" />
               <div>
-                <h2 id="chatbot-window-title" className="text-[1.28rem] font-semibold text-fg">
+                <h2 id="chatbot-window-title" className="text-[1.024rem] font-semibold text-fg">
                   {t('chatbot.title')}
                 </h2>
-                <p className="text-[0.75rem] text-fg-muted flex items-center gap-1.5">
+                <p className="text-[0.6rem] text-fg-muted flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                   {t('chatbot.status.online')}
                 </p>

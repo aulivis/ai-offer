@@ -4,7 +4,7 @@ import { t } from '@/copy';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export type PriceRow = {
   id: string;
@@ -92,9 +92,9 @@ export default function EditablePriceTable({
   const removeRow = (rowId: string) => onChange(rows.filter((row) => row.id !== rowId));
 
   return (
-    <Card className="overflow-hidden p-0">
+    <div className="overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full border border-slate-200 text-sm text-slate-600">
+        <table className="w-full text-sm text-slate-600">
           <thead className="border-b border-slate-200/80 bg-slate-50/80 text-slate-500">
             <tr>
               <th className="min-w-[14rem] px-4 py-3 text-left font-medium">
@@ -132,38 +132,13 @@ export default function EditablePriceTable({
               return (
                 <tr key={r.id} className="border-b border-slate-200/80 bg-white even:bg-slate-50/60 last:border-b-0">
                   <td className="px-4 py-3 align-top">
-                    <div className="flex flex-col gap-1.5">
-                      <Input
-                        placeholder={t('editablePriceTable.placeholders.name')}
-                        value={r.name}
-                        onChange={(e) => update(idx, 'name', e.target.value)}
-                        title={r.name}
-                        className="truncate py-2 text-sm"
-                      />
-                      {canSaveActivity && (
-                        <Button
-                          type="button"
-                          onClick={() => onSaveActivity?.(r)}
-                          disabled={isSaving}
-                          className="w-full rounded border border-primary/30 bg-primary/5 px-2 py-1 text-xs font-semibold text-primary transition hover:border-primary hover:bg-primary/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-50"
-                          aria-label={t('editablePriceTable.actions.saveActivity')}
-                        >
-                          {isSaving ? (
-                            <>
-                              <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent mr-1.5" />
-                              {t('editablePriceTable.actions.saving')}
-                            </>
-                          ) : (
-                            <span className="flex items-center gap-1">
-                              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                              {t('editablePriceTable.actions.saveActivity')}
-                            </span>
-                          )}
-                        </Button>
-                      )}
-                    </div>
+                    <Input
+                      placeholder={t('editablePriceTable.placeholders.name')}
+                      value={r.name}
+                      onChange={(e) => update(idx, 'name', e.target.value)}
+                      title={r.name}
+                      className="truncate py-2 text-sm"
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <Input
@@ -203,15 +178,36 @@ export default function EditablePriceTable({
                   <td className="px-4 py-3 text-right font-semibold text-slate-700 tabular-nums">
                     {formatCurrency(lineNet)}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      type="button"
-                      onClick={() => removeRow(r.id)}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                      aria-label={t('editablePriceTable.actions.removeRow')}
-                    >
-                      {t('editablePriceTable.actions.removeRow')}
-                    </Button>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => removeRow(r.id)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-300 bg-red-50 text-red-600 transition hover:border-red-400 hover:bg-red-100 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label={t('editablePriceTable.actions.removeRow')}
+                        title={t('editablePriceTable.actions.removeRow')}
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                      {canSaveActivity && (
+                        <div className="relative group">
+                          <button
+                            type="button"
+                            onClick={() => onSaveActivity?.(r)}
+                            disabled={isSaving}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-green-300 bg-green-50 text-green-600 transition hover:border-green-400 hover:bg-green-100 hover:text-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label={t('editablePriceTable.actions.saveActivity')}
+                            title={t('editablePriceTable.actions.saveActivity')}
+                          >
+                            {isSaving ? (
+                              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            ) : (
+                              <PlusIcon className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -258,6 +254,6 @@ export default function EditablePriceTable({
           {t('editablePriceTable.actions.addRow')}
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }

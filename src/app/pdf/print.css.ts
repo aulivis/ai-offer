@@ -1,24 +1,26 @@
 export const PRINT_BASE_CSS = `
   :root {
-    /* Industry standard margins: 15mm all sides for A4 */
-    /* Using 5mm top/bottom for safety buffer with fixed headers/footers */
-    --page-margin-top: 5mm;
+    /* Industry standard margins: match Puppeteer PDF generation settings (20mm top/bottom, 15mm sides) */
+    /* These margins are used by Puppeteer when generating PDFs */
+    --page-margin-top: 20mm;
     --page-margin-right: 15mm;
-    --page-margin-bottom: 5mm;
+    --page-margin-bottom: 20mm;
     --page-margin-left: 15mm;
-    --page-header-height: 12mm;
-    --page-footer-height: 12mm;
+    --page-header-height: 10mm;
+    --page-footer-height: 10mm;
     --page-header-gap: 8mm;
-    --page-header-padding: 4mm;
+    --page-header-padding: 2mm;
     --page-footer-margin: 12mm;
-    --page-footer-padding: 4mm;
-    /* Industry standard safe area: minimum 5mm from edges */
-    --page-safe-inset: 5mm;
+    --page-footer-padding: 2mm;
+    /* Industry standard safe area: minimum 3mm from edges for fixed headers/footers */
+    --page-safe-inset: 3mm;
     --page-header-offset: 0mm;
     --page-footer-offset: 0mm;
-    /* Calculate slim header height for content spacing */
-    --slim-header-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-header-padding) + 2px);
-    --slim-footer-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-footer-padding) + 2px);
+    /* Calculate slim header height for content spacing - reduced for compact header */
+    /* Header: 3mm top + 3mm bottom + text height (~1.2em) + padding (2mm) + border (1px) */
+    --slim-header-height: calc(var(--page-safe-inset) * 2 + 1.2em + var(--page-header-padding) + 1px);
+    /* Footer: 3mm top + 3mm bottom + text height (~1.4em) + padding (2mm) + border (1px) */
+    --slim-footer-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-footer-padding) + 1px);
   }
 
   @page {
@@ -26,6 +28,7 @@ export const PRINT_BASE_CSS = `
     /* Standard margins: account for fixed header/footer */
     /* On pages 2+, we need space for the slim header at the top */
     /* On all pages, we need space for the slim footer at the bottom */
+    /* These margins match the content area width exactly */
     margin-top: calc(var(--page-margin-top) + var(--slim-header-height));
     margin-right: var(--page-margin-right);
     margin-bottom: calc(var(--page-margin-bottom) + var(--slim-footer-height));
@@ -33,7 +36,7 @@ export const PRINT_BASE_CSS = `
   }
 
   @page :first {
-    /* First page: slim header is hidden, so we don't need extra top margin for it */
+    /* First page: slim header is hidden via CSS, so we don't need extra top margin for it */
     /* The main header handles its own spacing */
     margin-top: var(--page-margin-top);
     margin-right: var(--page-margin-right);
@@ -422,12 +425,13 @@ export const PRINT_BASE_CSS = `
       align-items: center;
       padding: var(--page-safe-inset) 0;
       position: fixed !important;
-      /* Match content width exactly by using same left/right margins as content area */
-      /* Content area uses page margins, so header/footer should match */
+      /* Match content width exactly by using same left/right margins as @page margins */
+      /* This ensures header/footer align perfectly with main content */
       left: var(--page-margin-left) !important;
       right: var(--page-margin-right) !important;
       width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
       max-width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
+      min-width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
       box-sizing: border-box;
       z-index: 1000;
       pointer-events: none;
@@ -468,7 +472,8 @@ export const PRINT_BASE_CSS = `
       padding-top: var(--page-safe-inset) !important;
       padding-bottom: calc(var(--page-safe-inset) + var(--page-header-padding)) !important;
       height: auto;
-      min-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-header-padding));
+      min-height: var(--slim-header-height);
+      max-height: var(--slim-header-height);
     }
     
     .slim-footer {
@@ -477,29 +482,38 @@ export const PRINT_BASE_CSS = `
       padding-top: calc(var(--page-safe-inset) + var(--page-footer-padding)) !important;
       padding-bottom: var(--page-safe-inset) !important;
       height: auto;
-      min-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-footer-padding));
+      min-height: var(--slim-footer-height);
+      max-height: var(--slim-footer-height);
     }
 
+    /* Page numbering - ensure counter works with Puppeteer */
+    /* Puppeteer/Chrome automatically handles page and pages counters in @page context */
+    /* The counter(page) shows current page, counter(pages) shows total pages */
+    /* These counters are only available in the page margin context (@page) or fixed positioned elements */
     .slim-footer__page-number::after {
       content: ' ' counter(page) ' / ' counter(pages);
+      font-variant-numeric: tabular-nums;
     }
     
-    /* Hide slim header on first page - it duplicates the main header info */
-    /* Solution: Hide the slim header when the first-page header is present */
-    /* Since the first-page header comes AFTER the slim header in DOM order, */
-    /* we can use a CSS sibling selector to hide the slim header */
+    /* Ensure page counter is available - it's automatically available in print media */
+    /* No explicit initialization needed as browsers handle this automatically */
+    
+    /* Hide slim header on first page - use sibling selector since slim header comes after first-page header in DOM */
+    /* The DOM order is: header.first-page-only -> slim-header -> content */
+    /* So we can hide slim-header when it follows a first-page-only header */
     .offer-doc__header.first-page-only ~ .slim-header {
       display: none !important;
       visibility: hidden !important;
       height: 0 !important;
       min-height: 0 !important;
+      max-height: 0 !important;
       padding: 0 !important;
       margin: 0 !important;
       border: none !important;
       overflow: hidden !important;
     }
     
-    /* Ensure first-page header is above slim header and covers it on page 1 */
+    /* Ensure first-page header is properly styled */
     .offer-doc__header.first-page-only {
       background: #ffffff !important;
       position: relative;
@@ -511,18 +525,31 @@ export const PRINT_BASE_CSS = `
       margin-bottom: var(--page-header-gap) !important;
     }
     
-    /* Ensure slim header z-index allows first-page header to cover it */
+    /* Ensure slim header z-index allows first-page header to cover it when needed */
     .slim-header {
       z-index: 1000; /* Below first-page header when it exists */
     }
     
-    /* Content spacing is handled by @page margins */
+    /* Content spacing - ensure content doesn't overlap with fixed headers/footers */
     .offer-doc__content {
       margin-top: 0;
       padding-top: 0;
       word-wrap: break-word;
       overflow-wrap: break-word;
       max-width: 100%;
+      /* Ensure content respects page margins set in @page */
+      box-sizing: border-box;
+    }
+    
+    /* Ensure main content area matches page margins exactly */
+    main,
+    .offer-doc {
+      padding-left: 0;
+      padding-right: 0;
+      margin-left: 0;
+      margin-right: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     main {
