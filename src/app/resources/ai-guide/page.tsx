@@ -250,11 +250,11 @@ export default function AIGuidePage() {
                 </li>
                 <li>
                   <strong>Add meg a kontextust:</strong> Írj egy rövid leírást arról, milyen típusú
-                  szöveget szeretnél (pl. "Bemutatkozás a szolgáltatásokról" vagy "Ügyfél
-                  problémájának megoldása").
+                  szöveget szeretnél (pl. &quot;Bemutatkozás a szolgáltatásokról&quot; vagy &quot;Ügyfél
+                  problémájának megoldása&quot;).
                 </li>
                 <li>
-                  <strong>Generáld a szöveget:</strong> Kattints a "Generálás" gombra, és
+                  <strong>Generáld a szöveget:</strong> Kattints a &quot;Generálás&quot; gombra, és
                   másodpercek alatt megkapod a szöveget.
                 </li>
                 <li>
@@ -280,8 +280,8 @@ export default function AIGuidePage() {
                 />
               </svg>
               <p className="mt-4 text-sm font-medium text-gray-600">
-                [Helyőrző: Videó vagy interaktív tutorial - "Hogyan használd az AI szöveg generálást
-                lépésről lépésre"]
+                [Helyőrző: Videó vagy interaktív tutorial - &quot;Hogyan használd az AI szöveg generálást
+                lépésről lépésre&quot;]
               </p>
               <p className="mt-2 text-xs text-gray-500">
                 Ajánlott: 2-3 perces rövid videó bemutató a funkció használatáról
@@ -331,13 +331,13 @@ export default function AIGuidePage() {
                   <p className="mb-2 text-xs font-semibold uppercase text-red-700">
                     ❌ Kevésbé hatékony
                   </p>
-                  <p className="text-sm text-fg-muted">"Írj egy bemutatkozást"</p>
+                  <p className="text-sm text-fg-muted">&quot;Írj egy bemutatkozást&quot;</p>
                 </div>
                 <div>
                   <p className="mb-2 text-xs font-semibold uppercase text-green-700">✅ Hatékony</p>
                   <p className="text-sm text-fg-muted">
-                    "Írj egy bemutatkozást egy weboldal fejlesztési projektjéről, amely hangsúlyozza
-                    a 10+ év tapasztalatot és a responsive design kiemelését"
+                    &quot;Írj egy bemutatkozást egy weboldal fejlesztési projektjéről, amely hangsúlyozza
+                    a 10+ év tapasztalatot és a responsive design kiemelését&quot;
                   </p>
                 </div>
               </div>
@@ -353,8 +353,8 @@ export default function AIGuidePage() {
               </p>
               <div className="rounded-lg bg-blue-100 p-4">
                 <p className="text-sm text-blue-900">
-                  <strong>Példa:</strong> "Használd a következő kifejezéseket: 'agilis fejlesztés',
-                  'cloud-based megoldás', 'scalable architektúra'"
+                  <strong>Példa:</strong> &quot;Használd a következő kifejezéseket: &apos;agilis fejlesztés&apos;,
+                  &apos;cloud-based megoldás&apos;, &apos;scalable architektúra&apos;&quot;
                 </p>
               </div>
             </Card>
@@ -394,17 +394,17 @@ export default function AIGuidePage() {
               <div className="rounded-lg bg-gray-50 p-6">
                 <p className="mb-3 text-sm font-semibold text-gray-700">AI prompt:</p>
                 <p className="mb-4 rounded bg-gray-100 p-3 text-sm italic text-gray-800">
-                  "Írj egy szöveget, amely bemutatja, hogyan oldjuk meg az ügyfél problémáját a
+                  &quot;Írj egy szöveget, amely bemutatja, hogyan oldjuk meg az ügyfél problémáját a
                   lassú weboldal betöltési idővel. A megoldás egy gyors, optimalizált, modern
-                  weboldal fejlesztése."
+                  weboldal fejlesztése.&quot;
                 </p>
                 <p className="mb-3 text-sm font-semibold text-gray-700">
                   Generált szöveg (részlet):
                 </p>
                 <p className="rounded bg-white p-4 text-sm text-gray-800 shadow-sm">
-                  "Értjük, hogy a lassú weboldal betöltési idő negatívan befolyásolja az üzleti
+                  &quot;Értjük, hogy a lassú weboldal betöltési idő negatívan befolyásolja az üzleti
                   teljesítményét. Megoldásunk egy gyors, optimalizált, modern weboldal fejlesztése,
-                  amely jelentősen csökkenti a betöltési időt és javítja a felhasználói élményt..."
+                  amely jelentősen csökkenti a betöltési időt és javítja a felhasználói élményt...&quot;
                 </p>
               </div>
             </Card>
@@ -416,17 +416,17 @@ export default function AIGuidePage() {
               <div className="rounded-lg bg-gray-50 p-6">
                 <p className="mb-3 text-sm font-semibold text-gray-700">AI prompt:</p>
                 <p className="mb-4 rounded bg-gray-100 p-3 text-sm italic text-gray-800">
-                  "Írj egy rövid, üzleti hangvételű leírást a következő szolgáltatásokról: SEO
-                  optimalizálás, tartalomszabályozás, social media marketing"
+                  &quot;Írj egy rövid, üzleti hangvételű leírást a következő szolgáltatásokról: SEO
+                  optimalizálás, tartalomszabályozás, social media marketing&quot;
                 </p>
                 <p className="mb-3 text-sm font-semibold text-gray-700">
                   Generált szöveg (részlet):
                 </p>
                 <p className="rounded bg-white p-4 text-sm text-gray-800 shadow-sm">
-                  "Kínáljuk a digitális marketing teljes spektrumát: SEO optimalizálást a
+                  &quot;Kínáljuk a digitális marketing teljes spektrumát: SEO optimalizálást a
                   keresőmotorokban való jobb láthatóságért, professzionális tartalomszabályozást a
                   brand identitás erősítéséhez, valamint stratégiai social media marketinget a
-                  közösségi médiában való hatékony jelenlétért..."
+                  közösségi médiában való hatékony jelenlétért...&quot;
                 </p>
               </div>
             </Card>

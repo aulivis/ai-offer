@@ -116,35 +116,47 @@ async function setContentWithNetworkIdleLogging(
 
   // Set up request/response listeners
   // Use type assertion to handle puppeteer-core event types
+  interface PuppeteerRequest {
+    url?: string | (() => string);
+    failure?: () => { errorText?: string } | null;
+  }
+
+  interface PuppeteerResponse {
+    url?: string | (() => string);
+    status?: number | (() => number);
+  }
+
   const pageWithEvents = page as unknown as {
-    on: (event: string, handler: (arg: any) => void) => void;
-    off?: (event: string, handler: (arg: any) => void) => void;
+    on: (event: string, handler: (arg: unknown) => void) => void;
+    off?: (event: string, handler: (arg: unknown) => void) => void;
   };
 
-  const onRequestFailed = (request: any) => {
+  const onRequestFailed = (request: unknown) => {
+    const req = request as PuppeteerRequest;
     try {
-      const url = typeof request.url === 'function' ? request.url() : request.url || 'unknown';
-      const failure = typeof request.failure === 'function' ? request.failure() : null;
+      const url = typeof req.url === 'function' ? req.url() : req.url || 'unknown';
+      const failure = typeof req.failure === 'function' ? req.failure() : null;
       requestFailures.push({
         url: String(url),
         errorText: failure?.errorText ?? null,
       });
-    } catch (err) {
+    } catch {
       // Ignore errors in event handlers
     }
   };
 
-  const onResponse = (response: any) => {
+  const onResponse = (response: unknown) => {
+    const res = response as PuppeteerResponse;
     try {
-      const url = typeof response.url === 'function' ? response.url() : response.url || 'unknown';
-      const status = typeof response.status === 'function' ? response.status() : response.status;
+      const url = typeof res.url === 'function' ? res.url() : res.url || 'unknown';
+      const status = typeof res.status === 'function' ? res.status() : res.status;
       if (typeof status === 'number' && status >= 400) {
         responseErrors.push({
           url: String(url),
           status,
         });
       }
-    } catch (err) {
+    } catch {
       // Ignore errors in event handlers
     }
   };
@@ -250,7 +262,10 @@ export async function generatePdfVercelNative(
 
     // Generate PDF
     // Type assertion needed because puppeteer-core types may differ
-    const pdfResult = await (page as any).pdf(puppeteerOptions);
+    // Puppeteer Page type doesn't expose pdf method in all type definitions
+    const pdfResult = await (page as { pdf: (options: unknown) => Promise<Buffer> }).pdf(
+      puppeteerOptions,
+    );
 
     // Close page
     await page.close();

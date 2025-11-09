@@ -348,6 +348,28 @@ export const PRINT_BASE_CSS = `
     position: fixed;
   }
   
+  .slim-header__content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm, 0.75rem);
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .slim-header__logo {
+    height: 10px;
+    max-width: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .slim-header__monogram {
+    font-weight: 600;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+  }
+
   .slim-header__company {
     font-weight: 600;
     color: var(--text, #0f172a);
@@ -360,6 +382,8 @@ export const PRINT_BASE_CSS = `
   .slim-header__meta {
     font-size: 7.5pt;
     color: var(--muted, #64748b);
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .slim-header__title {
@@ -370,10 +394,41 @@ export const PRINT_BASE_CSS = `
     min-width: 0;
   }
 
+  .slim-footer__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs, 0.25rem);
+    font-size: 0.7rem;
+    min-width: 0;
+    flex: 1;
+    max-width: 70%;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .slim-footer__company {
+    font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .slim-footer__text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
   .slim-footer__page-number {
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .offer-doc__page-spacer {
+    height: 0;
+    break-before: auto;
   }
 
   .first-page-only {

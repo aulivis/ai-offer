@@ -210,7 +210,7 @@ function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: bool
     const targetAttr = sanitisedAttributes.find((attr) => attr.name === 'target');
     if (targetAttr && targetAttr.value === '_blank') {
       const requiredTokens = ['noopener', 'noreferrer'];
-      let relAttr = sanitisedAttributes.find((attr) => attr.name === 'rel');
+      const relAttr = sanitisedAttributes.find((attr) => attr.name === 'rel');
       if (!relAttr) {
         sanitisedAttributes.push({ name: 'rel', value: 'noopener noreferrer' });
       } else {

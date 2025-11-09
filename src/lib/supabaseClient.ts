@@ -77,7 +77,7 @@ export async function ensureSession(
   const maxDelay = options?.maxDelay ?? 2000;
 
   // Check if we already have a valid session
-  let {
+  const {
     data: { session },
   } = await client.auth.getSession();
 

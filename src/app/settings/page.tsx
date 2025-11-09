@@ -1176,7 +1176,7 @@ export default function SettingsPage() {
                   <LockClosedIcon className="h-6 w-6 text-amber-600" />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold text-slate-900">
-                  Pro előfizetés szükséges
+                  {t('settings.proFeatures.testimonials.upgradeTitle')}
                 </h3>
                 <p className="mt-2 text-xs text-slate-600">
                   {t('settings.proFeatures.testimonials.upgradeDescription')}
@@ -1190,7 +1190,7 @@ export default function SettingsPage() {
                   variant="primary"
                   className="mt-4"
                 >
-                  Pro csomag megtekintése
+                  {t('settings.proFeatures.testimonials.upgradeButton')}
                 </Button>
               </div>
             )}

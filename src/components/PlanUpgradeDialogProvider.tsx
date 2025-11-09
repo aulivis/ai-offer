@@ -34,10 +34,11 @@ function useDefaultContent(): PlanUpgradeDialogContent {
 
 export function PlanUpgradeDialogProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const defaultContent = useDefaultContent();
   const [open, setOpen] = useState(false);
-  const [content, setContent] = useState<PlanUpgradeDialogContent>(() => useDefaultContent());
+  const [content, setContent] = useState<PlanUpgradeDialogContent>(defaultContent);
 
-  const getContent = useCallback(() => useDefaultContent(), []);
+  const getContent = useCallback(() => defaultContent, [defaultContent]);
 
   const handleClose = useCallback(() => {
     setOpen(false);

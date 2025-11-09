@@ -31,6 +31,11 @@ export const templateStyles = `
     overflow: hidden;
   }
 
+  .offer-doc__header--executive.offer-doc__header--no-top-spacing {
+    margin-top: 0;
+    padding-top: 0;
+  }
+
   .offer-doc__header--executive::before {
     content: '';
     position: absolute;
@@ -273,6 +278,10 @@ export const templateStyles = `
     letter-spacing: 0.1em;
     color: var(--secondary, #3b82f6);
     margin-bottom: 0.25rem;
+  }
+
+  .offer-doc__footer-label--executive.offer-doc__footer-label--spaced {
+    margin-top: var(--spacing-sm, 0.75rem);
   }
 
   .offer-doc__footer-value--executive {

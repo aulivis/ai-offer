@@ -257,6 +257,10 @@ export const templateStyles = `
     overflow-wrap: break-word;
   }
 
+  .offer-doc__footer-label--minimal.offer-doc__footer-label--spaced {
+    margin-top: var(--spacing-sm, 0.75rem);
+  }
+
   .offer-doc__footer-value--minimal {
     font-size: 0.85rem;
     color: var(--text, #1a1a1a);

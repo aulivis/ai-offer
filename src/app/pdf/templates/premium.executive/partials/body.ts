@@ -17,7 +17,7 @@ function partialHeader(ctx: RenderCtx): string {
     : `<div class="offer-doc__logo-wrap--executive"><span class="offer-doc__monogram--executive">${monogram}</span></div>`;
 
   return `
-    <header class="offer-doc__header--executive first-page-only" style="margin-top: 0; padding-top: 0;">
+    <header class="offer-doc__header--executive first-page-only offer-doc__header--no-top-spacing">
       <div class="offer-doc__header-content--executive">
         ${logoSlot}
         <div class="offer-doc__header-text--executive">
@@ -150,7 +150,7 @@ function partialFooter(ctx: RenderCtx): string {
         <div class="offer-doc__footer-column--executive">
           <span class="offer-doc__footer-label--executive">${labels.email}</span>
           <span class="${emailClass}">${contactEmail.value}</span>
-          <span class="offer-doc__footer-label--executive" style="margin-top: 0.75rem;">${labels.phone}</span>
+          <span class="offer-doc__footer-label--executive offer-doc__footer-label--spaced">${labels.phone}</span>
           <span class="${phoneClass}">${contactPhone.value}</span>
         </div>
         <div class="offer-doc__footer-column--executive">
@@ -159,9 +159,9 @@ function partialFooter(ctx: RenderCtx): string {
         </div>
         <div class="offer-doc__footer-column--executive">
           <span class="offer-doc__footer-label--executive">${labels.company}</span>
-          <span class="offer-doc__footer-label--executive" style="margin-top: 0.75rem;">${labels.address}</span>
+          <span class="offer-doc__footer-label--executive offer-doc__footer-label--spaced">${labels.address}</span>
           <span class="${addressClass}">${companyAddress.value}</span>
-          <span class="offer-doc__footer-label--executive" style="margin-top: 0.75rem;">${labels.taxId}</span>
+          <span class="offer-doc__footer-label--executive offer-doc__footer-label--spaced">${labels.taxId}</span>
           <span class="${taxClass}">${companyTaxId.value}</span>
         </div>
       </div>

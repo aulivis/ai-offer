@@ -83,7 +83,7 @@ export function SettingsActivitiesSection({
             </div>
             <p className="text-xs text-slate-600 mb-4">
               Ez a tevékenység jelenik meg alapértelmezetten az ajánlatkészítő 2. lépésében a
-              "Konzultáció" helyett.
+              &quot;Konzultáció&quot; helyett.
             </p>
             <select
               value={defaultActivityId || ''}

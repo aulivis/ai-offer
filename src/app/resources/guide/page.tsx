@@ -208,21 +208,21 @@ export default function GuidePage() {
                 3.1. Ügyfélközpontú nyelvhasználat
               </h3>
               <p className="mb-4 text-fg-muted">
-                Írj az ügyfél szemszögéből. Helyett, hogy "Mi ezt és ezt kínáljuk", használd a "Ön
-                ezt és ezt kapja" megközelítést.
+                Írj az ügyfél szemszögéből. Helyett, hogy &quot;Mi ezt és ezt kínáljuk&quot;, használd a &quot;Ön
+                ezt és ezt kapja&quot; megközelítést.
               </p>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Card className="border-red-200 bg-red-50">
                   <p className="mb-2 text-xs font-semibold uppercase text-red-700">❌ Kerüld</p>
                   <p className="text-sm text-red-900">
-                    "Mi egy professzionális weboldalt készítünk Önnek."
+                    &quot;Mi egy professzionális weboldalt készítünk Önnek.&quot;
                   </p>
                 </Card>
                 <Card className="border-green-200 bg-green-50">
                   <p className="mb-2 text-xs font-semibold uppercase text-green-700">✅ Használd</p>
                   <p className="text-sm text-green-900">
-                    "Ön egy professzionális weboldalt kap, amely növeli online jelenlétét."
+                    &quot;Ön egy professzionális weboldalt kap, amely növeli online jelenlétét.&quot;
                   </p>
                 </Card>
               </div>
@@ -253,7 +253,7 @@ export default function GuidePage() {
                   />
                 </svg>
                 <p className="mt-4 text-sm font-medium text-gray-600">
-                  [Helyőrző: Infografika - "Flozkulák vs. konkrét értékek" összehasonlító táblázat]
+                  [Helyőrző: Infografika - &quot;Flozkulák vs. konkrét értékek&quot; összehasonlító táblázat]
                 </p>
                 <p className="mt-2 text-xs text-gray-500">
                   Ajánlott: interaktív, színes infografika konkrét példákkal
@@ -415,7 +415,7 @@ export default function GuidePage() {
               tovább.
             </p>
             <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-              <li>Használj aktív, cselekvési szavakat ("Kezdjük el", "Foglald le", "Válaszolj")</li>
+              <li>Használj aktív, cselekvési szavakat (&quot;Kezdjük el&quot;, &quot;Foglald le&quot;, &quot;Válaszolj&quot;)</li>
               <li>Legyen egyértelmű a következő lépés</li>
               <li>Add meg az elérhetőségeidet</li>
               <li>Kínálj valamilyen plusz értéket (ingyenes konzultáció, kedvezmény, stb.)</li>

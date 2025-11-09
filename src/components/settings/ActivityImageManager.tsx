@@ -27,6 +27,7 @@ type ActivityImageManagerProps = {
 const MAX_IMAGES = 3;
 const BUCKET_ID = 'brand-assets';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getActivityImageUrl(supabase: any, imagePath: string): Promise<string | null> {
   try {
     const { data, error } = await supabase.storage

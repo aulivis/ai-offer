@@ -42,10 +42,12 @@ export function ensureSemanticStructure(html: string): string {
 /**
  * Add skip links for accessibility
  */
-export function renderSkipLinks(): string {
+export function renderSkipLinks(i18n: { t: (key: string) => string }): string {
+  const skipToMain = i18n.t('pdf.templates.accessibility.skipToMain') || 'Skip to main content';
+  const skipToPricing = i18n.t('pdf.templates.accessibility.skipToPricing') || 'Skip to pricing';
   return `
-    <a href="#main-content" class="offer-skip-link">Skip to main content</a>
-    <a href="#pricing" class="offer-skip-link">Skip to pricing</a>
+    <a href="#main-content" class="offer-skip-link">${skipToMain}</a>
+    <a href="#pricing" class="offer-skip-link">${skipToPricing}</a>
   `;
 }
 

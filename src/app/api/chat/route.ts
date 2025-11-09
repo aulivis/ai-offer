@@ -41,6 +41,16 @@ const ENABLE_RERANKING = true; // Enable query re-ranking
 const ENABLE_SUMMARIZATION = true; // Enable conversation summarization
 const MAX_REQUEST_SIZE = 1024 * 100; // 100KB max request size
 
+// Message type definitions for different formats
+type MessagePart = {
+  type: string;
+  text?: string;
+};
+
+type MessageInput =
+  | { role: string; content?: string; parts?: MessagePart[]; text?: string }
+  | string;
+
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -191,7 +201,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Helper to extract text content from message (handles multiple formats from useChat)
-    const getMessageContent = (message: any): string => {
+    const getMessageContent = (message: MessageInput): string => {
+      // Format 4: Direct string (shouldn't happen but handle gracefully)
+      if (typeof message === 'string') {
+        return message.trim();
+      }
+
       // Format 1: { role: 'user', content: 'text' } - standard format
       if (typeof message?.content === 'string') {
         return message.content.trim();
@@ -199,8 +214,8 @@ export async function POST(req: NextRequest) {
       // Format 2: { role: 'user', parts: [{ type: 'text', text: '...' }] } - parts array format
       if (message?.parts && Array.isArray(message.parts)) {
         return message.parts
-          .filter((part: any) => part.type === 'text')
-          .map((part: any) => (part.text || '').trim())
+          .filter((part: MessagePart) => part.type === 'text')
+          .map((part: MessagePart) => (part.text || '').trim())
           .join(' ')
           .trim();
       }
@@ -208,17 +223,17 @@ export async function POST(req: NextRequest) {
       if (message?.text) {
         return message.text.trim();
       }
-      // Format 4: Direct string (shouldn't happen but handle gracefully)
-      if (typeof message === 'string') {
-        return message.trim();
-      }
       log.warn('Could not extract message content', { message, requestId });
       return '';
     };
 
     // Convert messages to format expected by streamText
     const convertedMessages = messages
-      .map((m: any) => {
+      .map((m: MessageInput) => {
+        if (typeof m === 'string') {
+          return null; // Skip string messages as they need a role
+        }
+
         const content = getMessageContent(m);
         if (!content) return null;
 
@@ -236,7 +251,7 @@ export async function POST(req: NextRequest) {
           content,
         };
       })
-      .filter((m: any): m is { role: 'user' | 'assistant'; content: string } => m !== null);
+      .filter((m): m is { role: 'user' | 'assistant'; content: string } => m !== null);
 
     if (convertedMessages.length === 0) {
       log.warn('Invalid request: no valid messages found after conversion', { requestId });
@@ -692,7 +707,7 @@ ${context}`;
     let errorMessage = 'Unknown error';
     let errorStack: string | undefined;
     let errorType = 'Unknown';
-    let errorDetails: any = {};
+    let errorDetails: Record<string, unknown> = {};
 
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -709,10 +724,17 @@ ${context}`;
     } else if (error && typeof error === 'object') {
       // Try to extract meaningful information from error object
       try {
-        errorMessage = (error as any).message || (error as any).error || JSON.stringify(error);
-        errorType = (error as any).constructor?.name || 'Object';
+        const errorObj = error as Record<string, unknown>;
+        errorMessage =
+          (typeof errorObj.message === 'string' ? errorObj.message : null) ||
+          (typeof errorObj.error === 'string' ? errorObj.error : null) ||
+          JSON.stringify(error);
+        errorType =
+          (errorObj.constructor && typeof errorObj.constructor === 'object'
+            ? (errorObj.constructor as { name?: string })?.name
+            : null) || 'Object';
         errorDetails = JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
-      } catch (serializeError) {
+      } catch {
         errorMessage = String(error);
         errorType = 'Object (serialization failed)';
       }

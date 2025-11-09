@@ -44,7 +44,11 @@ export async function retrieveSimilarDocuments(
     });
 
     if (!error && data) {
-      return (data as any[]).map((doc: any) => ({
+      interface DocumentRow {
+        id: string;
+        content: string;
+      }
+      return (data as DocumentRow[]).map((doc: DocumentRow) => ({
         id: doc.id,
         content: doc.content,
         metadata: doc.metadata ?? {},

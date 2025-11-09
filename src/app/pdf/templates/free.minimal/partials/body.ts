@@ -121,7 +121,7 @@ function partialFooter(ctx: RenderCtx): string {
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.email}</span>
           <span class="${emailClass}">${emailValue}</span>
-          <span class="offer-doc__footer-label--minimal" style="margin-top: 0.75rem;">${labels.phone}</span>
+          <span class="offer-doc__footer-label--minimal offer-doc__footer-label--spaced">${labels.phone}</span>
           <span class="${phoneClass}">${phoneValue}</span>
         </div>
         <div class="offer-doc__footer-column--minimal">
@@ -130,9 +130,9 @@ function partialFooter(ctx: RenderCtx): string {
         </div>
         <div class="offer-doc__footer-column--minimal">
           <span class="offer-doc__footer-label--minimal">${labels.company}</span>
-          <span class="offer-doc__footer-label--minimal" style="margin-top: 0.75rem;">${labels.address}</span>
+          <span class="offer-doc__footer-label--minimal offer-doc__footer-label--spaced">${labels.address}</span>
           <span class="${addressClass}">${addressValue}</span>
-          <span class="offer-doc__footer-label--minimal" style="margin-top: 0.75rem;">${labels.taxId}</span>
+          <span class="offer-doc__footer-label--minimal offer-doc__footer-label--spaced">${labels.taxId}</span>
           <span class="${taxClass}">${taxValue}</span>
         </div>
       </div>

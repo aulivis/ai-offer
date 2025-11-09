@@ -209,10 +209,14 @@ export function reportWebVitals(metric: Metric) {
 
   // Store metrics in window for debugging/development
   if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-    if (!(window as any).__webVitals) {
-      (window as any).__webVitals = [];
+    interface WindowWithWebVitals extends Window {
+      __webVitals?: Array<Metric & { timestamp: number; url: string }>;
     }
-    (window as any).__webVitals.push({
+    const win = window as WindowWithWebVitals;
+    if (!win.__webVitals) {
+      win.__webVitals = [];
+    }
+    win.__webVitals.push({
       ...metric,
       timestamp: Date.now(),
       url: window.location.href,
@@ -228,7 +232,11 @@ export function getStoredWebVitals(): Metric[] {
     return [];
   }
 
-  return (window as any).__webVitals || [];
+  interface WindowWithWebVitals extends Window {
+    __webVitals?: Metric[];
+  }
+  const win = window as WindowWithWebVitals;
+  return win.__webVitals || [];
 }
 
 /**
@@ -239,7 +247,11 @@ export function clearStoredWebVitals() {
     return;
   }
 
-  delete (window as any).__webVitals;
+  interface WindowWithWebVitals extends Window {
+    __webVitals?: Metric[];
+  }
+  const win = window as WindowWithWebVitals;
+  delete win.__webVitals;
 }
 
 /**

@@ -291,10 +291,14 @@ export async function GET(request: NextRequest) {
       });
 
       // Verify OTP by token_hash
-      const { data, error } = await supabase.auth.verifyOtp({
+      // Type assertion needed due to Supabase typing differences
+      const verifyParams: { token_hash: string; type: EmailOtpType } = {
         token_hash: tokenHash,
         type: otpType,
-      } as any); // Type assertion needed due to Supabase typing differences
+      };
+      const { data, error } = await supabase.auth.verifyOtp(
+        verifyParams as Parameters<typeof supabase.auth.verifyOtp>[0],
+      );
 
       if (error || !data?.session) {
         logger.error('verifyOtp failed in auth confirm', {

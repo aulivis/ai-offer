@@ -142,7 +142,7 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
               Várj! Ne menj el üres kézzel
             </h2>
             <p className="mb-6 text-base leading-relaxed text-fg-muted">
-              Töltsd le ingyenes útmutatónkat: <strong>"10 tipp a tökéletes ajánlathoz"</strong>
+              Töltsd le ingyenes útmutatónkat: <strong>&quot;10 tipp a tökéletes ajánlathoz&quot;</strong>
             </p>
 
             <form onSubmit={handleEmailSubmit} className="mb-4 space-y-3">

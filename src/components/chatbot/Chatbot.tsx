@@ -116,8 +116,8 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
     // Handle format 2: parts array (legacy format)
     if (message.parts && Array.isArray(message.parts) && message.parts.length > 0) {
       return message.parts
-        .filter((part: any) => part.type === 'text')
-        .map((part: any) => part.text || '')
+        .filter((part: { type?: string }) => part.type === 'text')
+        .map((part: { text?: string }) => part.text || '')
         .join('');
     }
 
@@ -501,7 +501,9 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
                 e.preventDefault();
-                handleSubmit(e as any);
+                // Submit message directly (same as handleSubmit does)
+                sendMessage({ content: input.trim() });
+                setInput('');
               }
             }}
           />

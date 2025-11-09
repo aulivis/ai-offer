@@ -52,7 +52,7 @@ Example: {"queries": ["query variation 1", "query variation 2", "query variation
 
     // Validate variations
     const validVariations = variations
-      .filter((q: any) => typeof q === 'string' && q.trim().length > 0)
+      .filter((q: unknown): q is string => typeof q === 'string' && q.trim().length > 0)
       .slice(0, 3); // Limit to 3 variations
 
     // Return original query + variations (limit to 4 total)

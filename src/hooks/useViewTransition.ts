@@ -42,7 +42,10 @@ export function useViewTransition() {
 
       // Use View Transitions API
       if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-        (document as any).startViewTransition(() => {
+        interface DocumentWithViewTransition extends Document {
+          startViewTransition: (callback: () => void) => void;
+        }
+        (document as DocumentWithViewTransition).startViewTransition(() => {
           callback();
         });
       } else {
