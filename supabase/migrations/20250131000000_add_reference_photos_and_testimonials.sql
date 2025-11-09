@@ -117,3 +117,4 @@ COMMENT ON COLUMN profiles.enable_testimonials IS 'Toggle to enable testimonials
 COMMENT ON TABLE testimonials IS 'Customer testimonials/reviews that can be attached to activities (PRO feature, max 10 per user)';
 
 
+
