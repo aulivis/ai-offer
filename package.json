@@ -20,6 +20,7 @@
     "test": "vitest run",
     "test:templates": "vitest run src/app/pdf/templates/__tests__/golden.test.ts",
     "analyze": "ANALYZE=true next build",
+    "audit:color-contrast": "ts-node scripts/audit-color-contrast.ts",
     "prepare": "husky"
   },
   "dependencies": {

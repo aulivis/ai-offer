@@ -6,6 +6,7 @@ import { ReactNode, useEffect, useState } from 'react';
 
 import { useToast } from './ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 
 export type AppFrameProps = {
   title: string;
@@ -63,18 +64,27 @@ export default function AppFrame({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 pb-20 pt-24 md:flex-row md:gap-10">
       {sidebar ? (
-        <aside className="md:sticky md:top-36 md:w-64 md:flex-shrink-0">
+        <>
+          {/* Desktop sidebar - always visible */}
+          <aside className="hidden md:sticky md:top-36 md:block md:w-64 md:flex-shrink-0">
+            <div className="space-y-4 rounded-3xl border border-border/70 bg-bg/80 p-4 shadow-card backdrop-blur">
+              {sidebar}
+            </div>
+          </aside>
+
+          {/* Mobile sidebar toggle button */}
           <button
             type="button"
-            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            onClick={() => setIsSidebarOpen(true)}
             className="flex w-full items-center justify-between rounded-full border border-border/70 bg-bg/80 px-3 py-2 text-sm font-medium text-fg-muted shadow-card backdrop-blur transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
             aria-expanded={isSidebarOpen}
             aria-controls="appframe-sidebar"
+            aria-label={t('app.sidebar.open')}
           >
-            <span>{isSidebarOpen ? t('app.sidebar.close') : t('app.sidebar.open')}</span>
+            <span>{t('app.sidebar.open')}</span>
             <svg
               aria-hidden="true"
-              className={`h-4 w-4 transition-transform ${isSidebarOpen ? 'rotate-180' : ''}`}
+              className="h-4 w-4"
               viewBox="0 0 20 20"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -88,15 +98,22 @@ export default function AppFrame({
               />
             </svg>
           </button>
-          <div
-            id="appframe-sidebar"
-            className={`mt-4 space-y-4 rounded-3xl border border-border/70 bg-bg/80 p-4 shadow-card backdrop-blur md:mt-0 md:block ${
-              isSidebarOpen ? 'block' : 'hidden'
-            }`}
+
+          {/* Mobile sidebar bottom sheet */}
+          <BottomSheet
+            open={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            enableSwipeToClose={true}
+            swipeThreshold={0.25}
+            showCloseButton={true}
+            title={t('app.sidebar.title') || 'Navigation'}
+            className="md:hidden"
           >
-            {sidebar}
-          </div>
-        </aside>
+            <div id="appframe-sidebar" className="space-y-4">
+              {sidebar}
+            </div>
+          </BottomSheet>
+        </>
       ) : null}
 
       <main id="main" className="flex-1 space-y-8">

@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/Button';
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useLogout } from '@/hooks/useLogout';
 import { useBranding } from '@/components/BrandingProvider';
@@ -179,13 +180,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           )}
         </div>
 
+        {/* Mobile menu button - only show on mobile */}
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-fg transition duration-200 hover:bg-bg-muted md:hidden"
           aria-label={t('nav.menuToggle')}
           aria-expanded={isMenuOpen}
           aria-controls="landing-navigation"
-          onClick={() => setIsMenuOpen((prev) => !prev)}
+          onClick={() => setIsMenuOpen(true)}
         >
           <svg
             className="h-5 w-5"
@@ -196,34 +198,44 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
+            aria-hidden="true"
           >
-            {isMenuOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
+            <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
       </div>
 
-      {isMenuOpen ? (
-        <div className="bg-bg px-6 pb-6 pt-4 text-fg md:hidden">
-          <nav
-            id="landing-navigation"
-            className="flex flex-col gap-4 text-base font-medium text-fg"
-          >
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full px-3 py-1 transition-colors duration-200 text-fg-muted hover:text-fg"
-                aria-current={isNavItemActive(item.href) ? 'page' : undefined}
-                onClick={closeMenu}
-              >
-                {t(item.labelKey)}
-              </Link>
-            ))}
+      {/* Mobile navigation bottom sheet */}
+      <BottomSheet
+        open={isMenuOpen}
+        onClose={closeMenu}
+        enableSwipeToClose={true}
+        swipeThreshold={0.25}
+        showCloseButton={true}
+        className="md:hidden"
+      >
+        <nav
+          id="landing-navigation"
+          className="flex flex-col gap-2 px-4 py-4 text-base font-medium text-fg"
+        >
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-full px-4 py-3 transition-colors duration-200 text-fg-muted hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-current={isNavItemActive(item.href) ? 'page' : undefined}
+              onClick={closeMenu}
+            >
+              {t(item.labelKey)}
+            </Link>
+          ))}
+          
+          <div className="mt-2 border-t border-border pt-4">
             {isAuthenticated ? (
-              <>
+              <div className="flex flex-col gap-3">
                 <Link
                   href="/new"
-                  className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
+                  className="rounded-full bg-primary px-5 py-3 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={closeMenu}
                 >
                   {t('dashboard.actions.newOffer')}
@@ -238,28 +250,28 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 >
                   {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                 </Button>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex flex-col gap-3">
                 <Link
                   href="/login"
-                  className="text-base font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+                  className="rounded-full px-4 py-3 text-center text-base font-medium text-fg-muted transition-colors duration-200 hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={closeMenu}
                 >
                   {t('nav.login')}
                 </Link>
                 <Link
                   href="/login"
-                  className="rounded-full bg-primary px-5 py-2 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
+                  className="rounded-full bg-primary px-5 py-3 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onClick={closeMenu}
                 >
                   {t('nav.freeTrial')}
                 </Link>
-              </>
+              </div>
             )}
-          </nav>
-        </div>
-      ) : null}
+          </div>
+        </nav>
+      </BottomSheet>
     </header>
   );
 }
