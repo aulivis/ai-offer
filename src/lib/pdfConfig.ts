@@ -63,8 +63,8 @@ export const DEFAULT_PDF_OPTIONS: PdfGenerationOptions = {
  */
 export function createPdfOptions(
   metadata?: PdfMetadata,
-  overrides?: Partial<PdfGenerationOptions>,
-): PdfGenerationOptions {
+  overrides?: Partial<PdfGenerationOptions | PdfGenerationOptionsWithTemplates>,
+): PdfGenerationOptions | PdfGenerationOptionsWithTemplates {
   return {
     ...DEFAULT_PDF_OPTIONS,
     metadata: {
@@ -97,12 +97,17 @@ export type PuppeteerPdfOptions = {
   landscape?: boolean;
 };
 
+export interface PdfGenerationOptionsWithTemplates extends PdfGenerationOptions {
+  headerTemplate?: string;
+  footerTemplate?: string;
+}
+
 /**
  * Converts PDF options to Puppeteer PDF options
  * Works with both puppeteer and puppeteer-core
  */
 export function toPuppeteerOptions(
-  options: PdfGenerationOptions,
+  options: PdfGenerationOptions | PdfGenerationOptionsWithTemplates,
 ): PuppeteerPdfOptions {
   const puppeteerOptions: PuppeteerPdfOptions = {
     format: options.format ?? 'A4',
@@ -112,6 +117,15 @@ export function toPuppeteerOptions(
     displayHeaderFooter: options.displayHeaderFooter ?? false,
     scale: options.scale ?? 1.0,
   };
+  
+  // Add header/footer templates if provided
+  if ('headerTemplate' in options && options.headerTemplate) {
+    puppeteerOptions.headerTemplate = options.headerTemplate;
+  }
+  
+  if ('footerTemplate' in options && options.footerTemplate) {
+    puppeteerOptions.footerTemplate = options.footerTemplate;
+  }
 
   // Add metadata if provided
   if (options.metadata) {

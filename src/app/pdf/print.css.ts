@@ -1,47 +1,34 @@
 export const PRINT_BASE_CSS = `
   :root {
-    /* Industry standard margins: match Chrome/Puppeteer PDF generation settings (20mm top/bottom, 15mm sides) */
-    /* These margins work with any Chrome-based PDF generation (Puppeteer, Playwright, Browserless, etc.) */
-    --page-margin-top: 20mm;
-    --page-margin-right: 15mm;
-    --page-margin-bottom: 20mm;
-    --page-margin-left: 15mm;
-    --page-header-height: 10mm;
-    --page-footer-height: 10mm;
-    --page-header-gap: 8mm;
-    --page-header-padding: 2mm;
-    --page-footer-margin: 12mm;
-    --page-footer-padding: 2mm;
-    /* Industry standard safe area: minimum 3mm from edges for fixed headers/footers */
-    --page-safe-inset: 3mm;
-    --page-header-offset: 0mm;
-    --page-footer-offset: 0mm;
-    /* Calculate slim header height for content spacing - reduced for compact header */
-    /* Header: 3mm top + 3mm bottom + text height (~1.2em) + padding (2mm) + border (1px) */
-    --slim-header-height: calc(var(--page-safe-inset) * 2 + 1.2em + var(--page-header-padding) + 1px);
-    /* Footer: 3mm top + 3mm bottom + text height (~1.4em) + padding (2mm) + border (1px) */
-    --slim-footer-height: calc(var(--page-safe-inset) * 2 + 1.4em + var(--page-footer-padding) + 1px);
+    /* CSS custom properties for general use (not in @page rules) */
+    /* These are used for spacing within the document, not for @page margins */
+    --page-header-gap: 12mm;
+    --page-header-padding: 6mm;
+    --page-footer-margin: 18mm;
+    --page-footer-padding: 6mm;
   }
 
   @page {
     size: A4;
-    /* Content margins: account for fixed header/footer space */
-    /* On pages 2+, we need space for the slim header at the top */
-    /* On all pages, we need space for the slim footer at the bottom */
-    /* Fixed headers/footers are positioned from page edges (0,0), so margins push content away */
-    margin-top: calc(var(--page-margin-top) + var(--slim-header-height));
-    margin-right: var(--page-margin-right);
-    margin-bottom: calc(var(--page-margin-bottom) + var(--slim-footer-height));
-    margin-left: var(--page-margin-left);
+    /* Fixed margins: Chrome/Puppeteer does not support CSS custom properties (var()) in @page rules */
+    /* Using literal values ensures margins are properly applied */
+    /* When using Puppeteer templates (displayHeaderFooter: true), templates are rendered within margins */
+    /* Top: 20mm for content (slim header handled by Puppeteer template if used) */
+    /* Bottom: 25mm for content (footer handled by Puppeteer template if used) */
+    /* Sides: 15mm standard margins */
+    margin-top: 20mm;
+    margin-right: 15mm;
+    margin-bottom: 25mm;
+    margin-left: 15mm;
   }
 
   @page :first {
-    /* First page: slim header is hidden via CSS, so we don't need extra top margin for it */
-    /* The main header handles its own spacing */
-    margin-top: var(--page-margin-top);
-    margin-right: var(--page-margin-right);
-    margin-bottom: calc(var(--page-margin-bottom) + var(--slim-footer-height));
-    margin-left: var(--page-margin-left);
+    /* First page: same margins as other pages */
+    /* First page header is part of content, not a template */
+    margin-top: 20mm;
+    margin-right: 15mm;
+    margin-bottom: 25mm;
+    margin-left: 15mm;
   }
 
   html,
@@ -130,6 +117,7 @@ export const PRINT_BASE_CSS = `
 
   .offer-doc__header-brand {
     gap: 12mm;
+    align-items: center;
   }
 
   .offer-doc__logo-wrap {
@@ -139,6 +127,13 @@ export const PRINT_BASE_CSS = `
     height: 34mm;
     padding: 6mm;
     width: 34mm;
+    flex-shrink: 0;
+    margin-right: 0;
+  }
+  
+  .offer-doc__header-text {
+    margin-left: 0;
+    flex: 1;
   }
 
   .offer-doc__logo {
@@ -345,7 +340,7 @@ export const PRINT_BASE_CSS = `
     font-weight: 500;
     justify-content: space-between;
     line-height: 1.4;
-    min-height: 12mm;
+    min-height: 10mm;
   }
   
   .slim-header,
@@ -356,6 +351,10 @@ export const PRINT_BASE_CSS = `
   .slim-header__company {
     font-weight: 600;
     color: var(--text, #0f172a);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 40%;
+    min-width: 0;
   }
   
   .slim-header__meta {
@@ -363,19 +362,11 @@ export const PRINT_BASE_CSS = `
     color: var(--muted, #64748b);
   }
 
-
   .slim-header__title {
     font-weight: 600;
     word-wrap: break-word;
     overflow-wrap: break-word;
     max-width: 60%;
-    min-width: 0;
-  }
-
-  .slim-header__company {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    max-width: 40%;
     min-width: 0;
   }
 
@@ -424,13 +415,13 @@ export const PRINT_BASE_CSS = `
       justify-content: space-between;
       align-items: center;
       position: fixed !important;
-      /* Position from page edges (Puppeteer margins are 0) */
-      /* Match content width by using same left/right margins as @page margins */
-      left: var(--page-margin-left) !important;
-      right: var(--page-margin-right) !important;
-      width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
-      max-width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
-      min-width: calc(100% - var(--page-margin-left) - var(--page-margin-right)) !important;
+      /* Position from page edges - @page margins handle content spacing */
+      /* Headers/footers are positioned within the page margins */
+      left: 15mm !important;
+      right: 15mm !important;
+      width: calc(100% - 30mm) !important;
+      max-width: calc(100% - 30mm) !important;
+      min-width: calc(100% - 30mm) !important;
       box-sizing: border-box;
       z-index: 1000;
       pointer-events: none;
@@ -440,6 +431,8 @@ export const PRINT_BASE_CSS = `
       overflow: hidden;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
     }
 
     .slim-header > div {
@@ -464,39 +457,45 @@ export const PRINT_BASE_CSS = `
       white-space: nowrap;
     }
     
-    /* Calculate header/footer heights for spacing */
+    /* Header positioning - fixed at top of page within margins */
     .slim-header {
-      /* Position from top of page with safe margin (Puppeteer margins are 0, so we add margin here) */
-      top: var(--page-margin-top) !important;
+      top: 20mm !important;
       border-bottom: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
-      padding-top: var(--page-safe-inset) !important;
-      padding-bottom: calc(var(--page-safe-inset) + var(--page-header-padding)) !important;
-      padding-left: 0 !important;
-      padding-right: 0 !important;
+      padding-top: 4mm !important;
+      padding-bottom: 4mm !important;
       height: auto;
-      min-height: var(--slim-header-height);
-      max-height: var(--slim-header-height);
+      min-height: 10mm;
     }
     
+    /* Footer positioning - fixed at bottom of page within margins */
     .slim-footer {
-      /* Position from bottom of page with safe margin (Puppeteer margins are 0, so we add margin here) */
-      bottom: var(--page-margin-bottom) !important;
+      bottom: 25mm !important;
       border-top: 1px solid var(--brand-border, rgba(15, 23, 42, 0.12));
-      padding-top: calc(var(--page-safe-inset) + var(--page-footer-padding)) !important;
-      padding-bottom: var(--page-safe-inset) !important;
-      padding-left: 0 !important;
-      padding-right: 0 !important;
+      padding-top: 4mm !important;
+      padding-bottom: 4mm !important;
       height: auto;
-      min-height: var(--slim-footer-height);
-      max-height: var(--slim-footer-height);
+      min-height: 10mm;
     }
 
-    /* Page numbering - CSS page counters work in print media */
-    /* The 'page' counter shows current page number, 'pages' shows total pages */
-    /* Note: These counters only work in print context and are evaluated during PDF rendering */
-    .slim-footer__page-number::after {
-      content: ' ' counter(page) ' / ' counter(pages);
-      font-variant-numeric: tabular-nums;
+    /* Page numbering is now handled via Puppeteer's footerTemplate (server-side) */
+    /* Hide fixed footer in print mode when using Puppeteer templates */
+    /* The data attribute allows us to identify footers that should be hidden */
+    .slim-footer[data-puppeteer-footer="hidden"] {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      max-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      overflow: hidden !important;
+    }
+    
+    /* Also hide slim header in print when using Puppeteer templates */
+    /* (Header template can be added later if needed) */
+    .slim-header {
+      /* Keep header for now, but can be hidden if using Puppeteer header template */
     }
     
     /* Hide slim header on first page - use sibling selector since slim header comes after first-page header in DOM */

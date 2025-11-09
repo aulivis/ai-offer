@@ -23,16 +23,17 @@ export function renderSlimHeader(ctx: HeaderFooterCtx): string {
 }
 
 export function renderSlimFooter(ctx: HeaderFooterCtx): string {
-  // Page numbers are added via CSS counter in print mode
-  // The label is just "Oldal" which will become "Oldal 1 / 2" etc. via CSS
+  // Page numbers are now handled via Puppeteer's footerTemplate (server-side)
+  // This fixed footer is kept for first page display but will be hidden in print mode
+  // when Puppeteer templates are used
   return `
-    <div class="offer-doc__slim-bar slim-footer" aria-hidden="true">
+    <div class="offer-doc__slim-bar slim-footer" aria-hidden="true" data-puppeteer-footer="hidden">
       <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.7rem; min-width: 0; flex: 1; max-width: 70%; overflow: hidden; word-wrap: break-word; overflow-wrap: break-word;">
         <span style="font-weight: 600; word-wrap: break-word; overflow-wrap: break-word;">${ctx.company.value || ctx.companyPlaceholder}</span>
         ${ctx.companyAddress.value && !ctx.companyAddress.isPlaceholder ? `<span style="word-wrap: break-word; overflow-wrap: break-word;">${ctx.companyAddress.value}</span>` : ''}
         ${ctx.companyTaxId.value && !ctx.companyTaxId.isPlaceholder ? `<span style="word-wrap: break-word; overflow-wrap: break-word;">${ctx.labels.taxId}: ${ctx.companyTaxId.value}</span>` : ''}
       </div>
-      <span class="slim-footer__page-number" style="flex-shrink: 0; white-space: nowrap;">${ctx.labels.page}</span>
+      <span class="slim-footer__page-number" style="flex-shrink: 0; white-space: nowrap;" data-page-label="${ctx.labels.page}">${ctx.labels.page}</span>
     </div>
   `;
 }

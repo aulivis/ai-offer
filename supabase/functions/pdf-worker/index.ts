@@ -23,6 +23,15 @@ const pdfWebhookAllowlist = createPdfWebhookAllowlist(
 const JOB_TIMEOUT_MS = 90_000;
 const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 type PageEventHandler = (...args: unknown[]) => void;
 
 type PuppeteerRequest = {
@@ -282,15 +291,70 @@ serve(async (request) => {
               await page.setTitle(documentTitle);
             }
             
-            // Generate PDF with zero margins - let CSS @page handle all margins
-            // This ensures headers/footers are positioned correctly and don't overlap with content
-            // The CSS in print.css.ts defines @page margins that account for fixed headers/footers
+            // Extract header/footer data for Puppeteer templates
+            const headerFooterData = await page.evaluate(() => {
+              const footer = document.querySelector('.slim-footer');
+              const header = document.querySelector('.slim-header');
+              
+              if (!footer) return null;
+              
+              const companyEl = footer.querySelector('.slim-footer > div > span:first-child');
+              const companyName = companyEl?.textContent?.trim() || 'Company';
+              
+              const addressEl = footer.querySelector('.slim-footer > div > span:nth-child(2)');
+              const companyAddress = addressEl?.textContent?.trim() || '';
+              
+              const taxIdEl = footer.querySelector('.slim-footer > div > span:nth-child(3)');
+              const companyTaxId = taxIdEl?.textContent?.trim() || '';
+              
+              const pageNumberEl = footer.querySelector('.slim-footer__page-number');
+              const pageLabel = pageNumberEl?.getAttribute('data-page-label') || 'Page';
+              
+              let title = '';
+              let issueDate = '';
+              let dateLabel = '';
+              
+              if (header) {
+                const titleEl = header.querySelector('.slim-header__title');
+                title = titleEl?.textContent?.trim() || '';
+                
+                const metaEl = header.querySelector('.slim-header__meta');
+                const metaText = metaEl?.textContent?.trim() || '';
+                const dateMatch = metaText.match(/^(.+?):\s*(.+)$/);
+                if (dateMatch) {
+                  dateLabel = dateMatch[1]?.trim() || '';
+                  issueDate = dateMatch[2]?.trim() || '';
+                }
+              }
+              
+              return { companyName, companyAddress, companyTaxId, pageLabel, title, issueDate, dateLabel };
+            });
+            
+            // Create footer template with page numbers (server-side)
+            // Puppeteer templates support .pageNumber and .totalPages classes
+            const footerTemplate = headerFooterData ? `
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8pt; font-family: 'Work Sans', Arial, sans-serif; color: #334155; padding: 4mm 0; width: 100%; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; gap: 2px; font-size: 7pt; min-width: 0; flex: 1; max-width: 70%; word-wrap: break-word;">
+                  <span style="font-weight: 600;">${escapeHtml(headerFooterData.companyName)}</span>
+                  ${headerFooterData.companyAddress ? `<span>${escapeHtml(headerFooterData.companyAddress)}</span>` : ''}
+                  ${headerFooterData.companyTaxId ? `<span>${escapeHtml(headerFooterData.companyTaxId)}</span>` : ''}
+                </div>
+                <span style="flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; text-transform: uppercase;">
+                  ${escapeHtml(headerFooterData.pageLabel)} <span class="pageNumber"></span> / <span class="totalPages"></span>
+                </span>
+              </div>
+            ` : '<div></div>';
+            
+            // Generate PDF with margins that account for header/footer templates
+            // Using @page margins (20mm top, 15mm sides, 25mm bottom) plus space for templates
             return await page.pdf({
               format: 'A4',
-              margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
+              margin: { top: '20mm', right: '15mm', bottom: '25mm', left: '15mm' },
               printBackground: true,
               preferCSSPageSize: true,
-              displayHeaderFooter: false,
+              displayHeaderFooter: true,
+              headerTemplate: '<div></div>', // Empty header for now
+              footerTemplate: footerTemplate,
               scale: 1.0,
             });
           } finally {
