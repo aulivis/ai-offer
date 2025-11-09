@@ -218,9 +218,10 @@ export function matchPresetQuestion(
       if (normalizedQuery === normalizedVariation) {
         return preset;
       }
-      // Also check similarity for close matches
+      // Also check similarity for close matches - use threshold but require higher confidence for variations
       const similarity = calculateSimilarity(query, variation);
-      if (similarity >= 0.85) {
+      // Use a slightly higher threshold (0.75) for variations to ensure quality matches
+      if (similarity >= Math.max(0.75, similarityThreshold)) {
         return preset;
       }
     }
@@ -229,7 +230,8 @@ export function matchPresetQuestion(
   // Check similarity with original questions
   for (const preset of PRESET_QUESTIONS) {
     const similarity = calculateSimilarity(query, preset.question);
-    if (similarity >= 0.85) {
+    // Use threshold for original questions - more lenient
+    if (similarity >= similarityThreshold) {
       return preset;
     }
   }
@@ -256,7 +258,9 @@ export function matchPresetQuestion(
     
     // If majority of key words match, it's likely the same question
     const matchRatio = matchingWords.length / questionWords.length;
-    if (matchRatio >= 0.7) {
+    // Use threshold-based matching: if threshold is lower, require more word matches
+    const requiredRatio = similarityThreshold >= 0.7 ? 0.7 : 0.8;
+    if (matchRatio >= requiredRatio && matchingWords.length > 0) {
       // For "Milyen csomagok vannak?" vs "Milyen csomagok vannak?"
       // questionWords: ["csomagok"]
       // queryWords: ["csomagok"]

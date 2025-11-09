@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { envServer } from '@/env.server';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
+import { CSRF_COOKIE_NAME } from '../../../../../lib/auth/csrf';
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
@@ -58,7 +59,18 @@ type ExchangeCodeResult = {
   expires_in?: number;
 };
 
-function redirectTo(path: string, request?: Request) {
+type RedirectCookieOptions = {
+  accessTokenMaxAge?: number;
+  refreshTokenMaxAge?: number;
+  rememberMe?: boolean;
+};
+
+async function redirectTo(
+  path: string, 
+  request?: Request, 
+  cookieStore?: Awaited<ReturnType<typeof cookies>>,
+  cookieOptions?: RedirectCookieOptions
+) {
   // CRITICAL: Next.js NextResponse.redirect() requires absolute URLs.
   // We need to construct an absolute URL from the relative path.
   
@@ -88,10 +100,71 @@ function redirectTo(path: string, request?: Request) {
     absoluteUrl = `${baseUrl}${normalizedPath}`;
   }
   
+  // Get the cookie store if not provided
+  const store = cookieStore ?? await cookies();
+  
   // Create redirect response with absolute URL
-  // Next.js automatically includes all cookies set via cookies().set() in this response
-  // Status 302 is standard for redirects and works correctly with cookies
-  return NextResponse.redirect(absoluteUrl, { status: 302 });
+  const response = NextResponse.redirect(absoluteUrl, { status: 302 });
+  
+  // CRITICAL: In Next.js App Router, when using NextResponse.redirect(),
+  // cookies set via cookies().set() may not be automatically included in the response.
+  // We need to explicitly copy cookies from the store to the response to ensure
+  // they are sent with the redirect.
+  // 
+  // IMPORTANT: We read cookies from the store and set them on the response with
+  // the same options to ensure they're properly serialized into Set-Cookie headers.
+  const accessToken = store.get('propono_at')?.value;
+  const refreshToken = store.get('propono_rt')?.value;
+  const csrfToken = store.get(CSRF_COOKIE_NAME)?.value;
+  
+  const isSecure = envServer.APP_URL.startsWith('https');
+  const REMEMBER_ME_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
+  
+  // Calculate maxAge values based on options or defaults
+  // These should match the values used in setAuthCookies()
+  const accessTokenMaxAge = cookieOptions?.accessTokenMaxAge ?? 3600; // 1 hour default
+  const refreshTokenMaxAge = cookieOptions?.rememberMe
+    ? REMEMBER_ME_MAX_AGE
+    : (cookieOptions?.refreshTokenMaxAge ?? 7 * 24 * 60 * 60); // 7 days default
+  const csrfMaxAge = cookieOptions?.rememberMe
+    ? REMEMBER_ME_MAX_AGE
+    : Math.max(accessTokenMaxAge, 7 * 24 * 60 * 60); // At least 7 days
+  
+  // Explicitly set cookies on the redirect response
+  // This ensures they are included in the Set-Cookie headers of the redirect response.
+  // The browser will receive these cookies and send them with the next request to /auth/init-session.
+  if (accessToken) {
+    response.cookies.set('propono_at', accessToken, {
+      httpOnly: true,
+      sameSite: 'lax', // Allows cookies on same-site redirects (top-level navigations)
+      secure: isSecure, // false for HTTP (localhost), true for HTTPS
+      path: '/', // Available across entire site
+      maxAge: accessTokenMaxAge,
+      // Don't set domain - let browser handle it (important for localhost)
+    });
+  }
+  
+  if (refreshToken) {
+    response.cookies.set('propono_rt', refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
+      maxAge: refreshTokenMaxAge,
+    });
+  }
+  
+  if (csrfToken) {
+    response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
+      httpOnly: false, // CSRF token needs to be readable by client-side JS
+      sameSite: 'lax',
+      secure: isSecure,
+      path: '/',
+      maxAge: csrfMaxAge,
+    });
+  }
+  
+  return response;
 }
 
 function parseExpiresIn(value: string | number | null | undefined): number {
@@ -431,6 +504,8 @@ export async function GET(request: Request) {
           refreshTokenPresent: !!finalVerifyRt,
           accessTokenLength: finalVerifyAt?.length ?? 0,
           refreshTokenLength: finalVerifyRt?.length ?? 0,
+          expiresIn: tokens.expiresIn,
+          rememberMe,
         });
         
         if (!finalVerifyAt || !finalVerifyRt) {
@@ -443,15 +518,20 @@ export async function GET(request: Request) {
           return redirectTo(MAGIC_LINK_FAILURE_REDIRECT, request);
         }
         
-        // Use redirectTo helper which properly handles absolute URLs
+        // Use redirectTo helper which properly handles absolute URLs and cookies
         logger.info('Creating redirect response', {
           userId,
           redirectPath,
         });
         
-        // Create redirect response with absolute URL
-        // Next.js automatically includes cookies set via cookies().set() in the redirect response
-        return redirectTo(redirectPath, request);
+        // Pass cookie options to ensure cookies are set with correct maxAge values
+        return redirectTo(redirectPath, request, cookieStore, {
+          accessTokenMaxAge: tokens.expiresIn,
+          refreshTokenMaxAge: rememberMe 
+            ? REMEMBER_ME_EXPIRES_IN_SECONDS 
+            : Math.max(tokens.expiresIn || 3600, 7 * 24 * 60 * 60),
+          rememberMe,
+        });
       } catch (error) {
         logger.error('Error in magic link token handling', error);
         // Ensure cookies are cleared on error
@@ -573,11 +653,19 @@ export async function GET(request: Request) {
         logger.info('Redirecting to init-session (token_hash flow)', {
           userId,
           redirectPath,
+          expiresIn,
+          rememberMe,
         });
         
-        // Use redirectTo helper which properly handles absolute URLs
-        // Next.js automatically includes cookies set via cookies().set() in the redirect response
-        return redirectTo(redirectPath, request);
+        // Use redirectTo helper which properly handles absolute URLs and cookies
+        // Pass cookie options to ensure cookies are set with correct maxAge values
+        return redirectTo(redirectPath, request, cookieStore, {
+          accessTokenMaxAge: expiresIn,
+          refreshTokenMaxAge: rememberMe 
+            ? REMEMBER_ME_EXPIRES_IN_SECONDS 
+            : Math.max(expiresIn || 3600, 7 * 24 * 60 * 60),
+          rememberMe,
+        });
       } catch (handleError) {
         logger.error('Error in magic link token handling (token_hash flow)', handleError);
         // Ensure cookies are cleared on error
@@ -676,7 +764,14 @@ export async function GET(request: Request) {
     // redirecting to the final destination (dashboard, etc.)
     const initSessionPath = `/auth/init-session?redirect=${encodeURIComponent(finalRedirect)}&user_id=${encodeURIComponent(userId)}`;
     
-    return redirectTo(initSessionPath, request);
+    // Pass cookie options to ensure cookies are set with correct maxAge values
+    return redirectTo(initSessionPath, request, cookieStore, {
+      accessTokenMaxAge: expiresIn,
+      refreshTokenMaxAge: rememberMe 
+        ? REMEMBER_ME_EXPIRES_IN_SECONDS 
+        : Math.max(expiresIn || 3600, 7 * 24 * 60 * 60),
+      rememberMe,
+    });
   } catch (error) {
     logger.error('Failed to complete OAuth callback', error);
     await clearAuthCookies();

@@ -183,10 +183,10 @@ export default function Chatbot({
       {!isStandalone && (
         <div className="flex items-center justify-between border-b border-border bg-gradient-to-r from-bg to-bg-muted/30 p-4">
           <div className="flex items-center gap-3">
-            <VandaAvatar size="md" variant={isLoading ? 'thinking' : 'online'} />
+            <VandaAvatar size="lg" variant={isLoading ? 'thinking' : 'online'} />
             <div>
-              <h3 className="text-base font-semibold text-fg">{defaultTitle}</h3>
-              <p className="text-xs text-fg-muted flex items-center gap-1.5">
+              <h3 className="text-[1.28rem] font-semibold text-fg">{defaultTitle}</h3>
+              <p className="text-[0.75rem] text-fg-muted flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                 {isLoading ? t('chatbot.status.thinking') : t('chatbot.status.online')}
               </p>
@@ -219,22 +219,22 @@ export default function Chatbot({
             <div className="w-full max-w-2xl space-y-6 animate-in fade-in duration-500">
               {/* Vanda Avatar in Empty State */}
               <div className="flex justify-center">
-                <VandaAvatar size="xl" variant="default" className="scale-110" />
+                <VandaAvatar size="xl" variant="online" className="scale-110" />
               </div>
               
               {/* Welcome Message */}
               <div className="text-center space-y-2">
-                <h2 className="text-xl font-semibold text-fg">
+                <h2 className="text-[1.28rem] font-semibold text-fg">
                   {t('chatbot.emptyState.greeting')}
                 </h2>
-                <p className="text-sm text-fg-muted max-w-md mx-auto leading-relaxed">
+                <p className="text-[0.875rem] text-fg-muted max-w-md mx-auto leading-relaxed">
                   {t('chatbot.emptyState.description')}
                 </p>
               </div>
               
               {/* Suggested Questions */}
               <div className="space-y-3">
-                <p className="text-sm font-medium text-fg text-center">
+                <p className="text-[0.875rem] font-medium text-fg text-center">
                   {t('chatbot.suggestedQuestions.title')}
                 </p>
                 <div className="flex flex-col gap-2.5">
@@ -245,7 +245,7 @@ export default function Chatbot({
                         key={key}
                         onClick={() => handleQuestionClick(questionText)}
                         disabled={isLoading}
-                        className="group relative rounded-xl border border-border bg-bg px-4 py-3 text-left text-sm text-fg transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        className="group relative rounded-xl border border-border bg-bg px-4 py-3 text-left text-[0.875rem] text-fg transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                       >
                         <span className="flex items-center gap-2.5">
                           <svg
@@ -287,8 +287,8 @@ export default function Chatbot({
                   {showAvatar && (
                     <div className="flex-shrink-0">
                       <VandaAvatar 
-                        size="sm" 
-                        variant={index === messages.length - 1 && isLoading ? 'thinking' : 'default'}
+                        size="md" 
+                        variant={index === messages.length - 1 && isLoading ? 'thinking' : 'online'}
                         className="mb-1"
                       />
                     </div>
@@ -303,7 +303,7 @@ export default function Chatbot({
                           : 'bg-bg-muted text-fg border border-border/50 rounded-bl-sm'
                       }`}
                     >
-                      <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                      <div className="whitespace-pre-wrap break-words text-[0.875rem] leading-relaxed">
                         {isUser 
                           ? messageText
                           : renderMessageWithLinks(messageText)
@@ -313,7 +313,7 @@ export default function Chatbot({
                     
                     {/* Feedback and Timestamp for Assistant Messages */}
                     {!isUser && (
-                      <div className="mt-2 flex items-center gap-3 text-xs text-fg-muted">
+                      <div className="mt-2 flex items-center gap-3 text-[0.75rem] text-fg-muted">
                         <span className="opacity-60">
                           {new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -374,7 +374,7 @@ export default function Chatbot({
                     
                     {/* Timestamp for User Messages */}
                     {isUser && (
-                      <span className="mt-1.5 text-xs text-fg-muted opacity-60">
+                      <span className="mt-1.5 text-[0.75rem] text-fg-muted opacity-60">
                         {new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
@@ -390,11 +390,11 @@ export default function Chatbot({
             {isLoading && (
               <div className="flex items-end gap-2.5 justify-start animate-in fade-in slide-in-from-bottom-2">
                 <div className="flex-shrink-0">
-                  <VandaAvatar size="sm" variant="thinking" className="mb-1" />
+                  <VandaAvatar size="md" variant="thinking" className="mb-1" />
                 </div>
                 <div className="rounded-2xl rounded-bl-sm bg-bg-muted border border-border/50 px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm text-fg-muted">{t('chatbot.typing')}</span>
+                    <span className="text-[0.875rem] text-fg-muted">{t('chatbot.typing')}</span>
                     <div className="flex gap-1">
                       <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.3s]" />
                       <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-fg-muted [animation-delay:-0.15s]" />
@@ -413,7 +413,7 @@ export default function Chatbot({
         {error && (
           <div className="px-4 pb-4">
             <div 
-              className="rounded-xl border border-danger/30 bg-danger/10 p-3.5 text-sm text-danger shadow-sm animate-in fade-in slide-in-from-top-2"
+              className="rounded-xl border border-danger/30 bg-danger/10 p-3.5 text-[0.875rem] text-danger shadow-sm animate-in fade-in slide-in-from-top-2"
               role="alert"
               aria-live="assertive"
             >
@@ -423,7 +423,7 @@ export default function Chatbot({
                 </svg>
                 {t('chatbot.error')}
               </p>
-              <p className="mt-1.5 text-xs opacity-90">{error.message || t('common.status.error')}</p>
+              <p className="mt-1.5 text-[0.75rem] opacity-90">{error.message || t('common.status.error')}</p>
             </div>
           </div>
         )}
@@ -440,7 +440,7 @@ export default function Chatbot({
             disabled={isLoading}
             aria-label={defaultPlaceholder}
             aria-describedby="chatbot-input-description"
-            className="flex-1 rounded-xl border border-border bg-bg px-4 py-2.5 text-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-all duration-200"
+            className="flex-1 rounded-xl border border-border bg-bg px-4 py-2.5 text-[0.875rem] text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 transition-all duration-200"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !isLoading && input.trim()) {
                 e.preventDefault();
@@ -451,7 +451,7 @@ export default function Chatbot({
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-ink hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
+            className="rounded-xl bg-primary px-5 py-2.5 text-[0.875rem] font-medium text-primary-ink hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
             aria-label={t('chatbot.send')}
           >
             {isLoading ? (

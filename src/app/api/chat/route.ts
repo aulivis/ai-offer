@@ -316,9 +316,33 @@ export async function POST(req: NextRequest) {
         requestId,
       });
       
-      // For preset questions, return the answer directly without using AI
-      // Create a simple text stream that formats the answer for useChat hook
+      // For preset questions, use AI SDK's streamText with a simple prompt
+      // that returns the preset answer directly - this ensures proper streaming format
       try {
+        const openaiClient = createOpenAIClient();
+        const presetAnswer = presetMatch.answer;
+        
+        // Use streamText with a system prompt that returns the preset answer
+        // This ensures compatibility with useChat hook
+        // Temperature is set to 0 to ensure consistent output, and we explicitly instruct
+        // the model to return the answer exactly as provided
+        const result = streamText({
+          model: openai('gpt-3.5-turbo'),
+          system: `You are Vanda, a helpful assistant for Vyndi.
+
+CRITICAL INSTRUCTION: The user has asked a predefined question. You MUST return the following answer EXACTLY as written below. Do not add, remove, or modify any text. Return ONLY the answer text, nothing else.
+
+PRESET ANSWER:
+${presetAnswer}`,
+          messages: [
+            {
+              role: 'user',
+              content: lastMessage.content,
+            },
+          ],
+          temperature: 0, // Use temperature 0 for deterministic output
+        });
+        
         const responseTime = Date.now() - startTime;
         
         // Track analytics (async, don't await)
@@ -345,54 +369,13 @@ export async function POST(req: NextRequest) {
           });
         });
         
-        // Create a direct text stream response without using AI
-        // Return the preset answer directly in the format expected by useChat hook
-        // Format: text deltas as "0:" + JSON.stringify(text) + "\n"
-        // Done signal: "d:" + JSON.stringify({finishReason:"stop"}) + "\n"
-        const presetAnswer = presetMatch.answer;
-        const encoder = new TextEncoder();
-        const stream = new ReadableStream({
-          start(controller) {
-            // Stream the answer character by character or in small chunks
-            // Format: each text delta should be sent as "0:" + JSON.stringify(text)
-            const chunkSize = 30;
-            let index = 0;
-            
-            const sendChunk = () => {
-              if (index >= presetAnswer.length) {
-                // Send done signal: d:{"finishReason":"stop"}
-                controller.enqueue(encoder.encode('d:{"finishReason":"stop"}\n'));
-                controller.close();
-                return;
-              }
-              
-              const chunk = presetAnswer.slice(index, index + chunkSize);
-              index += chunkSize;
-              
-              // AI SDK text stream format: "0:" + JSON.stringify(text) + "\n"
-              const data = `0:${JSON.stringify(chunk)}\n`;
-              controller.enqueue(encoder.encode(data));
-              
-              // Schedule next chunk with a small delay for streaming effect
-              setTimeout(sendChunk, 20);
-            };
-            
-            sendChunk();
-          },
-        });
-        
-        log.info('Returning direct stream response for preset question (no AI)', {
+        log.info('Returning preset answer via AI SDK stream', {
           answerLength: presetAnswer.length,
           requestId,
         });
         
-        // Return response with proper headers for text streaming
-        return new Response(stream, {
-          headers: {
-            'Content-Type': 'text/plain; charset=utf-8',
-            'Cache-Control': 'no-cache',
-          },
-        });
+        // Return the stream response using AI SDK's format
+        return result.toTextStreamResponse();
       } catch (error) {
         log.error('Failed to create stream response for preset question', error instanceof Error ? error : undefined, {
           errorType: error instanceof Error ? error.constructor.name : typeof error,
