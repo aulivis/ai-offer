@@ -93,3 +93,4 @@ GRANT ALL ON TABLE public.clients TO service_role;
 COMMENT ON TABLE public.clients IS 'Client records with RLS enabled. Users can only access their own clients.';
 
 
+

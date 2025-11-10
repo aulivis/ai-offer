@@ -14,3 +14,4 @@ COMMENT ON COLUMN testimonials.star_rating IS 'Star rating from 1 to 5 (optional
 COMMENT ON COLUMN testimonials.star_style IS 'Star style: filled, outlined, or solid (optional)';
 
 
+

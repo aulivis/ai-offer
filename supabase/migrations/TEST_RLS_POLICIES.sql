@@ -125,3 +125,4 @@ WHERE schemaname = 'public'
   AND tablename IN ('activities', 'clients');
 
 
+

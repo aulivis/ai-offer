@@ -87,8 +87,8 @@ export default function FullTourPage() {
           Teljes funkciĂł bemutatĂł
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          RĂ©szletes ĂştmutatĂł a Vyndi minden funkciĂłjĂˇrĂłl. Tanuld meg, hogyan hasznĂˇld hatĂ©konyan a
-          platformot az ajĂˇnlatkĂ©szĂ­tĂ©s minden lĂ©pĂ©sĂ©ben.
+          RĂ©szletes ĂştmutatĂł a Vyndi minden funkciĂłjĂˇrĂłl. Tanuld meg, hogyan hasznĂˇld
+          hatĂ©konyan a platformot az ajĂˇnlatkĂ©szĂ­tĂ©s minden lĂ©pĂ©sĂ©ben.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -147,8 +147,8 @@ export default function FullTourPage() {
                 VideĂł hossza: 22 perc | FormĂˇtum: MP4 vagy YouTube embed
               </p>
               <p className="mt-4 text-xs text-white/60">
-                A videĂł tartalmazza: Platform ĂˇttekintĂ©s, rĂ©szletes funkciĂł bemutatĂˇsok, lĂ©pĂ©srĹ‘l
-                lĂ©pĂ©sre ĂştmutatĂłk, pro tippek
+                A videĂł tartalmazza: Platform ĂˇttekintĂ©s, rĂ©szletes funkciĂł bemutatĂˇsok,
+                lĂ©pĂ©srĹ‘l lĂ©pĂ©sre ĂştmutatĂłk, pro tippek
               </p>
             </div>
           </div>
@@ -412,3 +412,4 @@ export default function FullTourPage() {
     </main>
   );
 }
+

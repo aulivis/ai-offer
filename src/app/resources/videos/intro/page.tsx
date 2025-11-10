@@ -44,8 +44,9 @@ export default function IntroVideoPage() {
           BevezetĹ‘ videĂł
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Ismerd meg a Vyndi-t 5 percben. Ez a bevezetĹ‘ videĂł bemutatja a platform fĹ‘bb funkciĂłit,
-          Ă©s segĂ­t megĂ©rteni, hogyan segĂ­thet a professzionĂˇlis ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©ben.
+          Ismerd meg a Vyndi-t 5 percben. Ez a bevezetĹ‘ videĂł bemutatja a platform fĹ‘bb
+          funkciĂłit, Ă©s segĂ­t megĂ©rteni, hogyan segĂ­thet a professzionĂˇlis ajĂˇnlatok
+          kĂ©szĂ­tĂ©sĂ©ben.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -110,8 +111,8 @@ export default function IntroVideoPage() {
                 VideĂł hossza: 5 perc | FormĂˇtum: MP4 vagy YouTube embed
               </p>
               <p className="mt-4 text-xs text-white/60">
-                A videĂł tartalmazza: Platform ĂˇttekintĂ©s, fĹ‘bb funkciĂłk bemutatĂˇsa, gyors demo,
-                hasznĂˇlati pĂ©ldĂˇk
+                A videĂł tartalmazza: Platform ĂˇttekintĂ©s, fĹ‘bb funkciĂłk bemutatĂˇsa, gyors
+                demo, hasznĂˇlati pĂ©ldĂˇk
               </p>
             </div>
           </div>
@@ -130,8 +131,8 @@ export default function IntroVideoPage() {
       <Card className="mb-12">
         <h2 className="mb-4 text-2xl font-bold text-fg">VideĂł tartalma</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          Ez a bevezetĹ‘ videĂł ĂˇttekintĂ©st nyĂşjt a Vyndi platformrĂłl Ă©s bemutatja, hogyan segĂ­thet
-          neked professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni percek alatt.
+          Ez a bevezetĹ‘ videĂł ĂˇttekintĂ©st nyĂşjt a Vyndi platformrĂłl Ă©s bemutatja, hogyan
+          segĂ­thet neked professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni percek alatt.
         </p>
         <div className="space-y-4">
           <div>
@@ -198,8 +199,8 @@ export default function IntroVideoPage() {
               <div>
                 <h3 className="mb-2 font-semibold text-fg">AI-alapĂş szĂ¶veg generĂˇlĂˇs</h3>
                 <p className="text-sm text-fg-muted">
-                  NĂ©zd meg, hogyan mĹ±kĂ¶dik az AI funkciĂł, Ă©s hogyan generĂˇlhatsz professzionĂˇlis
-                  szĂ¶vegeket mĂˇsodpercek alatt.
+                  NĂ©zd meg, hogyan mĹ±kĂ¶dik az AI funkciĂł, Ă©s hogyan generĂˇlhatsz
+                  professzionĂˇlis szĂ¶vegeket mĂˇsodpercek alatt.
                 </p>
               </div>
             </div>
@@ -251,7 +252,8 @@ export default function IntroVideoPage() {
               <div>
                 <h3 className="mb-2 font-semibold text-fg">PDF export</h3>
                 <p className="text-sm text-fg-muted">
-                  NĂ©zd meg, hogyan exportĂˇlhatod az ajĂˇnlatodat professzionĂˇlis PDF formĂˇtumban.
+                  NĂ©zd meg, hogyan exportĂˇlhatod az ajĂˇnlatodat professzionĂˇlis PDF
+                  formĂˇtumban.
                 </p>
               </div>
             </div>
@@ -278,7 +280,8 @@ export default function IntroVideoPage() {
         <div className="text-center">
           <h2 className="mb-4 text-3xl font-bold text-fg">KĂ©szen Ăˇllsz a kezdĂ©sre?</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            RegisztrĂˇlj ingyenesen, Ă©s azonnal elkezdhetsz professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni.
+            RegisztrĂˇlj ingyenesen, Ă©s azonnal elkezdhetsz professzionĂˇlis ajĂˇnlatokat
+            kĂ©szĂ­teni.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -316,7 +319,9 @@ export default function IntroVideoPage() {
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
                     Teljes funkciĂł bemutatĂł
                   </h3>
-                  <p className="text-sm text-fg-muted">RĂ©szletes ĂştmutatĂł minden funkciĂłrĂłl.</p>
+                  <p className="text-sm text-fg-muted">
+                    RĂ©szletes ĂştmutatĂł minden funkciĂłrĂłl.
+                  </p>
                 </div>
                 <svg
                   className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
@@ -366,3 +371,4 @@ export default function IntroVideoPage() {
     </main>
   );
 }
+

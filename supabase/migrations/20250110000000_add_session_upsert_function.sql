@@ -59,3 +59,4 @@ COMMENT ON FUNCTION public.upsert_session IS
   'UPSERT function for sessions table. Inserts a new session or updates an existing one based on rt_hash unique constraint. Used for session deduplication during auth flows.';
 
 
+

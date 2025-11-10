@@ -19,7 +19,10 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     const { activityId, imagePath } = body;
 
     if (!activityId || typeof activityId !== 'string') {
-      return NextResponse.json({ error: 'HiĂˇnyzik a tevĂ©kenysĂ©g azonosĂ­tĂł.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'HiĂˇnyzik a tevĂ©kenysĂ©g azonosĂ­tĂł.' },
+        { status: 400 },
+      );
     }
 
     if (!imagePath || typeof imagePath !== 'string') {

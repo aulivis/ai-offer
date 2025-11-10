@@ -193,3 +193,4 @@ export function clearPerformanceData(): void {
     // Fail silently
   }
 }
+

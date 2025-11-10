@@ -52,8 +52,9 @@ export default function TemplatesPage() {
           Ingyenes ajĂˇnlat sablonok
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
-          BĂ¶ngĂ©szd Ăˇt ingyenes, professzionĂˇlis ajĂˇnlat sablonjainkat. Minden sablon testreszabhatĂł,
-          azonnal hasznĂˇlhatĂł, Ă©s tĂ¶kĂ©letesen megfelel az ĂĽzleti ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©hez.
+          BĂ¶ngĂ©szd Ăˇt ingyenes, professzionĂˇlis ajĂˇnlat sablonjainkat. Minden sablon
+          testreszabhatĂł, azonnal hasznĂˇlhatĂł, Ă©s tĂ¶kĂ©letesen megfelel az ĂĽzleti ajĂˇnlatok
+          kĂ©szĂ­tĂ©sĂ©hez.
         </p>
       </header>
 
@@ -136,8 +137,8 @@ export default function TemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">VĂˇlassz sablont</h3>
             <p className="text-sm text-fg-muted">
-              BĂ¶ngĂ©szd Ăˇt az ingyenes sablonokat, Ă©s vĂˇlaszd ki azt, amelyik a legjobban illeszkedik
-              a stĂ­lusodhoz.
+              BĂ¶ngĂ©szd Ăˇt az ingyenes sablonokat, Ă©s vĂˇlaszd ki azt, amelyik a legjobban
+              illeszkedik a stĂ­lusodhoz.
             </p>
           </div>
           <div>
@@ -146,8 +147,8 @@ export default function TemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">Testreszabd</h3>
             <p className="text-sm text-fg-muted">
-              Add meg a sajĂˇt informĂˇciĂłidat, szĂ­neidet, logĂłdat, Ă©s az AI segĂ­t generĂˇlni a
-              szĂ¶vegeket.
+              Add meg a sajĂˇt informĂˇciĂłidat, szĂ­neidet, logĂłdat, Ă©s az AI segĂ­t generĂˇlni
+              a szĂ¶vegeket.
             </p>
           </div>
           <div>
@@ -186,8 +187,8 @@ export default function TemplatesPage() {
               <div>
                 <h3 className="mb-2 font-semibold text-fg">ProfesszionĂˇlis dizĂˇjn</h3>
                 <p className="text-sm text-fg-muted">
-                  Minden sablonunk professzionĂˇlis dizĂˇjner Ăˇltal kĂ©szĂĽlt, Ă©s kĂ¶veti a legjobb UX/UI
-                  gyakorlatokat.
+                  Minden sablonunk professzionĂˇlis dizĂˇjner Ăˇltal kĂ©szĂĽlt, Ă©s kĂ¶veti a
+                  legjobb UX/UI gyakorlatokat.
                 </p>
               </div>
             </div>
@@ -213,8 +214,8 @@ export default function TemplatesPage() {
               <div>
                 <h3 className="mb-2 font-semibold text-fg">Teljes testreszabhatĂłsĂˇg</h3>
                 <p className="text-sm text-fg-muted">
-                  MĂłdosĂ­thatod a szĂ­neket, logĂłt, szĂ¶vegeket, Ă©s mĂ©g sok mindent, hogy tĂ¶kĂ©letesen
-                  illeszkedjen a brandhez.
+                  MĂłdosĂ­thatod a szĂ­neket, logĂłt, szĂ¶vegeket, Ă©s mĂ©g sok mindent, hogy
+                  tĂ¶kĂ©letesen illeszkedjen a brandhez.
                 </p>
               </div>
             </div>
@@ -267,8 +268,8 @@ export default function TemplatesPage() {
               <div>
                 <h3 className="mb-2 font-semibold text-fg">Gyors Ă©s egyszerĹ±</h3>
                 <p className="text-sm text-fg-muted">
-                  Percek alatt kĂ©szĂ­thetsz professzionĂˇlis ajĂˇnlatot. Nincs szĂĽksĂ©g tervezĹ‘i
-                  tapasztalatra.
+                  Percek alatt kĂ©szĂ­thetsz professzionĂˇlis ajĂˇnlatot. Nincs szĂĽksĂ©g
+                  tervezĹ‘i tapasztalatra.
                 </p>
               </div>
             </div>
@@ -371,3 +372,4 @@ export default function TemplatesPage() {
     </main>
   );
 }
+

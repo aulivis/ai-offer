@@ -44,8 +44,9 @@ export default function BestPracticesPage() {
           AjĂˇnlatkĂ©szĂ­tĂ©s best practices
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          IparĂˇgi best practice-ek, trendek Ă©s szakĂ©rtĹ‘i tanĂˇcsok az ajĂˇnlatkĂ©szĂ­tĂ©sben. Tanuld meg
-          a sikeres ajĂˇnlatkĂ©szĂ­tĂ©s titkait a szakĂ©rtĹ‘ktĹ‘l.
+          IparĂˇgi best practice-ek, trendek Ă©s szakĂ©rtĹ‘i tanĂˇcsok az
+          ajĂˇnlatkĂ©szĂ­tĂ©sben. Tanuld meg a sikeres ajĂˇnlatkĂ©szĂ­tĂ©s titkait a
+          szakĂ©rtĹ‘ktĹ‘l.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -89,8 +90,8 @@ export default function BestPracticesPage() {
           />
         </svg>
         <p className="mt-4 text-sm font-medium text-gray-600">
-          [HelyĹ‘rzĹ‘: Hero kĂ©p - Best practices infografika, iparĂˇgi trendek vagy szakĂ©rtĹ‘i tanĂˇcsok
-          vizuĂˇlis ĂˇbrĂˇzolĂˇsa]
+          [HelyĹ‘rzĹ‘: Hero kĂ©p - Best practices infografika, iparĂˇgi trendek vagy
+          szakĂ©rtĹ‘i tanĂˇcsok vizuĂˇlis ĂˇbrĂˇzolĂˇsa]
         </p>
         <p className="mt-2 text-xs text-gray-500">
           AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
@@ -100,10 +101,10 @@ export default function BestPracticesPage() {
       {/* Introduction */}
       <div className="mb-12">
         <p className="text-lg leading-relaxed text-fg-muted">
-          Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dĹ‘ terĂĽlet, ahol a legjobb gyakorlatok, trendek Ă©s
-          stratĂ©giai megkĂ¶zelĂ­tĂ©sek dĂ¶ntĹ‘en befolyĂˇsolhatjĂˇk az eredmĂ©nyeket. Ebben a cikkben
-          bemutatjuk az iparĂˇg legfontosabb best practice-eit Ă©s trendjeit, amelyeket a sikeres
-          vĂˇllalkozĂˇsok alkalmaznak.
+          Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dĹ‘ terĂĽlet, ahol a legjobb gyakorlatok,
+          trendek Ă©s stratĂ©giai megkĂ¶zelĂ­tĂ©sek dĂ¶ntĹ‘en befolyĂˇsolhatjĂˇk az
+          eredmĂ©nyeket. Ebben a cikkben bemutatjuk az iparĂˇg legfontosabb best
+          practice-eit Ă©s trendjeit, amelyeket a sikeres vĂˇllalkozĂˇsok alkalmaznak.
         </p>
       </div>
 
@@ -116,8 +117,9 @@ export default function BestPracticesPage() {
               1. SzemĂ©lyre szabĂˇs: Az Ăşj arany standard
             </h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              A mai piacon a generikus ajĂˇnlatok mĂˇr nem elĂ©gsĂ©gesek. A legjobb gyakorlatok szerint
-              minden ajĂˇnlatnak szemĂ©lyre kell szabottnak lennie az ĂĽgyfĂ©l specifikus igĂ©nyeihez.
+              A mai piacon a generikus ajĂˇnlatok mĂˇr nem elĂ©gsĂ©gesek. A legjobb gyakorlatok
+              szerint minden ajĂˇnlatnak szemĂ©lyre kell szabottnak lennie az ĂĽgyfĂ©l
+              specifikus igĂ©nyeihez.
             </p>
             <div className="rounded-lg bg-blue-50 p-6">
               <h3 className="mb-3 font-semibold text-fg">Gyakorlati tanĂˇcsok:</h3>
@@ -136,8 +138,8 @@ export default function BestPracticesPage() {
           <Card className="border-l-4 border-l-green-500">
             <h2 className="mb-4 text-3xl font-bold text-fg">2. AdatvezĂ©relt megkĂ¶zelĂ­tĂ©s</h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              A sikeres ajĂˇnlatkĂ©szĂ­tĂ©s nem vĂ©letlen, hanem adatokon alapul. A legjobb cĂ©gek
-              folyamatosan mĂ©rnek, elemeznek Ă©s optimalizĂˇlnak.
+              A sikeres ajĂˇnlatkĂ©szĂ­tĂ©s nem vĂ©letlen, hanem adatokon alapul. A
+              legjobb cĂ©gek folyamatosan mĂ©rnek, elemeznek Ă©s optimalizĂˇlnak.
             </p>
 
             {/* Placeholder for data visualization */}
@@ -156,8 +158,8 @@ export default function BestPracticesPage() {
                 />
               </svg>
               <p className="mt-4 text-sm font-medium text-gray-600">
-                [HelyĹ‘rzĹ‘: Infografika - AjĂˇnlat konverziĂł rĂˇtĂˇk, A/B tesztelĂ©si eredmĂ©nyek, mĂ©rhetĹ‘
-                metrikĂˇk]
+                [HelyĹ‘rzĹ‘: Infografika - AjĂˇnlat konverziĂł rĂˇtĂˇk, A/B tesztelĂ©si
+                eredmĂ©nyek, mĂ©rhetĹ‘ metrikĂˇk]
               </p>
             </div>
 
@@ -171,8 +173,8 @@ export default function BestPracticesPage() {
               <div className="rounded-lg bg-green-50 p-4">
                 <h4 className="mb-2 font-semibold text-fg">Tesztelj Ă©s optimalizĂˇlj</h4>
                 <p className="text-sm text-fg-muted">
-                  A/B teszteld kĂĽlĂ¶nbĂ¶zĹ‘ megkĂ¶zelĂ­tĂ©seket, Ă©s folyamatosan javĂ­ts a legjobb
-                  eredmĂ©nyek alapjĂˇn.
+                  A/B teszteld kĂĽlĂ¶nbĂ¶zĹ‘ megkĂ¶zelĂ­tĂ©seket, Ă©s folyamatosan javĂ­ts a
+                  legjobb eredmĂ©nyek alapjĂˇn.
                 </p>
               </div>
             </div>
@@ -190,18 +192,20 @@ export default function BestPracticesPage() {
               <div>
                 <h3 className="mb-2 text-xl font-semibold text-fg">InteraktĂ­v ajĂˇnlatok</h3>
                 <p className="text-fg-muted">
-                  A statikus PDF-ek helyett az interaktĂ­v, web-alapĂş ajĂˇnlatok egyre nĂ©pszerĹ±bbek.
-                  Ezek lehetĹ‘vĂ© teszik az ĂĽgyfeleknek, hogy rĂ©szletesebben megismerjĂ©k az ajĂˇnlatot,
-                  Ă©s azonnal reagĂˇljanak.
+                  A statikus PDF-ek helyett az interaktĂ­v, web-alapĂş ajĂˇnlatok egyre
+                  nĂ©pszerĹ±bbek. Ezek lehetĹ‘vĂ© teszik az ĂĽgyfeleknek, hogy rĂ©szletesebben
+                  megismerjĂ©k az ajĂˇnlatot, Ă©s azonnal reagĂˇljanak.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">AI-alapĂş szĂ¶veg generĂˇlĂˇs</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">
+                  AI-alapĂş szĂ¶veg generĂˇlĂˇs
+                </h3>
                 <p className="text-fg-muted">
                   A mestersĂ©ges intelligencia egyre fontosabb szerepet jĂˇtszik az
-                  ajĂˇnlatkĂ©szĂ­tĂ©sben. Az AI segĂ­t gyorsabban, hatĂ©konyabban Ă©s konzisztensebben
-                  generĂˇlni a tartalmat.
+                  ajĂˇnlatkĂ©szĂ­tĂ©sben. Az AI segĂ­t gyorsabban, hatĂ©konyabban Ă©s
+                  konzisztensebben generĂˇlni a tartalmat.
                 </p>
                 <Link
                   href="/resources/ai-guide"
@@ -220,19 +224,24 @@ export default function BestPracticesPage() {
               </div>
 
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">Mobil-optimalizĂˇlt ajĂˇnlatok</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">
+                  Mobil-optimalizĂˇlt ajĂˇnlatok
+                </h3>
                 <p className="text-fg-muted">
-                  Az ĂĽgyfelek egyre gyakrabban mobil eszkĂ¶zĂ¶kĂ¶n olvassĂˇk az ajĂˇnlatokat. Fontos,
-                  hogy az ajĂˇnlatok tĂ¶kĂ©letesen mĹ±kĂ¶djenek Ă©s jĂłl nĂ©zzenek ki mobilon is.
+                  Az ĂĽgyfelek egyre gyakrabban mobil eszkĂ¶zĂ¶kĂ¶n olvassĂˇk az ajĂˇnlatokat.
+                  Fontos, hogy az ajĂˇnlatok tĂ¶kĂ©letesen mĹ±kĂ¶djenek Ă©s jĂłl nĂ©zzenek ki
+                  mobilon is.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">Video Ă©s multimĂ©dia tartalom</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">
+                  Video Ă©s multimĂ©dia tartalom
+                </h3>
                 <p className="text-fg-muted">
-                  A videĂł Ă©s egyĂ©b multimĂ©dia tartalmak egyre gyakrabban kerĂĽlnek be az ajĂˇnlatokba.
-                  Ezek nĂ¶velhetik az engagement-et Ă©s segĂ­thetnek jobban kommunikĂˇlni az
-                  Ă©rtĂ©kajĂˇnlatot.
+                  A videĂł Ă©s egyĂ©b multimĂ©dia tartalmak egyre gyakrabban kerĂĽlnek be az
+                  ajĂˇnlatokba. Ezek nĂ¶velhetik az engagement-et Ă©s segĂ­thetnek jobban
+                  kommunikĂˇlni az Ă©rtĂ©kajĂˇnlatot.
                 </p>
               </div>
             </div>
@@ -251,7 +260,9 @@ export default function BestPracticesPage() {
                 <h3 className="mb-3 font-semibold text-fg">Tech Ă©s Start-up szektor</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
                   <li>HangsĂşlyozd az innovĂˇciĂłt Ă©s a technolĂłgiai elĹ‘nyĂ¶ket</li>
-                  <li>Mutasd be a skĂˇlĂˇzhatĂłsĂˇgot Ă©s a jĂ¶vĹ‘beli nĂ¶vekedĂ©si lehetĹ‘sĂ©geket</li>
+                  <li>
+                    Mutasd be a skĂˇlĂˇzhatĂłsĂˇgot Ă©s a jĂ¶vĹ‘beli nĂ¶vekedĂ©si lehetĹ‘sĂ©geket
+                  </li>
                   <li>HasznĂˇlj modern, dinamikus dizĂˇjnokat</li>
                   <li>KĂ¶zpontosĂ­ts a ROI-ra Ă©s a hosszĂş tĂˇvĂş Ă©rtĂ©kre</li>
                 </ul>
@@ -330,25 +341,25 @@ export default function BestPracticesPage() {
           <Card className="border-l-4 border-l-indigo-500">
             <h2 className="mb-4 text-3xl font-bold text-fg">6. Az ajĂˇnlatkĂ©szĂ­tĂ©s jĂ¶vĹ‘je</h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dik. ĂŤme nĂ©hĂˇny trend, amely a kĂ¶zeljĂ¶vĹ‘ben
-              vĂˇrhatĂł:
+              Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dik. ĂŤme nĂ©hĂˇny trend, amely a
+              kĂ¶zeljĂ¶vĹ‘ben vĂˇrhatĂł:
             </p>
             <ul className="ml-6 list-disc space-y-2 text-lg text-fg-muted">
               <li>
-                <strong>MĂ©g nagyobb automatizĂˇlĂˇs:</strong> Az AI Ă©s az automatizĂˇlĂˇs egyre nagyobb
-                szerepet fognak jĂˇtszani
+                <strong>MĂ©g nagyobb automatizĂˇlĂˇs:</strong> Az AI Ă©s az automatizĂˇlĂˇs egyre
+                nagyobb szerepet fognak jĂˇtszani
               </li>
               <li>
-                <strong>ValĂłs idejĹ± egyĂĽttmĹ±kĂ¶dĂ©s:</strong> Az ĂĽgyfelek valĂłs idĹ‘ben fogjĂˇk tudni
-                megtekinteni Ă©s szerkeszteni az ajĂˇnlatokat
+                <strong>ValĂłs idejĹ± egyĂĽttmĹ±kĂ¶dĂ©s:</strong> Az ĂĽgyfelek valĂłs idĹ‘ben
+                fogjĂˇk tudni megtekinteni Ă©s szerkeszteni az ajĂˇnlatokat
               </li>
               <li>
-                <strong>IntegrĂˇlt analytics:</strong> RĂ©szletesebb adatok Ă©s elemzĂ©sek az ajĂˇnlat
-                teljesĂ­tmĂ©nyĂ©rĹ‘l
+                <strong>IntegrĂˇlt analytics:</strong> RĂ©szletesebb adatok Ă©s elemzĂ©sek az
+                ajĂˇnlat teljesĂ­tmĂ©nyĂ©rĹ‘l
               </li>
               <li>
-                <strong>PersonalizĂˇciĂł a kĂ¶vetkezĹ‘ szinten:</strong> MĂ©g mĂ©lyebb szemĂ©lyre szabĂˇs az
-                ĂĽgyfĂ©l adatainak felhasznĂˇlĂˇsĂˇval
+                <strong>PersonalizĂˇciĂł a kĂ¶vetkezĹ‘ szinten:</strong> MĂ©g mĂ©lyebb szemĂ©lyre
+                szabĂˇs az ĂĽgyfĂ©l adatainak felhasznĂˇlĂˇsĂˇval
               </li>
             </ul>
           </Card>
@@ -359,14 +370,15 @@ export default function BestPracticesPage() {
       <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
         <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          Az ajĂˇnlatkĂ©szĂ­tĂ©s best practice-ei folyamatosan fejlĹ‘dnek, de nĂ©hĂˇny alapelv idĹ‘tĂˇllĂł:
-          szemĂ©lyre szabĂˇs, adatvezĂ©relt megkĂ¶zelĂ­tĂ©s, egyĂ©rtelmĹ± kommunikĂˇciĂł Ă©s folyamatos
-          optimalizĂˇlĂˇs. Azok a vĂˇllalkozĂˇsok, amelyek ezeket a gyakorlatokat kĂ¶vetik, jelentĹ‘sen
-          nĂ¶velhetik sikerĂĽk esĂ©lyĂ©t.
+          Az ajĂˇnlatkĂ©szĂ­tĂ©s best practice-ei folyamatosan fejlĹ‘dnek, de nĂ©hĂˇny alapelv
+          idĹ‘tĂˇllĂł: szemĂ©lyre szabĂˇs, adatvezĂ©relt megkĂ¶zelĂ­tĂ©s, egyĂ©rtelmĹ±
+          kommunikĂˇciĂł Ă©s folyamatos optimalizĂˇlĂˇs. Azok a vĂˇllalkozĂˇsok, amelyek ezeket a
+          gyakorlatokat kĂ¶vetik, jelentĹ‘sen nĂ¶velhetik sikerĂĽk esĂ©lyĂ©t.
         </p>
         <p className="text-lg leading-relaxed text-fg-muted">
-          Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s nem csak egy dokumentum kĂ©szĂ­tĂ©se, hanem egy stratĂ©giai
-          folyamat, amely hozzĂˇjĂˇrul az ĂĽzleti nĂ¶vekedĂ©shez Ă©s a hosszĂş tĂˇvĂş sikerhez.
+          Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s nem csak egy dokumentum kĂ©szĂ­tĂ©se, hanem egy
+          stratĂ©giai folyamat, amely hozzĂˇjĂˇrul az ĂĽzleti nĂ¶vekedĂ©shez Ă©s a hosszĂş tĂˇvĂş
+          sikerhez.
         </p>
       </Card>
 
@@ -377,8 +389,8 @@ export default function BestPracticesPage() {
             Kezdd el mĂ©g ma a best practice-ek alkalmazĂˇsĂˇt!
           </h2>
           <p className="mb-8 text-lg text-fg-muted">
-            A Vyndi segĂ­t neked professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni a legjobb gyakorlatok szerint.
-            PrĂłbĂˇld ki ingyenesen!
+            A Vyndi segĂ­t neked professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni a legjobb gyakorlatok
+            szerint. PrĂłbĂˇld ki ingyenesen!
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link

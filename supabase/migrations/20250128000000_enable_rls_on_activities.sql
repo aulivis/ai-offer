@@ -88,3 +88,4 @@ GRANT ALL ON TABLE public.activities TO service_role;
 COMMENT ON TABLE public.activities IS 'User activities with RLS enabled. Users can only access their own activities.';
 
 
+

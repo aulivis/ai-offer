@@ -207,8 +207,8 @@ export default function TenTipsPage() {
           10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Gyakorlati tanĂˇcsok Ă©s tippek, amelyek segĂ­tenek jobb, konverziĂłoptimalizĂˇlt ajĂˇnlatokat
-          kĂ©szĂ­teni. Tanuld meg a professzionĂˇlis ajĂˇnlatkĂ©szĂ­tĂ©s titkait.
+          Gyakorlati tanĂˇcsok Ă©s tippek, amelyek segĂ­tenek jobb, konverziĂłoptimalizĂˇlt
+          ajĂˇnlatokat kĂ©szĂ­teni. Tanuld meg a professzionĂˇlis ajĂˇnlatkĂ©szĂ­tĂ©s titkait.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -252,8 +252,8 @@ export default function TenTipsPage() {
           />
         </svg>
         <p className="mt-4 text-sm font-medium text-gray-600">
-          [HelyĹ‘rzĹ‘: Hero kĂ©p - ProfesszionĂˇlis ajĂˇnlat pĂ©ldĂˇk, tippek infografika vagy inspirĂˇlĂł
-          kĂ©p]
+          [HelyĹ‘rzĹ‘: Hero kĂ©p - ProfesszionĂˇlis ajĂˇnlat pĂ©ldĂˇk, tippek infografika vagy
+          inspirĂˇlĂł kĂ©p]
         </p>
         <p className="mt-2 text-xs text-gray-500">
           AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
@@ -263,9 +263,10 @@ export default function TenTipsPage() {
       {/* Introduction */}
       <div className="mb-12">
         <p className="text-lg leading-relaxed text-fg-muted">
-          Az ajĂˇnlatkĂ©szĂ­tĂ©s mĹ±vĂ©szete Ă©s tudomĂˇnya egyarĂˇnt. Egy jĂłl elkĂ©szĂ­tett ajĂˇnlat nem csak
-          informĂˇciĂłkat kĂ¶zĂ¶l, hanem meggyĹ‘zi az ĂĽgyfelet, hogy veled dolgozzon. Ebben a cikkben 10
-          praktikus tippet osztunk meg, amelyek segĂ­tenek tĂ¶kĂ©letes ajĂˇnlatokat kĂ©szĂ­teni.
+          Az ajĂˇnlatkĂ©szĂ­tĂ©s mĹ±vĂ©szete Ă©s tudomĂˇnya egyarĂˇnt. Egy jĂłl elkĂ©szĂ­tett
+          ajĂˇnlat nem csak informĂˇciĂłkat kĂ¶zĂ¶l, hanem meggyĹ‘zi az ĂĽgyfelet, hogy veled
+          dolgozzon. Ebben a cikkben 10 praktikus tippet osztunk meg, amelyek segĂ­tenek
+          tĂ¶kĂ©letes ajĂˇnlatokat kĂ©szĂ­teni.
         </p>
       </div>
 
@@ -316,13 +317,14 @@ export default function TenTipsPage() {
       <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
         <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          A tĂ¶kĂ©letes ajĂˇnlat egyensĂşlyt teremt az informĂˇciĂł Ă©s a meggyĹ‘zĂ©s kĂ¶zĂ¶tt. A fent emlĂ­tett
-          10 tipp segĂ­t abban, hogy professzionĂˇlis, hatĂ©kony ajĂˇnlatokat kĂ©szĂ­ts, amelyek nĂ¶velik a
-          konverziĂł rĂˇtĂˇt Ă©s az ĂĽzleti sikereket.
+          A tĂ¶kĂ©letes ajĂˇnlat egyensĂşlyt teremt az informĂˇciĂł Ă©s a meggyĹ‘zĂ©s kĂ¶zĂ¶tt. A fent
+          emlĂ­tett 10 tipp segĂ­t abban, hogy professzionĂˇlis, hatĂ©kony ajĂˇnlatokat kĂ©szĂ­ts,
+          amelyek nĂ¶velik a konverziĂł rĂˇtĂˇt Ă©s az ĂĽzleti sikereket.
         </p>
         <p className="text-lg leading-relaxed text-fg-muted">
-          Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatos tanulĂˇsi folyamat. PrĂłbĂˇlj ki kĂĽlĂ¶nbĂ¶zĹ‘
-          megkĂ¶zelĂ­tĂ©seket, kĂ©rj visszajelzĂ©st, Ă©s folyamatosan fejleszd a mĂłdszereidet.
+          Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatos tanulĂˇsi folyamat. PrĂłbĂˇlj ki
+          kĂĽlĂ¶nbĂ¶zĹ‘ megkĂ¶zelĂ­tĂ©seket, kĂ©rj visszajelzĂ©st, Ă©s folyamatosan fejleszd a
+          mĂłdszereidet.
         </p>
       </Card>
 
@@ -331,8 +333,8 @@ export default function TenTipsPage() {
         <div className="text-center">
           <h2 className="mb-4 text-3xl font-bold text-fg">KĂ©szen Ăˇllsz a gyakorlĂˇsra?</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            HasznĂˇld a Vyndi-t, hogy professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­ts percek alatt. PrĂłbĂˇld ki
-            ingyenesen!
+            HasznĂˇld a Vyndi-t, hogy professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­ts percek alatt.
+            PrĂłbĂˇld ki ingyenesen!
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link

@@ -204,3 +204,4 @@ If issues occur:
 - RLS policies use standard `auth.uid() = user_id` pattern
 - Retention policies should be run periodically (weekly recommended)
 
+

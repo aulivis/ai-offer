@@ -132,3 +132,4 @@ export function getRemainingDeviceQuota(quota: QuotaData): number | null {
   const devicePending = quota.pendingDevice ?? 0;
   return Math.max(0, deviceLimit - deviceConfirmed - devicePending);
 }
+

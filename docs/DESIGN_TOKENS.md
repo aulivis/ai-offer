@@ -261,3 +261,4 @@ import { H1 } from '@/components/ui/Heading';
 - `web/src/components/ui/Card.tsx` - Card component (with size/variant props)
 - `web/src/hooks/useReducedMotion.ts` - Reduced motion hook
 
+

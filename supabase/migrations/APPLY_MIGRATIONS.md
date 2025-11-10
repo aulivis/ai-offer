@@ -170,3 +170,4 @@ If you encounter any issues:
 3. Ensure you're using the service role key or have admin access
 4. Check the Supabase logs for additional details
 
+

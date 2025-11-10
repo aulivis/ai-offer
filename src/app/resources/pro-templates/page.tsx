@@ -56,7 +56,12 @@ export default function ProTemplatesPage() {
       category: 'KreatĂ­v',
       tags: ['merĂ©sz', 'kreatĂ­v', 'figyelemfelkeltĹ‘'],
       preview: '/templates/pro-bold-preview.png',
-      features: ['VibrĂˇns szĂ­nek', 'Egyedi illusztrĂˇciĂłk', 'Parallax effektusok', 'AnimĂˇlt ikonok'],
+      features: [
+        'VibrĂˇns szĂ­nek',
+        'Egyedi illusztrĂˇciĂłk',
+        'Parallax effektusok',
+        'AnimĂˇlt ikonok',
+      ],
       exclusive: true,
     },
   ];
@@ -85,8 +90,8 @@ export default function ProTemplatesPage() {
           Pro sablonok kĂ¶nyvtĂˇr
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
-          HozzĂˇfĂ©rj exkluzĂ­v, prĂ©mium ajĂˇnlat sablonokhoz Pro elĹ‘fizetĂ©ssel. Fejlett funkciĂłk,
-          egyedi dizĂˇjnok Ă©s korlĂˇtlan testreszabhatĂłsĂˇg vĂˇr rĂˇd.
+          HozzĂˇfĂ©rj exkluzĂ­v, prĂ©mium ajĂˇnlat sablonokhoz Pro elĹ‘fizetĂ©ssel. Fejlett
+          funkciĂłk, egyedi dizĂˇjnok Ă©s korlĂˇtlan testreszabhatĂłsĂˇg vĂˇr rĂˇd.
         </p>
       </header>
 
@@ -96,8 +101,8 @@ export default function ProTemplatesPage() {
           <div>
             <h2 className="mb-2 text-2xl font-bold text-fg">Pro elĹ‘fizetĂ©s szĂĽksĂ©ges</h2>
             <p className="text-fg-muted">
-              A prĂ©mium sablonok elĂ©rĂ©sĂ©hez Pro elĹ‘fizetĂ©sre van szĂĽksĂ©g. Fizess elĹ‘ mĂ©g ma, Ă©s
-              azonnal hozzĂˇfĂ©rsz az Ă¶sszes exkluzĂ­v sablonhoz!
+              A prĂ©mium sablonok elĂ©rĂ©sĂ©hez Pro elĹ‘fizetĂ©sre van szĂĽksĂ©g. Fizess elĹ‘
+              mĂ©g ma, Ă©s azonnal hozzĂˇfĂ©rsz az Ă¶sszes exkluzĂ­v sablonhoz!
             </p>
           </div>
           <Link
@@ -218,7 +223,8 @@ export default function ProTemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">ExkluzĂ­v dizĂˇjnok</h3>
             <p className="text-sm text-fg-muted">
-              EgyedĂĽlĂˇllĂł, professzionĂˇlis sablonok, amelyeket csak Pro elĹ‘fizetĹ‘k Ă©rhetnek el.
+              EgyedĂĽlĂˇllĂł, professzionĂˇlis sablonok, amelyeket csak Pro elĹ‘fizetĹ‘k
+              Ă©rhetnek el.
             </p>
           </Card>
 

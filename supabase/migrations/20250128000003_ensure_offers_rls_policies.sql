@@ -94,3 +94,4 @@ grant all on table public.offers to service_role;
 
 
 
+
