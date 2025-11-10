@@ -55,7 +55,7 @@ export default function CookieBar() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[100] bg-[#111827]/95 backdrop-blur-sm text-[#F8FAFC] shadow-2xl border-t border-white/10"
+      className="fixed inset-x-0 bottom-0 z-[100] bg-[#111827]/67 backdrop-blur-sm text-[#F8FAFC] shadow-2xl border-t border-white/10"
       role="dialog"
       aria-label={t('cookies.bar.message')}
       aria-live="polite"

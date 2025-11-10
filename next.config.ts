@@ -27,6 +27,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js', '@supabase/auth-js'],
   },
+  // Transpile @noble/hashes to ensure it's properly bundled in serverless environments
+  // This is required for Argon2 fallback implementation to work on Vercel
+  transpilePackages: ['@noble/hashes'],
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'

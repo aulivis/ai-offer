@@ -851,8 +851,7 @@ export const hu = {
   },
   cookies: {
     bar: {
-      message:
-        'Sütiket használunk, hogy jobb élményt nyújtsunk. Elfogadhatod az összeset, elutasíthatod a nem szükségeseket, vagy testreszabhatod a beállításokat.',
+      message: 'Sütiket használunk a jobb böngészési élményért.',
       customise: 'Testreszabás',
       reject: 'Nem szükségesek elutasítása',
       accept: 'Összes elfogadása',
