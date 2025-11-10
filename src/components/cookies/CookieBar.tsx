@@ -53,40 +53,51 @@ export default function CookieBar() {
     return null;
   }
 
-  const baseButtonClass =
-    'inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827]';
-
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] bg-[#111827] text-[#F8FAFC] shadow-lg">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
-        <p className="flex-shrink-0 text-center text-sm text-[#F8FAFC]/90 sm:text-left">
-          {t('cookies.bar.message')}
-        </p>
-        <div className="flex flex-nowrap items-center justify-center gap-2 overflow-x-auto sm:justify-end">
-          <button
-            type="button"
-            onClick={handleCustomize}
-            className={`${baseButtonClass} flex-shrink-0 hover:bg-white/10 active:bg-white/20`}
-            style={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
-          >
-            {t('cookies.bar.customise')}
-          </button>
-          <button
-            type="button"
-            onClick={handleRejectNonEssential}
-            className={`${baseButtonClass} flex-shrink-0 hover:bg-white/10 active:bg-white/20`}
-            style={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
-          >
-            {t('cookies.bar.reject')}
-          </button>
-          <button
-            type="button"
-            onClick={handleAcceptAll}
-            className={`${baseButtonClass} flex-shrink-0 border-transparent bg-white text-[#111827] hover:bg-white/90 active:bg-white/80`}
-            style={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
-          >
-            {t('cookies.bar.accept')}
-          </button>
+    <div
+      className="fixed inset-x-0 bottom-0 z-[100] bg-[#111827] text-[#F8FAFC] shadow-2xl border-t border-white/10"
+      role="dialog"
+      aria-label={t('cookies.bar.message')}
+      aria-live="polite"
+    >
+      <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          {/* Message text - takes available space, doesn't overlap buttons */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm leading-relaxed text-[#F8FAFC]/95 sm:text-base">
+              {t('cookies.bar.message')}
+            </p>
+          </div>
+
+          {/* Button group - properly spaced, equal prominence */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 flex-shrink-0">
+            {/* Customize button - secondary action */}
+            <button
+              type="button"
+              onClick={handleCustomize}
+              className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-transparent px-4 py-2.5 text-sm font-medium text-white/90 transition-all hover:bg-white/10 hover:border-white/30 active:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827] whitespace-nowrap"
+            >
+              {t('cookies.bar.customise')}
+            </button>
+
+            {/* Reject button - equal prominence to Accept */}
+            <button
+              type="button"
+              onClick={handleRejectNonEssential}
+              className="inline-flex items-center justify-center rounded-lg border border-white/30 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-white/10 hover:border-white/40 active:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827] whitespace-nowrap"
+            >
+              {t('cookies.bar.reject')}
+            </button>
+
+            {/* Accept button - primary action, but not overly emphasized */}
+            <button
+              type="button"
+              onClick={handleAcceptAll}
+              className="inline-flex items-center justify-center rounded-lg border border-transparent bg-white px-5 py-2.5 text-sm font-semibold text-[#111827] transition-all hover:bg-white/90 active:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827] whitespace-nowrap"
+            >
+              {t('cookies.bar.accept')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

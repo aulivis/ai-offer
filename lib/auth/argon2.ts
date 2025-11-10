@@ -2,36 +2,16 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
 // Try both import paths - with and without .js extension
-const NOBLE_ARGON_MODULE_IDS = ['@noble/hashes/argon2.js', '@noble/hashes/argon2'];
+// Note: @noble/hashes may export argon2 differently, so we try multiple paths
+const NOBLE_ARGON_MODULE_IDS = [
+  '@noble/hashes/argon2.js',
+  '@noble/hashes/argon2',
+  // Fallback: try importing from main package if subpath exports don't work
+];
 
 // Type definition for @noble/hashes/argon2 module
 // Use the .js extension version as that's what's exported in package.json
 type NobleArgon2Module = typeof import('@noble/hashes/argon2.js');
-
-// Try to statically import @noble/hashes at module load time for better bundling
-// This ensures the module is included in the bundle if available
-// Using a lazy static import that will be resolved at runtime
-let nobleModuleStatic: NobleArgon2Module | null = null;
-try {
-  // Try importing with .js extension first (as per package.json exports)
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const nobleModule = require('@noble/hashes/argon2.js');
-  if (nobleModule) {
-    nobleModuleStatic = nobleModule as NobleArgon2Module;
-  }
-} catch {
-  try {
-    // Fallback to import without .js extension
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const nobleModule = require('@noble/hashes/argon2');
-    if (nobleModule) {
-      nobleModuleStatic = nobleModule as NobleArgon2Module;
-    }
-  } catch {
-    // Module not available at build time, will use dynamic import
-    nobleModuleStatic = null;
-  }
-}
 
 export enum Argon2Algorithm {
   Argon2d = 0,
@@ -109,31 +89,38 @@ async function loadNativeModule(): Promise<Argon2Module | null> {
 }
 
 async function loadNobleModule(): Promise<NobleArgon2Module | null> {
-  // If we have a static import, use it immediately
-  if (nobleModuleStatic) {
-    return nobleModuleStatic;
-  }
-
   if (!nobleModulePromise) {
     nobleModulePromise = (async () => {
       // Try each import path in order
       for (const moduleId of NOBLE_ARGON_MODULE_IDS) {
         try {
-          // Try direct import first (works in most environments including Next.js)
-          return await import(moduleId);
-        } catch (_directImportError) {
-          try {
-            // Fallback to dynamic import using Function constructor
-            // This works in environments where direct import fails
-            const dynamicImport = new Function('specifier', 'return import(specifier);') as (
-              specifier: string,
-            ) => Promise<NobleArgon2Module>;
-            return await dynamicImport(moduleId);
-          } catch (_dynamicImportError) {
-            // Try next import path
-            continue;
+          // Use dynamic import with Function constructor to avoid static analysis issues
+          // This works in environments where direct import fails (like Vercel builds)
+          const dynamicImport = new Function('specifier', 'return import(specifier);') as (
+            specifier: string,
+          ) => Promise<NobleArgon2Module>;
+          const importedModule = await dynamicImport(moduleId);
+          if (importedModule) {
+            return importedModule;
           }
+        } catch (_importError) {
+          // Try next import path
+          continue;
         }
+      }
+
+      // If subpath imports fail, try importing from main package
+      try {
+        const dynamicImport = new Function('specifier', 'return import(specifier);') as (
+          specifier: string,
+        ) => Promise<{ argon2?: NobleArgon2Module }>;
+        const mainModule = await dynamicImport('@noble/hashes');
+        // Check if argon2 is exported from main package
+        if (mainModule && 'argon2' in mainModule && mainModule.argon2) {
+          return mainModule.argon2 as NobleArgon2Module;
+        }
+      } catch {
+        // Main package import also failed
       }
 
       // All import methods failed - log for debugging but don't throw

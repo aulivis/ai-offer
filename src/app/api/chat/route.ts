@@ -369,42 +369,35 @@ export async function POST(req: NextRequest) {
         requestId,
       });
 
-      // For preset questions, use streamText but with the actual user question
-      // and include the preset answer in context to ensure it's returned
+      // For preset questions, use streamText with a very direct approach
+      // to ensure the exact answer is returned without modifications
       try {
         const presetAnswer = presetMatch.answer;
 
-        log.info('Creating streamText for preset question', {
+        log.info('Returning preset answer via streamText', {
           question: presetMatch.question,
           answerLength: presetAnswer.length,
           answerPreview: presetAnswer.substring(0, 100),
           requestId,
         });
 
-        // Use streamText with the user's actual question and provide the answer
-        // in a way that ensures GPT returns it. We use the conversation history
-        // and provide the answer as context.
+        // Use streamText with a very strict system prompt that ensures
+        // the exact answer is returned. We use the answer as both the
+        // system instruction and provide it in a way GPT will follow.
         const result = streamText({
           model: openai('gpt-3.5-turbo'),
-          system: `You are Vanda, a helpful assistant for Vyndi. The user has asked a question, and you have the exact answer prepared. Return ONLY the answer text below, without any modifications, additions, or explanations. Do not add any introductory text, greetings, or closing remarks. Return the answer exactly as provided.
+          system: `You are Vanda, a helpful assistant. The user asked a question and you have the exact answer. Your task is to return ONLY the answer text below, character by character, exactly as written. Do not add, modify, or remove anything. Do not add greetings, explanations, or any other text. Return the answer exactly:
 
-ANSWER TO RETURN:
 ${presetAnswer}`,
           messages: [
-            ...messagesToUse.slice(0, -1), // All messages except the last one
             {
               role: 'user' as const,
-              content: lastMessage.content,
+              content:
+                'Return the answer exactly as provided in the system message, without any modifications.',
             },
           ],
-          temperature: 0,
+          temperature: 0, // Zero temperature for deterministic output
           // Note: maxTokens is not supported in this AI SDK version
-        });
-
-        // Log that we're about to return the response
-        log.info('StreamText result created, returning response', {
-          requestId,
-          hasToTextStreamResponse: typeof result.toTextStreamResponse === 'function',
         });
 
         const responseTime = Date.now() - startTime;
@@ -434,15 +427,7 @@ ${presetAnswer}`,
         });
 
         // Return using toTextStreamResponse which creates the correct format for useChat
-        const response = result.toTextStreamResponse();
-
-        log.info('Preset answer response created and returned', {
-          requestId,
-          responseType: response.constructor.name,
-          headers: Object.fromEntries(response.headers.entries()),
-        });
-
-        return response;
+        return result.toTextStreamResponse();
       } catch (error) {
         log.error(
           'Failed to create stream response for preset question',
