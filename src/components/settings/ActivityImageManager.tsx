@@ -157,7 +157,7 @@ export function ActivityImageManager({
           // Persist to database - await to ensure it completes
           await onImagesChange(newPaths);
           showToast({
-            title: t('settings.activities.images.uploadSuccess'),
+            description: t('settings.activities.images.uploadSuccess'),
             variant: 'success',
           });
         } catch (dbError) {
@@ -176,7 +176,7 @@ export function ActivityImageManager({
       const message =
         error instanceof ApiError ? error.message : t('settings.activities.images.uploadFailed');
       showToast({
-        title: message,
+        description: message,
         variant: 'error',
       });
     } finally {
@@ -211,7 +211,7 @@ export function ActivityImageManager({
           // Persist to database - await to ensure it completes
           await onImagesChange(newPaths);
           showToast({
-            title: t('settings.activities.images.deleteSuccess'),
+            description: t('settings.activities.images.deleteSuccess'),
             variant: 'success',
           });
         } catch (dbError) {
@@ -228,7 +228,7 @@ export function ActivityImageManager({
       const message =
         error instanceof ApiError ? error.message : t('settings.activities.images.deleteFailed');
       showToast({
-        title: message,
+        description: message,
         variant: 'error',
       });
     }

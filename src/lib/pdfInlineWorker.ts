@@ -11,6 +11,7 @@ import {
   toPuppeteerOptions,
   setPdfMetadata,
   type PdfMetadata,
+  type PuppeteerPage,
 } from '@/lib/pdfConfig';
 
 const JOB_TIMEOUT_MS = 90_000;
@@ -79,8 +80,8 @@ async function setContentWithNetworkIdleLogging(page: Page, html: string, contex
     console.error(`[${context}] page.setContent failed while waiting for networkidle0`, error);
     throw error;
   } finally {
-    detachPageListener(page, 'requestfailed', onRequestFailed);
-    detachPageListener(page, 'response', onResponse);
+    detachPageListener(page, 'requestfailed', onRequestFailed as PageEventHandler);
+    detachPageListener(page, 'response', onResponse as PageEventHandler);
 
     const elapsed = Date.now() - startedAt;
     console.info(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
@@ -212,7 +213,7 @@ export async function processPdfJobInline(
             };
 
             // Set PDF metadata
-            await setPdfMetadata(page, pdfMetadata);
+            await setPdfMetadata(page as unknown as PuppeteerPage, pdfMetadata);
 
             // Extract header/footer data for Puppeteer templates
             const headerFooterData = await page.evaluate(() => {
@@ -275,7 +276,7 @@ export async function processPdfJobInline(
             });
 
             const puppeteerOptions = toPuppeteerOptions(pdfOptions);
-            return await page.pdf(puppeteerOptions);
+            return await page.pdf(puppeteerOptions as Parameters<Page['pdf']>[0]);
           } finally {
             if (page) {
               try {

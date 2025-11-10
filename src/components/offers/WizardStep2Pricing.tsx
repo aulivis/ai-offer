@@ -114,12 +114,16 @@ export function WizardStep2Pricing({
     if (hasShownInitialModalRef.current || rows.length === 0 || !enableReferencePhotos) return;
 
     const firstRow = rows[0];
-    if (!firstRow || !firstRow.name) return;
+    if (!firstRow?.name) return;
+
+    const firstRowName: string = firstRow.name;
 
     // Find matching activity
-    const matchingActivity = activities.find(
-      (a) => a.name === firstRow.name && (a.reference_images as string[] | null)?.length > 0,
-    );
+    const matchingActivity = activities.find((a) => {
+      if (a.name !== firstRowName) return false;
+      const refImages = a.reference_images as string[] | null | undefined;
+      return Array.isArray(refImages) && refImages.length > 0;
+    });
 
     if (matchingActivity && !showImageModal && selectedImages.length === 0) {
       // Show image modal for default activity
@@ -188,8 +192,8 @@ export function WizardStep2Pricing({
     ]);
 
     // Check if activity has images and feature is enabled
-    const hasImages =
-      enableReferencePhotos && (activity.reference_images as string[] | null)?.length > 0;
+    const refImages = activity.reference_images as string[] | null | undefined;
+    const hasImages = enableReferencePhotos && Array.isArray(refImages) && refImages.length > 0;
 
     if (hasImages) {
       setPendingActivity(activity);

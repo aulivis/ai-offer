@@ -287,10 +287,11 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
 
     const planTier = await resolvePlanTier(sb, job.userId);
     const { templateId, metadata } = resolveTemplateForPlan(planTier, job);
+    const mergedMetadata = mergeMetadata(job.metadata, metadata);
     const preparedJob: PreparedPdfJob = {
       ...job,
       templateId,
-      metadata: mergeMetadata(job.metadata, metadata),
+      ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     };
 
     for (let attempt = 0; attempt < 2; attempt += 1) {

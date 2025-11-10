@@ -27,8 +27,8 @@ export function createErrorResponse(
 
   const response: StandardErrorResponse = {
     error: message,
-    ...(requestId && { requestId }),
-    ...(issues && { issues }),
+    ...(requestId ? { requestId } : {}),
+    ...(issues ? { issues } : {}),
   };
 
   return NextResponse.json(response, { status });
@@ -42,7 +42,7 @@ export function handleValidationError(
   requestId?: string,
 ): NextResponse<StandardErrorResponse> {
   return createErrorResponse('Érvénytelen kérés.', 400, {
-    requestId,
+    ...(requestId ? { requestId } : {}),
     issues: error.flatten(),
   });
 }
@@ -61,7 +61,9 @@ export function handleUnexpectedError(
     console.error('Unexpected error:', error);
   }
 
-  return createErrorResponse('Váratlan hiba történt.', 500, { requestId });
+  return createErrorResponse('Váratlan hiba történt.', 500, {
+    ...(requestId ? { requestId } : {}),
+  });
 }
 
 /**

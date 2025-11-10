@@ -125,7 +125,7 @@ export function TestimonialsManager({
   const handleAdd = async () => {
     if (!newTestimonial.text.trim()) {
       showToast({
-        title: t('settings.testimonials.textRequired'),
+        description: t('settings.testimonials.textRequired'),
         variant: 'error',
       });
       return;
@@ -174,12 +174,12 @@ export function TestimonialsManager({
       });
       onTestimonialsChange();
       showToast({
-        title: t('settings.testimonials.addSuccess'),
+        description: t('settings.testimonials.addSuccess'),
         variant: 'success',
       });
     } catch {
       showToast({
-        title: t('settings.testimonials.addFailed'),
+        description: t('settings.testimonials.addFailed'),
         variant: 'error',
       });
     } finally {
@@ -198,12 +198,12 @@ export function TestimonialsManager({
 
       onTestimonialsChange();
       showToast({
-        title: t('settings.testimonials.deleteSuccess'),
+        description: t('settings.testimonials.deleteSuccess'),
         variant: 'success',
       });
     } catch {
       showToast({
-        title: t('settings.testimonials.deleteFailed'),
+        description: t('settings.testimonials.deleteFailed'),
         variant: 'error',
       });
     } finally {

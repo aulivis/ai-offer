@@ -1,76 +1,10 @@
 /**
  * PDF Page Number Injection Utility
  *
- * This module provides utilities for injecting page numbers into PDF documents.
- * Since Chrome/Puppeteer does not support CSS page counters (counter(page), counter(pages)),
- * we use a two-pass approach:
- * 1. Generate PDF once to count pages using a PDF parser
- * 2. Inject page numbers into the DOM
- * 3. Generate final PDF with page numbers
- *
- * Alternatively, we can use Puppeteer's headerTemplate/footerTemplate which natively
- * supports page numbers, but this requires restructuring the HTML.
+ * This module provides utilities for creating Puppeteer header/footer templates
+ * that include page numbers. Puppeteer's headerTemplate/footerTemplate natively
+ * supports page numbers using the special classes .pageNumber and .totalPages.
  */
-
-import { PDFDocument } from 'pdf-lib';
-
-/**
- * Two-pass page number injection
- * First pass: Generate PDF to count pages accurately
- * Second pass: Inject page numbers and generate final PDF
- */
-export async function injectPageNumbersTwoPass(
-  page: {
-    evaluate: (
-      fn: (totalPages: number, pageLabel: string) => void,
-      totalPages: number,
-      pageLabel: string,
-    ) => Promise<void>;
-    pdf: (options: unknown) => Promise<Buffer | Uint8Array>;
-  },
-  pdfOptions: unknown,
-  _pageLabel: string = 'Page',
-): Promise<Buffer | Uint8Array> {
-  // First pass: Generate PDF to count pages
-  const firstPassPdf = await page.pdf(pdfOptions);
-
-  // Parse PDF to count pages accurately using pdf-lib
-  try {
-    const pdfBytes = firstPassPdf instanceof Buffer ? firstPassPdf : new Uint8Array(firstPassPdf);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    // Page count is determined but not used in current implementation
-    void pdfDoc.getPageCount();
-    // Page label parameter is accepted for API consistency but not currently used
-    void _pageLabel;
-  } catch (error) {
-    console.warn('Failed to parse PDF for page count, using estimation:', error);
-    // Fallback: estimate from PDF size (rough approximation)
-    const pdfSize = firstPassPdf instanceof Buffer ? firstPassPdf.length : firstPassPdf.byteLength;
-    // Rough estimate: ~50KB per page for typical documents
-    void Math.max(1, Math.ceil(pdfSize / 50000));
-    // Page label parameter is accepted for API consistency but not currently used
-    void _pageLabel;
-  }
-
-  // Inject page numbers into HTML using JavaScript
-  // Since we have fixed footers, we need to update the page number display
-  // The challenge is that fixed elements appear on every page, so we can't easily
-  // know which page number to show for each instance.
-  // Solution: Use a data attribute and let CSS/JS handle it, or restructure to use
-  // Puppeteer's headerTemplate/footerTemplate.
-
-  // For now, we'll update the footer to show the page number format
-  // The actual page numbers will need to be handled differently since fixed
-  // elements are duplicated on each page by the browser.
-
-  // Alternative: Remove fixed positioning and use page-break-based footers
-  // This is more complex but allows accurate page numbering.
-
-  // For the current implementation, we'll use Puppeteer's headerTemplate/footerTemplate
-  // which is the standard way to add page numbers to PDFs.
-
-  return firstPassPdf;
-}
 
 /**
  * Create a footer template for Puppeteer that includes page numbers

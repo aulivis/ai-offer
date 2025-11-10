@@ -3,7 +3,6 @@ import { t } from '@/copy';
 import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
 import { useEffect, type ReactNode } from 'react';
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
-import { PREVIEW_CSP_DIRECTIVE } from '@/lib/previewSecurity';
 
 export type OfferPreviewStatusDescriptor = {
   tone: 'info' | 'success' | 'error' | 'warning';
@@ -379,7 +378,6 @@ export function OfferPreviewCard({
             ref={previewFrameRef}
             className="block w-full"
             sandbox="allow-same-origin"
-            csp={PREVIEW_CSP_DIRECTIVE}
             srcDoc={previewMarkup}
             style={{
               border: '0',

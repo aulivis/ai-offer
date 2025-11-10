@@ -78,22 +78,17 @@ const sizes = {
  * </Button>
  * ```
  */
-export function Button({
-  className,
-  variant = 'primary',
-  size = 'md',
-  loading,
-  children,
-  style,
-  disabled,
-  ...props
-}: Props) {
+export const Button = React.forwardRef<HTMLButtonElement, Props>(function Button(
+  { className, variant = 'primary', size = 'md', loading, children, style, disabled, ...props },
+  ref,
+) {
   const cls = [base, variantClasses[variant], sizes[size], className].filter(Boolean).join(' ');
   const isDisabled = disabled || loading;
   const spinnerSize = size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : 'md';
 
   return (
     <button
+      ref={ref}
       className={cls}
       style={{ ...variantStyles[variant], ...style }}
       disabled={isDisabled}
@@ -110,7 +105,7 @@ export function Button({
       )}
     </button>
   );
-}
+});
 
 export type { Props as ButtonProps };
 export default Button;

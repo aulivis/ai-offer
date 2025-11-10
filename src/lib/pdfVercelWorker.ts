@@ -113,11 +113,20 @@ export async function processPdfJobVercelNative(
     const storagePath = job.storagePath || `${job.userId}/${job.jobId}.pdf`;
 
     // Convert Buffer to Uint8Array for Supabase Storage
+    // Type guard for Uint8Array
+    const isUint8Array = (val: unknown): val is Uint8Array =>
+      typeof val === 'object' &&
+      val !== null &&
+      'constructor' in val &&
+      (val.constructor === Uint8Array ||
+        (typeof Uint8Array !== 'undefined' &&
+          Object.prototype.toString.call(val) === '[object Uint8Array]'));
+
     const pdfUint8 = Buffer.isBuffer(pdfBuffer)
       ? new Uint8Array(pdfBuffer)
-      : pdfBuffer instanceof Uint8Array
+      : isUint8Array(pdfBuffer)
         ? pdfBuffer
-        : new Uint8Array(pdfBuffer);
+        : new Uint8Array(pdfBuffer as ArrayLike<number>);
 
     const pdfArrayBuffer = new ArrayBuffer(pdfUint8.byteLength);
     new Uint8Array(pdfArrayBuffer).set(pdfUint8);

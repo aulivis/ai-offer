@@ -44,8 +44,20 @@ async function getChromiumExecutablePath(): Promise<string | undefined> {
   if (isServerlessEnvironment()) {
     // In serverless, use @sparticuz/chromium
     const chromium = await import('@sparticuz/chromium');
-    chromium.setGraphicsMode(false); // Disable graphics for serverless
-    return await chromium.executablePath();
+    // Note: API may vary by version - check for available methods
+    if ('setGraphicsMode' in chromium && typeof chromium.setGraphicsMode === 'function') {
+      chromium.setGraphicsMode(false); // Disable graphics for serverless
+    }
+    // executablePath might be a function or property depending on version
+    if ('executablePath' in chromium) {
+      if (typeof chromium.executablePath === 'function') {
+        return await chromium.executablePath();
+      } else if (typeof chromium.executablePath === 'string') {
+        return chromium.executablePath;
+      }
+    }
+    // Fallback: return undefined to let Puppeteer handle it
+    return undefined;
   }
 
   // In local development, try to use local Puppeteer first
@@ -57,7 +69,16 @@ async function getChromiumExecutablePath(): Promise<string | undefined> {
   } catch {
     // Fall back to @sparticuz/chromium
     const chromium = await import('@sparticuz/chromium');
-    return await chromium.executablePath();
+    // executablePath might be a function or property depending on version
+    if ('executablePath' in chromium) {
+      if (typeof chromium.executablePath === 'function') {
+        return await chromium.executablePath();
+      } else if (typeof chromium.executablePath === 'string') {
+        return chromium.executablePath;
+      }
+    }
+    // Fallback: return undefined to let Puppeteer handle it
+    return undefined;
   }
 }
 
@@ -76,17 +97,34 @@ async function getPuppeteerLaunchOptions(): Promise<{
   if (isServerless && executablePath) {
     // Serverless configuration using @sparticuz/chromium
     const chromium = await import('@sparticuz/chromium');
+    // chromium API may vary by version - safely access properties with type checking
+    const chromiumArgs = 'args' in chromium && Array.isArray(chromium.args) ? chromium.args : [];
+    const chromiumHeadless: boolean | 'shell' =
+      'headless' in chromium &&
+      typeof chromium.headless !== 'undefined' &&
+      (typeof chromium.headless === 'boolean' || chromium.headless === 'shell')
+        ? (chromium.headless as boolean | 'shell')
+        : true;
+    const chromiumViewport =
+      'defaultViewport' in chromium &&
+      chromium.defaultViewport &&
+      typeof chromium.defaultViewport === 'object' &&
+      'width' in chromium.defaultViewport &&
+      'height' in chromium.defaultViewport
+        ? (chromium.defaultViewport as { width: number; height: number })
+        : { width: 1280, height: 720 };
+
     return {
       executablePath,
-      args: chromium.args,
-      headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport,
+      args: chromiumArgs,
+      headless: chromiumHeadless,
+      defaultViewport: chromiumViewport,
     };
   }
 
   // Local development configuration
   return {
-    executablePath,
+    ...(executablePath ? { executablePath } : {}),
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -270,17 +308,18 @@ export async function generatePdfVercelNative(
     // Close page
     await page.close();
 
-    // Convert to Buffer - handle both Buffer and Uint8Array
+    // Convert to Buffer - handle both Buffer and Uint8Array/ArrayBuffer
     if (Buffer.isBuffer(pdfResult)) {
       return pdfResult;
-    } else if (pdfResult instanceof Uint8Array) {
-      return Buffer.from(pdfResult);
-    } else if (pdfResult instanceof ArrayBuffer) {
-      return Buffer.from(pdfResult);
-    } else {
-      // Fallback: try to convert from any array-like object
-      return Buffer.from(pdfResult);
     }
+    // Type guard: check if it's an ArrayBuffer
+    const isArrayBuffer = (val: unknown): val is ArrayBuffer =>
+      typeof val === 'object' && val !== null && val.constructor === ArrayBuffer;
+    if (isArrayBuffer(pdfResult)) {
+      return Buffer.from(new Uint8Array(pdfResult));
+    }
+    // Handle Uint8Array or other array-like objects
+    return Buffer.from(pdfResult as Uint8Array | ArrayLike<number>);
   } finally {
     // Always close browser
     try {

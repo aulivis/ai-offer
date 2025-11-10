@@ -36,7 +36,7 @@ export function Container({
   ...props
 }: ContainerProps) {
   const containerStyle: React.CSSProperties = {
-    containerType: type,
+    containerType: type as React.CSSProperties['containerType'],
     ...(name && { containerName: name }),
     ...style,
   };

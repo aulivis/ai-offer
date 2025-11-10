@@ -46,13 +46,17 @@ export async function retrieveSimilarDocuments(
       interface DocumentRow {
         id: string;
         content: string;
+        metadata?: Record<string, unknown> | null;
+        source_path?: string;
+        chunk_index?: number;
+        similarity?: number;
       }
       return (data as DocumentRow[]).map((doc: DocumentRow) => ({
         id: doc.id,
         content: doc.content,
         metadata: doc.metadata ?? {},
-        sourcePath: doc.source_path,
-        chunkIndex: doc.chunk_index,
+        sourcePath: doc.source_path ?? '',
+        ...(doc.chunk_index !== undefined ? { chunkIndex: doc.chunk_index } : {}),
         similarity: doc.similarity ?? 0,
       }));
     }

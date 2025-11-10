@@ -36,7 +36,7 @@ export async function uploadWithProgress(
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    const requestUrl = typeof url === 'string' ? url : url.toString();
+    const requestUrl = url; // url is already typed as string
 
     // Set up abort handling
     if (signal) {
@@ -80,13 +80,12 @@ export async function uploadWithProgress(
         resolve(response);
       } else if (xhr.status === 401) {
         // Try to refresh session and retry once
-        refreshSession(signal)
+        refreshSession(signal ?? undefined)
           .then((refreshed) => {
             if (refreshed) {
               // Retry the request once
-              uploadWithProgress(url, { ...options, authErrorMessage: undefined })
-                .then(resolve)
-                .catch(reject);
+              const { authErrorMessage: _, ...retryOptions } = options;
+              uploadWithProgress(url, retryOptions).then(resolve).catch(reject);
             } else {
               const message = authErrorMessage ?? defaultErrorMessage ?? t(DEFAULT_AUTH_ERROR_KEY);
               reject(new ApiError(message, { status: 401 }));
@@ -153,7 +152,9 @@ export async function uploadWithProgress(
 
     // Send request
     if (body) {
-      xhr.send(body as BodyInit);
+      // XMLHttpRequest.send() accepts FormData, Blob, ArrayBuffer, etc., but not ReadableStream
+      // Cast to XMLHttpRequestBodyInit which is more restrictive than BodyInit
+      xhr.send(body as XMLHttpRequestBodyInit);
     } else {
       xhr.send();
     }

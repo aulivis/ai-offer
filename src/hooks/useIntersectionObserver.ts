@@ -12,9 +12,9 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
  */
 export function useIntersectionObserver<T extends HTMLElement = HTMLDivElement>(
   options?: IntersectionObserverInit,
-): [RefObject<T>, boolean] {
+): [RefObject<T | null>, boolean] {
   const [isIntersecting, setIsIntersecting] = useState(false);
-  const ref = useRef<T>(null);
+  const ref = useRef<T | null>(null);
 
   useEffect(() => {
     const element = ref.current;

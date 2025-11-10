@@ -78,14 +78,14 @@ export function SettingsBrandingSection({
             label={t('settings.branding.primaryLabel')}
             value={profile.brand_color_primary || ''}
             onChange={(value) => onProfileChange((p) => ({ ...p, brand_color_primary: value }))}
-            error={errors.brandPrimary}
+            {...(errors.brandPrimary ? { error: errors.brandPrimary } : {})}
             previewColor={primaryPreview}
           />
           <ColorPicker
             label={t('settings.branding.secondaryLabel')}
             value={profile.brand_color_secondary || ''}
             onChange={(value) => onProfileChange((p) => ({ ...p, brand_color_secondary: value }))}
-            error={errors.brandSecondary}
+            {...(errors.brandSecondary ? { error: errors.brandSecondary } : {})}
             previewColor={secondaryPreview}
           />
         </div>

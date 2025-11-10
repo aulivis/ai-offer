@@ -22,7 +22,7 @@ export async function extractHeaderFooterData(page: {
       dateLabel: string;
       pageLabel: string;
       logoUrl: string | null;
-    },
+    } | null,
   ) => Promise<{
     companyName: string;
     title: string;
@@ -32,7 +32,7 @@ export async function extractHeaderFooterData(page: {
     dateLabel: string;
     pageLabel: string;
     logoUrl: string | null;
-  }>;
+  } | null>;
 }): Promise<{
   footerTemplate: string;
   headerTemplate: string;

@@ -35,15 +35,10 @@ export type HeadingProps = React.ComponentPropsWithoutRef<'h1'> & {
  * <H2>Another convenience component</H2>
  * ```
  */
-export function Heading({
-  level = 'h2',
-  scale,
-  size,
-  fluid = false,
-  className = '',
-  children,
-  ...props
-}: HeadingProps) {
+export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(function Heading(
+  { level = 'h2', scale, size, fluid = false, className = '', children, ...props },
+  ref,
+) {
   // Determine typography scale based on level or size
   const typographyKey =
     scale ||
@@ -88,11 +83,11 @@ export function Heading({
   const cls = ['text-fg', className].filter(Boolean).join(' ');
 
   return (
-    <Component className={cls} style={style} {...props}>
+    <Component ref={ref} className={cls} style={style} {...props}>
       {children}
     </Component>
   );
-}
+});
 
 /**
  * Convenience components for each heading level

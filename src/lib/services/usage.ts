@@ -111,7 +111,11 @@ async function ensureUsageCounter<K extends CounterKind>(
     if (insertError) {
       throw new Error(`Failed to initialise usage counter: ${insertError.message}`);
     }
-    usageRow = inserted ?? { period_start: periodStart, offers_generated: 0 };
+    if (!inserted) {
+      // This should never happen if insert succeeded, but handle it for type safety
+      throw new Error('Failed to initialise usage counter: insert returned no data');
+    }
+    usageRow = inserted;
   }
 
   let currentPeriod = resolveStoredPeriod(usageRow, periodStart);

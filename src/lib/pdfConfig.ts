@@ -153,7 +153,8 @@ export function toPuppeteerOptions(
  * Puppeteer Page type that works with both puppeteer and puppeteer-core
  */
 export type PuppeteerPage = {
-  evaluate: (fn: (title: string) => void, ...args: unknown[]) => Promise<unknown>;
+  evaluate: (<T extends unknown[]>(fn: (...args: T) => void, ...args: T) => Promise<unknown>) &
+    (<T>(fn: () => T) => Promise<T>);
   title: () => Promise<string>;
   setContent: (
     html: string,
@@ -189,8 +190,13 @@ export async function setPdfMetadata(page: PuppeteerPage, metadata: PdfMetadata)
     // Note: Puppeteer's PDF generation will pick up the document.title
     // and can extract metadata from HTML meta tags
     if (metadata.author || metadata.subject || metadata.keywords) {
+      const metaData = {
+        author: metadata.author,
+        subject: metadata.subject,
+        keywords: metadata.keywords,
+      };
       await page.evaluate(
-        (meta) => {
+        (meta: { author?: string; subject?: string; keywords?: string }) => {
           const head = document.head || document.getElementsByTagName('head')[0];
 
           if (meta.author) {
@@ -223,11 +229,7 @@ export async function setPdfMetadata(page: PuppeteerPage, metadata: PdfMetadata)
             metaTag.setAttribute('content', meta.keywords);
           }
         },
-        {
-          author: metadata.author,
-          subject: metadata.subject,
-          keywords: metadata.keywords,
-        },
+        metaData as { author?: string; subject?: string; keywords?: string },
       );
     }
   } catch (error) {
