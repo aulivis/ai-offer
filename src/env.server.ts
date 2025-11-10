@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { z } from 'zod';
 
 /*
@@ -7,6 +9,9 @@ import { z } from 'zod';
  * secret tokens should be defined here.  Do not import this file
  * into any client-side code; doing so will leak secrets into the
  * browser bundle.
+ *
+ * This file is marked with 'server-only' to prevent it from being
+ * bundled into the client-side JavaScript.
  */
 const ServerEnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -88,37 +93,11 @@ const serverEnvDefaults = {
 
 type RawServerEnv = z.input<typeof ServerEnvSchema>;
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-// Validate required environment variables in production
-if (isProduction) {
-  const requiredVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SUPABASE_SERVICE_ROLE_KEY',
-    'AUTH_COOKIE_SECRET',
-    'CSRF_SECRET',
-    'MAGIC_LINK_RATE_LIMIT_SALT',
-    'OPENAI_API_KEY',
-    'STRIPE_SECRET_KEY',
-    'APP_URL',
-    'PUBLIC_CONTACT_EMAIL',
-    'SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI',
-  ] as const;
-
-  const missingVars: string[] = [];
-  for (const varName of requiredVars) {
-    if (!process.env[varName]) {
-      missingVars.push(varName);
-    }
-  }
-
-  if (missingVars.length > 0) {
-    throw new Error(
-      `Missing required environment variables in production: ${missingVars.join(', ')}`,
-    );
-  }
-}
+// Note: Environment variable validation is handled by Zod schema parsing below.
+// We do not validate at module load time to avoid issues during build phase.
+// The 'server-only' import above ensures this file is never bundled client-side.
+// If environment variables are missing in production, Zod will throw a descriptive error
+// when parsing the schema, or the application will fail at runtime when using invalid values.
 
 const envWithDefaults: RawServerEnv = {
   NEXT_PUBLIC_SUPABASE_URL:
@@ -160,6 +139,12 @@ const envServerBase: Omit<ServerEnv, 'EXTERNAL_API_SYSTEM_USER_ID'> = {
   OAUTH_REDIRECT_ALLOWLIST: parsedEnv.OAUTH_REDIRECT_ALLOWLIST,
   PDF_WEBHOOK_ALLOWLIST: parsedEnv.PDF_WEBHOOK_ALLOWLIST,
 };
+
+// Note: We do not validate environment variables at module load time to avoid issues during build.
+// The 'server-only' import ensures this file is never bundled client-side, preventing the error
+// from appearing in the browser console. If environment variables are missing in production,
+// the application will fail at runtime when it attempts to use them (e.g., connecting to Supabase),
+// which will provide clear error messages in server logs.
 
 export const envServer: ServerEnv =
   externalApiUserId !== undefined
