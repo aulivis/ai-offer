@@ -1,25 +1,36 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
-const NOBLE_ARGON_MODULE_ID = '@noble/hashes/argon2';
+// Try both import paths - with and without .js extension
+const NOBLE_ARGON_MODULE_IDS = ['@noble/hashes/argon2.js', '@noble/hashes/argon2'];
 
 // Type definition for @noble/hashes/argon2 module
-type NobleArgon2Module = typeof import('@noble/hashes/argon2');
+// Use the .js extension version as that's what's exported in package.json
+type NobleArgon2Module = typeof import('@noble/hashes/argon2.js');
 
 // Try to statically import @noble/hashes at module load time for better bundling
 // This ensures the module is included in the bundle if available
 // Using a lazy static import that will be resolved at runtime
 let nobleModuleStatic: NobleArgon2Module | null = null;
 try {
-  // Use dynamic import with a static string to help bundlers include it
+  // Try importing with .js extension first (as per package.json exports)
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const nobleModule = require('@noble/hashes/argon2');
+  const nobleModule = require('@noble/hashes/argon2.js');
   if (nobleModule) {
     nobleModuleStatic = nobleModule as NobleArgon2Module;
   }
 } catch {
-  // Module not available at build time, will use dynamic import
-  nobleModuleStatic = null;
+  try {
+    // Fallback to import without .js extension
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const nobleModule = require('@noble/hashes/argon2');
+    if (nobleModule) {
+      nobleModuleStatic = nobleModule as NobleArgon2Module;
+    }
+  } catch {
+    // Module not available at build time, will use dynamic import
+    nobleModuleStatic = null;
+  }
 }
 
 export enum Argon2Algorithm {
@@ -105,32 +116,31 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
 
   if (!nobleModulePromise) {
     nobleModulePromise = (async () => {
-      try {
-        // Try direct import first (works in most environments including Next.js)
-        return await import(NOBLE_ARGON_MODULE_ID);
-      } catch (directImportError) {
+      // Try each import path in order
+      for (const moduleId of NOBLE_ARGON_MODULE_IDS) {
         try {
-          // Fallback to dynamic import using Function constructor
-          // This works in environments where direct import fails
-          const dynamicImport = new Function('specifier', 'return import(specifier);') as (
-            specifier: string,
-          ) => Promise<NobleArgon2Module>;
-          return await dynamicImport(NOBLE_ARGON_MODULE_ID);
-        } catch (dynamicImportError) {
-          // Both import methods failed - log for debugging but don't throw
-          console.warn('Failed to load @noble/hashes module:', {
-            directImportError:
-              directImportError instanceof Error
-                ? directImportError.message
-                : String(directImportError),
-            dynamicImportError:
-              dynamicImportError instanceof Error
-                ? dynamicImportError.message
-                : String(dynamicImportError),
-          });
-          return null;
+          // Try direct import first (works in most environments including Next.js)
+          return await import(moduleId);
+        } catch (_directImportError) {
+          try {
+            // Fallback to dynamic import using Function constructor
+            // This works in environments where direct import fails
+            const dynamicImport = new Function('specifier', 'return import(specifier);') as (
+              specifier: string,
+            ) => Promise<NobleArgon2Module>;
+            return await dynamicImport(moduleId);
+          } catch (_dynamicImportError) {
+            // Try next import path
+            continue;
+          }
         }
       }
+
+      // All import methods failed - log for debugging but don't throw
+      console.warn('Failed to load @noble/hashes/argon2 module from all attempted paths:', {
+        attemptedPaths: NOBLE_ARGON_MODULE_IDS,
+      });
+      return null;
     })();
   }
 
@@ -145,15 +155,18 @@ async function getFallbackCompute(variant: FallbackVariant): Promise<FallbackCom
 
   const noble = await loadNobleModule();
   if (!noble) {
+    // Don't throw error - instead, throw a more descriptive error that suggests checking @node-rs/argon2
     throw new Error(
-      "Missing optional dependency '@noble/hashes'. Install it to enable the Argon2 fallback implementation.",
+      "Argon2 fallback implementation is not available. Please ensure '@node-rs/argon2' is properly installed, or install '@noble/hashes' for the fallback implementation.",
     );
   }
 
   const funcName = FALLBACK_FUNC_NAMES[variant];
   const compute = noble[funcName as keyof NobleArgon2Module];
   if (typeof compute !== 'function') {
-    throw new Error(`Argon2 fallback function '${funcName}' is not available.`);
+    throw new Error(
+      `Argon2 fallback function '${funcName}' is not available in @noble/hashes/argon2. Please ensure '@node-rs/argon2' is properly installed.`,
+    );
   }
 
   const callable = compute as FallbackCompute;

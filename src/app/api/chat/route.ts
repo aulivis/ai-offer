@@ -211,6 +211,14 @@ export async function POST(req: NextRequest) {
       if (typeof message?.content === 'string') {
         return message.content.trim();
       }
+      // Format 1b: { role: 'user', content: [{ type: 'text', text: '...' }] } - content array format
+      if (message?.content && Array.isArray(message.content)) {
+        return (message.content as MessagePart[])
+          .filter((part: MessagePart) => part.type === 'text')
+          .map((part: MessagePart) => (part.text || '').trim())
+          .join(' ')
+          .trim();
+      }
       // Format 2: { role: 'user', parts: [{ type: 'text', text: '...' }] } - parts array format
       if (message?.parts && Array.isArray(message.parts)) {
         return message.parts
@@ -223,7 +231,11 @@ export async function POST(req: NextRequest) {
       if (message?.text) {
         return message.text.trim();
       }
-      log.warn('Could not extract message content', { message, requestId });
+      log.warn('Could not extract message content', {
+        message,
+        messageKeys: message && typeof message === 'object' ? Object.keys(message) : [],
+        requestId,
+      });
       return '';
     };
 
@@ -324,6 +336,17 @@ export async function POST(req: NextRequest) {
     });
 
     // Check for preset questions first (before vector search)
+    // Log the query for debugging
+    log.info('Checking preset questions', {
+      query: lastMessage.content,
+      normalizedQuery: lastMessage.content
+        .toLowerCase()
+        .trim()
+        .replace(/[.,!?;:]/g, '')
+        .replace(/\s+/g, ' '),
+      requestId,
+    });
+
     // First try exact match (threshold 1.0 = exact match only, no similarity)
     // This handles clicked predefined questions instantly
     let presetMatch = matchPresetQuestion(lastMessage.content, 1.0);
@@ -331,12 +354,18 @@ export async function POST(req: NextRequest) {
     // If no exact match, try similarity matching for free-text that might match predefined questions
     // Use a threshold of 0.75 for free-text matching (higher than before for better quality)
     if (!presetMatch) {
+      log.info('No exact match found, trying similarity matching', {
+        query: lastMessage.content,
+        requestId,
+      });
       presetMatch = matchPresetQuestion(lastMessage.content, 0.75);
     }
+
     if (presetMatch) {
       log.info('Matched preset question', {
-        question: presetMatch.question,
-        query: lastMessage.content,
+        matchedQuestion: presetMatch.question,
+        userQuery: lastMessage.content,
+        answerLength: presetMatch.answer.length,
         requestId,
       });
 
@@ -357,12 +386,19 @@ export async function POST(req: NextRequest) {
         // and provide the answer as context.
         const result = streamText({
           model: openai('gpt-3.5-turbo'),
-          system: `You are Vanda, a helpful assistant for Vyndi. The user has asked a question, and you have the exact answer prepared. Return ONLY the answer text below, without any modifications, additions, or explanations.
+          system: `You are Vanda, a helpful assistant for Vyndi. The user has asked a question, and you have the exact answer prepared. Return ONLY the answer text below, without any modifications, additions, or explanations. Do not add any introductory text, greetings, or closing remarks. Return the answer exactly as provided.
 
 ANSWER TO RETURN:
 ${presetAnswer}`,
-          messages: messagesToUse,
+          messages: [
+            ...messagesToUse.slice(0, -1), // All messages except the last one
+            {
+              role: 'user' as const,
+              content: lastMessage.content,
+            },
+          ],
           temperature: 0,
+          // Note: maxTokens is not supported in this AI SDK version
         });
 
         // Log that we're about to return the response
@@ -425,6 +461,11 @@ ${presetAnswer}`,
         });
         // Don't return here - let it fall through to regular processing
       }
+    } else {
+      log.info('No preset question match found', {
+        query: lastMessage.content,
+        requestId,
+      });
     }
 
     // Best Practice: Multi-query retrieval (improves recall)

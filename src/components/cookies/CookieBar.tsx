@@ -57,7 +57,7 @@ export default function CookieBar() {
     'inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5B0] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827]';
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 bg-[#111827] text-[#F8FAFC] shadow-lg">
+    <div className="fixed inset-x-0 bottom-0 z-[100] bg-[#111827] text-[#F8FAFC] shadow-lg">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
         <p className="flex-shrink-0 text-center text-sm text-[#F8FAFC]/90 sm:text-left">
           {t('cookies.bar.message')}
@@ -67,6 +67,7 @@ export default function CookieBar() {
             type="button"
             onClick={handleCustomize}
             className={`${baseButtonClass} flex-shrink-0 hover:bg-white/10 active:bg-white/20`}
+            style={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
           >
             {t('cookies.bar.customise')}
           </button>
@@ -74,6 +75,7 @@ export default function CookieBar() {
             type="button"
             onClick={handleRejectNonEssential}
             className={`${baseButtonClass} flex-shrink-0 hover:bg-white/10 active:bg-white/20`}
+            style={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
           >
             {t('cookies.bar.reject')}
           </button>
@@ -81,6 +83,7 @@ export default function CookieBar() {
             type="button"
             onClick={handleAcceptAll}
             className={`${baseButtonClass} flex-shrink-0 border-transparent bg-white text-[#111827] hover:bg-white/90 active:bg-white/80`}
+            style={{ minWidth: 'auto', whiteSpace: 'nowrap' }}
           >
             {t('cookies.bar.accept')}
           </button>

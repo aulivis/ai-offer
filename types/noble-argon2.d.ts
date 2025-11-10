@@ -1,4 +1,5 @@
-declare module '@noble/hashes/argon2' {
+// Module declaration for @noble/hashes/argon2 (with and without .js extension)
+declare module '@noble/hashes/argon2.js' {
   export interface Argon2Options {
     m: number;
     t: number;
@@ -24,4 +25,9 @@ declare module '@noble/hashes/argon2' {
     salt: Uint8Array,
     options: Argon2Options,
   ): Promise<Uint8Array>;
+}
+
+// Also declare the path without .js for compatibility
+declare module '@noble/hashes/argon2' {
+  export * from '@noble/hashes/argon2.js';
 }
