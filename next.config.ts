@@ -51,12 +51,14 @@ const nextConfig: NextConfig = {
       config.externals = config.externals || [];
       if (Array.isArray(config.externals)) {
         config.externals = config.externals.filter(
-          (external) => typeof external !== 'string' || !external.includes('@noble/hashes'),
+          (external: unknown) =>
+            typeof external !== 'string' || !external.includes('@noble/hashes'),
         );
       } else if (typeof config.externals === 'function') {
         const originalExternals = config.externals;
-        config.externals = (context, request, callback) => {
-          if (request && request.includes('@noble/hashes')) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        config.externals = (context: any, request: any, callback: any) => {
+          if (request && typeof request === 'string' && request.includes('@noble/hashes')) {
             // Don't externalize @noble/hashes - it must be bundled
             return callback();
           }
