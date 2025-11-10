@@ -58,29 +58,29 @@ export default function CookieBar() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 bg-[#111827] text-[#F8FAFC] shadow-lg">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-center text-sm text-[#F8FAFC]/90 sm:text-left">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
+        <p className="flex-shrink-0 text-center text-sm text-[#F8FAFC]/90 sm:text-left">
           {t('cookies.bar.message')}
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+        <div className="flex flex-nowrap items-center justify-center gap-2 overflow-x-auto sm:justify-end">
           <button
             type="button"
             onClick={handleCustomize}
-            className={`${baseButtonClass} hover:bg-white/10 active:bg-white/20`}
+            className={`${baseButtonClass} flex-shrink-0 hover:bg-white/10 active:bg-white/20`}
           >
             {t('cookies.bar.customise')}
           </button>
           <button
             type="button"
             onClick={handleRejectNonEssential}
-            className={`${baseButtonClass} hover:bg-white/10 active:bg-white/20`}
+            className={`${baseButtonClass} flex-shrink-0 hover:bg-white/10 active:bg-white/20`}
           >
             {t('cookies.bar.reject')}
           </button>
           <button
             type="button"
             onClick={handleAcceptAll}
-            className={`${baseButtonClass} border-transparent bg-white text-[#111827] hover:bg-white/90 active:bg-white/80`}
+            className={`${baseButtonClass} flex-shrink-0 border-transparent bg-white text-[#111827] hover:bg-white/90 active:bg-white/80`}
           >
             {t('cookies.bar.accept')}
           </button>

@@ -1,7 +1,26 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
-const NOBLE_ARGON_MODULE_ID = ['@noble', 'hashes', 'argon2'].join('/');
+const NOBLE_ARGON_MODULE_ID = '@noble/hashes/argon2';
+
+// Type definition for @noble/hashes/argon2 module
+type NobleArgon2Module = typeof import('@noble/hashes/argon2');
+
+// Try to statically import @noble/hashes at module load time for better bundling
+// This ensures the module is included in the bundle if available
+// Using a lazy static import that will be resolved at runtime
+let nobleModuleStatic: NobleArgon2Module | null = null;
+try {
+  // Use dynamic import with a static string to help bundlers include it
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const nobleModule = require('@noble/hashes/argon2');
+  if (nobleModule) {
+    nobleModuleStatic = nobleModule as NobleArgon2Module;
+  }
+} catch {
+  // Module not available at build time, will use dynamic import
+  nobleModuleStatic = null;
+}
 
 export enum Argon2Algorithm {
   Argon2d = 0,
@@ -45,7 +64,6 @@ const ARGON2_NAMES: Record<Argon2Algorithm, 'argon2d' | 'argon2i' | 'argon2id'> 
   [Argon2Algorithm.Argon2id]: 'argon2id',
 };
 
-type NobleArgon2Module = typeof import('@noble/hashes/argon2');
 type FallbackVariant = (typeof ARGON2_NAMES)[Argon2Algorithm];
 type FallbackCompute = (
   password: string | Uint8Array,
@@ -80,6 +98,11 @@ async function loadNativeModule(): Promise<Argon2Module | null> {
 }
 
 async function loadNobleModule(): Promise<NobleArgon2Module | null> {
+  // If we have a static import, use it immediately
+  if (nobleModuleStatic) {
+    return nobleModuleStatic;
+  }
+
   if (!nobleModulePromise) {
     nobleModulePromise = (async () => {
       try {

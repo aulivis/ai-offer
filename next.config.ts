@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
   // CSS is automatically minified, tree-shaken, and split per route
   // Externalize Puppeteer packages for serverless optimization
   // These packages are large and should not be bundled with the Next.js app
+  // Note: @noble/hashes is NOT externalized - it must be bundled for Argon2 fallback to work
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
 };
 

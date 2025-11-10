@@ -26,8 +26,11 @@ export const metadata: Metadata = {
   title: 'Vyndi — AI offers',
   description: 'AI-assisted, professional offers for SMEs',
   icons: {
-    icon: '/vyndi-logo.png',
-    shortcut: '/vyndi-logo.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/vyndi-logo.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
     apple: '/vyndi-logo.png',
   },
 };
