@@ -852,7 +852,7 @@ export const hu = {
   cookies: {
     bar: {
       message:
-        'Sütiket használunk a felhasználói élmény javításához. Elfogadhatja az összes sütit, elutasíthatja a nem szükségeseket, vagy testreszabhatja a beállításokat.',
+        'Sütiket használunk, hogy jobb élményt nyújtsunk. Elfogadhatod az összeset, elutasíthatod a nem szükségeseket, vagy testreszabhatod a beállításokat.',
       customise: 'Testreszabás',
       reject: 'Nem szükségesek elutasítása',
       accept: 'Összes elfogadása',

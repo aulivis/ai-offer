@@ -1,17 +1,20 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
-// Try both import paths - with and without .js extension
-// Note: @noble/hashes may export argon2 differently, so we try multiple paths
-const NOBLE_ARGON_MODULE_IDS = [
-  '@noble/hashes/argon2.js',
-  '@noble/hashes/argon2',
-  // Fallback: try importing from main package if subpath exports don't work
-];
 
 // Type definition for @noble/hashes/argon2 module
 // Use the .js extension version as that's what's exported in package.json
 type NobleArgon2Module = typeof import('@noble/hashes/argon2.js');
+
+// Create a reference to the module path that Next.js can statically analyze
+// This helps ensure the module is included in the serverless bundle
+// We use a function that references the module path without actually importing it
+const NOBLE_ARGON2_MODULE_PATH = '@noble/hashes/argon2.js' as const;
+const NOBLE_ARGON2_MODULE_PATH_ALT = '@noble/hashes/argon2' as const;
+
+// Module cache for the noble argon2 implementation
+let nobleModuleStatic: NobleArgon2Module | null = null;
+let nobleModuleLoadAttempted = false;
 
 export enum Argon2Algorithm {
   Argon2d = 0,
@@ -79,54 +82,103 @@ let nativeModulePromise: Promise<Argon2Module | null> | null = null;
 
 async function loadNativeModule(): Promise<Argon2Module | null> {
   if (!nativeModulePromise) {
-    const dynamicImport = new Function('specifier', 'return import(specifier);') as (
-      specifier: string,
-    ) => Promise<Argon2Module>;
-    nativeModulePromise = dynamicImport(ARGON_MODULE_ID).catch(() => null);
+    nativeModulePromise = (async () => {
+      try {
+        // Use direct dynamic import - works better in serverless environments
+        // Next.js will properly bundle this at build time
+        const importedModule = await import(ARGON_MODULE_ID);
+        return importedModule as Argon2Module;
+      } catch {
+        // Native module not available - this is expected in some environments
+        return null;
+      }
+    })();
   }
 
   return nativeModulePromise;
 }
 
 async function loadNobleModule(): Promise<NobleArgon2Module | null> {
+  // Return cached module if available
+  if (nobleModuleStatic) {
+    return nobleModuleStatic;
+  }
+
   if (!nobleModulePromise) {
     nobleModulePromise = (async () => {
-      // Try each import path in order
-      for (const moduleId of NOBLE_ARGON_MODULE_IDS) {
-        try {
-          // Use dynamic import with Function constructor to avoid static analysis issues
-          // This works in environments where direct import fails (like Vercel builds)
-          const dynamicImport = new Function('specifier', 'return import(specifier);') as (
-            specifier: string,
-          ) => Promise<NobleArgon2Module>;
-          const importedModule = await dynamicImport(moduleId);
-          if (importedModule) {
-            return importedModule;
-          }
-        } catch (_importError) {
-          // Try next import path
-          continue;
-        }
-      }
-
-      // If subpath imports fail, try importing from main package
+      // Strategy 1: Try the primary export path (@noble/hashes/argon2.js)
+      // This is the officially supported subpath according to package.json exports
       try {
-        const dynamicImport = new Function('specifier', 'return import(specifier);') as (
-          specifier: string,
-        ) => Promise<{ argon2?: NobleArgon2Module }>;
-        const mainModule = await dynamicImport('@noble/hashes');
-        // Check if argon2 is exported from main package
-        if (mainModule && 'argon2' in mainModule && mainModule.argon2) {
-          return mainModule.argon2 as NobleArgon2Module;
+        // Use the constant to ensure Next.js can statically analyze the import
+        // Dynamic import with string literal should work in serverless environments
+        const importedModule = await import(NOBLE_ARGON2_MODULE_PATH);
+
+        // Verify the module exports the required functions
+        if (
+          importedModule &&
+          typeof importedModule.argon2idAsync === 'function' &&
+          typeof importedModule.argon2iAsync === 'function' &&
+          typeof importedModule.argon2dAsync === 'function'
+        ) {
+          nobleModuleStatic = importedModule as NobleArgon2Module;
+          return nobleModuleStatic;
         }
-      } catch {
-        // Main package import also failed
+      } catch (error) {
+        // Log detailed error in development for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('[Argon2] Failed to load @noble/hashes/argon2.js:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+        }
       }
 
-      // All import methods failed - log for debugging but don't throw
-      console.warn('Failed to load @noble/hashes/argon2 module from all attempted paths:', {
-        attemptedPaths: NOBLE_ARGON_MODULE_IDS,
-      });
+      // Strategy 2: Try alternative path without .js extension
+      // Some bundlers/resolvers might resolve this differently
+      if (!nobleModuleStatic && !nobleModuleLoadAttempted) {
+        nobleModuleLoadAttempted = true;
+        try {
+          const importedModule = await import(NOBLE_ARGON2_MODULE_PATH_ALT);
+          if (
+            importedModule &&
+            typeof importedModule.argon2idAsync === 'function' &&
+            typeof importedModule.argon2iAsync === 'function' &&
+            typeof importedModule.argon2dAsync === 'function'
+          ) {
+            nobleModuleStatic = importedModule as NobleArgon2Module;
+            return nobleModuleStatic;
+          }
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.debug('[Argon2] Failed to load @noble/hashes/argon2:', {
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+      }
+
+      // All import strategies failed
+      // This indicates the module is not available in the serverless environment
+      const errorDetails = {
+        attemptedPaths: [NOBLE_ARGON2_MODULE_PATH, NOBLE_ARGON2_MODULE_PATH_ALT],
+        environment: process.env.NODE_ENV || 'unknown',
+        nodeVersion: typeof process !== 'undefined' ? process.version : 'unknown',
+        platform: typeof process !== 'undefined' ? process.platform : 'unknown',
+      };
+
+      console.error(
+        '[Argon2] Failed to load @noble/hashes/argon2 module from all attempted paths.',
+        errorDetails,
+      );
+
+      // Provide helpful error message for debugging
+      console.error(
+        '[Argon2] This module is required as a fallback when @node-rs/argon2 is not available.',
+      );
+      console.error(
+        '[Argon2] Ensure @noble/hashes is installed (npm list @noble/hashes) and not externalized in next.config.ts',
+      );
+
       return null;
     })();
   }
