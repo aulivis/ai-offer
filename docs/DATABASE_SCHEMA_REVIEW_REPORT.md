@@ -411,3 +411,4 @@ All other tables are either:
 - Active features with 0 rows (offer_text_templates, testimonials, chatbot_feedback)
 
 The recommended actions are prioritized and can be implemented incrementally.
+

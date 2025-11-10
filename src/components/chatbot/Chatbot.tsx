@@ -153,8 +153,7 @@ export default function Chatbot({ className = '', title, placeholder }: ChatbotP
         <a
           key={key++}
           href={linkUrl.startsWith('http') ? linkUrl : `/${linkUrl}`}
-          target={linkUrl.startsWith('http') ? '_blank' : undefined}
-          rel={linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+          {...(linkUrl.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' })}
           className="text-primary underline hover:text-primary/80 transition-colors"
           onClick={(e) => {
             if (!linkUrl.startsWith('http')) {

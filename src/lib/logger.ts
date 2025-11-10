@@ -110,3 +110,4 @@ export function createLogger(requestId?: string): Logger {
  * Global logger for use outside of request context.
  */
 export const logger = new Logger();
+

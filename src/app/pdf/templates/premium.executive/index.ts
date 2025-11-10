@@ -26,3 +26,4 @@ export const premiumExecutiveTemplate: OfferTemplate = {
   renderHead,
   renderBody,
 };
+

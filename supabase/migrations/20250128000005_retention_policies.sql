@@ -215,3 +215,4 @@ COMMENT ON SCHEMA public IS 'Public schema. Retention policies: Run cleanup_old_
 -- SELECT cron.schedule('cleanup-old-data', '0 2 * * 0', 'SELECT * FROM public.cleanup_old_data()');
 -- (Runs every Sunday at 2 AM)
 
+

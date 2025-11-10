@@ -133,7 +133,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               className={`rounded-full px-3 py-1 text-fg-muted transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 isNavItemActive(item.href) ? 'text-fg' : ''
               }`}
-              aria-current={isNavItemActive(item.href) ? 'page' : undefined}
+              {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
               onClick={closeMenu}
             >
               {t(item.labelKey)}
@@ -223,7 +223,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               key={item.href}
               href={item.href}
               className="rounded-full px-4 py-3 transition-colors duration-200 text-fg-muted hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-current={isNavItemActive(item.href) ? 'page' : undefined}
+              {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
               onClick={closeMenu}
             >
               {t(item.labelKey)}

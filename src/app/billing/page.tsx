@@ -222,7 +222,7 @@ function PlanCard({
       ]
         .filter(Boolean)
         .join(' ')}
-      aria-current={isCurrent ? 'true' : undefined}
+      {...(isCurrent && { 'aria-current': 'true' })}
     >
       {/* Popular Badge */}
       {isPopular && !isCurrent && (

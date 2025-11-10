@@ -174,3 +174,4 @@ CREATE TABLE device_usage_counters (
 
 - [Architecture Documentation](./ARCHITECTURE.md) - System architecture overview
 - [API Documentation](./API.md) - API endpoints reference
+

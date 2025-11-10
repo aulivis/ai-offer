@@ -13,3 +13,4 @@ ADD COLUMN IF NOT EXISTS star_style TEXT CHECK (star_style IS NULL OR star_style
 COMMENT ON COLUMN testimonials.star_rating IS 'Star rating from 1 to 5 (optional)';
 COMMENT ON COLUMN testimonials.star_style IS 'Star style: filled, outlined, or solid (optional)';
 
+

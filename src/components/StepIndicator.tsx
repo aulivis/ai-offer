@@ -203,12 +203,12 @@ export default function StepIndicator({ steps }: Props) {
             <li key={index} className="h-full">
               <button
                 type="button"
-                onClick={clickable ? step.onSelect : undefined}
+                {...(clickable && step.onSelect && { onClick: step.onSelect })}
                 tabIndex={clickable || isCurrent ? 0 : -1}
                 aria-disabled={!clickable && !isCurrent}
-                aria-current={isCurrent ? 'step' : undefined}
+                {...(isCurrent && { 'aria-current': 'step' })}
                 aria-label={stepDescription}
-                aria-describedby={tone === 'error' ? `step-${index}-error` : undefined}
+                {...(tone === 'error' && { 'aria-describedby': `step-${index}-error` })}
                 className={cardClasses}
               >
                 <span className={circleClasses} aria-hidden="true">

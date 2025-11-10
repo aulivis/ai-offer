@@ -59,7 +59,7 @@ export default function ProductScreenshot({
           className="object-cover"
           priority={priority}
           placeholder="blur"
-          blurDataURL={priority ? BLUR_PLACEHOLDERS.gradient : undefined}
+          {...(priority && { blurDataURL: BLUR_PLACEHOLDERS.gradient })}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
         />
       </div>

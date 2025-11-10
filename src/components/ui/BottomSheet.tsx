@@ -247,7 +247,7 @@ export function BottomSheet({
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title ? 'bottom-sheet-title' : undefined}
+        {...(title && { 'aria-labelledby': 'bottom-sheet-title' })}
         className={`w-full max-w-lg rounded-t-3xl border-t border-x border-border bg-bg shadow-pop transition-transform duration-300 ease-out ${className}`}
         style={{
           transform: `translateY(${translateY}px)`,

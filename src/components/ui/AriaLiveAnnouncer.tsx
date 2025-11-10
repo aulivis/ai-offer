@@ -92,3 +92,4 @@ export function announceToScreenReader(
   const event = new CustomEvent(`aria-live-${priority}`, { detail: message });
   window.dispatchEvent(event);
 }
+

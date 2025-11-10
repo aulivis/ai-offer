@@ -242,3 +242,4 @@ describe('oauthRedirectSchema', () => {
     expect(oauthRedirectSchema.safeParse('not-a-url').success).toBe(false);
   });
 });
+

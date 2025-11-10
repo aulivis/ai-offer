@@ -25,7 +25,7 @@ export function SectionNav({ sections, activeSection, onSectionChange }: Section
               ? 'bg-primary/10 text-primary shadow-sm'
               : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
           }`}
-          aria-current={activeSection === section.id ? 'page' : undefined}
+          {...(activeSection === section.id && { 'aria-current': 'page' })}
         >
           <span
             className={`flex-shrink-0 ${activeSection === section.id ? 'text-primary' : 'text-slate-400'}`}
@@ -38,3 +38,4 @@ export function SectionNav({ sections, activeSection, onSectionChange }: Section
     </nav>
   );
 }
+

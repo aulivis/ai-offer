@@ -35,7 +35,7 @@ export function HelpText({ text, className = '', variant = 'inline', id }: HelpT
           onClick={() => setIsTooltipOpen(!isTooltipOpen)}
           onBlur={() => setIsTooltipOpen(false)}
           className="inline-flex items-center justify-center rounded-full text-fg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          aria-describedby={isTooltipOpen ? helpTextId : undefined}
+          {...(isTooltipOpen && { 'aria-describedby': helpTextId })}
           aria-expanded={isTooltipOpen}
           aria-label="Help"
         >
@@ -73,3 +73,4 @@ export function HelpText({ text, className = '', variant = 'inline', id }: HelpT
     </details>
   );
 }
+

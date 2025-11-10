@@ -42,3 +42,4 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 });
+

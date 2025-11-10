@@ -64,7 +64,7 @@ export function LoadMoreButton({
             key={page}
             type="button"
             className={cls}
-            aria-current={isCurrent ? 'page' : undefined}
+            {...(isCurrent && { 'aria-current': 'page' })}
             disabled
             aria-disabled
           >
