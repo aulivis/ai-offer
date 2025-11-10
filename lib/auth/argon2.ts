@@ -81,10 +81,34 @@ async function loadNativeModule(): Promise<Argon2Module | null> {
 
 async function loadNobleModule(): Promise<NobleArgon2Module | null> {
   if (!nobleModulePromise) {
-    const dynamicImport = new Function('specifier', 'return import(specifier);') as (
-      specifier: string,
-    ) => Promise<NobleArgon2Module>;
-    nobleModulePromise = dynamicImport(NOBLE_ARGON_MODULE_ID).catch(() => null);
+    nobleModulePromise = (async () => {
+      try {
+        // Try direct import first (works in most environments including Next.js)
+        return await import(NOBLE_ARGON_MODULE_ID);
+      } catch (directImportError) {
+        try {
+          // Fallback to dynamic import using Function constructor
+          // This works in environments where direct import fails
+          const dynamicImport = new Function('specifier', 'return import(specifier);') as (
+            specifier: string,
+          ) => Promise<NobleArgon2Module>;
+          return await dynamicImport(NOBLE_ARGON_MODULE_ID);
+        } catch (dynamicImportError) {
+          // Both import methods failed - log for debugging but don't throw
+          console.warn('Failed to load @noble/hashes module:', {
+            directImportError:
+              directImportError instanceof Error
+                ? directImportError.message
+                : String(directImportError),
+            dynamicImportError:
+              dynamicImportError instanceof Error
+                ? dynamicImportError.message
+                : String(dynamicImportError),
+          });
+          return null;
+        }
+      }
+    })();
   }
 
   return nobleModulePromise;

@@ -852,10 +852,10 @@ export const hu = {
   cookies: {
     bar: {
       message:
-        'We use cookies to improve your experience. You can accept all cookies, reject the non-essential ones, or customize your preferences.',
-      customise: 'Customize',
-      reject: 'Reject non-essential',
-      accept: 'Accept all',
+        'Sütiket használunk a felhasználói élmény javításához. Elfogadhatja az összes sütit, elutasíthatja a nem szükségeseket, vagy testreszabhatja a beállításokat.',
+      customise: 'Testreszabás',
+      reject: 'Nem szükségesek elutasítása',
+      accept: 'Összes elfogadása',
     },
     manageButton: 'Sütibeállítások kezelése',
     preferences: {
