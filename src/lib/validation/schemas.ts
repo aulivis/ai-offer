@@ -152,4 +152,3 @@ export const usageQuerySchema = z.object({
  * Validates OAuth redirect URL
  */
 export const oauthRedirectSchema = optionalUrlSchema('Redirect URL must be a valid URL.');
-

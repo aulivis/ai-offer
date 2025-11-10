@@ -12,7 +12,7 @@
  *   ts-node scripts/ingest-docs.ts
  */
 
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';

@@ -7,7 +7,7 @@
  * Run with: npx tsx scripts/audit-color-contrast.ts
  */
 
-import { auditColorPairs, getContrastRatio, type ColorPair } from '../src/lib/colorContrast';
+import { auditColorPairs, type ColorPair } from '../src/lib/colorContrast';
 
 // Color definitions from globals.css and design tokens
 const COLORS = {
@@ -207,5 +207,3 @@ if (require.main === module) {
 }
 
 export { main };
-
-

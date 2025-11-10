@@ -80,4 +80,3 @@ export function useClientAutocomplete(clientList: Client[] = []) {
     reset,
   };
 }
-

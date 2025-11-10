@@ -203,5 +203,3 @@ If issues occur:
 - Service role retains full access for background jobs
 - RLS policies use standard `auth.uid() = user_id` pattern
 - Retention policies should be run periodically (weekly recommended)
-
-

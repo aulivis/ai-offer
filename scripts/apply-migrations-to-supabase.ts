@@ -22,7 +22,7 @@ const MIGRATIONS_TO_APPLY = [
   '20250128000002_remove_obsolete_recipients_table.sql',
 ];
 
-async function readMigration(filename: string): Promise<string> {
+async function _readMigration(filename: string): Promise<string> {
   const filePath = join(process.cwd(), 'supabase', 'migrations', filename);
   try {
     const content = await readFile(filePath, 'utf-8');
@@ -32,7 +32,7 @@ async function readMigration(filename: string): Promise<string> {
   }
 }
 
-async function applyMigrationViaAPI(sql: string, migrationName: string): Promise<boolean> {
+async function _applyMigrationViaAPI(_sql: string, _migrationName: string): Promise<boolean> {
   // Note: Supabase JS client doesn't support direct SQL execution
   // We would need to use the Management API or create a serverless function
   // For now, we'll return false to indicate manual application is needed
@@ -139,5 +139,3 @@ main().catch((error) => {
   console.error('❌ Fatal error:', error);
   process.exit(1);
 });
-
-

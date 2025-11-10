@@ -94,4 +94,3 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobI
     );
   }
 }
-

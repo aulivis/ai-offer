@@ -32,7 +32,7 @@ describe('Visual Regression Tests', () => {
         executablePath,
         headless: chromium.headless,
       });
-    } catch (error) {
+    } catch (_error) {
       console.warn('Chromium not available, skipping visual regression tests');
       browser = null;
     }

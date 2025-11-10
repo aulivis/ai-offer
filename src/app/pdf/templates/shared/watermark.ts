@@ -68,5 +68,3 @@ function getDefaultWatermarkText(type: WatermarkType): string {
       return 'DRAFT';
   }
 }
-
-

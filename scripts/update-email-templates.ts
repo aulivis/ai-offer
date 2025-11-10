@@ -235,7 +235,7 @@ Examples:
 
     // Get current config
     console.log('\n📥 Fetching current email templates...');
-    const currentConfig = await getCurrentConfig(projectRef, accessToken);
+    const _currentConfig = await getCurrentConfig(projectRef, accessToken);
 
     // Load Hungarian magic link template
     console.log('\n📝 Loading Hungarian magic link template...');

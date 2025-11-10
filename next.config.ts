@@ -116,7 +116,7 @@ export async function headers() {
 let config = nextConfig;
 
 if (process.env.ANALYZE === 'true') {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: true,
   });

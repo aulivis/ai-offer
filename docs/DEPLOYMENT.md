@@ -320,9 +320,11 @@ Webhook callbacks are supported via `callbackUrl` parameter.
 ## Best Practices Review
 
 For a comprehensive review of Vercel deployment best practices (2025), see:
+
 - [Vercel Deployment Review 2025](./VERCEL_DEPLOYMENT_REVIEW_2025.md)
 
 This review covers:
+
 - Node.js version requirements
 - Memory optimization recommendations
 - Edge runtime opportunities

@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
-import type { Browser, Page } from 'puppeteer-core';
+import type { Browser } from 'puppeteer-core';
 
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { listTemplates } from '@/app/pdf/templates/engineRegistry';
@@ -27,7 +27,7 @@ describe('PDF Engine Compatibility', () => {
         executablePath,
         headless: chromium.headless,
       });
-    } catch (error) {
+    } catch (_error) {
       console.warn('Chromium not available, skipping PDF engine compatibility tests');
       browser = null;
     }

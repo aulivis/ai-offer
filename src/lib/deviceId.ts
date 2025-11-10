@@ -29,4 +29,3 @@ export function getDeviceIdFromCookie(name = 'propono_device_id'): string | null
 
   return null;
 }
-

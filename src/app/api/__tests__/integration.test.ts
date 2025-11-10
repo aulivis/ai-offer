@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, beforeAll } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 import { envServer } from '@/env.server';
 
@@ -7,10 +7,10 @@ import { envServer } from '@/env.server';
  * These tests verify end-to-end behavior of authentication routes.
  */
 describe('Authentication Integration Tests', () => {
-  let supabase: ReturnType<typeof createClient>;
+  let _supabase: ReturnType<typeof createClient>;
 
   beforeAll(() => {
-    supabase = createClient(
+    _supabase = createClient(
       envServer.NEXT_PUBLIC_SUPABASE_URL,
       envServer.SUPABASE_SERVICE_ROLE_KEY,
       {
@@ -83,5 +83,3 @@ describe('Rate Limiting Integration Tests', () => {
     // Test rate limit window expiration
   });
 });
-
-

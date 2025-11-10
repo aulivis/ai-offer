@@ -124,4 +124,3 @@ export function auditColorPairs(pairs: ColorPair[]): Array<
     };
   });
 }
-

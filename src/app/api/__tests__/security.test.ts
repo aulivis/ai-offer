@@ -1,6 +1,4 @@
-import { describe, it, expect } from 'vitest';
-import { createMocks } from 'node-mocks-http';
-import { NextRequest } from 'next/server';
+import { describe, it } from 'vitest';
 
 /**
  * Security-focused tests for API endpoints.
@@ -121,5 +119,3 @@ describe('Security Tests', () => {
     });
   });
 });
-
-

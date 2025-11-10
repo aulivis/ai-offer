@@ -223,8 +223,8 @@ export default function ProTemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">ExkluzĂ­v dizĂˇjnok</h3>
             <p className="text-sm text-fg-muted">
-              EgyedĂĽlĂˇllĂł, professzionĂˇlis sablonok, amelyeket csak Pro elĹ‘fizetĹ‘k
-              Ă©rhetnek el.
+              EgyedĂĽlĂˇllĂł, professzionĂˇlis sablonok, amelyeket csak Pro elĹ‘fizetĹ‘k Ă©rhetnek
+              el.
             </p>
           </Card>
 
@@ -248,7 +248,8 @@ export default function ProTemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">Fejlett funkciĂłk</h3>
             <p className="text-sm text-fg-muted">
-              InteraktĂ­v elemek, animĂˇciĂłk Ă©s egyedi komponensek, amelyek kiemelik az ajĂˇnlatodat.
+              InteraktĂ­v elemek, animĂˇciĂłk Ă©s egyedi komponensek, amelyek kiemelik az
+              ajĂˇnlatodat.
             </p>
           </Card>
 
@@ -272,7 +273,8 @@ export default function ProTemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">KorlĂˇtlan testreszabĂˇs</h3>
             <p className="text-sm text-fg-muted">
-              Teljes kontroll minden elem felett - szĂ­nek, tipogrĂˇfia, elrendezĂ©s Ă©s mĂ©g sok mĂˇs.
+              Teljes kontroll minden elem felett - szĂ­nek, tipogrĂˇfia, elrendezĂ©s Ă©s mĂ©g sok
+              mĂˇs.
             </p>
           </Card>
 
@@ -296,7 +298,8 @@ export default function ProTemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">ElsĹ‘bbsĂ©gi tĂˇmogatĂˇs</h3>
             <p className="text-sm text-fg-muted">
-              Pro elĹ‘fizetĹ‘kkĂ©nt elsĹ‘bbsĂ©get kapsz a tĂˇmogatĂˇsban Ă©s az Ăşj funkciĂłk hozzĂˇfĂ©rĂ©sĂ©ben.
+              Pro elĹ‘fizetĹ‘kkĂ©nt elsĹ‘bbsĂ©get kapsz a tĂˇmogatĂˇsban Ă©s az Ăşj funkciĂłk
+              hozzĂˇfĂ©rĂ©sĂ©ben.
             </p>
           </Card>
         </div>
@@ -357,7 +360,8 @@ export default function ProTemplatesPage() {
         <div className="text-center">
           <h2 className="mb-4 text-3xl font-bold text-fg">LĂ©pj szintet Pro elĹ‘fizetĂ©ssel!</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            HozzĂˇfĂ©rj az Ă¶sszes prĂ©mium sablonhoz, fejlett funkciĂłkhoz Ă©s exkluzĂ­v lehetĹ‘sĂ©gekhez.
+            HozzĂˇfĂ©rj az Ă¶sszes prĂ©mium sablonhoz, fejlett funkciĂłkhoz Ă©s exkluzĂ­v
+            lehetĹ‘sĂ©gekhez.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link

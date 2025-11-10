@@ -14,10 +14,11 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import OpenAI from 'openai';
+import { config } from 'dotenv';
 import { chunkMarkdown } from '../src/lib/chatbot/chunking';
 
 // Load environment variables
-require('dotenv').config({ path: join(process.cwd(), '.env.local') });
+config({ path: join(process.cwd(), '.env.local') });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;

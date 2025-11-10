@@ -1,7 +1,6 @@
 import React from 'react';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { t } from '@/copy';
 
 import CookieBar from '../CookieBar';
 import { CONSENT_VERSION } from '@/lib/consent/constants';

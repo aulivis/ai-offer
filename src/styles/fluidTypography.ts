@@ -218,4 +218,3 @@ export const FLUID_TYPOGRAPHY_CSS_VARS = Object.entries(FLUID_TYPOGRAPHY_SCALE)
   --fluid-typography-${key}-letter-spacing: ${value.letterSpacing};`;
   })
   .join('\n  ');
-

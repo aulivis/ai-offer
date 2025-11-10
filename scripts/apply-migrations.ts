@@ -67,7 +67,7 @@ async function getMigrationFiles(): Promise<Migration[]> {
   return migrations;
 }
 
-async function checkMigrationApplied(filename: string): Promise<boolean> {
+async function _checkMigrationApplied(filename: string): Promise<boolean> {
   // Check if migration has been applied by querying a migrations tracking table
   // For simplicity, we'll create a simple tracking mechanism
   const { data, error } = await supabase
@@ -104,7 +104,7 @@ async function createMigrationsTable(): Promise<void> {
   }
 }
 
-async function markMigrationApplied(filename: string): Promise<void> {
+async function _markMigrationApplied(filename: string): Promise<void> {
   const { error } = await supabase
     .from('schema_migrations')
     .upsert({ version: filename, applied_at: new Date().toISOString() });
@@ -114,12 +114,12 @@ async function markMigrationApplied(filename: string): Promise<void> {
   }
 }
 
-async function applyMigration(migration: Migration): Promise<boolean> {
+async function _applyMigration(migration: Migration): Promise<boolean> {
   console.log(`\nApplying migration: ${migration.filename}`);
 
   // Split migration content by semicolons to handle multiple statements
   // This is a simple approach - for complex migrations, you might need a proper SQL parser
-  const statements = migration.content
+  const _statements = migration.content
     .split(';')
     .map((s) => s.trim())
     .filter((s) => s.length > 0 && !s.startsWith('--'));
@@ -195,5 +195,3 @@ main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-
-

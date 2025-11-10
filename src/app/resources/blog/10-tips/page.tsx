@@ -317,9 +317,9 @@ export default function TenTipsPage() {
       <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
         <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          A tĂ¶kĂ©letes ajĂˇnlat egyensĂşlyt teremt az informĂˇciĂł Ă©s a meggyĹ‘zĂ©s kĂ¶zĂ¶tt. A fent
-          emlĂ­tett 10 tipp segĂ­t abban, hogy professzionĂˇlis, hatĂ©kony ajĂˇnlatokat kĂ©szĂ­ts,
-          amelyek nĂ¶velik a konverziĂł rĂˇtĂˇt Ă©s az ĂĽzleti sikereket.
+          A tĂ¶kĂ©letes ajĂˇnlat egyensĂşlyt teremt az informĂˇciĂł Ă©s a meggyĹ‘zĂ©s kĂ¶zĂ¶tt. A
+          fent emlĂ­tett 10 tipp segĂ­t abban, hogy professzionĂˇlis, hatĂ©kony ajĂˇnlatokat
+          kĂ©szĂ­ts, amelyek nĂ¶velik a konverziĂł rĂˇtĂˇt Ă©s az ĂĽzleti sikereket.
         </p>
         <p className="text-lg leading-relaxed text-fg-muted">
           Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatos tanulĂˇsi folyamat. PrĂłbĂˇlj ki

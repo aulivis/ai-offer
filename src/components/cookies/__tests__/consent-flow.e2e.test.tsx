@@ -2,7 +2,6 @@ import React, { type ReactNode } from 'react';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { t } from '@/copy';
 
 import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '../CookieBar';

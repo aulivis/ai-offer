@@ -90,8 +90,8 @@ export default function BestPracticesPage() {
           />
         </svg>
         <p className="mt-4 text-sm font-medium text-gray-600">
-          [HelyĹ‘rzĹ‘: Hero kĂ©p - Best practices infografika, iparĂˇgi trendek vagy
-          szakĂ©rtĹ‘i tanĂˇcsok vizuĂˇlis ĂˇbrĂˇzolĂˇsa]
+          [HelyĹ‘rzĹ‘: Hero kĂ©p - Best practices infografika, iparĂˇgi trendek vagy szakĂ©rtĹ‘i
+          tanĂˇcsok vizuĂˇlis ĂˇbrĂˇzolĂˇsa]
         </p>
         <p className="mt-2 text-xs text-gray-500">
           AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
@@ -103,8 +103,8 @@ export default function BestPracticesPage() {
         <p className="text-lg leading-relaxed text-fg-muted">
           Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dĹ‘ terĂĽlet, ahol a legjobb gyakorlatok,
           trendek Ă©s stratĂ©giai megkĂ¶zelĂ­tĂ©sek dĂ¶ntĹ‘en befolyĂˇsolhatjĂˇk az
-          eredmĂ©nyeket. Ebben a cikkben bemutatjuk az iparĂˇg legfontosabb best
-          practice-eit Ă©s trendjeit, amelyeket a sikeres vĂˇllalkozĂˇsok alkalmaznak.
+          eredmĂ©nyeket. Ebben a cikkben bemutatjuk az iparĂˇg legfontosabb best practice-eit Ă©s
+          trendjeit, amelyeket a sikeres vĂˇllalkozĂˇsok alkalmaznak.
         </p>
       </div>
 
@@ -118,8 +118,8 @@ export default function BestPracticesPage() {
             </h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
               A mai piacon a generikus ajĂˇnlatok mĂˇr nem elĂ©gsĂ©gesek. A legjobb gyakorlatok
-              szerint minden ajĂˇnlatnak szemĂ©lyre kell szabottnak lennie az ĂĽgyfĂ©l
-              specifikus igĂ©nyeihez.
+              szerint minden ajĂˇnlatnak szemĂ©lyre kell szabottnak lennie az ĂĽgyfĂ©l specifikus
+              igĂ©nyeihez.
             </p>
             <div className="rounded-lg bg-blue-50 p-6">
               <h3 className="mb-3 font-semibold text-fg">Gyakorlati tanĂˇcsok:</h3>
@@ -138,8 +138,8 @@ export default function BestPracticesPage() {
           <Card className="border-l-4 border-l-green-500">
             <h2 className="mb-4 text-3xl font-bold text-fg">2. AdatvezĂ©relt megkĂ¶zelĂ­tĂ©s</h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              A sikeres ajĂˇnlatkĂ©szĂ­tĂ©s nem vĂ©letlen, hanem adatokon alapul. A
-              legjobb cĂ©gek folyamatosan mĂ©rnek, elemeznek Ă©s optimalizĂˇlnak.
+              A sikeres ajĂˇnlatkĂ©szĂ­tĂ©s nem vĂ©letlen, hanem adatokon alapul. A legjobb
+              cĂ©gek folyamatosan mĂ©rnek, elemeznek Ă©s optimalizĂˇlnak.
             </p>
 
             {/* Placeholder for data visualization */}
@@ -167,7 +167,8 @@ export default function BestPracticesPage() {
               <div className="rounded-lg bg-green-50 p-4">
                 <h4 className="mb-2 font-semibold text-fg">MĂ©rj le mindent</h4>
                 <p className="text-sm text-fg-muted">
-                  KĂ¶vess nyomon a konverziĂł rĂˇtĂˇkat, vĂˇlaszidĹ‘ket, Ă©s az ĂĽgyfelek visszajelzĂ©seit.
+                  KĂ¶vess nyomon a konverziĂł rĂˇtĂˇkat, vĂˇlaszidĹ‘ket, Ă©s az ĂĽgyfelek
+                  visszajelzĂ©seit.
                 </p>
               </div>
               <div className="rounded-lg bg-green-50 p-4">
@@ -305,31 +306,32 @@ export default function BestPracticesPage() {
                 </h3>
                 <p className="text-fg-muted">
                   Az ajĂˇnlatnak megfelelĹ‘ hosszĂşsĂˇgĂşnak kell lennie - nem tĂşl hosszĂş, hogy ne
-                  veszĂ­tse el az ĂĽgyfelet, de nem is tĂşl rĂ¶vid, hogy hiĂˇnyozzon fontos informĂˇciĂł.
+                  veszĂ­tse el az ĂĽgyfelet, de nem is tĂşl rĂ¶vid, hogy hiĂˇnyozzon fontos
+                  informĂˇciĂł.
                 </p>
               </div>
 
               <div>
                 <h3 className="mb-2 font-semibold text-fg">âťŚ HomĂˇlyos ĂˇrazĂˇs</h3>
                 <p className="text-fg-muted">
-                  Az ĂĽgyfeleknek egyĂ©rtelmĹ±nek kell lennie, mit kapnak Ă©s mennyiĂ©rt. KerĂĽld a
-                  rejtett kĂ¶ltsĂ©geket Ă©s a homĂˇlyos ĂˇrazĂˇsi struktĂşrĂˇkat.
+                  Az ĂĽgyfeleknek egyĂ©rtelmĹ±nek kell lennie, mit kapnak Ă©s mennyiĂ©rt. KerĂĽld
+                  a rejtett kĂ¶ltsĂ©geket Ă©s a homĂˇlyos ĂˇrazĂˇsi struktĂşrĂˇkat.
                 </p>
               </div>
 
               <div>
                 <h3 className="mb-2 font-semibold text-fg">âťŚ HiĂˇnyzĂł call-to-action</h3>
                 <p className="text-fg-muted">
-                  Minden ajĂˇnlatnak egyĂ©rtelmĹ±en kell kommunikĂˇlnia, mit kell tennie az ĂĽgyfĂ©lnek
-                  tovĂˇbb. HiĂˇnyzĂł vagy gyenge CTA csĂ¶kkenti a konverziĂł rĂˇtĂˇt.
+                  Minden ajĂˇnlatnak egyĂ©rtelmĹ±en kell kommunikĂˇlnia, mit kell tennie az
+                  ĂĽgyfĂ©lnek tovĂˇbb. HiĂˇnyzĂł vagy gyenge CTA csĂ¶kkenti a konverziĂł rĂˇtĂˇt.
                 </p>
               </div>
 
               <div>
                 <h3 className="mb-2 font-semibold text-fg">âťŚ Nem szemĂ©lyre szabott tartalom</h3>
                 <p className="text-fg-muted">
-                  A generikus, sablonos ajĂˇnlatok kevĂ©sbĂ© hatĂ©konyak. Mindig szemĂ©lyre szabd az
-                  ajĂˇnlatot az ĂĽgyfĂ©l igĂ©nyeihez.
+                  A generikus, sablonos ajĂˇnlatok kevĂ©sbĂ© hatĂ©konyak. Mindig szemĂ©lyre
+                  szabd az ajĂˇnlatot az ĂĽgyfĂ©l igĂ©nyeihez.
                 </p>
               </div>
             </div>
@@ -339,7 +341,9 @@ export default function BestPracticesPage() {
         {/* Section 6: Future of Proposals */}
         <section>
           <Card className="border-l-4 border-l-indigo-500">
-            <h2 className="mb-4 text-3xl font-bold text-fg">6. Az ajĂˇnlatkĂ©szĂ­tĂ©s jĂ¶vĹ‘je</h2>
+            <h2 className="mb-4 text-3xl font-bold text-fg">
+              6. Az ajĂˇnlatkĂ©szĂ­tĂ©s jĂ¶vĹ‘je
+            </h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
               Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dik. ĂŤme nĂ©hĂˇny trend, amely a
               kĂ¶zeljĂ¶vĹ‘ben vĂˇrhatĂł:

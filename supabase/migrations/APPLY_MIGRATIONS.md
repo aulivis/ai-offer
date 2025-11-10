@@ -169,5 +169,3 @@ If you encounter any issues:
 2. Verify your Supabase project has the required permissions
 3. Ensure you're using the service role key or have admin access
 4. Check the Supabase logs for additional details
-
-
