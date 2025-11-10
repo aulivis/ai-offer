@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@reference "tailwindcss/utilities";
 
 @page {
   size: A4;
@@ -13,9 +12,9 @@
   }
 }
 
-@theme {
+@theme inline {
+  --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Work Sans', system-ui, sans-serif;
-  --font-sans: 'Work Sans', system-ui, sans-serif;
   --font-mono:
     'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
@@ -24,12 +23,42 @@
   --radius-lg: 8px;
   --radius-2xl: 16px;
   --radius-3xl: 24px;
-  --color-primary: #00e5b0;
-  --color-primary-ink: #04251a;
+  --radius: 0.5rem;
+
+  /* Navy Colors */
+  --color-navy-50: #f0f4f8;
+  --color-navy-100: #d9e2ec;
+  --color-navy-200: #bcccdc;
+  --color-navy-300: #9fb3c8;
+  --color-navy-400: #829ab1;
+  --color-navy-500: #627d98;
+  --color-navy-600: #486581;
+  --color-navy-700: #334e68;
+  --color-navy-800: #243b53;
+  --color-navy-900: #102a43;
+
+  /* Turquoise - WCAG AA Compliant */
+  --color-turquoise-50: #e6f9f7;
+  --color-turquoise-100: #b8f0ea;
+  --color-turquoise-200: #8ae7de;
+  --color-turquoise-300: #5cded1;
+  --color-turquoise-400: #2ed5c5;
+  --color-turquoise-500: #00b8a9;
+  --color-turquoise-600: #009688;
+  --color-turquoise-700: #00796b;
+  --color-turquoise-800: #005b4f;
+  --color-turquoise-900: #003d33;
+
+  /* Semantic tokens */
+  --color-background: #ffffff;
+  --color-foreground: var(--color-navy-900);
+  --color-primary: var(--color-turquoise-600);
+  --color-primary-ink: #ffffff;
+  --color-primary-foreground: #ffffff;
   --color-accent: #c3b3ff;
   --color-bg: #f7f9fb;
   --color-bg-muted: #ffffff;
-  --color-fg: #0f172a;
+  --color-fg: var(--color-navy-900);
   --color-fg-muted: #475569; /* Improved contrast for WCAG AA compliance (was #4b5563) */
   --color-border: #e5e7eb;
   --color-success: #16a34a;
@@ -38,7 +67,7 @@
   --color-danger-ink: #ffffff;
   --brand-primary: #1c274c;
   --brand-secondary: #e2e8f0;
-  --brand-text: #0f172a;
+  --brand-text: var(--color-navy-900);
   --brand-muted: #334155;
   --brand-border: #475569;
   --brand-bg: #ffffff;
@@ -52,21 +81,22 @@
 :root {
   color-scheme: light;
 
-  --color-primary: #00e5b0;
+  /* Use turquoise-600 for primary (WCAG AA compliant) */
+  --color-primary: #009688;
   --color-accent: #c3b3ff;
   --color-bg: #f7f9fb;
   --color-bg-muted: #ffffff;
-  --color-fg: #0f172a;
+  --color-fg: #102a43;
   --color-fg-muted: #475569; /* Improved contrast for WCAG AA compliance (was #4b5563) */
   --color-border: #e5e7eb;
-  --color-primary-ink: #04251a;
+  --color-primary-ink: #ffffff;
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
   --color-danger-ink: #ffffff;
   --brand-primary: #1c274c;
   --brand-secondary: #e2e8f0;
-  --brand-text: #0f172a;
+  --brand-text: #102a43;
   --brand-muted: #334155;
   --brand-border: #475569;
   --brand-bg: #ffffff;
@@ -76,14 +106,14 @@
   --border: var(--brand-border);
   --bg: var(--brand-bg);
 
-  --color-primary-rgb: 0 229 176;
+  --color-primary-rgb: 0 150 136;
   --color-accent-rgb: 195 179 255;
   --color-bg-rgb: 247 249 251;
   --color-bg-muted-rgb: 255 255 255;
-  --color-fg-rgb: 15 23 42;
+  --color-fg-rgb: 16 42 67;
   --color-fg-muted-rgb: 71 85 105; /* Improved contrast for WCAG AA compliance (was 75 85 99) */
   --color-border-rgb: 229 231 235;
-  --color-primary-ink-rgb: 4 37 26;
+  --color-primary-ink-rgb: 255 255 255;
   --color-success-rgb: 22 163 74;
   --color-warning-rgb: 245 158 11;
   --color-danger-rgb: 220 38 38;
@@ -283,6 +313,17 @@ p {
     to {
       transform: scale(0.95);
       opacity: 0;
+    }
+  }
+
+  @keyframes slideInFromBottom {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 }
