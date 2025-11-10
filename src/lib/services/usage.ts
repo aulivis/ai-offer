@@ -4,17 +4,10 @@ import { countPendingPdfJobs } from '../queue/pdf';
 import { getMonthlyOfferLimit, resolveEffectivePlan } from '../subscription';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { normalizeDate, rollbackUsageIncrement, type RollbackOptions } from '../usageHelpers';
+import { currentMonthStart } from '../utils/dateHelpers';
 
-/**
- * Compute the first day of the current month in YYYY-MM-DD format.  This
- * helper is used to determine the billing period for usage counters.
- */
-export function currentMonthStart(): { date: Date; iso: string } {
-  const now = new Date();
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const iso = date.toISOString().slice(0, 10);
-  return { date, iso };
-}
+// Re-export for backward compatibility
+export { currentMonthStart };
 
 export type QuotaCheckResult = {
   allowed: boolean;

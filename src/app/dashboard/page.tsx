@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Card } from '@/components/ui/Card';
-import { currentMonthStart } from '@/lib/services/usage';
+import { currentMonthStart } from '@/lib/utils/dateHelpers';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import dynamic from 'next/dynamic';

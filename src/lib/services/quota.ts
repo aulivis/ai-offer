@@ -12,7 +12,7 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { currentMonthStart } from './usage';
+import { currentMonthStart } from '../utils/dateHelpers';
 
 export type QuotaData = {
   plan: 'free' | 'standard' | 'pro';
