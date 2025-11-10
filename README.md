@@ -122,7 +122,6 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Architecture](./docs/ARCHITECTURE.md)** - System architecture and design
 - **[API Documentation](./docs/API.md)** - REST API endpoints reference
 - **[Deployment Guide](./docs/DEPLOYMENT.md)** - Vercel deployment instructions
-- **[Chatbot](./docs/CHATBOT.md)** - Chatbot setup and configuration
 - **[Templates](./docs/TEMPLATES.md)** - PDF template creation guide
 - **[Quota System](./docs/QUOTA_SYSTEM.md)** - Quota management system design
 

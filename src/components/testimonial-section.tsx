@@ -1,8 +1,20 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import {
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Quote,
+  Users,
+  FileCheck,
+  ThumbsUp,
+  Headphones,
+  TrendingUp,
+  CheckCircle,
+} from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export function TestimonialSection() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -18,8 +30,11 @@ export function TestimonialSection() {
       quote:
         'A Vyndi segítségével 70% időt spórolunk meg az ajánlatkészítésen. Most több időnk marad az ügyfelekkel való kapcsolattartásra.',
       rating: 5,
-      result: '70% időmegtakarítás',
-      resultValue: '+15 ajánlat/hét',
+      metrics: [
+        { label: '70% időmegtakarítás', icon: TrendingUp },
+        { label: '+15 ajánlat/hét', icon: FileCheck },
+      ],
+      verified: true,
     },
     {
       name: 'Nagy Péter',
@@ -29,8 +44,11 @@ export function TestimonialSection() {
       quote:
         'Hihetetlen, hogy milyen gyorsan és professzionálisan tudunk most ajánlatot készíteni. Az ügyfeleink is észreveszik a különbséget.',
       rating: 5,
-      result: '3x gyorsabb',
-      resultValue: '98% pontosság',
+      metrics: [
+        { label: '3x gyorsabb', icon: TrendingUp },
+        { label: '98% pontosság', icon: CheckCircle },
+      ],
+      verified: true,
     },
     {
       name: 'Szabó Anna',
@@ -40,8 +58,11 @@ export function TestimonialSection() {
       quote:
         'A Vyndi nélkül már el sem tudom képzelni a munkánkat. Az AI funkciók egyszerűen zseniálisak, és a csapatom imádja használni.',
       rating: 5,
-      result: '50+ ajánlat/hó',
-      resultValue: '85% elfogadási arány',
+      metrics: [
+        { label: '50+ ajánlat/hó', icon: FileCheck },
+        { label: '85% elfogadási arány', icon: ThumbsUp },
+      ],
+      verified: true,
     },
   ];
 
@@ -91,146 +112,196 @@ export function TestimonialSection() {
   const currentTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <p className="text-turquoise-600 font-semibold text-sm uppercase tracking-wide mb-3">
+          <div className="inline-block px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
             ÜGYFELEINK MONDJÁK
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+          </div>
+
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-6 leading-tight text-balance">
             Csatlakozz a Vyndi közösséghez
           </h2>
+
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
             500+ vállalkozás bízik már a Vyndiben. Nézd meg, mit mondanak rólunk!
           </p>
         </div>
 
-        {/* Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-16">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-turquoise-600 mb-2">500+</div>
-            <div className="text-gray-600">Aktív felhasználó</div>
+        {/* Stats Grid */}
+        {/* Enhanced stats with icons, cards, and larger numbers */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-20">
+          {/* Stat 1: Active Users */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
+            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+              <Users className="w-7 h-7 text-blue-600" />
+            </div>
+            <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">500+</div>
+            <div className="text-gray-600 font-medium">Aktív felhasználó</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-turquoise-600 mb-2">10K+</div>
-            <div className="text-gray-600">Létrehozott ajánlat</div>
+
+          {/* Stat 2: Proposals Created */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
+            <div className="w-14 h-14 bg-turquoise-100 rounded-xl flex items-center justify-center mb-4">
+              <FileCheck className="w-7 h-7 text-turquoise-600" />
+            </div>
+            <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">10K+</div>
+            <div className="text-gray-600 font-medium">Létrehozott ajánlat</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-turquoise-600 mb-2">98%</div>
-            <div className="text-gray-600">Elégedettségi mutató</div>
+
+          {/* Stat 3: Satisfaction Rate */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
+            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+              <ThumbsUp className="w-7 h-7 text-green-600" />
+            </div>
+            <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">98%</div>
+            <div className="text-gray-600 font-medium">Elégedettségi mutató</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-turquoise-600 mb-2">24/7</div>
-            <div className="text-gray-600">Ügyfélszolgálat</div>
+
+          {/* Stat 4: Support */}
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
+            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+              <Headphones className="w-7 h-7 text-purple-600" />
+            </div>
+            <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">24/7</div>
+            <div className="text-gray-600 font-medium">Ügyfélszolgálat</div>
           </div>
         </div>
 
         {/* Testimonial Carousel */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto relative">
+          {/* Enhanced testimonial card with better design and prominence */}
           <div
-            className="relative bg-white rounded-2xl shadow-2xl p-8 md:p-12 border-2 border-turquoise-100"
+            className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-200 relative overflow-hidden"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-            {/* Quote Icon */}
-            <div className="absolute top-8 left-8 text-turquoise-200">
-              <Quote className="w-16 h-16" />
+            {/* Decorative Quote Mark */}
+            <div className="absolute top-8 right-8 opacity-10">
+              <Quote className="w-32 h-32 text-turquoise-500" />
             </div>
 
-            {/* Content */}
-            <div className="relative">
-              {/* User Info */}
-              <div className="flex flex-col md:flex-row items-center gap-6 mb-8">
-                <div className="relative">
+            {/* Profile Section */}
+            <div className="flex items-start gap-6 mb-8 relative z-10">
+              {/* Avatar with Verification Badge */}
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden ring-4 ring-turquoise-100">
                   <Image
                     src={currentTestimonial.image || '/placeholder.svg'}
                     alt={currentTestimonial.name}
-                    width={100}
-                    height={100}
-                    className="rounded-full border-4 border-turquoise-200"
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute -bottom-2 -right-2 bg-turquoise-600 text-white rounded-full p-2">
-                    <Star className="w-4 h-4 fill-white" />
-                  </div>
                 </div>
-
-                <div className="text-center md:text-left">
-                  <h3 className="text-2xl font-bold text-navy-900 mb-1 text-balance">
-                    {currentTestimonial.name}
-                  </h3>
-                  <p className="text-gray-600 mb-2 text-pretty">
-                    {currentTestimonial.role} • {currentTestimonial.company}
-                  </p>
-
-                  {/* Star Rating */}
-                  <div className="flex gap-1 justify-center md:justify-start">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    ))}
+                {currentTestimonial.verified && (
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-turquoise-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                    <CheckCircle className="w-5 h-5 text-white" />
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Quote */}
-              <blockquote className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-8 italic text-pretty">
-                &ldquo;{currentTestimonial.quote}&rdquo;
-              </blockquote>
+              {/* Name, Title, Rating */}
+              <div className="flex-1">
+                <h3 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2 text-balance">
+                  {currentTestimonial.name}
+                </h3>
+                <p className="text-gray-600 text-lg mb-4 text-pretty">
+                  {currentTestimonial.role} • {currentTestimonial.company}
+                </p>
 
-              {/* Results */}
-              <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                <div className="bg-turquoise-50 border-2 border-turquoise-200 px-6 py-3 rounded-full">
-                  <span className="font-bold text-turquoise-700">{currentTestimonial.result}</span>
-                </div>
-                <div className="bg-green-50 border-2 border-green-200 px-6 py-3 rounded-full">
-                  <span className="font-bold text-green-700">{currentTestimonial.resultValue}</span>
+                {/* Larger, more prominent star rating */}
+                <div className="flex items-center gap-1">
+                  {[...Array(currentTestimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Navigation Arrows */}
-            <div className="absolute top-1/2 -translate-y-1/2 left-4 md:-left-6">
+            {/* Quote */}
+            {/* Larger, more readable quote text */}
+            <blockquote className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-8 relative z-10 italic text-pretty">
+              &ldquo;{currentTestimonial.quote}&rdquo;
+            </blockquote>
+
+            {/* Metric Badges */}
+            {/* Larger, more prominent metric badges with icons */}
+            <div className="flex flex-wrap gap-4 relative z-10">
+              {currentTestimonial.metrics.map((metric, index) => {
+                const Icon = metric.icon;
+                return (
+                  <div
+                    key={index}
+                    className="inline-flex items-center gap-3 bg-turquoise-100 text-turquoise-700 px-6 py-3 rounded-full font-bold text-base border border-turquoise-300"
+                  >
+                    <Icon className="w-5 h-5" />
+                    {metric.label}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Navigation Arrows */}
+          {testimonials.length > 1 && (
+            <>
+              {/* Better styled navigation buttons */}
               <button
                 onClick={goToPrevious}
-                className="bg-white hover:bg-gray-50 rounded-full p-3 shadow-lg border-2 border-gray-200 transition-all hover:scale-110 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200 z-20 min-h-[44px] min-w-[44px]"
                 aria-label="Previous testimonial"
               >
                 <ChevronLeft className="w-6 h-6 text-navy-900" />
               </button>
-            </div>
 
-            <div className="absolute top-1/2 -translate-y-1/2 right-4 md:-right-6">
               <button
                 onClick={goToNext}
-                className="bg-white hover:bg-gray-50 rounded-full p-3 shadow-lg border-2 border-gray-200 transition-all hover:scale-110 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200 z-20 min-h-[44px] min-w-[44px]"
                 aria-label="Next testimonial"
               >
                 <ChevronRight className="w-6 h-6 text-navy-900" />
               </button>
-            </div>
-          </div>
+            </>
+          )}
 
-          {/* Pagination Dots */}
-          <div className="flex gap-2 justify-center mt-8">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setActiveIndex(index)}
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label={`Go to testimonial ${index + 1}`}
-              >
-                <span
-                  className={`h-2 rounded-full transition-all ${
+          {/* Carousel Dots */}
+          {testimonials.length > 1 && (
+            <div className="flex justify-center gap-2 mt-8">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveIndex(index)}
+                  className={`transition-all rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     index === activeIndex
-                      ? 'w-8 bg-turquoise-600'
-                      : 'w-2 bg-gray-300 hover:bg-gray-400'
+                      ? 'w-8 h-3 bg-turquoise-500'
+                      : 'w-3 h-3 bg-gray-300 hover:bg-gray-400'
                   }`}
+                  aria-label={`Go to testimonial ${index + 1}`}
                 />
-              </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Trust Indicators */}
+        {/* Added trust indicators section */}
+        <div className="mt-16 text-center">
+          <p className="text-gray-600 mb-6 text-lg text-pretty">
+            Csatlakozz a sikeres vállalkozások közösségéhez
+          </p>
+          <Link
+            href="/login?redirect=/new"
+            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+          >
+            Kezdd el ingyen →
+          </Link>
+          <p className="text-sm text-gray-500 mt-4 text-pretty">
+            Ingyenes próba • Nincs bankkártya szükséges • Azonnali hozzáférés
+          </p>
         </div>
       </div>
     </section>

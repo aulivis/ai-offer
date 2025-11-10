@@ -130,13 +130,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-full px-3 py-1 text-fg-muted transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              className={`relative px-3 py-1 text-fg-muted transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary group ${
                 isNavItemActive(item.href) ? 'text-fg' : ''
               }`}
               {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
               onClick={closeMenu}
             >
               {t(item.labelKey)}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </Link>
           ))}
         </nav>
@@ -146,7 +147,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             <>
               <Link
                 href="/new"
-                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
+                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
               >
                 {t('dashboard.actions.newOffer')}
               </Link>
@@ -166,13 +167,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             <>
               <Link
                 href="/login"
-                className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+                className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-primary"
               >
                 {t('nav.login')}
               </Link>
               <Link
                 href="/login"
-                className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md"
+                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
               >
                 {t('nav.freeTrial')}
               </Link>

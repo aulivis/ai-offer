@@ -1,105 +1,174 @@
-import { Check, X, TrendingUp } from 'lucide-react';
+import { Check, X, TrendingUp, Clock, AlertTriangle, Palette } from 'lucide-react';
 import Link from 'next/link';
 
 export function SolutionSection() {
   const comparison = [
     {
       metric: 'Ajánlat készítési idő',
-      before: '2-4 óra',
-      after: '5-10 perc',
-      improvement: '70% időmegtakarítás',
+      icon: Clock,
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      before: { value: '2-4 óra', subtitle: 'lassú folyamat' },
+      after: { value: '5-10 perc', subtitle: 'AI-automatizált' },
+      improvement: '~70% megtakarítás',
     },
     {
       metric: 'Hibák száma',
-      before: 'Gyakori',
-      after: 'Automatikusan ellenőrzött',
-      improvement: '95% pontosság',
+      icon: AlertTriangle,
+      iconBg: 'bg-orange-100',
+      iconColor: 'text-orange-600',
+      before: { value: 'Gyakori', subtitle: 'manuális ellenőrzés' },
+      after: { value: 'Automatikusan ellenőrzött', subtitle: 'AI validáció' },
+      improvement: '~95% pontosság',
     },
     {
       metric: 'Egységes dizájn',
-      before: 'Kézi formázás',
-      after: 'Automatikus branding',
-      improvement: '100% konzisztencia',
+      icon: Palette,
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      before: { value: 'Kézi formázás', subtitle: 'inkonzisztens' },
+      after: { value: 'Automatikus branding', subtitle: 'márkahű design' },
+      improvement: '~100% konzisztencia',
     },
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-turquoise-50 via-blue-50 to-turquoise-50">
+    <section
+      id="solution"
+      className="py-20 bg-gradient-to-br from-turquoise-50 to-blue-50 scroll-mt-20"
+    >
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <p className="text-turquoise-600 font-semibold text-sm uppercase tracking-wide mb-3">
-            A MEGOLDÁS
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-6 text-balance">
+          {/* Enhanced badge with icon */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+            <Check className="w-4 h-4" />A MEGOLDÁS
+          </div>
+
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-6 leading-tight text-balance">
             Vyndi AI-alapú ajánlatkészítő
           </h2>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed text-pretty">
+
+          <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed text-pretty">
             Automatizáld az ajánlatkészítést, spórolj órákat minden ajánlaton, és növeld az üzleti
             eredményeidet akár 70%-kal.
           </p>
         </div>
 
-        {/* Before/After Comparison Table */}
-        <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-turquoise-200">
-          {/* Table Header */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-navy-900 text-white p-6">
-            <div className="hidden md:block"></div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <X className="w-5 h-5 text-red-400" />
-                <span className="font-semibold">Hagyományos</span>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Check className="w-5 h-5 text-turquoise-400" />
-                <span className="font-semibold">Vyndi AI</span>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-green-400" />
-                <span className="font-semibold">Fejlődés</span>
-              </div>
-            </div>
-          </div>
+        {/* Comparison Table */}
+        <div className="max-w-6xl mx-auto">
+          {/* Enhanced table with better visual hierarchy and shadows */}
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
+            {/* Table Header */}
+            <div className="grid grid-cols-4 bg-navy-900 text-white">
+              {/* Empty cell for row labels */}
+              <div className="p-6"></div>
 
-          {/* Table Rows */}
-          <div className="divide-y divide-gray-200">
-            {comparison.map((item, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 md:p-6 hover:bg-gray-50 transition-colors"
-              >
-                <div className="font-semibold text-navy-900 mb-2 md:mb-0 text-balance md:flex md:items-center">
-                  {item.metric}
+              {/* Traditional column with red accent */}
+              <div className="p-6 text-center border-l border-white/10">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
+                    <X className="w-5 h-5 text-red-400" />
+                  </div>
                 </div>
-                <div className="text-center text-gray-600 md:text-left md:pl-4 md:flex md:items-center">
-                  {item.before}
-                </div>
-                <div className="text-center font-semibold text-turquoise-600 md:text-left md:pl-4 md:flex md:items-center">
-                  {item.after}
-                </div>
-                <div className="text-center md:text-left md:pl-4 md:flex md:items-center">
-                  <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium min-h-[44px]">
-                    <TrendingUp className="w-4 h-4 flex-shrink-0" />
-                    <span className="whitespace-nowrap">{item.improvement}</span>
-                  </span>
-                </div>
+                <h3 className="font-bold text-lg">Hagyományos</h3>
               </div>
-            ))}
+
+              {/* Vyndi AI column with turquoise accent and highlight */}
+              <div className="p-6 text-center border-l border-white/10 bg-turquoise-600">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <Check className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <h3 className="font-bold text-lg">Vyndi AI</h3>
+                <div className="text-xs mt-1 text-turquoise-100">Ajánlott</div>
+              </div>
+
+              {/* Improvement column with green accent */}
+              <div className="p-6 text-center border-l border-white/10">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                  </div>
+                </div>
+                <h3 className="font-bold text-lg">Fejlődés</h3>
+              </div>
+            </div>
+
+            {/* Table Rows */}
+            {comparison.map((item, index) => {
+              const Icon = item.icon;
+              const isFirstRow = index === 0;
+
+              return (
+                <div
+                  key={index}
+                  className="grid grid-cols-4 border-t border-gray-200 hover:bg-gray-50 transition-colors"
+                >
+                  {/* Row Label */}
+                  <div className="p-6 flex items-center gap-3">
+                    <div
+                      className={`w-12 h-12 ${item.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}
+                    >
+                      <Icon className={`w-6 h-6 ${item.iconColor}`} />
+                    </div>
+                    <div>
+                      <div className="font-bold text-navy-900 text-lg">{item.metric}</div>
+                    </div>
+                  </div>
+
+                  {/* Traditional Value */}
+                  <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-red-50/50">
+                    <div className="text-center">
+                      <div
+                        className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-red-600 mb-1`}
+                      >
+                        {item.before.value}
+                      </div>
+                      <div className="text-sm text-gray-500">{item.before.subtitle}</div>
+                    </div>
+                  </div>
+
+                  {/* Vyndi AI Value */}
+                  <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-turquoise-50">
+                    <div className="text-center">
+                      <div
+                        className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-turquoise-600 mb-1`}
+                      >
+                        {item.after.value}
+                      </div>
+                      <div className="text-sm text-gray-600">{item.after.subtitle}</div>
+                    </div>
+                  </div>
+
+                  {/* Improvement */}
+                  <div className="p-6 flex items-center justify-center border-l border-gray-200">
+                    <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold border border-green-300">
+                      <TrendingUp className="w-4 h-4" />
+                      {item.improvement}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="text-center mt-12">
+        {/* CTA Section */}
+        <div className="text-center mt-16">
+          <p className="text-lg text-gray-600 mb-6 text-pretty">
+            Tapasztald meg a különbséget és indítsd el az üzleted növekedését
+          </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-flex items-center justify-center bg-turquoise-600 hover:bg-turquoise-700 text-white font-semibold px-8 py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
           >
-            Próbáld ki ingyen
+            Próbáld ki ingyen →
           </Link>
+          <p className="text-sm text-gray-500 mt-4 text-pretty">
+            Nincs bankkártya szükséges • 5 perc alatt kész vagy
+          </p>
         </div>
       </div>
     </section>

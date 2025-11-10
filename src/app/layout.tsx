@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { t } from '@/copy';
 
 import QuotaWarningBar from '@/components/QuotaWarningBar';
@@ -11,7 +11,6 @@ import LandingHeader from '@/components/LandingHeader';
 import { Footer } from '@/components/footer';
 import { AppProviders } from '@/components/AppProviders';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
-import ChatbotWidget from '@/components/chatbot/ChatbotWidget';
 import { AriaLiveAnnouncer } from '@/components/ui/AriaLiveAnnouncer';
 import { WebVitalsReporter } from '@/components/performance/WebVitalsReporter';
 
@@ -24,12 +23,6 @@ import { gota, spaceMono, workSans } from './fonts';
 export const metadata: Metadata = {
   title: 'Vyndi — AI offers',
   description: 'AI-assisted, professional offers for SMEs',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-  },
-  themeColor: '#009688', // turquoise-600
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -38,6 +31,13 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/vyndi-logo.png',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#009688', // turquoise-600
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -71,7 +71,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <PreferencesModal />
               <AnalyticsScriptGate />
               <ScrollToTop />
-              <ChatbotWidget />
             </ErrorBoundary>
           </AppProviders>
         </LanguageProvider>

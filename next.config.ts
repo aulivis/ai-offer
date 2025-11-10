@@ -10,8 +10,6 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  // Enable SWC minification
-  swcMinify: true,
   // Compress responses
   compress: true,
   images: {
@@ -71,6 +69,17 @@ const nextConfig: NextConfig = {
           return originalExternals(context, request, callback);
         };
       }
+
+      // Suppress critical dependency warnings for dynamic imports in argon2.ts
+      // These are intentional for fallback module loading and are safe to ignore
+      const existingWarnings = Array.isArray(config.ignoreWarnings) ? config.ignoreWarnings : [];
+      config.ignoreWarnings = [
+        ...existingWarnings,
+        // Suppress warnings from argon2.ts about dynamic imports (by message pattern)
+        {
+          message: /Critical dependency: the request of a dependency is an expression/,
+        },
+      ];
     }
     return config;
   },

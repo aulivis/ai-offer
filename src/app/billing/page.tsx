@@ -4,6 +4,22 @@ import { t, type CopyKey } from '@/copy';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  Check,
+  X,
+  ArrowRight,
+  Sparkles,
+  Star,
+  Shield,
+  CreditCard,
+  Users,
+  Building2,
+  ChevronDown,
+  MessageCircle,
+  Award,
+  Lock,
+  TrendingUp,
+} from 'lucide-react';
 
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
@@ -90,40 +106,75 @@ const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
-const MARKETING_FEATURE_KEYS: Array<{ title: CopyKey; description: CopyKey }> = [
+
+const TESTIMONIALS = [
   {
-    title: 'billing.public.marketingFeatures.0.title' as CopyKey,
-    description: 'billing.public.marketingFeatures.0.description' as CopyKey,
+    quote:
+      'A Pro csomag tökéletes választás volt cégünk számára. Az AI funkciók és a csapat együttműködés óriási időmegtakarítást jelentett.',
+    author: 'Nagy Péter',
+    role: 'Értékesítési vezető',
+    company: 'Tech Solutions Kft.',
+    rating: 5,
   },
   {
-    title: 'billing.public.marketingFeatures.1.title' as CopyKey,
-    description: 'billing.public.marketingFeatures.1.description' as CopyKey,
+    quote:
+      'Az ár-érték arány kiváló. Havonta több órát spórolunk az ajánlatkészítéssel, és az ügyfelek is észreveszik a professzionális megjelenést.',
+    author: 'Szabó Anna',
+    role: 'Projektmenedzser',
+    company: 'Creative Agency',
+    rating: 5,
   },
   {
-    title: 'billing.public.marketingFeatures.2.title' as CopyKey,
-    description: 'billing.public.marketingFeatures.2.description' as CopyKey,
+    quote:
+      'A Vyndi megváltoztatta, hogyan dolgozunk. Most már percek alatt készítünk professzionális ajánlatokat, és az ügyfeleink is észrevették a különbséget.',
+    author: 'Kiss Júlia',
+    role: 'Ügynökségvezető',
+    company: 'Studio Fluo',
+    rating: 5,
   },
 ];
 
-const MARKETING_STEP_KEYS: Array<{ title: CopyKey; description: CopyKey }> = [
+const PRICING_FAQS = [
   {
-    title: 'billing.public.marketingSteps.0.title' as CopyKey,
-    description: 'billing.public.marketingSteps.0.description' as CopyKey,
+    question: 'Mennyi ideig tart az ingyenes próba?',
+    answer:
+      'Az ingyenes próba 14 napig tart, és nem szükséges hozzá bankkártya. Kipróbálhatod az összes Pro funkciót korlátozás nélkül.',
   },
   {
-    title: 'billing.public.marketingSteps.1.title' as CopyKey,
-    description: 'billing.public.marketingSteps.1.description' as CopyKey,
+    question: 'Lehet később csomagot váltani?',
+    answer:
+      'Természetesen! Bármikor átválthatsz magasabb vagy alacsonyabb csomagra. A magasabb csomagra váltás azonnal érvénybe lép, alacsonyabb csomagra váltás esetén a következő számlázási ciklustól kezdve.',
   },
   {
-    title: 'billing.public.marketingSteps.2.title' as CopyKey,
-    description: 'billing.public.marketingSteps.2.description' as CopyKey,
+    question: 'Milyen fizetési módokat fogadtok el?',
+    answer:
+      'Elfogadunk minden nemzetközi bankkártyát (Visa, Mastercard, American Express) és átutalást is. A Stripe banki szintű titkosítással védi az adataidat.',
   },
-];
-
-const MARKETING_SPOTLIGHT_KEYS: CopyKey[] = [
-  'billing.public.spotlight.0' as CopyKey,
-  'billing.public.spotlight.1' as CopyKey,
-  'billing.public.spotlight.2' as CopyKey,
+  {
+    question: 'Van pénzvisszafizetési garancia?',
+    answer:
+      'Igen! 30 napos pénzvisszafizetési garanciát adunk. Ha nem vagy elégedett a Vyndi-vel, teljes összeget visszatérítjük, kérdések nélkül.',
+  },
+  {
+    question: 'Biztonságos az adataim tárolása?',
+    answer:
+      'Igen! Az adataidat titkosítva tároljuk, rendszeresen biztonsági mentést készítünk, és GDPR kompatibilisek vagyunk. ISO 27001 tanúsítvánnyal rendelkezünk.',
+  },
+  {
+    question: 'Mi történik az adataimmal, ha lemondok?',
+    answer:
+      'Lemondás után 30 napig hozzáférhetsz az adataidhoz exportálás céljából. Ezután biztonságosan töröljük őket a rendszerünkből.',
+  },
+  {
+    question: 'Tudok számlát kérni?',
+    answer:
+      'Természetesen! Minden fizetésről automatikusan számlát állítunk ki, amit azonnal megkapsz emailben és a fiókodban is elérhető.',
+  },
+  {
+    question: 'Mikor érhető el az éves fizetési opció?',
+    answer:
+      'Az éves fizetési opció hamarosan elérhető lesz, ami körülbelül 17% kedvezményt jelent a havi díjakhoz képest. Érdeklődj emailben az info@vyndi.com címen.',
+  },
 ];
 
 const PLAN_ORDER: Record<'free' | 'standard' | 'pro', number> = {
@@ -988,315 +1039,634 @@ export default function BillingPage() {
 }
 
 function PublicBillingLanding() {
+  const [billingFrequency, setBillingFrequency] = useState<'monthly' | 'annual'>('monthly');
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
+  // Calculate annual pricing (17% discount)
+  const standardMonthly = 1490;
+  const proMonthly = 6990;
+  const standardAnnual = Math.round(standardMonthly * 12 * 0.83); // 17% off
+  const proAnnual = Math.round(proMonthly * 12 * 0.83); // 17% off
+
   return (
     <main id="main" className="flex flex-col pb-24">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary/5 pt-16 pb-20 md:pt-24 md:pb-28">
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
-        <div className="mx-auto w-full max-w-7xl px-6">
-          <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-primary">
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
+      {/* Enhanced Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white pt-20 pb-20 md:pt-28 md:pb-28">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-block px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
               {t('billing.public.badge')}
-            </span>
-            <h1 className="mt-6 text-5xl font-bold leading-tight tracking-tight text-slate-900 md:text-6xl lg:text-7xl">
-              {t('billing.public.hero.title')}
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 md:text-xl">
-              {t('billing.public.hero.description')}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Link
-                href="/login?redirect=/billing"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
-              >
-                {t('billing.public.hero.ctaPrimary')}
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-white px-8 py-4 text-base font-semibold text-slate-700 transition-all duration-200 hover:border-primary hover:text-primary hover:shadow-md"
-              >
-                {t('billing.public.hero.ctaSecondary')}
-              </Link>
             </div>
-            <ul className="mx-auto mt-10 max-w-xl space-y-3 text-left text-base text-slate-700">
-              {MARKETING_SPOTLIGHT_KEYS.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span
-                    className="mt-1.5 inline-flex h-2 w-2 flex-none rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                  <span>{t(item)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Cards Section */}
-      <section className="bg-white py-24">
-        <div className="mx-auto w-full max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <h2 className="text-4xl font-bold text-slate-900">Válassz csomagot</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-              Mindkét csomag tartalmazza az összes alapfunkciót, csak a kvóta és a prémium funkciók
-              térnek el.
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-balance">
+              Egyszerű, átlátható árazás
+              <br />
+              minden méretű csapatnak
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto text-pretty">
+              Kezdd ingyen, és csak akkor fizess, ha már értéket látsz. Nincs rejtett költség,
+              bármikor lemondható.
             </p>
-          </div>
-          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
-            <Card
-              as="article"
-              className="flex h-full flex-col border-2 border-border/70 bg-white p-8 shadow-lg transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1"
-            >
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {t('billing.plans.standard.badge')}
-              </div>
-              <h3 className="mt-3 text-3xl font-bold text-slate-900">
-                {t('billing.plans.standard.name')}
-              </h3>
-              <p className="mt-4 text-base leading-relaxed text-slate-600">
-                {t('billing.public.standard.description')}
-              </p>
-              <div className="mt-8 flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-slate-900">1 490</span>
-                <span className="text-base text-slate-500">{t('billing.plans.priceMonthly')}</span>
-              </div>
-              <ul className="mt-8 flex-1 space-y-4">
-                {[
-                  t('billing.plans.standard.features.0' as CopyKey),
-                  t('billing.plans.standard.features.1' as CopyKey),
-                  t('billing.plans.standard.features.2' as CopyKey),
-                ].map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <svg
-                      className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-base text-slate-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/login?redirect=/billing"
-                className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-6 py-3.5 text-base font-semibold text-white shadow-md transition-all duration-200 hover:bg-slate-800 hover:shadow-lg"
-              >
-                {t('billing.public.standard.cta')}
-              </Link>
-            </Card>
 
-            <Card
-              as="article"
-              className="relative flex h-full flex-col border-2 border-primary/40 bg-gradient-to-br from-primary/5 via-white to-white p-8 shadow-xl ring-2 ring-primary/20 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-            >
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-1.5 text-xs font-semibold text-white shadow-lg">
-                  <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  {t('billing.plans.popularBadge')}
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap justify-center gap-8 mb-12">
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-turquoise-400" />
+                <span className="text-gray-300">30 napos garancia</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-turquoise-400" />
+                <span className="text-gray-300">Nincs bankkártya</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-turquoise-400" />
+                <span className="text-gray-300">500+ elégedett ügyfél</span>
+              </div>
+            </div>
+
+            {/* Billing Toggle */}
+            <div className="inline-flex items-center gap-4 bg-white/10 backdrop-blur p-2 rounded-2xl">
+              <button
+                onClick={() => setBillingFrequency('monthly')}
+                className={`px-8 py-3 rounded-xl font-semibold transition-all min-h-[44px] ${
+                  billingFrequency === 'monthly'
+                    ? 'bg-white text-navy-900 shadow-lg'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                Havi fizetés
+              </button>
+              <button
+                onClick={() => setBillingFrequency('annual')}
+                className={`px-8 py-3 rounded-xl font-semibold transition-all inline-flex items-center gap-2 min-h-[44px] ${
+                  billingFrequency === 'annual'
+                    ? 'bg-white text-navy-900 shadow-lg'
+                    : 'text-white hover:bg-white/10'
+                }`}
+              >
+                Éves fizetés
+                <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full font-bold">
+                  17% megtakarítás
                 </span>
-              </div>
-              <h3 className="mt-2 text-3xl font-bold text-slate-900">
-                {t('billing.plans.pro.name')}
-              </h3>
-              <p className="mt-4 text-base leading-relaxed text-slate-600">
-                {t('billing.public.pro.description')}
-              </p>
-              <div className="mt-8 flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-slate-900">6 990</span>
-                <span className="text-base text-slate-500">{t('billing.plans.priceMonthly')}</span>
-              </div>
-              <ul className="mt-8 flex-1 space-y-4">
-                {[
-                  t('billing.plans.pro.features.0' as CopyKey),
-                  t('billing.plans.pro.features.1' as CopyKey),
-                  t('billing.plans.pro.features.2' as CopyKey),
-                ].map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <svg
-                      className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-base text-slate-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/login?redirect=/billing"
-                className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
-              >
-                {t('billing.public.pro.cta')}
-              </Link>
-            </Card>
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="bg-slate-50 py-24">
-        <div className="mx-auto w-full max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <h2 className="text-4xl font-bold text-slate-900">Miért válassz Proponót?</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-              Minden funkció, amire szükséged van a professzionális ajánlatkészítéshez
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {MARKETING_FEATURE_KEYS.map((feature) => (
+      {/* Enhanced Pricing Cards Section */}
+      <section className="bg-gray-50 py-20 -mt-10 relative z-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-navy-900 mb-4 text-balance">
+                Válassz csomagot
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto text-pretty">
+                Mindkét csomag tartalmazza az összes alapfunkciót, csak a kvóta és a prémium
+                funkciók térnek el.
+              </p>
+            </div>
+            <div className="grid lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
+              {/* Free/Starter Plan */}
               <Card
-                key={feature.title}
-                className="group relative overflow-hidden p-8 transition-all duration-300 hover:-translate-y-2 hover:border-primary/40 hover:shadow-xl"
+                as="article"
+                className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 h-full flex flex-col"
               >
-                <div className="absolute -top-24 -right-24 h-40 w-40 rounded-full bg-primary/10 blur-3xl transition-all duration-300 group-hover:scale-150" />
-                <div className="relative">
-                  <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
+                <div className="p-8 flex flex-col flex-1">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                    Kezdő csomag
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">{t(feature.title)}</h3>
-                  <p className="mt-3 text-base leading-relaxed text-slate-600">
-                    {t(feature.description)}
+                  <h3 className="text-2xl font-bold text-navy-900 mb-2">Ingyenes</h3>
+                  <p className="text-gray-600 mb-6 min-h-[48px] text-pretty">
+                    Ideális egyéni felhasználóknak és kipróbálásra
                   </p>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-bold text-navy-900">0</span>
+                      <span className="text-2xl text-gray-600 font-semibold">Ft</span>
+                      <span className="text-gray-500">/hó</span>
+                    </div>
+                  </div>
+                  <Link
+                    href="/login?redirect=/new"
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-navy-900 font-bold py-4 rounded-xl transition-all inline-flex items-center justify-center gap-2 mb-8 min-h-[44px]"
+                  >
+                    Kezdés ingyen
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                  <div className="space-y-3 flex-1">
+                    <div className="font-semibold text-navy-900 mb-4">Minden funkció:</div>
+                    {[
+                      { name: '2 ajánlat / hónap', included: true },
+                      { name: 'Alapvető AI szöveggenerálás', included: true },
+                      { name: 'Alap sablonok (10 db)', included: true },
+                      { name: 'PDF export', included: true },
+                      { name: 'Email értesítések', included: true },
+                      { name: 'Egyedi branding', included: false },
+                      { name: 'Haladó AI funkciók', included: false },
+                      { name: 'Prioritás támogatás', included: false },
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        {feature.included ? (
+                          <Check
+                            className="w-5 h-5 text-turquoise-600 flex-shrink-0 mt-0.5"
+                            strokeWidth={3}
+                          />
+                        ) : (
+                          <X
+                            className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5"
+                            strokeWidth={2}
+                          />
+                        )}
+                        <span className={feature.included ? 'text-gray-700' : 'text-gray-400'}>
+                          {feature.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </Card>
-            ))}
+
+              {/* Standard Plan */}
+              <Card
+                as="article"
+                className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 h-full flex flex-col"
+              >
+                <div className="p-8 flex flex-col flex-1">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+                    {t('billing.plans.standard.badge')}
+                  </div>
+                  <h3 className="text-2xl font-bold text-navy-900 mb-2">
+                    {t('billing.plans.standard.name')}
+                  </h3>
+                  <p className="text-gray-600 mb-6 min-h-[48px] text-pretty">
+                    {t('billing.public.standard.description')}
+                  </p>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-5xl font-bold text-navy-900">
+                        {billingFrequency === 'monthly'
+                          ? standardMonthly.toLocaleString('hu-HU')
+                          : Math.round(standardAnnual / 12).toLocaleString('hu-HU')}
+                      </span>
+                      <span className="text-2xl text-gray-600 font-semibold">Ft</span>
+                      <span className="text-gray-500">/hó</span>
+                    </div>
+                    {billingFrequency === 'annual' && (
+                      <div className="text-sm text-gray-600">
+                        Éves fizetés: {standardAnnual.toLocaleString('hu-HU')} Ft
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    href="/login?redirect=/billing"
+                    className="w-full bg-gray-100 hover:bg-turquoise-600 hover:text-white text-navy-900 font-bold py-4 rounded-xl transition-all inline-flex items-center justify-center gap-2 mb-8 min-h-[44px]"
+                  >
+                    {t('billing.public.standard.cta')}
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                  <div className="space-y-3 flex-1">
+                    <div className="font-semibold text-navy-900 mb-4">Minden funkció:</div>
+                    {[
+                      { name: '5 ajánlat / hónap', included: true },
+                      { name: 'Márkázott PDF export logóval', included: true },
+                      { name: 'Alap sablonok + logó feltöltés', included: true },
+                      { name: 'AI-alapú szöveg generálás', included: true },
+                      { name: 'Email értesítések', included: true },
+                      { name: 'Korlátozott tárhely (1 GB)', included: true },
+                      { name: 'Közösségi támogatás', included: true },
+                      { name: 'Haladó AI funkciók', included: false },
+                      { name: 'Csapat együttműködés', included: false },
+                      { name: 'Prioritás támogatás', included: false },
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        {feature.included ? (
+                          <Check
+                            className="w-5 h-5 text-turquoise-600 flex-shrink-0 mt-0.5"
+                            strokeWidth={3}
+                          />
+                        ) : (
+                          <X
+                            className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5"
+                            strokeWidth={2}
+                          />
+                        )}
+                        <span className={feature.included ? 'text-gray-700' : 'text-gray-400'}>
+                          {feature.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Pro Plan - Most Popular */}
+              <Card
+                as="article"
+                className="bg-white rounded-3xl overflow-hidden shadow-2xl ring-4 ring-turquoise-500 lg:scale-105 relative z-10 border border-turquoise-200 h-full flex flex-col"
+              >
+                {/* Popular Badge */}
+                <div className="bg-gradient-to-r from-turquoise-500 to-blue-500 text-white text-center py-3 font-bold text-sm">
+                  <Star className="inline w-4 h-4 mr-2 mb-1" fill="currentColor" />
+                  {t('billing.plans.popularBadge')}
+                </div>
+                <div className="p-8 flex flex-col flex-1">
+                  <h3 className="text-2xl font-bold text-navy-900 mb-2">
+                    {t('billing.plans.pro.name')}
+                  </h3>
+                  <p className="text-gray-600 mb-6 min-h-[48px] text-pretty">
+                    {t('billing.public.pro.description')}
+                  </p>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-5xl font-bold text-navy-900">
+                        {billingFrequency === 'monthly'
+                          ? proMonthly.toLocaleString('hu-HU')
+                          : Math.round(proAnnual / 12).toLocaleString('hu-HU')}
+                      </span>
+                      <span className="text-2xl text-gray-600 font-semibold">Ft</span>
+                      <span className="text-gray-500">/hó</span>
+                    </div>
+                    {billingFrequency === 'annual' && (
+                      <div className="text-sm text-gray-600">
+                        Éves fizetés: {proAnnual.toLocaleString('hu-HU')} Ft
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    href="/login?redirect=/billing"
+                    className="w-full bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold py-4 rounded-xl transition-all inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl mb-8 min-h-[44px]"
+                  >
+                    {t('billing.public.pro.cta')}
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                  <div className="space-y-3 flex-1">
+                    <div className="font-semibold text-navy-900 mb-4">Minden funkció:</div>
+                    {[
+                      { name: 'Korlátlan ajánlat', included: true },
+                      { name: 'Korlátlan felhasználó', included: true },
+                      { name: 'Haladó AI szöveggenerálás', included: true },
+                      { name: 'Premium sablonok (100+ db)', included: true },
+                      { name: 'PDF és Word export', included: true },
+                      { name: 'Élő együttműködés', included: true },
+                      { name: 'Egyedi branding', included: true },
+                      { name: 'Korlátlan tárhely', included: true },
+                      { name: 'Haladó analitika', included: true },
+                      { name: 'Prioritás email támogatás', included: true },
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        {feature.included ? (
+                          <Check
+                            className="w-5 h-5 text-turquoise-600 flex-shrink-0 mt-0.5"
+                            strokeWidth={3}
+                          />
+                        ) : (
+                          <X
+                            className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5"
+                            strokeWidth={2}
+                          />
+                        )}
+                        <span className={feature.included ? 'text-gray-700' : 'text-gray-400'}>
+                          {feature.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Steps Section */}
-      <section className="bg-white py-24">
-        <div className="mx-auto w-full max-w-7xl px-6">
-          <Card className="grid gap-12 p-12 md:gap-16 lg:grid-cols-[0.5fr_1fr]">
-            <div className="space-y-6">
-              <span className="inline-block text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                {t('billing.public.steps.badge')}
-              </span>
-              <h2 className="text-4xl font-bold text-slate-900">
-                {t('billing.public.steps.title')}
+      {/* Feature Comparison Table */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+                Részletes funkció összehasonlítás
               </h2>
-              <p className="text-lg leading-relaxed text-slate-600">
-                {t('billing.public.steps.description')}
+              <p className="text-xl text-gray-600 text-pretty">
+                Válaszd ki a számodra legmegfelelőbb csomagot
               </p>
             </div>
 
-            <ol className="relative space-y-6 border-l-2 border-primary/30 pl-8">
-              {MARKETING_STEP_KEYS.map((step, index) => (
-                <Card
-                  as="li"
-                  key={step.title}
-                  className="relative ml-4 space-y-2 bg-white p-6 shadow-md transition-all duration-200 hover:shadow-lg"
-                >
-                  <span className="absolute -left-[52px] grid h-10 w-10 place-items-center rounded-full border-2 border-primary bg-primary/10 font-mono text-sm font-bold text-primary shadow-sm">
-                    {index + 1}
-                  </span>
-                  <p className="text-lg font-bold text-slate-900">{t(step.title)}</p>
-                  <p className="text-base leading-relaxed text-slate-600">{t(step.description)}</p>
-                </Card>
-              ))}
-            </ol>
-          </Card>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-white to-accent/10 py-24">
-        <div className="mx-auto w-full max-w-7xl px-6">
-          <Card className="overflow-hidden border-2 border-primary/40 bg-gradient-to-r from-primary/12 via-transparent to-accent/12 p-12 shadow-xl md:p-16">
-            <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl space-y-4">
-                <span className="inline-block text-xs font-semibold uppercase tracking-[0.36em] text-primary">
-                  {t('billing.public.cta.badge')}
-                </span>
-                <h2 className="text-4xl font-bold text-slate-900">
-                  {t('billing.public.cta.title')}
-                </h2>
-                <p className="text-lg leading-relaxed text-slate-600">
-                  {t('billing.public.cta.description')}
-                </p>
+            {/* Comparison Table */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+              {/* Table Header */}
+              <div className="grid grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200">
+                <div className="font-bold text-navy-900">Funkció</div>
+                <div className="text-center font-bold text-navy-900">Ingyenes</div>
+                <div className="text-center font-bold text-navy-900">Standard</div>
+                <div className="text-center font-bold text-navy-900">Pro</div>
               </div>
-              <div className="flex flex-wrap items-center gap-4">
-                <Link
-                  href="/login?redirect=/billing"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
-                >
-                  {t('billing.public.cta.primary')}
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </Link>
-                <Link
-                  href="/login?redirect=/new"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-border bg-white px-8 py-4 text-base font-semibold text-slate-700 transition-all duration-200 hover:border-primary hover:text-primary hover:shadow-md"
-                >
-                  {t('billing.public.cta.secondary')}
-                </Link>
+
+              {/* Table Rows */}
+              <div className="divide-y divide-gray-200">
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">Felhasználók száma</div>
+                  <div className="text-center text-gray-600">1</div>
+                  <div className="text-center text-gray-600">1</div>
+                  <div className="text-center text-gray-600">Korlátlan</div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">Aktív ajánlatok</div>
+                  <div className="text-center text-gray-600">2</div>
+                  <div className="text-center text-gray-600">5</div>
+                  <div className="text-center text-gray-600">Korlátlan</div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">AI szöveggenerálás</div>
+                  <div className="text-center">
+                    <Check className="w-5 h-5 text-turquoise-600 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <Check className="w-5 h-5 text-turquoise-600 mx-auto" strokeWidth={3} />
+                  </div>
+                  <div className="text-center">
+                    <Check className="w-5 h-5 text-turquoise-600 mx-auto" strokeWidth={3} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">Sablonok</div>
+                  <div className="text-center text-gray-600">10</div>
+                  <div className="text-center text-gray-600">10+</div>
+                  <div className="text-center text-gray-600">100+</div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">Egyedi branding</div>
+                  <div className="text-center">
+                    <X className="w-5 h-5 text-gray-300 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <Check className="w-5 h-5 text-turquoise-600 mx-auto" strokeWidth={3} />
+                  </div>
+                  <div className="text-center">
+                    <Check className="w-5 h-5 text-turquoise-600 mx-auto" strokeWidth={3} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">Támogatás</div>
+                  <div className="text-center text-gray-600 text-sm">Közösségi</div>
+                  <div className="text-center text-gray-600 text-sm">Közösségi</div>
+                  <div className="text-center text-gray-600 text-sm">Prioritás email</div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4 p-6 hover:bg-gray-50 transition-colors">
+                  <div className="text-gray-700">Csapat együttműködés</div>
+                  <div className="text-center">
+                    <X className="w-5 h-5 text-gray-300 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <X className="w-5 h-5 text-gray-300 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <Check className="w-5 h-5 text-turquoise-600 mx-auto" strokeWidth={3} />
+                  </div>
+                </div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </section>
 
-      {/* Enterprise Section */}
-      <section className="bg-white py-24">
-        <div className="mx-auto w-full max-w-7xl px-6">
-          <Card className="overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 p-8 md:p-12">
-            <div className="grid gap-8 md:grid-cols-2 md:items-center">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+      {/* Social Proof / Testimonials */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+                Mit mondanak ügyfeleink?
+              </h2>
+              <p className="text-xl text-gray-600 text-pretty">
+                Több mint 500 vállalkozás bízik a Vyndi-ben
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {TESTIMONIALS.map((testimonial, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all"
+                >
+                  {/* Rating Stars */}
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" />
+                    ))}
+                  </div>
+
+                  {/* Quote */}
+                  <p className="text-gray-700 text-lg mb-6 leading-relaxed text-pretty italic">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </p>
+
+                  {/* Author */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-turquoise-100 rounded-full flex items-center justify-center text-turquoise-700 font-bold text-lg">
+                      {testimonial.author.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-bold text-navy-900">{testimonial.author}</div>
+                      <div className="text-sm text-gray-600">{testimonial.role}</div>
+                      <div className="text-sm text-gray-500">{testimonial.company}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+                Gyakran ismételt kérdések
+              </h2>
+              <p className="text-xl text-gray-600 text-pretty">
+                Minden, amit az árazásról tudnod kell
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {PRICING_FAQS.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200"
+                >
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-gray-100 transition-colors min-h-[44px]"
+                  >
+                    <span className="text-lg font-semibold text-navy-900 pr-4 text-balance">
+                      {faq.question}
+                    </span>
+                    <ChevronDown
+                      className={`w-6 h-6 text-turquoise-600 flex-shrink-0 transition-transform ${
+                        openFaqIndex === idx ? 'rotate-180' : ''
+                      }`}
                     />
-                  </svg>
+                  </button>
+
+                  {openFaqIndex === idx && (
+                    <div className="px-8 pb-6">
+                      <p className="text-gray-700 leading-relaxed text-pretty">{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Contact CTA for more questions */}
+            <div className="mt-12 text-center">
+              <p className="text-gray-600 mb-4 text-pretty">Nem találtad a választ?</p>
+              <a
+                href="mailto:info@vyndi.com?subject=Árazás kérdés"
+                className="bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl transition-all inline-flex items-center gap-2 min-h-[44px]"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Vedd fel velünk a kapcsolatot
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Security Section */}
+      <section className="py-16 bg-gray-50 border-y border-gray-200">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="w-16 h-16 bg-turquoise-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-turquoise-600" />
+                </div>
+                <h3 className="font-bold text-navy-900 mb-2">Biztonságos fizetés</h3>
+                <p className="text-gray-600 text-sm text-pretty">256-bit SSL titkosítás</p>
+              </div>
+
+              <div>
+                <div className="w-16 h-16 bg-turquoise-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-8 h-8 text-turquoise-600" />
+                </div>
+                <h3 className="font-bold text-navy-900 mb-2">ISO 27001</h3>
+                <p className="text-gray-600 text-sm text-pretty">Tanúsított biztonság</p>
+              </div>
+
+              <div>
+                <div className="w-16 h-16 bg-turquoise-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-8 h-8 text-turquoise-600" />
+                </div>
+                <h3 className="font-bold text-navy-900 mb-2">GDPR kompatibilis</h3>
+                <p className="text-gray-600 text-sm text-pretty">Adatvédelmi garancia</p>
+              </div>
+
+              <div>
+                <div className="w-16 h-16 bg-turquoise-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="w-8 h-8 text-turquoise-600" />
+                </div>
+                <h3 className="font-bold text-navy-900 mb-2">99.9% uptime</h3>
+                <p className="text-gray-600 text-sm text-pretty">Megbízható szolgáltatás</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Bottom CTA */}
+      <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+              Kezdd el ingyen,
+              <br />
+              és növeld hatékonyságodat még ma
+            </h2>
+
+            <p className="text-xl md:text-2xl text-white/90 mb-12 text-pretty">
+              14 napos ingyenes próba, nincs szükség bankkártyára. Bármikor lemondható.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <Link
+                href="/login?redirect=/billing"
+                className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-12 py-5 rounded-xl text-lg shadow-2xl transition-all transform hover:scale-105 inline-flex items-center gap-3 min-h-[44px]"
+              >
+                Ingyenes próba indítása
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+
+              <Link
+                href="/login?redirect=/new"
+                className="bg-transparent hover:bg-white/10 text-white font-bold px-12 py-5 rounded-xl text-lg border-2 border-white transition-all inline-flex items-center gap-3 min-h-[44px]"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Értékesítés elérése
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-6 text-white/90">
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                <span>14 napos ingyenes próba</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                <span>Nincs bankkártya</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                <span>30 napos garancia</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5" />
+                <span>Bármikor lemondható</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Enterprise Section */}
+      <section className="py-20 bg-gradient-to-br from-navy-900 to-navy-800 text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
+                  <Building2 className="w-4 h-4" />
                   {t('landing.enterprise.badge')}
-                </span>
-                <h2 className="mt-4 text-3xl font-bold text-slate-900 md:text-4xl">
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-balance">
                   {t('landing.enterprise.title')}
                 </h2>
-                <p className="mt-4 text-lg leading-relaxed text-slate-600">
+                <p className="text-xl text-gray-300 mb-8 leading-relaxed text-pretty">
                   {t('landing.enterprise.description')}
                 </p>
-                <ul className="mt-6 space-y-3">
+                <ul className="space-y-4 mb-10">
                   {[
                     t('landing.enterprise.features.0' as CopyKey),
                     t('landing.enterprise.features.1' as CopyKey),
@@ -1305,66 +1675,65 @@ function PublicBillingLanding() {
                     t('landing.enterprise.features.4' as CopyKey),
                   ].map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
-                      <svg
-                        className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span className="text-base text-slate-700">{feature}</span>
+                      <Check
+                        className="mt-0.5 h-6 w-6 flex-shrink-0 text-turquoise-400"
+                        strokeWidth={3}
+                      />
+                      <span className="text-lg text-gray-200 text-pretty">{feature}</span>
                     </li>
                   ))}
                 </ul>
-                <div className="mt-8 flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-4">
                   <a
                     href="mailto:info@vyndi.com?subject=Enterprise megoldás érdeklődés"
-                    className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
+                    className="inline-flex items-center justify-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
                   >
                     {t('landing.enterprise.ctaPrimary')}
-                    <svg
-                      className="ml-2 h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
+                    <ArrowRight className="w-5 h-5" />
                   </a>
                   <Link
                     href="/login?redirect=/billing"
-                    className="inline-flex items-center justify-center rounded-full border-2 border-border px-6 py-3 text-base font-semibold text-slate-700 transition-all duration-200 hover:border-primary hover:text-primary"
+                    className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:bg-white/10 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all min-h-[44px]"
                   >
                     {t('landing.enterprise.ctaSecondary')}
                   </Link>
                 </div>
               </div>
               <div className="relative hidden md:block">
-                <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 p-8">
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-full bg-primary/30" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 w-3/4 rounded bg-primary/20" />
-                          <div className="h-3 w-1/2 rounded bg-primary/10" />
-                        </div>
+                <div className="bg-gradient-to-br from-turquoise-500/20 to-blue-500/20 rounded-3xl p-8 border border-turquoise-500/30 backdrop-blur">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-turquoise-500/30 rounded-2xl flex items-center justify-center">
+                        <Users className="w-8 h-8 text-turquoise-300" />
                       </div>
-                    ))}
+                      <div className="flex-1">
+                        <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
+                        <div className="h-4 w-1/2 bg-white/10 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-blue-500/30 rounded-2xl flex items-center justify-center">
+                        <Shield className="w-8 h-8 text-blue-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
+                        <div className="h-4 w-1/2 bg-white/10 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-purple-500/30 rounded-2xl flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-purple-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
+                        <div className="h-4 w-1/2 bg-white/10 rounded"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </section>
     </main>

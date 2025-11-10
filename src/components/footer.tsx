@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Linkedin, Twitter, Facebook, Instagram, MapPin, Phone } from 'lucide-react';
+import { Mail, Linkedin, Twitter, Facebook, Instagram, MapPin, Phone, Send } from 'lucide-react';
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { trackEmailCapture } from '@/lib/analytics';
@@ -29,23 +29,25 @@ export function Footer() {
     <footer className="bg-navy-900 text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
-          {/* Company Info & Newsletter */}
-          <div className="lg:col-span-2">
+        <div className="grid md:grid-cols-2 lg:grid-cols-12 gap-12 mb-12">
+          {/* Brand Column - Wider */}
+          {/* Enhanced brand section with better newsletter styling */}
+          <div className="lg:col-span-4">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-turquoise-400 mb-2">Vyndi</h3>
-              <p className="text-gray-400 leading-relaxed text-pretty">
+              <h3 className="text-3xl font-bold text-turquoise-400 mb-4">Vyndi</h3>
+              <p className="text-gray-300 text-lg leading-relaxed text-pretty">
                 AI-alapú ajánlatkészítő platform, amely segít professzionális ajánlatokat készíteni
-                percek alatt.
+                percek alatt
               </p>
             </div>
 
             {/* Newsletter Signup */}
-            <div className="mb-6">
-              <h4 className="font-semibold mb-3 text-balance">Iratkozz fel hírlevelünkre</h4>
-              <p className="text-sm text-gray-400 mb-3 text-pretty">
+            <div className="bg-navy-800 rounded-2xl p-6 border border-navy-700 mb-6">
+              <h4 className="font-bold text-xl mb-3">Iratkozz fel hírlevelünkre</h4>
+              <p className="text-gray-400 text-sm mb-4 text-pretty">
                 Hasznos tippek és frissítések havonta
               </p>
+
               {newsletterStatus === 'success' ? (
                 <p className="text-sm text-green-400">Köszönjük a feliratkozást!</p>
               ) : (
@@ -57,28 +59,29 @@ export function Footer() {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={newsletterStatus === 'loading'}
                     required
-                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-turquoise-400 transition-colors min-h-[44px] text-base"
+                    className="flex-1 px-4 py-3 rounded-lg bg-navy-900 border border-navy-600 focus:outline-none focus:ring-2 focus:ring-turquoise-500 text-white placeholder-gray-500 min-h-[44px]"
                   />
                   <button
                     type="submit"
                     disabled={newsletterStatus === 'loading'}
-                    className="bg-turquoise-500 hover:bg-turquoise-600 px-6 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap min-h-[44px] disabled:opacity-50"
+                    className="bg-turquoise-600 hover:bg-turquoise-700 p-3 rounded-lg transition-colors min-h-[44px] min-w-[44px] disabled:opacity-50 flex items-center justify-center"
                   >
-                    {newsletterStatus === 'loading' ? 'Küldés...' : 'Feliratkozás'}
+                    <Send className="w-5 h-5" />
                   </button>
                 </form>
               )}
             </div>
 
             {/* Social Links */}
+            {/* Larger, better styled social icons */}
             <div>
-              <h4 className="font-semibold mb-3">Kövess minket</h4>
+              <p className="text-gray-400 text-sm mb-3 font-semibold">Kövess minket</p>
               <div className="flex gap-3">
                 <a
                   href="https://linkedin.com/company/vyndi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/10 hover:bg-turquoise-500 flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
+                  className="w-11 h-11 bg-navy-800 hover:bg-turquoise-600 rounded-lg flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="w-5 h-5" />
@@ -87,7 +90,7 @@ export function Footer() {
                   href="https://twitter.com/vyndi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/10 hover:bg-turquoise-500 flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
+                  className="w-11 h-11 bg-navy-800 hover:bg-turquoise-600 rounded-lg flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
                   aria-label="Twitter"
                 >
                   <Twitter className="w-5 h-5" />
@@ -96,7 +99,7 @@ export function Footer() {
                   href="https://facebook.com/vyndi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/10 hover:bg-turquoise-500 flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
+                  className="w-11 h-11 bg-navy-800 hover:bg-turquoise-600 rounded-lg flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
                   aria-label="Facebook"
                 >
                   <Facebook className="w-5 h-5" />
@@ -105,7 +108,7 @@ export function Footer() {
                   href="https://instagram.com/vyndi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-white/10 hover:bg-turquoise-500 flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
+                  className="w-11 h-11 bg-navy-800 hover:bg-turquoise-600 rounded-lg flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
                   aria-label="Instagram"
                 >
                   <Instagram className="w-5 h-5" />
@@ -114,14 +117,15 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Product Links */}
-          <div>
-            <h4 className="font-bold mb-4 text-lg">Termék</h4>
-            <ul className="space-y-2">
+          {/* Termék Column */}
+          {/* Better organized columns with larger text */}
+          <div className="lg:col-span-2">
+            <h4 className="font-bold text-lg mb-6 text-turquoise-400">Termék</h4>
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/#product-demo"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Funkciók
                 </Link>
@@ -129,7 +133,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/billing"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Árazás
                 </Link>
@@ -137,7 +141,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Integráció
                 </Link>
@@ -145,7 +149,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Sablonok
                 </Link>
@@ -153,7 +157,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Mobilapp
                 </Link>
@@ -161,7 +165,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   API
                 </Link>
@@ -169,14 +173,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Resources Links */}
-          <div>
-            <h4 className="font-bold mb-4 text-lg">Erőforrások</h4>
-            <ul className="space-y-2">
+          {/* Erőforrások Column */}
+          <div className="lg:col-span-2">
+            <h4 className="font-bold text-lg mb-6 text-turquoise-400">Erőforrások</h4>
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Blog
                 </Link>
@@ -184,7 +188,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/#faq"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Súgó központ
                 </Link>
@@ -192,7 +196,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Útmutatók
                 </Link>
@@ -200,7 +204,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Webináriumok
                 </Link>
@@ -208,7 +212,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/success-stories"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Esettanulmányok
                 </Link>
@@ -216,7 +220,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Közösség
                 </Link>
@@ -224,14 +228,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company Links */}
-          <div>
-            <h4 className="font-bold mb-4 text-lg">Cég</h4>
-            <ul className="space-y-2 mb-6">
+          {/* Cég Column */}
+          <div className="lg:col-span-2">
+            <h4 className="font-bold text-lg mb-6 text-turquoise-400">Cég</h4>
+            <ul className="space-y-3">
               <li>
                 <Link
                   href="/success-stories"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Rólunk
                 </Link>
@@ -239,7 +243,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Karrier
                 </Link>
@@ -247,7 +251,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/resources"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Partnerek
                 </Link>
@@ -255,53 +259,60 @@ export function Footer() {
               <li>
                 <a
                   href="mailto:hello@vyndi.hu"
-                  className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Kapcsolat
                 </a>
               </li>
             </ul>
+          </div>
 
-            {/* Contact Info */}
-            <div className="space-y-2 text-sm">
-              <div className="flex items-start gap-2 text-gray-400">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span className="text-pretty">
+          {/* Contact Column */}
+          {/* Enhanced contact section with icons */}
+          <div className="lg:col-span-2">
+            <h4 className="font-bold text-lg mb-6 text-turquoise-400">Kapcsolat</h4>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-turquoise-400 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-300 text-base">
                   Budapest, 1052
                   <br />
                   Magyarország
                 </span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <Phone className="w-4 h-4 flex-shrink-0" />
-                <a href="tel:+36123456789" className="hover:text-turquoise-400 transition-colors">
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="w-5 h-5 text-turquoise-400 flex-shrink-0" />
+                <a
+                  href="tel:+3612345678"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
+                >
                   +36 1 234 5678
                 </a>
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <Mail className="w-4 h-4 flex-shrink-0" />
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail className="w-5 h-5 text-turquoise-400 flex-shrink-0" />
                 <a
                   href="mailto:hello@vyndi.hu"
-                  className="hover:text-turquoise-400 transition-colors"
+                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   hello@vyndi.hu
                 </a>
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-white/10 pt-8">
-          {/* Bottom Bar */}
+        {/* Bottom Bar */}
+        {/* Better organized bottom section */}
+        <div className="pt-8 border-t border-navy-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright */}
-            <div className="text-gray-400 text-sm text-pretty">
+            <p className="text-gray-400 text-sm text-pretty">
               © {new Date().getFullYear()} Vyndi. Minden jog fenntartva.
-            </div>
+            </p>
 
             {/* Legal Links */}
-            <div className="flex flex-wrap gap-6 text-sm">
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
               <Link
                 href="/privacy-policy"
                 className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
