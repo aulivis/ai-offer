@@ -11,4 +11,3 @@ export function currentMonthStart(): { date: Date; iso: string } {
   const iso = date.toISOString().slice(0, 10);
   return { date, iso };
 }
-
