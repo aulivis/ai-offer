@@ -3,11 +3,11 @@ import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Bevezető videó - Ismerd meg a Vyndi-t | Vyndi',
+  title: 'BevezetĹ‘ videĂł - Ismerd meg a Vyndi-t | Vyndi',
   description:
-    'Ismerd meg a Vyndi-t 5 percben. Ez a bevezető videó bemutatja a platform főbb funkcióit, és segít megérteni, hogyan segíthet a professzionális ajánlatok készítésében.',
+    'Ismerd meg a Vyndi-t 5 percben. Ez a bevezetĹ‘ videĂł bemutatja a platform fĹ‘bb funkciĂłit, Ă©s segĂ­t megĂ©rteni, hogyan segĂ­thet a professzionĂˇlis ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©ben.',
   openGraph: {
-    title: 'Bevezető videó - Ismerd meg a Vyndi-t | Vyndi',
+    title: 'BevezetĹ‘ videĂł - Ismerd meg a Vyndi-t | Vyndi',
     description: 'Ismerd meg a Vyndi-t 5 percben.',
     type: 'video.other',
   },
@@ -21,31 +21,31 @@ export default function IntroVideoPage() {
         <ol className="flex items-center gap-2">
           <li>
             <Link href="/resources" className="hover:text-primary transition-colors">
-              Erőforrások
+              ErĹ‘forrĂˇsok
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
           <li>
             <Link href="/resources/videos" className="hover:text-primary transition-colors">
-              Videók
+              VideĂłk
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
-          <li className="text-fg">Bevezető videó</li>
+          <li className="text-fg">BevezetĹ‘ videĂł</li>
         </ol>
       </nav>
 
       {/* Hero Section */}
       <header className="mb-12">
         <span className="inline-flex items-center gap-2 rounded-full border border-red-500/50 bg-red-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-red-700">
-          Videó
+          VideĂł
         </span>
         <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-          Bevezető videó
+          BevezetĹ‘ videĂł
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Ismerd meg a Vyndi-t 5 percben. Ez a bevezető videó bemutatja a platform főbb funkcióit,
-          és segít megérteni, hogyan segíthet a professzionális ajánlatok készítésében.
+          Ismerd meg a Vyndi-t 5 percben. Ez a bevezetĹ‘ videĂł bemutatja a platform fĹ‘bb funkciĂłit,
+          Ă©s segĂ­t megĂ©rteni, hogyan segĂ­thet a professzionĂˇlis ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©ben.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export default function IntroVideoPage() {
                 d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>Bevezető</span>
+            <span>BevezetĹ‘</span>
           </div>
         </div>
       </header>
@@ -104,14 +104,14 @@ export default function IntroVideoPage() {
                 />
               </svg>
               <p className="mt-4 text-lg font-medium text-white">
-                [Helyőrző: Video player - Vyndi bevezető videó]
+                [HelyĹ‘rzĹ‘: Video player - Vyndi bevezetĹ‘ videĂł]
               </p>
               <p className="mt-2 text-sm text-white/70">
-                Videó hossza: 5 perc | Formátum: MP4 vagy YouTube embed
+                VideĂł hossza: 5 perc | FormĂˇtum: MP4 vagy YouTube embed
               </p>
               <p className="mt-4 text-xs text-white/60">
-                A videó tartalmazza: Platform áttekintés, főbb funkciók bemutatása, gyors demo,
-                használati példák
+                A videĂł tartalmazza: Platform ĂˇttekintĂ©s, fĹ‘bb funkciĂłk bemutatĂˇsa, gyors demo,
+                hasznĂˇlati pĂ©ldĂˇk
               </p>
             </div>
           </div>
@@ -128,20 +128,20 @@ export default function IntroVideoPage() {
 
       {/* Video Description */}
       <Card className="mb-12">
-        <h2 className="mb-4 text-2xl font-bold text-fg">Videó tartalma</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">VideĂł tartalma</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          Ez a bevezető videó áttekintést nyújt a Vyndi platformról és bemutatja, hogyan segíthet
-          neked professzionális ajánlatokat készíteni percek alatt.
+          Ez a bevezetĹ‘ videĂł ĂˇttekintĂ©st nyĂşjt a Vyndi platformrĂłl Ă©s bemutatja, hogyan segĂ­thet
+          neked professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni percek alatt.
         </p>
         <div className="space-y-4">
           <div>
-            <h3 className="mb-2 font-semibold text-fg">A videóban látni fogod:</h3>
+            <h3 className="mb-2 font-semibold text-fg">A videĂłban lĂˇtni fogod:</h3>
             <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-              <li>Platform áttekintés és főbb funkciók</li>
-              <li>Gyors demo - hogyan készíts ajánlatot</li>
-              <li>AI-alapú szöveg generálás bemutatása</li>
-              <li>Sablonok és testreszabási lehetőségek</li>
-              <li>PDF export és megosztási lehetőségek</li>
+              <li>Platform ĂˇttekintĂ©s Ă©s fĹ‘bb funkciĂłk</li>
+              <li>Gyors demo - hogyan kĂ©szĂ­ts ajĂˇnlatot</li>
+              <li>AI-alapĂş szĂ¶veg generĂˇlĂˇs bemutatĂˇsa</li>
+              <li>Sablonok Ă©s testreszabĂˇsi lehetĹ‘sĂ©gek</li>
+              <li>PDF export Ă©s megosztĂˇsi lehetĹ‘sĂ©gek</li>
             </ul>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function IntroVideoPage() {
 
       {/* Key Features Highlighted in Video */}
       <div className="mb-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Főbb funkciók a videóban</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">FĹ‘bb funkciĂłk a videĂłban</h2>
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <div className="flex items-start gap-4">
@@ -169,10 +169,10 @@ export default function IntroVideoPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">Gyors ajánlatkészítés</h3>
+                <h3 className="mb-2 font-semibold text-fg">Gyors ajĂˇnlatkĂ©szĂ­tĂ©s</h3>
                 <p className="text-sm text-fg-muted">
-                  Tanuld meg, hogyan készíthetsz professzionális ajánlatot percek alatt a Vyndi
-                  segítségével.
+                  Tanuld meg, hogyan kĂ©szĂ­thetsz professzionĂˇlis ajĂˇnlatot percek alatt a Vyndi
+                  segĂ­tsĂ©gĂ©vel.
                 </p>
               </div>
             </div>
@@ -196,10 +196,10 @@ export default function IntroVideoPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">AI-alapú szöveg generálás</h3>
+                <h3 className="mb-2 font-semibold text-fg">AI-alapĂş szĂ¶veg generĂˇlĂˇs</h3>
                 <p className="text-sm text-fg-muted">
-                  Nézd meg, hogyan működik az AI funkció, és hogyan generálhatsz professzionális
-                  szövegeket másodpercek alatt.
+                  NĂ©zd meg, hogyan mĹ±kĂ¶dik az AI funkciĂł, Ă©s hogyan generĂˇlhatsz professzionĂˇlis
+                  szĂ¶vegeket mĂˇsodpercek alatt.
                 </p>
               </div>
             </div>
@@ -223,9 +223,9 @@ export default function IntroVideoPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">Sablonok és testreszabás</h3>
+                <h3 className="mb-2 font-semibold text-fg">Sablonok Ă©s testreszabĂˇs</h3>
                 <p className="text-sm text-fg-muted">
-                  Ismerd meg a különböző sablonokat és a testreszabási lehetőségeket.
+                  Ismerd meg a kĂĽlĂ¶nbĂ¶zĹ‘ sablonokat Ă©s a testreszabĂˇsi lehetĹ‘sĂ©geket.
                 </p>
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function IntroVideoPage() {
               <div>
                 <h3 className="mb-2 font-semibold text-fg">PDF export</h3>
                 <p className="text-sm text-fg-muted">
-                  Nézd meg, hogyan exportálhatod az ajánlatodat professzionális PDF formátumban.
+                  NĂ©zd meg, hogyan exportĂˇlhatod az ajĂˇnlatodat professzionĂˇlis PDF formĂˇtumban.
                 </p>
               </div>
             </div>
@@ -261,31 +261,31 @@ export default function IntroVideoPage() {
 
       {/* Next Steps */}
       <Card className="mb-12 border-l-4 border-l-blue-500 bg-blue-50/30">
-        <h2 className="mb-4 text-2xl font-bold text-fg">Következő lépések</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">KĂ¶vetkezĹ‘ lĂ©pĂ©sek</h2>
         <p className="mb-4 text-fg-muted">
-          Most, hogy megismerkedtél a Vyndi-vel, itt az ideje, hogy elkezdd használni:
+          Most, hogy megismerkedtĂ©l a Vyndi-vel, itt az ideje, hogy elkezdd hasznĂˇlni:
         </p>
         <ol className="ml-6 list-decimal space-y-2 text-fg-muted">
-          <li>Regisztrálj egy ingyenes fiókot</li>
-          <li>Készítsd el első ajánlatodat</li>
-          <li>Nézd meg a részletes útmutatókat</li>
-          <li>Fedezd fel az összes funkciót</li>
+          <li>RegisztrĂˇlj egy ingyenes fiĂłkot</li>
+          <li>KĂ©szĂ­tsd el elsĹ‘ ajĂˇnlatodat</li>
+          <li>NĂ©zd meg a rĂ©szletes ĂştmutatĂłkat</li>
+          <li>Fedezd fel az Ă¶sszes funkciĂłt</li>
         </ol>
       </Card>
 
       {/* CTA Section */}
       <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Készen állsz a kezdésre?</h2>
+          <h2 className="mb-4 text-3xl font-bold text-fg">KĂ©szen Ăˇllsz a kezdĂ©sre?</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            Regisztrálj ingyenesen, és azonnal elkezdhetsz professzionális ajánlatokat készíteni.
+            RegisztrĂˇlj ingyenesen, Ă©s azonnal elkezdhetsz professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/login?redirect=/new"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
-              Ingyenes próba indítása
+              Ingyenes prĂłba indĂ­tĂˇsa
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -299,7 +299,7 @@ export default function IntroVideoPage() {
               href="/resources/videos/full-tour"
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary/40 bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:bg-primary/5"
             >
-              Teljes funkció bemutató
+              Teljes funkciĂł bemutatĂł
             </Link>
           </div>
         </div>
@@ -307,16 +307,16 @@ export default function IntroVideoPage() {
 
       {/* Related Resources */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó erőforrások</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">KapcsolĂłdĂł erĹ‘forrĂˇsok</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/videos/full-tour">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Teljes funkció bemutató
+                    Teljes funkciĂł bemutatĂł
                   </h3>
-                  <p className="text-sm text-fg-muted">Részletes útmutató minden funkcióról.</p>
+                  <p className="text-sm text-fg-muted">RĂ©szletes ĂştmutatĂł minden funkciĂłrĂłl.</p>
                 </div>
                 <svg
                   className="h-5 w-5 text-fg-muted group-hover:translate-x-1 transition-transform"
@@ -339,10 +339,10 @@ export default function IntroVideoPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Ajánlatkészítési útmutató
+                    AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Komplett útmutató a tökéletes ajánlatok elkészítéséhez.
+                    Komplett ĂştmutatĂł a tĂ¶kĂ©letes ajĂˇnlatok elkĂ©szĂ­tĂ©sĂ©hez.
                   </p>
                 </div>
                 <svg
@@ -366,4 +366,3 @@ export default function IntroVideoPage() {
     </main>
   );
 }
-

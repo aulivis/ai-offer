@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Pro sablonok könyvtár | Vyndi',
+  title: 'Pro sablonok kĂ¶nyvtĂˇr | Vyndi',
   description:
-    'Hozzáférj a prémium ajánlat sablonokhoz Pro előfizetéssel. Exkluzív, professzionális dizájnok, fejlett funkciók és korlátlan testreszabhatóság.',
+    'HozzĂˇfĂ©rj a prĂ©mium ajĂˇnlat sablonokhoz Pro elĹ‘fizetĂ©ssel. ExkluzĂ­v, professzionĂˇlis dizĂˇjnok, fejlett funkciĂłk Ă©s korlĂˇtlan testreszabhatĂłsĂˇg.',
   openGraph: {
-    title: 'Pro sablonok könyvtár | Vyndi',
-    description: 'Prémium ajánlat sablonok Pro előfizetőink számára.',
+    title: 'Pro sablonok kĂ¶nyvtĂˇr | Vyndi',
+    description: 'PrĂ©mium ajĂˇnlat sablonok Pro elĹ‘fizetĹ‘ink szĂˇmĂˇra.',
     type: 'website',
   },
 };
@@ -20,43 +20,43 @@ export default function ProTemplatesPage() {
       id: 'pro.modern',
       name: 'Modern',
       description:
-        'Korszerű, dinamikus dizájn, amely kiemeli a szolgáltatásokat és az értékajánlatot. Ideális tech cégeknek és start-upoknak.',
+        'KorszerĹ±, dinamikus dizĂˇjn, amely kiemeli a szolgĂˇltatĂˇsokat Ă©s az Ă©rtĂ©kajĂˇnlatot. IdeĂˇlis tech cĂ©geknek Ă©s start-upoknak.',
       category: 'Tech & Start-up',
       tags: ['modern', 'dinamikus', 'tech'],
       preview: '/templates/pro-modern-preview.png',
       features: [
-        'Interaktív elemek',
-        'Animált grafika',
-        'Fejlett árazási táblázat',
-        'Logo animáció',
+        'InteraktĂ­v elemek',
+        'AnimĂˇlt grafika',
+        'Fejlett ĂˇrazĂˇsi tĂˇblĂˇzat',
+        'Logo animĂˇciĂł',
       ],
       exclusive: true,
     },
     {
       id: 'pro.elegant',
-      name: 'Elegáns',
+      name: 'ElegĂˇns',
       description:
-        'Raffinált, luxus dizájn, amely tökéletesen megfelel a prémium szolgáltatások és brandek számára.',
+        'RaffinĂˇlt, luxus dizĂˇjn, amely tĂ¶kĂ©letesen megfelel a prĂ©mium szolgĂˇltatĂˇsok Ă©s brandek szĂˇmĂˇra.',
       category: 'Luxury & Premium',
-      tags: ['elegáns', 'luxus', 'prémium'],
+      tags: ['elegĂˇns', 'luxus', 'prĂ©mium'],
       preview: '/templates/pro-elegant-preview.png',
       features: [
-        'Prémium tipográfia',
-        'Egyedi illusztrációk',
-        'Fénykép galéria',
-        'Interaktív timeline',
+        'PrĂ©mium tipogrĂˇfia',
+        'Egyedi illusztrĂˇciĂłk',
+        'FĂ©nykĂ©p galĂ©ria',
+        'InteraktĂ­v timeline',
       ],
       exclusive: true,
     },
     {
       id: 'pro.bold',
-      name: 'Merész',
+      name: 'MerĂ©sz',
       description:
-        'Hangulatos, figyelemfelkeltő dizájn, amely segít kiemelkedni a versenytársak közül.',
-      category: 'Kreatív',
-      tags: ['merész', 'kreatív', 'figyelemfelkeltő'],
+        'Hangulatos, figyelemfelkeltĹ‘ dizĂˇjn, amely segĂ­t kiemelkedni a versenytĂˇrsak kĂ¶zĂĽl.',
+      category: 'KreatĂ­v',
+      tags: ['merĂ©sz', 'kreatĂ­v', 'figyelemfelkeltĹ‘'],
       preview: '/templates/pro-bold-preview.png',
-      features: ['Vibráns színek', 'Egyedi illusztrációk', 'Parallax effektusok', 'Animált ikonok'],
+      features: ['VibrĂˇns szĂ­nek', 'Egyedi illusztrĂˇciĂłk', 'Parallax effektusok', 'AnimĂˇlt ikonok'],
       exclusive: true,
     },
   ];
@@ -68,7 +68,7 @@ export default function ProTemplatesPage() {
         <ol className="flex items-center gap-2">
           <li>
             <Link href="/resources" className="hover:text-primary transition-colors">
-              Erőforrások
+              ErĹ‘forrĂˇsok
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
@@ -82,11 +82,11 @@ export default function ProTemplatesPage() {
           Pro Sablonok
         </span>
         <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-          Pro sablonok könyvtár
+          Pro sablonok kĂ¶nyvtĂˇr
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
-          Hozzáférj exkluzív, prémium ajánlat sablonokhoz Pro előfizetéssel. Fejlett funkciók,
-          egyedi dizájnok és korlátlan testreszabhatóság vár rád.
+          HozzĂˇfĂ©rj exkluzĂ­v, prĂ©mium ajĂˇnlat sablonokhoz Pro elĹ‘fizetĂ©ssel. Fejlett funkciĂłk,
+          egyedi dizĂˇjnok Ă©s korlĂˇtlan testreszabhatĂłsĂˇg vĂˇr rĂˇd.
         </p>
       </header>
 
@@ -94,17 +94,17 @@ export default function ProTemplatesPage() {
       <Card className="mb-12 border-2 border-amber-500/40 bg-gradient-to-br from-amber-50 to-orange-50">
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           <div>
-            <h2 className="mb-2 text-2xl font-bold text-fg">Pro előfizetés szükséges</h2>
+            <h2 className="mb-2 text-2xl font-bold text-fg">Pro elĹ‘fizetĂ©s szĂĽksĂ©ges</h2>
             <p className="text-fg-muted">
-              A prémium sablonok eléréséhez Pro előfizetésre van szükség. Fizess elő még ma, és
-              azonnal hozzáférsz az összes exkluzív sablonhoz!
+              A prĂ©mium sablonok elĂ©rĂ©sĂ©hez Pro elĹ‘fizetĂ©sre van szĂĽksĂ©g. Fizess elĹ‘ mĂ©g ma, Ă©s
+              azonnal hozzĂˇfĂ©rsz az Ă¶sszes exkluzĂ­v sablonhoz!
             </p>
           </div>
           <Link
             href="/billing"
             className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
           >
-            Pro csomag megtekintése
+            Pro csomag megtekintĂ©se
           </Link>
         </div>
       </Card>
@@ -139,10 +139,10 @@ export default function ProTemplatesPage() {
                     />
                   </svg>
                   <p className="mt-4 text-xs font-medium text-amber-700">
-                    [Helyőrző: {template.name} Pro sablon előnézet képe]
+                    [HelyĹ‘rzĹ‘: {template.name} Pro sablon elĹ‘nĂ©zet kĂ©pe]
                   </p>
                   <p className="mt-1 text-xs text-amber-600">
-                    Ajánlott: 800x1000px PDF előnézet vagy screenshot
+                    AjĂˇnlott: 800x1000px PDF elĹ‘nĂ©zet vagy screenshot
                   </p>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function ProTemplatesPage() {
 
               {/* Features */}
               <div className="mb-4 space-y-2">
-                <p className="text-xs font-semibold uppercase text-gray-500">Főbb funkciók:</p>
+                <p className="text-xs font-semibold uppercase text-gray-500">FĹ‘bb funkciĂłk:</p>
                 <ul className="space-y-1">
                   {template.features.map((feature, index) => (
                     <li key={index} className="flex items-center gap-2 text-sm text-fg-muted">
@@ -187,7 +187,7 @@ export default function ProTemplatesPage() {
                 href="/billing"
                 className="block w-full rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg"
               >
-                Pro előfizetés indítása
+                Pro elĹ‘fizetĂ©s indĂ­tĂˇsa
               </Link>
             </div>
           </Card>
@@ -196,7 +196,7 @@ export default function ProTemplatesPage() {
 
       {/* Pro Features Section */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Miért válaszd a Pro sablonokat?</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">MiĂ©rt vĂˇlaszd a Pro sablonokat?</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card className="text-center">
             <div className="mb-4 flex justify-center">
@@ -216,9 +216,9 @@ export default function ProTemplatesPage() {
                 </svg>
               </div>
             </div>
-            <h3 className="mb-2 font-semibold text-fg">Exkluzív dizájnok</h3>
+            <h3 className="mb-2 font-semibold text-fg">ExkluzĂ­v dizĂˇjnok</h3>
             <p className="text-sm text-fg-muted">
-              Egyedülálló, professzionális sablonok, amelyeket csak Pro előfizetők érhetnek el.
+              EgyedĂĽlĂˇllĂł, professzionĂˇlis sablonok, amelyeket csak Pro elĹ‘fizetĹ‘k Ă©rhetnek el.
             </p>
           </Card>
 
@@ -240,9 +240,9 @@ export default function ProTemplatesPage() {
                 </svg>
               </div>
             </div>
-            <h3 className="mb-2 font-semibold text-fg">Fejlett funkciók</h3>
+            <h3 className="mb-2 font-semibold text-fg">Fejlett funkciĂłk</h3>
             <p className="text-sm text-fg-muted">
-              Interaktív elemek, animációk és egyedi komponensek, amelyek kiemelik az ajánlatodat.
+              InteraktĂ­v elemek, animĂˇciĂłk Ă©s egyedi komponensek, amelyek kiemelik az ajĂˇnlatodat.
             </p>
           </Card>
 
@@ -264,9 +264,9 @@ export default function ProTemplatesPage() {
                 </svg>
               </div>
             </div>
-            <h3 className="mb-2 font-semibold text-fg">Korlátlan testreszabás</h3>
+            <h3 className="mb-2 font-semibold text-fg">KorlĂˇtlan testreszabĂˇs</h3>
             <p className="text-sm text-fg-muted">
-              Teljes kontroll minden elem felett - színek, tipográfia, elrendezés és még sok más.
+              Teljes kontroll minden elem felett - szĂ­nek, tipogrĂˇfia, elrendezĂ©s Ă©s mĂ©g sok mĂˇs.
             </p>
           </Card>
 
@@ -288,9 +288,9 @@ export default function ProTemplatesPage() {
                 </svg>
               </div>
             </div>
-            <h3 className="mb-2 font-semibold text-fg">Elsőbbségi támogatás</h3>
+            <h3 className="mb-2 font-semibold text-fg">ElsĹ‘bbsĂ©gi tĂˇmogatĂˇs</h3>
             <p className="text-sm text-fg-muted">
-              Pro előfizetőkként elsőbbséget kapsz a támogatásban és az új funkciók hozzáférésében.
+              Pro elĹ‘fizetĹ‘kkĂ©nt elsĹ‘bbsĂ©get kapsz a tĂˇmogatĂˇsban Ă©s az Ăşj funkciĂłk hozzĂˇfĂ©rĂ©sĂ©ben.
             </p>
           </Card>
         </div>
@@ -299,47 +299,47 @@ export default function ProTemplatesPage() {
       {/* Comparison Table */}
       <Card className="mt-12">
         <h2 className="mb-6 text-2xl font-bold text-fg">
-          Összehasonlítás: Ingyenes vs. Pro sablonok
+          Ă–sszehasonlĂ­tĂˇs: Ingyenes vs. Pro sablonok
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-border">
-                <th className="px-4 py-3 text-left font-semibold text-fg">Funkció</th>
+                <th className="px-4 py-3 text-left font-semibold text-fg">FunkciĂł</th>
                 <th className="px-4 py-3 text-center font-semibold text-fg">Ingyenes</th>
                 <th className="px-4 py-3 text-center font-semibold text-amber-600">Pro</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               <tr>
-                <td className="px-4 py-3 text-fg-muted">Sablonok száma</td>
+                <td className="px-4 py-3 text-fg-muted">Sablonok szĂˇma</td>
                 <td className="px-4 py-3 text-center text-fg-muted">1-2</td>
                 <td className="px-4 py-3 text-center font-semibold text-amber-600">10+</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-fg-muted">Fejlett animációk</td>
-                <td className="px-4 py-3 text-center text-fg-muted">❌</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">✅</td>
+                <td className="px-4 py-3 text-fg-muted">Fejlett animĂˇciĂłk</td>
+                <td className="px-4 py-3 text-center text-fg-muted">âťŚ</td>
+                <td className="px-4 py-3 text-center font-semibold text-amber-600">âś…</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-fg-muted">Interaktív elemek</td>
-                <td className="px-4 py-3 text-center text-fg-muted">Korlátozott</td>
+                <td className="px-4 py-3 text-fg-muted">InteraktĂ­v elemek</td>
+                <td className="px-4 py-3 text-center text-fg-muted">KorlĂˇtozott</td>
                 <td className="px-4 py-3 text-center font-semibold text-amber-600">Teljes</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-fg-muted">Egyedi illusztrációk</td>
-                <td className="px-4 py-3 text-center text-fg-muted">❌</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">✅</td>
+                <td className="px-4 py-3 text-fg-muted">Egyedi illusztrĂˇciĂłk</td>
+                <td className="px-4 py-3 text-center text-fg-muted">âťŚ</td>
+                <td className="px-4 py-3 text-center font-semibold text-amber-600">âś…</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-fg-muted">Prémium tipográfia</td>
-                <td className="px-4 py-3 text-center text-fg-muted">Alapvető</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">Prémium</td>
+                <td className="px-4 py-3 text-fg-muted">PrĂ©mium tipogrĂˇfia</td>
+                <td className="px-4 py-3 text-center text-fg-muted">AlapvetĹ‘</td>
+                <td className="px-4 py-3 text-center font-semibold text-amber-600">PrĂ©mium</td>
               </tr>
               <tr>
-                <td className="px-4 py-3 text-fg-muted">Fénykép galéria</td>
-                <td className="px-4 py-3 text-center text-fg-muted">❌</td>
-                <td className="px-4 py-3 text-center font-semibold text-amber-600">✅</td>
+                <td className="px-4 py-3 text-fg-muted">FĂ©nykĂ©p galĂ©ria</td>
+                <td className="px-4 py-3 text-center text-fg-muted">âťŚ</td>
+                <td className="px-4 py-3 text-center font-semibold text-amber-600">âś…</td>
               </tr>
             </tbody>
           </table>
@@ -349,16 +349,16 @@ export default function ProTemplatesPage() {
       {/* CTA Section */}
       <Card className="mt-12 border-2 border-amber-500/40 bg-gradient-to-br from-amber-50 to-orange-50">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Lépj szintet Pro előfizetéssel!</h2>
+          <h2 className="mb-4 text-3xl font-bold text-fg">LĂ©pj szintet Pro elĹ‘fizetĂ©ssel!</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            Hozzáférj az összes prémium sablonhoz, fejlett funkciókhoz és exkluzív lehetőségekhez.
+            HozzĂˇfĂ©rj az Ă¶sszes prĂ©mium sablonhoz, fejlett funkciĂłkhoz Ă©s exkluzĂ­v lehetĹ‘sĂ©gekhez.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/billing"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
-              Pro csomag megtekintése
+              Pro csomag megtekintĂ©se
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -380,4 +380,3 @@ export default function ProTemplatesPage() {
     </main>
   );
 }
-

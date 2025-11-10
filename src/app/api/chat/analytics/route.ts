@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (!event || typeof event !== 'string') {
       return NextResponse.json(
         {
-          error: 'Érvénytelen esemény típus',
+          error: 'Ă‰rvĂ©nytelen esemĂ©ny tĂ­pus',
           requestId,
         },
         { status: 400 },
@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
       });
       return NextResponse.json(
         {
-          error: 'Nem sikerült lekérni az analitikát',
+          error: 'Nem sikerĂĽlt lekĂ©rni az analitikĂˇt',
           requestId,
         },
         { status: 500 },
@@ -188,11 +188,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Váratlan hiba történt',
+        error: 'VĂˇratlan hiba tĂ¶rtĂ©nt',
         requestId,
       },
       { status: 500 },
     );
   }
 }
-

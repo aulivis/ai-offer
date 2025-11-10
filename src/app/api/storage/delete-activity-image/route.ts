@@ -19,11 +19,11 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     const { activityId, imagePath } = body;
 
     if (!activityId || typeof activityId !== 'string') {
-      return NextResponse.json({ error: 'Hiányzik a tevékenység azonosító.' }, { status: 400 });
+      return NextResponse.json({ error: 'HiĂˇnyzik a tevĂ©kenysĂ©g azonosĂ­tĂł.' }, { status: 400 });
     }
 
     if (!imagePath || typeof imagePath !== 'string') {
-      return NextResponse.json({ error: 'Hiányzik a kép elérési útja.' }, { status: 400 });
+      return NextResponse.json({ error: 'HiĂˇnyzik a kĂ©p elĂ©rĂ©si Ăştja.' }, { status: 400 });
     }
 
     // Verify activity belongs to user
@@ -36,7 +36,7 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
 
     if (activityError || !activity) {
       return NextResponse.json(
-        { error: 'A tevékenység nem található vagy nincs hozzáférésed hozzá.' },
+        { error: 'A tevĂ©kenysĂ©g nem talĂˇlhatĂł vagy nincs hozzĂˇfĂ©rĂ©sed hozzĂˇ.' },
         { status: 404 },
       );
     }
@@ -55,7 +55,7 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     if (updateError) {
       log.error('Failed to update activity after image deletion', { error: updateError });
       return NextResponse.json(
-        { error: 'Nem sikerült frissíteni a tevékenységet.' },
+        { error: 'Nem sikerĂĽlt frissĂ­teni a tevĂ©kenysĂ©get.' },
         { status: 500 },
       );
     }
@@ -70,7 +70,7 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba történt.';
+    const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba tĂ¶rtĂ©nt.';
     log.error(
       'Activity image deletion failed',
       error instanceof Error ? error : new Error(String(error)),
@@ -78,4 +78,3 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 });
-

@@ -63,98 +63,98 @@ export function fluidFontSize(
  * Uses clamp() for smooth scaling between mobile and desktop
  */
 export const FLUID_TYPOGRAPHY_SCALE = {
-  /** Display text - Large hero headings (48px mobile → 64px desktop) */
+  /** Display text - Large hero headings (48px mobile â†’ 64px desktop) */
   display: {
     size: fluidFontSize(48, 64),
     lineHeight: '1.1',
     fontWeight: '700',
     letterSpacing: '-0.02em',
   },
-  /** H1 - Main page headings (32px mobile → 48px desktop) */
+  /** H1 - Main page headings (32px mobile â†’ 48px desktop) */
   h1: {
     size: fluidFontSize(32, 48),
     lineHeight: '1.2',
     fontWeight: '700',
     letterSpacing: '-0.01em',
   },
-  /** H2 - Section headings (24px mobile → 36px desktop) */
+  /** H2 - Section headings (24px mobile â†’ 36px desktop) */
   h2: {
     size: fluidFontSize(24, 36),
     lineHeight: '1.25',
     fontWeight: '600',
     letterSpacing: '-0.005em',
   },
-  /** H3 - Subsection headings (20px mobile → 30px desktop) */
+  /** H3 - Subsection headings (20px mobile â†’ 30px desktop) */
   h3: {
     size: fluidFontSize(20, 30),
     lineHeight: '1.3',
     fontWeight: '600',
     letterSpacing: '-0.0025em',
   },
-  /** H4 - Minor headings (18px mobile → 24px desktop) */
+  /** H4 - Minor headings (18px mobile â†’ 24px desktop) */
   h4: {
     size: fluidFontSize(18, 24),
     lineHeight: '1.35',
     fontWeight: '600',
     letterSpacing: '0',
   },
-  /** H5 - Small headings (16px mobile → 20px desktop) */
+  /** H5 - Small headings (16px mobile â†’ 20px desktop) */
   h5: {
     size: fluidFontSize(16, 20),
     lineHeight: '1.4',
     fontWeight: '600',
     letterSpacing: '0',
   },
-  /** H6 - Smallest headings (14px mobile → 18px desktop) */
+  /** H6 - Smallest headings (14px mobile â†’ 18px desktop) */
   h6: {
     size: fluidFontSize(14, 18),
     lineHeight: '1.4',
     fontWeight: '600',
     letterSpacing: '0',
   },
-  /** Body large - Emphasis text (16px mobile → 18px desktop) */
+  /** Body large - Emphasis text (16px mobile â†’ 18px desktop) */
   bodyLarge: {
     size: fluidFontSize(16, 18),
     lineHeight: '1.6',
     fontWeight: '400',
     letterSpacing: '0',
   },
-  /** Body - Default body text (14px mobile → 16px desktop) */
+  /** Body - Default body text (14px mobile â†’ 16px desktop) */
   body: {
     size: fluidFontSize(14, 16),
     lineHeight: '1.6',
     fontWeight: '400',
     letterSpacing: '0',
   },
-  /** Body small - Secondary text (12px mobile → 14px desktop) */
+  /** Body small - Secondary text (12px mobile â†’ 14px desktop) */
   bodySmall: {
     size: fluidFontSize(12, 14),
     lineHeight: '1.5',
     fontWeight: '400',
     letterSpacing: '0',
   },
-  /** Caption - Small labels and captions (11px mobile → 12px desktop) */
+  /** Caption - Small labels and captions (11px mobile â†’ 12px desktop) */
   caption: {
     size: fluidFontSize(11, 12),
     lineHeight: '1.4',
     fontWeight: '400',
     letterSpacing: '0.01em',
   },
-  /** UI large - Large UI text (16px mobile → 18px desktop) */
+  /** UI large - Large UI text (16px mobile â†’ 18px desktop) */
   uiLarge: {
     size: fluidFontSize(16, 18),
     lineHeight: '1.5',
     fontWeight: '600',
     letterSpacing: '0',
   },
-  /** UI - Default UI text (14px mobile → 16px desktop) */
+  /** UI - Default UI text (14px mobile â†’ 16px desktop) */
   ui: {
     size: fluidFontSize(14, 16),
     lineHeight: '1.5',
     fontWeight: '600',
     letterSpacing: '0',
   },
-  /** UI small - Small UI text (12px mobile → 14px desktop) */
+  /** UI small - Small UI text (12px mobile â†’ 14px desktop) */
   uiSmall: {
     size: fluidFontSize(12, 14),
     lineHeight: '1.4',
@@ -177,25 +177,25 @@ export function getFluidTypography(key: FluidTypographyScale) {
  * Spacing that scales smoothly between breakpoints
  */
 export const FLUID_SPACING_SCALE = {
-  /** 4px mobile → 4px desktop */
+  /** 4px mobile â†’ 4px desktop */
   xs: fluidFontSize(4, 4),
-  /** 6px mobile → 8px desktop */
+  /** 6px mobile â†’ 8px desktop */
   sm: fluidFontSize(6, 8),
-  /** 10px mobile → 12px desktop */
+  /** 10px mobile â†’ 12px desktop */
   'sm-md': fluidFontSize(10, 12),
-  /** 12px mobile → 16px desktop */
+  /** 12px mobile â†’ 16px desktop */
   md: fluidFontSize(12, 16),
-  /** 16px mobile → 24px desktop */
+  /** 16px mobile â†’ 24px desktop */
   lg: fluidFontSize(16, 24),
-  /** 20px mobile → 32px desktop */
+  /** 20px mobile â†’ 32px desktop */
   xl: fluidFontSize(20, 32),
-  /** 24px mobile → 44px desktop */
+  /** 24px mobile â†’ 44px desktop */
   '2xl': fluidFontSize(24, 44),
-  /** 28px mobile → 56px desktop */
+  /** 28px mobile â†’ 56px desktop */
   '3xl': fluidFontSize(28, 56),
-  /** 32px mobile → 64px desktop */
+  /** 32px mobile â†’ 64px desktop */
   '4xl': fluidFontSize(32, 64),
-  /** 40px mobile → 80px desktop */
+  /** 40px mobile â†’ 80px desktop */
   '5xl': fluidFontSize(40, 80),
 } as const;
 
@@ -218,4 +218,3 @@ export const FLUID_TYPOGRAPHY_CSS_VARS = Object.entries(FLUID_TYPOGRAPHY_SCALE)
   --fluid-typography-${key}-letter-spacing: ${value.letterSpacing};`;
   })
   .join('\n  ');
-

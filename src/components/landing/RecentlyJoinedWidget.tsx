@@ -10,11 +10,11 @@ interface RecentJoin {
 }
 
 const mockJoins: RecentJoin[] = [
-  { name: 'Kovács Márta', location: 'Budapest', time: '2 perce' },
-  { name: 'Nagy Péter', location: 'Debrecen', time: '5 perce' },
-  { name: 'Szabó Anna', location: 'Szeged', time: '12 perce' },
-  { name: 'Tóth János', location: 'Pécs', time: '18 perce' },
-  { name: 'Kiss Éva', location: 'Győr', time: '25 perce' },
+  { name: 'KovĂˇcs MĂˇrta', location: 'Budapest', time: '2 perce' },
+  { name: 'Nagy PĂ©ter', location: 'Debrecen', time: '5 perce' },
+  { name: 'SzabĂł Anna', location: 'Szeged', time: '12 perce' },
+  { name: 'TĂłth JĂˇnos', location: 'PĂ©cs', time: '18 perce' },
+  { name: 'Kiss Ă‰va', location: 'GyĹ‘r', time: '25 perce' },
 ];
 
 export default function RecentlyJoinedWidget({ className = '' }: { className?: string }) {
@@ -63,7 +63,7 @@ export default function RecentlyJoinedWidget({ className = '' }: { className?: s
       <button
         onClick={() => setIsVisible(false)}
         className="flex-shrink-0 rounded-full p-1 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg"
-        aria-label="Bezárás"
+        aria-label="BezĂˇrĂˇs"
       >
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -77,4 +77,3 @@ export default function RecentlyJoinedWidget({ className = '' }: { className?: s
     </Card>
   );
 }
-

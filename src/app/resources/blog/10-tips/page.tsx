@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '10 tipp a tökéletes ajánlathoz | Vyndi Blog',
+  title: '10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz | Vyndi Blog',
   description:
-    'Gyakorlati tanácsok és tippek, amelyek segítenek jobb, konverzióoptimalizált ajánlatokat készíteni. Tanuld meg a professzionális ajánlatkészítés titkait.',
+    'Gyakorlati tanĂˇcsok Ă©s tippek, amelyek segĂ­tenek jobb, konverziĂłoptimalizĂˇlt ajĂˇnlatokat kĂ©szĂ­teni. Tanuld meg a professzionĂˇlis ajĂˇnlatkĂ©szĂ­tĂ©s titkait.',
   openGraph: {
-    title: '10 tipp a tökéletes ajánlathoz | Vyndi Blog',
-    description: 'Gyakorlati tanácsok a tökéletes ajánlatok készítéséhez.',
+    title: '10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz | Vyndi Blog',
+    description: 'Gyakorlati tanĂˇcsok a tĂ¶kĂ©letes ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©hez.',
     type: 'article',
   },
 };
@@ -17,9 +17,9 @@ export default function TenTipsPage() {
   const tips = [
     {
       number: 1,
-      title: 'Ismerd meg az ügyfelet',
+      title: 'Ismerd meg az ĂĽgyfelet',
       content:
-        'Mielőtt elkezdenél dolgozni az ajánlaton, tölts időt az ügyfél megértésével. Kérdezz rá problémáikra, céljaikra és elvárásaikra. Minél jobban ismered az ügyfelet, annál relevánsabb és hatékonyabb ajánlatot tudsz készíteni.',
+        'MielĹ‘tt elkezdenĂ©l dolgozni az ajĂˇnlaton, tĂ¶lts idĹ‘t az ĂĽgyfĂ©l megĂ©rtĂ©sĂ©vel. KĂ©rdezz rĂˇ problĂ©mĂˇikra, cĂ©ljaikra Ă©s elvĂˇrĂˇsaikra. MinĂ©l jobban ismered az ĂĽgyfelet, annĂˇl relevĂˇnsabb Ă©s hatĂ©konyabb ajĂˇnlatot tudsz kĂ©szĂ­teni.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -33,9 +33,9 @@ export default function TenTipsPage() {
     },
     {
       number: 2,
-      title: 'Fókuszálj az értékajánlatra',
+      title: 'FĂłkuszĂˇlj az Ă©rtĂ©kajĂˇnlatra',
       content:
-        'Ne csak a szolgáltatásaidat listázd, hanem mutasd be, milyen értéket adsz az ügyfélnek. Hangsúlyozd az eredményeket, a megoldásokat és a pozitív kimeneteket. Az ügyfél nem a szolgáltatást vásárolja, hanem az értéket.',
+        'Ne csak a szolgĂˇltatĂˇsaidat listĂˇzd, hanem mutasd be, milyen Ă©rtĂ©ket adsz az ĂĽgyfĂ©lnek. HangsĂşlyozd az eredmĂ©nyeket, a megoldĂˇsokat Ă©s a pozitĂ­v kimeneteket. Az ĂĽgyfĂ©l nem a szolgĂˇltatĂˇst vĂˇsĂˇrolja, hanem az Ă©rtĂ©ket.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -49,9 +49,9 @@ export default function TenTipsPage() {
     },
     {
       number: 3,
-      title: 'Használj konkrét számokat',
+      title: 'HasznĂˇlj konkrĂ©t szĂˇmokat',
       content:
-        'Kerüld a floskulákat és a homályos kijelentéseket. Használj konkrét számokat, százalékokat, időtartamokat és mérhető eredményeket. Például "50%-os növekedés" sokkal hatékonyabb, mint "jelentős növekedés".',
+        'KerĂĽld a floskulĂˇkat Ă©s a homĂˇlyos kijelentĂ©seket. HasznĂˇlj konkrĂ©t szĂˇmokat, szĂˇzalĂ©kokat, idĹ‘tartamokat Ă©s mĂ©rhetĹ‘ eredmĂ©nyeket. PĂ©ldĂˇul "50%-os nĂ¶vekedĂ©s" sokkal hatĂ©konyabb, mint "jelentĹ‘s nĂ¶vekedĂ©s".',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -65,9 +65,9 @@ export default function TenTipsPage() {
     },
     {
       number: 4,
-      title: 'Törj le az árakat',
+      title: 'TĂ¶rj le az Ăˇrakat',
       content:
-        'Ne csak egy összeggel dobd be az árat. Törj le az árakat konkrét szolgáltatásokra vagy fázisokra. Ez segít az ügyfélnek megérteni, mit kap, és növeli a transzparenciát és a bizalmat.',
+        'Ne csak egy Ă¶sszeggel dobd be az Ăˇrat. TĂ¶rj le az Ăˇrakat konkrĂ©t szolgĂˇltatĂˇsokra vagy fĂˇzisokra. Ez segĂ­t az ĂĽgyfĂ©lnek megĂ©rteni, mit kap, Ă©s nĂ¶veli a transzparenciĂˇt Ă©s a bizalmat.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -83,7 +83,7 @@ export default function TenTipsPage() {
       number: 5,
       title: 'Mutasd be a ROI-t',
       content:
-        'Számold ki és mutasd be a megtérülési időt (ROI). Az ügyfelek számára fontos tudni, hogy a befektetés mennyi idő alatt térül meg. Konkrét számokkal és számításokkal segíts nekik megérteni az értéket.',
+        'SzĂˇmold ki Ă©s mutasd be a megtĂ©rĂĽlĂ©si idĹ‘t (ROI). Az ĂĽgyfelek szĂˇmĂˇra fontos tudni, hogy a befektetĂ©s mennyi idĹ‘ alatt tĂ©rĂĽl meg. KonkrĂ©t szĂˇmokkal Ă©s szĂˇmĂ­tĂˇsokkal segĂ­ts nekik megĂ©rteni az Ă©rtĂ©ket.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -97,9 +97,9 @@ export default function TenTipsPage() {
     },
     {
       number: 6,
-      title: 'Használj social proof-ot',
+      title: 'HasznĂˇlj social proof-ot',
       content:
-        'Vélemények, értékelések, referenciák és esettanulmányok jelentősen növelhetik az ajánlat hitelességét. Mutasd be korábbi sikeres projekteidet és elégedett ügyfeleid véleményeit.',
+        'VĂ©lemĂ©nyek, Ă©rtĂ©kelĂ©sek, referenciĂˇk Ă©s esettanulmĂˇnyok jelentĹ‘sen nĂ¶velhetik az ajĂˇnlat hitelessĂ©gĂ©t. Mutasd be korĂˇbbi sikeres projekteidet Ă©s elĂ©gedett ĂĽgyfeleid vĂ©lemĂ©nyeit.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -113,9 +113,9 @@ export default function TenTipsPage() {
     },
     {
       number: 7,
-      title: 'Készíts határidős ajánlatot',
+      title: 'KĂ©szĂ­ts hatĂˇridĹ‘s ajĂˇnlatot',
       content:
-        'Határidő vagy korlátozott ideig érvényes ajánlat segíthet az ügyfelekben sürgősség érzését kelteni. Ez növelheti a konverzió rátát, de csak akkor használd, ha valóban korlátozott az idő.',
+        'HatĂˇridĹ‘ vagy korlĂˇtozott ideig Ă©rvĂ©nyes ajĂˇnlat segĂ­thet az ĂĽgyfelekben sĂĽrgĹ‘ssĂ©g Ă©rzĂ©sĂ©t kelteni. Ez nĂ¶velheti a konverziĂł rĂˇtĂˇt, de csak akkor hasznĂˇld, ha valĂłban korlĂˇtozott az idĹ‘.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -129,9 +129,9 @@ export default function TenTipsPage() {
     },
     {
       number: 8,
-      title: 'Egyértelmű call-to-action',
+      title: 'EgyĂ©rtelmĹ± call-to-action',
       content:
-        'Minden ajánlatnak egyértelműen kell kommunikálnia, mit kell tennie az ügyfélnek tovább. Használj aktív, cselekvési szavakat ("Kezdjük el", "Foglald le", "Válaszolj") és add meg az elérhetőségeidet.',
+        'Minden ajĂˇnlatnak egyĂ©rtelmĹ±en kell kommunikĂˇlnia, mit kell tennie az ĂĽgyfĂ©lnek tovĂˇbb. HasznĂˇlj aktĂ­v, cselekvĂ©si szavakat ("KezdjĂĽk el", "Foglald le", "VĂˇlaszolj") Ă©s add meg az elĂ©rhetĹ‘sĂ©geidet.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -145,9 +145,9 @@ export default function TenTipsPage() {
     },
     {
       number: 9,
-      title: 'Professzionális vizuális prezentáció',
+      title: 'ProfesszionĂˇlis vizuĂˇlis prezentĂˇciĂł',
       content:
-        'A jól tervezett, konzisztens dizájn növeli az ajánlat hitelességét. Használj professzionális sablonokat, következetes színeket, és ügyelj az olvashatóságra. A vizuális prezentáció ugyanolyan fontos, mint a tartalom.',
+        'A jĂłl tervezett, konzisztens dizĂˇjn nĂ¶veli az ajĂˇnlat hitelessĂ©gĂ©t. HasznĂˇlj professzionĂˇlis sablonokat, kĂ¶vetkezetes szĂ­neket, Ă©s ĂĽgyelj az olvashatĂłsĂˇgra. A vizuĂˇlis prezentĂˇciĂł ugyanolyan fontos, mint a tartalom.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -161,9 +161,9 @@ export default function TenTipsPage() {
     },
     {
       number: 10,
-      title: 'Ellenőrizd és teszteld',
+      title: 'EllenĹ‘rizd Ă©s teszteld',
       content:
-        'Mielőtt elküldöd az ajánlatot, ellenőrizd a helyesírást, a számokat és a részleteket. Kérj visszajelzést egy kollégától vagy baráttól. A hibamentes ajánlat növeli a hitelességedet és a professzionalitásodat.',
+        'MielĹ‘tt elkĂĽldĂ¶d az ajĂˇnlatot, ellenĹ‘rizd a helyesĂ­rĂˇst, a szĂˇmokat Ă©s a rĂ©szleteket. KĂ©rj visszajelzĂ©st egy kollĂ©gĂˇtĂłl vagy barĂˇttĂłl. A hibamentes ajĂˇnlat nĂ¶veli a hitelessĂ©gedet Ă©s a professzionalitĂˇsodat.',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -184,7 +184,7 @@ export default function TenTipsPage() {
         <ol className="flex items-center gap-2">
           <li>
             <Link href="/resources" className="hover:text-primary transition-colors">
-              Erőforrások
+              ErĹ‘forrĂˇsok
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
@@ -194,7 +194,7 @@ export default function TenTipsPage() {
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
-          <li className="text-fg">10 tipp a tökéletes ajánlathoz</li>
+          <li className="text-fg">10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz</li>
         </ol>
       </nav>
 
@@ -204,11 +204,11 @@ export default function TenTipsPage() {
           Blog cikk
         </span>
         <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-          10 tipp a tökéletes ajánlathoz
+          10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Gyakorlati tanácsok és tippek, amelyek segítenek jobb, konverzióoptimalizált ajánlatokat
-          készíteni. Tanuld meg a professzionális ajánlatkészítés titkait.
+          Gyakorlati tanĂˇcsok Ă©s tippek, amelyek segĂ­tenek jobb, konverziĂłoptimalizĂˇlt ajĂˇnlatokat
+          kĂ©szĂ­teni. Tanuld meg a professzionĂˇlis ajĂˇnlatkĂ©szĂ­tĂ©s titkait.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export default function TenTipsPage() {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span>2024. január</span>
+            <span>2024. januĂˇr</span>
           </div>
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -231,7 +231,7 @@ export default function TenTipsPage() {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>12 perc olvasás</span>
+            <span>12 perc olvasĂˇs</span>
           </div>
         </div>
       </header>
@@ -252,20 +252,20 @@ export default function TenTipsPage() {
           />
         </svg>
         <p className="mt-4 text-sm font-medium text-gray-600">
-          [Helyőrző: Hero kép - Professzionális ajánlat példák, tippek infografika vagy inspiráló
-          kép]
+          [HelyĹ‘rzĹ‘: Hero kĂ©p - ProfesszionĂˇlis ajĂˇnlat pĂ©ldĂˇk, tippek infografika vagy inspirĂˇlĂł
+          kĂ©p]
         </p>
         <p className="mt-2 text-xs text-gray-500">
-          Ajánlott méret: 1200x600px, formátum: WebP vagy PNG
+          AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
         </p>
       </div>
 
       {/* Introduction */}
       <div className="mb-12">
         <p className="text-lg leading-relaxed text-fg-muted">
-          Az ajánlatkészítés művészete és tudománya egyaránt. Egy jól elkészített ajánlat nem csak
-          információkat közöl, hanem meggyőzi az ügyfelet, hogy veled dolgozzon. Ebben a cikkben 10
-          praktikus tippet osztunk meg, amelyek segítenek tökéletes ajánlatokat készíteni.
+          Az ajĂˇnlatkĂ©szĂ­tĂ©s mĹ±vĂ©szete Ă©s tudomĂˇnya egyarĂˇnt. Egy jĂłl elkĂ©szĂ­tett ajĂˇnlat nem csak
+          informĂˇciĂłkat kĂ¶zĂ¶l, hanem meggyĹ‘zi az ĂĽgyfelet, hogy veled dolgozzon. Ebben a cikkben 10
+          praktikus tippet osztunk meg, amelyek segĂ­tenek tĂ¶kĂ©letes ajĂˇnlatokat kĂ©szĂ­teni.
         </p>
       </div>
 
@@ -293,45 +293,45 @@ export default function TenTipsPage() {
 
       {/* Practical Example Section */}
       <Card className="mt-12 bg-gradient-to-br from-amber-50 to-orange-50">
-        <h2 className="mb-4 text-2xl font-bold text-fg">Gyakorlati példa</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">Gyakorlati pĂ©lda</h2>
         <p className="mb-4 text-fg-muted">
-          Íme egy példa, hogyan néz ki egy jól strukturált ajánlat:
+          ĂŤme egy pĂ©lda, hogyan nĂ©z ki egy jĂłl strukturĂˇlt ajĂˇnlat:
         </p>
         <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h3 className="mb-2 font-semibold text-fg">Ajánlat struktúra példa:</h3>
+          <h3 className="mb-2 font-semibold text-fg">AjĂˇnlat struktĂşra pĂ©lda:</h3>
           <ol className="ml-6 list-decimal space-y-2 text-fg-muted">
-            <li>Fedőlap: Cégnév, logó, projekt címe</li>
-            <li>Ügyfél problémájának megértése: Konkrét kihívások</li>
-            <li>Megoldás: Részletes terv és megközelítés</li>
-            <li>Szolgáltatások: Pontos leírás minden elemről</li>
-            <li>Árazás: Törött árstruktúra, ROI számítás</li>
-            <li>Timeline: Határidők és mérföldkövek</li>
-            <li>Referenciák: Korábbi sikeres projektek</li>
-            <li>Call-to-action: Egyértelmű következő lépések</li>
+            <li>FedĹ‘lap: CĂ©gnĂ©v, logĂł, projekt cĂ­me</li>
+            <li>ĂśgyfĂ©l problĂ©mĂˇjĂˇnak megĂ©rtĂ©se: KonkrĂ©t kihĂ­vĂˇsok</li>
+            <li>MegoldĂˇs: RĂ©szletes terv Ă©s megkĂ¶zelĂ­tĂ©s</li>
+            <li>SzolgĂˇltatĂˇsok: Pontos leĂ­rĂˇs minden elemrĹ‘l</li>
+            <li>ĂrazĂˇs: TĂ¶rĂ¶tt ĂˇrstruktĂşra, ROI szĂˇmĂ­tĂˇs</li>
+            <li>Timeline: HatĂˇridĹ‘k Ă©s mĂ©rfĂ¶ldkĂ¶vek</li>
+            <li>ReferenciĂˇk: KorĂˇbbi sikeres projektek</li>
+            <li>Call-to-action: EgyĂ©rtelmĹ± kĂ¶vetkezĹ‘ lĂ©pĂ©sek</li>
           </ol>
         </div>
       </Card>
 
       {/* Summary */}
       <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
-        <h2 className="mb-4 text-2xl font-bold text-fg">Összegzés</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          A tökéletes ajánlat egyensúlyt teremt az információ és a meggyőzés között. A fent említett
-          10 tipp segít abban, hogy professzionális, hatékony ajánlatokat készíts, amelyek növelik a
-          konverzió rátát és az üzleti sikereket.
+          A tĂ¶kĂ©letes ajĂˇnlat egyensĂşlyt teremt az informĂˇciĂł Ă©s a meggyĹ‘zĂ©s kĂ¶zĂ¶tt. A fent emlĂ­tett
+          10 tipp segĂ­t abban, hogy professzionĂˇlis, hatĂ©kony ajĂˇnlatokat kĂ©szĂ­ts, amelyek nĂ¶velik a
+          konverziĂł rĂˇtĂˇt Ă©s az ĂĽzleti sikereket.
         </p>
         <p className="text-lg leading-relaxed text-fg-muted">
-          Ne feledd: az ajánlatkészítés folyamatos tanulási folyamat. Próbálj ki különböző
-          megközelítéseket, kérj visszajelzést, és folyamatosan fejleszd a módszereidet.
+          Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatos tanulĂˇsi folyamat. PrĂłbĂˇlj ki kĂĽlĂ¶nbĂ¶zĹ‘
+          megkĂ¶zelĂ­tĂ©seket, kĂ©rj visszajelzĂ©st, Ă©s folyamatosan fejleszd a mĂłdszereidet.
         </p>
       </Card>
 
       {/* CTA Section */}
       <Card className="mt-12 border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Készen állsz a gyakorlásra?</h2>
+          <h2 className="mb-4 text-3xl font-bold text-fg">KĂ©szen Ăˇllsz a gyakorlĂˇsra?</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            Használd a Vyndi-t, hogy professzionális ajánlatokat készíts percek alatt. Próbáld ki
+            HasznĂˇld a Vyndi-t, hogy professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­ts percek alatt. PrĂłbĂˇld ki
             ingyenesen!
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -339,7 +339,7 @@ export default function TenTipsPage() {
               href="/login?redirect=/new"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
-              Ingyenes próba indítása
+              Ingyenes prĂłba indĂ­tĂˇsa
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -353,7 +353,7 @@ export default function TenTipsPage() {
               href="/resources/guide"
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary/40 bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:bg-primary/5"
             >
-              Ajánlatkészítési útmutató
+              AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł
             </Link>
           </div>
         </div>
@@ -361,17 +361,17 @@ export default function TenTipsPage() {
 
       {/* Related Articles */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó cikkek</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">KapcsolĂłdĂł cikkek</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/blog/best-practices">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Ajánlatkészítés best practices
+                    AjĂˇnlatkĂ©szĂ­tĂ©s best practices
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Iparági best practice-ek és trendek az ajánlatkészítésben.
+                    IparĂˇgi best practice-ek Ă©s trendek az ajĂˇnlatkĂ©szĂ­tĂ©sben.
                   </p>
                 </div>
                 <svg
@@ -395,10 +395,10 @@ export default function TenTipsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Ajánlatkészítési útmutató
+                    AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Komplett útmutató a tökéletes ajánlatok elkészítéséhez.
+                    Komplett ĂştmutatĂł a tĂ¶kĂ©letes ajĂˇnlatok elkĂ©szĂ­tĂ©sĂ©hez.
                   </p>
                 </div>
                 <svg
@@ -422,4 +422,3 @@ export default function TenTipsPage() {
     </main>
   );
 }
-

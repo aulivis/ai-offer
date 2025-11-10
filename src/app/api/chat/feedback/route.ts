@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         {
-          error: 'Érvénytelen kérés',
+          error: 'Ă‰rvĂ©nytelen kĂ©rĂ©s',
           requestId,
         },
         { status: 400 },
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     if (!messageId || typeof messageId !== 'string') {
       return NextResponse.json(
         {
-          error: 'Érvénytelen üzenet azonosító',
+          error: 'Ă‰rvĂ©nytelen ĂĽzenet azonosĂ­tĂł',
           requestId,
         },
         { status: 400 },
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     if (!type || (type !== 'up' && type !== 'down')) {
       return NextResponse.json(
         {
-          error: 'Érvénytelen visszajelzés típus (up vagy down kell)',
+          error: 'Ă‰rvĂ©nytelen visszajelzĂ©s tĂ­pus (up vagy down kell)',
           requestId,
         },
         { status: 400 },
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         {
-          error: 'Nem sikerült menteni a visszajelzést',
+          error: 'Nem sikerĂĽlt menteni a visszajelzĂ©st',
           requestId,
         },
         { status: 500 },
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Köszönjük a visszajelzést!',
+      message: 'KĂ¶szĂ¶njĂĽk a visszajelzĂ©st!',
       requestId,
     });
   } catch (error) {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Váratlan hiba történt',
+        error: 'VĂˇratlan hiba tĂ¶rtĂ©nt',
         requestId,
       },
       { status: 500 },
@@ -161,7 +161,7 @@ export async function GET(req: NextRequest) {
       });
       return NextResponse.json(
         {
-          error: 'Nem sikerült lekérni a visszajelzéseket',
+          error: 'Nem sikerĂĽlt lekĂ©rni a visszajelzĂ©seket',
           requestId,
         },
         { status: 500 },
@@ -190,11 +190,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Váratlan hiba történt',
+        error: 'VĂˇratlan hiba tĂ¶rtĂ©nt',
         requestId,
       },
       { status: 500 },
     );
   }
 }
-

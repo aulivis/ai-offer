@@ -28,4 +28,3 @@ export type WizardState = {
 export type DraftState = WizardState & {
   timestamp: number;
 };
-

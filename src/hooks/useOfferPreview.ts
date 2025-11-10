@@ -206,7 +206,7 @@ export function useOfferPreview({
               break;
             }
           } catch (err) {
-            console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
+            console.error('Nem sikerĂĽlt feldolgozni az AI elĹ‘nĂ©zet adatĂˇt', err, jsonPart);
           }
         }
 
@@ -389,4 +389,3 @@ export function useOfferPreview({
     abort,
   };
 }
-

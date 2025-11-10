@@ -37,9 +37,8 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     return NextResponse.json({ success: true });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó törlésekor.';
+      error instanceof Error ? error.message : 'Ismeretlen hiba tĂ¶rtĂ©nt a logĂł tĂ¶rlĂ©sekor.';
     log.error('Brand logo deletion failed', error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 });
-

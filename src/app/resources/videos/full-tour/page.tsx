@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Teljes funkció bemutató - Vyndi | Vyndi',
+  title: 'Teljes funkciĂł bemutatĂł - Vyndi | Vyndi',
   description:
-    'Részletes útmutató a Vyndi minden funkciójáról. Tanuld meg, hogyan használd hatékonyan a platformot az ajánlatkészítés minden lépésében.',
+    'RĂ©szletes ĂştmutatĂł a Vyndi minden funkciĂłjĂˇrĂłl. Tanuld meg, hogyan hasznĂˇld hatĂ©konyan a platformot az ajĂˇnlatkĂ©szĂ­tĂ©s minden lĂ©pĂ©sĂ©ben.',
   openGraph: {
-    title: 'Teljes funkció bemutató - Vyndi | Vyndi',
-    description: 'Részletes útmutató minden funkcióról.',
+    title: 'Teljes funkciĂł bemutatĂł - Vyndi | Vyndi',
+    description: 'RĂ©szletes ĂştmutatĂł minden funkciĂłrĂłl.',
     type: 'video.other',
   },
 };
@@ -17,43 +17,43 @@ export default function FullTourPage() {
   const chapters = [
     {
       time: '0:00',
-      title: 'Bevezetés és áttekintés',
-      description: 'A Vyndi platform áttekintése és főbb funkciók bemutatása.',
+      title: 'BevezetĂ©s Ă©s ĂˇttekintĂ©s',
+      description: 'A Vyndi platform ĂˇttekintĂ©se Ă©s fĹ‘bb funkciĂłk bemutatĂˇsa.',
     },
     {
       time: '2:30',
-      title: 'Regisztráció és beállítások',
-      description: 'Hogyan regisztrálj és állítsd be a fiókodat.',
+      title: 'RegisztrĂˇciĂł Ă©s beĂˇllĂ­tĂˇsok',
+      description: 'Hogyan regisztrĂˇlj Ă©s ĂˇllĂ­tsd be a fiĂłkodat.',
     },
     {
       time: '5:00',
-      title: 'Új ajánlat létrehozása',
-      description: 'Lépésről lépésre útmutató az első ajánlat készítéséhez.',
+      title: 'Ăšj ajĂˇnlat lĂ©trehozĂˇsa',
+      description: 'LĂ©pĂ©srĹ‘l lĂ©pĂ©sre ĂştmutatĂł az elsĹ‘ ajĂˇnlat kĂ©szĂ­tĂ©sĂ©hez.',
     },
     {
       time: '8:30',
-      title: 'AI-alapú szöveg generálás',
-      description: 'Részletes bemutatás az AI funkció használatáról.',
+      title: 'AI-alapĂş szĂ¶veg generĂˇlĂˇs',
+      description: 'RĂ©szletes bemutatĂˇs az AI funkciĂł hasznĂˇlatĂˇrĂłl.',
     },
     {
       time: '12:00',
-      title: 'Sablonok és testreszabás',
-      description: 'Hogyan válassz sablont és testreszabd az ajánlatodat.',
+      title: 'Sablonok Ă©s testreszabĂˇs',
+      description: 'Hogyan vĂˇlassz sablont Ă©s testreszabd az ajĂˇnlatodat.',
     },
     {
       time: '15:30',
-      title: 'Árazás és csomagolás',
-      description: 'Árazási táblázatok létrehozása és csomagolás beállítása.',
+      title: 'ĂrazĂˇs Ă©s csomagolĂˇs',
+      description: 'ĂrazĂˇsi tĂˇblĂˇzatok lĂ©trehozĂˇsa Ă©s csomagolĂˇs beĂˇllĂ­tĂˇsa.',
     },
     {
       time: '18:00',
-      title: 'Előnézet és export',
-      description: 'Az ajánlat előnézete és PDF exportálása.',
+      title: 'ElĹ‘nĂ©zet Ă©s export',
+      description: 'Az ajĂˇnlat elĹ‘nĂ©zete Ă©s PDF exportĂˇlĂˇsa.',
     },
     {
       time: '20:00',
-      title: 'Tippek és trükkök',
-      description: 'Pro tippek a legjobb eredményekhez.',
+      title: 'Tippek Ă©s trĂĽkkĂ¶k',
+      description: 'Pro tippek a legjobb eredmĂ©nyekhez.',
     },
   ];
 
@@ -64,31 +64,31 @@ export default function FullTourPage() {
         <ol className="flex items-center gap-2">
           <li>
             <Link href="/resources" className="hover:text-primary transition-colors">
-              Erőforrások
+              ErĹ‘forrĂˇsok
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
           <li>
             <Link href="/resources/videos" className="hover:text-primary transition-colors">
-              Videók
+              VideĂłk
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
-          <li className="text-fg">Teljes funkció bemutató</li>
+          <li className="text-fg">Teljes funkciĂł bemutatĂł</li>
         </ol>
       </nav>
 
       {/* Hero Section */}
       <header className="mb-12">
         <span className="inline-flex items-center gap-2 rounded-full border border-red-500/50 bg-red-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-red-700">
-          Videó
+          VideĂł
         </span>
         <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-          Teljes funkció bemutató
+          Teljes funkciĂł bemutatĂł
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Részletes útmutató a Vyndi minden funkciójáról. Tanuld meg, hogyan használd hatékonyan a
-          platformot az ajánlatkészítés minden lépésében.
+          RĂ©szletes ĂştmutatĂł a Vyndi minden funkciĂłjĂˇrĂłl. Tanuld meg, hogyan hasznĂˇld hatĂ©konyan a
+          platformot az ajĂˇnlatkĂ©szĂ­tĂ©s minden lĂ©pĂ©sĂ©ben.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export default function FullTourPage() {
                 d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
               />
             </svg>
-            <span>Részletes útmutató</span>
+            <span>RĂ©szletes ĂştmutatĂł</span>
           </div>
         </div>
       </header>
@@ -141,14 +141,14 @@ export default function FullTourPage() {
                 />
               </svg>
               <p className="mt-4 text-lg font-medium text-white">
-                [Helyőrző: Video player - Vyndi teljes funkció bemutató]
+                [HelyĹ‘rzĹ‘: Video player - Vyndi teljes funkciĂł bemutatĂł]
               </p>
               <p className="mt-2 text-sm text-white/70">
-                Videó hossza: 22 perc | Formátum: MP4 vagy YouTube embed
+                VideĂł hossza: 22 perc | FormĂˇtum: MP4 vagy YouTube embed
               </p>
               <p className="mt-4 text-xs text-white/60">
-                A videó tartalmazza: Platform áttekintés, részletes funkció bemutatások, lépésről
-                lépésre útmutatók, pro tippek
+                A videĂł tartalmazza: Platform ĂˇttekintĂ©s, rĂ©szletes funkciĂł bemutatĂˇsok, lĂ©pĂ©srĹ‘l
+                lĂ©pĂ©sre ĂştmutatĂłk, pro tippek
               </p>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function FullTourPage() {
 
       {/* Video Chapters */}
       <Card className="mb-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Videó fejezetek</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">VideĂł fejezetek</h2>
         <div className="space-y-4">
           {chapters.map((chapter, index) => (
             <div
@@ -203,8 +203,8 @@ export default function FullTourPage() {
               />
             </svg>
             <div>
-              <h3 className="font-semibold text-fg">Platform használata</h3>
-              <p className="text-sm text-fg-muted">Ismerd meg az összes alapfunkciót</p>
+              <h3 className="font-semibold text-fg">Platform hasznĂˇlata</h3>
+              <p className="text-sm text-fg-muted">Ismerd meg az Ă¶sszes alapfunkciĂłt</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -220,8 +220,8 @@ export default function FullTourPage() {
               />
             </svg>
             <div>
-              <h3 className="font-semibold text-fg">AI funkciók</h3>
-              <p className="text-sm text-fg-muted">Tanuld meg az AI hatékony használatát</p>
+              <h3 className="font-semibold text-fg">AI funkciĂłk</h3>
+              <p className="text-sm text-fg-muted">Tanuld meg az AI hatĂ©kony hasznĂˇlatĂˇt</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -237,8 +237,8 @@ export default function FullTourPage() {
               />
             </svg>
             <div>
-              <h3 className="font-semibold text-fg">Sablon testreszabás</h3>
-              <p className="text-sm text-fg-muted">Hogyan állítsd be a sablonokat</p>
+              <h3 className="font-semibold text-fg">Sablon testreszabĂˇs</h3>
+              <p className="text-sm text-fg-muted">Hogyan ĂˇllĂ­tsd be a sablonokat</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -255,7 +255,7 @@ export default function FullTourPage() {
             </svg>
             <div>
               <h3 className="font-semibold text-fg">Pro tippek</h3>
-              <p className="text-sm text-fg-muted">Tanulj a szakértőktől</p>
+              <p className="text-sm text-fg-muted">Tanulj a szakĂ©rtĹ‘ktĹ‘l</p>
             </div>
           </div>
         </div>
@@ -263,9 +263,9 @@ export default function FullTourPage() {
 
       {/* Additional Resources */}
       <Card className="mb-12">
-        <h2 className="mb-4 text-2xl font-bold text-fg">További források</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">TovĂˇbbi forrĂˇsok</h2>
         <p className="mb-4 text-fg-muted">
-          A videó megtekintése után olvasd el ezeket a részletes útmutatókat is:
+          A videĂł megtekintĂ©se utĂˇn olvasd el ezeket a rĂ©szletes ĂştmutatĂłkat is:
         </p>
         <div className="space-y-3">
           <Link
@@ -273,9 +273,9 @@ export default function FullTourPage() {
             className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5"
           >
             <div>
-              <h3 className="font-semibold text-fg">Ajánlatkészítési útmutató</h3>
+              <h3 className="font-semibold text-fg">AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł</h3>
               <p className="text-sm text-fg-muted">
-                Komplett útmutató a tökéletes ajánlatok elkészítéséhez
+                Komplett ĂştmutatĂł a tĂ¶kĂ©letes ajĂˇnlatok elkĂ©szĂ­tĂ©sĂ©hez
               </p>
             </div>
             <svg
@@ -297,9 +297,9 @@ export default function FullTourPage() {
             className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:border-primary/40 hover:bg-primary/5"
           >
             <div>
-              <h3 className="font-semibold text-fg">AI-alapú szöveg generálás</h3>
+              <h3 className="font-semibold text-fg">AI-alapĂş szĂ¶veg generĂˇlĂˇs</h3>
               <p className="text-sm text-fg-muted">
-                Részletes útmutató az AI funkciók használatához
+                RĂ©szletes ĂştmutatĂł az AI funkciĂłk hasznĂˇlatĂˇhoz
               </p>
             </div>
             <svg
@@ -322,16 +322,16 @@ export default function FullTourPage() {
       {/* CTA Section */}
       <Card className="border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Kezdd el a használatot!</h2>
+          <h2 className="mb-4 text-3xl font-bold text-fg">Kezdd el a hasznĂˇlatot!</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            Most, hogy megismerted a Vyndi-t, regisztrálj és kezdj el ajánlatokat készíteni.
+            Most, hogy megismerted a Vyndi-t, regisztrĂˇlj Ă©s kezdj el ajĂˇnlatokat kĂ©szĂ­teni.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/login?redirect=/new"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
-              Ingyenes próba indítása
+              Ingyenes prĂłba indĂ­tĂˇsa
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -345,7 +345,7 @@ export default function FullTourPage() {
               href="/resources/videos/intro"
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary/40 bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:bg-primary/5"
             >
-              Bevezető videó
+              BevezetĹ‘ videĂł
             </Link>
           </div>
         </div>
@@ -353,14 +353,14 @@ export default function FullTourPage() {
 
       {/* Related Resources */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó erőforrások</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">KapcsolĂłdĂł erĹ‘forrĂˇsok</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/videos/intro">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Bevezető videó
+                    BevezetĹ‘ videĂł
                   </h3>
                   <p className="text-sm text-fg-muted">Ismerd meg a Vyndi-t 5 percben.</p>
                 </div>
@@ -385,10 +385,10 @@ export default function FullTourPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Ajánlatkészítési útmutató
+                    AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Komplett útmutató a tökéletes ajánlatok elkészítéséhez.
+                    Komplett ĂştmutatĂł a tĂ¶kĂ©letes ajĂˇnlatok elkĂ©szĂ­tĂ©sĂ©hez.
                   </p>
                 </div>
                 <svg
@@ -412,4 +412,3 @@ export default function FullTourPage() {
     </main>
   );
 }
-

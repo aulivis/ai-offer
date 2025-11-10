@@ -73,4 +73,3 @@ export function HelpText({ text, className = '', variant = 'inline', id }: HelpT
     </details>
   );
 }
-

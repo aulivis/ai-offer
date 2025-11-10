@@ -83,4 +83,3 @@ export function useRealTimeValidation({
       !Object.keys(combinedErrors.projectDetails).length,
   };
 }
-

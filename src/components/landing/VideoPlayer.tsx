@@ -36,8 +36,8 @@ export default function VideoPlayer({
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
-            <p className="text-sm font-medium text-fg-muted">Termék bemutató videó</p>
-            <p className="mt-1 text-xs text-fg-muted">Kattints a lejátszáshoz</p>
+            <p className="text-sm font-medium text-fg-muted">TermĂ©k bemutatĂł videĂł</p>
+            <p className="mt-1 text-xs text-fg-muted">Kattints a lejĂˇtszĂˇshoz</p>
           </div>
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,229,176,0.08),transparent_70%)]" />
@@ -64,7 +64,7 @@ export default function VideoPlayer({
       type="button"
       onClick={() => setIsPlaying(true)}
       className={`group relative aspect-video overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 shadow-pop transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${className}`}
-      aria-label={`Lejátszás: ${title}`}
+      aria-label={`LejĂˇtszĂˇs: ${title}`}
     >
       {thumbnailUrl ? (
         <Image
@@ -93,4 +93,3 @@ export default function VideoPlayer({
     </button>
   );
 }
-

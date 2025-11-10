@@ -62,11 +62,10 @@ export default function TestimonialCard({
           <p className="font-semibold text-fg">{author}</p>
           <p className="text-sm text-fg-muted">
             {role}
-            {company && ` • ${company}`}
+            {company && ` â€˘ ${company}`}
           </p>
         </div>
       </div>
     </Card>
   );
 }
-

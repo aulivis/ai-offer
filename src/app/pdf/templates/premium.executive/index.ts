@@ -11,7 +11,7 @@ export const premiumExecutiveTemplate: OfferTemplate = {
   label: 'Executive',
   version: '1.0.0',
   marketingHighlight:
-    'Prémium dizájn logóval, dekoratív elemekkel és elegáns tipográfiával a legprofesszionálisabb ajánlatokhoz.',
+    'PrĂ©mium dizĂˇjn logĂłval, dekoratĂ­v elemekkel Ă©s elegĂˇns tipogrĂˇfiĂˇval a legprofesszionĂˇlisabb ajĂˇnlatokhoz.',
   styles: {
     print: pdfStyles,
     template: templateStyles,
@@ -26,4 +26,3 @@ export const premiumExecutiveTemplate: OfferTemplate = {
   renderHead,
   renderBody,
 };
-

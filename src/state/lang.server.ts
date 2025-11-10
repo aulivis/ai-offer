@@ -58,4 +58,3 @@ export function getLanguage(): LocaleKey {
   const storage = getAsyncLocalStorage();
   return storage?.getStore() ?? 'hu';
 }
-

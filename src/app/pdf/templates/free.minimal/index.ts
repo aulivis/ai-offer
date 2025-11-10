@@ -8,10 +8,10 @@ import { freeMinimalTokens } from './tokens';
 export const freeMinimalTemplate: OfferTemplate = {
   id: 'free.minimal@1.0.0',
   tier: 'free',
-  label: 'Minimális',
+  label: 'MinimĂˇlis',
   version: '1.0.0',
   marketingHighlight:
-    'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz.',
+    'Tiszta, professzionĂˇlis dizĂˇjn, amely tĂ¶kĂ©letesen megfelel az ĂĽzleti ajĂˇnlatokhoz.',
   styles: {
     print: pdfStyles,
     template: templateStyles,
@@ -23,4 +23,3 @@ export const freeMinimalTemplate: OfferTemplate = {
   renderHead,
   renderBody,
 };
-

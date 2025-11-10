@@ -103,7 +103,7 @@ export function usePreviewGeneration({
         if (!resp.body) {
           const message = t('errors.preview.noData');
           if (previewRequestIdRef.current === nextRequestId) {
-            setPreviewHtml('<p>(nincs előnézet)</p>');
+            setPreviewHtml('<p>(nincs elĹ‘nĂ©zet)</p>');
             setPreviewState({ status: 'error', message });
           }
           return { status: 'error', message };
@@ -137,7 +137,7 @@ export function usePreviewGeneration({
                 if (typeof payload.html === 'string') {
                   latestHtml = payload.html;
                   if (previewRequestIdRef.current === nextRequestId) {
-                    setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
+                    setPreviewHtml(payload.html || '<p>(nincs elĹ‘nĂ©zet)</p>');
                     if (payload.type === 'done') {
                       setPreviewState({ status: 'success', html: payload.html || '' });
                       setPreviewLocked(true);
@@ -169,7 +169,7 @@ export function usePreviewGeneration({
 
         if (streamErrorMessage) {
           if (previewRequestIdRef.current === nextRequestId) {
-            setPreviewHtml('<p>(nincs előnézet)</p>');
+            setPreviewHtml('<p>(nincs elĹ‘nĂ©zet)</p>');
             setPreviewState({ status: 'error', message: streamErrorMessage });
           }
           if (streamErrorMessage === STREAM_TIMEOUT_MESSAGE) {
@@ -179,7 +179,7 @@ export function usePreviewGeneration({
         }
 
         if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
-          setPreviewHtml('<p>(nincs előnézet)</p>');
+          setPreviewHtml('<p>(nincs elĹ‘nĂ©zet)</p>');
         }
 
         return { status: 'success', html: latestHtml };
@@ -195,7 +195,7 @@ export function usePreviewGeneration({
               : t('errors.preview.fetchUnknown');
         console.error('Preview generation error:', message, error);
         if (previewRequestIdRef.current === nextRequestId) {
-          setPreviewHtml('<p>(nincs előnézet)</p>');
+          setPreviewHtml('<p>(nincs elĹ‘nĂ©zet)</p>');
           setPreviewState({ status: 'error', message });
         }
         return { status: 'error', message };
@@ -277,4 +277,3 @@ export function usePreviewGeneration({
     setPreviewLocked,
   };
 }
-

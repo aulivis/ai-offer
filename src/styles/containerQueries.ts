@@ -83,4 +83,3 @@ export const CONTAINER_QUERY_CLASSES = {
   /** Container query for extra large screens */
   'container-xl': '@container (min-width: 1280px)',
 } as const;
-

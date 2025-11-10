@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Ajánlatkészítés best practices | Vyndi Blog',
+  title: 'AjĂˇnlatkĂ©szĂ­tĂ©s best practices | Vyndi Blog',
   description:
-    'Iparági best practice-ek, trendek és szakértői tanácsok az ajánlatkészítésben. Tanuld meg a sikeres ajánlatkészítés titkait a szakértőktől.',
+    'IparĂˇgi best practice-ek, trendek Ă©s szakĂ©rtĹ‘i tanĂˇcsok az ajĂˇnlatkĂ©szĂ­tĂ©sben. Tanuld meg a sikeres ajĂˇnlatkĂ©szĂ­tĂ©s titkait a szakĂ©rtĹ‘ktĹ‘l.',
   openGraph: {
-    title: 'Ajánlatkészítés best practices | Vyndi Blog',
-    description: 'Iparági best practice-ek és trendek az ajánlatkészítésben.',
+    title: 'AjĂˇnlatkĂ©szĂ­tĂ©s best practices | Vyndi Blog',
+    description: 'IparĂˇgi best practice-ek Ă©s trendek az ajĂˇnlatkĂ©szĂ­tĂ©sben.',
     type: 'article',
   },
 };
@@ -21,7 +21,7 @@ export default function BestPracticesPage() {
         <ol className="flex items-center gap-2">
           <li>
             <Link href="/resources" className="hover:text-primary transition-colors">
-              Erőforrások
+              ErĹ‘forrĂˇsok
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
@@ -41,11 +41,11 @@ export default function BestPracticesPage() {
           Blog cikk
         </span>
         <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-          Ajánlatkészítés best practices
+          AjĂˇnlatkĂ©szĂ­tĂ©s best practices
         </h1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
-          Iparági best practice-ek, trendek és szakértői tanácsok az ajánlatkészítésben. Tanuld meg
-          a sikeres ajánlatkészítés titkait a szakértőktől.
+          IparĂˇgi best practice-ek, trendek Ă©s szakĂ©rtĹ‘i tanĂˇcsok az ajĂˇnlatkĂ©szĂ­tĂ©sben. Tanuld meg
+          a sikeres ajĂˇnlatkĂ©szĂ­tĂ©s titkait a szakĂ©rtĹ‘ktĹ‘l.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-fg-muted">
           <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export default function BestPracticesPage() {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span>2024. január</span>
+            <span>2024. januĂˇr</span>
           </div>
           <div className="flex items-center gap-2">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,7 +68,7 @@ export default function BestPracticesPage() {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>15 perc olvasás</span>
+            <span>15 perc olvasĂˇs</span>
           </div>
         </div>
       </header>
@@ -89,21 +89,21 @@ export default function BestPracticesPage() {
           />
         </svg>
         <p className="mt-4 text-sm font-medium text-gray-600">
-          [Helyőrző: Hero kép - Best practices infografika, iparági trendek vagy szakértői tanácsok
-          vizuális ábrázolása]
+          [HelyĹ‘rzĹ‘: Hero kĂ©p - Best practices infografika, iparĂˇgi trendek vagy szakĂ©rtĹ‘i tanĂˇcsok
+          vizuĂˇlis ĂˇbrĂˇzolĂˇsa]
         </p>
         <p className="mt-2 text-xs text-gray-500">
-          Ajánlott méret: 1200x600px, formátum: WebP vagy PNG
+          AjĂˇnlott mĂ©ret: 1200x600px, formĂˇtum: WebP vagy PNG
         </p>
       </div>
 
       {/* Introduction */}
       <div className="mb-12">
         <p className="text-lg leading-relaxed text-fg-muted">
-          Az ajánlatkészítés folyamatosan fejlődő terület, ahol a legjobb gyakorlatok, trendek és
-          stratégiai megközelítések döntően befolyásolhatják az eredményeket. Ebben a cikkben
-          bemutatjuk az iparág legfontosabb best practice-eit és trendjeit, amelyeket a sikeres
-          vállalkozások alkalmaznak.
+          Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dĹ‘ terĂĽlet, ahol a legjobb gyakorlatok, trendek Ă©s
+          stratĂ©giai megkĂ¶zelĂ­tĂ©sek dĂ¶ntĹ‘en befolyĂˇsolhatjĂˇk az eredmĂ©nyeket. Ebben a cikkben
+          bemutatjuk az iparĂˇg legfontosabb best practice-eit Ă©s trendjeit, amelyeket a sikeres
+          vĂˇllalkozĂˇsok alkalmaznak.
         </p>
       </div>
 
@@ -113,19 +113,19 @@ export default function BestPracticesPage() {
         <section>
           <Card className="border-l-4 border-l-blue-500">
             <h2 className="mb-4 text-3xl font-bold text-fg">
-              1. Személyre szabás: Az új arany standard
+              1. SzemĂ©lyre szabĂˇs: Az Ăşj arany standard
             </h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              A mai piacon a generikus ajánlatok már nem elégségesek. A legjobb gyakorlatok szerint
-              minden ajánlatnak személyre kell szabottnak lennie az ügyfél specifikus igényeihez.
+              A mai piacon a generikus ajĂˇnlatok mĂˇr nem elĂ©gsĂ©gesek. A legjobb gyakorlatok szerint
+              minden ajĂˇnlatnak szemĂ©lyre kell szabottnak lennie az ĂĽgyfĂ©l specifikus igĂ©nyeihez.
             </p>
             <div className="rounded-lg bg-blue-50 p-6">
-              <h3 className="mb-3 font-semibold text-fg">Gyakorlati tanácsok:</h3>
+              <h3 className="mb-3 font-semibold text-fg">Gyakorlati tanĂˇcsok:</h3>
               <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-                <li>Használj az ügyfél nevét és cégnevét az ajánlatban</li>
-                <li>Hivatkozz konkrét problémákra, amelyekről beszéltetek</li>
-                <li>Mutasd be, hogy megérted az ügyfél üzleti kontextusát</li>
-                <li>Készíts testreszabott megoldásokat az ügyfél egyedi igényeihez</li>
+                <li>HasznĂˇlj az ĂĽgyfĂ©l nevĂ©t Ă©s cĂ©gnevĂ©t az ajĂˇnlatban</li>
+                <li>Hivatkozz konkrĂ©t problĂ©mĂˇkra, amelyekrĹ‘l beszĂ©ltetek</li>
+                <li>Mutasd be, hogy megĂ©rted az ĂĽgyfĂ©l ĂĽzleti kontextusĂˇt</li>
+                <li>KĂ©szĂ­ts testreszabott megoldĂˇsokat az ĂĽgyfĂ©l egyedi igĂ©nyeihez</li>
               </ul>
             </div>
           </Card>
@@ -134,10 +134,10 @@ export default function BestPracticesPage() {
         {/* Section 2: Data-Driven Approach */}
         <section>
           <Card className="border-l-4 border-l-green-500">
-            <h2 className="mb-4 text-3xl font-bold text-fg">2. Adatvezérelt megközelítés</h2>
+            <h2 className="mb-4 text-3xl font-bold text-fg">2. AdatvezĂ©relt megkĂ¶zelĂ­tĂ©s</h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              A sikeres ajánlatkészítés nem véletlen, hanem adatokon alapul. A legjobb cégek
-              folyamatosan mérnek, elemeznek és optimalizálnak.
+              A sikeres ajĂˇnlatkĂ©szĂ­tĂ©s nem vĂ©letlen, hanem adatokon alapul. A legjobb cĂ©gek
+              folyamatosan mĂ©rnek, elemeznek Ă©s optimalizĂˇlnak.
             </p>
 
             {/* Placeholder for data visualization */}
@@ -156,23 +156,23 @@ export default function BestPracticesPage() {
                 />
               </svg>
               <p className="mt-4 text-sm font-medium text-gray-600">
-                [Helyőrző: Infografika - Ajánlat konverzió ráták, A/B tesztelési eredmények, mérhető
-                metrikák]
+                [HelyĹ‘rzĹ‘: Infografika - AjĂˇnlat konverziĂł rĂˇtĂˇk, A/B tesztelĂ©si eredmĂ©nyek, mĂ©rhetĹ‘
+                metrikĂˇk]
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-lg bg-green-50 p-4">
-                <h4 className="mb-2 font-semibold text-fg">Mérj le mindent</h4>
+                <h4 className="mb-2 font-semibold text-fg">MĂ©rj le mindent</h4>
                 <p className="text-sm text-fg-muted">
-                  Kövess nyomon a konverzió rátákat, válaszidőket, és az ügyfelek visszajelzéseit.
+                  KĂ¶vess nyomon a konverziĂł rĂˇtĂˇkat, vĂˇlaszidĹ‘ket, Ă©s az ĂĽgyfelek visszajelzĂ©seit.
                 </p>
               </div>
               <div className="rounded-lg bg-green-50 p-4">
-                <h4 className="mb-2 font-semibold text-fg">Tesztelj és optimalizálj</h4>
+                <h4 className="mb-2 font-semibold text-fg">Tesztelj Ă©s optimalizĂˇlj</h4>
                 <p className="text-sm text-fg-muted">
-                  A/B teszteld különböző megközelítéseket, és folyamatosan javíts a legjobb
-                  eredmények alapján.
+                  A/B teszteld kĂĽlĂ¶nbĂ¶zĹ‘ megkĂ¶zelĂ­tĂ©seket, Ă©s folyamatosan javĂ­ts a legjobb
+                  eredmĂ©nyek alapjĂˇn.
                 </p>
               </div>
             </div>
@@ -183,31 +183,31 @@ export default function BestPracticesPage() {
         <section>
           <Card className="border-l-4 border-l-purple-500">
             <h2 className="mb-4 text-3xl font-bold text-fg">
-              3. Aktuális trendek az ajánlatkészítésben
+              3. AktuĂˇlis trendek az ajĂˇnlatkĂ©szĂ­tĂ©sben
             </h2>
 
             <div className="space-y-6">
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">Interaktív ajánlatok</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">InteraktĂ­v ajĂˇnlatok</h3>
                 <p className="text-fg-muted">
-                  A statikus PDF-ek helyett az interaktív, web-alapú ajánlatok egyre népszerűbbek.
-                  Ezek lehetővé teszik az ügyfeleknek, hogy részletesebben megismerjék az ajánlatot,
-                  és azonnal reagáljanak.
+                  A statikus PDF-ek helyett az interaktĂ­v, web-alapĂş ajĂˇnlatok egyre nĂ©pszerĹ±bbek.
+                  Ezek lehetĹ‘vĂ© teszik az ĂĽgyfeleknek, hogy rĂ©szletesebben megismerjĂ©k az ajĂˇnlatot,
+                  Ă©s azonnal reagĂˇljanak.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">AI-alapú szöveg generálás</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">AI-alapĂş szĂ¶veg generĂˇlĂˇs</h3>
                 <p className="text-fg-muted">
-                  A mesterséges intelligencia egyre fontosabb szerepet játszik az
-                  ajánlatkészítésben. Az AI segít gyorsabban, hatékonyabban és konzisztensebben
-                  generálni a tartalmat.
+                  A mestersĂ©ges intelligencia egyre fontosabb szerepet jĂˇtszik az
+                  ajĂˇnlatkĂ©szĂ­tĂ©sben. Az AI segĂ­t gyorsabban, hatĂ©konyabban Ă©s konzisztensebben
+                  generĂˇlni a tartalmat.
                 </p>
                 <Link
                   href="/resources/ai-guide"
                   className="mt-2 inline-flex items-center gap-2 text-primary hover:underline"
                 >
-                  Tudj meg többet az AI használatáról
+                  Tudj meg tĂ¶bbet az AI hasznĂˇlatĂˇrĂłl
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
@@ -220,19 +220,19 @@ export default function BestPracticesPage() {
               </div>
 
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">Mobil-optimalizált ajánlatok</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">Mobil-optimalizĂˇlt ajĂˇnlatok</h3>
                 <p className="text-fg-muted">
-                  Az ügyfelek egyre gyakrabban mobil eszközökön olvassák az ajánlatokat. Fontos,
-                  hogy az ajánlatok tökéletesen működjenek és jól nézzenek ki mobilon is.
+                  Az ĂĽgyfelek egyre gyakrabban mobil eszkĂ¶zĂ¶kĂ¶n olvassĂˇk az ajĂˇnlatokat. Fontos,
+                  hogy az ajĂˇnlatok tĂ¶kĂ©letesen mĹ±kĂ¶djenek Ă©s jĂłl nĂ©zzenek ki mobilon is.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 text-xl font-semibold text-fg">Video és multimédia tartalom</h3>
+                <h3 className="mb-2 text-xl font-semibold text-fg">Video Ă©s multimĂ©dia tartalom</h3>
                 <p className="text-fg-muted">
-                  A videó és egyéb multimédia tartalmak egyre gyakrabban kerülnek be az ajánlatokba.
-                  Ezek növelhetik az engagement-et és segíthetnek jobban kommunikálni az
-                  értékajánlatot.
+                  A videĂł Ă©s egyĂ©b multimĂ©dia tartalmak egyre gyakrabban kerĂĽlnek be az ajĂˇnlatokba.
+                  Ezek nĂ¶velhetik az engagement-et Ă©s segĂ­thetnek jobban kommunikĂˇlni az
+                  Ă©rtĂ©kajĂˇnlatot.
                 </p>
               </div>
             </div>
@@ -243,37 +243,37 @@ export default function BestPracticesPage() {
         <section>
           <Card className="border-l-4 border-l-amber-500">
             <h2 className="mb-4 text-3xl font-bold text-fg">
-              4. Iparági specifikus best practice-ek
+              4. IparĂˇgi specifikus best practice-ek
             </h2>
 
             <div className="space-y-6">
               <div className="rounded-lg bg-amber-50 p-6">
-                <h3 className="mb-3 font-semibold text-fg">Tech és Start-up szektor</h3>
+                <h3 className="mb-3 font-semibold text-fg">Tech Ă©s Start-up szektor</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-                  <li>Hangsúlyozd az innovációt és a technológiai előnyöket</li>
-                  <li>Mutasd be a skálázhatóságot és a jövőbeli növekedési lehetőségeket</li>
-                  <li>Használj modern, dinamikus dizájnokat</li>
-                  <li>Központosíts a ROI-ra és a hosszú távú értékre</li>
+                  <li>HangsĂşlyozd az innovĂˇciĂłt Ă©s a technolĂłgiai elĹ‘nyĂ¶ket</li>
+                  <li>Mutasd be a skĂˇlĂˇzhatĂłsĂˇgot Ă©s a jĂ¶vĹ‘beli nĂ¶vekedĂ©si lehetĹ‘sĂ©geket</li>
+                  <li>HasznĂˇlj modern, dinamikus dizĂˇjnokat</li>
+                  <li>KĂ¶zpontosĂ­ts a ROI-ra Ă©s a hosszĂş tĂˇvĂş Ă©rtĂ©kre</li>
                 </ul>
               </div>
 
               <div className="rounded-lg bg-blue-50 p-6">
-                <h3 className="mb-3 font-semibold text-fg">Kreatív iparág</h3>
+                <h3 className="mb-3 font-semibold text-fg">KreatĂ­v iparĂˇg</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-                  <li>Mutasd be a kreatív portfóliót és a korábbi munkákat</li>
-                  <li>Hangsúlyozd az egyedi stílust és a kreatív megközelítést</li>
-                  <li>Használj vizuálisan erős, inspiráló dizájnokat</li>
-                  <li>Központosíts a storytelling-re és a narratívára</li>
+                  <li>Mutasd be a kreatĂ­v portfĂłliĂłt Ă©s a korĂˇbbi munkĂˇkat</li>
+                  <li>HangsĂşlyozd az egyedi stĂ­lust Ă©s a kreatĂ­v megkĂ¶zelĂ­tĂ©st</li>
+                  <li>HasznĂˇlj vizuĂˇlisan erĹ‘s, inspirĂˇlĂł dizĂˇjnokat</li>
+                  <li>KĂ¶zpontosĂ­ts a storytelling-re Ă©s a narratĂ­vĂˇra</li>
                 </ul>
               </div>
 
               <div className="rounded-lg bg-purple-50 p-6">
-                <h3 className="mb-3 font-semibold text-fg">Konsultációs szolgáltatások</h3>
+                <h3 className="mb-3 font-semibold text-fg">KonsultĂˇciĂłs szolgĂˇltatĂˇsok</h3>
                 <ul className="ml-6 list-disc space-y-2 text-fg-muted">
-                  <li>Hangsúlyozd a szakértelemet és a tapasztalatot</li>
-                  <li>Mutasd be a korábbi sikeres projekteket és ügyfeleket</li>
-                  <li>Központosíts az egyedi megoldásokra és a személyre szabásra</li>
-                  <li>Biztosítsd az ügyfeleket a hosszú távú kapcsolatról</li>
+                  <li>HangsĂşlyozd a szakĂ©rtelemet Ă©s a tapasztalatot</li>
+                  <li>Mutasd be a korĂˇbbi sikeres projekteket Ă©s ĂĽgyfeleket</li>
+                  <li>KĂ¶zpontosĂ­ts az egyedi megoldĂˇsokra Ă©s a szemĂ©lyre szabĂˇsra</li>
+                  <li>BiztosĂ­tsd az ĂĽgyfeleket a hosszĂş tĂˇvĂş kapcsolatrĂłl</li>
                 </ul>
               </div>
             </div>
@@ -284,41 +284,41 @@ export default function BestPracticesPage() {
         <section>
           <Card className="border-l-4 border-l-red-500 bg-red-50/30">
             <h2 className="mb-4 text-3xl font-bold text-fg">
-              5. Gyakori hibák, amelyeket kerülni kell
+              5. Gyakori hibĂˇk, amelyeket kerĂĽlni kell
             </h2>
 
             <div className="space-y-4">
               <div>
                 <h3 className="mb-2 font-semibold text-fg">
-                  ❌ Túl hosszú vagy túl rövid ajánlatok
+                  âťŚ TĂşl hosszĂş vagy tĂşl rĂ¶vid ajĂˇnlatok
                 </h3>
                 <p className="text-fg-muted">
-                  Az ajánlatnak megfelelő hosszúságúnak kell lennie - nem túl hosszú, hogy ne
-                  veszítse el az ügyfelet, de nem is túl rövid, hogy hiányozzon fontos információ.
+                  Az ajĂˇnlatnak megfelelĹ‘ hosszĂşsĂˇgĂşnak kell lennie - nem tĂşl hosszĂş, hogy ne
+                  veszĂ­tse el az ĂĽgyfelet, de nem is tĂşl rĂ¶vid, hogy hiĂˇnyozzon fontos informĂˇciĂł.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 font-semibold text-fg">❌ Homályos árazás</h3>
+                <h3 className="mb-2 font-semibold text-fg">âťŚ HomĂˇlyos ĂˇrazĂˇs</h3>
                 <p className="text-fg-muted">
-                  Az ügyfeleknek egyértelműnek kell lennie, mit kapnak és mennyiért. Kerüld a
-                  rejtett költségeket és a homályos árazási struktúrákat.
+                  Az ĂĽgyfeleknek egyĂ©rtelmĹ±nek kell lennie, mit kapnak Ă©s mennyiĂ©rt. KerĂĽld a
+                  rejtett kĂ¶ltsĂ©geket Ă©s a homĂˇlyos ĂˇrazĂˇsi struktĂşrĂˇkat.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 font-semibold text-fg">❌ Hiányzó call-to-action</h3>
+                <h3 className="mb-2 font-semibold text-fg">âťŚ HiĂˇnyzĂł call-to-action</h3>
                 <p className="text-fg-muted">
-                  Minden ajánlatnak egyértelműen kell kommunikálnia, mit kell tennie az ügyfélnek
-                  tovább. Hiányzó vagy gyenge CTA csökkenti a konverzió rátát.
+                  Minden ajĂˇnlatnak egyĂ©rtelmĹ±en kell kommunikĂˇlnia, mit kell tennie az ĂĽgyfĂ©lnek
+                  tovĂˇbb. HiĂˇnyzĂł vagy gyenge CTA csĂ¶kkenti a konverziĂł rĂˇtĂˇt.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-2 font-semibold text-fg">❌ Nem személyre szabott tartalom</h3>
+                <h3 className="mb-2 font-semibold text-fg">âťŚ Nem szemĂ©lyre szabott tartalom</h3>
                 <p className="text-fg-muted">
-                  A generikus, sablonos ajánlatok kevésbé hatékonyak. Mindig személyre szabd az
-                  ajánlatot az ügyfél igényeihez.
+                  A generikus, sablonos ajĂˇnlatok kevĂ©sbĂ© hatĂ©konyak. Mindig szemĂ©lyre szabd az
+                  ajĂˇnlatot az ĂĽgyfĂ©l igĂ©nyeihez.
                 </p>
               </div>
             </div>
@@ -328,27 +328,27 @@ export default function BestPracticesPage() {
         {/* Section 6: Future of Proposals */}
         <section>
           <Card className="border-l-4 border-l-indigo-500">
-            <h2 className="mb-4 text-3xl font-bold text-fg">6. Az ajánlatkészítés jövője</h2>
+            <h2 className="mb-4 text-3xl font-bold text-fg">6. Az ajĂˇnlatkĂ©szĂ­tĂ©s jĂ¶vĹ‘je</h2>
             <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-              Az ajánlatkészítés folyamatosan fejlődik. Íme néhány trend, amely a közeljövőben
-              várható:
+              Az ajĂˇnlatkĂ©szĂ­tĂ©s folyamatosan fejlĹ‘dik. ĂŤme nĂ©hĂˇny trend, amely a kĂ¶zeljĂ¶vĹ‘ben
+              vĂˇrhatĂł:
             </p>
             <ul className="ml-6 list-disc space-y-2 text-lg text-fg-muted">
               <li>
-                <strong>Még nagyobb automatizálás:</strong> Az AI és az automatizálás egyre nagyobb
-                szerepet fognak játszani
+                <strong>MĂ©g nagyobb automatizĂˇlĂˇs:</strong> Az AI Ă©s az automatizĂˇlĂˇs egyre nagyobb
+                szerepet fognak jĂˇtszani
               </li>
               <li>
-                <strong>Valós idejű együttműködés:</strong> Az ügyfelek valós időben fogják tudni
-                megtekinteni és szerkeszteni az ajánlatokat
+                <strong>ValĂłs idejĹ± egyĂĽttmĹ±kĂ¶dĂ©s:</strong> Az ĂĽgyfelek valĂłs idĹ‘ben fogjĂˇk tudni
+                megtekinteni Ă©s szerkeszteni az ajĂˇnlatokat
               </li>
               <li>
-                <strong>Integrált analytics:</strong> Részletesebb adatok és elemzések az ajánlat
-                teljesítményéről
+                <strong>IntegrĂˇlt analytics:</strong> RĂ©szletesebb adatok Ă©s elemzĂ©sek az ajĂˇnlat
+                teljesĂ­tmĂ©nyĂ©rĹ‘l
               </li>
               <li>
-                <strong>Personalizáció a következő szinten:</strong> Még mélyebb személyre szabás az
-                ügyfél adatainak felhasználásával
+                <strong>PersonalizĂˇciĂł a kĂ¶vetkezĹ‘ szinten:</strong> MĂ©g mĂ©lyebb szemĂ©lyre szabĂˇs az
+                ĂĽgyfĂ©l adatainak felhasznĂˇlĂˇsĂˇval
               </li>
             </ul>
           </Card>
@@ -357,16 +357,16 @@ export default function BestPracticesPage() {
 
       {/* Summary */}
       <Card className="mt-12 border-l-4 border-l-green-500 bg-green-50/30">
-        <h2 className="mb-4 text-2xl font-bold text-fg">Összegzés</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">Ă–sszegzĂ©s</h2>
         <p className="mb-4 text-lg leading-relaxed text-fg-muted">
-          Az ajánlatkészítés best practice-ei folyamatosan fejlődnek, de néhány alapelv időtálló:
-          személyre szabás, adatvezérelt megközelítés, egyértelmű kommunikáció és folyamatos
-          optimalizálás. Azok a vállalkozások, amelyek ezeket a gyakorlatokat követik, jelentősen
-          növelhetik sikerük esélyét.
+          Az ajĂˇnlatkĂ©szĂ­tĂ©s best practice-ei folyamatosan fejlĹ‘dnek, de nĂ©hĂˇny alapelv idĹ‘tĂˇllĂł:
+          szemĂ©lyre szabĂˇs, adatvezĂ©relt megkĂ¶zelĂ­tĂ©s, egyĂ©rtelmĹ± kommunikĂˇciĂł Ă©s folyamatos
+          optimalizĂˇlĂˇs. Azok a vĂˇllalkozĂˇsok, amelyek ezeket a gyakorlatokat kĂ¶vetik, jelentĹ‘sen
+          nĂ¶velhetik sikerĂĽk esĂ©lyĂ©t.
         </p>
         <p className="text-lg leading-relaxed text-fg-muted">
-          Ne feledd: az ajánlatkészítés nem csak egy dokumentum készítése, hanem egy stratégiai
-          folyamat, amely hozzájárul az üzleti növekedéshez és a hosszú távú sikerhez.
+          Ne feledd: az ajĂˇnlatkĂ©szĂ­tĂ©s nem csak egy dokumentum kĂ©szĂ­tĂ©se, hanem egy stratĂ©giai
+          folyamat, amely hozzĂˇjĂˇrul az ĂĽzleti nĂ¶vekedĂ©shez Ă©s a hosszĂş tĂˇvĂş sikerhez.
         </p>
       </Card>
 
@@ -374,18 +374,18 @@ export default function BestPracticesPage() {
       <Card className="mt-12 border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
           <h2 className="mb-4 text-3xl font-bold text-fg">
-            Kezdd el még ma a best practice-ek alkalmazását!
+            Kezdd el mĂ©g ma a best practice-ek alkalmazĂˇsĂˇt!
           </h2>
           <p className="mb-8 text-lg text-fg-muted">
-            A Vyndi segít neked professzionális ajánlatokat készíteni a legjobb gyakorlatok szerint.
-            Próbáld ki ingyenesen!
+            A Vyndi segĂ­t neked professzionĂˇlis ajĂˇnlatokat kĂ©szĂ­teni a legjobb gyakorlatok szerint.
+            PrĂłbĂˇld ki ingyenesen!
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/login?redirect=/new"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
-              Ingyenes próba indítása
+              Ingyenes prĂłba indĂ­tĂˇsa
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -399,7 +399,7 @@ export default function BestPracticesPage() {
               href="/resources/blog/10-tips"
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary/40 bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:bg-primary/5"
             >
-              10 tipp a tökéletes ajánlathoz
+              10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz
             </Link>
           </div>
         </div>
@@ -407,17 +407,17 @@ export default function BestPracticesPage() {
 
       {/* Related Articles */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó cikkek</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">KapcsolĂłdĂł cikkek</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/blog/10-tips">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    10 tipp a tökéletes ajánlathoz
+                    10 tipp a tĂ¶kĂ©letes ajĂˇnlathoz
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Gyakorlati tanácsok a tökéletes ajánlatok készítéséhez.
+                    Gyakorlati tanĂˇcsok a tĂ¶kĂ©letes ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©hez.
                   </p>
                 </div>
                 <svg
@@ -441,10 +441,10 @@ export default function BestPracticesPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Ajánlatkészítési útmutató
+                    AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Komplett útmutató a tökéletes ajánlatok elkészítéséhez.
+                    Komplett ĂştmutatĂł a tĂ¶kĂ©letes ajĂˇnlatok elkĂ©szĂ­tĂ©sĂ©hez.
                   </p>
                 </div>
                 <svg
@@ -468,4 +468,3 @@ export default function BestPracticesPage() {
     </main>
   );
 }
-

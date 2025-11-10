@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/Card';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Ingyenes ajánlat sablonok | Vyndi',
+  title: 'Ingyenes ajĂˇnlat sablonok | Vyndi',
   description:
-    'Böngészd át ingyenes, letölthető ajánlat sablonjainkat. Professzionális, testreszabható sablonok különböző iparágakhoz és projekttípusokhoz. Azonnal használható, PDF formátumban.',
+    'BĂ¶ngĂ©szd Ăˇt ingyenes, letĂ¶lthetĹ‘ ajĂˇnlat sablonjainkat. ProfesszionĂˇlis, testreszabhatĂł sablonok kĂĽlĂ¶nbĂ¶zĹ‘ iparĂˇgakhoz Ă©s projekttĂ­pusokhoz. Azonnal hasznĂˇlhatĂł, PDF formĂˇtumban.',
   openGraph: {
-    title: 'Ingyenes ajánlat sablonok | Vyndi',
-    description: 'Professzionális, letölthető ajánlat sablonok ingyen.',
+    title: 'Ingyenes ajĂˇnlat sablonok | Vyndi',
+    description: 'ProfesszionĂˇlis, letĂ¶lthetĹ‘ ajĂˇnlat sablonok ingyen.',
     type: 'website',
   },
 };
@@ -18,13 +18,13 @@ export default function TemplatesPage() {
   const templates = [
     {
       id: 'free.minimal',
-      name: 'Minimális',
+      name: 'MinimĂˇlis',
       description:
-        'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz. Egyszerű és elegáns.',
-      category: 'Általános',
-      tags: ['minimális', 'professzionális', 'egyszerű'],
+        'Tiszta, professzionĂˇlis dizĂˇjn, amely tĂ¶kĂ©letesen megfelel az ĂĽzleti ajĂˇnlatokhoz. EgyszerĹ± Ă©s elegĂˇns.',
+      category: 'ĂltalĂˇnos',
+      tags: ['minimĂˇlis', 'professzionĂˇlis', 'egyszerĹ±'],
       preview: '/templates/minimal-preview.png',
-      features: ['Árazási táblázat', 'Logó támogatás', 'Egyedi színek'],
+      features: ['ĂrazĂˇsi tĂˇblĂˇzat', 'LogĂł tĂˇmogatĂˇs', 'Egyedi szĂ­nek'],
     },
   ];
 
@@ -35,7 +35,7 @@ export default function TemplatesPage() {
         <ol className="flex items-center gap-2">
           <li>
             <Link href="/resources" className="hover:text-primary transition-colors">
-              Erőforrások
+              ErĹ‘forrĂˇsok
             </Link>
           </li>
           <li className="text-fg-muted">/</li>
@@ -49,11 +49,11 @@ export default function TemplatesPage() {
           Sablonok
         </span>
         <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-          Ingyenes ajánlat sablonok
+          Ingyenes ajĂˇnlat sablonok
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-xl leading-relaxed text-fg-muted">
-          Böngészd át ingyenes, professzionális ajánlat sablonjainkat. Minden sablon testreszabható,
-          azonnal használható, és tökéletesen megfelel az üzleti ajánlatok készítéséhez.
+          BĂ¶ngĂ©szd Ăˇt ingyenes, professzionĂˇlis ajĂˇnlat sablonjainkat. Minden sablon testreszabhatĂł,
+          azonnal hasznĂˇlhatĂł, Ă©s tĂ¶kĂ©letesen megfelel az ĂĽzleti ajĂˇnlatok kĂ©szĂ­tĂ©sĂ©hez.
         </p>
       </header>
 
@@ -82,10 +82,10 @@ export default function TemplatesPage() {
                     />
                   </svg>
                   <p className="mt-4 text-xs font-medium text-gray-500">
-                    [Helyőrző: {template.name} sablon előnézet képe]
+                    [HelyĹ‘rzĹ‘: {template.name} sablon elĹ‘nĂ©zet kĂ©pe]
                   </p>
                   <p className="mt-1 text-xs text-gray-400">
-                    Ajánlott: 800x1000px PDF előnézet vagy screenshot
+                    AjĂˇnlott: 800x1000px PDF elĹ‘nĂ©zet vagy screenshot
                   </p>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default function TemplatesPage() {
                 href="/login?redirect=/new"
                 className="block w-full rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-3 text-center text-sm font-semibold text-white transition-all hover:scale-105 hover:shadow-lg"
               >
-                Használat indítása
+                HasznĂˇlat indĂ­tĂˇsa
               </Link>
             </div>
           </Card>
@@ -128,16 +128,16 @@ export default function TemplatesPage() {
 
       {/* Info Section */}
       <Card className="mt-12 border-l-4 border-l-purple-500 bg-purple-50/30">
-        <h2 className="mb-4 text-2xl font-bold text-fg">Hogyan használd a sablonokat?</h2>
+        <h2 className="mb-4 text-2xl font-bold text-fg">Hogyan hasznĂˇld a sablonokat?</h2>
         <div className="grid gap-6 md:grid-cols-3">
           <div>
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-2xl font-bold text-purple-600">
               1
             </div>
-            <h3 className="mb-2 font-semibold text-fg">Válassz sablont</h3>
+            <h3 className="mb-2 font-semibold text-fg">VĂˇlassz sablont</h3>
             <p className="text-sm text-fg-muted">
-              Böngészd át az ingyenes sablonokat, és válaszd ki azt, amelyik a legjobban illeszkedik
-              a stílusodhoz.
+              BĂ¶ngĂ©szd Ăˇt az ingyenes sablonokat, Ă©s vĂˇlaszd ki azt, amelyik a legjobban illeszkedik
+              a stĂ­lusodhoz.
             </p>
           </div>
           <div>
@@ -146,17 +146,17 @@ export default function TemplatesPage() {
             </div>
             <h3 className="mb-2 font-semibold text-fg">Testreszabd</h3>
             <p className="text-sm text-fg-muted">
-              Add meg a saját információidat, színeidet, logódat, és az AI segít generálni a
-              szövegeket.
+              Add meg a sajĂˇt informĂˇciĂłidat, szĂ­neidet, logĂłdat, Ă©s az AI segĂ­t generĂˇlni a
+              szĂ¶vegeket.
             </p>
           </div>
           <div>
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-2xl font-bold text-purple-600">
               3
             </div>
-            <h3 className="mb-2 font-semibold text-fg">Exportáld PDF-be</h3>
+            <h3 className="mb-2 font-semibold text-fg">ExportĂˇld PDF-be</h3>
             <p className="text-sm text-fg-muted">
-              Kattints egy gombra, és kész a professzionális ajánlatod PDF formátumban.
+              Kattints egy gombra, Ă©s kĂ©sz a professzionĂˇlis ajĂˇnlatod PDF formĂˇtumban.
             </p>
           </div>
         </div>
@@ -164,7 +164,7 @@ export default function TemplatesPage() {
 
       {/* Benefits Section */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Miért válaszd a Vyndi sablonokat?</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">MiĂ©rt vĂˇlaszd a Vyndi sablonokat?</h2>
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <div className="flex items-start gap-4">
@@ -184,9 +184,9 @@ export default function TemplatesPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">Professzionális dizájn</h3>
+                <h3 className="mb-2 font-semibold text-fg">ProfesszionĂˇlis dizĂˇjn</h3>
                 <p className="text-sm text-fg-muted">
-                  Minden sablonunk professzionális dizájner által készült, és követi a legjobb UX/UI
+                  Minden sablonunk professzionĂˇlis dizĂˇjner Ăˇltal kĂ©szĂĽlt, Ă©s kĂ¶veti a legjobb UX/UI
                   gyakorlatokat.
                 </p>
               </div>
@@ -211,9 +211,9 @@ export default function TemplatesPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">Teljes testreszabhatóság</h3>
+                <h3 className="mb-2 font-semibold text-fg">Teljes testreszabhatĂłsĂˇg</h3>
                 <p className="text-sm text-fg-muted">
-                  Módosíthatod a színeket, logót, szövegeket, és még sok mindent, hogy tökéletesen
+                  MĂłdosĂ­thatod a szĂ­neket, logĂłt, szĂ¶vegeket, Ă©s mĂ©g sok mindent, hogy tĂ¶kĂ©letesen
                   illeszkedjen a brandhez.
                 </p>
               </div>
@@ -238,10 +238,10 @@ export default function TemplatesPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">AI segítség</h3>
+                <h3 className="mb-2 font-semibold text-fg">AI segĂ­tsĂ©g</h3>
                 <p className="text-sm text-fg-muted">
-                  Használd az AI funkciót, hogy másodpercek alatt generálj professzionális
-                  szövegeket a sablonokhoz.
+                  HasznĂˇld az AI funkciĂłt, hogy mĂˇsodpercek alatt generĂˇlj professzionĂˇlis
+                  szĂ¶vegeket a sablonokhoz.
                 </p>
               </div>
             </div>
@@ -265,9 +265,9 @@ export default function TemplatesPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="mb-2 font-semibold text-fg">Gyors és egyszerű</h3>
+                <h3 className="mb-2 font-semibold text-fg">Gyors Ă©s egyszerĹ±</h3>
                 <p className="text-sm text-fg-muted">
-                  Percek alatt készíthetsz professzionális ajánlatot. Nincs szükség tervezői
+                  Percek alatt kĂ©szĂ­thetsz professzionĂˇlis ajĂˇnlatot. Nincs szĂĽksĂ©g tervezĹ‘i
                   tapasztalatra.
                 </p>
               </div>
@@ -279,16 +279,16 @@ export default function TemplatesPage() {
       {/* CTA Section */}
       <Card className="mt-12 border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Kezdd el még ma!</h2>
+          <h2 className="mb-4 text-3xl font-bold text-fg">Kezdd el mĂ©g ma!</h2>
           <p className="mb-8 text-lg text-fg-muted">
-            Regisztrálj ingyenesen, és azonnal hozzáférhetsz az összes ingyenes sablonhoz.
+            RegisztrĂˇlj ingyenesen, Ă©s azonnal hozzĂˇfĂ©rhetsz az Ă¶sszes ingyenes sablonhoz.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/login?redirect=/new"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
             >
-              Ingyenes próba indítása
+              Ingyenes prĂłba indĂ­tĂˇsa
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
@@ -302,7 +302,7 @@ export default function TemplatesPage() {
               href="/resources/pro-templates"
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary/40 bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:bg-primary/5"
             >
-              Pro sablonok megtekintése
+              Pro sablonok megtekintĂ©se
             </Link>
           </div>
         </div>
@@ -310,17 +310,17 @@ export default function TemplatesPage() {
 
       {/* Related Resources */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó erőforrások</h2>
+        <h2 className="mb-6 text-2xl font-bold text-fg">KapcsolĂłdĂł erĹ‘forrĂˇsok</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/guide">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    Ajánlatkészítési útmutató
+                    AjĂˇnlatkĂ©szĂ­tĂ©si ĂştmutatĂł
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Tanuld meg, hogyan készíts tökéletes ajánlatokat.
+                    Tanuld meg, hogyan kĂ©szĂ­ts tĂ¶kĂ©letes ajĂˇnlatokat.
                   </p>
                 </div>
                 <svg
@@ -344,10 +344,10 @@ export default function TemplatesPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="mb-2 text-lg font-semibold text-fg group-hover:text-primary transition-colors">
-                    AI-alapú szöveg generálás
+                    AI-alapĂş szĂ¶veg generĂˇlĂˇs
                   </h3>
                   <p className="text-sm text-fg-muted">
-                    Használd az AI-t a sablonokhoz szövegek generálásához.
+                    HasznĂˇld az AI-t a sablonokhoz szĂ¶vegek generĂˇlĂˇsĂˇhoz.
                   </p>
                 </div>
                 <svg
@@ -371,4 +371,3 @@ export default function TemplatesPage() {
     </main>
   );
 }
-
