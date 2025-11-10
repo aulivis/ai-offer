@@ -11,8 +11,10 @@ import { CONSENT_VERSION } from '@/lib/consent/constants';
 import type { ConsentRecord } from '@/lib/consent/types';
 
 const buildCategories = (record: ConsentRecord | null) => ({
-  analytics: record?.granted.analytics ?? false,
-  marketing: record?.granted.marketing ?? false,
+  // Default to true (all enabled) when there's no consent record
+  // This matches the cookie bar behavior where all cookies are pre-accepted
+  analytics: record?.granted.analytics ?? true,
+  marketing: record?.granted.marketing ?? true,
 });
 
 type ConsentState = ReturnType<typeof buildCategories>;

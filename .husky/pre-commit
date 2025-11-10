@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
+# Format files before linting to prevent prettier errors
+npm run format:fix
+
 npm run lint
 npm run test:templates

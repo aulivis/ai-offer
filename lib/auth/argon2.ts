@@ -1,5 +1,18 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
+// Static import reference to ensure Next.js includes @noble/hashes in the bundle
+// This import is conditionally used and helps Next.js statically analyze and bundle the module
+// The actual usage is lazy-loaded to handle cases where the module might not be available
+let nobleArgon2StaticImport: typeof import('@noble/hashes/argon2.js') | null = null;
+try {
+  // This static import ensures Next.js includes the module in the serverless bundle
+  // We use a try-catch because the module might not be available in all environments
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  nobleArgon2StaticImport = require('@noble/hashes/argon2.js');
+} catch {
+  // Module not available at module load time, will use dynamic import at runtime
+}
+
 const ARGON_MODULE_ID = ['@node-rs', 'argon2'].join('/');
 
 // Type definition for @noble/hashes/argon2 module
@@ -15,6 +28,14 @@ const NOBLE_ARGON2_MODULE_PATH_ALT = '@noble/hashes/argon2' as const;
 // Module cache for the noble argon2 implementation
 let nobleModuleStatic: NobleArgon2Module | null = null;
 let nobleModuleLoadAttempted = false;
+
+// Static import reference to ensure Next.js includes the module in the bundle
+// This is a function that references the module without importing it at module load time
+// Next.js will statically analyze this and include the module in the bundle
+function getNobleArgon2ModulePath(): string {
+  // This function ensures Next.js can statically analyze the module path
+  return '@noble/hashes/argon2.js';
+}
 
 export enum Argon2Algorithm {
   Argon2d = 0,
@@ -106,7 +127,37 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
 
   if (!nobleModulePromise) {
     nobleModulePromise = (async () => {
-      // Strategy 1: Try the primary export path (@noble/hashes/argon2.js)
+      // Strategy 1: Try using the static import if available (loaded at module initialization)
+      if (nobleArgon2StaticImport) {
+        if (
+          nobleArgon2StaticImport &&
+          typeof nobleArgon2StaticImport.argon2idAsync === 'function' &&
+          typeof nobleArgon2StaticImport.argon2iAsync === 'function' &&
+          typeof nobleArgon2StaticImport.argon2dAsync === 'function'
+        ) {
+          nobleModuleStatic = nobleArgon2StaticImport as NobleArgon2Module;
+          return nobleModuleStatic;
+        }
+      }
+
+      // Strategy 2: Try using require() at runtime (works better in some serverless environments)
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const requiredModule = require(getNobleArgon2ModulePath()) as NobleArgon2Module;
+        if (
+          requiredModule &&
+          typeof requiredModule.argon2idAsync === 'function' &&
+          typeof requiredModule.argon2iAsync === 'function' &&
+          typeof requiredModule.argon2dAsync === 'function'
+        ) {
+          nobleModuleStatic = requiredModule;
+          return nobleModuleStatic;
+        }
+      } catch {
+        // require() failed, try dynamic import
+      }
+
+      // Strategy 3: Try the primary export path with dynamic import (@noble/hashes/argon2.js)
       // This is the officially supported subpath according to package.json exports
       try {
         // Use the constant to ensure Next.js can statically analyze the import
@@ -133,7 +184,7 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
         }
       }
 
-      // Strategy 2: Try alternative path without .js extension
+      // Strategy 4: Try alternative path without .js extension
       // Some bundlers/resolvers might resolve this differently
       if (!nobleModuleStatic && !nobleModuleLoadAttempted) {
         nobleModuleLoadAttempted = true;

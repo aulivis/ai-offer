@@ -76,8 +76,11 @@ export const parseConsentFromRequest = (req: RequestLike): ConsentRecord | null 
 
 export const allowCategory = (req: RequestLike, category: ConsentCategory): boolean => {
   const consent = parseConsentFromRequest(req);
+
+  // Default to true (all enabled) when there's no consent
+  // This matches the cookie bar behavior where all cookies are pre-accepted
   if (!consent) {
-    return false;
+    return true;
   }
 
   return consent.granted[category] === true;

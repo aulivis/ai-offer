@@ -9,14 +9,6 @@ import { getConsent, updateConsent } from '@/lib/consent/client';
 export default function CookieBar() {
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
-    const consent = getConsent();
-
-    if (!consent || consent.version !== CONSENT_VERSION) {
-      setIsVisible(true);
-    }
-  }, []);
-
   const saveConsent = useCallback(async (analytics: boolean, marketing: boolean) => {
     const record = await updateConsent({
       necessary: true,
@@ -33,6 +25,19 @@ export default function CookieBar() {
     );
 
     setIsVisible(false);
+  }, []);
+
+  useEffect(() => {
+    const consent = getConsent();
+
+    if (!consent || consent.version !== CONSENT_VERSION) {
+      // Show the cookie bar with all cookies pre-accepted by default
+      // User can click to decline or customize
+      setIsVisible(true);
+      // Note: We don't save consent yet - let the user make a choice
+      // The default state is all enabled, so "Accept" keeps them enabled
+      // and "Reject" disables analytics and marketing
+    }
   }, []);
 
   const handleAcceptAll = useCallback(() => {

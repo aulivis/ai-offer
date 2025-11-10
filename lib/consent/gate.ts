@@ -32,8 +32,10 @@ const readCategoriesFromCookie = (): ConsentCategories | null => {
 export const canRun = (category: ConsentCategory): boolean => {
   const categories = readCategoriesFromCookie();
 
+  // Default to true (all enabled) when there's no consent
+  // This matches the cookie bar behavior where all cookies are pre-accepted
   if (!categories) {
-    return false;
+    return true;
   }
 
   return categories[category] === true;

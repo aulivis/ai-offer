@@ -44,6 +44,28 @@ const nextConfig: NextConfig = {
   // These packages are large and should not be bundled with the Next.js app
   // Note: @noble/hashes is NOT externalized - it must be bundled for Argon2 fallback to work
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
+  // Webpack configuration to ensure @noble/hashes is properly bundled
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Ensure @noble/hashes is not externalized and is included in the server bundle
+      config.externals = config.externals || [];
+      if (Array.isArray(config.externals)) {
+        config.externals = config.externals.filter(
+          (external) => typeof external !== 'string' || !external.includes('@noble/hashes'),
+        );
+      } else if (typeof config.externals === 'function') {
+        const originalExternals = config.externals;
+        config.externals = (context, request, callback) => {
+          if (request && request.includes('@noble/hashes')) {
+            // Don't externalize @noble/hashes - it must be bundled
+            return callback();
+          }
+          return originalExternals(context, request, callback);
+        };
+      }
+    }
+    return config;
+  },
 };
 
 const isProduction = process.env.NODE_ENV === 'production';
