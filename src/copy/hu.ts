@@ -1009,6 +1009,7 @@ export const hu = {
       ctaPrimary: 'Kezdd el most – ingyen',
       ctaSecondary: 'Csomagok megtekintése',
       closeAria: 'Bezárás',
+      ariaLabel: 'Felhívás a cselekvésre',
     },
     emailCapture: {
       title: 'Kapj ingyenes tippeket a professzionális ajánlatkészítéshez',
