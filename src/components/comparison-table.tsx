@@ -155,7 +155,7 @@ export function ComparisonTable() {
                     {/* Features Column - 40% width */}
                     <th
                       className="px-6 py-5 text-left font-bold text-lg align-top"
-                      style={{ width: '40%' }}
+                      style={{ width: '50%' }}
                     >
                       Funkciók
                     </th>
@@ -171,7 +171,7 @@ export function ComparisonTable() {
                     {/* Vyndi Column - 30% width with badge area */}
                     <th
                       className="px-6 py-5 text-center font-bold text-lg bg-turquoise-600 align-top relative"
-                      style={{ width: '30%' }}
+                      style={{ width: '20%' }}
                     >
                       {/* Column content */}
                       <div className="flex items-center justify-center gap-2">

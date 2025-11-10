@@ -132,12 +132,12 @@ export function IndustrySolutions() {
             return (
               <div
                 key={industry.id}
-                className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-gray-300 hover:-translate-y-2"
+                className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-gray-300 hover:-translate-y-2 text-center"
               >
                 {/* Icon with Gradient Background */}
                 {/* Much larger icon with gradient background */}
                 <div
-                  className={`w-16 h-16 bg-gradient-to-br ${industry.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}
+                  className={`w-16 h-16 bg-gradient-to-br ${industry.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg mx-auto`}
                 >
                   <Icon className="w-8 h-8 text-white" strokeWidth={2} />
                 </div>
@@ -154,7 +154,7 @@ export function IndustrySolutions() {
 
                 {/* Features List */}
                 {/* Better styled bullet points with checkmarks */}
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-3 mb-6 flex flex-col items-center">
                   {industry.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <Check
@@ -172,7 +172,7 @@ export function IndustrySolutions() {
                 {/* Transformed text link into prominent button-style link */}
                 <Link
                   href="/login?redirect=/new"
-                  className="inline-flex items-center gap-2 text-turquoise-600 font-bold hover:text-turquoise-700 group/link transition-colors"
+                  className="inline-flex items-center gap-2 text-turquoise-600 font-bold hover:text-turquoise-700 group/link transition-colors justify-center"
                 >
                   <span>Ismerd meg a megoldást</span>
                   <ArrowRight className="w-5 h-5 group-hover/link:translate-x-1 transition-transform" />

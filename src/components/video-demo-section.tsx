@@ -142,38 +142,80 @@ export function VideoDemoSection() {
             Mit fogsz látni a videóban:
           </h3>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6 relative pt-12">
             {/* Point 1 */}
-            <div className="bg-gradient-to-br from-turquoise-50 to-white rounded-xl p-6 border-2 border-turquoise-200 hover:border-turquoise-400 transition-colors">
-              <div className="w-12 h-12 bg-turquoise-500 rounded-full flex items-center justify-center mb-4 font-bold text-white text-xl">
-                1
+            <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+              {/* Number badge at top - overlapping like in how-it-works */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+                <div className="relative">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-turquoise-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+                  {/* Badge */}
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-turquoise-500 to-turquoise-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-white">1</span>
+                  </div>
+                </div>
               </div>
-              <h4 className="font-bold text-navy-900 text-lg mb-2 text-balance">
-                AI ajánlat generálás
-              </h4>
-              <p className="text-gray-600 text-sm text-pretty">Automatikus tartalom és árazás</p>
+
+              {/* Centered content */}
+              <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
+                <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
+                  AI ajánlat generálás
+                </h4>
+                <p className="text-gray-600 leading-relaxed text-pretty">
+                  Automatikus tartalom és árazás
+                </p>
+              </div>
             </div>
 
             {/* Point 2 */}
-            <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border-2 border-blue-200 hover:border-blue-400 transition-colors">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-4 font-bold text-white text-xl">
-                2
+            <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+              {/* Number badge at top */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+                <div className="relative">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+                  {/* Badge */}
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-white">2</span>
+                  </div>
+                </div>
               </div>
-              <h4 className="font-bold text-navy-900 text-lg mb-2 text-balance">
-                Testreszabás egyszerűen
-              </h4>
-              <p className="text-gray-600 text-sm text-pretty">Drag & drop szerkesztő</p>
+
+              {/* Centered content */}
+              <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
+                <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
+                  Testreszabás egyszerűen
+                </h4>
+                <p className="text-gray-600 leading-relaxed text-pretty">
+                  Drag & drop szerkesztő
+                </p>
+              </div>
             </div>
 
             {/* Point 3 */}
-            <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border-2 border-green-200 hover:border-green-400 transition-colors">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-4 font-bold text-white text-xl">
-                3
+            <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+              {/* Number badge at top */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+                <div className="relative">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-green-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
+                  {/* Badge */}
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-white">3</span>
+                  </div>
+                </div>
               </div>
-              <h4 className="font-bold text-navy-900 text-lg mb-2 text-balance">
-                Küldés és követés
-              </h4>
-              <p className="text-gray-600 text-sm text-pretty">Real-time értesítések</p>
+
+              {/* Centered content */}
+              <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
+                <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
+                  Küldés és követés
+                </h4>
+                <p className="text-gray-600 leading-relaxed text-pretty">
+                  Real-time értesítések
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -134,8 +134,8 @@ export function TestimonialSection() {
         {/* Enhanced stats with icons, cards, and larger numbers */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-20">
           {/* Stat 1: Active Users */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
-            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
+            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <Users className="w-7 h-7 text-blue-600" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">500+</div>
@@ -143,8 +143,8 @@ export function TestimonialSection() {
           </div>
 
           {/* Stat 2: Proposals Created */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
-            <div className="w-14 h-14 bg-turquoise-100 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
+            <div className="w-14 h-14 bg-turquoise-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <FileCheck className="w-7 h-7 text-turquoise-600" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">10K+</div>
@@ -152,8 +152,8 @@ export function TestimonialSection() {
           </div>
 
           {/* Stat 3: Satisfaction Rate */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
-            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
+            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <ThumbsUp className="w-7 h-7 text-green-600" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">98%</div>
@@ -161,8 +161,8 @@ export function TestimonialSection() {
           </div>
 
           {/* Stat 4: Support */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200">
-            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
+            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <Headphones className="w-7 h-7 text-purple-600" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">24/7</div>

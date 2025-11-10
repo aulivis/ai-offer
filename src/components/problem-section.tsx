@@ -60,11 +60,11 @@ export function ProblemSection() {
             return (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
+                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 text-center"
               >
                 {/* Larger icon with gradient background for more impact */}
                 <div
-                  className={`w-20 h-20 bg-gradient-to-br ${problem.gradient} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}
+                  className={`w-20 h-20 bg-gradient-to-br ${problem.gradient} rounded-2xl flex items-center justify-center mb-6 shadow-lg mx-auto`}
                 >
                   <Icon className="w-10 h-10 text-white" strokeWidth={2.5} />
                 </div>

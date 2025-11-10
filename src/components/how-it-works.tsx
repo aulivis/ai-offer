@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload, Wand2, Send, Zap, ArrowRight, Check, ChevronDown } from 'lucide-react';
+import { Upload, Wand2, Send, Zap, ArrowRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
 export function HowItWorks() {
@@ -10,31 +10,18 @@ export function HowItWorks() {
       number: '01',
       title: 'Töltsd fel az adatokat',
       description: 'Add meg az ügyfél adatait vagy használd a meglévő adatbázist',
-      bullets: ['Ügyfél adatok hozzáadása', 'Projekt részletek megadása', 'Opcionális sablonok'],
-      gradient: 'from-turquoise-400 to-turquoise-600',
-      bulletColor: 'text-turquoise-600',
     },
     {
       icon: Wand2,
       number: '02',
       title: 'AI generálja az ajánlatot',
       description: 'Az AI 2 perc alatt professzionális ajánlatot készít',
-      bullets: ['Automatikus tartalomgenerálás', 'Professzionális formázás', 'Árazás kalkuláció'],
-      gradient: 'from-blue-400 to-blue-600',
-      bulletColor: 'text-blue-600',
     },
     {
       icon: Send,
       number: '03',
       title: 'Küldd el azonnal',
       description: 'Testreszabás után küldd el PDF-ben',
-      bullets: [
-        'Szerkesztés és testreszabás',
-        'PDF export egy kattintással',
-        'Email vagy link megosztás',
-      ],
-      gradient: 'from-green-400 to-green-600',
-      bulletColor: 'text-green-600',
     },
   ];
 
@@ -54,10 +41,10 @@ export function HowItWorks() {
 
         {/* Process Steps with Progress Arrows */}
         <div className="relative max-w-7xl mx-auto mt-16">
-          {/* Desktop arrows - positioned absolutely between cards */}
+          {/* Desktop arrows - positioned to connect number badges at top */}
           <div className="hidden lg:block">
-            {/* Arrow 1 -> 2 */}
-            <div className="absolute top-32 left-[32%] -translate-x-1/2 z-0">
+            {/* Arrow 1 -> 2 - positioned to align with center of number badges (40px from top of badge, badges start at pt-12 - top-10 = 8px, so center at 8px + 40px = 48px = top-12) */}
+            <div className="absolute top-12 left-[32%] -translate-x-1/2 z-30">
               <svg className="w-16 h-8 text-turquoise-400" viewBox="0 0 64 32" fill="none">
                 <path
                   d="M0 16 L56 16 M56 16 L48 8 M56 16 L48 24"
@@ -71,7 +58,7 @@ export function HowItWorks() {
             </div>
 
             {/* Arrow 2 -> 3 */}
-            <div className="absolute top-32 left-[66%] -translate-x-1/2 z-0">
+            <div className="absolute top-12 left-[66%] -translate-x-1/2 z-30">
               <svg className="w-16 h-8 text-turquoise-400" viewBox="0 0 64 32" fill="none">
                 <path
                   d="M0 16 L56 16 M56 16 L48 8 M56 16 L48 24"
@@ -86,12 +73,11 @@ export function HowItWorks() {
           </div>
 
           {/* Cards grid */}
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-6 relative z-10">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-6 relative z-10 pt-12">
             {steps.map((step, idx) => {
               const Icon = step.icon;
               const isMiddle = idx === 1;
               const bgColors = ['bg-turquoise-100', 'bg-blue-100', 'bg-green-100'];
-              const checkBgColors = ['bg-turquoise-100', 'bg-blue-100', 'bg-green-100'];
               const checkTextColors = ['text-turquoise-600', 'text-blue-600', 'text-green-600'];
               const gradients = [
                 'from-turquoise-500 to-turquoise-600',
@@ -109,17 +95,8 @@ export function HowItWorks() {
                       : 'border border-gray-100'
                   } group h-full flex flex-col`}
                 >
-                  {/* Featured badge for middle card */}
-                  {isMiddle && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                      <div className="bg-gradient-to-r from-blue-500 to-turquoise-500 text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                        AI-POWERED
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Large circular number badge at top center */}
-                  <div className="flex justify-center mb-6 mt-2">
+                  {/* Number badge at top - overlapping like the AI-powered badge was */}
+                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
                     <div className="relative">
                       {/* Glow effect */}
                       <div
@@ -135,7 +112,7 @@ export function HowItWorks() {
                   </div>
 
                   {/* Centered icon */}
-                  <div className="flex justify-center mb-6">
+                  <div className="flex justify-center mb-6 mt-4">
                     <div
                       className={`w-20 h-20 ${bgColors[idx]} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}
                     >
@@ -149,21 +126,16 @@ export function HowItWorks() {
                     <p className="text-gray-600 leading-relaxed text-pretty mb-4">
                       {step.description}
                     </p>
-
-                    {/* Centered feature list with better styling */}
-                    <ul className="space-y-3 mt-auto flex flex-col items-center">
-                      {step.bullets.map((bullet, bulletIndex) => (
-                        <li key={bulletIndex} className="flex items-center gap-3 text-gray-700">
-                          <div
-                            className={`w-5 h-5 ${checkBgColors[idx]} rounded-full flex items-center justify-center flex-shrink-0`}
-                          >
-                            <Check className={`w-3 h-3 ${checkTextColors[idx]} stroke-[3]`} />
-                          </div>
-                          <span className="text-sm">{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
+
+                  {/* AI-powered badge at bottom of middle card */}
+                  {isMiddle && (
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
+                      <div className="bg-gradient-to-r from-blue-500 to-turquoise-500 text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                        AI-POWERED
+                      </div>
+                    </div>
+                  )}
 
                   {/* Mobile arrow down (except for last card) */}
                   {idx < steps.length - 1 && (
@@ -211,20 +183,17 @@ export function HowItWorks() {
             </Link>
           </div>
 
-          {/* Trust indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
-              <span>Nincs bankkártya szükséges</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
-              <span>30 napos ingyenes próba</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
-              <span>Bármikor lemondható</span>
-            </div>
+          {/* Trust indicators as pills */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              Nincs bankkártya szükséges
+            </span>
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              30 napos ingyenes próba
+            </span>
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              Bármikor lemondható
+            </span>
           </div>
         </div>
       </div>
