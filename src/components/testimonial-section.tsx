@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { getAuthorImage } from '@/lib/testimonial-images';
 
 export function TestimonialSection() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -26,7 +27,7 @@ export function TestimonialSection() {
       name: 'Kiss Júlia',
       role: 'Marketing Vezető',
       company: 'Creative Agency',
-      image: '/placeholder.svg?height=100&width=100',
+      image: getAuthorImage('Kiss Júlia'),
       quote:
         'A Vyndi segítségével 70% időt spórolunk meg az ajánlatkészítésen. Most több időnk marad az ügyfelekkel való kapcsolattartásra.',
       rating: 5,
@@ -40,7 +41,7 @@ export function TestimonialSection() {
       name: 'Nagy Péter',
       role: 'Értékesítési Igazgató',
       company: 'Tech Solutions Kft',
-      image: '/placeholder.svg?height=100&width=100',
+      image: getAuthorImage('Nagy Péter'),
       quote:
         'Hihetetlen, hogy milyen gyorsan és professzionálisan tudunk most ajánlatot készíteni. Az ügyfeleink is észreveszik a különbséget.',
       rating: 5,
@@ -54,7 +55,7 @@ export function TestimonialSection() {
       name: 'Szabó Anna',
       role: 'Ügyvezető',
       company: 'Growth Partners',
-      image: '/placeholder.svg?height=100&width=100',
+      image: getAuthorImage('Szabó Anna'),
       quote:
         'A Vyndi nélkül már el sem tudom képzelni a munkánkat. Az AI funkciók egyszerűen zseniálisak, és a csapatom imádja használni.',
       rating: 5,

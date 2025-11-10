@@ -61,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <AriaLiveAnnouncer />
                   <WebVitalsReporter />
                   <QuotaWarningBar />
-                  <LandingHeader className="bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60" />
+                  <LandingHeader />
                   <div className="flex-1">{children}</div>
                   <Footer />
                 </div>

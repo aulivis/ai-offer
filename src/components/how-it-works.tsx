@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload, Wand2, Send } from 'lucide-react';
+import { Upload, Wand2, Send, Zap, ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 
 export function HowItWorks() {
@@ -53,26 +53,27 @@ export function HowItWorks() {
         </div>
 
         {/* Process Steps */}
-        <div className="relative max-w-5xl mx-auto">
+        <div className="relative max-w-6xl mx-auto">
           {/* Connecting line between steps (desktop only) */}
-          <div className="hidden lg:block absolute top-24 left-0 right-0 h-0.5 bg-gradient-to-r from-turquoise-200 via-blue-200 to-green-200 -z-10"></div>
+          <div className="hidden lg:block absolute top-32 left-0 right-0 h-1 bg-gradient-to-r from-turquoise-300 via-blue-300 to-green-300 mx-32 -z-10"></div>
 
           <div className="grid md:grid-cols-3 gap-8 relative">
-            {steps.map((step) => {
+            {steps.map((step, idx) => {
               const Icon = step.icon;
+              const checkColors = ['text-turquoise-600', 'text-blue-600', 'text-green-600'];
 
               return (
-                <div key={step.number} className="relative">
-                  {/* Larger numbered badge with better positioning */}
-                  <div className="absolute -top-4 left-8 w-12 h-12 bg-navy-900 text-white rounded-full flex items-center justify-center font-bold text-lg z-10 shadow-lg">
-                    {step.number}
-                  </div>
-
+                <div key={step.number} className="relative group">
                   {/* Enhanced card with hover effects and shadows */}
-                  <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
-                    {/* Larger gradient icon with background */}
+                  <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full border border-gray-100 relative overflow-hidden">
+                    {/* Integrated step number - larger and positioned at top-left corner */}
+                    <div className="absolute -top-4 -left-4 w-16 h-16 bg-navy-900 text-white rounded-2xl flex items-center justify-center font-bold text-2xl shadow-xl z-10 group-hover:scale-110 transition-transform">
+                      {step.number}
+                    </div>
+
+                    {/* Larger gradient icon with background - Updated positioning */}
                     <div
-                      className={`w-20 h-20 bg-gradient-to-br ${step.gradient} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}
+                      className={`w-20 h-20 bg-gradient-to-br ${step.gradient} rounded-2xl flex items-center justify-center mb-6 mt-8 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
                     >
                       <Icon className="w-10 h-10 text-white" />
                     </div>
@@ -80,23 +81,16 @@ export function HowItWorks() {
                     <h3 className="text-2xl font-bold text-navy-900 mb-3">{step.title}</h3>
 
                     {/* Detailed description */}
-                    <p className="text-gray-600 mb-4">{step.description}</p>
+                    <p className="text-gray-600 mb-4 leading-relaxed">{step.description}</p>
 
-                    {/* Detailed bullet points */}
+                    {/* Detailed bullet points with Check icons */}
                     <ul className="space-y-2 text-sm text-gray-600">
                       {step.bullets.map((bullet, bulletIndex) => (
                         <li key={bulletIndex} className="flex items-start gap-2">
-                          <svg
-                            className={`w-5 h-5 ${step.bulletColor} flex-shrink-0 mt-0.5`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                          <Check
+                            className={`w-5 h-5 ${checkColors[idx]} flex-shrink-0 mt-0.5`}
+                            strokeWidth={3}
+                          />
                           <span>{bullet}</span>
                         </li>
                       ))}
@@ -108,26 +102,47 @@ export function HowItWorks() {
           </div>
         </div>
 
-        {/* Enhanced CTA with prominent button and time badge */}
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-lg mb-6">
-            <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="font-semibold text-gray-900">Teljes folyamat:</span>
-            <span className="text-turquoise-600 font-bold text-lg">~5 perc</span>
+        {/* Enhanced CTA Section - Redesigned for better visual prominence */}
+        <div className="text-center mt-20">
+          {/* Duration Badge - More prominent card-style design */}
+          <div className="inline-flex items-center gap-4 bg-gradient-to-r from-white to-gray-50 rounded-2xl px-8 py-5 shadow-xl border border-gray-200 mb-8">
+            <div className="w-14 h-14 bg-gradient-to-br from-turquoise-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+              <Zap className="w-7 h-7 text-white" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                Teljes folyamat
+              </div>
+              <div className="text-3xl font-bold text-turquoise-600">~5 perc</div>
+            </div>
           </div>
 
-          <Link
-            href="/login?redirect=/new"
-            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
-          >
-            Próbáld ki ingyen →
-          </Link>
+          {/* Main CTA Button - Larger and more prominent */}
+          <div className="mb-6">
+            <Link
+              href="/login?redirect=/new"
+              className="inline-flex items-center gap-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+            >
+              Próbáld ki most ingyen
+              <ArrowRight className="w-7 h-7 group-hover:translate-x-2 transition-transform" />
+            </Link>
+          </div>
+
+          {/* Trust indicators */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
+              <span>Nincs bankkártya szükséges</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
+              <span>30 napos ingyenes próba</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
+              <span>Bármikor lemondható</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -1,13 +1,13 @@
 'use client';
 
 import { t, type CopyKey } from '@/copy';
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { Menu, X, ArrowRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
-import { BottomSheet } from '@/components/ui/BottomSheet';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useLogout } from '@/hooks/useLogout';
 import { useBranding } from '@/components/BrandingProvider';
@@ -37,6 +37,7 @@ const AUTH_NAV_ITEMS: ReadonlyArray<NavItem> = [
 export default function LandingHeader({ className }: LandingHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hash, setHash] = useState('');
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { status: authStatus } = useAuthSession();
   const { logout, isLoggingOut } = useLogout();
@@ -44,6 +45,18 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
 
   const isAuthenticated = authStatus === 'authenticated';
   const navItems = isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
+
+  // Scroll state management for glass morphism effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Check initial scroll position
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const updateHash = () => {
@@ -70,20 +83,19 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  // Enhanced header classes with scroll-based styling
   const headerClass = useMemo(
     () =>
       [
-        'sticky top-0 z-50 w-full bg-bg/80 text-fg backdrop-blur supports-[backdrop-filter]:bg-bg/60',
+        'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300',
+        scrolled
+          ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
+          : 'bg-white/60 backdrop-blur-md border-b border-white/20',
         className,
       ]
         .filter(Boolean)
         .join(' '),
-    [className],
-  );
-
-  const headerStyle = useMemo<CSSProperties>(
-    () => ({ position: 'sticky', top: 0, insetInlineStart: 0, insetInlineEnd: 0 }),
-    [],
+    [className, scrolled],
   );
 
   const closeMenu = () => setIsMenuOpen(false);
@@ -93,186 +105,221 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   };
 
   return (
-    <header className={headerClass} style={headerStyle}>
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-6">
-        <Link
-          href="/"
-          className="flex items-center gap-3 text-lg font-bold text-[var(--text)]"
-          onClick={closeMenu}
-        >
-          {logoUrl ? (
-            <Image
-              src={logoUrl}
-              alt={companyName ? `${companyName} logo` : t('nav.brand')}
-              width={220}
-              height={106}
-              priority
-              unoptimized
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYigyNDAsIDI0MCwgMjQwKSIvPjwvc3ZnPg=="
-              sizes="(max-width: 768px) 160px, 220px"
-              className="h-auto w-auto object-contain"
-              style={{ maxHeight: '28mm', maxWidth: '220px' }}
-            />
-          ) : (
-            <span
-              aria-hidden="true"
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary)] text-sm font-semibold uppercase tracking-[0.18em] text-[var(--brand-primary-contrast)]"
-            >
-              {monogram}
+    <>
+      <header className={headerClass}>
+        <div className="mx-auto flex h-20 w-full max-w-6xl items-center gap-6 px-4 md:px-6">
+          {/* Enhanced Logo Section */}
+          <Link href="/" className="flex items-center gap-3 group" onClick={closeMenu}>
+            {logoUrl ? (
+              <div className="relative">
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 bg-turquoise-400 rounded-xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
+                <div className="relative">
+                  <Image
+                    src={logoUrl}
+                    alt={companyName ? `${companyName} logo` : t('nav.brand')}
+                    width={220}
+                    height={106}
+                    priority
+                    unoptimized
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYigyNDAsIDI0MCwgMjQwKSIvPjwvc3ZnPg=="
+                    sizes="(max-width: 768px) 160px, 220px"
+                    className="h-auto w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                    style={{ maxHeight: '28mm', maxWidth: '220px' }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                {/* Hover glow effect for monogram */}
+                <div className="absolute inset-0 bg-turquoise-400 rounded-xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
+                <div className="relative w-12 h-12 bg-gradient-to-br from-turquoise-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-xl transition-all duration-300">
+                  <span
+                    aria-hidden="true"
+                    className="text-lg font-bold text-white uppercase tracking-wide"
+                  >
+                    {monogram}
+                  </span>
+                </div>
+              </div>
+            )}
+            <span className="text-xl font-bold text-navy-900 group-hover:text-turquoise-600 transition-colors duration-200">
+              {companyName ?? t('nav.brand')}
             </span>
-          )}
-          <span className="text-lg font-bold">{companyName ?? t('nav.brand')}</span>
-        </Link>
+          </Link>
 
-        <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-fg-muted md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`relative px-3 py-1 text-fg-muted transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary group ${
-                isNavItemActive(item.href) ? 'text-fg' : ''
-              }`}
-              {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
-              onClick={closeMenu}
-            >
-              {t(item.labelKey)}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden items-center gap-4 md:flex">
-          {isAuthenticated ? (
-            <>
+          {/* Enhanced Desktop Navigation Links */}
+          <nav className="hidden flex-1 items-center justify-center gap-1 text-sm font-medium md:flex">
+            {navItems.map((item) => (
               <Link
-                href="/new"
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
+                key={item.href}
+                href={item.href}
+                className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
+                  isNavItemActive(item.href)
+                    ? 'text-navy-900 font-semibold bg-gray-100/80'
+                    : 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
+                }`}
+                {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
+                onClick={closeMenu}
               >
-                {t('dashboard.actions.newOffer')}
+                {t(item.labelKey)}
+                {/* Subtle underline animation on hover */}
+                {!isNavItemActive(item.href) && (
+                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-turquoise-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
+                )}
               </Link>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={logout}
-                disabled={isLoggingOut}
-                aria-busy={isLoggingOut}
-                aria-label={t('nav.logoutAria')}
-              >
-                {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-primary"
-              >
-                {t('nav.login')}
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
-              >
-                {t('nav.freeTrial')}
-              </Link>
-            </>
-          )}
-        </div>
+            ))}
+          </nav>
 
-        {/* Mobile menu button - only show on mobile */}
-        <button
-          type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-fg transition duration-200 hover:bg-bg-muted md:hidden"
-          aria-label={t('nav.menuToggle')}
-          aria-expanded={isMenuOpen}
-          aria-controls="landing-navigation"
-          onClick={() => setIsMenuOpen(true)}
-        >
-          <svg
-            className="h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Mobile navigation bottom sheet */}
-      <BottomSheet
-        open={isMenuOpen}
-        onClose={closeMenu}
-        enableSwipeToClose={true}
-        swipeThreshold={0.25}
-        showCloseButton={true}
-        className="md:hidden"
-      >
-        <nav
-          id="landing-navigation"
-          className="flex flex-col gap-2 px-4 py-4 text-base font-medium text-fg"
-        >
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full px-4 py-3 transition-colors duration-200 text-fg-muted hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
-              onClick={closeMenu}
-            >
-              {t(item.labelKey)}
-            </Link>
-          ))}
-
-          <div className="mt-2 border-t border-border pt-4">
+          {/* Enhanced CTA Section */}
+          <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated ? (
-              <div className="flex flex-col gap-3">
+              <>
                 <Link
                   href="/new"
-                  className="rounded-full bg-primary px-5 py-3 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={closeMenu}
+                  className="relative px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
-                  {t('dashboard.actions.newOffer')}
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-turquoise-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <span className="relative flex items-center gap-2">
+                    {t('dashboard.actions.newOffer')}
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </Link>
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={handleLogout}
+                  size="sm"
+                  onClick={logout}
                   disabled={isLoggingOut}
                   aria-busy={isLoggingOut}
-                  className="justify-center text-base"
+                  aria-label={t('nav.logoutAria')}
+                  className="px-5 py-2.5 text-navy-900 font-semibold rounded-lg hover:bg-gray-100/80 transition-all duration-200 border border-transparent hover:border-gray-200"
                 >
                   {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                 </Button>
-              </div>
+              </>
             ) : (
-              <div className="flex flex-col gap-3">
+              <>
+                {/* Enhanced "Bejelentkezés" button instead of plain text */}
                 <Link
                   href="/login"
-                  className="rounded-full px-4 py-3 text-center text-base font-medium text-fg-muted transition-colors duration-200 hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={closeMenu}
+                  className="px-5 py-2.5 text-navy-900 font-semibold rounded-lg hover:bg-gray-100/80 transition-all duration-200 border border-transparent hover:border-gray-200"
                 >
                   {t('nav.login')}
                 </Link>
+                {/* Enhanced Primary CTA with glow effect */}
                 <Link
                   href="/login"
-                  className="rounded-full bg-primary px-5 py-3 text-center text-base font-semibold text-primary-ink shadow-sm transition-all duration-200 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  onClick={closeMenu}
+                  className="relative px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
-                  {t('nav.freeTrial')}
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-turquoise-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <span className="relative flex items-center gap-2">
+                    {t('nav.freeTrial')}
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </Link>
-              </div>
+              </>
             )}
           </div>
-        </nav>
-      </BottomSheet>
-    </header>
+
+          {/* Enhanced Mobile menu button */}
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-navy-900 transition duration-200 hover:bg-gray-100/80 md:hidden min-h-[44px] min-w-[44px]"
+            aria-label={t('nav.menuToggle')}
+            aria-expanded={isMenuOpen}
+            aria-controls="landing-navigation"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Menu with enhanced styling */}
+      {isMenuOpen && (
+        <>
+          {/* Backdrop with blur */}
+          <div
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+            onClick={closeMenu}
+            aria-hidden="true"
+          ></div>
+
+          {/* Mobile Menu Panel */}
+          <div className="fixed top-20 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-2xl z-40 md:hidden">
+            <div className="container mx-auto px-4 py-6">
+              <nav id="landing-navigation" className="flex flex-col gap-2">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-4 py-3 rounded-lg font-medium transition-colors duration-200 min-h-[44px] flex items-center ${
+                      isNavItemActive(item.href)
+                        ? 'bg-gray-100 text-navy-900 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-navy-900'
+                    }`}
+                    {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
+                    onClick={closeMenu}
+                  >
+                    {t(item.labelKey)}
+                  </Link>
+                ))}
+
+                {/* CTA Section in Mobile Menu */}
+                <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-3">
+                  {isAuthenticated ? (
+                    <>
+                      <Link
+                        href="/new"
+                        className="px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2"
+                        onClick={closeMenu}
+                      >
+                        {t('dashboard.actions.newOffer')}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        aria-busy={isLoggingOut}
+                        className="justify-center text-base min-h-[44px]"
+                      >
+                        {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        className="px-4 py-3 text-center text-base font-semibold text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-h-[44px] flex items-center justify-center"
+                        onClick={closeMenu}
+                      >
+                        {t('nav.login')}
+                      </Link>
+                      <Link
+                        href="/login"
+                        className="px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2"
+                        onClick={closeMenu}
+                      >
+                        {t('nav.freeTrial')}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </nav>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Spacer to prevent content jump when navbar is fixed */}
+      <div className="h-20"></div>
+    </>
   );
 }
