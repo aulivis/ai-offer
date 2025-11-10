@@ -187,9 +187,7 @@ export function VideoDemoSection() {
                 <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
                   Testreszabás egyszerűen
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">
-                  Drag & drop szerkesztő
-                </p>
+                <p className="text-gray-600 leading-relaxed text-pretty">Drag & drop szerkesztő</p>
               </div>
             </div>
 
@@ -212,9 +210,7 @@ export function VideoDemoSection() {
                 <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
                   Küldés és követés
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">
-                  Real-time értesítések
-                </p>
+                <p className="text-gray-600 leading-relaxed text-pretty">Real-time értesítések</p>
               </div>
             </div>
           </div>

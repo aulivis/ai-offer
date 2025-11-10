@@ -281,7 +281,10 @@ export default function LoginClient() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-5 w-5 rounded border-gray-300 text-turquoise-600 focus:ring-2 focus:ring-turquoise-500"
                 />
-                <label htmlFor="remember" className="text-sm font-medium text-gray-700 cursor-pointer">
+                <label
+                  htmlFor="remember"
+                  className="text-sm font-medium text-gray-700 cursor-pointer"
+                >
                   Maradok bejelentkezve
                 </label>
               </div>
