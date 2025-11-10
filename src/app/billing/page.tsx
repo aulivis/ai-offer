@@ -12,7 +12,6 @@ import {
   Sparkles,
   Star,
   Shield,
-  CreditCard,
   Users,
   Building2,
   ChevronDown,
@@ -1053,40 +1052,70 @@ function PublicBillingLanding() {
 
   return (
     <main id="main" className="flex flex-col pb-24">
-      {/* Enhanced Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white pt-20 pb-20 md:pt-28 md:pb-28">
+      {/* Enhanced Hero Section with Better Typography */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white pt-20 pb-24 md:pt-32 md:pb-32">
+        {/* Background pattern for visual interest */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+              backgroundSize: '48px 48px',
+            }}
+          ></div>
+        </div>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-8 border border-turquoise-500/30">
+              <Sparkles className="w-4 h-4" />
               {t('billing.public.badge')}
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-balance">
-              Egyszerű, átlátható árazás
-              <br />
-              minden méretű csapatnak
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight text-balance">
+              Egyszerű, átlátható árazás{' '}
+              <span className="bg-gradient-to-r from-turquoise-400 to-blue-400 bg-clip-text text-transparent">
+                minden méretű csapatnak
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto text-pretty">
-              Kezdd ingyen, és csak akkor fizess, ha már értéket látsz. Nincs rejtett költség,
-              bármikor lemondható.
+            <p className="text-xl md:text-2xl text-gray-300 mb-10 leading-relaxed max-w-3xl mx-auto text-pretty">
+              Nincs rejtett költség. Nincs kötelezettség. Csak tiszta, egyszerű árazás, amely a
+              vállalkozásod méretével együtt nő.
             </p>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center gap-8 mb-12">
+            {/* Enhanced CTA Buttons with Better Hierarchy */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+              <Link
+                href="/login?redirect=/new"
+                className="w-full sm:w-auto px-8 py-4 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-lg shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 inline-flex items-center justify-center gap-3 group min-h-[44px]"
+              >
+                Kezdd el ingyen
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="#compare"
+                className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-bold rounded-xl text-lg border-2 border-white/30 hover:border-white/50 transition-all inline-flex items-center justify-center gap-3 min-h-[44px]"
+              >
+                Nézd meg működésben
+                <MessageCircle className="w-5 h-5" />
+              </Link>
+            </div>
+
+            {/* Enhanced Trust Indicators with Better Visibility */}
+            <div className="flex flex-wrap items-center justify-center gap-8 text-gray-300">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-turquoise-400" />
-                <span className="text-gray-300">30 napos garancia</span>
+                <Check className="w-6 h-6 text-turquoise-400" strokeWidth={3} />
+                <span className="text-base font-medium">14 napos ingyenes próba</span>
               </div>
               <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-turquoise-400" />
-                <span className="text-gray-300">Nincs bankkártya</span>
+                <Check className="w-6 h-6 text-turquoise-400" strokeWidth={3} />
+                <span className="text-base font-medium">Nincs bankkártya szükséges</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-turquoise-400" />
-                <span className="text-gray-300">500+ elégedett ügyfél</span>
+                <Check className="w-6 h-6 text-turquoise-400" strokeWidth={3} />
+                <span className="text-base font-medium">Bármikor lemondható</span>
               </div>
             </div>
 
@@ -1121,274 +1150,205 @@ function PublicBillingLanding() {
       </section>
 
       {/* Enhanced Pricing Cards Section */}
-      <section className="bg-gray-50 py-20 -mt-10 relative z-20">
+      <section
+        id="compare"
+        className="bg-gradient-to-b from-gray-50 to-white py-20 -mt-10 relative z-20"
+      >
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-navy-900 mb-4 text-balance">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
                 Válassz csomagot
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto text-pretty">
-                Mindkét csomag tartalmazza az összes alapfunkciót, csak a kvóta és a prémium
-                funkciók térnek el.
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto text-pretty">
+                Minden csomag 30 napos pénzvisszafizetési garanciával
               </p>
             </div>
-            <div className="grid lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-3 gap-8 items-stretch max-w-7xl mx-auto mt-16">
               {/* Free/Starter Plan */}
-              <Card
-                as="article"
-                className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 h-full flex flex-col"
-              >
-                <div className="p-8 flex flex-col h-full">
-                  {/* Header */}
-                  <div className="mb-6">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
-                      Kezdő csomag
-                    </div>
-                    <h3 className="text-2xl font-bold text-navy-900 mb-2">Ingyenes</h3>
-                    <p className="text-gray-600 mb-6 leading-relaxed text-pretty">
-                      Ideális egyéni felhasználóknak és kipróbálásra
-                    </p>
-                    <div className="mb-6 pb-6 border-b border-gray-200">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-bold text-navy-900">0</span>
-                        <span className="text-2xl text-gray-600 font-semibold">Ft</span>
-                        <span className="text-gray-500">/hó</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CTA Button - Fixed position */}
-                  <div className="mb-6">
-                    <Link
-                      href="/login?redirect=/new"
-                      className="w-full bg-gray-100 hover:bg-gray-200 text-navy-900 font-bold py-4 px-6 rounded-xl transition-all inline-flex items-center justify-center gap-2 min-h-[44px]"
-                    >
-                      Kezdés ingyen
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
-                  </div>
-
-                  {/* Features List - Grows to fill space */}
-                  <div className="flex-1 flex flex-col">
-                    <div className="text-sm font-bold text-navy-900 mb-4 uppercase tracking-wide">
-                      Főbb funkciók:
-                    </div>
-                    <ul className="space-y-4 flex-1">
-                      {[
-                        { name: '2 ajánlat / hónap', included: true },
-                        { name: 'Alapvető AI szöveggenerálás', included: true },
-                        { name: 'Alap sablonok (10 db)', included: true },
-                        { name: 'PDF export', included: true },
-                        { name: 'Email értesítések', included: true },
-                        { name: 'Egyedi branding', included: false },
-                        { name: 'Haladó AI funkciók', included: false },
-                        { name: 'Prioritás támogatás', included: false },
-                      ].map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          {feature.included ? (
-                            <Check
-                              className="w-5 h-5 text-turquoise-600 flex-shrink-0 mt-0.5"
-                              strokeWidth={3}
-                            />
-                          ) : (
-                            <X
-                              className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5"
-                              strokeWidth={2}
-                            />
-                          )}
-                          <span
-                            className={`leading-relaxed ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}
-                          >
-                            {feature.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-gray-300 transition-all hover:shadow-xl h-full flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-navy-900 mb-2">Ingyenes</h3>
+                  <p className="text-gray-600">Kezdőknek és kipróbáláshoz</p>
                 </div>
-              </Card>
 
-              {/* Standard Plan */}
-              <Card
-                as="article"
-                className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 h-full flex flex-col"
-              >
-                <div className="p-8 flex flex-col h-full">
-                  {/* Header */}
-                  <div className="mb-6">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
-                      {t('billing.plans.standard.badge')}
-                    </div>
-                    <h3 className="text-2xl font-bold text-navy-900 mb-2">
-                      {t('billing.plans.standard.name')}
-                    </h3>
-                    <p className="text-gray-600 mb-6 leading-relaxed text-pretty">
-                      {t('billing.public.standard.description')}
-                    </p>
-                    <div className="mb-6 pb-6 border-b border-gray-200">
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <span className="text-5xl font-bold text-navy-900">
-                          {billingFrequency === 'monthly'
-                            ? standardMonthly.toLocaleString('hu-HU')
-                            : Math.round(standardAnnual / 12).toLocaleString('hu-HU')}
-                        </span>
-                        <span className="text-2xl text-gray-600 font-semibold">Ft</span>
-                        <span className="text-gray-500">/hó</span>
-                      </div>
-                      {billingFrequency === 'annual' && (
-                        <div className="text-sm text-gray-600">
-                          Éves fizetés: {standardAnnual.toLocaleString('hu-HU')} Ft
-                        </div>
+                {/* Better price display with clear hierarchy */}
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold text-navy-900">0</span>
+                    <span className="text-2xl text-gray-600">Ft</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Örökké ingyenes</p>
+                </div>
+
+                {/* Enhanced feature list with better spacing and icons */}
+                <ul className="space-y-4 mb-8 flex-1">
+                  {[
+                    { name: 'Legfeljebb 3 ajánlat / hó', included: true },
+                    { name: 'Alap sablonok', included: true },
+                    { name: 'Email támogatás', included: true },
+                    { name: 'AI személyre szabás', included: false },
+                    { name: 'Csapat együttműködés', included: false },
+                  ].map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      {feature.included ? (
+                        <Check className="w-6 h-6 text-gray-400 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <X className="w-6 h-6 text-gray-300 flex-shrink-0 mt-0.5" />
                       )}
-                    </div>
-                  </div>
+                      <span className={`text-gray-700 ${!feature.included ? 'text-gray-400' : ''}`}>
+                        {feature.name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-                  {/* CTA Button - Fixed position */}
-                  <div className="mb-6">
-                    <Link
-                      href="/login?redirect=/billing"
-                      className="w-full bg-gray-100 hover:bg-turquoise-600 hover:text-white text-navy-900 font-bold py-4 px-6 rounded-xl transition-all inline-flex items-center justify-center gap-2 min-h-[44px]"
-                    >
-                      {t('billing.public.standard.cta')}
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
-                  </div>
+                {/* Consistent button styling */}
+                <Link
+                  href="/login?redirect=/new"
+                  className="block w-full px-6 py-4 bg-gray-100 hover:bg-gray-200 text-navy-900 font-bold rounded-xl text-center transition-all min-h-[44px] flex items-center justify-center"
+                >
+                  Kezdd el ingyen
+                </Link>
+              </div>
 
-                  {/* Features List - Grows to fill space */}
-                  <div className="flex-1 flex flex-col">
-                    <div className="text-sm font-bold text-navy-900 mb-4 uppercase tracking-wide">
-                      Főbb funkciók:
-                    </div>
-                    <ul className="space-y-4 flex-1">
-                      {[
-                        { name: '5 ajánlat / hónap', included: true },
-                        { name: 'Márkázott PDF export logóval', included: true },
-                        { name: 'Alap sablonok + logó feltöltés', included: true },
-                        { name: 'AI-alapú szöveg generálás', included: true },
-                        { name: 'Email értesítések', included: true },
-                        { name: 'Korlátozott tárhely (1 GB)', included: true },
-                        { name: 'Közösségi támogatás', included: true },
-                        { name: 'Haladó AI funkciók', included: false },
-                        { name: 'Csapat együttműködés', included: false },
-                        { name: 'Prioritás támogatás', included: false },
-                      ].map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          {feature.included ? (
-                            <Check
-                              className="w-5 h-5 text-turquoise-600 flex-shrink-0 mt-0.5"
-                              strokeWidth={3}
-                            />
-                          ) : (
-                            <X
-                              className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5"
-                              strokeWidth={2}
-                            />
-                          )}
-                          <span
-                            className={`leading-relaxed ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}
-                          >
-                            {feature.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+              {/* Standard Plan - FEATURED */}
+              <div className="relative bg-white rounded-3xl p-8 border-4 border-turquoise-500 shadow-2xl lg:scale-105 hover:shadow-3xl transition-all h-full flex flex-col">
+                {/* Prominent featured badge positioned above card */}
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-10">
+                  <div className="bg-gradient-to-r from-turquoise-500 to-blue-500 text-white font-extrabold text-sm px-8 py-3 rounded-full shadow-xl border-4 border-white whitespace-nowrap flex items-center gap-2">
+                    <Star className="w-5 h-5 fill-current" />
+                    LEGJOBB VÁLASZTÁS
                   </div>
                 </div>
-              </Card>
 
-              {/* Pro Plan - Most Popular */}
-              <Card
-                as="article"
-                className="relative bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-2xl transition-all border-2 border-turquoise-500 h-full flex flex-col lg:scale-105 z-10"
-              >
-                {/* Popular Badge - More Prominent */}
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                  <span className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-turquoise-500 to-blue-500 text-white rounded-full text-sm font-bold shadow-lg">
-                    <Star className="w-4 h-4" fill="currentColor" />
-                    {t('billing.plans.popularBadge')}
-                  </span>
+                <div className="mb-6 mt-4">
+                  <h3 className="text-2xl font-bold text-navy-900 mb-2">Vyndi Standard</h3>
+                  <p className="text-gray-600">Kisvállalkozásoknak és freelancereknek</p>
                 </div>
 
-                <div className="p-8 flex flex-col h-full pt-12">
-                  {/* Header */}
-                  <div className="mb-6">
-                    <h3 className="text-2xl font-bold text-navy-900 mb-2">
-                      {t('billing.plans.pro.name')}
-                    </h3>
-                    <p className="text-gray-600 mb-6 leading-relaxed text-pretty">
-                      {t('billing.public.pro.description')}
+                {/* Emphasized price with gradient */}
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-6xl font-bold bg-gradient-to-r from-turquoise-600 to-blue-600 bg-clip-text text-transparent">
+                      {billingFrequency === 'monthly'
+                        ? standardMonthly.toLocaleString('hu-HU')
+                        : Math.round(standardAnnual / 12).toLocaleString('hu-HU')}
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-2xl text-gray-600">Ft</span>
+                      <span className="text-sm text-gray-500">/ hónap</span>
+                    </div>
+                  </div>
+                  {billingFrequency === 'annual' && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Éves fizetés: {standardAnnual.toLocaleString('hu-HU')} Ft
                     </p>
-                    <div className="mb-6 pb-6 border-b border-gray-200">
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <span className="text-5xl font-bold text-navy-900">
-                          {billingFrequency === 'monthly'
-                            ? proMonthly.toLocaleString('hu-HU')
-                            : Math.round(proAnnual / 12).toLocaleString('hu-HU')}
-                        </span>
-                        <span className="text-2xl text-gray-600 font-semibold">Ft</span>
-                        <span className="text-gray-500">/hó</span>
-                      </div>
-                      {billingFrequency === 'annual' && (
-                        <div className="text-sm text-gray-600">
-                          Éves fizetés: {proAnnual.toLocaleString('hu-HU')} Ft
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* CTA Button - Fixed position */}
-                  <div className="mb-6">
-                    <Link
-                      href="/login?redirect=/billing"
-                      className="w-full bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold py-4 px-6 rounded-xl transition-all inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl min-h-[44px]"
-                    >
-                      {t('billing.public.pro.cta')}
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
-                  </div>
-
-                  {/* Features List - Grows to fill space */}
-                  <div className="flex-1 flex flex-col">
-                    <div className="text-sm font-bold text-navy-900 mb-4 uppercase tracking-wide">
-                      Főbb funkciók:
-                    </div>
-                    <ul className="space-y-4 flex-1">
-                      {[
-                        { name: 'Korlátlan ajánlat', included: true },
-                        { name: 'Korlátlan felhasználó', included: true },
-                        { name: 'Haladó AI szöveggenerálás', included: true },
-                        { name: 'Premium sablonok (100+ db)', included: true },
-                        { name: 'PDF és Word export', included: true },
-                        { name: 'Élő együttműködés', included: true },
-                        { name: 'Egyedi branding', included: true },
-                        { name: 'Korlátlan tárhely', included: true },
-                        { name: 'Haladó analitika', included: true },
-                        { name: 'Prioritás email támogatás', included: true },
-                      ].map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          {feature.included ? (
-                            <Check
-                              className="w-5 h-5 text-turquoise-600 flex-shrink-0 mt-0.5"
-                              strokeWidth={3}
-                            />
-                          ) : (
-                            <X
-                              className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5"
-                              strokeWidth={2}
-                            />
-                          )}
-                          <span
-                            className={`leading-relaxed ${feature.included ? 'text-gray-700' : 'text-gray-400'}`}
-                          >
-                            {feature.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  )}
+                  {billingFrequency === 'monthly' && (
+                    <p className="text-sm text-gray-500 mt-2">Havonta számlázva</p>
+                  )}
                 </div>
-              </Card>
+
+                {/* Feature list with turquoise checkmarks */}
+                <ul className="space-y-4 mb-8 flex-1">
+                  {[
+                    { name: 'Korlátlan ajánlatok', included: true },
+                    { name: 'Összes sablon hozzáférés', included: true },
+                    { name: 'AI-alapú személyre szabás', included: true },
+                    { name: 'Prioritás támogatás', included: true },
+                    { name: 'Export PDF/Word', included: true },
+                  ].map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-turquoise-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-4 h-4 text-turquoise-600 stroke-[3]" />
+                      </div>
+                      <span className="text-gray-900 font-medium">{feature.name}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Prominent CTA with gradient */}
+                <Link
+                  href="/login?redirect=/billing"
+                  className="block w-full px-6 py-4 bg-gradient-to-r from-turquoise-600 to-blue-600 hover:from-turquoise-700 hover:to-blue-700 text-white font-bold rounded-xl text-center shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
+                >
+                  Próbáld ki ingyen 30 napig
+                </Link>
+                <p className="text-center text-sm text-gray-500 mt-4">Nincs bankkártya szükséges</p>
+              </div>
+
+              {/* Pro Plan */}
+              <div className="relative bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-gray-300 transition-all hover:shadow-xl h-full flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-navy-900 mb-2">Vyndi Pro</h3>
+                  <p className="text-gray-600">Növekvő csapatoknak</p>
+                </div>
+
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-bold text-navy-900">
+                      {billingFrequency === 'monthly'
+                        ? proMonthly.toLocaleString('hu-HU')
+                        : Math.round(proAnnual / 12).toLocaleString('hu-HU')}
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-2xl text-gray-600">Ft</span>
+                      <span className="text-sm text-gray-500">/ hónap</span>
+                    </div>
+                  </div>
+                  {billingFrequency === 'annual' && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Éves fizetés: {proAnnual.toLocaleString('hu-HU')} Ft
+                    </p>
+                  )}
+                  {billingFrequency === 'monthly' && (
+                    <p className="text-sm text-gray-500 mt-2">Havonta számlázva</p>
+                  )}
+                </div>
+
+                <ul className="space-y-4 mb-8 flex-1">
+                  {[
+                    { name: 'Minden Standard funkció', included: true },
+                    { name: 'Csapat együttműködés (5 fő)', included: true },
+                    { name: 'Haladó AI funkciók', included: true },
+                    { name: 'CRM integráció', included: true },
+                    { name: 'Dedikált account manager', included: true },
+                  ].map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <Check className="w-6 h-6 text-turquoise-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-900 font-medium">{feature.name}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/login?redirect=/billing"
+                  className="block w-full px-6 py-4 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl text-center transition-all min-h-[44px] flex items-center justify-center"
+                >
+                  Kezdd el most
+                </Link>
+              </div>
+            </div>
+
+            {/* Enterprise CTA below cards */}
+            <div className="mt-16 text-center">
+              <div className="inline-block bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-8 border border-gray-200">
+                <h3 className="text-2xl font-bold text-navy-900 mb-3">
+                  Nagyobb csapat vagy egyedi igények?
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-xl mx-auto text-pretty">
+                  Az Enterprise csomag egyedi árazást, dedikált támogatást és testreszabott
+                  funkciókat kínál.
+                </p>
+                <Link
+                  href="mailto:info@vyndi.com?subject=Enterprise megoldás érdeklődés"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-navy-900 font-bold rounded-xl border-2 border-gray-300 hover:border-turquoise-500 transition-all min-h-[44px]"
+                >
+                  Kérj egyedi ajánlatot
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -1407,21 +1367,23 @@ function PublicBillingLanding() {
               </p>
             </div>
 
-            {/* Comparison Table */}
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
+            {/* Enhanced Comparison Table */}
+            <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-navy-900 to-navy-800 text-white">
-                      <th className="px-6 py-4 text-left font-bold">Funkció</th>
-                      <th className="px-6 py-4 text-center font-bold">Ingyenes</th>
-                      <th className="px-6 py-4 text-center font-bold">Standard</th>
-                      <th className="px-6 py-4 text-center font-bold bg-turquoise-600">
-                        Pro <Star className="inline w-4 h-4 ml-1" fill="currentColor" />
+                      <th className="px-8 py-5 text-left font-bold text-lg">Funkció</th>
+                      <th className="px-8 py-5 text-center font-bold">Ingyenes</th>
+                      <th className="px-8 py-5 text-center font-bold bg-turquoise-600/30">
+                        Standard
+                      </th>
+                      <th className="px-8 py-5 text-center font-bold bg-turquoise-600">
+                        Pro <Star className="inline w-5 h-5 ml-1" fill="currentColor" />
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-200">
                     {[
                       {
                         feature: 'Felhasználók száma',
@@ -1473,62 +1435,57 @@ function PublicBillingLanding() {
                         type: 'check' as const,
                       },
                     ].map((row, idx) => (
-                      <tr
-                        key={idx}
-                        className={`border-b border-gray-200 transition-colors hover:bg-gray-50 ${
-                          idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                        }`}
-                      >
-                        <td className="px-6 py-4 font-medium text-navy-900">{row.feature}</td>
-                        <td className="px-6 py-4 text-center">
+                      <tr key={idx} className="transition-colors hover:bg-gray-50">
+                        <td className="px-8 py-5 font-semibold text-navy-900">{row.feature}</td>
+                        <td className="px-8 py-5 text-center">
                           {row.type === 'check' ? (
                             row.free === true ? (
                               <div className="flex justify-center">
-                                <div className="w-6 h-6 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                  <Check className="w-4 h-4 text-turquoise-600" strokeWidth={3} />
+                                <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
+                                  <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
                                 </div>
                               </div>
                             ) : (
                               <div className="flex justify-center">
-                                <X className="w-5 h-5 text-gray-300" />
+                                <X className="w-6 h-6 text-gray-300" />
                               </div>
                             )
                           ) : (
-                            <span className="text-gray-600">{row.free}</span>
+                            <span className="text-gray-700 font-medium">{row.free}</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-8 py-5 text-center bg-turquoise-50/20">
                           {row.type === 'check' ? (
                             row.standard === true ? (
                               <div className="flex justify-center">
-                                <div className="w-6 h-6 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                  <Check className="w-4 h-4 text-turquoise-600" strokeWidth={3} />
+                                <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
+                                  <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
                                 </div>
                               </div>
                             ) : (
                               <div className="flex justify-center">
-                                <X className="w-5 h-5 text-gray-300" />
+                                <X className="w-6 h-6 text-gray-300" />
                               </div>
                             )
                           ) : (
-                            <span className="text-gray-600">{row.standard}</span>
+                            <span className="text-gray-700 font-medium">{row.standard}</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center bg-turquoise-50/30">
+                        <td className="px-8 py-5 text-center bg-turquoise-50/40">
                           {row.type === 'check' ? (
                             row.pro === true ? (
                               <div className="flex justify-center">
-                                <div className="w-6 h-6 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                  <Check className="w-4 h-4 text-turquoise-600" strokeWidth={3} />
+                                <div className="w-7 h-7 bg-turquoise-200 rounded-full flex items-center justify-center">
+                                  <Check className="w-5 h-5 text-turquoise-700" strokeWidth={3} />
                                 </div>
                               </div>
                             ) : (
                               <div className="flex justify-center">
-                                <X className="w-5 h-5 text-gray-300" />
+                                <X className="w-6 h-6 text-gray-300" />
                               </div>
                             )
                           ) : (
-                            <span className="text-gray-600 font-medium">{row.pro}</span>
+                            <span className="text-gray-900 font-bold">{row.pro}</span>
                           )}
                         </td>
                       </tr>
@@ -1538,7 +1495,7 @@ function PublicBillingLanding() {
               </div>
 
               {/* Mobile hint */}
-              <div className="lg:hidden px-6 py-3 bg-gray-100 text-center text-sm text-gray-600 border-t border-gray-200">
+              <div className="lg:hidden px-6 py-4 bg-gray-100 text-center text-sm text-gray-600 border-t border-gray-200">
                 ← Görgess vízszintesen a teljes táblázatért →
               </div>
             </div>
@@ -1546,74 +1503,53 @@ function PublicBillingLanding() {
         </div>
       </section>
 
-      {/* Social Proof / Testimonials */}
-      <section className="py-20 bg-gray-50">
+      {/* Enhanced Testimonials Section */}
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
                 Mit mondanak ügyfeleink?
               </h2>
               <p className="text-xl text-gray-600 text-pretty">
-                Több mint 500 vállalkozás bízik a Vyndi-ben
+                Több mint 500 elégedett ügyfél használja a Vyndit
               </p>
             </div>
 
+            {/* Redesigned testimonial cards with better hierarchy */}
             <div className="grid md:grid-cols-3 gap-8">
               {TESTIMONIALS.map((testimonial, idx) => (
                 <div
                   key={idx}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-8 relative overflow-hidden group"
+                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100"
                 >
-                  {/* Decorative gradient accent */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-turquoise-500 to-blue-500"></div>
-
-                  {/* Star Rating - More prominent */}
-                  <div className="flex items-center gap-1 mb-6">
+                  {/* Star rating at top, more prominent */}
+                  <div className="flex items-center gap-1 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-6 h-6 fill-yellow-400 text-yellow-400"
-                        strokeWidth={0}
-                      />
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
 
-                  {/* Quote */}
-                  <div className="relative mb-6">
-                    <svg
-                      className="absolute -top-2 -left-2 w-8 h-8 text-turquoise-200"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.996 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.984zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                    </svg>
-                    <p className="text-gray-700 leading-relaxed relative z-10 pl-6 text-pretty">
-                      {testimonial.quote}
-                    </p>
-                  </div>
+                  {/* Quote with better typography */}
+                  <blockquote className="text-gray-700 leading-relaxed mb-6 text-lg text-pretty">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </blockquote>
 
-                  {/* Author */}
-                  <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
-                    <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-turquoise-100 flex-shrink-0">
-                      <Image
-                        src={testimonial.image}
-                        alt={testimonial.author}
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                  {/* Profile section with better layout */}
+                  <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                    <Image
+                      src={testimonial.image}
+                      alt={testimonial.author}
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 rounded-full object-cover ring-2 ring-turquoise-200"
+                    />
                     <div>
-                      <div className="font-bold text-navy-900">{testimonial.author}</div>
+                      <div className="font-bold text-navy-900 text-base">{testimonial.author}</div>
                       <div className="text-sm text-gray-600">{testimonial.role}</div>
                       <div className="text-sm text-gray-500">{testimonial.company}</div>
                     </div>
                   </div>
-
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-turquoise-500/0 to-blue-500/0 group-hover:from-turquoise-500/5 group-hover:to-blue-500/5 transition-all pointer-events-none"></div>
                 </div>
               ))}
             </div>
@@ -1621,46 +1557,46 @@ function PublicBillingLanding() {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Section with Enhanced Accordion */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
+            <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
                 Gyakran ismételt kérdések
               </h2>
-              <p className="text-xl text-gray-600 text-pretty">
-                Minden, amit az árazásról tudnod kell
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto text-pretty">
+                Nem találod a választ? Írj nekünk bátran a{' '}
+                <a
+                  href="mailto:hello@vyndi.com"
+                  className="text-turquoise-600 hover:text-turquoise-700 font-semibold"
+                >
+                  hello@vyndi.com
+                </a>{' '}
+                címen.
               </p>
             </div>
 
+            {/* Enhanced accordion with better styling */}
             <div className="space-y-4">
               {PRICING_FAQS.map((faq, idx) => (
                 <details
                   key={idx}
-                  className="group bg-white rounded-2xl shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-200"
+                  className="group bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:border-turquoise-300 transition-all"
                 >
-                  <summary className="flex items-center justify-between cursor-pointer p-6 font-bold text-navy-900 hover:text-turquoise-600 transition-colors list-none min-h-[44px]">
-                    <span className="text-lg pr-4 text-balance">{faq.question}</span>
-                    <ChevronDown className="w-6 h-6 text-turquoise-600 transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
+                  <summary className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-gray-50 transition-colors cursor-pointer list-none min-h-[44px] [&::-webkit-details-marker]:hidden">
+                    <span className="text-lg font-bold text-navy-900 pr-8 text-balance group-hover:text-turquoise-600 transition-colors">
+                      {faq.question}
+                    </span>
+                    <ChevronDown className="w-6 h-6 text-turquoise-600 flex-shrink-0 transition-transform duration-300 group-open:rotate-180" />
                   </summary>
-                  <div className="px-6 pb-6 text-gray-700 leading-relaxed text-pretty">
+
+                  {/* Smooth expand/collapse animation */}
+                  <div className="px-8 pb-6 text-gray-600 leading-relaxed text-pretty">
                     {faq.answer}
                   </div>
                 </details>
               ))}
-            </div>
-
-            {/* Contact CTA for more questions */}
-            <div className="mt-12 text-center">
-              <p className="text-gray-600 mb-4 text-pretty">Nem találtad a választ?</p>
-              <a
-                href="mailto:info@vyndi.com?subject=Árazás kérdés"
-                className="bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl transition-all inline-flex items-center gap-2 min-h-[44px]"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Vedd fel velünk a kapcsolatot
-              </a>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { VideoDemoSection } from '@/components/video-demo-section';
 import { ProblemSection } from '@/components/problem-section';
 import { SolutionSection } from '@/components/solution-section';
 import { ComparisonTable } from '@/components/comparison-table';
-import { ROICalculator } from '@/components/roi-calculator';
+import { ROICalculatorLanding } from '@/components/roi-calculator-landing';
 import { TestimonialSection } from '@/components/testimonial-section';
 import { IndustrySolutions } from '@/components/industry-solutions';
 import { FAQSection } from '@/components/faq-section';
@@ -114,7 +114,7 @@ export default function Home() {
       <ComparisonTable />
 
       {/* ROI CALCULATOR - Personalized Value */}
-      <ROICalculator />
+      <ROICalculatorLanding />
 
       {/* TESTIMONIALS - Social Proof */}
       <TestimonialSection />
@@ -126,113 +126,202 @@ export default function Home() {
       <FAQSection />
 
       {/* FINAL CTA - Last Conversion Opportunity */}
-      <section className="py-24 bg-gradient-to-br from-turquoise-500 via-turquoise-400 to-blue-500 text-white relative overflow-hidden">
-        {/* Decorative Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+      <section className="relative py-24 overflow-hidden">
+        {/* Enhanced gradient background with pattern overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-turquoise-500 via-turquoise-600 to-blue-600">
+          {/* Subtle pattern overlay */}
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          ></div>
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
-          {/* Content Wrapper */}
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Heading */}
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg text-balance">
-              Készen állsz a váltásra?
-            </h2>
+          <div className="max-w-4xl mx-auto">
+            {/* Compelling headline with better messaging */}
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+                Készen állsz, hogy időt <br className="hidden sm:block" />
+                és pénzt spórolj?
+              </h2>
+              <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
+                Csatlakozz 500+ vállalkozáshoz, akik már professzionális ajánlatokat készítenek
+                percek alatt a Vyndivel
+              </p>
+            </div>
 
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-white/90 mb-12 leading-relaxed text-pretty">
-              Csatlakozz 500+ vállalkozáshoz, akik már spórolnak időt és pénzt a Vyndivel
-            </p>
+            {/* Prominent form with clear CTA button */}
+            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8">
+              {/* Value proposition above form */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-50 text-green-700 font-bold text-sm rounded-full mb-4 border-2 border-green-200">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span>Indítsd el 14 napos ingyenes próbádat</span>
+                </div>
+              </div>
 
-            {/* CTA Form */}
-            {/* Enhanced form with better styling and larger inputs */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <input
-                  type="email"
-                  placeholder="Add meg az email címedet"
-                  className="flex-1 px-8 py-5 text-lg rounded-xl border-2 border-white/30 bg-white/95 backdrop-blur focus:outline-none focus:ring-4 focus:ring-white/50 shadow-2xl min-h-[44px]"
-                />
+              {/* Form */}
+              <div className="space-y-4 mb-6">
+                {/* Two input fields side by side on desktop */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Name input */}
+                  <div>
+                    <label
+                      htmlFor="cta-name"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Név
+                    </label>
+                    <input
+                      id="cta-name"
+                      type="text"
+                      placeholder="Kovács János"
+                      className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-turquoise-500 focus:bg-white focus:outline-none text-gray-900 placeholder-gray-400 transition-all text-lg min-h-[44px]"
+                    />
+                  </div>
+
+                  {/* Email input */}
+                  <div>
+                    <label
+                      htmlFor="cta-email"
+                      className="block text-sm font-semibold text-gray-700 mb-2"
+                    >
+                      Email cím
+                    </label>
+                    <input
+                      id="cta-email"
+                      type="email"
+                      placeholder="janos@vallalkozas.hu"
+                      className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-turquoise-500 focus:bg-white focus:outline-none text-gray-900 placeholder-gray-400 transition-all text-lg min-h-[44px]"
+                    />
+                  </div>
+                </div>
+
+                {/* Prominent CTA button that stands out */}
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-10 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 inline-flex items-center justify-center gap-3 whitespace-nowrap min-h-[44px]"
+                  className="w-full py-5 px-8 bg-gradient-to-r from-turquoise-600 to-blue-600 hover:from-turquoise-700 hover:to-blue-700 text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group min-h-[44px]"
                 >
-                  Beszélj egy szakértővel
+                  <span>Kezdés ingyen</span>
                   <svg
-                    className="w-5 h-5"
+                    className="w-6 h-6 group-hover:translate-x-1 transition-transform"
                     fill="none"
-                    stroke="currentColor"
                     viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
+                    stroke="currentColor"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      strokeWidth={2.5}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
                     />
                   </svg>
                 </Link>
               </div>
 
-              {/* Trust Indicators */}
-              {/* Added prominent trust indicators */}
-              <div className="flex flex-wrap justify-center gap-6 text-white/90">
+              {/* Trust signals below form */}
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={3}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  <span className="font-medium">14 napos ingyenes próba</span>
+                  <span className="font-semibold">14 napos próba ingyen</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={3}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  <span className="font-medium">Nincs bankkártya</span>
+                  <span className="font-semibold">Nincs bankkártya szükséges</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={3}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
-                  <span className="font-medium">5 perc alatt indulás</span>
+                  <span className="font-semibold">Indítás 5 perc alatt</span>
                 </div>
               </div>
             </div>
 
-            {/* Social Proof Numbers */}
-            {/* Added quick stats for final push */}
-            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto pt-8 border-t border-white/20">
-              <div>
-                <div className="text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-white/80">Aktív vállalkozás</div>
+            {/* Social proof stats - redesigned for better visibility */}
+            <div className="grid grid-cols-3 gap-6 md:gap-8">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
+                  <svg
+                    className="w-8 h-8 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                </div>
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">500+</div>
+                <div className="text-white/90 font-medium">Aktív vállalkozás</div>
               </div>
-              <div>
-                <div className="text-4xl font-bold text-white mb-2">98%</div>
-                <div className="text-white/80">Elégedettség</div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
+                  <svg
+                    className="w-8 h-8 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                    />
+                  </svg>
+                </div>
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">98%</div>
+                <div className="text-white/90 font-medium">Elégedettség</div>
               </div>
-              <div>
-                <div className="text-4xl font-bold text-white mb-2">10K+</div>
-                <div className="text-white/80">Ajánlat készült</div>
+
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
+                  <svg
+                    className="w-8 h-8 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">10K+</div>
+                <div className="text-white/90 font-medium">Ajánlat készült</div>
               </div>
             </div>
           </div>
