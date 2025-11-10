@@ -2,13 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, X, Filter } from 'lucide-react';
-
-export interface ResourceFilters {
-  type: string[];
-  topic: string[];
-  difficulty: string[];
-  format: string[];
-}
+import { ResourceFilters } from '@/types/resource';
 
 interface ResourceFiltersProps {
   activeFilters: ResourceFilters;

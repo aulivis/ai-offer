@@ -2,6 +2,13 @@ export type ResourceType = 'guide' | 'blog' | 'video' | 'template';
 
 export type Difficulty = 'Kezdő' | 'Haladó' | 'Szakértő';
 
+export interface ResourceFilters {
+  type: string[];
+  topic: string[];
+  difficulty: string[];
+  format: string[];
+}
+
 export interface Resource {
   id: string;
   slug: string;
