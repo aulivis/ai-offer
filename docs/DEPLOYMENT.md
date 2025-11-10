@@ -57,6 +57,7 @@ NEXT_PUBLIC_ENABLE_CHATBOT=true
 ### 3. Build Configuration
 
 - [ ] Verify `vercel.json` is in the root of the `web` directory
+- [ ] Verify `package.json` specifies Node.js 22.x in `engines.node`
 - [ ] Test build locally: `npm run build`
 - [ ] Verify no build errors or warnings
 
@@ -75,6 +76,11 @@ The `vercel.json` file configures:
 - **Function timeout:** 60 seconds (Pro plan)
 - **Memory:** 1024 MB
 - **Region:** `iad1` (US East)
+
+**Node.js Version:**
+
+- **Required:** Node.js 22.x (specified in `package.json` `engines.node`)
+- Node.js 18.x is discontinued and will cause deployment failures
 
 To customize:
 
@@ -311,6 +317,18 @@ Webhook callbacks are supported via `callbackUrl` parameter.
 - [Vercel CLI](https://vercel.com/docs/cli)
 - [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
 
+## Best Practices Review
+
+For a comprehensive review of Vercel deployment best practices (2025), see:
+- [Vercel Deployment Review 2025](./VERCEL_DEPLOYMENT_REVIEW_2025.md)
+
+This review covers:
+- Node.js version requirements
+- Memory optimization recommendations
+- Edge runtime opportunities
+- Performance monitoring
+- Cost optimization strategies
+
 ## Support
 
 If you encounter issues:
@@ -320,3 +338,4 @@ If you encounter issues:
 3. Review error logs in Vercel dashboard
 4. Check this guide for troubleshooting steps
 5. Review [Architecture Documentation](./ARCHITECTURE.md) for system overview
+6. Review [Vercel Deployment Review 2025](./VERCEL_DEPLOYMENT_REVIEW_2025.md) for optimization opportunities
