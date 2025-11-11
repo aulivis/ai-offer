@@ -76,10 +76,12 @@ export function SolutionSection() {
             <style
               dangerouslySetInnerHTML={{
                 __html: `
+              /* Mobile: First column 5% thinner, 3rd and 4th columns 5% wider */
               .solution-table-header,
               .solution-table-row {
                 grid-template-columns: 30% 21.67% 26.67% 21.66%;
               }
+              /* Desktop: Original column widths */
               @media (min-width: 768px) {
                 .solution-table-header,
                 .solution-table-row {
@@ -95,10 +97,10 @@ export function SolutionSection() {
                 {/* Table Header */}
                 <div className="grid bg-navy-900 text-white solution-table-header">
                   {/* Empty cell for row labels */}
-                  <div className="p-4"></div>
+                  <div className="p-4 md:p-6"></div>
 
                   {/* Traditional column with red accent */}
-                  <div className="p-4 text-center border-l border-white/10">
+                  <div className="p-4 md:p-6 text-center border-l border-white/10">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
                         <X className="w-5 h-5 text-red-400" />
@@ -108,7 +110,7 @@ export function SolutionSection() {
                   </div>
 
                   {/* Vyndi AI column with turquoise accent and highlight */}
-                  <div className="p-4 text-center border-l border-white/10 bg-turquoise-600 relative">
+                  <div className="p-4 md:p-6 text-center border-l border-white/10 bg-turquoise-600 relative">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                         <Check className="w-5 h-5 text-white" />
@@ -118,7 +120,7 @@ export function SolutionSection() {
                   </div>
 
                   {/* Improvement column with green accent */}
-                  <div className="p-4 text-center border-l border-white/10">
+                  <div className="p-4 md:p-6 text-center border-l border-white/10">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
                         <TrendingUp className="w-5 h-5 text-green-400" />

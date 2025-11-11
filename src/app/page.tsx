@@ -174,19 +174,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Clean diagonal transition: Hero (navy-900/turquoise-900) → How It Works (gray-50/white) */}
-      <div className="relative h-12 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#003d33] via-[#243b53] to-[#F9FAFB]"></div>
-        <svg
-          viewBox="0 0 1440 60"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="0,0 1440,0 1440,60 0,40" fill="#F9FAFB" />
-        </svg>
-      </div>
-
       {/* HOW IT WORKS - Quick Process Overview */}
       <HowItWorks />
 
@@ -195,106 +182,26 @@ export default function Home() {
         <VideoDemoSection />
       </section>
 
-      {/* Clean transition: Video (white) → Problem (gray-50) */}
-      <div className="relative h-8 -mb-1">
-        <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F9FAFB]"></div>
-      </div>
-
       {/* PROBLEM - Establish Pain Points */}
       <ProblemSection />
-
-      {/* Clean diagonal transition: Problem (gray-50) → Solution (turquoise-50/blue-50) */}
-      <div className="relative h-12 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] to-[#e6f9f7]"></div>
-        <svg
-          viewBox="0 0 1440 60"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="0,20 1440,0 1440,60 0,60" fill="#e6f9f7" />
-        </svg>
-      </div>
 
       {/* SOLUTION - Your Answer with Before/After */}
       <SolutionSection />
 
-      {/* Clean diagonal transition: Solution (turquoise-50/blue-50) → Comparison (white/gray-50) */}
-      <div className="relative h-12 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#EFF6FF] to-white"></div>
-        <svg
-          viewBox="0 0 1440 60"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="0,0 1440,20 1440,60 0,60" fill="white" />
-        </svg>
-      </div>
-
       {/* COMPARISON TABLE - Why Choose Us */}
       <ComparisonTable />
-
-      {/* Clean transition: Comparison (white/gray-50) → ROI (navy-900/blue-900) */}
-      <div className="relative h-16 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-[#334e68] to-[#102a43]"></div>
-        <svg
-          viewBox="0 0 1440 80"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="0,0 1440,0 1440,80 0,60" fill="#102a43" />
-        </svg>
-      </div>
 
       {/* ROI CALCULATOR - Personalized Value */}
       <ROICalculatorLanding />
 
-      {/* Clean transition: ROI (navy-900/blue-900) → Testimonials (gray-50/blue-50) */}
-      <div className="relative h-16 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1E3A8A] via-[#243b53] to-[#F9FAFB]"></div>
-        <svg
-          viewBox="0 0 1440 80"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="0,20 1440,0 1440,80 0,80" fill="#F9FAFB" />
-        </svg>
-      </div>
-
       {/* TESTIMONIALS - Social Proof */}
       <TestimonialSection />
-
-      {/* Clean transition: Testimonials (gray-50/blue-50) → Industry Solutions (white) */}
-      <div className="relative h-8 -mb-1">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#EFF6FF] to-white"></div>
-      </div>
 
       {/* INDUSTRY SOLUTIONS - Specific Use Cases */}
       <IndustrySolutions />
 
-      {/* Clean transition: Industry Solutions (white) → FAQ (white/gray-50) */}
-      <div className="relative h-8 -mb-1">
-        <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F9FAFB]"></div>
-      </div>
-
       {/* FAQ - Address Objections */}
       <FAQSection />
-
-      {/* Clean diagonal transition: FAQ (white/gray-50) → Final CTA (turquoise-500/blue-600) */}
-      <div className="relative h-16 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-[#b8f0ea] to-[#009688]"></div>
-        <svg
-          viewBox="0 0 1440 80"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="0,0 1440,0 1440,80 0,60" fill="#009688" />
-        </svg>
-      </div>
 
       {/* FINAL CTA - Last Conversion Opportunity */}
       <section className="relative py-24 overflow-hidden">
