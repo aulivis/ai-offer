@@ -34,4 +34,3 @@ export function LandingCTA({
     </Link>
   );
 }
-

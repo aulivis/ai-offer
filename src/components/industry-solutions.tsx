@@ -167,7 +167,9 @@ export function IndustrySolutions() {
 
                     {/* Features List */}
                     <ul className="space-y-3 flex flex-col items-start text-left">
-                      <li className="text-gray-700 text-sm font-semibold mb-2 w-full">Fő funkciók:</li>
+                      <li className="text-gray-700 text-sm font-semibold mb-2 w-full">
+                        Fő funkciók:
+                      </li>
                       {industry.features.map((feature, index) => (
                         <li key={index} className="flex items-start gap-3 w-full">
                           <Check
@@ -204,7 +206,9 @@ export function IndustrySolutions() {
 
                   {/* Features List */}
                   <ul className="space-y-3 mb-6 flex flex-col items-start">
-                    <li className="text-gray-700 text-sm font-semibold mb-2 w-full">Fő funkciók:</li>
+                    <li className="text-gray-700 text-sm font-semibold mb-2 w-full">
+                      Fő funkciók:
+                    </li>
                     {industry.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-3 w-full">
                         <Check

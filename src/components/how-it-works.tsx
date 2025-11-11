@@ -204,11 +204,7 @@ export function HowItWorks() {
         <div className="text-center mt-12 relative">
           {/* Vertical dashed line from time badge to CTA */}
           <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 -top-24">
-            <svg
-              className="mx-auto w-1 h-16"
-              viewBox="0 0 4 64"
-              fill="none"
-            >
+            <svg className="mx-auto w-1 h-16" viewBox="0 0 4 64" fill="none">
               <line
                 x1="2"
                 y1="0"
