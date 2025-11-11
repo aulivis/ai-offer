@@ -50,6 +50,7 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     },
 
     // Integration configuration
-    integrations: [Sentry.nodeProfilingIntegration()],
+    // Note: nodeProfilingIntegration requires @sentry/profiling-node package
+    // integrations: [nodeProfilingIntegration()],
   });
 }
