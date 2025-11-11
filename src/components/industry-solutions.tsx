@@ -141,8 +141,8 @@ export function IndustrySolutions() {
                     >
                       <Icon className="w-6 h-6 text-white" strokeWidth={2} />
                     </div>
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-navy-900 text-balance flex-1">
+                    {/* Title - matching comparison table font size */}
+                    <h3 className="text-base md:text-lg font-bold text-navy-900 text-balance flex-1">
                       {industry.name}
                     </h3>
                   </div>

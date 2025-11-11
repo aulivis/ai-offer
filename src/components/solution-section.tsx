@@ -77,7 +77,12 @@ export function SolutionSection() {
             <div className="overflow-x-auto">
               <div className="min-w-[600px]">
                 {/* Table Header */}
-                <div className="grid grid-cols-4 bg-navy-900 text-white">
+                <div
+                  className="grid bg-navy-900 text-white"
+                  style={{
+                    gridTemplateColumns: '35% 21.67% 21.67% 21.66%',
+                  }}
+                >
                   {/* Empty cell for row labels */}
                   <div className="p-4"></div>
 
@@ -88,7 +93,7 @@ export function SolutionSection() {
                         <X className="w-5 h-5 text-red-400" />
                       </div>
                     </div>
-                    <h3 className="font-bold text-lg">Hagyományos</h3>
+                    <h3 className="font-bold text-base md:text-lg">Hagyományos</h3>
                   </div>
 
                   {/* Vyndi AI column with turquoise accent and highlight */}
@@ -98,7 +103,7 @@ export function SolutionSection() {
                         <Check className="w-5 h-5 text-white" />
                       </div>
                     </div>
-                    <h3 className="font-bold text-lg">Vyndi</h3>
+                    <h3 className="font-bold text-base md:text-lg">Vyndi</h3>
                   </div>
 
                   {/* Improvement column with green accent */}
@@ -108,7 +113,7 @@ export function SolutionSection() {
                         <TrendingUp className="w-5 h-5 text-green-400" />
                       </div>
                     </div>
-                    <h3 className="font-bold text-lg">Fejlődés</h3>
+                    <h3 className="font-bold text-base md:text-lg">Fejlődés</h3>
                   </div>
                 </div>
 
@@ -120,48 +125,57 @@ export function SolutionSection() {
                   return (
                     <div
                       key={index}
-                      className="grid grid-cols-4 border-t border-gray-200 hover:bg-gray-50 transition-colors"
+                      className="grid border-t border-gray-200 hover:bg-gray-50 transition-colors"
+                      style={{
+                        gridTemplateColumns: '35% 21.67% 21.67% 21.66%',
+                      }}
                     >
                       {/* Row Label */}
-                      <div className="p-6 flex items-center gap-3">
+                      <div className="p-4 md:p-6 flex items-center gap-3">
                         <div
-                          className={`w-12 h-12 ${item.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}
+                          className={`w-10 h-10 md:w-12 md:h-12 ${item.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}
                         >
-                          <Icon className={`w-6 h-6 ${item.iconColor}`} />
+                          <Icon className={`w-5 h-5 md:w-6 md:h-6 ${item.iconColor}`} />
                         </div>
                         <div>
-                          <div className="font-bold text-navy-900 text-lg">{item.metric}</div>
+                          <div className="font-bold text-navy-900 text-sm md:text-base">
+                            {item.metric}
+                          </div>
                         </div>
                       </div>
 
                       {/* Traditional Value */}
-                      <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-red-50/50">
+                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-gray-200 bg-red-50/50">
                         <div className="text-center">
                           <div
-                            className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-red-600 mb-1`}
+                            className={`${isFirstRow ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-bold text-red-600 mb-1`}
                           >
                             {item.before.value}
                           </div>
-                          <div className="text-sm text-gray-500">{item.before.subtitle}</div>
+                          <div className="text-xs md:text-sm text-gray-500">
+                            {item.before.subtitle}
+                          </div>
                         </div>
                       </div>
 
                       {/* Vyndi AI Value */}
-                      <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-turquoise-50">
+                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-gray-200 bg-turquoise-50">
                         <div className="text-center">
                           <div
-                            className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-turquoise-600 mb-1`}
+                            className={`${isFirstRow ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-bold text-turquoise-600 mb-1`}
                           >
                             {item.after.value}
                           </div>
-                          <div className="text-sm text-gray-600">{item.after.subtitle}</div>
+                          <div className="text-xs md:text-sm text-gray-600">
+                            {item.after.subtitle}
+                          </div>
                         </div>
                       </div>
 
                       {/* Improvement */}
-                      <div className="p-6 flex items-center justify-center border-l border-gray-200">
-                        <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold border border-green-300">
-                          <TrendingUp className="w-4 h-4" />
+                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-gray-200">
+                        <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold border border-green-300">
+                          <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
                           {item.improvement}
                         </div>
                       </div>

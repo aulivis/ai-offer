@@ -127,7 +127,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   return (
     <>
       <header className={headerClass}>
-        <div className="mx-auto flex h-14 md:h-20 w-full max-w-6xl items-center gap-6 px-4 md:px-6">
+        <div className="mx-auto flex h-14 md:h-20 w-full max-w-7xl items-center gap-6 px-4 md:px-6">
           {/* Enhanced Logo Section */}
           <Link href="/" className="flex items-center gap-3" onClick={closeMenu}>
             {logoUrl ? (
@@ -213,10 +213,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               </>
             ) : (
               <>
-                {/* Enhanced "Bejelentkezés" button instead of plain text */}
+                {/* Enhanced "Bejelentkezés" button with hero secondary CTA style */}
                 <Link
                   href="/login"
-                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 transition-all duration-200"
+                  className="border-2 border-navy-900 text-navy-900 font-semibold rounded-xl px-5 py-2.5 text-base hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors"
                 >
                   {t('nav.login')}
                 </Link>
@@ -307,7 +307,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     <>
                       <Link
                         href="/login"
-                        className="px-4 py-3 text-center text-base font-semibold border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200 min-h-[44px] flex items-center justify-center"
+                        className="border-2 border-navy-900 text-navy-900 font-semibold rounded-xl px-4 py-3 text-center text-base hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors min-h-[44px] flex items-center justify-center"
                         onClick={closeMenu}
                       >
                         {t('nav.login')}

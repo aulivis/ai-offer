@@ -29,57 +29,39 @@ export function VideoDemoSection() {
 
         {/* Video Player Container */}
         <div className="max-w-5xl mx-auto mb-12">
-          {/* Enhanced video container with better shadow and border */}
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl group">
-            {/* Thumbnail/Video */}
+          {/* Responsive video container */}
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl">
+            {/* Poster image - loads fast */}
             {!isPlaying ? (
               <>
-                {/* Thumbnail Image - loads fast */}
-                <div className="relative w-full aspect-video bg-gradient-to-br from-navy-800 via-navy-700 to-turquoise-800">
+                {/* Background gradient fallback */}
+                <div className="absolute inset-0 bg-gradient-to-br from-navy-800 via-navy-700 to-turquoise-800"></div>
+                <div className="relative w-full h-full">
                   <Image
-                    src="/placeholder.svg?height=720&width=1280"
+                    src="/video-poster.jpg"
                     alt="Product demo"
                     fill
-                    className="object-cover opacity-80"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                    loading="lazy"
+                    className="object-cover"
+                    onError={() => {
+                      // Image will fallback to gradient background if it fails to load
+                    }}
                   />
-
-                  {/* Overlay for better play button visibility */}
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-                  {/* Duration Badge */}
-                  <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-sm font-semibold">
-                    2:15
-                  </div>
-
-                  {/* Large, tappable play button */}
-                  <button
-                    onClick={() => setIsPlaying(true)}
-                    className="absolute inset-0 flex items-center justify-center min-h-[56px] min-w-[56px]"
-                    aria-label="Play video"
-                  >
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                      <Play className="w-10 h-10 md:w-12 md:h-12 text-white ml-1" fill="white" />
-                    </div>
-                  </button>
-
-                  {/* Video Title Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
-                    <h3 className="text-white font-bold text-xl md:text-2xl mb-2 text-balance">
-                      Fedezd fel, hogyan automatizálhatod a teljes ajánlatkészítési folyamatot – az
-                      adatok megadásától az árazáson át a dizájnig.
-                    </h3>
-                    <p className="text-gray-200 text-sm text-pretty">
-                      Nézd meg, hogyan spórolnak időt és növelik a bevételeiket a leggyorsabban
-                      fejlődő vállakozók és cégek a Vyndivel.
-                    </p>
-                  </div>
                 </div>
+
+                {/* Large, tappable play button */}
+                <button
+                  onClick={() => setIsPlaying(true)}
+                  className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors group"
+                  aria-label="Play video"
+                >
+                  <div className="w-20 h-20 rounded-full bg-teal-500 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                    <Play className="w-10 h-10 text-white ml-1" />
+                  </div>
+                </button>
               </>
             ) : (
               /* Actual Video Player - Replace with your video URL */
-              <div className="aspect-video bg-black">
+              <div className="w-full h-full bg-black">
                 <iframe
                   className="w-full h-full"
                   src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
@@ -139,9 +121,9 @@ export function VideoDemoSection() {
           </div>
         </div>
 
-        {/* What You'll See Section */}
+        {/* What You'll See Section - Hidden on mobile */}
         {/* Enhanced with better card design and visual hierarchy */}
-        <div className="max-w-4xl mx-auto mb-12">
+        <div className="max-w-4xl mx-auto mb-12 hidden md:block">
           <h3 className="text-2xl md:text-3xl font-bold text-navy-900 text-center mb-8 text-balance">
             Mit fogsz látni a videóban:
           </h3>

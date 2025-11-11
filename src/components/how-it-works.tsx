@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload, Wand2, Send, Zap, ChevronDown, Sparkles } from 'lucide-react';
+import { Upload, Wand2, Send, Zap, Sparkles } from 'lucide-react';
 import { FeatureIndicators } from './FeatureIndicators';
 import { LandingCTA } from './ui/LandingCTA';
 
@@ -45,61 +45,10 @@ export function HowItWorks() {
           </p>
         </div>
 
-        {/* Process Steps with Progress Arrows */}
+        {/* Process Steps */}
         <div className="relative max-w-7xl mx-auto mt-16">
-          {/* Connecting Arrows - Desktop Only */}
-          <div className="hidden lg:block absolute top-0 left-0 right-0 h-32 pointer-events-none">
-            {/* Arrow from Card 1 to Card 2 */}
-            <svg
-              className="absolute left-[16.666%] w-[16.666%]"
-              viewBox="0 0 200 120"
-              fill="none"
-              style={{ top: '-20px' }}
-            >
-              <path
-                d="M 10 80 Q 100 20, 190 80"
-                stroke="rgb(45, 212, 191)"
-                strokeWidth="3"
-                strokeDasharray="8 8"
-                strokeLinecap="round"
-                fill="none"
-              />
-              {/* Arrow head */}
-              <path
-                d="M 190 80 L 185 75 M 190 80 L 185 85"
-                stroke="rgb(45, 212, 191)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            {/* Arrow from Card 2 to Card 3 */}
-            <svg
-              className="absolute left-[50%] w-[16.666%]"
-              viewBox="0 0 200 120"
-              fill="none"
-              style={{ top: '-20px' }}
-            >
-              <path
-                d="M 10 80 Q 100 20, 190 80"
-                stroke="rgb(45, 212, 191)"
-                strokeWidth="3"
-                strokeDasharray="8 8"
-                strokeLinecap="round"
-                fill="none"
-              />
-              {/* Arrow head */}
-              <path
-                d="M 190 80 L 185 75 M 190 80 L 185 85"
-                stroke="rgb(45, 212, 191)"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-
           {/* Cards grid */}
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-6 relative z-10 pt-12">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-6 relative z-10">
             {steps.map((step, idx) => {
               const Icon = step.icon;
               const isMiddle = idx === 1;
@@ -166,17 +115,6 @@ export function HowItWorks() {
                       </div>
                     </div>
                   )}
-
-                  {/* Mobile arrow down (except for last card) */}
-                  {idx < steps.length - 1 && (
-                    <div className="md:hidden flex justify-center mt-8">
-                      <div
-                        className={`w-12 h-12 ${bgColors[idx]} rounded-full flex items-center justify-center`}
-                      >
-                        <ChevronDown className={`w-6 h-6 ${checkTextColors[idx]} animate-bounce`} />
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -201,23 +139,7 @@ export function HowItWorks() {
         </div>
 
         {/* Enhanced CTA Section */}
-        <div className="text-center mt-12 relative">
-          {/* Vertical dashed line from time badge to CTA */}
-          <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 -top-24">
-            <svg className="mx-auto w-1 h-16" viewBox="0 0 4 64" fill="none">
-              <line
-                x1="2"
-                y1="0"
-                x2="2"
-                y2="64"
-                stroke="rgb(45, 212, 191)"
-                strokeWidth="2"
-                strokeDasharray="6 6"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-
+        <div className="text-center mt-12">
           {/* Main CTA Button - Mobile optimized */}
           <div className="mb-6">
             <LandingCTA size="md" className="w-full md:w-auto justify-center">

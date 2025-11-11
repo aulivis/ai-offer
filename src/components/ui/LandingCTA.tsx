@@ -30,7 +30,7 @@ export function LandingCTA({
       className={`inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group ${sizeClasses[size]} ${className}`}
     >
       {children}
-      <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+      <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform text-white" />
     </Link>
   );
 }

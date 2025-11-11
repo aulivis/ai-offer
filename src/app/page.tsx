@@ -11,13 +11,13 @@ import { FAQSection } from '@/components/faq-section';
 import { StickyCTABar } from '@/components/sticky-cta-bar';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
 import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
-import { Sparkles, Check, Rocket, Award, CheckCircle, ArrowRight } from 'lucide-react';
+import { Sparkles, Check, Rocket, Award, CheckCircle, ArrowRight, ChevronDown } from 'lucide-react';
 
 export default function Home() {
   return (
     <main id="main" className="min-h-screen">
       {/* HERO SECTION - First Impression */}
-      <section className="relative bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white py-16 md:py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white min-h-screen flex flex-col overflow-hidden">
         {/* Enhanced decorative gradient blobs for visual depth */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl opacity-20 animate-pulse"></div>
         <div
@@ -26,7 +26,7 @@ export default function Home() {
         ></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500 rounded-full blur-3xl opacity-10"></div>
 
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
+        <div className="container mx-auto px-4 md:px-6 relative z-10 flex-1 flex flex-col justify-center max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Value Proposition */}
             <div className="text-center lg:text-left">
@@ -34,7 +34,10 @@ export default function Home() {
               <div className="flex justify-center lg:justify-start mb-6">
                 <span className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-semibold text-white">
                   <Sparkles className="w-3 h-3 mr-2" />
-                  AI-alapú ajánlatkészítés
+                  <span className="md:hidden">AI-alapú ajánlatkészítés</span>
+                  <span className="hidden md:inline">
+                    AI-alapú megoldás a modern vállalkozásoknak
+                  </span>
                 </span>
               </div>
               <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight text-balance">
@@ -42,16 +45,37 @@ export default function Home() {
                 <span className="text-turquoise-400">percek alatt</span>
               </h1>
               <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
-                Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
+                <span className="md:hidden">
+                  Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
+                </span>
+                <span className="hidden md:inline">
+                  Automatizáld az ajánlatkészítést, spórolj akár{' '}
+                  <span className="text-white font-semibold">70%-nyi időt</span>, és növeld az{' '}
+                  <span className="text-white font-semibold">üzleti eredményeidet</span> a Vyndivel.
+                </span>
               </p>
 
               {/* Checkmarks with better spacing */}
               <div className="space-y-4 mt-6 mb-8">
-                <div className="flex items-center gap-3 justify-center lg:justify-start">
+                {/* Mobile: single combined feature */}
+                <div className="flex items-center gap-3 justify-center lg:justify-start md:hidden">
                   <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
                   <span className="text-sm md:text-base">
                     Kezdd el ingyen, azonnal, bankkártya nélkül
                   </span>
+                </div>
+                {/* Desktop: three separate features */}
+                <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
+                  <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Kezdd el teljesen ingyen</span>
+                </div>
+                <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
+                  <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Nem kérünk bankkártyát</span>
+                </div>
+                <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
+                  <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-sm md:text-base">Kész ajánlat 5 perc alatt</span>
                 </div>
               </div>
 
@@ -62,11 +86,11 @@ export default function Home() {
                   className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
                 >
                   <span className="text-base md:text-lg">Próbáld ki most ingyen</span>
-                  <ArrowRight className="w-5 h-5 flex-shrink-0" />
+                  <ArrowRight className="w-5 h-5 flex-shrink-0 text-white" />
                 </Link>
                 <a
                   href="#product-demo"
-                  className="border-2 border-orange-500 text-orange-500 font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:bg-orange-50 transition-colors flex items-center justify-center"
+                  className="border-2 border-white text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors flex items-center justify-center"
                 >
                   További információ
                 </a>
@@ -135,7 +159,37 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Animated downward arrow */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
+          <a
+            href="#product-demo"
+            className="flex flex-col items-center gap-2 text-white/80 hover:text-white transition-colors"
+            aria-label="Scroll to next section"
+          >
+            <span className="text-sm font-medium hidden sm:block">További információ</span>
+            <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors">
+              <ChevronDown className="w-6 h-6" />
+            </div>
+          </a>
+        </div>
       </section>
+
+      {/* Smooth transition from Hero to How It Works */}
+      <div className="relative h-16 -mb-1 bg-gradient-to-b from-navy-900 via-navy-800 to-transparent">
+        <svg
+          viewBox="0 0 1440 80"
+          className="absolute bottom-0 w-full h-full"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,0 C360,40 720,20 1080,40 C1200,50 1320,30 1440,40 L1440,80 L0,80 Z"
+            fill="rgb(249, 250, 251)"
+            className="transition-all duration-500"
+          />
+        </svg>
+      </div>
 
       {/* HOW IT WORKS - Quick Process Overview */}
       <HowItWorks />
@@ -145,19 +199,25 @@ export default function Home() {
         <VideoDemoSection />
       </section>
 
-      {/* Wave Divider between Video and Problems Sections */}
-      <div className="relative h-24 -mb-1">
+      {/* Enhanced Wave Divider between Video and Problems Sections */}
+      <div className="relative h-32 md:h-24 -mb-1 overflow-hidden">
         <svg
           viewBox="0 0 1440 120"
           className="absolute bottom-0 w-full h-full"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Main wave fill - creates the gray background transition */}
+          {/* Smooth wave transition from white to gray-50 */}
           <path
-            d="M0,64 C360,10 720,100 1080,40 C1200,20 1320,80 1440,64 L1440,120 L0,120 Z"
+            d="M0,40 C360,80 720,20 1080,60 C1200,70 1320,50 1440,60 L1440,120 L0,120 Z"
             fill="#F9FAFB"
-            className="transition-colors duration-300"
+            className="transition-all duration-500 ease-in-out"
+          />
+          {/* Secondary wave for depth */}
+          <path
+            d="M0,50 C240,90 480,30 720,70 C960,50 1200,80 1440,65 L1440,120 L0,120 Z"
+            fill="#F3F4F6"
+            className="transition-all duration-700 ease-in-out opacity-60"
           />
         </svg>
       </div>
@@ -165,11 +225,48 @@ export default function Home() {
       {/* PROBLEM - Establish Pain Points */}
       <ProblemSection />
 
+      {/* Smooth transition from Problem (gray-50) to Solution (turquoise-50) */}
+      <div className="relative h-20 -mb-1 overflow-hidden">
+        <svg
+          viewBox="0 0 1440 100"
+          className="absolute bottom-0 w-full h-full"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,60 C360,20 720,80 1080,40 C1200,30 1320,70 1440,50 L1440,100 L0,100 Z"
+            fill="rgb(236, 253, 245)"
+            className="transition-all duration-500 ease-in-out"
+          />
+        </svg>
+      </div>
+
       {/* SOLUTION - Your Answer with Before/After */}
       <SolutionSection />
 
+      {/* Smooth transition from Solution (turquoise-50) to Comparison (white) */}
+      <div className="relative h-16 -mb-1 overflow-hidden bg-gradient-to-b from-blue-50 to-white">
+        <svg
+          viewBox="0 0 1440 80"
+          className="absolute bottom-0 w-full h-full"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,30 C360,70 720,10 1080,50 C1200,60 1320,20 1440,40 L1440,80 L0,80 Z"
+            fill="white"
+            className="transition-all duration-500 ease-in-out"
+          />
+        </svg>
+      </div>
+
       {/* COMPARISON TABLE - Why Choose Us */}
       <ComparisonTable />
+
+      {/* Subtle transition between Comparison and ROI */}
+      <div className="relative h-8 -mb-1">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white"></div>
+      </div>
 
       {/* ROI CALCULATOR - Personalized Value */}
       <ROICalculatorLanding />
@@ -182,6 +279,23 @@ export default function Home() {
 
       {/* FAQ - Address Objections */}
       <FAQSection />
+
+      {/* Smooth transition from FAQ (gray-50) to Final CTA (turquoise gradient) */}
+      <div className="relative h-24 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-turquoise-100 to-turquoise-500"></div>
+        <svg
+          viewBox="0 0 1440 120"
+          className="absolute bottom-0 w-full h-full"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,80 C360,40 720,100 1080,60 C1200,50 1320,90 1440,70 L1440,120 L0,120 Z"
+            fill="rgb(0, 150, 136)"
+            className="transition-all duration-500 ease-in-out"
+          />
+        </svg>
+      </div>
 
       {/* FINAL CTA - Last Conversion Opportunity */}
       <section className="relative py-24 overflow-hidden">

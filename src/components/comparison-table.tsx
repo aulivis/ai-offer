@@ -122,7 +122,7 @@ export function ComparisonTable() {
                     <tr className="bg-navy-900 text-white">
                       {/* Features Column - reduced width */}
                       <th
-                        className="px-4 md:px-6 py-5 text-left font-bold text-base md:text-lg align-top"
+                        className="px-4 md:px-6 py-5 text-left font-bold text-base md:text-lg align-top md:align-top"
                         style={{ width: '35%' }}
                       >
                         Funkciók
@@ -130,7 +130,7 @@ export function ComparisonTable() {
 
                       {/* Vyndi Column - first column, wider */}
                       <th
-                        className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg bg-turquoise-600 align-top relative border-l border-white/10"
+                        className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg bg-turquoise-600 align-middle md:align-top relative border-l border-white/10"
                         style={{ width: '25%' }}
                       >
                         {/* Column content */}
@@ -142,7 +142,7 @@ export function ComparisonTable() {
 
                       {/* Competitor A - wider */}
                       <th
-                        className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg align-top border-l border-white/10"
+                        className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg align-middle md:align-top border-l border-white/10"
                         style={{ width: '20%' }}
                       >
                         Versenytárs A
@@ -150,7 +150,7 @@ export function ComparisonTable() {
 
                       {/* Competitor B - wider */}
                       <th
-                        className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg align-top border-l border-white/10"
+                        className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg align-middle md:align-top border-l border-white/10"
                         style={{ width: '20%' }}
                       >
                         Versenytárs B
