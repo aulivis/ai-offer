@@ -1,27 +1,30 @@
 'use client';
 
-import { Upload, Wand2, Send, Zap, ArrowRight, ChevronDown } from 'lucide-react';
+import { Upload, Wand2, Send, Zap, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { TrustIndicatorsPills } from './trust-indicators';
 
 export function HowItWorks() {
   const steps = [
     {
       icon: Upload,
       number: '01',
-      title: 'Töltsd fel az adatokat',
-      description: 'Add meg az ügyfél adatait vagy használd a meglévő adatbázist',
+      title: 'Add meg az alapadatokat',
+      description:
+        'Add meg az alapadatokat – ügyfél, projekt, költségek – vagy használd a mentett sablonokat.',
     },
     {
       icon: Wand2,
       number: '02',
-      title: 'AI generálja az ajánlatot',
-      description: 'Az AI 2 perc alatt professzionális ajánlatot készít',
+      title: 'A Vyndi elkészíti az ajánlatot',
+      description:
+        'A Vyndi elkészíti az ajánlatot – néhány perc alatt, egységes dizájnnal és árazással.',
     },
     {
       icon: Send,
       number: '03',
-      title: 'Küldd el azonnal',
-      description: 'Testreszabás után küldd el PDF-ben',
+      title: 'Töltsd le és küldd el',
+      description: 'Töltsd le és küldd el – azonnal, PDF-ben vagy linkként.',
     },
   ];
 
@@ -30,46 +33,71 @@ export function HowItWorks() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-block px-6 py-2 bg-turquoise-100 text-turquoise-700 font-bold text-sm rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 px-6 py-2 bg-gray-100 text-gray-700 font-bold text-sm rounded-full mb-6">
+            <Sparkles className="w-4 h-4" />
             EGYSZERŰ FOLYAMAT
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">Hogyan működik?</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
-            Három egyszerű lépésben professzionális ajánlatokat készíthetsz
+            Készíts professzionális, személyre szabott ajánlatokat 3 egyszerű lépésben
           </p>
         </div>
 
         {/* Process Steps with Progress Arrows */}
         <div className="relative max-w-7xl mx-auto mt-16">
-          {/* Desktop arrows - positioned to connect number badges at top */}
-          <div className="hidden lg:block">
-            {/* Arrow 1 -> 2 - positioned to align with center of number badges (40px from top of badge, badges start at pt-12 - top-10 = 8px, so center at 8px + 40px = 48px = top-12) */}
-            <div className="absolute top-12 left-[32%] -translate-x-1/2 z-30">
-              <svg className="w-16 h-8 text-turquoise-400" viewBox="0 0 64 32" fill="none">
-                <path
-                  d="M0 16 L56 16 M56 16 L48 8 M56 16 L48 24"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeDasharray="4 4"
-                />
-              </svg>
-            </div>
-
-            {/* Arrow 2 -> 3 */}
-            <div className="absolute top-12 left-[66%] -translate-x-1/2 z-30">
-              <svg className="w-16 h-8 text-turquoise-400" viewBox="0 0 64 32" fill="none">
-                <path
-                  d="M0 16 L56 16 M56 16 L48 8 M56 16 L48 24"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeDasharray="4 4"
-                />
-              </svg>
-            </div>
+          {/* Desktop curved arrows - positioned to connect number badges */}
+          <div
+            className="hidden lg:block absolute inset-0"
+            style={{ height: '60px', top: '-10px', pointerEvents: 'none' }}
+          >
+            <svg
+              className="w-full h-full text-turquoise-400"
+              viewBox="0 0 100 30"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <marker
+                  id="arrowhead-howitworks-1"
+                  markerWidth="4"
+                  markerHeight="4"
+                  refX="3.5"
+                  refY="2"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
+                </marker>
+                <marker
+                  id="arrowhead-howitworks-2"
+                  markerWidth="4"
+                  markerHeight="4"
+                  refX="3.5"
+                  refY="2"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
+                </marker>
+              </defs>
+              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) */}
+              <path
+                d="M 18 15 Q 32.5 5, 47 15"
+                stroke="currentColor"
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                fill="none"
+                markerEnd="url(#arrowhead-howitworks-1)"
+              />
+              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) */}
+              <path
+                d="M 53 15 Q 67.5 5, 82 15"
+                stroke="currentColor"
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                fill="none"
+                markerEnd="url(#arrowhead-howitworks-2)"
+              />
+            </svg>
           </div>
 
           {/* Cards grid */}
@@ -95,18 +123,18 @@ export function HowItWorks() {
                       : 'border border-gray-100'
                   } group h-full flex flex-col`}
                 >
-                  {/* Number badge at top - overlapping like the AI-powered badge was */}
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+                  {/* Number badge at top - overlapping like the AI-powered badge was - reduced by 50% */}
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                     <div className="relative">
                       {/* Glow effect */}
                       <div
                         className={`absolute inset-0 ${glowColors[idx]} rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity`}
                       ></div>
-                      {/* Badge */}
+                      {/* Badge - reduced size from w-20 h-20 to w-10 h-10, text from text-3xl to text-xl */}
                       <div
-                        className={`relative w-20 h-20 bg-gradient-to-br ${gradients[idx]} rounded-full flex items-center justify-center shadow-lg`}
+                        className={`relative w-10 h-10 bg-gradient-to-br ${gradients[idx]} rounded-full flex items-center justify-center shadow-lg`}
                       >
-                        <span className="text-3xl font-bold text-white">{step.number}</span>
+                        <span className="text-xl font-bold text-white">{step.number}</span>
                       </div>
                     </div>
                   </div>
@@ -176,7 +204,7 @@ export function HowItWorks() {
           <div className="mb-6">
             <Link
               href="/login?redirect=/new"
-              className="inline-flex items-center gap-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+              className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
             >
               Próbáld ki most ingyen
               <ArrowRight className="w-7 h-7 group-hover:translate-x-2 transition-transform" />
@@ -184,17 +212,7 @@ export function HowItWorks() {
           </div>
 
           {/* Trust indicators as pills */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              Nincs bankkártya szükséges
-            </span>
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              30 napos ingyenes próba
-            </span>
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              Bármikor lemondható
-            </span>
-          </div>
+          <TrustIndicatorsPills />
         </div>
       </div>
     </section>

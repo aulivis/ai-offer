@@ -20,6 +20,34 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Features
+
+### Error Tracking (Sentry)
+
+- Automated error tracking and monitoring
+- Performance monitoring
+- Session replay
+- Source map support
+
+See [Sentry Setup Guide](./docs/SENTRY_SETUP.md) for configuration.
+
+### CI/CD Pipeline
+
+- Automated testing and linting
+- Type checking
+- Security audits
+- Dependency updates (Dependabot)
+
+See [CI/CD Workflow](.github/workflows/ci.yml) for details.
+
+### API Versioning
+
+- URL-based versioning (`/api/v1/`)
+- Backward compatibility
+- Deprecation handling
+
+See [API Versioning Strategy](./docs/API_VERSIONING_STRATEGY.md) for details.
+
 ## Environment Variables
 
 Configure the following secrets before running the application:
@@ -119,11 +147,39 @@ if additional attributes need to be supported for future content.
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- **[Architecture](./docs/ARCHITECTURE.md)** - System architecture and design
+### Core Documentation
+
+- **[Architecture](./docs/ARCHITECTURE.md)** - System architecture, security model, and data flow
 - **[API Documentation](./docs/API.md)** - REST API endpoints reference
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Vercel deployment instructions
-- **[Templates](./docs/TEMPLATES.md)** - PDF template creation guide
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Vercel deployment instructions and optimization recommendations
+- **[Database Schema Review](./docs/DATABASE_SCHEMA_REVIEW_REPORT.md)** - Database schema analysis and migration summary
+
+### Development Guides
+
+- **[Templates](./docs/TEMPLATES.md)** - PDF template creation and management guide
+- **[Component Usage Guidelines](./docs/COMPONENT_USAGE_GUIDELINES.md)** - UI component library usage and best practices
+- **[Design System](./docs/DESIGN_SYSTEM.md)** - Design tokens, typography, spacing, and component patterns
+- **[Performance Monitoring](./docs/PERFORMANCE_MONITORING.md)** - Web Vitals tracking and performance metrics
+
+### System Design
+
 - **[Quota System](./docs/QUOTA_SYSTEM.md)** - Quota management system design
+- **[API Versioning Strategy](./docs/API_VERSIONING_STRATEGY.md)** - API versioning guidelines and implementation
+- **[Sentry Setup](./docs/SENTRY_SETUP.md)** - Error tracking setup and configuration
+
+### Best Practices & Reviews
+
+- **[Best Practices Comparison](./docs/BEST_PRACTICES_COMPARISON_2025.md)** - Industry best practices analysis and recommendations
+- **[UI/UX Review](./docs/UI_UX_REVIEW_2025.md)** - Frontend UI/UX review and recommendations
+
+### Future Implementations
+
+Planned features and research documents are in the `docs/future/` directory:
+
+- **[Google Drive Integration](./docs/future/GOOGLE_DRIVE_INTEGRATION_RESEARCH.md)** - Research and implementation guide for Google Drive integration
+- **[Google Drive Summary](./docs/future/GOOGLE_DRIVE_INTEGRATION_SUMMARY.md)** - Executive summary for Google Drive integration
+- **[Offer Version Control](./docs/future/OFFER_VERSION_CONTROL_RESEARCH.md)** - Research and implementation guide for offer versioning
+- **[Offer Version Control Summary](./docs/future/OFFER_VERSION_CONTROL_SUMMARY.md)** - Executive summary for version control
 
 ## Deploy on Vercel
 

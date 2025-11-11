@@ -2,7 +2,6 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { t } from '@/copy';
 
-import QuotaWarningBar from '@/components/QuotaWarningBar';
 import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '@/components/cookies/CookieBar';
 import { PreferencesModal } from '@/components/cookies/PreferencesModal';
@@ -21,8 +20,9 @@ import { getRequestLanguage } from './lib/language';
 import { gota, spaceMono, workSans } from './fonts';
 
 export const metadata: Metadata = {
-  title: 'Vyndi — AI offers',
-  description: 'AI-assisted, professional offers for SMEs',
+  title: 'Vyndi – AI-alapú ajánlatkészítő platform | Professzionális ajánlat percek alatt',
+  description:
+    'Automatizáld az ajánlatkészítést mesterséges intelligenciával. Készítsd el az első professzionális ajánlatod 5 perc alatt – ingyen, bankkártya nélkül.',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -60,7 +60,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="relative z-10 flex min-h-screen flex-col">
                   <AriaLiveAnnouncer />
                   <WebVitalsReporter />
-                  <QuotaWarningBar />
                   <LandingHeader />
                   <div className="flex-1">{children}</div>
                   <Footer />

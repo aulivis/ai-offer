@@ -40,7 +40,8 @@ This application is a Next.js-based SaaS platform for generating professional bu
    - Session persisted to database with UPSERT (deduplication)
    - Cookies set (access token, refresh token, CSRF token)
    - Redirect to `/auth/init-session` for client-side initialization
-   - See [Auth Routes Migration](./AUTH_ROUTES_MIGRATION.md) for details
+
+   **Auth Routes Migration:** The application migrated from `/api/auth/callback` to `/api/auth/confirm` for improved reliability. Both routes are currently supported for backward compatibility, with `/api/auth/confirm` being the primary endpoint. The migration includes session deduplication, route usage tracking, and support for token_hash flow (shorter URLs).
 
 2. **Session Management:**
    - Access tokens stored in HTTP-only cookies

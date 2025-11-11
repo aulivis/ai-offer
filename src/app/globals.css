@@ -326,6 +326,28 @@ p {
       opacity: 1;
     }
   }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 3s ease-in-out 0.5s infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 4s ease-in-out 1s infinite;
+  }
 }
 
 /* View Transitions API Support */

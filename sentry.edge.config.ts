@@ -1,0 +1,29 @@
+import * as Sentry from '@sentry/nextjs';
+
+// Only initialize Sentry if DSN is provided
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    environment: process.env.NODE_ENV,
+    enabled: process.env.NODE_ENV === 'production',
+
+    // Performance Monitoring
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+
+    // Release tracking
+    release: process.env.NEXT_PUBLIC_APP_VERSION || undefined,
+
+    // Filter out noisy errors
+    ignoreErrors: ['Non-Error promise rejection captured'],
+
+    // Additional context
+    beforeSend(event, _hint) {
+      // Don't send events in development
+      if (process.env.NODE_ENV !== 'production') {
+        return null;
+      }
+
+      return event;
+    },
+  });
+}

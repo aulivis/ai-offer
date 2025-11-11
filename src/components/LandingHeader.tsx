@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ArrowRight } from 'lucide-react';
 
-import { Button } from '@/components/ui/Button';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useLogout } from '@/hooks/useLogout';
 import { useBranding } from '@/components/BrandingProvider';
@@ -109,11 +108,9 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
       <header className={headerClass}>
         <div className="mx-auto flex h-20 w-full max-w-6xl items-center gap-6 px-4 md:px-6">
           {/* Enhanced Logo Section */}
-          <Link href="/" className="flex items-center gap-3 group" onClick={closeMenu}>
+          <Link href="/" className="flex items-center gap-3" onClick={closeMenu}>
             {logoUrl ? (
               <div className="relative">
-                {/* Hover glow effect */}
-                <div className="absolute inset-0 bg-turquoise-400 rounded-xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
                 <div className="relative">
                   <Image
                     src={logoUrl}
@@ -125,16 +122,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     placeholder="blur"
                     blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYigyNDAsIDI0MCwgMjQwKSIvPjwvc3ZnPg=="
                     sizes="(max-width: 768px) 160px, 220px"
-                    className="h-auto w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="h-auto w-auto object-contain"
                     style={{ maxHeight: '28mm', maxWidth: '220px' }}
                   />
                 </div>
               </div>
             ) : (
               <div className="relative">
-                {/* Hover glow effect for monogram */}
-                <div className="absolute inset-0 bg-turquoise-400 rounded-xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
-                <div className="relative w-12 h-12 bg-gradient-to-br from-turquoise-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-xl transition-all duration-300">
+                <div className="relative w-12 h-12 bg-gradient-to-br from-turquoise-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
                   <span
                     aria-hidden="true"
                     className="text-lg font-bold text-white uppercase tracking-wide"
@@ -144,13 +139,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 </div>
               </div>
             )}
-            <span className="text-xl font-bold text-navy-900 group-hover:text-turquoise-600 transition-colors duration-200">
-              {companyName ?? t('nav.brand')}
-            </span>
           </Link>
 
           {/* Enhanced Desktop Navigation Links */}
-          <nav className="hidden flex-1 items-center justify-center gap-1 text-sm font-medium md:flex">
+          <nav className="hidden flex-1 items-center justify-center gap-1 text-base font-medium md:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -178,44 +170,42 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               <>
                 <Link
                   href="/new"
-                  className="relative px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-turquoise-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                   <span className="relative flex items-center gap-2">
                     {t('dashboard.actions.newOffer')}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Link>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={logout}
-                  disabled={isLoggingOut}
-                  aria-busy={isLoggingOut}
-                  aria-label={t('nav.logoutAria')}
-                  className="px-5 py-2.5 text-navy-900 font-semibold rounded-lg hover:bg-gray-100/80 transition-all duration-200 border border-transparent hover:border-gray-200"
+                <Link
+                  href="/login"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    logout();
+                  }}
+                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 transition-all duration-200"
                 >
                   {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
-                </Button>
+                </Link>
               </>
             ) : (
               <>
                 {/* Enhanced "Bejelentkezés" button instead of plain text */}
                 <Link
                   href="/login"
-                  className="px-5 py-2.5 text-navy-900 font-semibold rounded-lg hover:bg-gray-100/80 transition-all duration-200 border border-transparent hover:border-gray-200"
+                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 transition-all duration-200"
                 >
                   {t('nav.login')}
                 </Link>
                 {/* Enhanced Primary CTA with glow effect */}
                 <Link
                   href="/login"
-                  className="relative px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-turquoise-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                   <span className="relative flex items-center gap-2">
                     {t('nav.freeTrial')}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -275,35 +265,35 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     <>
                       <Link
                         href="/new"
-                        className="px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2"
+                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
                         onClick={closeMenu}
                       >
                         {t('dashboard.actions.newOffer')}
                         <ArrowRight className="w-4 h-4" />
                       </Link>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={handleLogout}
-                        disabled={isLoggingOut}
-                        aria-busy={isLoggingOut}
-                        className="justify-center text-base min-h-[44px]"
+                      <Link
+                        href="/login"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleLogout();
+                        }}
+                        className="px-4 py-3 text-center text-base font-semibold border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200 min-h-[44px] flex items-center justify-center"
                       >
                         {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
-                      </Button>
+                      </Link>
                     </>
                   ) : (
                     <>
                       <Link
                         href="/login"
-                        className="px-4 py-3 text-center text-base font-semibold text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 min-h-[44px] flex items-center justify-center"
+                        className="px-4 py-3 text-center text-base font-semibold border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200 min-h-[44px] flex items-center justify-center"
                         onClick={closeMenu}
                       >
                         {t('nav.login')}
                       </Link>
                       <Link
                         href="/login"
-                        className="px-6 py-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2"
+                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
                         onClick={closeMenu}
                       >
                         {t('nav.freeTrial')}

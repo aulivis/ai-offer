@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
+import * as Sentry from '@sentry/nextjs';
 
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
@@ -54,11 +55,41 @@ export function handleUnexpectedError(
   error: unknown,
   requestId?: string,
   log?: ReturnType<typeof createLogger>,
+  context?: Record<string, unknown>,
 ): NextResponse<StandardErrorResponse> {
   if (log) {
     log.error('Unexpected error occurred', error);
   } else {
     console.error('Unexpected error:', error);
+  }
+
+  // Report to Sentry with context (if Sentry is configured)
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    if (error instanceof Error) {
+      Sentry.captureException(error, {
+        tags: {
+          requestId: requestId || 'unknown',
+          errorType: 'unexpected',
+        },
+        extra: {
+          requestId,
+          ...context,
+        },
+      });
+    } else {
+      Sentry.captureMessage('Unexpected error (non-Error type)', {
+        level: 'error',
+        tags: {
+          requestId: requestId || 'unknown',
+          errorType: 'unexpected',
+        },
+        extra: {
+          requestId,
+          error: String(error),
+          ...context,
+        },
+      });
+    }
   }
 
   return createErrorResponse('Váratlan hiba történt.', 500, {
@@ -86,7 +117,14 @@ export function withErrorHandling<T extends unknown[]>(
         return handleValidationError(error, requestId);
       }
 
-      return handleUnexpectedError(error, requestId, log);
+      // Extract request context for error reporting
+      const context = {
+        method: req.method,
+        url: req.url,
+        headers: Object.fromEntries(req.headers.entries()),
+      };
+
+      return handleUnexpectedError(error, requestId, log, context);
     }
   };
 }

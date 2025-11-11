@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { AnimatedDemo } from '@/components/animated-demo';
 import { HowItWorks } from '@/components/how-it-works';
 import { VideoDemoSection } from '@/components/video-demo-section';
 import { ProblemSection } from '@/components/problem-section';
@@ -11,6 +10,8 @@ import { IndustrySolutions } from '@/components/industry-solutions';
 import { FAQSection } from '@/components/faq-section';
 import { StickyCTABar } from '@/components/sticky-cta-bar';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
+import { TrustIndicators } from '@/components/trust-indicators';
+import { Sparkles, Check, Rocket, Award } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -29,19 +30,28 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left: Value Proposition */}
             <div className="text-center lg:text-left">
+              {/* Badge */}
+              <div className="flex justify-center lg:justify-start mb-6">
+                <span className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-semibold text-white">
+                  <Sparkles className="w-3 h-3 mr-2" />
+                  AI-alapú ajánlatkészítés
+                </span>
+              </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-balance">
-                Ajánlatkészítés <span className="text-turquoise-400">AI-val</span> másodpercek alatt
+                Professzionális ajánlatkészítés{' '}
+                <span className="text-turquoise-400">percek alatt</span>
               </h1>
               <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed text-pretty">
-                Spórolj <strong className="text-white">70%-ot</strong> az időből, növeld a
-                professzionalizmust és nyerj több projektet az AI-alapú Vyndi ajánlatkészítővel.
+                Automatizáld az ajánlatkészítést, spórolj akár{' '}
+                <strong className="text-white">70 %-nyi időt</strong>, és növeld a{' '}
+                <strong className="text-white">üzleti eredményeidet</strong> a Vyndi AI-val.
               </p>
 
               {/* Primary CTA */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-turquoise-500 hover:bg-turquoise-600 text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
+                  className="bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
                 >
                   Kezdd el ingyen →
                 </Link>
@@ -54,43 +64,68 @@ export default function Home() {
               </div>
 
               {/* Trust Indicators */}
-              <div className="mt-8 flex flex-wrap gap-8 justify-center lg:justify-start text-sm">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Ingyenes próba</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Nincs bankkártya</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>5 perc alatt indulás</span>
-                </div>
-              </div>
+              <TrustIndicators />
             </div>
 
-            {/* Right: Animated Demo */}
-            <div className="relative">
-              <AnimatedDemo />
+            {/* Right: Dashboard Image with Floating Cards */}
+            <div className="relative hidden lg:block">
+              {/* Main Dashboard Image with Glow Effect */}
+              <div className="relative z-10">
+                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 via-transparent to-blue-500/20 blur-3xl" />
+                <div className="relative bg-white rounded-xl shadow-2xl p-8 aspect-video flex items-center justify-center">
+                  <div className="text-gray-400 text-center">
+                    <p className="text-lg font-semibold">Dashboard Preview</p>
+                    <p className="text-sm mt-2">Placeholder image</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Card 1 - Top Left - Speed Indicator */}
+              <div className="absolute -top-4 -left-4 z-20 animate-float hidden lg:block">
+                <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100 backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <Check className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Ajánlat generálva</p>
+                      <p className="text-xs text-gray-500">5 perc alatt</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Card 2 - Top Right - Free Start */}
+              <div className="absolute -top-6 -right-6 z-20 animate-float-delayed hidden lg:block">
+                <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100 backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 p-2 rounded-lg">
+                      <Rocket className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Ingyenes kezdés</p>
+                      <p className="text-xs text-gray-500">Bankkártya nélkül</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Card 3 - Bottom Left - Professional Appearance */}
+              <div className="absolute -bottom-6 left-8 z-20 animate-float-slow hidden lg:block">
+                <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100 backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-purple-100 p-2 rounded-lg">
+                      <Award className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Professzionális megjelenés
+                      </p>
+                      <p className="text-xs text-gray-500">Egységes dizájn</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -208,7 +243,7 @@ export default function Home() {
                 {/* Prominent CTA button that stands out */}
                 <Link
                   href="/login?redirect=/new"
-                  className="w-full py-5 px-8 bg-gradient-to-r from-turquoise-600 to-blue-600 hover:from-turquoise-700 hover:to-blue-700 text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group min-h-[44px]"
+                  className="w-full py-5 px-8 bg-[#FF6B35] hover:bg-[#E55A2B] text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group min-h-[44px]"
                 >
                   <span>Kezdés ingyen</span>
                   <svg

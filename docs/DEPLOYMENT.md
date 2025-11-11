@@ -317,19 +317,34 @@ Webhook callbacks are supported via `callbackUrl` parameter.
 - [Vercel CLI](https://vercel.com/docs/cli)
 - [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
 
-## Best Practices Review
+## Optimization Recommendations (2025)
 
-For a comprehensive review of Vercel deployment best practices (2025), see:
+### Edge Runtime Opportunities
 
-- [Vercel Deployment Review 2025](./VERCEL_DEPLOYMENT_REVIEW_2025.md)
+Consider using Edge Runtime for simple, stateless routes to reduce latency and costs:
 
-This review covers:
+- `/api/templates` - Returns static template metadata
+- `/api/health` - Simple health check
 
-- Node.js version requirements
-- Memory optimization recommendations
-- Edge runtime opportunities
-- Performance monitoring
-- Cost optimization strategies
+**Benefits:** Lower latency, reduced cold starts, lower costs, better global performance.
+
+### Memory Optimization
+
+Monitor actual memory usage and optimize allocations:
+
+- Standard routes: Consider reducing from 1024 MB to 512 MB if usage is low
+- Simple routes like `/api/templates` and `/api/health`: 256 MB may be sufficient
+- PDF routes: Keep at 3008 MB for Puppeteer
+
+### Performance Monitoring
+
+After deployment, monitor:
+
+- Function execution times (target: < 1s for simple routes)
+- Memory usage (optimize routes using < 50% of allocated memory)
+- Cold start times (target: < 500ms for edge, < 2s for Node.js)
+- Error rates (target: < 0.1%)
+- Core Web Vitals (LCP < 2.5s, FID < 100ms, CLS < 0.1)
 
 ## Support
 

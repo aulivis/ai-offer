@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
+    instrumentationHook: true,
     optimizePackageImports: ['@supabase/supabase-js', '@supabase/auth-js'],
   },
   // Transpile @noble/hashes to ensure it's properly bundled in serverless environments
@@ -112,6 +113,9 @@ const cspDirectives = [
     'https://www.googletagmanager.com',
     'https://*.supabase.co',
     'https://*.supabase.in',
+    // Sentry
+    'https://*.sentry.io',
+    'https://*.ingest.sentry.io',
   ]
     .filter(Boolean)
     .join(' '),
@@ -155,9 +159,30 @@ export async function headers() {
   ];
 }
 
-// Apply bundle analyzer wrapper if ANALYZE env var is set
+// Apply Sentry wrapper if SENTRY_DSN is set
 let config = nextConfig;
 
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { withSentryConfig } = require('@sentry/nextjs');
+  config = withSentryConfig(config, {
+    // For all available options, see:
+    // https://github.com/getsentry/sentry-webpack-plugin#options
+
+    // Suppresses source map uploading logs during build
+    silent: true,
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+
+    // Only upload source maps in production
+    widenClientFileUpload: true,
+    hideSourceMaps: true,
+    disableLogger: true,
+    automaticVercelMonitors: true,
+  });
+}
+
+// Apply bundle analyzer wrapper if ANALYZE env var is set
 if (process.env.ANALYZE === 'true') {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const withBundleAnalyzer = require('@next/bundle-analyzer')({

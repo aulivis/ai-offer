@@ -30,6 +30,7 @@
     "@noble/hashes": "^2.0.1",
     "@node-rs/argon2": "^2.0.2",
     "@opentelemetry/api": "^1.9.0",
+    "@sentry/nextjs": "^8.46.0",
     "@sparticuz/chromium": "^141.0.0",
     "@supabase/auth-js": "^2.67.0",
     "@supabase/supabase-js": "^2.76.0",

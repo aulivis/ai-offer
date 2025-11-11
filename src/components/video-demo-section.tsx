@@ -1,6 +1,6 @@
 'use client';
 
-import { Play, Users, Eye, Star, ThumbsUp } from 'lucide-react';
+import { Play, Users, Eye, Star, ThumbsUp, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,19 +9,20 @@ export function VideoDemoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <div className="inline-block px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-semibold text-sm mb-4">
+            <Sparkles className="w-4 h-4" />
             NÉZD MEG MŰKÖDÉS KÖZBEN
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
-            Így működik a Vyndi
+            Nézd meg, hogyan dolgozik helyetted a Vyndi
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
-            2 perces videó, amely megmutatja, hogyan készíts professzionális ajánlatot másodpercek
-            alatt
+            2 perces rövid bemutató, ami megmutatja, hogyan készül el egy teljes ajánlat mesterséges
+            intelligenciával – percek alatt
           </p>
         </div>
 
@@ -65,10 +66,12 @@ export function VideoDemoSection() {
                   {/* Video Title Overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
                     <h3 className="text-white font-bold text-xl md:text-2xl mb-2 text-balance">
-                      Ajánlatkészítés AI-val 2 percben
+                      Fedezd fel, hogyan automatizálhatod a teljes ajánlatkészítési folyamatot – az
+                      adatok megadásától az árazáson át a dizájnig.
                     </h3>
                     <p className="text-gray-200 text-sm text-pretty">
-                      Nézd meg, hogyan használják a legjobb vállalkozások a Vyndit
+                      Nézd meg, hogyan spórolnak időt és növelik a bevételeiket a leggyorsabban
+                      fejlődő vállakozók és cégek a Vyndivel.
                     </p>
                   </div>
                 </div>
@@ -107,8 +110,8 @@ export function VideoDemoSection() {
                   <Users className="w-5 h-5 text-white" />
                 </div>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-navy-900 mb-1">500+</div>
-              <div className="text-sm text-gray-600 font-medium">Aktív felhasználó</div>
+              <div className="text-2xl md:text-3xl font-bold text-navy-900 mb-1">200+</div>
+              <div className="text-sm text-gray-600 font-medium">Aktív vállalkozás</div>
             </div>
 
             {/* Rating */}
@@ -145,14 +148,14 @@ export function VideoDemoSection() {
           <div className="grid md:grid-cols-3 gap-6 relative pt-12">
             {/* Point 1 */}
             <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
-              {/* Number badge at top - overlapping like in how-it-works */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+              {/* Number badge at top - reduced by 50% */}
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-turquoise-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
-                  {/* Badge */}
-                  <div className="relative w-20 h-20 bg-gradient-to-br from-turquoise-500 to-turquoise-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-3xl font-bold text-white">1</span>
+                  {/* Badge - reduced size */}
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-turquoise-500 to-turquoise-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-xl font-bold text-white">1</span>
                   </div>
                 </div>
               </div>
@@ -160,24 +163,24 @@ export function VideoDemoSection() {
               {/* Centered content */}
               <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
                 <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
-                  AI ajánlat generálás
+                  AI-ajánlat generálás
                 </h4>
                 <p className="text-gray-600 leading-relaxed text-pretty">
-                  Automatikus tartalom és árazás
+                  Tartalom, ár és struktúra automatikusan
                 </p>
               </div>
             </div>
 
             {/* Point 2 */}
             <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
-              {/* Number badge at top */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+              {/* Number badge at top - reduced by 50% */}
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
-                  {/* Badge */}
-                  <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-3xl font-bold text-white">2</span>
+                  {/* Badge - reduced size */}
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-xl font-bold text-white">2</span>
                   </div>
                 </div>
               </div>
@@ -185,22 +188,24 @@ export function VideoDemoSection() {
               {/* Centered content */}
               <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
                 <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
-                  Testreszabás egyszerűen
+                  Testreszabás pár kattintással
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">Drag & drop szerkesztő</p>
+                <p className="text-gray-600 leading-relaxed text-pretty">
+                  Egyszerű, vizuális szerkesztőben
+                </p>
               </div>
             </div>
 
             {/* Point 3 */}
             <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
-              {/* Number badge at top */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20">
+              {/* Number badge at top - reduced by 50% */}
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-green-400 rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity"></div>
-                  {/* Badge */}
-                  <div className="relative w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-3xl font-bold text-white">3</span>
+                  {/* Badge - reduced size */}
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-xl font-bold text-white">3</span>
                   </div>
                 </div>
               </div>
@@ -208,9 +213,11 @@ export function VideoDemoSection() {
               {/* Centered content */}
               <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
                 <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
-                  Küldés és követés
+                  Küldés & követés
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">Real-time értesítések</p>
+                <p className="text-gray-600 leading-relaxed text-pretty">
+                  Státuszok és eredmények egy helyen
+                </p>
               </div>
             </div>
           </div>
@@ -218,12 +225,14 @@ export function VideoDemoSection() {
 
         {/* CTA Section */}
         <div className="text-center">
-          <p className="text-gray-600 mb-4 text-lg text-pretty">Készen állsz kipróbálni?</p>
+          <p className="text-gray-600 mb-4 text-lg text-pretty">
+            Készen állsz, hogy te is automatizáld az ajánlatkészítést?
+          </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
           >
-            Kezdd el ingyen →
+            Kezdd el most – ingyenes fiókkal, 5 perc alatt →
           </Link>
         </div>
       </div>
