@@ -262,8 +262,8 @@ export function ROICalculatorLanding() {
               href="/login?redirect=/new"
               className="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 min-h-[44px]"
             >
-              <span>Kezdd el ingyen – 5 perc alatt</span>
-              <TrendingUp className="w-5 h-5" />
+              <span className="text-white">Kezdd el ingyen – 5 perc alatt</span>
+              <TrendingUp className="w-5 h-5 text-white" />
             </Link>
           </div>
         </div>

@@ -73,16 +73,23 @@ export function SolutionSection() {
 
           {/* Enhanced table with better visual hierarchy and shadows */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
+            <style dangerouslySetInnerHTML={{__html: `
+              .solution-table-header,
+              .solution-table-row {
+                grid-template-columns: 30% 21.67% 26.67% 21.66%;
+              }
+              @media (min-width: 768px) {
+                .solution-table-header,
+                .solution-table-row {
+                  grid-template-columns: 35% 21.67% 21.67% 21.66%;
+                }
+              }
+            `}} />
             {/* Mobile scroll container */}
             <div className="overflow-x-auto">
               <div className="min-w-[600px]">
                 {/* Table Header */}
-                <div
-                  className="grid bg-navy-900 text-white"
-                  style={{
-                    gridTemplateColumns: '35% 21.67% 21.67% 21.66%',
-                  }}
-                >
+                <div className="grid bg-navy-900 text-white solution-table-header">
                   {/* Empty cell for row labels */}
                   <div className="p-4"></div>
 
@@ -125,10 +132,7 @@ export function SolutionSection() {
                   return (
                     <div
                       key={index}
-                      className="grid border-t border-gray-200 hover:bg-gray-50 transition-colors"
-                      style={{
-                        gridTemplateColumns: '35% 21.67% 21.67% 21.66%',
-                      }}
+                      className="grid border-t border-gray-200 hover:bg-gray-50 transition-colors solution-table-row"
                     >
                       {/* Row Label */}
                       <div className="p-4 md:p-6 flex items-center gap-3">

@@ -40,11 +40,11 @@ export default function Home() {
                   </span>
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight text-balance">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight text-balance">
                 Professzionális ajánlatkészítés{' '}
                 <span className="text-turquoise-400">percek alatt</span>
               </h1>
-              <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
+              <p className="text-lg md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
                 <span className="md:hidden">
                   Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
                 </span>
@@ -85,7 +85,7 @@ export default function Home() {
                   href="/login?redirect=/new"
                   className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
                 >
-                  <span className="text-base md:text-lg">Próbáld ki most ingyen</span>
+                  <span className="text-base md:text-lg text-white">Próbáld ki most ingyen</span>
                   <ArrowRight className="w-5 h-5 flex-shrink-0 text-white" />
                 </Link>
                 <a
@@ -160,14 +160,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Animated downward arrow */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
+        {/* Animated downward arrow - Mobile only, positioned above the fold */}
+        <div className="md:hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
           <a
             href="#product-demo"
             className="flex flex-col items-center gap-2 text-white/80 hover:text-white transition-colors"
             aria-label="Scroll to next section"
           >
-            <span className="text-sm font-medium hidden sm:block">További információ</span>
             <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors">
               <ChevronDown className="w-6 h-6" />
             </div>
@@ -175,19 +174,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Smooth transition from Hero to How It Works */}
-      <div className="relative h-16 -mb-1 bg-gradient-to-b from-navy-900 via-navy-800 to-transparent">
+      {/* Clean diagonal transition: Hero (navy-900/turquoise-900) → How It Works (gray-50/white) */}
+      <div className="relative h-12 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#003d33] via-[#243b53] to-[#F9FAFB]"></div>
         <svg
-          viewBox="0 0 1440 80"
+          viewBox="0 0 1440 60"
           className="absolute bottom-0 w-full h-full"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M0,0 C360,40 720,20 1080,40 C1200,50 1320,30 1440,40 L1440,80 L0,80 Z"
-            fill="rgb(249, 250, 251)"
-            className="transition-all duration-500"
-          />
+          <polygon points="0,0 1440,0 1440,60 0,40" fill="#F9FAFB" />
         </svg>
       </div>
 
@@ -199,101 +195,104 @@ export default function Home() {
         <VideoDemoSection />
       </section>
 
-      {/* Enhanced Wave Divider between Video and Problems Sections */}
-      <div className="relative h-32 md:h-24 -mb-1 overflow-hidden">
-        <svg
-          viewBox="0 0 1440 120"
-          className="absolute bottom-0 w-full h-full"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Smooth wave transition from white to gray-50 */}
-          <path
-            d="M0,40 C360,80 720,20 1080,60 C1200,70 1320,50 1440,60 L1440,120 L0,120 Z"
-            fill="#F9FAFB"
-            className="transition-all duration-500 ease-in-out"
-          />
-          {/* Secondary wave for depth */}
-          <path
-            d="M0,50 C240,90 480,30 720,70 C960,50 1200,80 1440,65 L1440,120 L0,120 Z"
-            fill="#F3F4F6"
-            className="transition-all duration-700 ease-in-out opacity-60"
-          />
-        </svg>
+      {/* Clean transition: Video (white) → Problem (gray-50) */}
+      <div className="relative h-8 -mb-1">
+        <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F9FAFB]"></div>
       </div>
 
       {/* PROBLEM - Establish Pain Points */}
       <ProblemSection />
 
-      {/* Smooth transition from Problem (gray-50) to Solution (turquoise-50) */}
-      <div className="relative h-20 -mb-1 overflow-hidden">
+      {/* Clean diagonal transition: Problem (gray-50) → Solution (turquoise-50/blue-50) */}
+      <div className="relative h-12 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] to-[#e6f9f7]"></div>
         <svg
-          viewBox="0 0 1440 100"
+          viewBox="0 0 1440 60"
           className="absolute bottom-0 w-full h-full"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M0,60 C360,20 720,80 1080,40 C1200,30 1320,70 1440,50 L1440,100 L0,100 Z"
-            fill="rgb(236, 253, 245)"
-            className="transition-all duration-500 ease-in-out"
-          />
+          <polygon points="0,20 1440,0 1440,60 0,60" fill="#e6f9f7" />
         </svg>
       </div>
 
       {/* SOLUTION - Your Answer with Before/After */}
       <SolutionSection />
 
-      {/* Smooth transition from Solution (turquoise-50) to Comparison (white) */}
-      <div className="relative h-16 -mb-1 overflow-hidden bg-gradient-to-b from-blue-50 to-white">
+      {/* Clean diagonal transition: Solution (turquoise-50/blue-50) → Comparison (white/gray-50) */}
+      <div className="relative h-12 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#EFF6FF] to-white"></div>
         <svg
-          viewBox="0 0 1440 80"
+          viewBox="0 0 1440 60"
           className="absolute bottom-0 w-full h-full"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M0,30 C360,70 720,10 1080,50 C1200,60 1320,20 1440,40 L1440,80 L0,80 Z"
-            fill="white"
-            className="transition-all duration-500 ease-in-out"
-          />
+          <polygon points="0,0 1440,20 1440,60 0,60" fill="white" />
         </svg>
       </div>
 
       {/* COMPARISON TABLE - Why Choose Us */}
       <ComparisonTable />
 
-      {/* Subtle transition between Comparison and ROI */}
-      <div className="relative h-8 -mb-1">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white"></div>
+      {/* Clean transition: Comparison (white/gray-50) → ROI (navy-900/blue-900) */}
+      <div className="relative h-16 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-[#334e68] to-[#102a43]"></div>
+        <svg
+          viewBox="0 0 1440 80"
+          className="absolute bottom-0 w-full h-full"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polygon points="0,0 1440,0 1440,80 0,60" fill="#102a43" />
+        </svg>
       </div>
 
       {/* ROI CALCULATOR - Personalized Value */}
       <ROICalculatorLanding />
 
-      {/* TESTIMONIALS - Social Proof */}
-      <TestimonialSection />
-
-      {/* INDUSTRY SOLUTIONS - Specific Use Cases */}
-      <IndustrySolutions />
-
-      {/* FAQ - Address Objections */}
-      <FAQSection />
-
-      {/* Smooth transition from FAQ (gray-50) to Final CTA (turquoise gradient) */}
-      <div className="relative h-24 -mb-1 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-turquoise-100 to-turquoise-500"></div>
+      {/* Clean transition: ROI (navy-900/blue-900) → Testimonials (gray-50/blue-50) */}
+      <div className="relative h-16 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1E3A8A] via-[#243b53] to-[#F9FAFB]"></div>
         <svg
-          viewBox="0 0 1440 120"
+          viewBox="0 0 1440 80"
           className="absolute bottom-0 w-full h-full"
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path
-            d="M0,80 C360,40 720,100 1080,60 C1200,50 1320,90 1440,70 L1440,120 L0,120 Z"
-            fill="rgb(0, 150, 136)"
-            className="transition-all duration-500 ease-in-out"
-          />
+          <polygon points="0,20 1440,0 1440,80 0,80" fill="#F9FAFB" />
+        </svg>
+      </div>
+
+      {/* TESTIMONIALS - Social Proof */}
+      <TestimonialSection />
+
+      {/* Clean transition: Testimonials (gray-50/blue-50) → Industry Solutions (white) */}
+      <div className="relative h-8 -mb-1">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#EFF6FF] to-white"></div>
+      </div>
+
+      {/* INDUSTRY SOLUTIONS - Specific Use Cases */}
+      <IndustrySolutions />
+
+      {/* Clean transition: Industry Solutions (white) → FAQ (white/gray-50) */}
+      <div className="relative h-8 -mb-1">
+        <div className="absolute inset-0 bg-gradient-to-b from-white to-[#F9FAFB]"></div>
+      </div>
+
+      {/* FAQ - Address Objections */}
+      <FAQSection />
+
+      {/* Clean diagonal transition: FAQ (white/gray-50) → Final CTA (turquoise-500/blue-600) */}
+      <div className="relative h-16 -mb-1 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F9FAFB] via-[#b8f0ea] to-[#009688]"></div>
+        <svg
+          viewBox="0 0 1440 80"
+          className="absolute bottom-0 w-full h-full"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polygon points="0,0 1440,0 1440,80 0,60" fill="#009688" />
         </svg>
       </div>
 
