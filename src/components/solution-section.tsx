@@ -57,7 +57,27 @@ export function SolutionSection() {
         </div>
 
         {/* Comparison Table */}
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto relative pt-8">
+          {/* Badge positioned above the Vyndi column - outside the table */}
+          <div
+            className="absolute top-0 z-20 hidden lg:block"
+            style={{
+              left: '75%',
+              transform: 'translateX(-50%)',
+            }}
+          >
+            <div className="bg-yellow-400 text-navy-900 font-extrabold text-sm px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
+              Ajánlott
+            </div>
+          </div>
+
+          {/* Mobile badge - centered above table */}
+          <div className="lg:hidden text-center mb-4">
+            <div className="inline-block bg-yellow-400 text-navy-900 font-extrabold text-sm px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
+              Ajánlott
+            </div>
+          </div>
+
           {/* Enhanced table with better visual hierarchy and shadows */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
             {/* Table Header */}
@@ -77,11 +97,6 @@ export function SolutionSection() {
 
               {/* Vyndi AI column with turquoise accent and highlight */}
               <div className="p-4 text-center border-l border-white/10 bg-turquoise-600 relative">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
-                  <div className="bg-yellow-400 text-navy-900 font-extrabold text-xs px-4 py-1.5 rounded-full shadow-lg border-2 border-white whitespace-nowrap">
-                    Ajánlott
-                  </div>
-                </div>
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <Check className="w-5 h-5 text-white" />

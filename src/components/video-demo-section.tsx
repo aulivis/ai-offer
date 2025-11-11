@@ -1,6 +1,6 @@
 'use client';
 
-import { Play, Users, Eye, Star, ThumbsUp } from 'lucide-react';
+import { Play, Users, Eye, Star, ThumbsUp, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,18 +10,18 @@ export function VideoDemoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-16 md:py-24 bg-white">
+      <div className="container mx-auto px-4 md:px-6">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center space-y-8 md:space-y-12 mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-semibold text-sm mb-4">
             <Eye className="w-4 h-4" />
             NÉZD MEG MŰKÖDÉS KÖZBEN
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-4 text-balance">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy-900 mb-4 text-balance leading-tight">
             Nézd meg, hogyan dolgozik helyetted a Vyndi
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
+          <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto text-pretty leading-relaxed">
             2 perces rövid bemutató, ami megmutatja, hogyan készül el egy teljes ajánlat mesterséges
             intelligenciával – percek alatt
           </p>
@@ -30,15 +30,15 @@ export function VideoDemoSection() {
         {/* Video Player Container */}
         <div className="max-w-5xl mx-auto mb-12">
           {/* Enhanced video container with better shadow and border */}
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-100 group">
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl group">
             {/* Thumbnail/Video */}
             {!isPlaying ? (
               <>
-                {/* Thumbnail Image */}
-                <div className="relative aspect-video bg-gradient-to-br from-navy-800 via-navy-700 to-turquoise-800">
+                {/* Thumbnail Image - loads fast */}
+                <div className="relative w-full aspect-video bg-gradient-to-br from-navy-800 via-navy-700 to-turquoise-800">
                   <Image
                     src="/placeholder.svg?height=720&width=1280"
-                    alt="Vyndi Demo Video Thumbnail"
+                    alt="Product demo"
                     fill
                     className="object-cover opacity-80"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
@@ -46,21 +46,21 @@ export function VideoDemoSection() {
                   />
 
                   {/* Overlay for better play button visibility */}
-                  <div className="absolute inset-0 bg-black/20"></div>
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
 
                   {/* Duration Badge */}
                   <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-sm font-semibold">
                     2:15
                   </div>
 
-                  {/* Larger, more prominent play button with hover effect */}
+                  {/* Large, tappable play button */}
                   <button
                     onClick={() => setIsPlaying(true)}
-                    className="absolute inset-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 min-h-[44px] min-w-[44px]"
+                    className="absolute inset-0 flex items-center justify-center min-h-[56px] min-w-[56px]"
                     aria-label="Play video"
                   >
-                    <div className="w-24 h-24 bg-turquoise-500 hover:bg-turquoise-600 rounded-full flex items-center justify-center shadow-2xl transition-all">
-                      <Play className="w-12 h-12 text-white ml-1" fill="white" />
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                      <Play className="w-10 h-10 md:w-12 md:h-12 text-white ml-1" fill="white" />
                     </div>
                   </button>
 
@@ -225,15 +225,16 @@ export function VideoDemoSection() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center">
-          <p className="text-gray-600 mb-4 text-lg text-pretty">
+        <div className="text-center space-y-6">
+          <p className="text-base md:text-lg text-gray-600 text-pretty leading-relaxed">
             Készen állsz, hogy te is automatizáld az ajánlatkészítést?
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 min-h-[56px] w-full md:w-auto rounded-xl text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
           >
-            Kezdd el most – ingyenes fiókkal, 5 perc alatt →
+            <span>Kezdd el most – ingyenes fiókkal, 5 perc alatt</span>
+            <ArrowRight className="w-5 h-5 flex-shrink-0" />
           </Link>
           <div className="mt-6">
             <FeatureIndicators />

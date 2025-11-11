@@ -37,6 +37,8 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hash, setHash] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
   const { status: authStatus } = useAuthSession();
   const { logout, isLoggingOut } = useLogout();
@@ -45,17 +47,34 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   const isAuthenticated = authStatus === 'authenticated';
   const navItems = isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
-  // Scroll state management for glass morphism effect
+  // Scroll state management for glass morphism effect and mobile hide/show
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 20);
+
+      // Mobile-only: hide navbar when scrolling down, show when scrolling up
+      if (window.innerWidth < 768) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // Scrolling down - hide navbar
+          setIsVisible(false);
+        } else if (currentScrollY < lastScrollY) {
+          // Scrolling up - show navbar
+          setIsVisible(true);
+        }
+      } else {
+        // Desktop: always visible
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     // Check initial scroll position
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   useEffect(() => {
     const updateHash = () => {
@@ -82,7 +101,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  // Enhanced header classes with scroll-based styling
+  // Enhanced header classes with scroll-based styling and mobile visibility
   const headerClass = useMemo(
     () =>
       [
@@ -90,11 +109,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         scrolled
           ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
           : 'bg-white backdrop-blur-md border-b border-white/20',
+        // Mobile: hide/show based on scroll direction
+        isVisible ? 'translate-y-0' : '-translate-y-full',
         className,
       ]
         .filter(Boolean)
         .join(' '),
-    [className, scrolled],
+    [className, scrolled, isVisible],
   );
 
   const closeMenu = () => setIsMenuOpen(false);
@@ -106,7 +127,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   return (
     <>
       <header className={headerClass}>
-        <div className="mx-auto flex h-20 w-full max-w-6xl items-center gap-6 px-4 md:px-6">
+        <div className="mx-auto flex h-14 md:h-20 w-full max-w-6xl items-center gap-6 px-4 md:px-6">
           {/* Enhanced Logo Section */}
           <Link href="/" className="flex items-center gap-3" onClick={closeMenu}>
             {logoUrl ? (
@@ -164,7 +185,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             ))}
           </nav>
 
-          {/* Enhanced CTA Section */}
+          {/* Enhanced CTA Section - Hidden on mobile */}
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated ? (
               <>
@@ -215,10 +236,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             )}
           </div>
 
-          {/* Enhanced Mobile menu button */}
+          {/* Enhanced Mobile menu button - moved to right */}
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-navy-900 transition duration-200 hover:bg-gray-100/80 md:hidden min-h-[44px] min-w-[44px]"
+            className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg text-navy-900 transition duration-200 hover:bg-gray-100/80 md:hidden min-h-[44px] min-w-[44px]"
             aria-label={t('nav.menuToggle')}
             aria-expanded={isMenuOpen}
             aria-controls="landing-navigation"
@@ -240,7 +261,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           ></div>
 
           {/* Mobile Menu Panel */}
-          <div className="fixed top-20 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-2xl z-40 md:hidden">
+          <div className="fixed top-14 md:top-20 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-2xl z-40 md:hidden">
             <div className="container mx-auto px-4 py-6">
               <nav id="landing-navigation" className="flex flex-col gap-2">
                 {navItems.map((item) => (
@@ -309,7 +330,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
       )}
 
       {/* Spacer to prevent content jump when navbar is fixed */}
-      <div className="h-20"></div>
+      <div className="h-14 md:h-20"></div>
     </>
   );
 }

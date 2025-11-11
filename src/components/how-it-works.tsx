@@ -29,18 +29,18 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4">
+    <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
+      <div className="container mx-auto px-4 md:px-6">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center space-y-8 md:space-y-12 mb-12 md:mb-16">
           <div className="inline-flex items-center gap-2 px-6 py-2 bg-gray-100 text-gray-700 font-bold text-sm rounded-full mb-6">
             <Sparkles className="w-4 h-4" />
             EGYSZERŰ FOLYAMAT
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy-900 mb-4 leading-tight">
             Hogyan működik?
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
+          <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto text-pretty leading-relaxed">
             Készíts professzionális, személyre szabott ajánlatokat 3 egyszerű lépésben
           </p>
         </div>
@@ -50,11 +50,11 @@ export function HowItWorks() {
           {/* Desktop curved arrows - positioned to connect number badges */}
           <div
             className="hidden lg:block absolute inset-0"
-            style={{ height: '60px', top: '-10px', pointerEvents: 'none' }}
+            style={{ height: '180px', top: '-160px', pointerEvents: 'none' }}
           >
             <svg
               className="w-full h-full text-turquoise-400"
-              viewBox="0 0 100 30"
+              viewBox="0 -140 100 160"
               preserveAspectRatio="none"
             >
               <defs>
@@ -81,9 +81,9 @@ export function HowItWorks() {
                   <polygon points="0 0, 3 1.5, 0 3" fill="currentColor" />
                 </marker>
               </defs>
-              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) - more pronounced and taller curve */}
+              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) - dramatic arc with y=-100 */}
               <path
-                d="M 18 15 Q 32.5 -8, 47 15"
+                d="M 18 15 Q 32.5 -100, 47 15"
                 stroke="currentColor"
                 strokeWidth="0.6"
                 strokeLinecap="round"
@@ -91,9 +91,9 @@ export function HowItWorks() {
                 fill="none"
                 markerEnd="url(#arrowhead-howitworks-1)"
               />
-              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) - more pronounced and taller curve */}
+              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) - dramatic arc with y=-100 */}
               <path
-                d="M 53 15 Q 67.5 -8, 82 15"
+                d="M 53 15 Q 67.5 -100, 82 15"
                 stroke="currentColor"
                 strokeWidth="0.6"
                 strokeLinecap="round"
@@ -121,41 +121,45 @@ export function HowItWorks() {
               return (
                 <div
                   key={step.number}
-                  className={`relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border ${
+                  className={`relative bg-white rounded-xl md:rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border ${
                     isMiddle
                       ? 'border-2 border-turquoise-200 md:scale-105 shadow-xl'
                       : 'border border-gray-100'
                   } group h-full flex flex-col`}
                 >
-                  {/* Number badge at top - overlapping like the AI-powered badge was - reduced by 50% */}
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
+                  {/* Number badge at top - larger for mobile */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
                     <div className="relative">
                       {/* Glow effect */}
                       <div
                         className={`absolute inset-0 ${glowColors[idx]} rounded-full opacity-20 blur-xl group-hover:opacity-30 transition-opacity`}
                       ></div>
-                      {/* Badge - reduced size from w-20 h-20 to w-10 h-10, text from text-3xl to text-xl */}
+                      {/* Badge - larger size for mobile: w-14 h-14 on mobile, w-10 h-10 on desktop */}
                       <div
-                        className={`relative w-10 h-10 bg-gradient-to-br ${gradients[idx]} rounded-full flex items-center justify-center shadow-lg`}
+                        className={`relative w-14 h-14 md:w-10 md:h-10 bg-gradient-to-br ${gradients[idx]} rounded-full flex items-center justify-center shadow-lg`}
                       >
-                        <span className="text-xl font-bold text-white">{step.number}</span>
+                        <span className="text-xl md:text-xl font-bold text-white">
+                          {step.number}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Centered icon */}
-                  <div className="flex justify-center mb-6 mt-4">
+                  {/* Centered icon - larger for mobile */}
+                  <div className="mt-6 mb-6 flex justify-center">
                     <div
-                      className={`w-20 h-20 ${bgColors[idx]} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}
+                      className={`w-20 h-20 md:w-20 md:h-20 ${bgColors[idx]} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}
                     >
                       <Icon className={`w-10 h-10 ${checkTextColors[idx]}`} />
                     </div>
                   </div>
 
-                  {/* Centered content */}
+                  {/* Centered content with improved spacing */}
                   <div className="text-center mb-6 flex-1 flex flex-col">
-                    <h3 className="text-2xl font-bold text-navy-900 mb-3">{step.title}</h3>
-                    <p className="text-gray-600 leading-relaxed text-pretty mb-4">
+                    <h3 className="text-xl md:text-2xl font-bold text-navy-900 mb-3">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm md:text-base text-gray-600 leading-relaxed text-pretty mb-4">
                       {step.description}
                     </p>
                   </div>
@@ -227,27 +231,27 @@ export function HowItWorks() {
                   <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
                 </marker>
               </defs>
-              {/* Curved arrow from bottom center of TELJES FOLYAMAT box (50% x, 100% y) to top center of CTA */}
+              {/* Curved arrow from bottom center of TELJES FOLYAMAT box with subtle rightward bow */}
               <path
-                d="M 100 100 Q 100 50, 100 0"
+                d="M 100 100 Q 130 50, 100 0"
                 stroke="currentColor"
                 strokeWidth="0.6"
                 strokeLinecap="round"
-                strokeDasharray="3 3"
+                strokeDasharray="2.5 2.5"
                 fill="none"
                 markerEnd="url(#arrowhead-cta)"
               />
             </svg>
           </div>
 
-          {/* Main CTA Button - Larger and more prominent */}
+          {/* Main CTA Button - Mobile optimized */}
           <div className="mb-6">
             <Link
               href="/login?redirect=/new"
-              className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+              className="inline-flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 md:px-12 md:py-6 rounded-xl text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 group min-h-[56px] w-full md:w-auto justify-center"
             >
-              Próbáld ki most ingyen
-              <ArrowRight className="w-7 h-7 group-hover:translate-x-2 transition-transform" />
+              <span>Próbáld ki most ingyen</span>
+              <ArrowRight className="w-5 h-5 md:w-7 md:h-7 flex-shrink-0 group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
 

@@ -10,15 +10,14 @@ import { IndustrySolutions } from '@/components/industry-solutions';
 import { FAQSection } from '@/components/faq-section';
 import { StickyCTABar } from '@/components/sticky-cta-bar';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
-import { TrustIndicators } from '@/components/trust-indicators';
 import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
-import { Sparkles, Check, Rocket, Award } from 'lucide-react';
+import { Sparkles, Check, Rocket, Award, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
     <main id="main" className="min-h-screen">
       {/* HERO SECTION - First Impression */}
-      <section className="relative bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white py-16 md:py-20 lg:py-32 overflow-hidden">
         {/* Enhanced decorative gradient blobs for visual depth */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl opacity-20 animate-pulse"></div>
         <div
@@ -27,8 +26,8 @@ export default function Home() {
         ></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500 rounded-full blur-3xl opacity-10"></div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Value Proposition */}
             <div className="text-center lg:text-left">
               {/* Badge */}
@@ -38,34 +37,40 @@ export default function Home() {
                   AI-alapú ajánlatkészítés
                 </span>
               </div>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-balance">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight text-balance">
                 Professzionális ajánlatkészítés{' '}
                 <span className="text-turquoise-400">percek alatt</span>
               </h1>
-              <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed text-pretty">
-                Automatizáld az ajánlatkészítést, spórolj akár{' '}
-                <strong className="text-white">70 %-nyi időt</strong>, és növeld a{' '}
-                <strong className="text-white">üzleti eredményeidet</strong> a Vyndi AI-val.
+              <p className="text-base md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
+                Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
               </p>
+
+              {/* Checkmarks with better spacing */}
+              <div className="space-y-4 mt-6 mb-8">
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
+                  <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-sm md:text-base">
+                    Kezdd el ingyen, azonnal, bankkártya nélkül
+                  </span>
+                </div>
+              </div>
 
               {/* Primary CTA */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
                 >
-                  Kezdd el ingyen →
+                  <span className="text-base md:text-lg">Próbáld ki most ingyen</span>
+                  <ArrowRight className="w-5 h-5 flex-shrink-0" />
                 </Link>
                 <a
                   href="#product-demo"
-                  className="border-2 border-white/30 hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-lg text-lg backdrop-blur-sm transition-all min-h-[44px] flex items-center justify-center"
+                  className="border-2 border-orange-500 text-orange-500 font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:bg-orange-50 transition-colors flex items-center justify-center"
                 >
-                  Nézd meg működésben
+                  További információ
                 </a>
               </div>
-
-              {/* Trust Indicators */}
-              <TrustIndicators />
             </div>
 
             {/* Right: Dashboard Image with Floating Cards */}
@@ -141,29 +146,28 @@ export default function Home() {
       </section>
 
       {/* Wave Divider between Video and Problems Sections */}
-      <div className="relative w-full" style={{ height: '80px' }}>
+      <div className="relative h-24 -mb-1">
         <svg
           viewBox="0 0 1440 120"
-          className="w-full h-full"
+          className="absolute bottom-0 w-full h-full"
           preserveAspectRatio="none"
-          style={{ display: 'block' }}
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <defs>
-            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#00d4b4" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#00d4b4" stopOpacity="0.05" />
-            </linearGradient>
-          </defs>
+          {/* Main wave fill - creates the gray background transition */}
           <path
-            d="M0,64 C360,20 720,100 1440,64 L1440,120 L0,120 Z"
+            d="M0,64 C360,10 720,100 1080,40 C1200,20 1320,80 1440,64 L1440,120 L0,120 Z"
             fill="#F9FAFB"
-            fillOpacity="1"
+            className="transition-colors duration-300"
           />
+
+          {/* Decorative teal wave overlay - adds visual interest */}
           <path
-            d="M0,64 C360,20 720,100 1440,64"
-            stroke="url(#waveGradient)"
-            strokeWidth="2"
+            d="M0,64 C360,10 720,100 1080,40 C1200,20 1320,80 1440,64"
             fill="none"
+            stroke="#00d4b4"
+            strokeWidth="2"
+            opacity="0.3"
+            className="transition-all duration-300"
           />
         </svg>
       </div>
