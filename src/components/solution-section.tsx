@@ -73,7 +73,9 @@ export function SolutionSection() {
 
           {/* Enhanced table with better visual hierarchy and shadows */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
-            <style dangerouslySetInnerHTML={{__html: `
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `
               .solution-table-header,
               .solution-table-row {
                 grid-template-columns: 30% 21.67% 26.67% 21.66%;
@@ -84,7 +86,9 @@ export function SolutionSection() {
                   grid-template-columns: 35% 21.67% 21.67% 21.66%;
                 }
               }
-            `}} />
+            `,
+              }}
+            />
             {/* Mobile scroll container */}
             <div className="overflow-x-auto">
               <div className="min-w-[600px]">
