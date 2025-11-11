@@ -1,6 +1,6 @@
 import { Clock, TrendingDown, FileX, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function ProblemSection() {
   const problems = [
@@ -99,14 +99,9 @@ export function ProblemSection() {
             A Vyndi pontosan ezeket a problémákat oldja meg mesterséges intelligencia alapú
             automatizálással.
           </p>
-          <Link
-            href="#solution"
-            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
-          >
-            Nézd meg, hogyan működik →
-          </Link>
+          <LandingCTA href="#solution">Nézd meg, hogyan működik</LandingCTA>
           <div className="mt-6">
-            <FeatureIndicators />
+            <FeatureIndicators mobileOnly={['fast']} />
           </div>
         </div>
       </div>

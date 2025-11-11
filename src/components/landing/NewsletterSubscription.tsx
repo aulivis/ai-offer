@@ -189,7 +189,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
 
       {/* Trust signals below form */}
       <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -209,7 +209,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
           </svg>
           <span className="font-semibold">Nincs spam, bármikor leiratkozhatsz</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"

@@ -1,8 +1,8 @@
 'use client';
 
-import { Upload, Wand2, Send, Zap, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { Upload, Wand2, Send, Zap, ChevronDown, Sparkles } from 'lucide-react';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function HowItWorks() {
   const steps = [
@@ -47,59 +47,53 @@ export function HowItWorks() {
 
         {/* Process Steps with Progress Arrows */}
         <div className="relative max-w-7xl mx-auto mt-16">
-          {/* Desktop curved arrows - positioned to connect number badges */}
-          <div
-            className="hidden lg:block absolute inset-0"
-            style={{ height: '180px', top: '-160px', pointerEvents: 'none' }}
-          >
+          {/* Connecting Arrows - Desktop Only */}
+          <div className="hidden lg:block absolute top-0 left-0 right-0 h-32 pointer-events-none">
+            {/* Arrow from Card 1 to Card 2 */}
             <svg
-              className="w-full h-full text-turquoise-400"
-              viewBox="0 -140 100 160"
-              preserveAspectRatio="none"
+              className="absolute left-[16.666%] w-[16.666%]"
+              viewBox="0 0 200 120"
+              fill="none"
+              style={{ top: '-20px' }}
             >
-              <defs>
-                <marker
-                  id="arrowhead-howitworks-1"
-                  markerWidth="3"
-                  markerHeight="3"
-                  refX="2.5"
-                  refY="1.5"
-                  orient="auto"
-                  markerUnits="strokeWidth"
-                >
-                  <polygon points="0 0, 3 1.5, 0 3" fill="currentColor" />
-                </marker>
-                <marker
-                  id="arrowhead-howitworks-2"
-                  markerWidth="3"
-                  markerHeight="3"
-                  refX="2.5"
-                  refY="1.5"
-                  orient="auto"
-                  markerUnits="strokeWidth"
-                >
-                  <polygon points="0 0, 3 1.5, 0 3" fill="currentColor" />
-                </marker>
-              </defs>
-              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) - dramatic arc with y=-100 */}
               <path
-                d="M 18 15 Q 32.5 -100, 47 15"
-                stroke="currentColor"
-                strokeWidth="0.6"
+                d="M 10 80 Q 100 20, 190 80"
+                stroke="rgb(45, 212, 191)"
+                strokeWidth="3"
+                strokeDasharray="8 8"
                 strokeLinecap="round"
-                strokeDasharray="3 3"
                 fill="none"
-                markerEnd="url(#arrowhead-howitworks-1)"
               />
-              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) - dramatic arc with y=-100 */}
+              {/* Arrow head */}
               <path
-                d="M 53 15 Q 67.5 -100, 82 15"
-                stroke="currentColor"
-                strokeWidth="0.6"
+                d="M 190 80 L 185 75 M 190 80 L 185 85"
+                stroke="rgb(45, 212, 191)"
+                strokeWidth="3"
                 strokeLinecap="round"
-                strokeDasharray="3 3"
+              />
+            </svg>
+
+            {/* Arrow from Card 2 to Card 3 */}
+            <svg
+              className="absolute left-[50%] w-[16.666%]"
+              viewBox="0 0 200 120"
+              fill="none"
+              style={{ top: '-20px' }}
+            >
+              <path
+                d="M 10 80 Q 100 20, 190 80"
+                stroke="rgb(45, 212, 191)"
+                strokeWidth="3"
+                strokeDasharray="8 8"
+                strokeLinecap="round"
                 fill="none"
-                markerEnd="url(#arrowhead-howitworks-2)"
+              />
+              {/* Arrow head */}
+              <path
+                d="M 190 80 L 185 75 M 190 80 L 185 85"
+                stroke="rgb(45, 212, 191)"
+                strokeWidth="3"
+                strokeLinecap="round"
               />
             </svg>
           </div>
@@ -155,7 +149,7 @@ export function HowItWorks() {
                   </div>
 
                   {/* Centered content with improved spacing */}
-                  <div className="text-center mb-6 flex-1 flex flex-col">
+                  <div className="text-center mb-4 md:mb-6 flex-1 flex flex-col">
                     <h3 className="text-xl md:text-2xl font-bold text-navy-900 mb-3">
                       {step.title}
                     </h3>
@@ -208,55 +202,35 @@ export function HowItWorks() {
 
         {/* Enhanced CTA Section */}
         <div className="text-center mt-12 relative">
-          {/* Curved arrow from bottom of TELJES FOLYAMAT box to CTA */}
-          <div
-            className="hidden lg:block absolute left-1/2 -translate-x-1/2 -top-24 w-full max-w-md"
-            style={{ height: '100px' }}
-          >
+          {/* Vertical dashed line from time badge to CTA */}
+          <div className="hidden lg:block absolute left-1/2 -translate-x-1/2 -top-24">
             <svg
-              className="w-full h-full text-turquoise-400"
-              viewBox="0 0 200 100"
-              preserveAspectRatio="none"
+              className="mx-auto w-1 h-16"
+              viewBox="0 0 4 64"
+              fill="none"
             >
-              <defs>
-                <marker
-                  id="arrowhead-cta"
-                  markerWidth="4"
-                  markerHeight="4"
-                  refX="3.5"
-                  refY="2"
-                  orient="auto"
-                  markerUnits="strokeWidth"
-                >
-                  <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
-                </marker>
-              </defs>
-              {/* Curved arrow from bottom center of TELJES FOLYAMAT box with subtle rightward bow */}
-              <path
-                d="M 100 100 Q 130 50, 100 0"
-                stroke="currentColor"
-                strokeWidth="0.6"
+              <line
+                x1="2"
+                y1="0"
+                x2="2"
+                y2="64"
+                stroke="rgb(45, 212, 191)"
+                strokeWidth="2"
+                strokeDasharray="6 6"
                 strokeLinecap="round"
-                strokeDasharray="2.5 2.5"
-                fill="none"
-                markerEnd="url(#arrowhead-cta)"
               />
             </svg>
           </div>
 
           {/* Main CTA Button - Mobile optimized */}
           <div className="mb-6">
-            <Link
-              href="/login?redirect=/new"
-              className="inline-flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 md:px-12 md:py-6 rounded-xl text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 group min-h-[56px] w-full md:w-auto justify-center"
-            >
-              <span>Próbáld ki most ingyen</span>
-              <ArrowRight className="w-5 h-5 md:w-7 md:h-7 flex-shrink-0 group-hover:translate-x-2 transition-transform" />
-            </Link>
+            <LandingCTA size="md" className="w-full md:w-auto justify-center">
+              Próbáld ki most ingyen
+            </LandingCTA>
           </div>
 
           {/* Trust indicators with icons */}
-          <FeatureIndicators />
+          <FeatureIndicators mobileOnly={['noCard']} />
         </div>
       </div>
     </section>

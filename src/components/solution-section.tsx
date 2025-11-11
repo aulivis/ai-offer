@@ -1,6 +1,6 @@
-import { Check, X, TrendingUp, Clock, AlertTriangle, Palette, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { Check, X, TrendingUp, Clock, AlertTriangle, Palette } from 'lucide-react';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function SolutionSection() {
   const comparison = [
@@ -58,11 +58,11 @@ export function SolutionSection() {
 
         {/* Comparison Table */}
         <div className="max-w-6xl mx-auto relative pt-8">
-          {/* Badge positioned above the Vyndi column - outside the table */}
+          {/* Badge positioned above the Vyndi column - outside the table - hidden on mobile */}
           <div
             className="absolute top-0 z-20 hidden lg:block"
             style={{
-              left: '75%',
+              left: '62.5%',
               transform: 'translateX(-50%)',
             }}
           >
@@ -71,107 +71,110 @@ export function SolutionSection() {
             </div>
           </div>
 
-          {/* Mobile badge - centered above table */}
-          <div className="lg:hidden text-center mb-4">
-            <div className="inline-block bg-yellow-400 text-navy-900 font-extrabold text-sm px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
-              Ajánlott
-            </div>
-          </div>
-
           {/* Enhanced table with better visual hierarchy and shadows */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
-            {/* Table Header */}
-            <div className="grid grid-cols-4 bg-navy-900 text-white">
-              {/* Empty cell for row labels */}
-              <div className="p-4"></div>
+            {/* Mobile scroll container */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[600px]">
+                {/* Table Header */}
+                <div className="grid grid-cols-4 bg-navy-900 text-white">
+                  {/* Empty cell for row labels */}
+                  <div className="p-4"></div>
 
-              {/* Traditional column with red accent */}
-              <div className="p-4 text-center border-l border-white/10">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-                    <X className="w-5 h-5 text-red-400" />
+                  {/* Traditional column with red accent */}
+                  <div className="p-4 text-center border-l border-white/10">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
+                        <X className="w-5 h-5 text-red-400" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg">Hagyományos</h3>
+                  </div>
+
+                  {/* Vyndi AI column with turquoise accent and highlight */}
+                  <div className="p-4 text-center border-l border-white/10 bg-turquoise-600 relative">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                        <Check className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg">Vyndi</h3>
+                  </div>
+
+                  {/* Improvement column with green accent */}
+                  <div className="p-4 text-center border-l border-white/10">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-green-400" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg">Fejlődés</h3>
                   </div>
                 </div>
-                <h3 className="font-bold text-lg">Hagyományos</h3>
-              </div>
 
-              {/* Vyndi AI column with turquoise accent and highlight */}
-              <div className="p-4 text-center border-l border-white/10 bg-turquoise-600 relative">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-                <h3 className="font-bold text-lg">Vyndi</h3>
-              </div>
+                {/* Table Rows */}
+                {comparison.map((item, index) => {
+                  const Icon = item.icon;
+                  const isFirstRow = index === 0;
 
-              {/* Improvement column with green accent */}
-              <div className="p-4 text-center border-l border-white/10">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-400" />
-                  </div>
-                </div>
-                <h3 className="font-bold text-lg">Fejlődés</h3>
+                  return (
+                    <div
+                      key={index}
+                      className="grid grid-cols-4 border-t border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      {/* Row Label */}
+                      <div className="p-6 flex items-center gap-3">
+                        <div
+                          className={`w-12 h-12 ${item.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}
+                        >
+                          <Icon className={`w-6 h-6 ${item.iconColor}`} />
+                        </div>
+                        <div>
+                          <div className="font-bold text-navy-900 text-lg">{item.metric}</div>
+                        </div>
+                      </div>
+
+                      {/* Traditional Value */}
+                      <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-red-50/50">
+                        <div className="text-center">
+                          <div
+                            className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-red-600 mb-1`}
+                          >
+                            {item.before.value}
+                          </div>
+                          <div className="text-sm text-gray-500">{item.before.subtitle}</div>
+                        </div>
+                      </div>
+
+                      {/* Vyndi AI Value */}
+                      <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-turquoise-50">
+                        <div className="text-center">
+                          <div
+                            className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-turquoise-600 mb-1`}
+                          >
+                            {item.after.value}
+                          </div>
+                          <div className="text-sm text-gray-600">{item.after.subtitle}</div>
+                        </div>
+                      </div>
+
+                      {/* Improvement */}
+                      <div className="p-6 flex items-center justify-center border-l border-gray-200">
+                        <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold border border-green-300">
+                          <TrendingUp className="w-4 h-4" />
+                          {item.improvement}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Table Rows */}
-            {comparison.map((item, index) => {
-              const Icon = item.icon;
-              const isFirstRow = index === 0;
-
-              return (
-                <div
-                  key={index}
-                  className="grid grid-cols-4 border-t border-gray-200 hover:bg-gray-50 transition-colors"
-                >
-                  {/* Row Label */}
-                  <div className="p-6 flex items-center gap-3">
-                    <div
-                      className={`w-12 h-12 ${item.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}
-                    >
-                      <Icon className={`w-6 h-6 ${item.iconColor}`} />
-                    </div>
-                    <div>
-                      <div className="font-bold text-navy-900 text-lg">{item.metric}</div>
-                    </div>
-                  </div>
-
-                  {/* Traditional Value */}
-                  <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-red-50/50">
-                    <div className="text-center">
-                      <div
-                        className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-red-600 mb-1`}
-                      >
-                        {item.before.value}
-                      </div>
-                      <div className="text-sm text-gray-500">{item.before.subtitle}</div>
-                    </div>
-                  </div>
-
-                  {/* Vyndi AI Value */}
-                  <div className="p-6 flex items-center justify-center border-l border-gray-200 bg-turquoise-50">
-                    <div className="text-center">
-                      <div
-                        className={`${isFirstRow ? 'text-3xl' : 'text-2xl'} font-bold text-turquoise-600 mb-1`}
-                      >
-                        {item.after.value}
-                      </div>
-                      <div className="text-sm text-gray-600">{item.after.subtitle}</div>
-                    </div>
-                  </div>
-
-                  {/* Improvement */}
-                  <div className="p-6 flex items-center justify-center border-l border-gray-200">
-                    <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold border border-green-300">
-                      <TrendingUp className="w-4 h-4" />
-                      {item.improvement}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {/* Mobile scroll hint */}
+            <div className="md:hidden px-6 py-3 bg-gray-100 text-center text-sm text-gray-600 border-t border-gray-200">
+              ← Görgess vízszintesen a teljes táblázatért →
+            </div>
           </div>
         </div>
 
@@ -181,15 +184,9 @@ export function SolutionSection() {
             Tapasztald meg, milyen gyors és egyszerű lehet az ajánlatkészítés. Készítsd el az első
             ajánlatodat még ma – ingyen.
           </p>
-          <Link
-            href="/login?redirect=/new"
-            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
-          >
-            Próbáld ki ingyen
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <LandingCTA>Próbáld ki ingyen</LandingCTA>
           <div className="mt-6">
-            <FeatureIndicators />
+            <FeatureIndicators mobileOnly={['noCard']} />
           </div>
         </div>
       </div>

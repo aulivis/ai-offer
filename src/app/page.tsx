@@ -159,16 +159,6 @@ export default function Home() {
             fill="#F9FAFB"
             className="transition-colors duration-300"
           />
-
-          {/* Decorative teal wave overlay - adds visual interest */}
-          <path
-            d="M0,64 C360,10 720,100 1080,40 C1200,20 1320,80 1440,64"
-            fill="none"
-            stroke="#00d4b4"
-            strokeWidth="2"
-            opacity="0.3"
-            className="transition-all duration-300"
-          />
         </svg>
       </div>
 

@@ -7,10 +7,9 @@ import {
   Bell,
   BarChart3,
   Headphones,
-  ArrowRight,
 } from 'lucide-react';
-import Link from 'next/link';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function ComparisonTable() {
   const features = [
@@ -106,12 +105,12 @@ export function ComparisonTable() {
 
         {/* Comparison Table */}
         <div className="max-w-6xl mx-auto relative pt-8">
-          {/* Badge positioned above the Vyndi column */}
-          {/* Vyndi column center: 50% (features) + 15% (competitor A) + 10% (half of Vyndi's 20%) = 75% */}
+          {/* Badge positioned above the Vyndi column - hidden on mobile */}
+          {/* Vyndi column center: 35% (functions) + 25% (half of Vyndi's 50%) = 47.5% */}
           <div
             className="absolute top-0 z-20 hidden lg:block"
             style={{
-              left: '75%',
+              left: '47.5%',
               transform: 'translateX(-50%)',
             }}
           >
@@ -120,51 +119,45 @@ export function ComparisonTable() {
             </div>
           </div>
 
-          {/* Mobile badge - centered above table */}
-          <div className="lg:hidden text-center mb-4">
-            <div className="inline-block bg-yellow-400 text-navy-900 font-extrabold text-sm px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
-              ⭐ LEGJOBB VÁLASZTÁS
-            </div>
-          </div>
-
           {/* Enhanced table with better shadows and rounded corners */}
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]" style={{ tableLayout: 'fixed' }}>
+              <div className="min-w-full">
+                <table className="w-full min-w-[600px]" style={{ tableLayout: 'fixed', width: '100%' }}>
                 <thead>
                   <tr className="bg-navy-900 text-white">
-                    {/* Features Column - 40% width */}
+                    {/* Features Column - reduced width */}
                     <th
-                      className="px-6 py-5 text-left font-bold text-lg align-top"
-                      style={{ width: '50%' }}
+                      className="px-4 md:px-6 py-5 text-left font-bold text-base md:text-lg align-top"
+                      style={{ width: '35%' }}
                     >
                       Funkciók
                     </th>
 
-                    {/* Competitor A - 15% width */}
+                    {/* Vyndi Column - first column, wider */}
                     <th
-                      className="px-6 py-5 text-center font-bold text-lg align-top"
-                      style={{ width: '15%' }}
-                    >
-                      Versenytárs A
-                    </th>
-
-                    {/* Vyndi Column - 30% width with badge area */}
-                    <th
-                      className="px-6 py-5 text-center font-bold text-lg bg-turquoise-600 align-top relative"
-                      style={{ width: '20%' }}
+                      className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg bg-turquoise-600 align-top relative border-l border-white/10"
+                      style={{ width: '25%' }}
                     >
                       {/* Column content */}
                       <div className="flex items-center justify-center gap-2">
-                        <Sparkles className="w-6 h-6" />
+                        <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
                         <span>Vyndi</span>
                       </div>
                     </th>
 
-                    {/* Competitor B - 15% width */}
+                    {/* Competitor A - wider */}
                     <th
-                      className="px-6 py-5 text-center font-bold text-lg align-top"
-                      style={{ width: '15%' }}
+                      className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg align-top border-l border-white/10"
+                      style={{ width: '20%' }}
+                    >
+                      Versenytárs A
+                    </th>
+
+                    {/* Competitor B - wider */}
+                    <th
+                      className="px-4 md:px-6 py-5 text-center font-bold text-base md:text-lg align-top border-l border-white/10"
+                      style={{ width: '20%' }}
                     >
                       Versenytárs B
                     </th>
@@ -181,64 +174,64 @@ export function ComparisonTable() {
                           feature.highlight ? 'bg-turquoise-50/30' : ''
                         }`}
                       >
-                        {/* Feature Name & Description - 40% width */}
-                        <td className="px-6 py-6 align-middle" style={{ width: '40%' }}>
-                          <div className="flex items-center gap-4">
+                        {/* Feature Name & Description - 35% width */}
+                        <td className="px-4 md:px-6 py-4 md:py-6 align-middle" style={{ width: '35%' }}>
+                          <div className="flex items-center gap-3 md:gap-4">
                             {/* Feature icon in colored circle */}
                             <div
-                              className={`w-12 h-12 ${feature.iconColor} rounded-xl flex items-center justify-center flex-shrink-0`}
+                              className={`w-10 h-10 md:w-12 md:h-12 ${feature.iconColor} rounded-xl flex items-center justify-center flex-shrink-0`}
                             >
-                              <Icon className={`w-6 h-6 ${feature.iconTextColor}`} />
+                              <Icon className={`w-5 h-5 md:w-6 md:h-6 ${feature.iconTextColor}`} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-bold text-navy-900 text-base mb-1">
+                              <div className="font-bold text-navy-900 text-sm md:text-base mb-1">
                                 {feature.name}
                               </div>
                             </div>
                           </div>
                         </td>
 
-                        {/* Competitor A - 15% width */}
+                        {/* Vyndi Column - first column, 25% width, highlighted */}
                         <td
-                          className="px-6 py-6 text-center bg-gray-50/50 align-middle"
-                          style={{ width: '15%' }}
-                        >
-                          <div className="flex justify-center items-center">
-                            {feature.competitor1 ? (
-                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                <Check className="w-6 h-6 text-green-600" strokeWidth={3} />
-                              </div>
-                            ) : (
-                              <X className="w-7 h-7 text-gray-300" strokeWidth={2.5} />
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Vyndi Column - 30% width, highlighted */}
-                        <td
-                          className="px-6 py-6 text-center bg-turquoise-50/50 align-middle"
-                          style={{ width: '30%' }}
+                          className="px-4 md:px-6 py-4 md:py-6 text-center bg-turquoise-50/50 align-middle border-l border-gray-200"
+                          style={{ width: '25%' }}
                         >
                           <div className="flex justify-center items-center">
                             {feature.vyndi ? (
-                              <div className="w-10 h-10 bg-turquoise-600 rounded-full flex items-center justify-center shadow-md">
-                                <Check className="w-6 h-6 text-white" strokeWidth={3} />
+                              <div className="w-8 h-8 md:w-10 md:h-10 bg-turquoise-600 rounded-full flex items-center justify-center shadow-md">
+                                <Check className="w-5 h-5 md:w-6 md:h-6 text-white" strokeWidth={3} />
                               </div>
                             ) : (
-                              <X className="w-7 h-7 text-gray-300" strokeWidth={2.5} />
+                              <X className="w-6 h-6 md:w-7 md:h-7 text-gray-300" strokeWidth={2.5} />
                             )}
                           </div>
                         </td>
 
-                        {/* Competitor B - 15% width */}
-                        <td className="px-6 py-6 text-center align-middle" style={{ width: '15%' }}>
+                        {/* Competitor A - 20% width */}
+                        <td
+                          className="px-4 md:px-6 py-4 md:py-6 text-center bg-gray-50/50 align-middle border-l border-gray-200"
+                          style={{ width: '20%' }}
+                        >
                           <div className="flex justify-center items-center">
-                            {feature.competitor2 ? (
-                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                <Check className="w-6 h-6 text-green-600" strokeWidth={3} />
+                            {feature.competitor1 ? (
+                              <div className="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <Check className="w-5 h-5 md:w-6 md:h-6 text-green-600" strokeWidth={3} />
                               </div>
                             ) : (
-                              <X className="w-7 h-7 text-gray-300" strokeWidth={2.5} />
+                              <X className="w-6 h-6 md:w-7 md:h-7 text-gray-300" strokeWidth={2.5} />
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Competitor B - 20% width */}
+                        <td className="px-4 md:px-6 py-4 md:py-6 text-center align-middle border-l border-gray-200" style={{ width: '20%' }}>
+                          <div className="flex justify-center items-center">
+                            {feature.competitor2 ? (
+                              <div className="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <Check className="w-5 h-5 md:w-6 md:h-6 text-green-600" strokeWidth={3} />
+                              </div>
+                            ) : (
+                              <X className="w-6 h-6 md:w-7 md:h-7 text-gray-300" strokeWidth={2.5} />
                             )}
                           </div>
                         </td>
@@ -250,30 +243,28 @@ export function ComparisonTable() {
                 {/* Summary Row */}
                 <tfoot>
                   <tr className="bg-gray-50 border-t-2 border-gray-300">
-                    <td className="px-6 py-6" style={{ width: '40%' }}>
-                      <span className="font-bold text-navy-900">Összesen</span>
+                    <td className="px-4 md:px-6 py-4 md:py-6" style={{ width: '35%' }}>
+                      <span className="font-bold text-navy-900 text-sm md:text-base">Összesen</span>
                     </td>
 
-                    <td className="px-6 py-6 text-center bg-gray-50/50" style={{ width: '15%' }}>
-                      <div className="text-2xl font-bold text-gray-600">{competitor1Count}/6</div>
-                      <div className="text-xs text-gray-500">funkció</div>
-                    </td>
-
-                    <td
-                      className="px-6 py-6 text-center bg-turquoise-50/50"
-                      style={{ width: '20%' }}
-                    >
-                      <div className="text-3xl font-bold text-turquoise-600">{vyndiCount}/6</div>
+                    <td className="px-4 md:px-6 py-4 md:py-6 text-center bg-turquoise-50/50 border-l border-gray-200" style={{ width: '25%' }}>
+                      <div className="text-xl md:text-3xl font-bold text-turquoise-600">{vyndiCount}/6</div>
                       <div className="text-xs text-turquoise-700 font-semibold">MINDEN funkció</div>
                     </td>
 
-                    <td className="px-6 py-6 text-center" style={{ width: '15%' }}>
-                      <div className="text-2xl font-bold text-gray-600">{competitor2Count}/6</div>
+                    <td className="px-4 md:px-6 py-4 md:py-6 text-center bg-gray-50/50 border-l border-gray-200" style={{ width: '20%' }}>
+                      <div className="text-lg md:text-2xl font-bold text-gray-600">{competitor1Count}/6</div>
+                      <div className="text-xs text-gray-500">funkció</div>
+                    </td>
+
+                    <td className="px-4 md:px-6 py-4 md:py-6 text-center border-l border-gray-200" style={{ width: '20%' }}>
+                      <div className="text-lg md:text-2xl font-bold text-gray-600">{competitor2Count}/6</div>
                       <div className="text-xs text-gray-500">funkció</div>
                     </td>
                   </tr>
                 </tfoot>
-              </table>
+                </table>
+              </div>
             </div>
 
             {/* Mobile scroll hint - outside scrollable area */}
@@ -289,15 +280,9 @@ export function ComparisonTable() {
             A Vyndi az egyetlen platform, amely mind a 6 kulcsfontosságú funkciót egy helyen
             kínálja. Takaríts meg időt és készíts professzionális ajánlatokat percek alatt.
           </p>
-          <Link
-            href="/login?redirect=/new"
-            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
-          >
-            Próbáld ki most ingyen
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <LandingCTA>Próbáld ki most ingyen</LandingCTA>
           <div className="mt-6">
-            <FeatureIndicators />
+            <FeatureIndicators mobileOnly={['fast']} />
           </div>
         </div>
       </div>

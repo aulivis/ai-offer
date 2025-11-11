@@ -12,7 +12,6 @@ import {
   Eye,
   Star,
   Play,
-  Bookmark,
 } from 'lucide-react';
 import { Resource, ResourceType } from '@/types/resource';
 
@@ -142,17 +141,6 @@ export function ResourceCard({ resource }: ResourceCardProps) {
           {/* Date */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200">
             <div className="text-sm text-gray-500">{resource.publishedDate}</div>
-
-            {/* Bookmark Icon */}
-            <button
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                // TODO: Implement bookmark functionality
-              }}
-            >
-              <Bookmark className="w-5 h-5 text-gray-400 hover:text-turquoise-600" />
-            </button>
           </div>
         </div>
 

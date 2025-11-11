@@ -57,6 +57,13 @@ export function sanitizeBrandLogoPath(value: string | null | undefined): string 
 /**
  * Validates and sanitizes a brand logo URL (for backward compatibility).
  * @deprecated Use sanitizeBrandLogoPath and generate signed URLs on-demand instead.
+ * 
+ * This function is still used as a fallback in:
+ * - getBrandLogoSignedUrl: when logoPath cannot be parsed
+ * - getBrandLogoUrl: for legacy URLs during migration
+ * - normalizeBranding: when receiving URLs directly (e.g., from API requests)
+ * 
+ * It should not be used for new code. Prefer getBrandLogoUrl which handles both paths and URLs.
  */
 export function sanitizeBrandLogoUrl(value: string | null | undefined): string | null {
   if (typeof value !== 'string') {

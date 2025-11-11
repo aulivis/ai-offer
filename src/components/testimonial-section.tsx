@@ -14,9 +14,9 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { getAuthorImage } from '@/lib/testimonial-images';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function TestimonialSection() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -298,14 +298,9 @@ export function TestimonialSection() {
             Csatlakozz a sikeres vállalkozások közösségéhez. Kezdd el ingyenes fiókkal, és készítsd
             el az első ajánlatodat 5 perc alatt.
           </p>
-          <Link
-            href="/login?redirect=/new"
-            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
-          >
-            Kezdd el ingyen – 5 perc alatt
-          </Link>
+          <LandingCTA size="md">Kezdd el ingyen – 5 perc alatt</LandingCTA>
           <div className="mt-6">
-            <FeatureIndicators />
+            <FeatureIndicators mobileOnly={['noCard']} />
           </div>
         </div>
       </div>

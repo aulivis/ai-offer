@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Briefcase,
   Megaphone,
@@ -7,11 +9,15 @@ import {
   Building2,
   Check,
   Factory,
+  ChevronDown,
 } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from 'react';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function IndustrySolutions() {
+  const [expandedIndustry, setExpandedIndustry] = useState<number | null>(null);
+
   const industries = [
     {
       id: 1,
@@ -115,46 +121,103 @@ export function IndustrySolutions() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
           {industries.map((industry) => {
             const Icon = industry.icon;
+            const isExpanded = expandedIndustry === industry.id;
 
             return (
               <div
                 key={industry.id}
-                className="group bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-gray-300 hover:-translate-y-2 text-center"
+                className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-gray-300 hover:-translate-y-2 text-center md:text-center overflow-hidden"
               >
-                {/* Icon with Gradient Background */}
-                {/* Much larger icon with gradient background */}
-                <div
-                  className={`w-16 h-16 bg-gradient-to-br ${industry.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg mx-auto`}
+                {/* Mobile: Accordion Header - Always visible */}
+                <button
+                  onClick={() => setExpandedIndustry(isExpanded ? null : industry.id)}
+                  className="w-full md:hidden flex items-center justify-between p-6 text-left"
+                  aria-expanded={isExpanded}
                 >
-                  <Icon className="w-8 h-8 text-white" strokeWidth={2} />
+                  <div className="flex items-center gap-4 flex-1">
+                    {/* Icon with Gradient Background */}
+                    <div
+                      className={`w-12 h-12 bg-gradient-to-br ${industry.gradient} rounded-xl flex items-center justify-center flex-shrink-0 shadow-md`}
+                    >
+                      <Icon className="w-6 h-6 text-white" strokeWidth={2} />
+                    </div>
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-navy-900 text-balance flex-1">
+                      {industry.name}
+                    </h3>
+                  </div>
+                  <ChevronDown
+                    className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${
+                      isExpanded ? 'transform rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* Mobile: Accordion Content - Collapsible */}
+                <div
+                  className={`md:hidden transition-all duration-300 overflow-hidden ${
+                    isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="px-6 pb-6">
+                    {/* Description */}
+                    <p className="text-gray-600 mb-4 leading-relaxed text-pretty text-left">
+                      {industry.description}
+                    </p>
+
+                    {/* Features List */}
+                    <ul className="space-y-3 flex flex-col items-start text-left">
+                      <li className="text-gray-700 text-sm font-semibold mb-2 w-full">Fő funkciók:</li>
+                      {industry.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-3 w-full">
+                          <Check
+                            className="w-5 h-5 text-turquoise-500 flex-shrink-0 mt-0.5"
+                            strokeWidth={3}
+                          />
+                          <span className="text-gray-700 text-sm leading-relaxed text-pretty">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
 
-                {/* Title */}
-                <h3 className="text-2xl font-bold text-navy-900 mb-4 group-hover:text-turquoise-600 transition-colors text-balance">
-                  {industry.name}
-                </h3>
+                {/* Desktop: Full Card - Always visible */}
+                <div className="hidden md:block p-8">
+                  {/* Icon with Gradient Background */}
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-br ${industry.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg mx-auto`}
+                  >
+                    <Icon className="w-8 h-8 text-white" strokeWidth={2} />
+                  </div>
 
-                {/* Description */}
-                <p className="text-gray-600 mb-6 leading-relaxed text-pretty">
-                  {industry.description}
-                </p>
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-navy-900 mb-4 group-hover:text-turquoise-600 transition-colors text-balance">
+                    {industry.name}
+                  </h3>
 
-                {/* Features List */}
-                {/* Better styled bullet points with checkmarks */}
-                <ul className="space-y-3 mb-6 flex flex-col items-start">
-                  <li className="text-gray-700 text-sm font-semibold mb-2 w-full">Fő funkciók:</li>
-                  {industry.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3 w-full">
-                      <Check
-                        className="w-5 h-5 text-turquoise-500 flex-shrink-0 mt-0.5"
-                        strokeWidth={3}
-                      />
-                      <span className="text-gray-700 text-sm leading-relaxed text-pretty">
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                  {/* Description */}
+                  <p className="text-gray-600 mb-6 leading-relaxed text-pretty">
+                    {industry.description}
+                  </p>
+
+                  {/* Features List */}
+                  <ul className="space-y-3 mb-6 flex flex-col items-start">
+                    <li className="text-gray-700 text-sm font-semibold mb-2 w-full">Fő funkciók:</li>
+                    {industry.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3 w-full">
+                        <Check
+                          className="w-5 h-5 text-turquoise-500 flex-shrink-0 mt-0.5"
+                          strokeWidth={3}
+                        />
+                        <span className="text-gray-700 text-sm leading-relaxed text-pretty">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             );
           })}
@@ -172,15 +235,10 @@ export function IndustrySolutions() {
             illik a te folyamataidhoz.
           </p>
 
-          <Link
-            href="/login?redirect=/new"
-            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
-          >
-            Kezdd el ingyen – 5 perc alatt
-          </Link>
+          <LandingCTA size="md">Kezdd el ingyen – 5 perc alatt</LandingCTA>
 
           <div className="mt-6">
-            <FeatureIndicators />
+            <FeatureIndicators mobileOnly={['noCard']} />
           </div>
         </div>
       </div>

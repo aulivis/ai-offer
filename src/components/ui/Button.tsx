@@ -21,7 +21,7 @@ const variantClasses: Record<NonNullable<Props['variant']>, string> = {
     'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
   secondary: [
     'border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]',
-    'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
+    'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:text-[var(--btn-hover-fg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
   ].join(' '),
   ghost:
     'bg-transparent text-[var(--btn-fg)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
@@ -40,6 +40,7 @@ const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {
     '--btn-border': tokens.colors.border,
     '--btn-hover-border': tokens.colors.fg,
     '--btn-hover-bg': tokens.colors.bgMuted,
+    '--btn-hover-fg': '#FF6B35', // Orange color on hover
   },
   ghost: {
     '--btn-fg': tokens.colors.fg,

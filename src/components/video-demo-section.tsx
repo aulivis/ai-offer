@@ -1,10 +1,10 @@
 'use client';
 
-import { Play, Users, Eye, Star, ThumbsUp, ArrowRight } from 'lucide-react';
+import { Play, Users, Eye, Star, ThumbsUp } from 'lucide-react';
 import { useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { FeatureIndicators } from './FeatureIndicators';
+import { LandingCTA } from './ui/LandingCTA';
 
 export function VideoDemoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -229,15 +229,11 @@ export function VideoDemoSection() {
           <p className="text-base md:text-lg text-gray-600 text-pretty leading-relaxed">
             Készen állsz, hogy te is automatizáld az ajánlatkészítést?
           </p>
-          <Link
-            href="/login?redirect=/new"
-            className="inline-flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-4 min-h-[56px] w-full md:w-auto rounded-xl text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
-          >
-            <span>Kezdd el most – ingyenes fiókkal, 5 perc alatt</span>
-            <ArrowRight className="w-5 h-5 flex-shrink-0" />
-          </Link>
+          <LandingCTA size="md" className="w-full md:w-auto justify-center">
+            Kezdd el most – ingyenes fiókkal, 5 perc alatt
+          </LandingCTA>
           <div className="mt-6">
-            <FeatureIndicators />
+            <FeatureIndicators mobileOnly={['noCard']} />
           </div>
         </div>
       </div>
