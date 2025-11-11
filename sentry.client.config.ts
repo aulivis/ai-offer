@@ -15,7 +15,9 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     replaysOnErrorSampleRate: 1.0,
 
     // Release tracking
-    release: process.env.NEXT_PUBLIC_APP_VERSION || undefined,
+    ...(process.env.NEXT_PUBLIC_APP_VERSION && {
+      release: process.env.NEXT_PUBLIC_APP_VERSION,
+    }),
 
     // Filter out noisy errors
     ignoreErrors: [
