@@ -29,7 +29,6 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    instrumentationHook: true,
     optimizePackageImports: ['@supabase/supabase-js', '@supabase/auth-js'],
   },
   // Transpile @noble/hashes to ensure it's properly bundled in serverless environments
