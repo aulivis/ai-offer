@@ -81,10 +81,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = supabaseServiceRole();
+    const supabaseAdmin = supabaseServiceRole();
 
     // Find or create subscription for this user
-    const { data: existingSubscriptions, error: findError } = await supabase
+    const { data: existingSubscriptions, error: findError } = await supabaseAdmin
       .from('email_subscriptions')
       .select('id, unsubscribed_at')
       .eq('email', userEmail)
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       // Subscribe: create or update subscription
       if (existing) {
         // Update existing subscription
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
           .from('email_subscriptions')
           .update({
             unsubscribed_at: null,
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
         }
       } else {
         // Create new subscription
-        const { error: insertError } = await supabase.from('email_subscriptions').insert({
+        const { error: insertError } = await supabaseAdmin.from('email_subscriptions').insert({
           email: userEmail,
           user_id: userId,
           source: 'settings',
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
           if (insertError.code === '23505') {
             log.info('Subscription race condition handled', { email: userEmail, userId });
             // Try to update instead
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin
               .from('email_subscriptions')
               .update({
                 user_id: userId,
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
     } else {
       // Unsubscribe: set unsubscribed_at
       if (existing) {
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
           .from('email_subscriptions')
           .update({
             unsubscribed_at: new Date().toISOString(),
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
       } else {
         // Create subscription record with unsubscribed_at set
         // This allows us to track that the user explicitly unsubscribed
-        const { error: insertError } = await supabase.from('email_subscriptions').insert({
+        const { error: insertError } = await supabaseAdmin.from('email_subscriptions').insert({
           email: userEmail,
           user_id: userId,
           source: 'settings',
