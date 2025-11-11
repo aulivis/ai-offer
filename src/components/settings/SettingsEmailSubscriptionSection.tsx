@@ -18,18 +18,22 @@ export function SettingsEmailSubscriptionSection() {
 
   // Load current subscription status
   useEffect(() => {
-    if (!user?.email) {
+    if (!user || !user.email || !user.id) {
       setLoading(false);
       return;
     }
+
+    // Capture user values to avoid TypeScript issues with closures
+    const userEmail = user.email.toLowerCase().trim();
+    const userId = user.id;
 
     async function loadSubscriptionStatus() {
       try {
         const { data, error } = await supabase
           .from('email_subscriptions')
           .select('unsubscribed_at')
-          .eq('email', user.email?.toLowerCase().trim())
-          .eq('user_id', user.id)
+          .eq('email', userEmail)
+          .eq('user_id', userId)
           .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
