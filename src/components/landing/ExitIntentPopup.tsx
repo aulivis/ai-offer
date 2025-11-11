@@ -50,13 +50,28 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
     setStatus('loading');
 
     try {
-      // Here you would integrate with your email service
-      // For now, simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'exit_intent',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Hiba történt a feliratkozás során');
+      }
+
       trackEmailCapture('exit_intent');
       trackConversion('exit_intent_converted');
       setStatus('success');
-    } catch {
+    } catch (error) {
+      console.error('Exit intent email submission error:', error);
       // Handle error silently or show message
       setStatus('idle');
     }

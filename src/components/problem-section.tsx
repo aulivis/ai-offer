@@ -5,26 +5,26 @@ export function ProblemSection() {
   const problems = [
     {
       icon: Clock,
-      title: 'Órákba telik egy professzionális ajánlat elkészítése',
+      title: 'Órákba telik egyetlen ajánlat elkészítése',
       description:
-        'Minden alkalommal újra kell kezdeni, manuálisan kitölteni az összes adatot és formázni a dokumentumot',
+        'Minden alkalommal elölről kell kezdeni, manuálisan kitölteni az adatokat és formázni a dokumentumot',
       stat: { value: '3-5 óra', label: 'átlagos elkészítési idő', color: 'text-red-600' },
       gradient: 'from-red-400 to-red-600',
     },
     {
       icon: TrendingDown,
-      title: 'Inkonzisztens dizájn és márkaidnetitás',
+      title: 'Nehezen tartható az egységes dizájn',
       description:
-        'Nehéz egységes megjelenést tartani minden ajánlatban, ami unprofesszionális benyomást kelt',
-      stat: { value: '65%', label: 'az ajánlatok nem márkahű', color: 'text-orange-600' },
+        'A kézi formázás miatt az ajánlatok gyakran eltérnek egymástól, ami rontja a professzionális benyomást.',
+      stat: { value: '65%', label: 'az ajánlatok közül nem márkahű', color: 'text-orange-600' },
       gradient: 'from-orange-400 to-red-500',
     },
     {
       icon: FileX,
-      title: 'Nehézkes együttműködés a csapat tagjai között',
+      title: 'A csapatmunka lassítja a folyamatot',
       description:
-        'Verziókezelés és megosztás problémák lassítják a folyamatot és hibákhoz vezetnek',
-      stat: { value: '8+', label: 'email oda-vissza projektenként', color: 'text-red-700' },
+        'Verziókezelési gondok, e-mail láncok, félreértések – mindez időveszteséghez és hibákhoz vezet.',
+      stat: { value: '8+', label: 'e-mail váltás projektenként', color: 'text-red-700' },
       gradient: 'from-red-500 to-red-700',
     },
   ];
@@ -41,13 +41,13 @@ export function ProblemSection() {
 
           {/* Larger, bolder headline with better hierarchy */}
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-6 leading-tight text-balance">
-            Túl sok időt töltesz az ajánlatkészítéssel?
+            Ismerős, hogy órákig tart egy ajánlat összeállítása?
           </h2>
 
           {/* Improved line-height for better readability */}
           <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed text-pretty">
-            A hagyományos ajánlatkészítés lassú, hibára hajlamos és nem skálázható. Minden
-            projektnél újra kell kezdened a nulláról.
+            A kézi ajánlatkészítés időigényes, hibalehetőségekkel teli, és minden projektet
+            újrakezdesz a nulláról.
           </p>
         </div>
 
@@ -92,16 +92,17 @@ export function ProblemSection() {
         {/* Optional: Add transition element or CTA */}
         <div className="text-center mt-16">
           <p className="text-xl text-gray-700 font-semibold mb-4 text-pretty">
-            Felismered ezeket a problémákat?
+            Ismerősek ezek a helyzetek?
           </p>
           <p className="text-gray-600 max-w-2xl mx-auto mb-6 text-pretty">
-            A Vyndi pontosan ezeket a fájdalompontokat oldja meg AI-alapú automatizálással
+            A Vyndi pontosan ezeket a problémákat oldja meg mesterséges intelligencia alapú
+            automatizálással.
           </p>
           <Link
             href="#solution"
-            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
           >
-            Nézd meg a megoldást →
+            Nézd meg, hogyan működik →
           </Link>
         </div>
       </div>

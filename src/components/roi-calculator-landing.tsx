@@ -58,16 +58,17 @@ export function ROICalculatorLanding() {
         <div className="text-center mb-16">
           {/* Enhanced badge with icon */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
-            <Sparkles className="w-4 h-4" />
+            <DollarSign className="w-4 h-4" />
             ROI KALKULÁTOR
           </div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
-            Mennyit takaríthatnál meg a Vyndivel?
+            Mennyit spórolsz a Vyndivel?
           </h2>
 
           <p className="text-xl text-gray-300 max-w-3xl mx-auto text-pretty">
-            Állítsd be a paramétereket és nézd meg, mennyi időt és pénzt spórolhatsz
+            Állítsd be a paramétereket, és nézd meg, mennyi időt és pénzt takaríthatsz meg az
+            ajánlatkészítés automatizálásával.
           </p>
         </div>
 
@@ -119,7 +120,7 @@ export function ROICalculatorLanding() {
             {/* Input 2: Time per Proposal */}
             <div className="mb-8">
               <label className="block text-white font-semibold mb-3 text-lg">
-                Mennyi időt töltesz egy ajánlattal?
+                Mennyi idő megy el egy ajánlatra?
               </label>
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-5xl font-bold text-turquoise-400">{timePerProposal}</span>
@@ -151,7 +152,7 @@ export function ROICalculatorLanding() {
             {/* Input 3: Hourly Rate */}
             <div>
               <label className="block text-white font-semibold mb-3 text-lg">
-                Mi az óradíjad/munkadíja költséged?
+                Mennyibe kerül egy óra munkád?
               </label>
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-5xl font-bold text-turquoise-400">
@@ -225,7 +226,7 @@ export function ROICalculatorLanding() {
                   <Clock className="w-5 h-5 text-red-400" />
                   <span className="text-gray-300 font-semibold">Jelenlegi idő</span>
                 </div>
-                <div className="text-4xl font-bold text-white mb-1">{currentMonthlyHours}h</div>
+                <div className="text-4xl font-bold text-white mb-1">{currentMonthlyHours} óra</div>
                 <div className="text-sm text-gray-400">havonta</div>
               </div>
 
@@ -236,7 +237,7 @@ export function ROICalculatorLanding() {
                   <span className="text-turquoise-300 font-semibold">Vyndivel</span>
                 </div>
                 <div className="text-4xl font-bold text-turquoise-400 mb-1">
-                  {vyndiMonthlyHours.toFixed(1)}h
+                  {vyndiMonthlyHours.toFixed(1)} óra
                 </div>
                 <div className="text-sm text-turquoise-300">havonta</div>
               </div>
@@ -256,12 +257,12 @@ export function ROICalculatorLanding() {
             </div>
 
             {/* CTA Button */}
-            {/* Turquoise button instead of white */}
+            {/* New orange button style */}
             <Link
               href="/login?redirect=/new"
-              className="w-full bg-white hover:bg-gray-100 text-navy-900 font-bold px-8 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 min-h-[44px]"
+              className="w-full bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 min-h-[44px]"
             >
-              <span>Próbáld ki ingyen</span>
+              <span>Kezdd el ingyen – 5 perc alatt</span>
               <TrendingUp className="w-5 h-5" />
             </Link>
           </div>
@@ -270,8 +271,8 @@ export function ROICalculatorLanding() {
         {/* Disclaimer */}
         <div className="text-center mt-12">
           <p className="text-gray-400 text-sm max-w-3xl mx-auto text-pretty">
-            * A kalkulátor átlagos értékeken alapul. Az eredmények egyéni használattól függően
-            változhatnak.
+            * A kalkulátor átlagos értékeket használ. Az eredmények a saját folyamataidtól és
+            beállításaidtól függően változhatnak.
           </p>
         </div>
       </div>

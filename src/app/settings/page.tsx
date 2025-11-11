@@ -30,6 +30,7 @@ import {
   DocumentTextIcon,
   LockClosedIcon,
   ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { SettingsAuthSection } from '@/components/settings/SettingsAuthSection';
@@ -37,6 +38,7 @@ import { SettingsCompanySection } from '@/components/settings/SettingsCompanySec
 import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
 import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
 import { SettingsActivitiesSection } from '@/components/settings/SettingsActivitiesSection';
+import { SettingsEmailSubscriptionSection } from '@/components/settings/SettingsEmailSubscriptionSection';
 import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow } from '@/components/settings/types';
@@ -192,13 +194,26 @@ export default function SettingsPage() {
       icon: <CubeIcon className="h-5 w-5" />,
       href: '#activities',
     },
+    {
+      id: 'email-subscription',
+      label: 'Email hírlevél',
+      icon: <EnvelopeIcon className="h-5 w-5" />,
+      href: '#email-subscription',
+    },
   ];
 
   useEffect(() => {
     if (loading) return;
 
     const handleScroll = () => {
-      const sectionIds = ['auth', 'company', 'branding', 'templates', 'activities'];
+      const sectionIds = [
+        'auth',
+        'company',
+        'branding',
+        'templates',
+        'activities',
+        'email-subscription',
+      ];
       const scrollPosition = window.scrollY + 200;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -1105,6 +1120,8 @@ export default function SettingsPage() {
             }}
             onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
           />
+
+          <SettingsEmailSubscriptionSection />
 
           <Card
             id="testimonials"

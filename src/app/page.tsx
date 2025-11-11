@@ -11,6 +11,7 @@ import { FAQSection } from '@/components/faq-section';
 import { StickyCTABar } from '@/components/sticky-cta-bar';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
 import { TrustIndicators } from '@/components/trust-indicators';
+import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 import { Sparkles, Check, Rocket, Award } from 'lucide-react';
 
 export default function Home() {
@@ -51,7 +52,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
+                  className="bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
                 >
                   Kezdd el ingyen →
                 </Link>
@@ -178,124 +179,18 @@ export default function Home() {
             {/* Compelling headline with better messaging */}
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
-                Készen állsz, hogy időt <br className="hidden sm:block" />
-                és pénzt spórolj?
+                Szeretnéd elsőként kipróbálni az újdonságokat?
               </h2>
               <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
-                Csatlakozz 500+ vállalkozáshoz, akik már professzionális ajánlatokat készítenek
-                percek alatt a Vyndivel
+                Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók indulásáról.
+                <br />
+                Csatlakozz több mint 200 vállalkozáshoz, akik már hatékonyabban dolgoznak az
+                ajánlatkészítésben.
               </p>
             </div>
 
-            {/* Prominent form with clear CTA button */}
-            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8">
-              {/* Value proposition above form */}
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-50 text-green-700 font-bold text-sm rounded-full mb-4 border-2 border-green-200">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>Indítsd el 14 napos ingyenes próbádat</span>
-                </div>
-              </div>
-
-              {/* Form */}
-              <div className="space-y-4 mb-6">
-                {/* Two input fields side by side on desktop */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {/* Name input */}
-                  <div>
-                    <label
-                      htmlFor="cta-name"
-                      className="block text-sm font-semibold text-gray-700 mb-2"
-                    >
-                      Név
-                    </label>
-                    <input
-                      id="cta-name"
-                      type="text"
-                      placeholder="Kovács János"
-                      className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-turquoise-500 focus:bg-white focus:outline-none text-gray-900 placeholder-gray-400 transition-all text-lg min-h-[44px]"
-                    />
-                  </div>
-
-                  {/* Email input */}
-                  <div>
-                    <label
-                      htmlFor="cta-email"
-                      className="block text-sm font-semibold text-gray-700 mb-2"
-                    >
-                      Email cím
-                    </label>
-                    <input
-                      id="cta-email"
-                      type="email"
-                      placeholder="janos@vallalkozas.hu"
-                      className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-turquoise-500 focus:bg-white focus:outline-none text-gray-900 placeholder-gray-400 transition-all text-lg min-h-[44px]"
-                    />
-                  </div>
-                </div>
-
-                {/* Prominent CTA button that stands out */}
-                <Link
-                  href="/login?redirect=/new"
-                  className="w-full py-5 px-8 bg-[#FF6B35] hover:bg-[#E55A2B] text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group min-h-[44px]"
-                >
-                  <span>Kezdés ingyen</span>
-                  <svg
-                    className="w-6 h-6 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </Link>
-              </div>
-
-              {/* Trust signals below form */}
-              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="font-semibold">14 napos próba ingyen</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="font-semibold">Nincs bankkártya szükséges</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="font-semibold">Indítás 5 perc alatt</span>
-                </div>
-              </div>
-            </div>
+            {/* Newsletter subscription form */}
+            <NewsletterSubscription source="landing_page" />
 
             {/* Social proof stats - redesigned for better visibility */}
             <div className="grid grid-cols-3 gap-6 md:gap-8">
@@ -315,7 +210,7 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">500+</div>
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">200+</div>
                 <div className="text-white/90 font-medium">Aktív vállalkozás</div>
               </div>
 

@@ -117,16 +117,18 @@ export function TestimonialSection() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-block px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+            <Star className="w-4 h-4" />
             ÜGYFELEINK MONDJÁK
           </div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-6 leading-tight text-balance">
-            Csatlakozz a Vyndi közösséghez
+            Csatlakozz a Vyndi közösségéhez
           </h2>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
-            500+ vállalkozás bízik már a Vyndiben. Nézd meg, mit mondanak rólunk!
+            Már 200+ vállalkozás készít professzionális ajánlatokat percek alatt a Vyndivel. Íme
+            néhány tapasztalatuk.
           </p>
         </div>
 
@@ -138,7 +140,7 @@ export function TestimonialSection() {
             <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <Users className="w-7 h-7 text-blue-600" />
             </div>
-            <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">500+</div>
+            <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">200+</div>
             <div className="text-gray-600 font-medium">Aktív felhasználó</div>
           </div>
 
@@ -292,17 +294,47 @@ export function TestimonialSection() {
         {/* Added trust indicators section */}
         <div className="mt-16 text-center">
           <p className="text-gray-600 mb-6 text-lg text-pretty">
-            Csatlakozz a sikeres vállalkozások közösségéhez
+            Csatlakozz a sikeres vállalkozások közösségéhez. Kezdd el ingyenes fiókkal, és készítsd
+            el az első ajánlatodat 5 perc alatt.
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
           >
-            Kezdd el ingyen →
+            Kezdd el ingyen – 5 perc alatt
           </Link>
-          <p className="text-sm text-gray-500 mt-4 text-pretty">
-            Ingyenes próba • Nincs bankkártya szükséges • Azonnali hozzáférés
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600 mt-6">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-semibold">14 napos próba ingyen</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-semibold">Nincs bankkártya szükséges</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-semibold">Indítás 5 perc alatt</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

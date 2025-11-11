@@ -5,8 +5,8 @@ import {
   Users,
   Palette,
   Building2,
-  ArrowRight,
   Check,
+  Factory,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,14 +15,13 @@ export function IndustrySolutions() {
     {
       id: 1,
       icon: Megaphone,
-      name: 'Marketing Ügynökségek',
+      name: 'Marketing ügynökségek',
       description:
-        'Gyorsabb kampánykínálatok, automatizált árazás és branding sablonok ügyfélspecifikus eszközláshoz.',
+        'Gyors, egységes ajánlatok kampányokra és szolgáltatáscsomagokra – automatizált árazással és előre elkészített sablonokkal.',
       features: [
-        'Kampány költségvetés kalkulátor',
-        'Telekamintás ajánlatok',
-        'ROI előrejelzés',
-        'Ügyfél brand integráció',
+        'Kampányköltség-kalkulátor',
+        'Előre definiált ajánlatsablonok',
+        'Szolgáltatáslista-alapú árazás',
       ],
       color: 'purple',
       gradient: 'from-purple-500 to-pink-500',
@@ -30,14 +29,13 @@ export function IndustrySolutions() {
     {
       id: 2,
       icon: Code,
-      name: 'IT és Szoftverfejlesztés',
+      name: 'IT és szoftverfejlesztés',
       description:
-        'Projekt scope-ajánlatok, rés alapú árazással, mérföldkő tervezéssel és részletes specifikációkkal.',
+        'Projektajánlatok átlátható szerkezettel, moduláris felépítéssel és mérföldkő-tervezéssel.',
       features: [
-        'Technikai követelményköt',
-        'Sprint alapú árazás',
-        'API dokumentáció csatolás',
-        'Karbantartás csomagok',
+        'Technikai követelménydokumentum csatolás',
+        'Sprint-alapú árazás',
+        'Projekt-mérföldkő ütemezés',
       ],
       color: 'blue',
       gradient: 'from-blue-500 to-cyan-500',
@@ -45,14 +43,13 @@ export function IndustrySolutions() {
     {
       id: 3,
       icon: Palette,
-      name: 'Kreatív és Dizájn',
+      name: 'Kreatív és dizájn',
       description:
-        'Vizuális portfólió beágyazás, kreatív koncepció bemutatás és revíziós kerenderszer ajánlatokban.',
+        'Esztétikus, strukturált ajánlatok vizuális szolgáltatásokhoz és portfólió-bemutatáshoz.',
       features: [
-        'Portfólió galéria',
-        'Vizuális mock up csatolás',
-        'Revíziós körök',
-        'Branding package opciók',
+        'Portfólió-galéria beágyazás',
+        'Mockup és koncepció feltöltés',
+        'Testreszabható ajánlatsablonok',
       ],
       color: 'pink',
       gradient: 'from-pink-500 to-rose-500',
@@ -60,14 +57,13 @@ export function IndustrySolutions() {
     {
       id: 4,
       icon: Users,
-      name: 'Tanácsadás és Coaching',
+      name: 'Tanácsadás és coaching',
       description:
-        'Egyéni tanácsadó csomagok, workshop ajánlatok és onboarding vagy projekt alapú konstrukciók.',
+        'Professzionális ajánlatok konzultációkhoz, workshopokhoz és szolgáltatáscsomagokhoz.',
       features: [
-        'Csomag alapú árazás',
-        'Workshop bemutató',
-        'Folyamatos támogatás opciók',
-        'Személyre szabott megközelítés',
+        'Csomag-alapú árazás',
+        'Workshop-ajánlat sablonok',
+        'Folyamatos támogatási lehetőségek',
       ],
       color: 'green',
       gradient: 'from-green-500 to-emerald-500',
@@ -75,30 +71,19 @@ export function IndustrySolutions() {
     {
       id: 5,
       icon: Building2,
-      name: 'Építőipar és Kivitelezés',
+      name: 'Építőipar és kivitelezés',
       description:
-        'Anyagkalkuláció, munkadíjász becslés és projekt ütemterv automatikusan generálva minden ajánlatban.',
-      features: [
-        'Anyagkalkulás kalkulátor',
-        'Munkadíjasz becslés',
-        'Projekt ütemterv',
-        'Garanciális feltételek',
-      ],
+        'Pontos kalkulációk és ütemtervek automatikusan generálva – gyorsabb, átláthatóbb ajánlatkészítéshez.',
+      features: ['Anyagköltség-kalkulátor', 'Munkadíj-becslés', 'Projektütemezés'],
       color: 'orange',
       gradient: 'from-orange-500 to-amber-500',
     },
     {
       id: 6,
       icon: Briefcase,
-      name: 'Üzleti Szolgáltatások',
-      description:
-        'Általános szolgáltatási ajánlatok egyszerű testreszabással és gyors kilenc jóváhagyásnak.',
-      features: [
-        'Szolgáltatás katalógus',
-        'Moduláris árazás',
-        'Online aláírás',
-        'SLA meghatározás',
-      ],
+      name: 'Üzleti szolgáltatások',
+      description: 'Egyszerű ajánlatkészítés minden szolgáltatás-alapú vállalkozás számára.',
+      features: ['Szolgáltatás-katalógus', 'Moduláris árazás', 'Könnyen testreszabható sablonok'],
       color: 'indigo',
       gradient: 'from-indigo-500 to-blue-500',
     },
@@ -109,17 +94,18 @@ export function IndustrySolutions() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-block px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+            <Factory className="w-4 h-4" />
             IPARÁG-SPECIFIKUS MEGOLDÁSOK
           </div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-6 leading-tight text-balance">
-            Minden iparághoz megfelelő megoldás
+            Testreszabott funkciók minden vállalkozás számára
           </h2>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
-            A Vyndi alkalmazkodik a te iparágadhoz: speciális sablonokkal és funkciókkal minden
-            területre
+            A Vyndi alkalmazkodik az iparágad igényeihez — egyedi sablonokkal, automatizált
+            árazással és intelligens ajánlatstruktúrával.
           </p>
         </div>
 
@@ -154,9 +140,10 @@ export function IndustrySolutions() {
 
                 {/* Features List */}
                 {/* Better styled bullet points with checkmarks */}
-                <ul className="space-y-3 mb-6 flex flex-col items-center">
+                <ul className="space-y-3 mb-6 flex flex-col items-start">
+                  <li className="text-gray-700 text-sm font-semibold mb-2 w-full">Fő funkciók:</li>
                   {industry.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
+                    <li key={index} className="flex items-start gap-3 w-full">
                       <Check
                         className="w-5 h-5 text-turquoise-500 flex-shrink-0 mt-0.5"
                         strokeWidth={3}
@@ -167,16 +154,6 @@ export function IndustrySolutions() {
                     </li>
                   ))}
                 </ul>
-
-                {/* CTA Link */}
-                {/* Transformed text link into prominent button-style link */}
-                <Link
-                  href="/login?redirect=/new"
-                  className="inline-flex items-center gap-2 text-turquoise-600 font-bold hover:text-turquoise-700 group/link transition-colors justify-center"
-                >
-                  <span>Ismerd meg a megoldást</span>
-                  <ArrowRight className="w-5 h-5 group-hover/link:translate-x-1 transition-transform" />
-                </Link>
               </div>
             );
           })}
@@ -186,24 +163,53 @@ export function IndustrySolutions() {
         {/* Enhanced bottom section with better styling */}
         <div className="text-center bg-gradient-to-br from-gray-50 to-blue-50 rounded-3xl p-12 max-w-4xl mx-auto border border-gray-200">
           <h3 className="text-2xl md:text-3xl font-bold text-navy-900 mb-4 text-balance">
-            Nem találod az iparágad?
+            Nem találod a saját iparágad?
           </h3>
 
           <p className="text-lg text-gray-600 mb-8 text-pretty">
-            A Vyndi bármilyen idézet területen használható. Próbáld ki ingyen!
+            A Vyndi bármilyen szolgáltatásra alkalmazható — próbáld ki most, és nézd meg, hogyan
+            illik a te folyamataidhoz.
           </p>
 
           <Link
             href="/login?redirect=/new"
-            className="inline-flex items-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
           >
-            Próbáld ki ingyen
-            <ArrowRight className="w-5 h-5" />
+            Kezdd el ingyen – 5 perc alatt
           </Link>
 
-          <p className="text-sm text-gray-500 mt-6 text-pretty">
-            Ingyenes próba • Nincs bankkártya szükséges • Minden funkció elérhető
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600 mt-6">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-semibold">14 napos próba ingyen</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-semibold">Nincs bankkártya szükséges</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="font-semibold">Indítás 5 perc alatt</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

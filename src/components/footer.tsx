@@ -15,12 +15,28 @@ export function Footer() {
 
     setNewsletterStatus('loading');
     try {
-      // Integrate with newsletter service
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          source: 'footer',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Hiba történt a feliratkozás során');
+      }
+
       trackEmailCapture('footer_newsletter');
       setNewsletterStatus('success');
       setEmail('');
-    } catch {
+    } catch (error) {
+      console.error('Newsletter subscription error:', error);
       setNewsletterStatus('idle');
     }
   };
@@ -36,16 +52,17 @@ export function Footer() {
             <div className="mb-6">
               <h3 className="text-3xl font-bold text-turquoise-400 mb-4">Vyndi</h3>
               <p className="text-gray-300 text-lg leading-relaxed text-pretty">
-                AI-alapú ajánlatkészítő platform, amely segít professzionális ajánlatokat készíteni
-                percek alatt
+                AI-alapú ajánlatkészítő platform, amellyel percek alatt készíthetsz professzionális,
+                automatizált ajánlatokat – gyorsan, egységesen és márkahűen.
               </p>
             </div>
 
             {/* Newsletter Signup */}
             <div className="bg-navy-800 rounded-2xl p-6 border border-navy-700 mb-6">
-              <h4 className="font-bold text-xl mb-3">Iratkozz fel hírlevelünkre</h4>
+              <h4 className="font-bold text-xl mb-3">Iratkozz fel a Vyndi hírlevelére</h4>
               <p className="text-gray-400 text-sm mb-4 text-pretty">
-                Hasznos tippek és frissítések havonta
+                Havi egyszer hasznos tippeket, új funkciókat és inspirációkat küldünk az
+                ajánlatkészítés hatékonyabbá tételéhez.
               </p>
 
               {newsletterStatus === 'success' ? (
@@ -119,7 +136,7 @@ export function Footer() {
 
           {/* Termék Column */}
           {/* Better organized columns with larger text */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <h4 className="font-bold text-lg mb-6 text-turquoise-400">Termék</h4>
             <ul className="space-y-3">
               <li>
@@ -143,38 +160,14 @@ export function Footer() {
                   href="/resources"
                   className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
-                  Integráció
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
                   Sablonok
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Mobilapp
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  API
                 </Link>
               </li>
             </ul>
           </div>
 
           {/* Erőforrások Column */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <h4 className="font-bold text-lg mb-6 text-turquoise-400">Erőforrások</h4>
             <ul className="space-y-3">
               <li>
@@ -203,66 +196,11 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Webináriumok
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/success-stories"
                   className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Esettanulmányok
                 </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Közösség
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Cég Column */}
-          <div className="lg:col-span-2">
-            <h4 className="font-bold text-lg mb-6 text-turquoise-400">Cég</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/success-stories"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Rólunk
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Karrier
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/resources"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Partnerek
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="mailto:hello@vyndi.hu"
-                  className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
-                >
-                  Kapcsolat
-                </a>
               </li>
             </ul>
           </div>
@@ -330,12 +268,6 @@ export function Footer() {
                 className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
               >
                 Cookie szabályzat
-              </Link>
-              <Link
-                href="/privacy-policy"
-                className="text-gray-400 hover:text-turquoise-400 transition-colors text-pretty"
-              >
-                GDPR
               </Link>
             </div>
           </div>

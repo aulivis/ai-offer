@@ -30,7 +30,7 @@ export function FAQSection() {
       iconBg: 'bg-turquoise-50',
       question: 'Mennyire nehéz megtanulni a Vyndi használatát?',
       answer:
-        'A Vyndi használata rendkívül egyszerű és intuitív. A legtöbb felhasználó 10-15 perc alatt képes az első professzionális ajánlatot elkészíteni. Emellett részletes videó útmutatókat és dokumentációt biztosítunk, valamint az ügyfélszolgálatunk 24/7 rendelkezésre áll, ha bármilyen kérdésed merülne fel.',
+        'A Vyndi használata rendkívül egyszerű. A legtöbb felhasználó 10–15 perc alatt elkészíti az első ajánlatát. Részletes útmutatók, videók és 24/7 ügyfélszolgálat segítik a gyors bevezetést.',
     },
     {
       id: 2,
@@ -40,7 +40,7 @@ export function FAQSection() {
       iconBg: 'bg-blue-50',
       question: 'Milyen típusú ajánlatokat készíthetek a Vyndivel?',
       answer:
-        'A Vyndi minden típusú üzleti ajánlat készítésére alkalmas: szolgáltatási ajánlatok, termék ajánlatok, projekt ajánlatok, marketing csomagok, IT szolgáltatások, tanácsadói ajánlatok és még sok más. 50+ iparág-specifikus sablonnal rendelkezünk, amelyek teljes mértékben testreszabhatók.',
+        'Szinte bármilyen szolgáltatás- vagy projektalapú ajánlat létrehozható: marketing, IT-fejlesztés, tanácsadás, kivitelezés, kreatív projektek stb. A sablonok testreszabhatók, így a rendszer alkalmazkodik a brandedhez.',
     },
     {
       id: 3,
@@ -50,7 +50,7 @@ export function FAQSection() {
       iconBg: 'bg-purple-50',
       question: 'Integrálható a Vyndi a meglévő CRM rendszeremmel?',
       answer:
-        'Igen, a Vyndi integrálható a legnépszerűbb CRM rendszerekkel (Salesforce, HubSpot, Pipedrive, stb.) és egyéb üzleti eszközökkel. Az integráció egyszerű és gyors, és lehetővé teszi, hogy az ügyfél adatok automatikusan szinkronizálódjanak a Vyndi és a CRM között.',
+        'A Vyndi jelenleg önállóan működik, de az exportálható ajánlatok könnyen továbbíthatók más platformokra (például e-mailen vagy PDF-ben). A közvetlen CRM-integráció fejlesztés alatt áll.',
     },
     {
       id: 4,
@@ -60,7 +60,7 @@ export function FAQSection() {
       iconBg: 'bg-green-50',
       question: 'Van ingyenes próbaidőszak?',
       answer:
-        'Igen, 14 napos ingyenes próbaidőszakot kínálunk, amely során teljes hozzáférést kapsz az összes funkcióhoz. Nem kell bankkártyát megadnod a regisztrációhoz, és bármikor lemondhatod a próbaidőszakot. Ha tetszik a Vyndi, akkor válaszd ki a számodra megfelelő csomagot.',
+        'Igen. A Vyndi ingyenes fiókkal használható — nincs időkorlát és nem szükséges bankkártya. A prémium funkciók bármikor aktiválhatók.',
     },
     {
       id: 5,
@@ -70,7 +70,7 @@ export function FAQSection() {
       iconBg: 'bg-red-50',
       question: 'Mennyire biztonságos az adataim tárolása a Vyndiben?',
       answer:
-        'Az adatbiztonság számunkra kiemelten fontos. A Vyndi vállalati szintű titkosítást használ (256-bit SSL), és minden adat biztonságos szerveren tárolódik az EU-ban. GDPR kompatibilisek vagyunk, és rendszeres biztonsági auditokat végzünk. Az adataid kizárólag a te tulajdonodban vannak.',
+        'Az adataid titkosított kapcsolat (SSL) és biztonságos szerverek között kerülnek feldolgozásra. A Vyndi megfelel az EU GDPR-előírásainak, és minden fájl biztonsági mentéssel védett.',
     },
     {
       id: 6,
@@ -80,7 +80,7 @@ export function FAQSection() {
       iconBg: 'bg-orange-50',
       question: 'Milyen támogatást kapok, ha elakadok?',
       answer:
-        'Teljes körű támogatást biztosítunk minden ügyfélnek: 24/7 élő chat támogatás, email support, részletes dokumentáció, videó oktatóanyagok és rendszeres webináriumok. A Pro és Enterprise csomagok dedikált ügyfélkapcsolati menedzsert is tartalmaznak, aki segít az indulásban és a rendszer optimalizálásában.',
+        '24/7 elérhető ügyfélszolgálatunk e-mailben és telefonon is segít. Ezen felül részletes Súgóközpont és videó-útmutatók is rendelkezésedre állnak.',
     },
     {
       id: 7,
@@ -90,7 +90,7 @@ export function FAQSection() {
       iconBg: 'bg-indigo-50',
       question: 'Több munkatárs is használhatja egyszerre a Vyndit?',
       answer:
-        'Igen, a Standard és Pro csomagok többfelhasználós hozzáférést biztosítanak. Beállíthatod a csapattagok jogosultságait, közösen dolgozhatnak az ajánlatokon valós időben, és minden változás automatikusan szinkronizálódik. Az együttműködési funkciók segítenek a csapatmunkában.',
+        'Igen. Egy Vyndi-fiókhoz több e-mail címet rendelhetsz, így a csapattagok ugyanabba a fiókba lépnek be, és közösen kezelik az ajánlatokat.',
     },
     {
       id: 8,
@@ -100,7 +100,7 @@ export function FAQSection() {
       iconBg: 'bg-teal-50',
       question: 'Milyen formátumban exportálhatom az ajánlatokat?',
       answer:
-        'Az ajánlatokat többféle formátumban exportálhatod: PDF (nyomtatható és interaktív), Word dokumentum, online megosztható link, vagy közvetlenül elküldheted emailben az ügyfélnek. Az ajánlatok teljes mértékben tükrözik a te márkád megjelenését és professzionális formázást tartalmaznak.',
+        'Minden ajánlat PDF formátumban exportálható, amely letölthető, nyomtatható vagy e-mailben továbbítható.',
     },
   ];
 
@@ -120,7 +120,8 @@ export function FAQSection() {
       <div className="container mx-auto px-4">
         {/* Enhanced Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-block px-6 py-2 bg-turquoise-100 text-turquoise-700 font-bold text-sm rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 px-6 py-2 bg-turquoise-100 text-turquoise-700 font-bold text-sm rounded-full mb-6">
+            <HelpCircle className="w-4 h-4" />
             GYAKORI KÉRDÉSEK
           </div>
 
@@ -129,7 +130,7 @@ export function FAQSection() {
           </h2>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 text-pretty">
-            Minden, amit tudnod kell a Vyndi-ról, egy helyen.
+            Minden, amit a Vyndiről tudni érdemes — gyors, egyértelmű válaszok egy helyen.
           </p>
 
           {/* Enhanced Search Bar */}
@@ -249,22 +250,15 @@ export function FAQSection() {
             </div>
             <h3 className="text-2xl font-bold text-navy-900 mb-3">Nem találtad meg a választ?</h3>
             <p className="text-gray-600 mb-6 max-w-xl mx-auto text-pretty">
-              Lépj kapcsolatba velünk, és szakértő csapatunk szívesen segít az összes kérdésedben!
+              Lépj kapcsolatba velünk — szakértő csapatunk minden kérdésedre válaszol.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="mailto:hello@vyndi.com?subject=Kérdés a Vyndiről"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all min-h-[44px]"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-navy-900 font-bold rounded-xl border-2 border-gray-300 hover:border-turquoise-500 transition-all min-h-[44px]"
               >
                 <Mail className="w-5 h-5" />
                 Írj nekünk emailt
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-navy-900 font-bold rounded-xl border-2 border-gray-300 hover:border-turquoise-500 transition-all min-h-[44px]"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Élő chat indítása
               </Link>
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Play, Users, Eye, Star, ThumbsUp, Sparkles } from 'lucide-react';
+import { Play, Users, Eye, Star, ThumbsUp } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,10 +14,10 @@ export function VideoDemoSection() {
         {/* Section Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-semibold text-sm mb-4">
-            <Sparkles className="w-4 h-4" />
+            <Eye className="w-4 h-4" />
             NÉZD MEG MŰKÖDÉS KÖZBEN
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-4 text-balance">
             Nézd meg, hogyan dolgozik helyetted a Vyndi
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
@@ -147,7 +147,7 @@ export function VideoDemoSection() {
 
           <div className="grid md:grid-cols-3 gap-6 relative pt-12">
             {/* Point 1 */}
-            <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -162,17 +162,17 @@ export function VideoDemoSection() {
 
               {/* Centered content */}
               <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
-                <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
+                <h4 className="text-xl font-bold text-navy-900 mb-3 text-balance">
                   AI-ajánlat generálás
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">
+                <p className="text-gray-600 leading-relaxed text-pretty text-sm">
                   Tartalom, ár és struktúra automatikusan
                 </p>
               </div>
             </div>
 
             {/* Point 2 */}
-            <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -187,17 +187,17 @@ export function VideoDemoSection() {
 
               {/* Centered content */}
               <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
-                <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
+                <h4 className="text-xl font-bold text-navy-900 mb-3 text-balance">
                   Testreszabás pár kattintással
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">
+                <p className="text-gray-600 leading-relaxed text-pretty text-sm">
                   Egyszerű, vizuális szerkesztőben
                 </p>
               </div>
             </div>
 
             {/* Point 3 */}
-            <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -212,10 +212,10 @@ export function VideoDemoSection() {
 
               {/* Centered content */}
               <div className="text-center mb-6 mt-4 flex-1 flex flex-col">
-                <h4 className="text-2xl font-bold text-navy-900 mb-3 text-balance">
+                <h4 className="text-xl font-bold text-navy-900 mb-3 text-balance">
                   Küldés & követés
                 </h4>
-                <p className="text-gray-600 leading-relaxed text-pretty">
+                <p className="text-gray-600 leading-relaxed text-pretty text-sm">
                   Státuszok és eredmények egy helyen
                 </p>
               </div>
@@ -230,7 +230,7 @@ export function VideoDemoSection() {
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
           >
             Kezdd el most – ingyenes fiókkal, 5 perc alatt →
           </Link>

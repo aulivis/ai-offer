@@ -5,8 +5,6 @@ import {
   FileText,
   Users,
   Bell,
-  Link2,
-  Smartphone,
   BarChart3,
   Headphones,
   ArrowRight,
@@ -37,7 +35,7 @@ export function ComparisonTable() {
       iconTextColor: 'text-purple-600',
     },
     {
-      name: 'Valós idejű együttműködés',
+      name: 'Csapatmunka és együttműködés',
       icon: Users,
       vyndi: true,
       competitor1: false,
@@ -47,7 +45,7 @@ export function ComparisonTable() {
       iconTextColor: 'text-green-600',
     },
     {
-      name: 'Automatikus follow-up',
+      name: 'Beépített státuszkövetés',
       icon: Bell,
       vyndi: true,
       competitor1: false,
@@ -56,26 +54,6 @@ export function ComparisonTable() {
       highlight: true,
       iconColor: 'bg-orange-100',
       iconTextColor: 'text-orange-600',
-    },
-    {
-      name: 'Integrációk (CRM, email)',
-      icon: Link2,
-      vyndi: true,
-      competitor1: true,
-      competitor2: false,
-      description: 'Meglévő eszközökhöz',
-      iconColor: 'bg-indigo-100',
-      iconTextColor: 'text-indigo-600',
-    },
-    {
-      name: 'Mobilalkalmazás',
-      icon: Smartphone,
-      vyndi: true,
-      competitor1: false,
-      competitor2: true,
-      description: 'iOS és Android',
-      iconColor: 'bg-pink-100',
-      iconTextColor: 'text-pink-600',
     },
     {
       name: 'Analitika és riportok',
@@ -100,7 +78,7 @@ export function ComparisonTable() {
     },
   ];
 
-  // Calculate feature counts
+  // Calculate feature counts (after removing 2 rows)
   const vyndiCount = features.filter((f) => f.vyndi).length;
   const competitor1Count = features.filter((f) => f.competitor1).length;
   const competitor2Count = features.filter((f) => f.competitor2).length;
@@ -110,7 +88,8 @@ export function ComparisonTable() {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-semibold text-sm mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full font-semibold text-sm mb-6">
+            <Sparkles className="w-4 h-4" />
             ÖSSZEHASONLÍTÁS
           </div>
 
@@ -119,18 +98,19 @@ export function ComparisonTable() {
           </h2>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
-            Miért választják a legjobb vállalkozások a Vyndit az ajánlatkészítéshez?
+            Nézd meg, miért választják a leginnovatívabb vállalkozások a Vyndit az ajánlatkészítés
+            új generációjaként.
           </p>
         </div>
 
         {/* Comparison Table */}
         <div className="max-w-6xl mx-auto relative pt-8">
           {/* Badge positioned above the Vyndi column */}
-          {/* Vyndi column center: 40% (features) + 15% (competitor A) + 15% (half of Vyndi's 30%) = 70% */}
+          {/* Vyndi column center: 50% (features) + 15% (competitor A) + 10% (half of Vyndi's 20%) = 75% */}
           <div
             className="absolute top-0 z-20 hidden lg:block"
             style={{
-              left: '70%',
+              left: '75%',
               transform: 'translateX(-50%)',
             }}
           >
@@ -213,10 +193,6 @@ export function ComparisonTable() {
                               <div className="font-bold text-navy-900 text-base mb-1">
                                 {feature.name}
                               </div>
-                              {/* Shortened description to prevent wrapping */}
-                              <div className="text-sm text-gray-600 leading-snug">
-                                {feature.description}
-                              </div>
                             </div>
                           </div>
                         </td>
@@ -278,20 +254,20 @@ export function ComparisonTable() {
                     </td>
 
                     <td className="px-6 py-6 text-center bg-gray-50/50" style={{ width: '15%' }}>
-                      <div className="text-2xl font-bold text-gray-600">{competitor1Count}/8</div>
+                      <div className="text-2xl font-bold text-gray-600">{competitor1Count}/6</div>
                       <div className="text-xs text-gray-500">funkció</div>
                     </td>
 
                     <td
                       className="px-6 py-6 text-center bg-turquoise-50/50"
-                      style={{ width: '30%' }}
+                      style={{ width: '20%' }}
                     >
-                      <div className="text-3xl font-bold text-turquoise-600">{vyndiCount}/8</div>
+                      <div className="text-3xl font-bold text-turquoise-600">{vyndiCount}/6</div>
                       <div className="text-xs text-turquoise-700 font-semibold">MINDEN funkció</div>
                     </td>
 
                     <td className="px-6 py-6 text-center" style={{ width: '15%' }}>
-                      <div className="text-2xl font-bold text-gray-600">{competitor2Count}/8</div>
+                      <div className="text-2xl font-bold text-gray-600">{competitor2Count}/6</div>
                       <div className="text-xs text-gray-500">funkció</div>
                     </td>
                   </tr>
@@ -308,17 +284,31 @@ export function ComparisonTable() {
 
         {/* CTA Section */}
         <div className="text-center mt-12">
-          <p className="text-lg text-gray-600 mb-6 text-pretty">Készen állsz a váltásra?</p>
+          <p className="text-lg text-gray-600 mb-6 text-pretty">
+            A Vyndi az egyetlen platform, amely mind a 6 kulcsfontosságú funkciót egy helyen
+            kínálja. Takaríts meg időt és készíts professzionális ajánlatokat percek alatt.
+          </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-flex items-center gap-3 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-5 rounded-xl text-lg shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
           >
             Próbáld ki most ingyen
             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <p className="text-sm text-gray-500 mt-4 text-pretty">
-            Nincs bankkártya szükséges • 30 napos ingyenes próba • Bármikor lemondható
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Kezdd el teljesen ingyen
+            </span>
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Nem kérünk bankkártyát
+            </span>
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Kész ajánlat 5 perc alatt
+            </span>
+          </div>
         </div>
       </div>
     </section>

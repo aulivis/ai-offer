@@ -37,7 +37,9 @@ export function HowItWorks() {
             <Sparkles className="w-4 h-4" />
             EGYSZERŰ FOLYAMAT
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4">Hogyan működik?</h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-4">
+            Hogyan működik?
+          </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
             Készíts professzionális, személyre szabott ajánlatokat 3 egyszerű lépésben
           </p>
@@ -79,21 +81,23 @@ export function HowItWorks() {
                   <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
                 </marker>
               </defs>
-              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) */}
+              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) - increased curve by 50% */}
               <path
-                d="M 18 15 Q 32.5 5, 47 15"
+                d="M 18 15 Q 32.5 -2.5, 47 15"
                 stroke="currentColor"
                 strokeWidth="0.8"
                 strokeLinecap="round"
+                strokeDasharray="4 4"
                 fill="none"
                 markerEnd="url(#arrowhead-howitworks-1)"
               />
-              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) */}
+              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) - increased curve by 50% */}
               <path
-                d="M 53 15 Q 67.5 5, 82 15"
+                d="M 53 15 Q 67.5 -2.5, 82 15"
                 stroke="currentColor"
                 strokeWidth="0.8"
                 strokeLinecap="round"
+                strokeDasharray="4 4"
                 fill="none"
                 markerEnd="url(#arrowhead-howitworks-2)"
               />
@@ -160,7 +164,7 @@ export function HowItWorks() {
                   {isMiddle && (
                     <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
                       <div className="bg-gradient-to-r from-blue-500 to-turquoise-500 text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                        AI-POWERED
+                        AI-VEZÉRELT
                       </div>
                     </div>
                   )}
@@ -199,12 +203,48 @@ export function HowItWorks() {
         </div>
 
         {/* Enhanced CTA Section */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-12 relative">
+          {/* Curved arrow from TELJES FOLYAMAT box to CTA */}
+          <div
+            className="hidden lg:block absolute left-1/2 -translate-x-1/2 -top-24 w-full max-w-md"
+            style={{ height: '80px' }}
+          >
+            <svg
+              className="w-full h-full text-turquoise-400"
+              viewBox="0 0 200 80"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <marker
+                  id="arrowhead-cta"
+                  markerWidth="6"
+                  markerHeight="6"
+                  refX="5"
+                  refY="3"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <polygon points="0 0, 6 3, 0 6" fill="currentColor" />
+                </marker>
+              </defs>
+              {/* Curved arrow from left of TELJES FOLYAMAT box to left of CTA */}
+              <path
+                d="M 20 70 Q 100 20, 180 70"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray="6 4"
+                fill="none"
+                markerEnd="url(#arrowhead-cta)"
+              />
+            </svg>
+          </div>
+
           {/* Main CTA Button - Larger and more prominent */}
           <div className="mb-6">
             <Link
               href="/login?redirect=/new"
-              className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+              className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
             >
               Próbáld ki most ingyen
               <ArrowRight className="w-7 h-7 group-hover:translate-x-2 transition-transform" />

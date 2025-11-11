@@ -1,33 +1,33 @@
-import { Check, X, TrendingUp, Clock, AlertTriangle, Palette } from 'lucide-react';
+import { Check, X, TrendingUp, Clock, AlertTriangle, Palette, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export function SolutionSection() {
   const comparison = [
     {
-      metric: 'Ajánlat készítési idő',
+      metric: 'Ajánlatkészítés ideje',
       icon: Clock,
       iconBg: 'bg-blue-100',
       iconColor: 'text-blue-600',
-      before: { value: '2-4 óra', subtitle: 'lassú folyamat' },
-      after: { value: '5-10 perc', subtitle: 'AI-automatizált' },
-      improvement: '~70% megtakarítás',
+      before: { value: '2-4 óra', subtitle: 'lassú, manuális folyamat' },
+      after: { value: '5-10 perc', subtitle: 'automatizált' },
+      improvement: '~70% időmegtakarítás',
     },
     {
-      metric: 'Hibák száma',
+      metric: 'Hibák aránya',
       icon: AlertTriangle,
       iconBg: 'bg-orange-100',
       iconColor: 'text-orange-600',
-      before: { value: 'Gyakori', subtitle: 'manuális ellenőrzés' },
-      after: { value: 'Automatikusan ellenőrzött', subtitle: 'AI validáció' },
+      before: { value: 'Gyakori', subtitle: 'kézi ellenőrzést igényel' },
+      after: { value: 'Automatikus hibaszűrés', subtitle: 'AI ellenőrzés' },
       improvement: '~95% pontosság',
     },
     {
-      metric: 'Egységes dizájn',
+      metric: 'Dizájn és márkahűség',
       icon: Palette,
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600',
-      before: { value: 'Kézi formázás', subtitle: 'inkonzisztens' },
-      after: { value: 'Automatikus branding', subtitle: 'márkahű design' },
+      before: { value: 'Kézi formázás', subtitle: 'eltérő megjelenés' },
+      after: { value: 'Automatikus branding', subtitle: 'egységes sablonok' },
       improvement: '~100% konzisztencia',
     },
   ];
@@ -46,12 +46,12 @@ export function SolutionSection() {
           </div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-navy-900 mb-6 leading-tight text-balance">
-            Vyndi AI-alapú ajánlatkészítő
+            A Vyndi elkészíti helyetted az ajánlataidat – gyorsan, pontosan, egységesen
           </h2>
 
           <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed text-pretty">
-            Automatizáld az ajánlatkészítést, spórolj órákat minden ajánlaton, és növeld az üzleti
-            eredményeidet akár 70%-kal.
+            Spórolj órákat minden projekten, és érj el akár 70 %-os időmegtakarítást teljes
+            automatizálással.
           </p>
         </div>
 
@@ -75,14 +75,18 @@ export function SolutionSection() {
               </div>
 
               {/* Vyndi AI column with turquoise accent and highlight */}
-              <div className="p-6 text-center border-l border-white/10 bg-turquoise-600">
-                <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="p-6 text-center border-l border-white/10 bg-turquoise-600 relative">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                  <div className="bg-yellow-400 text-navy-900 font-extrabold text-xs px-4 py-1.5 rounded-full shadow-lg border-2 border-white whitespace-nowrap">
+                    Ajánlott
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2 mb-2 mt-2">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <Check className="w-5 h-5 text-white" />
                   </div>
                 </div>
-                <h3 className="font-bold text-lg">Vyndi AI</h3>
-                <div className="text-xs mt-1 text-turquoise-100">Ajánlott</div>
+                <h3 className="font-bold text-lg">Vyndi</h3>
               </div>
 
               {/* Improvement column with green accent */}
@@ -158,17 +162,30 @@ export function SolutionSection() {
         {/* CTA Section */}
         <div className="text-center mt-16">
           <p className="text-lg text-gray-600 mb-6 text-pretty">
-            Tapasztald meg a különbséget és indítsd el az üzleted növekedését
+            Tapasztald meg, milyen gyors és egyszerű lehet az ajánlatkészítés. Készítsd el az első
+            ajánlatodat még ma – ingyen.
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-block bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-12 py-5 rounded-xl text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
           >
-            Próbáld ki ingyen →
+            Próbáld ki ingyen
+            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <p className="text-sm text-gray-500 mt-4 text-pretty">
-            Nincs bankkártya szükséges • 5 perc alatt kész vagy
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Kezdd el teljesen ingyen
+            </span>
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Nem kérünk bankkártyát
+            </span>
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Kész ajánlat 5 perc alatt
+            </span>
+          </div>
         </div>
       </div>
     </section>
