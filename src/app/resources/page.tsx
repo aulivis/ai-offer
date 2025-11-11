@@ -148,7 +148,7 @@ export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Enhanced Hero Section */}
-      <section className="py-12 bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white">
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             {/* Breadcrumb */}

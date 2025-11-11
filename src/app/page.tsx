@@ -52,7 +52,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
+                  className="bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-8 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px] flex items-center justify-center"
                 >
                   Kezdd el ingyen →
                 </Link>
@@ -139,6 +139,34 @@ export default function Home() {
       <section id="product-demo" className="scroll-mt-20">
         <VideoDemoSection />
       </section>
+
+      {/* Wave Divider between Video and Problems Sections */}
+      <div className="relative w-full" style={{ height: '80px' }}>
+        <svg
+          viewBox="0 0 1440 120"
+          className="w-full h-full"
+          preserveAspectRatio="none"
+          style={{ display: 'block' }}
+        >
+          <defs>
+            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#00d4b4" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#00d4b4" stopOpacity="0.05" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0,64 C360,20 720,100 1440,64 L1440,120 L0,120 Z"
+            fill="#F9FAFB"
+            fillOpacity="1"
+          />
+          <path
+            d="M0,64 C360,20 720,100 1440,64"
+            stroke="url(#waveGradient)"
+            strokeWidth="2"
+            fill="none"
+          />
+        </svg>
+      </div>
 
       {/* PROBLEM - Establish Pain Points */}
       <ProblemSection />

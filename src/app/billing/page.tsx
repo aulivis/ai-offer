@@ -1053,7 +1053,7 @@ function PublicBillingLanding() {
   return (
     <main id="main" className="flex flex-col pb-24">
       {/* Enhanced Hero Section with Better Typography */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white pt-20 pb-24 md:pt-32 md:pb-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white py-20 lg:py-32">
         {/* Background pattern for visual interest */}
         <div className="absolute inset-0 opacity-10">
           <div

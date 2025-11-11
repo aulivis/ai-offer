@@ -1,5 +1,6 @@
 import { Check, X, TrendingUp, Clock, AlertTriangle, Palette, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { FeatureIndicators } from './FeatureIndicators';
 
 export function SolutionSection() {
   const comparison = [
@@ -62,10 +63,10 @@ export function SolutionSection() {
             {/* Table Header */}
             <div className="grid grid-cols-4 bg-navy-900 text-white">
               {/* Empty cell for row labels */}
-              <div className="p-6"></div>
+              <div className="p-4"></div>
 
               {/* Traditional column with red accent */}
-              <div className="p-6 text-center border-l border-white/10">
+              <div className="p-4 text-center border-l border-white/10">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
                     <X className="w-5 h-5 text-red-400" />
@@ -75,13 +76,13 @@ export function SolutionSection() {
               </div>
 
               {/* Vyndi AI column with turquoise accent and highlight */}
-              <div className="p-6 text-center border-l border-white/10 bg-turquoise-600 relative">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+              <div className="p-4 text-center border-l border-white/10 bg-turquoise-600 relative">
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
                   <div className="bg-yellow-400 text-navy-900 font-extrabold text-xs px-4 py-1.5 rounded-full shadow-lg border-2 border-white whitespace-nowrap">
                     Ajánlott
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-2 mb-2 mt-2">
+                <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <Check className="w-5 h-5 text-white" />
                   </div>
@@ -90,7 +91,7 @@ export function SolutionSection() {
               </div>
 
               {/* Improvement column with green accent */}
-              <div className="p-6 text-center border-l border-white/10">
+              <div className="p-4 text-center border-l border-white/10">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-green-400" />
@@ -167,24 +168,13 @@ export function SolutionSection() {
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
           >
             Próbáld ki ingyen
             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              <Check className="w-4 h-4 mr-2" />
-              Kezdd el teljesen ingyen
-            </span>
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              <Check className="w-4 h-4 mr-2" />
-              Nem kérünk bankkártyát
-            </span>
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              <Check className="w-4 h-4 mr-2" />
-              Kész ajánlat 5 perc alatt
-            </span>
+          <div className="mt-6">
+            <FeatureIndicators />
           </div>
         </div>
       </div>

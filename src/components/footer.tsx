@@ -45,10 +45,10 @@ export function Footer() {
     <footer className="bg-navy-900 text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
         {/* Main Footer Content */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-12 gap-12 mb-12">
-          {/* Brand Column - Wider */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+          {/* Brand Column - 40% */}
           {/* Enhanced brand section with better newsletter styling */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-2">
             <div className="mb-6">
               <h3 className="text-3xl font-bold text-turquoise-400 mb-4">Vyndi</h3>
               <p className="text-gray-300 text-lg leading-relaxed text-pretty">
@@ -134,9 +134,9 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Termék Column */}
+          {/* Termék Column - 20% */}
           {/* Better organized columns with larger text */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-1">
             <h4 className="font-bold text-lg mb-6 text-turquoise-400">Termék</h4>
             <ul className="space-y-3">
               <li>
@@ -166,8 +166,8 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Erőforrások Column */}
-          <div className="lg:col-span-3">
+          {/* Erőforrások Column - 20% */}
+          <div className="lg:col-span-1">
             <h4 className="font-bold text-lg mb-6 text-turquoise-400">Erőforrások</h4>
             <ul className="space-y-3">
               <li>
@@ -205,9 +205,9 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact Column */}
+          {/* Contact Column - 20% */}
           {/* Enhanced contact section with icons */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             <h4 className="font-bold text-lg mb-6 text-turquoise-400">Kapcsolat</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">

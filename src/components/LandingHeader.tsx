@@ -170,13 +170,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
               <>
                 <Link
                   href="/new"
-                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                  <span className="relative flex items-center gap-2">
+                  <span className="relative flex items-center gap-2 text-white">
                     {t('dashboard.actions.newOffer')}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-white" />
                   </span>
                 </Link>
                 <Link
@@ -202,13 +202,13 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {/* Enhanced Primary CTA with glow effect */}
                 <Link
                   href="/login"
-                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+                  className="relative px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-base shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
                 >
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                  <span className="relative flex items-center gap-2">
+                  <span className="relative flex items-center gap-2 text-white">
                     {t('nav.freeTrial')}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-white" />
                   </span>
                 </Link>
               </>
@@ -265,11 +265,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     <>
                       <Link
                         href="/new"
-                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
+                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
                         onClick={closeMenu}
                       >
-                        {t('dashboard.actions.newOffer')}
-                        <ArrowRight className="w-4 h-4" />
+                        <span className="text-white">{t('dashboard.actions.newOffer')}</span>
+                        <ArrowRight className="w-4 h-4 text-white" />
                       </Link>
                       <Link
                         href="/login"
@@ -293,11 +293,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                       </Link>
                       <Link
                         href="/login"
-                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
+                        className="px-6 py-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-center shadow-lg transition-all duration-200 min-h-[44px] flex items-center justify-center gap-2 text-base"
                         onClick={closeMenu}
                       >
-                        {t('nav.freeTrial')}
-                        <ArrowRight className="w-4 h-4" />
+                        <span className="text-white">{t('nav.freeTrial')}</span>
+                        <ArrowRight className="w-4 h-4 text-white" />
                       </Link>
                     </>
                   )}

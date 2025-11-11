@@ -4,12 +4,13 @@ import { Play, Users, Eye, Star, ThumbsUp } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FeatureIndicators } from './FeatureIndicators';
 
 export function VideoDemoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -147,7 +148,7 @@ export function VideoDemoSection() {
 
           <div className="grid md:grid-cols-3 gap-6 relative pt-12">
             {/* Point 1 */}
-            <div className="relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -172,7 +173,7 @@ export function VideoDemoSection() {
             </div>
 
             {/* Point 2 */}
-            <div className="relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -197,7 +198,7 @@ export function VideoDemoSection() {
             </div>
 
             {/* Point 3 */}
-            <div className="relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -230,10 +231,13 @@ export function VideoDemoSection() {
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+            className="inline-block bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-10 py-4 rounded-lg text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
           >
             Kezdd el most – ingyenes fiókkal, 5 perc alatt →
           </Link>
+          <div className="mt-6">
+            <FeatureIndicators />
+          </div>
         </div>
       </div>
     </section>

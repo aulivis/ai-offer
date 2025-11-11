@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
+import { FeatureIndicators } from './FeatureIndicators';
 
 export function ComparisonTable() {
   const features = [
@@ -181,8 +182,8 @@ export function ComparisonTable() {
                         }`}
                       >
                         {/* Feature Name & Description - 40% width */}
-                        <td className="px-6 py-6" style={{ width: '40%' }}>
-                          <div className="flex items-start gap-4">
+                        <td className="px-6 py-6 align-middle" style={{ width: '40%' }}>
+                          <div className="flex items-center gap-4">
                             {/* Feature icon in colored circle */}
                             <div
                               className={`w-12 h-12 ${feature.iconColor} rounded-xl flex items-center justify-center flex-shrink-0`}
@@ -199,10 +200,10 @@ export function ComparisonTable() {
 
                         {/* Competitor A - 15% width */}
                         <td
-                          className="px-6 py-6 text-center bg-gray-50/50"
+                          className="px-6 py-6 text-center bg-gray-50/50 align-middle"
                           style={{ width: '15%' }}
                         >
-                          <div className="flex justify-center">
+                          <div className="flex justify-center items-center">
                             {feature.competitor1 ? (
                               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                 <Check className="w-6 h-6 text-green-600" strokeWidth={3} />
@@ -215,10 +216,10 @@ export function ComparisonTable() {
 
                         {/* Vyndi Column - 30% width, highlighted */}
                         <td
-                          className="px-6 py-6 text-center bg-turquoise-50/50"
+                          className="px-6 py-6 text-center bg-turquoise-50/50 align-middle"
                           style={{ width: '30%' }}
                         >
-                          <div className="flex justify-center">
+                          <div className="flex justify-center items-center">
                             {feature.vyndi ? (
                               <div className="w-10 h-10 bg-turquoise-600 rounded-full flex items-center justify-center shadow-md">
                                 <Check className="w-6 h-6 text-white" strokeWidth={3} />
@@ -230,8 +231,8 @@ export function ComparisonTable() {
                         </td>
 
                         {/* Competitor B - 15% width */}
-                        <td className="px-6 py-6 text-center" style={{ width: '15%' }}>
-                          <div className="flex justify-center">
+                        <td className="px-6 py-6 text-center align-middle" style={{ width: '15%' }}>
+                          <div className="flex justify-center items-center">
                             {feature.competitor2 ? (
                               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                 <Check className="w-6 h-6 text-green-600" strokeWidth={3} />
@@ -290,24 +291,13 @@ export function ComparisonTable() {
           </p>
           <Link
             href="/login?redirect=/new"
-            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
           >
             Próbáld ki most ingyen
             <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              <Check className="w-4 h-4 mr-2" />
-              Kezdd el teljesen ingyen
-            </span>
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              <Check className="w-4 h-4 mr-2" />
-              Nem kérünk bankkártyát
-            </span>
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm">
-              <Check className="w-4 h-4 mr-2" />
-              Kész ajánlat 5 perc alatt
-            </span>
+          <div className="mt-6">
+            <FeatureIndicators />
           </div>
         </div>
       </div>

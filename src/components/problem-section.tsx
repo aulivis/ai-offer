@@ -1,5 +1,6 @@
 import { Clock, TrendingDown, FileX, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { FeatureIndicators } from './FeatureIndicators';
 
 export function ProblemSection() {
   const problems = [
@@ -30,7 +31,7 @@ export function ProblemSection() {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-24 bg-gray-50">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -100,10 +101,13 @@ export function ProblemSection() {
           </p>
           <Link
             href="#solution"
-            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+            className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
           >
             Nézd meg, hogyan működik →
           </Link>
+          <div className="mt-6">
+            <FeatureIndicators />
+          </div>
         </div>
       </div>
     </section>

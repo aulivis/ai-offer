@@ -2,7 +2,7 @@
 
 import { Upload, Wand2, Send, Zap, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { TrustIndicatorsPills } from './trust-indicators';
+import { FeatureIndicators } from './FeatureIndicators';
 
 export function HowItWorks() {
   const steps = [
@@ -60,44 +60,44 @@ export function HowItWorks() {
               <defs>
                 <marker
                   id="arrowhead-howitworks-1"
-                  markerWidth="4"
-                  markerHeight="4"
-                  refX="3.5"
-                  refY="2"
+                  markerWidth="3"
+                  markerHeight="3"
+                  refX="2.5"
+                  refY="1.5"
                   orient="auto"
                   markerUnits="strokeWidth"
                 >
-                  <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
+                  <polygon points="0 0, 3 1.5, 0 3" fill="currentColor" />
                 </marker>
                 <marker
                   id="arrowhead-howitworks-2"
-                  markerWidth="4"
-                  markerHeight="4"
-                  refX="3.5"
-                  refY="2"
+                  markerWidth="3"
+                  markerHeight="3"
+                  refX="2.5"
+                  refY="1.5"
                   orient="auto"
                   markerUnits="strokeWidth"
                 >
-                  <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
+                  <polygon points="0 0, 3 1.5, 0 3" fill="currentColor" />
                 </marker>
               </defs>
-              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) - increased curve by 50% */}
+              {/* Curved Arrow 1 -> 2: from badge 1 right edge (~18%) to badge 2 left edge (~47%) - more pronounced and taller curve */}
               <path
-                d="M 18 15 Q 32.5 -2.5, 47 15"
+                d="M 18 15 Q 32.5 -8, 47 15"
                 stroke="currentColor"
-                strokeWidth="0.8"
+                strokeWidth="0.6"
                 strokeLinecap="round"
-                strokeDasharray="4 4"
+                strokeDasharray="3 3"
                 fill="none"
                 markerEnd="url(#arrowhead-howitworks-1)"
               />
-              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) - increased curve by 50% */}
+              {/* Curved Arrow 2 -> 3: from badge 2 right edge (~53%) to badge 3 left edge (~82%) - more pronounced and taller curve */}
               <path
-                d="M 53 15 Q 67.5 -2.5, 82 15"
+                d="M 53 15 Q 67.5 -8, 82 15"
                 stroke="currentColor"
-                strokeWidth="0.8"
+                strokeWidth="0.6"
                 strokeLinecap="round"
-                strokeDasharray="4 4"
+                strokeDasharray="3 3"
                 fill="none"
                 markerEnd="url(#arrowhead-howitworks-2)"
               />
@@ -204,36 +204,36 @@ export function HowItWorks() {
 
         {/* Enhanced CTA Section */}
         <div className="text-center mt-12 relative">
-          {/* Curved arrow from TELJES FOLYAMAT box to CTA */}
+          {/* Curved arrow from bottom of TELJES FOLYAMAT box to CTA */}
           <div
             className="hidden lg:block absolute left-1/2 -translate-x-1/2 -top-24 w-full max-w-md"
-            style={{ height: '80px' }}
+            style={{ height: '100px' }}
           >
             <svg
               className="w-full h-full text-turquoise-400"
-              viewBox="0 0 200 80"
+              viewBox="0 0 200 100"
               preserveAspectRatio="none"
             >
               <defs>
                 <marker
                   id="arrowhead-cta"
-                  markerWidth="6"
-                  markerHeight="6"
-                  refX="5"
-                  refY="3"
+                  markerWidth="4"
+                  markerHeight="4"
+                  refX="3.5"
+                  refY="2"
                   orient="auto"
                   markerUnits="strokeWidth"
                 >
-                  <polygon points="0 0, 6 3, 0 6" fill="currentColor" />
+                  <polygon points="0 0, 4 2, 0 4" fill="currentColor" />
                 </marker>
               </defs>
-              {/* Curved arrow from left of TELJES FOLYAMAT box to left of CTA */}
+              {/* Curved arrow from bottom center of TELJES FOLYAMAT box (50% x, 100% y) to top center of CTA */}
               <path
-                d="M 20 70 Q 100 20, 180 70"
+                d="M 100 100 Q 100 50, 100 0"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="0.6"
                 strokeLinecap="round"
-                strokeDasharray="6 4"
+                strokeDasharray="3 3"
                 fill="none"
                 markerEnd="url(#arrowhead-cta)"
               />
@@ -244,15 +244,15 @@ export function HowItWorks() {
           <div className="mb-6">
             <Link
               href="/login?redirect=/new"
-              className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-[#FFFFFF] font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
+              className="inline-flex items-center gap-3 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold px-12 py-6 rounded-xl text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105 group min-h-[44px]"
             >
               Próbáld ki most ingyen
               <ArrowRight className="w-7 h-7 group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
 
-          {/* Trust indicators as pills */}
-          <TrustIndicatorsPills />
+          {/* Trust indicators with icons */}
+          <FeatureIndicators />
         </div>
       </div>
     </section>
