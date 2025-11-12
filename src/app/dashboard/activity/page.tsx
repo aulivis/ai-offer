@@ -42,6 +42,7 @@ export default function ActivityLogPage() {
         const currentOffset = reset ? 0 : offset;
         const response = await fetchWithSupabaseAuth(
           `/api/notifications?limit=${limit}&offset=${currentOffset}`,
+          {},
         );
 
         if (!response.ok) {
