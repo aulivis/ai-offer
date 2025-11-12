@@ -178,6 +178,3 @@ export function OnboardingUpsell({
     </Card>
   );
 }
-
-// Add missing import
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
