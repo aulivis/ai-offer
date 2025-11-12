@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
-import { CircleIcon } from '@heroicons/react/24/outline';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useOnboarding } from './OnboardingProvider';
@@ -69,7 +68,16 @@ export function OnboardingChecklist({ title, items, onItemClick }: OnboardingChe
                 {item.completed ? (
                   <CheckCircleIcon className="h-5 w-5 text-success" aria-hidden="true" />
                 ) : (
-                  <CircleIcon className="h-5 w-5 text-fg-muted" aria-hidden="true" />
+                  <svg
+                    className="h-5 w-5 text-fg-muted"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
                 )}
               </div>
               <div className="flex-1 min-w-0">
