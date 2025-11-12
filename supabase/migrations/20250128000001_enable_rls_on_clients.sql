@@ -95,3 +95,4 @@ COMMENT ON TABLE public.clients IS 'Client records with RLS enabled. Users can o
 
 
 
+

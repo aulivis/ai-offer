@@ -1,0 +1,627 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import {
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  Building2,
+  Clock,
+  Award,
+  AlertCircle,
+  Lightbulb,
+  CheckCircle,
+  XCircle,
+  MessageCircle,
+  FileText,
+  TrendingDown,
+  Zap,
+} from 'lucide-react';
+import type { CaseStudy } from '@/types/case-study';
+import { getRelatedCaseStudies } from '@/lib/case-studies';
+import { getAuthorImage } from '@/lib/testimonial-images';
+
+interface CaseStudyDetailClientProps {
+  caseStudy: CaseStudy;
+}
+
+export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps) {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
+  const relatedCaseStudies = getRelatedCaseStudies(caseStudy.slug, 3);
+
+  // Show floating CTA after scrolling past hero
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroHeight = 400; // Approximate hero section height
+      setShowFloatingCTA(window.scrollY > heroHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Get primary metric for hero display
+  const primaryMetric = caseStudy.metrics[0];
+  const improvementValue = primaryMetric?.improvement?.match(/\d+/)?.[0] || '0';
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 py-6 border-b border-gray-200 bg-white">
+        <Link
+          href="/success-stories"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-teal-600 transition-colors group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Vissza a sikertörténetekhez</span>
+        </Link>
+      </div>
+
+      {/* Enhanced Hero Section */}
+      <section className="py-12 md:py-16 bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-5xl mx-auto">
+            {/* Eyebrow text */}
+            <div className="text-center mb-6">
+              <span className="inline-block px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm border border-turquoise-500/30">
+                SIKERTÖRTÉNET
+              </span>
+            </div>
+
+            {/* Company Context */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-8">
+              {/* Company logo */}
+              <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg flex items-center justify-center border border-white/20">
+                {caseStudy.companyLogo ? (
+                  <Image
+                    src={caseStudy.companyLogo}
+                    alt={caseStudy.companyName}
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 object-contain p-2"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-turquoise-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl font-bold text-turquoise-600">
+                      {caseStudy.companyName.charAt(0)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-center md:text-left">
+                <h2 className="text-white font-semibold text-2xl mb-3">{caseStudy.companyName}</h2>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm">
+                  <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white">
+                    {caseStudy.industryLabel}
+                  </span>
+                  <span className="text-gray-300 flex items-center gap-1">
+                    <Building2 className="w-4 h-4" />
+                    {caseStudy.companySize}
+                  </span>
+                  <span className="text-gray-300 flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {caseStudy.timeline}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Main result quote - reduced prominence */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+                {caseStudy.mainResult}
+              </h1>
+              <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+                {caseStudy.shortDescription}
+              </p>
+            </div>
+
+            {/* Quick facts */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm border-t border-white/20 pt-8">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-turquoise-400" />
+                <span>{caseStudy.plan} csomag</span>
+              </div>
+              {primaryMetric && (
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-turquoise-400" />
+                  <span>{improvementValue}% javulás</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Metrics Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">Elért eredmények</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              {caseStudy.metrics.map((metric, index) => {
+                const isPrimary = index === 0;
+                const iconMap: Record<number, typeof Clock> = {
+                  0: Clock,
+                  1: FileText,
+                  2: TrendingDown,
+                };
+                const Icon = iconMap[index] || Clock;
+
+                // Use static Tailwind classes
+                const colorClasses = [
+                  { bg: 'bg-teal-50', text: 'text-teal-600', icon: 'text-teal-600' },
+                  { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'text-blue-600' },
+                  { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'text-purple-600' },
+                ];
+                const colors = colorClasses[index] || colorClasses[0];
+
+                return (
+                  <div
+                    key={metric.id}
+                    className="bg-white rounded-xl p-6 md:p-8 shadow-lg relative overflow-hidden"
+                  >
+                    {/* Decorative background element */}
+                    <div
+                      className={`absolute top-0 right-0 w-32 h-32 ${colors.bg} rounded-full -mr-16 -mt-16`}
+                    ></div>
+
+                    <div className="relative z-10">
+                      <Icon
+                        className={`w-6 md:w-8 h-6 md:h-8 ${colors.icon} mb-3 ${
+                          isPrimary ? 'md:w-10 md:h-10' : ''
+                        }`}
+                      />
+                      <div
+                        className={`font-bold mb-2 ${colors.text} ${
+                          isPrimary ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+                        }`}
+                      >
+                        {metric.value}
+                      </div>
+                      <div
+                        className={`font-semibold mb-1 ${
+                          isPrimary ? 'text-lg' : 'text-base'
+                        } text-gray-700`}
+                      >
+                        {metric.label}
+                      </div>
+                      <div className={`text-gray-500 ${isPrimary ? 'text-sm' : 'text-xs'}`}>
+                        {metric.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Enhanced Before/After Comparisons */}
+            {caseStudy.metrics.some((m) => m.before && m.after) && (
+              <div className="space-y-8">
+                <h3 className="text-2xl font-bold text-navy-900 text-center mb-8">
+                  Eredmények számokban
+                </h3>
+                {caseStudy.metrics
+                  .filter((m) => m.before && m.after)
+                  .map((metric) => (
+                    <div
+                      key={metric.id}
+                      className="bg-gradient-to-r from-red-50 to-green-50 rounded-xl p-6 md:p-8 border border-gray-200"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        {/* Before - Red/Orange tint */}
+                        <div className="bg-white rounded-xl p-6 border-2 border-red-200 shadow-sm">
+                          <div className="text-xs text-red-600 font-semibold mb-2 uppercase tracking-wide">
+                            Előtte
+                          </div>
+                          <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">
+                            {metric.before}
+                          </div>
+                          <div className="text-sm text-gray-600">{metric.label}</div>
+                        </div>
+
+                        {/* Arrow with improvement */}
+                        <div className="text-center">
+                          <ArrowRight className="w-6 h-8 md:w-8 md:h-10 mx-auto text-gray-400 mb-3 hidden md:block" />
+                          <div className="bg-green-500 text-white px-4 py-2 rounded-full inline-flex items-center gap-2 shadow-lg">
+                            <TrendingDown className="w-4 h-4" />
+                            <span className="font-bold">{metric.improvement || 'Javulás'}</span>
+                          </div>
+                        </div>
+
+                        {/* After - Green tint */}
+                        <div className="bg-white rounded-xl p-6 border-2 border-green-200 shadow-sm">
+                          <div className="text-xs text-green-600 font-semibold mb-2 uppercase tracking-wide">
+                            Utána
+                          </div>
+                          <div className="text-3xl md:text-4xl font-bold text-green-600 mb-1">
+                            {metric.after}
+                          </div>
+                          <div className="text-sm text-gray-600">Vyndi-val</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Challenge Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-xl p-8 shadow-lg">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-8 h-8 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">A kihívás</h2>
+                  <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.challenge}</p>
+                </div>
+              </div>
+
+              {/* Challenge details with better spacing */}
+              <div className="space-y-4">
+                {caseStudy.challengePoints.map((point, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="font-semibold text-gray-800">{point}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Solution Section */}
+      <section className="py-16 bg-gradient-to-br from-teal-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-xl p-8 shadow-lg">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-16 h-16 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">A megoldás</h2>
+                  <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.solution}</p>
+                </div>
+              </div>
+
+              {/* Solution features used */}
+              <div className="space-y-3">
+                <h3 className="font-bold text-navy-900 mb-4 text-lg">Használt Vyndi funkciók:</h3>
+                {caseStudy.featuresUsed.map((feature, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-teal-100"
+                  >
+                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Visual Timeline */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">
+              Eredmények idővonalon
+            </h2>
+
+            <div className="relative py-12">
+              {/* Vertical line */}
+              <div className="absolute left-8 top-20 bottom-0 w-0.5 bg-teal-200 md:left-1/2 md:-translate-x-0.5"></div>
+
+              {/* Timeline items */}
+              <div className="space-y-12">
+                {caseStudy.resultTimeline.map((milestone, idx) => {
+                  const isEven = idx % 2 === 0;
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative flex items-center gap-8 md:justify-center ${
+                        !isEven ? 'md:flex-row-reverse' : ''
+                      }`}
+                    >
+                      {/* Timeline dot */}
+                      <div className="absolute left-8 w-4 h-4 rounded-full bg-teal-500 ring-4 ring-teal-100 md:left-1/2 md:-ml-2 z-10"></div>
+
+                      {/* Content card */}
+                      <div className={`ml-20 md:ml-0 md:w-1/2 ${isEven ? 'md:pr-12' : 'md:pl-12'}`}>
+                        <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                          <div className="text-sm font-semibold text-teal-600 mb-2">
+                            {milestone.week}
+                          </div>
+                          <div className="text-xs text-gray-600 mb-2">{milestone.period}</div>
+                          <h3 className="font-bold text-lg mb-2 text-navy-900">
+                            {milestone.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {milestone.description}
+                          </p>
+                          {milestone.metrics && (
+                            <div className="mt-4 inline-block px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold text-sm">
+                              {milestone.metrics}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Testimonial Section */}
+      <section className="py-16 bg-gradient-to-br from-teal-500 to-blue-600 text-white relative overflow-hidden">
+        {/* Decorative quote mark */}
+        <div className="absolute top-4 left-4 md:top-8 md:left-8 text-white/20 text-7xl md:text-9xl font-serif">
+          &ldquo;
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            {/* Quote text - break into paragraphs */}
+            <blockquote className="text-xl md:text-2xl text-white font-medium leading-relaxed mb-8 max-w-4xl">
+              {caseStudy.testimonial.fullQuote
+                .split(/\n+/)
+                .filter(Boolean)
+                .map((paragraph, idx) => (
+                  <p key={idx} className="mb-4 last:mb-0">
+                    {paragraph}
+                  </p>
+                ))}
+            </blockquote>
+
+            {/* Client info - more prominent */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white/30 flex-shrink-0">
+                <Image
+                  src={getAuthorImage(caseStudy.testimonial.author)}
+                  alt={caseStudy.testimonial.author}
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="text-white font-bold text-lg">{caseStudy.testimonial.author}</div>
+                <div className="text-white/80">{caseStudy.testimonial.role}</div>
+                <div className="text-white/70 text-sm">{caseStudy.companyName}</div>
+              </div>
+
+              {/* Verified badge */}
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+                <CheckCircle className="w-4 h-4" />
+                Ellenőrzött ügyfél
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced FAQ Section - Accordion Style */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-navy-900 mb-8">
+              Hogyan történt a megvalósítás?
+            </h2>
+
+            <div className="space-y-3">
+              {caseStudy.implementationSteps.map((step, idx) => (
+                <div key={idx} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === idx + 1 ? null : idx + 1)}
+                    className="w-full p-6 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-600 font-bold flex items-center justify-center flex-shrink-0">
+                        {idx + 1}
+                      </div>
+                      <span className="font-semibold text-gray-800 text-lg">{step.title}</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${
+                        openFaq === idx + 1 ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {openFaq === idx + 1 && (
+                    <div className="px-6 pb-6 text-gray-600 leading-relaxed ml-12">
+                      {step.description}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Related Case Studies */}
+      {relatedCaseStudies.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">
+                Hasonló sikertörténetek
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {relatedCaseStudies.map((related, index) => {
+                  // Use static Tailwind classes
+                  const gradients = [
+                    'from-purple-400 to-pink-600',
+                    'from-blue-400 to-indigo-600',
+                    'from-teal-400 to-cyan-600',
+                  ];
+                  const gradient = gradients[index % 3] || 'from-teal-400 to-blue-600';
+                  const primaryMetric = related.metrics[0];
+                  const improvementValue = primaryMetric?.improvement?.match(/\d+/)?.[0] || '0';
+
+                  return (
+                    <Link
+                      key={related.slug}
+                      href={`/success-stories/${related.slug}`}
+                      className="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all cursor-pointer"
+                    >
+                      {/* Gradient header */}
+                      <div className={`h-24 bg-gradient-to-br ${gradient} relative`}>
+                        <div className="absolute bottom-4 left-6">
+                          <span className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-white font-semibold">
+                            {related.industryLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6">
+                        <h4 className="font-bold text-xl mb-2 group-hover:text-teal-600 transition-colors">
+                          {related.companyName}
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                          {related.shortDescription}
+                        </p>
+
+                        {/* Key metric highlight */}
+                        {primaryMetric && (
+                          <div className="flex gap-4 mb-4">
+                            <div className="flex-1 bg-gray-50 rounded-lg p-3 text-center">
+                              <div className="text-2xl font-bold text-teal-600">
+                                {improvementValue}%
+                              </div>
+                              <div className="text-xs text-gray-600">Javulás</div>
+                            </div>
+                            <div className="flex-1 bg-gray-50 rounded-lg p-3 text-center">
+                              <div className="text-2xl font-bold text-blue-600">
+                                {primaryMetric.value}
+                              </div>
+                              <div className="text-xs text-gray-600">{primaryMetric.label}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-teal-100">
+                              <Image
+                                src={getAuthorImage(related.testimonial.author)}
+                                alt={related.testimonial.author}
+                                width={32}
+                                height={32}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="text-xs">
+                              <div className="font-semibold">{related.testimonial.author}</div>
+                              <div className="text-gray-500">{related.testimonial.role}</div>
+                            </div>
+                          </div>
+                          <ArrowRight className="w-5 h-5 text-teal-600 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Back to Stories Link */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4 text-center">
+          <Link
+            href="/success-stories"
+            className="inline-flex items-center gap-2 text-teal-600 font-semibold hover:gap-3 transition-all"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            További sikertörténetek
+          </Link>
+        </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Érj el hasonló eredményeket</h2>
+            <p className="text-xl mb-8 text-white/90">
+              Csatlakozz {caseStudy.companyName}-hoz és 500+ céghez, akik már átlagosan 70%-kal
+              gyorsabban készítik ajánlataikat
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/login?redirect=/new"
+                className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-10 py-4 rounded-xl text-lg shadow-xl transition-all inline-flex items-center justify-center gap-2 min-h-[44px]"
+              >
+                14 napos ingyenes próba
+              </Link>
+              <Link
+                href="/billing"
+                className="bg-transparent hover:bg-white/10 text-white font-bold px-10 py-4 rounded-xl text-lg border-2 border-white transition-all inline-flex items-center justify-center gap-2 min-h-[44px]"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Demo kérése
+              </Link>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-white/90">
+              <span>✓ Nincs bankkártya</span>
+              <span>✓ 30 napos garancia</span>
+              <span>✓ Bármikor lemondható</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Floating CTA */}
+      {showFloatingCTA && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 duration-300">
+          <Link
+            href="/login?redirect=/new"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-orange-600 flex items-center gap-2 transition-all hover:scale-105"
+          >
+            <span className="font-semibold">Próbáld ki ingyen</span>
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}

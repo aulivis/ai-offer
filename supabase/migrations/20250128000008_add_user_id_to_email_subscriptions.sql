@@ -57,3 +57,4 @@ where es.user_id is null
 
 comment on column public.email_subscriptions.user_id is 'User account ID if subscription is linked to a registered user. Null for anonymous subscriptions.';
 
+

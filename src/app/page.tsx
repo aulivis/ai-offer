@@ -83,10 +83,13 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
+                  className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                 >
-                  <span className="text-base md:text-lg text-white">Próbáld ki most ingyen</span>
-                  <ArrowRight className="w-5 h-5 flex-shrink-0 text-white" />
+                  <span className="relative z-10 text-base md:text-lg text-white">
+                    Próbáld ki most ingyen
+                  </span>
+                  <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </Link>
                 <a
                   href="#product-demo"

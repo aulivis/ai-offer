@@ -50,3 +50,4 @@ $$;
 grant insert on table public.email_subscriptions to anon, authenticated;
 grant usage on schema public to anon, authenticated;
 
+

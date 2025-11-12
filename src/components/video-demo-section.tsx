@@ -10,7 +10,7 @@ export function VideoDemoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
-    <section className="py-16 md:py-24 bg-white">
+    <section className="py-16 md:py-24 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4 md:px-6">
         {/* Section Header */}
         <div className="text-center space-y-8 md:space-y-12 mb-12">

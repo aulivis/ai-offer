@@ -96,9 +96,14 @@ const config = {
           '0%, 100%': { opacity: '0.05', transform: 'scale(1)' },
           '50%': { opacity: '0.15', transform: 'scale(1.05)' },
         },
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'gentle-pulse': 'gentle-pulse 3s ease-in-out infinite',
+        scroll: 'scroll 30s linear infinite',
       },
     },
   },
