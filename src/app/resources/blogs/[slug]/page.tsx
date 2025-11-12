@@ -3,9 +3,7 @@ import Image from 'next/image';
 import { Metadata } from 'next';
 import {
   ChevronRight,
-  Calendar,
   Clock,
-  Eye,
   Bookmark,
   Lightbulb,
   AlertCircle,
@@ -29,6 +27,7 @@ import { ReadingProgress } from '@/components/guides/ReadingProgress';
 import { ShareDropdown } from '@/components/guides/ShareDropdown';
 import { BlogTOC } from '@/components/blogs/BlogTOC';
 import { BackToTop } from '@/components/blogs/BackToTop';
+import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 
 export async function generateMetadata({
   params,
@@ -108,22 +107,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <span className="bg-teal-500 text-white text-sm px-4 py-1.5 rounded-full font-semibold">
               Ajánlatkészítés
             </span>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span>{resource.publishedDate}</span>
+            {resource.readingTime && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                <Clock className="w-4 h-4" />
+                <span>{resource.readingTime} perc</span>
               </div>
-              {resource.readingTime && (
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  <span>{resource.readingTime} perc</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5">
-                <Eye className="w-4 h-4" />
-                <span>{resource.views.toLocaleString()} megtekintés</span>
-              </div>
-            </div>
+            )}
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
@@ -513,9 +502,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </p>
                     <Link
                       href="/login?redirect=/new"
-                      className="w-full bg-white text-teal-600 px-6 py-3 rounded-lg font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                      className="group w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-6 py-3 min-h-[56px] flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                     >
-                      Indulás
+                      <span className="relative z-10 text-base text-white">
+                        Próbáld ki most ingyen
+                      </span>
+                      <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                      <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                     </Link>
                   </div>
                 </div>
@@ -592,21 +585,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       {/* Lead Gen Newsletter CTA */}
       <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Ne maradj le a legújabb tartalmakról</h2>
-            <p className="text-xl mb-8 text-white/90">
-              Iratkozz fel hírlevelünkre és kapj értékes tippeket ajánlatkészítéshez hetente
-            </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="pelda@email.com"
-                className="flex-1 px-6 py-4 rounded-xl text-navy-900 focus:outline-none focus:ring-2 focus:ring-white min-h-[44px]"
-              />
-              <button className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-8 py-4 rounded-xl transition-all whitespace-nowrap min-h-[44px]">
-                Feliratkozom
-              </button>
-            </form>
+          <div className="max-w-4xl mx-auto">
+            <NewsletterSubscription source="blog_page" />
           </div>
         </div>
       </section>

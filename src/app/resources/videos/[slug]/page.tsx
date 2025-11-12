@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { ArrowRight, ChevronRight, Calendar, Clock, Eye, Bookmark, ThumbsUp } from 'lucide-react';
+import { ArrowRight, ChevronRight, Clock, Bookmark } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
 import { ResourceCard } from '@/components/resource-card';
@@ -10,8 +10,8 @@ import { VideoChapters } from '@/components/videos/VideoChapters';
 import { VideoSeries } from '@/components/videos/VideoSeries';
 import { VideoTranscript } from '@/components/videos/VideoTranscript';
 import { VideoDescription } from '@/components/videos/VideoDescription';
-import { VideoComments } from '@/components/videos/VideoComments';
 import { ShareDropdown } from '@/components/guides/ShareDropdown';
+import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 
 export async function generateMetadata({
   params,
@@ -177,29 +177,14 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
 
           {/* Metadata and actions row */}
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-6 text-sm text-gray-600">
-              {resource.videoDuration && (
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  <span>{resource.videoDuration} perc</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5">
-                <Eye className="w-4 h-4" />
-                <span>{resource.views.toLocaleString()} megtekintés</span>
+            {resource.videoDuration && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                <Clock className="w-4 h-4" />
+                <span>{resource.videoDuration} perc</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span>{resource.publishedDate}</span>
-              </div>
-            </div>
+            )}
 
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-teal-500 transition-colors min-h-[44px]">
-                <ThumbsUp className="w-5 h-5" />
-                <span className="font-medium">Tetszik</span>
-                <span className="text-gray-600">(243)</span>
-              </button>
               <button className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg hover:border-teal-500 transition-colors min-h-[44px]">
                 <Bookmark className="w-5 h-5" />
                 <span className="font-medium">Mentés</span>
@@ -225,9 +210,6 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
 
                 {/* Transcript */}
                 <VideoTranscript transcript={transcript} />
-
-                {/* Comments */}
-                <VideoComments videoId={slug} />
               </div>
 
               {/* Sidebar - 4 columns */}
@@ -280,21 +262,8 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
       {/* Lead Gen CTA */}
       <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Szeretnél többet tanulni?</h2>
-            <p className="text-xl mb-8 text-white/90">
-              Iratkozz fel hírlevelünkre és értesülj elsőként új videóinkról
-            </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="pelda@email.com"
-                className="flex-1 px-6 py-4 rounded-xl text-navy-900 focus:outline-none focus:ring-2 focus:ring-white min-h-[44px]"
-              />
-              <button className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-8 py-4 rounded-xl transition-all whitespace-nowrap min-h-[44px]">
-                Feliratkozom
-              </button>
-            </form>
+          <div className="max-w-4xl mx-auto">
+            <NewsletterSubscription source="video_page" />
           </div>
         </div>
       </section>

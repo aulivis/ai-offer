@@ -4,9 +4,7 @@ import { Metadata } from 'next';
 import {
   ArrowRight,
   ChevronRight,
-  Calendar,
   Clock,
-  Eye,
   Bookmark,
   Lightbulb,
   CheckCircle,
@@ -27,6 +25,7 @@ import { ReadingProgress } from '@/components/guides/ReadingProgress';
 import { ShareDropdown } from '@/components/guides/ShareDropdown';
 import { GuideFeedback } from '@/components/guides/GuideFeedback';
 import { TimeRemaining } from '@/components/guides/TimeRemaining';
+import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 
 export async function generateMetadata({
   params,
@@ -156,22 +155,12 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                 >
                   {resource.difficulty}
                 </span>
-                <div className="flex items-center gap-5 text-sm text-gray-600">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4" />
-                    <span>{resource.publishedDate}</span>
+                {resource.readingTime && (
+                  <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>{resource.readingTime} perc</span>
                   </div>
-                  {resource.readingTime && (
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4" />
-                      <span>{resource.readingTime} perc</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1.5">
-                    <Eye className="w-4 h-4" />
-                    <span>{resource.views.toLocaleString()} megtekintés</span>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Title and description */}
@@ -371,10 +360,13 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link
                     href="/login?redirect=/new"
-                    className="flex-1 bg-white text-teal-600 px-6 py-4 rounded-xl font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                    className="group flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-6 py-4 min-h-[56px] flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Próbáld ki most</span>
+                    <span className="relative z-10 text-base text-white">
+                      Próbáld ki most ingyen
+                    </span>
+                    <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   </Link>
                   <button className="flex-1 bg-white/20 backdrop-blur-sm text-white px-6 py-4 rounded-xl font-semibold hover:bg-white/30 transition-all border-2 border-white/30 flex items-center justify-center gap-2 min-h-[44px]">
                     <FileDown className="w-5 h-5" />
@@ -422,21 +414,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       {/* Newsletter CTA */}
       <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Szeretnél többet tanulni?</h2>
-            <p className="text-xl mb-8 text-white/90">
-              Iratkozz fel hírlevelünkre és értesülj elsőként új útmutatóinkról
-            </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="pelda@email.com"
-                className="flex-1 px-6 py-4 rounded-xl text-navy-900 focus:outline-none focus:ring-2 focus:ring-white min-h-[44px]"
-              />
-              <button className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-8 py-4 rounded-xl transition-all whitespace-nowrap min-h-[44px]">
-                Feliratkozom
-              </button>
-            </form>
+          <div className="max-w-4xl mx-auto">
+            <NewsletterSubscription source="guide_page" />
           </div>
         </div>
       </section>

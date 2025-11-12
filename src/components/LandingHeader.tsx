@@ -163,7 +163,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           </Link>
 
           {/* Enhanced Desktop Navigation Links */}
-          <nav className="hidden flex-1 items-center justify-center gap-1 text-base font-medium md:flex">
+          <nav className="hidden flex-1 items-center justify-center gap-4 text-base font-medium md:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}

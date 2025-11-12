@@ -8,13 +8,13 @@ import {
   ArrowRightIcon,
   ChevronDownIcon,
   EyeIcon,
-  ArrowDownTrayIcon,
   BoltIcon,
   Squares2X2Icon,
   ListBulletIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { Check } from 'lucide-react';
 
 // Mock data for templates - in production, fetch from API
 const mockTemplates = [
@@ -397,10 +397,10 @@ export default function TemplatesPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'Üzleti', count: 24, color: 'from-blue-500 to-blue-600' },
-            { name: 'Marketing', count: 18, color: 'from-purple-500 to-purple-600' },
-            { name: 'Tech', count: 12, color: 'from-teal-500 to-teal-600' },
-            { name: 'Kreatív', count: 8, color: 'from-pink-500 to-pink-600' },
+            { name: 'Üzleti', count: 24, color: 'from-blue-500 to-blue-600', icon: '💼' },
+            { name: 'Marketing', count: 18, color: 'from-purple-500 to-purple-600', icon: '📊' },
+            { name: 'Tech', count: 12, color: 'from-teal-500 to-teal-600', icon: '💻' },
+            { name: 'Kreatív', count: 8, color: 'from-pink-500 to-pink-600', icon: '🎨' },
           ].map((category) => (
             <a
               key={category.name}
@@ -413,9 +413,10 @@ export default function TemplatesPage() {
               className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer"
             >
               <div
-                className={`w-full h-full bg-gradient-to-br ${category.color} flex items-end p-6`}
+                className={`w-full h-full bg-gradient-to-br ${category.color} flex flex-col items-center justify-center p-6`}
               >
-                <div className="w-full">
+                <div className="text-6xl mb-4">{category.icon}</div>
+                <div className="w-full text-center">
                   <h3 className="text-white font-bold text-xl mb-1">{category.name}</h3>
                   <p className="text-white/80 text-sm">{category.count} sablon</p>
                 </div>
@@ -479,7 +480,6 @@ export default function TemplatesPage() {
                       href="/login?redirect=/new"
                       className="w-full bg-teal-500 text-white py-2 rounded-lg font-semibold hover:bg-teal-600 transition-colors flex items-center justify-center gap-2"
                     >
-                      <ArrowDownTrayIcon className="w-4 h-4" />
                       <span>Használat</span>
                     </Link>
                   </div>
@@ -491,18 +491,6 @@ export default function TemplatesPage() {
                     {template.name}
                   </h3>
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description}</p>
-
-                  {/* Metadata */}
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                    <div className="flex items-center gap-1">
-                      <ArrowDownTrayIcon className="w-3 h-3" />
-                      <span>{template.downloads.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <StarIconSolid className="w-3 h-3 text-yellow-400" />
-                      <span>{template.rating}</span>
-                    </div>
-                  </div>
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1">
@@ -550,14 +538,14 @@ export default function TemplatesPage() {
 
             {/* Step 1 */}
             <div className="relative">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all relative z-10">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all relative z-10 h-full flex flex-col">
                 <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                   <span className="text-3xl font-bold text-white">1</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">
                   Válassz sablont
                 </h3>
-                <p className="text-gray-600 text-center leading-relaxed">
+                <p className="text-gray-600 text-center leading-relaxed flex-1">
                   Böngéssz az elérhető sablonok közül, és válaszd ki azt, amelyik a legjobban
                   illeszkedik az üzleti igényeidhez
                 </p>
@@ -566,12 +554,12 @@ export default function TemplatesPage() {
 
             {/* Step 2 */}
             <div className="relative">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all relative z-10">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all relative z-10 h-full flex flex-col">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                   <span className="text-3xl font-bold text-white">2</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">Testre szabás</h3>
-                <p className="text-gray-600 text-center leading-relaxed">
+                <p className="text-gray-600 text-center leading-relaxed flex-1">
                   Add meg a saját tartalmat, válassz színeket, logót. Az AI segít a szöveg
                   megírásában
                 </p>
@@ -580,14 +568,14 @@ export default function TemplatesPage() {
 
             {/* Step 3 */}
             <div className="relative">
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all relative z-10">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all relative z-10 h-full flex flex-col">
                 <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                   <span className="text-3xl font-bold text-white">3</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">
                   Exportáld PDF-be
                 </h3>
-                <p className="text-gray-600 text-center leading-relaxed">
+                <p className="text-gray-600 text-center leading-relaxed flex-1">
                   Töltsd le az ajánlatot PDF formátumban vagy küldd el közvetlenül az ügyfélnek
                 </p>
               </div>
@@ -820,22 +808,30 @@ export default function TemplatesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/login?redirect=/new"
-              className="bg-white text-teal-600 px-8 py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2"
+              className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
             >
-              <span>Ingyenes próba indítása</span>
-              <ArrowRightIcon className="w-5 h-5" />
-            </Link>
-            <Link
-              href="/resources/pro-templates"
-              className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition-all"
-            >
-              Próbálj ki egy sablont
+              <span className="relative z-10 text-base md:text-lg text-white">
+                Próbáld ki most ingyen
+              </span>
+              <ArrowRightIcon className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+              <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </Link>
           </div>
 
-          <p className="text-white/70 text-sm mt-6">
-            ✓ Nincs bankkártya szükséges &nbsp; • &nbsp; ✓ Bármikor lemondható
-          </p>
+          <div className="flex flex-wrap justify-center gap-6 text-white/90 mt-6">
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-300" />
+              <span>Kezdd el teljesen ingyen</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-300" />
+              <span>Nem kérünk bankkártyát</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-300" />
+              <span>Bármikor lemondható</span>
+            </div>
+          </div>
         </div>
       </div>
 

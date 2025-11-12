@@ -14,7 +14,6 @@ import {
   Lightbulb,
   CheckCircle,
   XCircle,
-  MessageCircle,
   FileText,
   TrendingDown,
   Zap,
@@ -220,7 +219,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                     >
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                         {/* Before - Red/Orange tint */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-red-200 shadow-sm">
+                        <div className="bg-white rounded-xl p-6 border-2 border-red-200 shadow-sm text-center">
                           <div className="text-xs text-red-600 font-semibold mb-2 uppercase tracking-wide">
                             Előtte
                           </div>
@@ -231,8 +230,8 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                         </div>
 
                         {/* Arrow with improvement */}
-                        <div className="text-center">
-                          <ArrowRight className="w-6 h-8 md:w-8 md:h-10 mx-auto text-gray-400 mb-3 hidden md:block" />
+                        <div className="text-center flex flex-col items-center justify-center">
+                          <ArrowRight className="w-12 h-16 md:w-16 md:h-20 mx-auto text-gray-400 mb-3 hidden md:block" />
                           <div className="bg-green-500 text-white px-4 py-2 rounded-full inline-flex items-center gap-2 shadow-lg">
                             <TrendingDown className="w-4 h-4" />
                             <span className="font-bold">{metric.improvement || 'Javulás'}</span>
@@ -240,7 +239,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                         </div>
 
                         {/* After - Green tint */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-green-200 shadow-sm">
+                        <div className="bg-white rounded-xl p-6 border-2 border-green-200 shadow-sm text-center">
                           <div className="text-xs text-green-600 font-semibold mb-2 uppercase tracking-wide">
                             Utána
                           </div>
@@ -328,31 +327,28 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       {/* Enhanced Visual Timeline */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">
               Eredmények idővonalon
             </h2>
 
             <div className="relative py-12">
-              {/* Vertical line */}
-              <div className="absolute left-8 top-20 bottom-0 w-0.5 bg-teal-200 md:left-1/2 md:-translate-x-0.5"></div>
+              {/* Horizontal line connecting columns */}
+              <div className="absolute left-1/4 right-1/4 top-0 bottom-0 w-0.5 bg-teal-200 hidden md:block"></div>
 
-              {/* Timeline items */}
-              <div className="space-y-12">
+              {/* Timeline items - 2 column layout */}
+              <div className="grid md:grid-cols-2 gap-8">
                 {caseStudy.resultTimeline.map((milestone, idx) => {
-                  const isEven = idx % 2 === 0;
+                  const isLeft = idx % 2 === 0;
                   return (
-                    <div
-                      key={idx}
-                      className={`relative flex items-center gap-8 md:justify-center ${
-                        !isEven ? 'md:flex-row-reverse' : ''
-                      }`}
-                    >
-                      {/* Timeline dot */}
-                      <div className="absolute left-8 w-4 h-4 rounded-full bg-teal-500 ring-4 ring-teal-100 md:left-1/2 md:-ml-2 z-10"></div>
+                    <div key={idx} className={`relative ${isLeft ? 'md:pr-8' : 'md:pl-8'}`}>
+                      {/* Timeline dot - at top of card */}
+                      <div
+                        className={`absolute ${isLeft ? 'left-0' : 'right-0'} top-0 w-4 h-4 rounded-full bg-teal-500 ring-4 ring-teal-100 z-10 md:-translate-x-1/2 md:left-1/2`}
+                      ></div>
 
                       {/* Content card */}
-                      <div className={`ml-20 md:ml-0 md:w-1/2 ${isEven ? 'md:pr-12' : 'md:pl-12'}`}>
+                      <div className="pt-6">
                         <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                           <div className="text-sm font-semibold text-teal-600 mb-2">
                             {milestone.week}
@@ -589,16 +585,13 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/login?redirect=/new"
-                className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-10 py-4 rounded-xl text-lg shadow-xl transition-all inline-flex items-center justify-center gap-2 min-h-[44px]"
+                className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
-                14 napos ingyenes próba
-              </Link>
-              <Link
-                href="/billing"
-                className="bg-transparent hover:bg-white/10 text-white font-bold px-10 py-4 rounded-xl text-lg border-2 border-white transition-all inline-flex items-center justify-center gap-2 min-h-[44px]"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Demo kérése
+                <span className="relative z-10 text-base md:text-lg text-white">
+                  Próbáld ki most ingyen
+                </span>
+                <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Link>
             </div>
             <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-white/90">
@@ -612,13 +605,13 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
       {/* Floating CTA */}
       {showFloatingCTA && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-6 left-6 z-50 animate-in slide-in-from-bottom-5 duration-300">
           <Link
             href="/login?redirect=/new"
-            className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-orange-600 flex items-center gap-2 transition-all hover:scale-105"
+            className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-orange-600 flex items-center gap-2 transition-all hover:scale-105"
           >
             <span className="font-semibold">Próbáld ki ingyen</span>
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
       )}

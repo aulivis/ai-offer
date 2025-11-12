@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, MessageCircle, Check, CheckCircle, ChevronDown } from 'lucide-react';
+import { ArrowRight, CheckCircle, ChevronDown } from 'lucide-react';
 import { t } from '@/copy';
 import { getCaseStudies } from '@/lib/case-studies';
 import { ROICalculatorLanding } from '@/components/roi-calculator-landing';
@@ -55,7 +55,7 @@ export default function SuccessStoriesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Enhanced Hero Section with Scrolling Logo Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white relative overflow-hidden">
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-navy-900 via-navy-800 to-blue-900 text-white relative overflow-hidden min-h-screen flex flex-col">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
@@ -76,25 +76,6 @@ export default function SuccessStoriesPage() {
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed text-pretty">
               {t('landing.successStories.description')}
             </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-8 border-y border-white/20 mb-12">
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-turquoise-400 mb-2">500+</div>
-                <div className="text-gray-300 text-sm">Elégedett ügyfél</div>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-turquoise-400 mb-2">70%</div>
-                <div className="text-gray-300 text-sm">Átlagos időmegtakarítás</div>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-turquoise-400 mb-2">10K+</div>
-                <div className="text-gray-300 text-sm">Ajánlat készült</div>
-              </div>
-              <div>
-                <div className="text-4xl md:text-5xl font-bold text-turquoise-400 mb-2">98%</div>
-                <div className="text-gray-300 text-sm">Ajánlja tovább</div>
-              </div>
-            </div>
 
             {/* Scrolling Logo Section */}
             <div className="mb-12">
@@ -135,8 +116,8 @@ export default function SuccessStoriesPage() {
               </div>
             </div>
 
-            {/* Scroll indicator */}
-            <div className="flex flex-col items-center gap-2 animate-bounce">
+            {/* Scroll indicator - moved to bottom */}
+            <div className="flex flex-col items-center gap-2 animate-bounce mt-auto pt-8">
               <button
                 onClick={scrollToStories}
                 className="text-white/80 hover:text-white transition-colors flex flex-col items-center gap-2 group"
@@ -339,7 +320,7 @@ export default function SuccessStoriesPage() {
       </section>
 
       {/* Enhanced Bottom CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
+      <section className="bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -378,39 +359,29 @@ export default function SuccessStoriesPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <Link
                 href="/login?redirect=/new"
-                className="group bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-12 py-5 rounded-xl text-lg shadow-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-3xl inline-flex items-center gap-3 min-h-[44px] relative overflow-hidden"
+                className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
-                <span className="relative z-10">14 napos ingyenes próba</span>
-                <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-turquoise-700" />
-                <span className="absolute inset-0 bg-gradient-to-r from-turquoise-50 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              </Link>
-
-              <Link
-                href="/billing"
-                className="bg-transparent hover:bg-white/10 text-white font-bold px-12 py-5 rounded-xl text-lg border-2 border-white transition-all inline-flex items-center gap-3 min-h-[44px]"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Demo kérése
+                <span className="relative z-10 text-base md:text-lg text-white">
+                  Próbáld ki most ingyen
+                </span>
+                <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Link>
             </div>
 
-            {/* Trust Indicators */}
+            {/* Trust Indicators - 3 features from landing hero */}
             <div className="flex flex-wrap justify-center gap-6 text-white/90">
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5" />
-                <span>14 napos ingyenes próba</span>
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span>Kezdd el teljesen ingyen</span>
               </div>
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5" />
-                <span>Nincs bankkártya</span>
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span>Nem kérünk bankkártyát</span>
               </div>
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5" />
-                <span>30 napos garancia</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-5 h-5" />
-                <span>Bármikor lemondható</span>
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span>Kész ajánlat 5 perc alatt</span>
               </div>
             </div>
           </div>

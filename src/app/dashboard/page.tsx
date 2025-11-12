@@ -60,6 +60,8 @@ import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
 import ArrowsPointingOutIcon from '@heroicons/react/24/outline/ArrowsPointingOutIcon';
 import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIcon';
 import QuestionMarkCircleIcon from '@heroicons/react/24/outline/QuestionMarkCircleIcon';
+import { NotificationBar } from '@/components/dashboard/NotificationBar';
+import { NotificationBell } from '@/components/dashboard/NotificationBell';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -185,6 +187,16 @@ export default function DashboardPage() {
   const [offerToDelete, setOfferToDelete] = useState<Offer | null>(null);
   const [quotaSnapshot, setQuotaSnapshot] = useState<UsageQuotaSnapshot | null>(null);
   const [isQuotaLoading, setIsQuotaLoading] = useState(false);
+  const [latestNotification, setLatestNotification] = useState<{
+    id: string;
+    offerId: string;
+    type: 'response' | 'view' | 'share_created';
+    title: string;
+    message: string;
+    metadata: Record<string, unknown>;
+    isRead: boolean;
+    createdAt: string;
+  } | null>(null);
 
   // keresés/szűrés/rendezés
   const [q, setQ] = useState('');
@@ -1237,13 +1249,106 @@ export default function DashboardPage() {
     ? t('dashboard.emptyStates.noOffers')
     : t('dashboard.emptyStates.noResults');
 
+  // Load latest unread notification and set up realtime subscription
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) return;
+
+    // Load latest unread notification
+    const loadLatestNotification = async () => {
+      try {
+        const response = await fetchWithSupabaseAuth('/api/notifications?limit=1&unreadOnly=true');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.notifications && data.notifications.length > 0) {
+            setLatestNotification(data.notifications[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load notifications', error);
+      }
+    };
+
+    loadLatestNotification();
+
+    // Set up realtime subscription for notifications
+    const notificationChannel = sb
+      .channel(`notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'offer_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newNotification = payload.new as typeof latestNotification;
+          if (newNotification && !newNotification.isRead) {
+            setLatestNotification(newNotification);
+          }
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'offer_notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const updated = payload.new as typeof latestNotification;
+          setLatestNotification((current) => {
+            if (current && updated.id === current.id && updated.isRead) {
+              return null;
+            }
+            return current;
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      sb.removeChannel(notificationChannel);
+    };
+  }, [authStatus, user, sb]);
+
+  const handleDismissNotification = (notificationId: string) => {
+    if (latestNotification?.id === notificationId) {
+      setLatestNotification(null);
+    }
+  };
+
+  const handleMarkNotificationAsRead = async (notificationId: string) => {
+    try {
+      await fetchWithSupabaseAuth(`/api/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+      });
+      if (latestNotification?.id === notificationId) {
+        setLatestNotification(null);
+      }
+    } catch (error) {
+      console.error('Failed to mark notification as read', error);
+    }
+  };
+
   return (
-    <>
+    <div className={latestNotification && !latestNotification.isRead ? 'pt-16' : ''}>
+      {latestNotification && !latestNotification.isRead && (
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <NotificationBar
+            notification={latestNotification}
+            onDismiss={handleDismissNotification}
+            onMarkAsRead={handleMarkNotificationAsRead}
+          />
+        </div>
+      )}
       <AppFrame
         title={t('dashboard.title')}
         description={t('dashboard.description')}
         actions={
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <NotificationBell />
             <button
               type="button"
               onClick={() => setShowKeyboardShortcuts(true)}
@@ -1969,6 +2074,6 @@ export default function DashboardPage() {
           },
         ]}
       />
-    </>
+    </div>
   );
 }

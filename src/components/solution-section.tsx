@@ -62,7 +62,7 @@ export function SolutionSection() {
           <div
             className="absolute top-0 z-20 hidden lg:block"
             style={{
-              left: '62.5%',
+              left: 'calc(35% + 21.67% + 21.67% / 2)',
               transform: 'translateX(-50%)',
             }}
           >

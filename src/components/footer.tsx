@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Linkedin, Twitter, Facebook, Instagram, MapPin, Phone, Send } from 'lucide-react';
+import { Mail, Linkedin, Facebook, Instagram, MapPin, Phone, Send } from 'lucide-react';
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { trackEmailCapture } from '@/lib/analytics';
@@ -102,15 +102,6 @@ export function Footer() {
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="w-5 h-5" />
-                </a>
-                <a
-                  href="https://twitter.com/vyndi"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-11 h-11 bg-navy-800 hover:bg-turquoise-600 rounded-lg flex items-center justify-center transition-colors min-h-[44px] min-w-[44px]"
-                  aria-label="Twitter"
-                >
-                  <Twitter className="w-5 h-5" />
                 </a>
                 <a
                   href="https://facebook.com/vyndi"

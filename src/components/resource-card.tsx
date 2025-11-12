@@ -9,7 +9,6 @@ import {
   PlayCircle,
   Layout,
   Clock,
-  Eye,
   Play,
   Download,
 } from 'lucide-react';
@@ -104,10 +103,6 @@ export function ResourceCard({ resource }: ResourceCardProps) {
                     <span>{resource.videoDuration} perc</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  <span>{resource.views.toLocaleString()}</span>
-                </div>
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${
                     resource.difficulty === 'Kezdő'
@@ -170,10 +165,6 @@ export function ResourceCard({ resource }: ResourceCardProps) {
                     <span>{resource.readingTime} perc</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  <span>{resource.views.toLocaleString()}</span>
-                </div>
                 <span
                   className={`px-2 py-1 rounded text-xs font-medium ${
                     resource.difficulty === 'Kezdő'

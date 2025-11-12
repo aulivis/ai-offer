@@ -15,11 +15,9 @@ import {
   Star,
   Download,
   Eye,
-  Users,
   Flame,
   Bell,
   SlidersHorizontal,
-  Play,
 } from 'lucide-react';
 import { t } from '@/copy';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
@@ -227,31 +225,6 @@ export default function ResourcesPage() {
                   className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur text-white placeholder:text-white/50 focus:outline-none focus:ring-4 focus:ring-turquoise-100 focus:border-turquoise-500 transition-all text-base min-h-[44px]"
                   aria-label="Keresés erőforrások között"
                 />
-              </div>
-
-              {/* Enhanced Stats Display */}
-              <div className="grid grid-cols-3 gap-6 max-w-2xl">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-turquoise-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Users className="w-8 h-8 text-turquoise-400" />
-                  </div>
-                  <div className="text-4xl font-bold text-white mb-1">50+</div>
-                  <div className="text-white/70">Oktatók</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-turquoise-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <FileText className="w-8 h-8 text-turquoise-400" />
-                  </div>
-                  <div className="text-4xl font-bold text-white mb-1">100+</div>
-                  <div className="text-white/70">Cikk</div>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-turquoise-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Play className="w-8 h-8 text-turquoise-400" />
-                  </div>
-                  <div className="text-4xl font-bold text-white mb-1">25+</div>
-                  <div className="text-white/70">Videó</div>
-                </div>
               </div>
             </div>
 

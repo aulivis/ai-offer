@@ -16,10 +16,12 @@ import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
+import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import { useMemo, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { ShareModal } from './ShareModal';
 
 export interface OfferListItemProps {
   offer: Offer;
@@ -52,6 +54,7 @@ export function OfferListItem({
   const initials = useMemo(() => getInitials(companyName), [companyName]);
   const [decisionDate, setDecisionDate] = useState<string>(() => isoDateInput(offer.decided_at));
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     setDecisionDate(isoDateInput(offer.decided_at));
@@ -59,6 +62,7 @@ export function OfferListItem({
 
   const downloadLabel = t('dashboard.offerCard.savePdf');
   const openLabel = t('dashboard.offerCard.openPdf');
+  const shareLabel = 'Megosztás';
   const deleteLabel = isDeleting
     ? t('dashboard.actions.deleting')
     : t('dashboard.actions.deleteOffer');
@@ -190,6 +194,17 @@ export function OfferListItem({
           ) : null}
           <button
             type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            disabled={isBusy}
+            className={`${actionButtonClass} hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+            aria-label={shareLabel}
+            title={shareLabel}
+          >
+            <LinkIcon aria-hidden="true" className="h-4 w-4" />
+            <span className="sr-only">{shareLabel}</span>
+          </button>
+          <button
+            type="button"
             onClick={() => onDelete(offer)}
             disabled={isBusy}
             className={`${actionButtonClass} hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 ${isBusy ? actionButtonDisabledClass : ''}`}
@@ -205,6 +220,13 @@ export function OfferListItem({
           </button>
         </div>
       </div>
+
+      <ShareModal
+        offerId={offer.id}
+        offerTitle={offer.title || 'Névtelen ajánlat'}
+        open={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
 
       {isExpanded && (
         <div className="border-t border-border/60 px-3 py-3">
