@@ -89,3 +89,6 @@
       });
   }
 }
+
+// Make this file a valid ES module
+export {};
