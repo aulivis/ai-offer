@@ -1,7 +1,6 @@
 'use client';
 
 import { Component, type ReactNode } from 'react';
-import * as Sentry from '@sentry/nextjs';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { t } from '@/copy';
@@ -44,23 +43,29 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
+  async componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
 
     // Report to Sentry (if Sentry is configured)
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-      Sentry.captureException(error, {
-        contexts: {
-          react: {
-            componentStack: errorInfo.componentStack,
+      try {
+        const Sentry = await import('@sentry/nextjs');
+        Sentry.captureException(error, {
+          contexts: {
+            react: {
+              componentStack: errorInfo.componentStack,
+            },
           },
-        },
-        tags: {
-          errorBoundary: true,
-          retryCount: this.state.retryCount,
-        },
-      });
+          tags: {
+            errorBoundary: true,
+            retryCount: this.state.retryCount,
+          },
+        });
+      } catch (sentryError) {
+        // Sentry not available, skip reporting
+        console.warn('Sentry not available:', sentryError);
+      }
     }
 
     this.props.onError?.(error, errorInfo);
