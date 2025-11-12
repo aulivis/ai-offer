@@ -17,7 +17,7 @@ export function OfferWizardOnboarding() {
     () => [
       {
         id: 'wizard-welcome',
-        title: "Let&apos;s Create Your First Offer! 🎉",
+        title: 'Let&apos;s Create Your First Offer! 🎉',
         content: (
           <div>
             <p className="mb-2">
@@ -57,8 +57,8 @@ export function OfferWizardOnboarding() {
         content: (
           <div>
             <p>
-              Describe what you&apos;ll deliver. Be specific about the scope, deliverables, and timeline.
-              The more detail, the better!
+              Describe what you&apos;ll deliver. Be specific about the scope, deliverables, and
+              timeline. The more detail, the better!
             </p>
           </div>
         ),
@@ -85,8 +85,8 @@ export function OfferWizardOnboarding() {
         content: (
           <div>
             <p>
-              Review your offer here. Once you&apos;re happy, click &quot;Generate PDF&quot; to create your
-              professional offer document.
+              Review your offer here. Once you&apos;re happy, click &quot;Generate PDF&quot; to
+              create your professional offer document.
             </p>
           </div>
         ),

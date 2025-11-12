@@ -21,8 +21,8 @@ export function DashboardOnboarding() {
         content: (
           <div>
             <p className="mb-2">
-              This is your dashboard where you can manage all your offers. Let&apos;s take a quick tour
-              to get you started.
+              This is your dashboard where you can manage all your offers. Let&apos;s take a quick
+              tour to get you started.
             </p>
             <p>We&apos;ll show you the key features in just a few steps.</p>
           </div>
@@ -71,8 +71,8 @@ export function DashboardOnboarding() {
         content: (
           <div>
             <p>
-              These metrics show your offer statistics - how many you&apos;ve created, sent, and their
-              status.
+              These metrics show your offer statistics - how many you&apos;ve created, sent, and
+              their status.
             </p>
           </div>
         ),
