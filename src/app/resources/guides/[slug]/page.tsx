@@ -21,7 +21,6 @@ import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
 import { ResourceCard } from '@/components/resource-card';
 import { ResourceStructuredData } from '@/components/resource-structured-data';
 import { GuideTOC } from '@/components/guides/GuideTOC';
-import { ReadingProgress } from '@/components/guides/ReadingProgress';
 import { ShareDropdown } from '@/components/guides/ShareDropdown';
 import { GuideFeedback } from '@/components/guides/GuideFeedback';
 import { TimeRemaining } from '@/components/guides/TimeRemaining';
@@ -107,9 +106,6 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   return (
     <div className="min-h-screen bg-white">
       <ResourceStructuredData resource={resource} />
-
-      {/* Reading Progress Bar */}
-      <ReadingProgress />
 
       {/* Estimated Time Remaining */}
       {resource.readingTime && <TimeRemaining totalMinutes={resource.readingTime} />}
@@ -198,7 +194,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Desktop: Sticky TOC Sidebar */}
             <div className="hidden lg:block lg:col-span-1">
-              <div className="sticky top-24">
+              <div className="sticky top-24 transition-transform duration-200">
                 <GuideTOC items={tocItems} />
               </div>
             </div>

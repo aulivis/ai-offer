@@ -345,7 +345,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                       {/* Timeline dot and connector */}
                       <div className="relative flex-shrink-0 z-10">
                         {/* Timeline dot */}
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-6">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-1/2 -translate-y-1/2 top-0">
                           <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white"></div>
                         </div>
                         {/* Week badge - mobile only, positioned above */}
@@ -358,19 +358,19 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                       {/* Content card */}
                       <div className="flex-1 pt-1">
-                        <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-teal-200 group">
+                        <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-teal-200 group max-w-2xl mx-auto">
                           {/* Week and period header */}
-                          <div className="flex items-center gap-3 mb-3">
+                          <div className="flex items-center justify-center gap-3 mb-3">
                             <span className="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-200">
                               {milestone.week}
                             </span>
                             <span className="text-xs text-gray-500">{milestone.period}</span>
                           </div>
 
-                          <h3 className="font-bold text-lg md:text-xl mb-3 text-navy-900 group-hover:text-teal-600 transition-colors">
+                          <h3 className="font-bold text-lg md:text-xl mb-3 text-navy-900 group-hover:text-teal-600 transition-colors text-center">
                             {milestone.title}
                           </h3>
-                          <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4">
+                          <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4 text-center">
                             {milestone.description}
                           </p>
                           {milestone.metrics && (
@@ -392,13 +392,11 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
       {/* Enhanced Testimonial Section */}
       <section className="py-16 bg-gradient-to-br from-teal-500 to-blue-600 text-white relative overflow-hidden">
-        {/* Decorative quote mark */}
-        <div className="absolute top-4 left-4 md:top-8 md:left-8 text-white/20 text-7xl md:text-9xl font-serif">
-          &ldquo;
-        </div>
-
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
+            {/* Decorative quote mark - closer to text */}
+            <div className="text-white/20 text-7xl md:text-9xl font-serif mb-4 -ml-4">&ldquo;</div>
+
             {/* Quote text - break into paragraphs */}
             <blockquote className="text-xl md:text-2xl text-white font-medium leading-relaxed mb-8 max-w-4xl">
               {caseStudy.testimonial.fullQuote
@@ -430,8 +428,8 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
               {/* Verified badge */}
               <div className="flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                <CheckCircle className="w-4 h-4" />
-                Ellenőrzött ügyfél
+                <CheckCircle className="w-4 h-4 text-green-300" />
+                Ellenőrzött
               </div>
             </div>
           </div>

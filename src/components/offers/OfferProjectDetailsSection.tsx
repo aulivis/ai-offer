@@ -105,7 +105,6 @@ export function OfferProjectDetailsSection({
 
       <div className="space-y-8">
         <Input
-          data-onboarding="wizard-title-input"
           label={
             <span className="flex items-center gap-2">
               {t('offers.wizard.forms.details.titleLabel')}
@@ -187,7 +186,6 @@ export function OfferProjectDetailsSection({
             return (
               <Textarea
                 key={field}
-                data-onboarding={field === 'overview' ? 'wizard-description-input' : undefined}
                 value={projectDetails[field]}
                 onChange={(event) => onProjectDetailsChange(field, event.target.value)}
                 onBlur={fieldValidation?.onBlur}

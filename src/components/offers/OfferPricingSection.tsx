@@ -10,10 +10,7 @@ type OfferPricingSectionProps = {
 
 export function OfferPricingSection({ rows, onChange, error }: OfferPricingSectionProps) {
   return (
-    <section
-      data-onboarding="wizard-pricing-section"
-      className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-6"
-    >
+    <section className="grid w-full max-w-[var(--column-width)] grid-cols-1 gap-6">
       <Card
         header={
           <CardHeader className="space-y-1">

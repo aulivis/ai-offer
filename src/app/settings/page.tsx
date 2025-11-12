@@ -43,8 +43,6 @@ import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
-import { SettingsOnboarding } from '@/components/onboarding/examples/SettingsOnboarding';
-import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 type SupabaseErrorLike = {
   message?: string | null;
@@ -71,7 +69,6 @@ export default function SettingsPage() {
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { completeStep } = useOnboarding();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -560,9 +557,6 @@ export default function SettingsPage() {
           offer_template: brandingData?.offer_template ?? templateId,
         }));
 
-        // Track onboarding step completion
-        await completeStep('settings-branding-configured');
-
         showToast({
           title: t('toasts.settings.saveSuccess'),
           description: t('toasts.settings.saveSuccess'),
@@ -657,9 +651,6 @@ export default function SettingsPage() {
         enable_testimonials: profile.enable_testimonials ?? false,
         default_activity_id: profile.default_activity_id ?? null,
       }));
-
-      // Track onboarding step completion
-      await completeStep('settings-company-configured');
 
       showToast({
         title: t('toasts.settings.saveSuccess'),
@@ -1001,7 +992,6 @@ export default function SettingsPage() {
         ) : null
       }
     >
-      <SettingsOnboarding plan={plan} activeSection={activeSection} />
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Enhanced Sidebar Navigation */}
         <aside className="hidden lg:block lg:w-72 lg:flex-shrink-0">
@@ -1025,7 +1015,7 @@ export default function SettingsPage() {
             onLinkGoogle={startGoogleLink}
           />
 
-          <section id="company" data-onboarding="settings-company-section" className="scroll-mt-24">
+          <section id="company" className="scroll-mt-24">
             <SettingsCompanySection
               profile={profile}
               errors={errors.general}
@@ -1039,11 +1029,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          <section
-            id="branding"
-            data-onboarding="settings-branding-section"
-            className="scroll-mt-24"
-          >
+          <section id="branding" className="scroll-mt-24">
             <SettingsBrandingSection
               profile={profile}
               plan={plan}
@@ -1067,11 +1053,7 @@ export default function SettingsPage() {
             onChange={handleLogoChange}
           />
 
-          <section
-            id="templates"
-            data-onboarding="settings-templates-section"
-            className="scroll-mt-24"
-          >
+          <section id="templates" className="scroll-mt-24">
             <SettingsTemplatesSection
               selectedTemplateId={selectedTemplateId}
               plan={plan}

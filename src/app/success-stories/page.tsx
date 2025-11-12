@@ -140,7 +140,7 @@ export default function SuccessStoriesPage() {
             </h2>
             <Link
               href="/login?redirect=/new"
-              className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+              className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] inline-flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
             >
               <span className="relative z-10 text-base md:text-lg text-white">
                 Próbáld ki most ingyen

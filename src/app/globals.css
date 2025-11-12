@@ -348,6 +348,19 @@ p {
   .animate-float-slow {
     animation: float 4s ease-in-out 1s infinite;
   }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
+  }
 }
 
 /* View Transitions API Support */

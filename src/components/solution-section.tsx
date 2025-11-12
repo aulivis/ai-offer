@@ -11,7 +11,7 @@ export function SolutionSection() {
       iconColor: 'text-blue-600',
       before: { value: '2-4 óra', subtitle: 'lassú, manuális folyamat' },
       after: { value: '5-10 perc', subtitle: 'automatizált' },
-      improvement: '~70% időmegtakarítás',
+      improvement: '~70% kevesebb idő',
     },
     {
       metric: 'Hibák aránya',
@@ -29,7 +29,7 @@ export function SolutionSection() {
       iconColor: 'text-purple-600',
       before: { value: 'Kézi formázás', subtitle: 'eltérő megjelenés' },
       after: { value: 'Automatikus branding', subtitle: 'egységes sablonok' },
-      improvement: '~100% konzisztencia',
+      improvement: '~100% márkahű',
     },
   ];
 
@@ -51,7 +51,7 @@ export function SolutionSection() {
           </h2>
 
           <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed text-pretty">
-            Spórolj órákat minden projekten, és érj el akár 70 %-os időmegtakarítást teljes
+            Spórolj órákat minden projekten, és érj el akár 70%-os időmegtakarítást teljes
             automatizálással.
           </p>
         </div>

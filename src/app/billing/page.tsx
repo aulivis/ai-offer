@@ -1059,7 +1059,7 @@ function PublicBillingLanding() {
   return (
     <main id="main" className="flex flex-col pb-24">
       {/* Enhanced Hero Section with Urgency & Value Proposition */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-teal-900 text-white py-20 lg:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-teal-900 text-white min-h-screen flex flex-col">
         {/* Decorative background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-96 h-96 bg-teal-400 rounded-full blur-3xl"></div>
@@ -1875,93 +1875,6 @@ function PublicBillingLanding() {
                   </p>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Enterprise Section */}
-      <section className="py-20 bg-gradient-to-br from-navy-900 to-navy-800 text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
-                  <Building2 className="w-4 h-4" />
-                  {t('landing.enterprise.badge')}
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-balance">
-                  {t('landing.enterprise.title')}
-                </h2>
-                <p className="text-xl text-gray-300 mb-8 leading-relaxed text-pretty">
-                  {t('landing.enterprise.description')}
-                </p>
-                <ul className="space-y-4 mb-10">
-                  {[
-                    t('landing.enterprise.features.0' as CopyKey),
-                    t('landing.enterprise.features.1' as CopyKey),
-                    t('landing.enterprise.features.2' as CopyKey),
-                    t('landing.enterprise.features.3' as CopyKey),
-                    t('landing.enterprise.features.4' as CopyKey),
-                  ].map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Check
-                        className="mt-0.5 h-6 w-6 flex-shrink-0 text-turquoise-400"
-                        strokeWidth={3}
-                      />
-                      <span className="text-lg text-gray-200 text-pretty">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex flex-wrap gap-4">
-                  <a
-                    href="mailto:info@vyndi.com?subject=Enterprise megoldás érdeklődés"
-                    className="inline-flex items-center justify-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
-                  >
-                    {t('landing.enterprise.ctaPrimary')}
-                    <ArrowRight className="w-5 h-5" />
-                  </a>
-                  <Link
-                    href="/login?redirect=/billing"
-                    className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:bg-white/10 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all min-h-[44px]"
-                  >
-                    {t('landing.enterprise.ctaSecondary')}
-                  </Link>
-                </div>
-              </div>
-              <div className="relative hidden md:block">
-                <div className="bg-gradient-to-br from-turquoise-500/20 to-blue-500/20 rounded-3xl p-8 border border-turquoise-500/30 backdrop-blur">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-turquoise-500/30 rounded-2xl flex items-center justify-center">
-                        <Users className="w-8 h-8 text-turquoise-300" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
-                        <div className="h-4 w-1/2 bg-white/10 rounded"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-blue-500/30 rounded-2xl flex items-center justify-center">
-                        <Shield className="w-8 h-8 text-blue-300" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
-                        <div className="h-4 w-1/2 bg-white/10 rounded"></div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-purple-500/30 rounded-2xl flex items-center justify-center">
-                        <Sparkles className="w-8 h-8 text-purple-300" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-5 w-3/4 bg-white/20 rounded mb-2"></div>
-                        <div className="h-4 w-1/2 bg-white/10 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

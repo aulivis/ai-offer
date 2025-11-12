@@ -26,8 +26,6 @@ import type { OfferPreviewTab } from '@/types/preview';
 import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
 import type { WizardStep } from '@/types/wizard';
-import { OfferWizardOnboarding } from '@/components/onboarding/examples/OfferWizardOnboarding';
-import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 const PREVIEW_DEBOUNCE_MS = 600;
 
@@ -51,7 +49,6 @@ export default function NewOfferPage() {
   } = useOfferWizard();
   const { showToast } = useToast();
   const router = useRouter();
-  const { completeStep } = useOnboarding();
 
   // Draft persistence
   const wizardData = useMemo(
@@ -398,8 +395,6 @@ export default function NewOfferPage() {
         throw new ApiError(message);
       }
 
-      await completeStep('first-offer-created');
-
       showToast({
         title: t('toasts.offers.saveSuccess.title'),
         description: t('toasts.offers.saveSuccess.description'),
@@ -435,7 +430,6 @@ export default function NewOfferPage() {
     showToast,
     title,
     clearDraft,
-    completeStep,
   ]);
 
   useWizardKeyboardShortcuts({
@@ -478,7 +472,6 @@ export default function NewOfferPage() {
 
   return (
     <AppFrame title={t('offers.wizard.pageTitle')} description={t('offers.wizard.pageDescription')}>
-      <OfferWizardOnboarding />
       <div
         className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-start md:gap-10 lg:gap-12"
         style={columnWidthStyle}

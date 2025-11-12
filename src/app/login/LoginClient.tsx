@@ -219,6 +219,22 @@ export default function LoginClient() {
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left Column - Login Form */}
           <div className="w-full">
+            {/* GDPR Section - Moved to top */}
+            <div className="flex flex-wrap items-center justify-center gap-6 mb-6 pb-6 border-b border-gray-200">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>GDPR megfelelő</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>ISO 27001 minősített</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>SOC 2 Type II</span>
+              </div>
+            </div>
+
             {/* Form card with prominent styling */}
             <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-100 p-6 md:p-8">
               {/* Adaptive hero section */}
@@ -302,7 +318,7 @@ export default function LoginClient() {
                             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                           />
                         </svg>
-                        <span className="font-semibold">Folytatás Google-lal</span>
+                        <span className="font-semibold">Google Bejelentkezés</span>
                       </div>
                       <div className="ml-auto bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold relative z-10">
                         5 mp
@@ -495,22 +511,6 @@ export default function LoginClient() {
                     </div>
                     <div className="font-bold text-gray-900 mb-1">24/7 Támogatás</div>
                     <div className="text-sm text-gray-600">Mindig itt vagyunk neked</div>
-                  </div>
-                </div>
-
-                {/* Additional security badges */}
-                <div className="flex flex-wrap items-center justify-center gap-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>GDPR megfelelő</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>ISO 27001 minősített</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span>SOC 2 Type II</span>
                   </div>
                 </div>
 

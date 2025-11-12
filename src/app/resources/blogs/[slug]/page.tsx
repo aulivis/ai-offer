@@ -23,7 +23,6 @@ import { notFound } from 'next/navigation';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
 import { ResourceCard } from '@/components/resource-card';
 import { ResourceStructuredData } from '@/components/resource-structured-data';
-import { ReadingProgress } from '@/components/guides/ReadingProgress';
 import { ShareDropdown } from '@/components/guides/ShareDropdown';
 import { BlogTOC } from '@/components/blogs/BlogTOC';
 import { BackToTop } from '@/components/blogs/BackToTop';
@@ -75,9 +74,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <div className="min-h-screen bg-white">
       <ResourceStructuredData resource={resource} />
-
-      {/* Reading Progress Bar */}
-      <ReadingProgress />
 
       {/* Back to Top Button */}
       <BackToTop />
