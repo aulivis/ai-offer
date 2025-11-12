@@ -1302,7 +1302,7 @@ export default function DashboardPage() {
         (payload) => {
           const updated = payload.new as typeof latestNotification;
           setLatestNotification((current) => {
-            if (current && updated.id === current.id && updated.isRead) {
+            if (current && updated && updated.id === current.id && updated.isRead) {
               return null;
             }
             return current;
