@@ -214,13 +214,13 @@ export default function LoginClient() {
   const fromSource = searchParams?.get('from') || 'default';
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-4 pt-24 md:pt-32">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-8 px-4 pt-12 md:pt-16">
       <div className="w-full max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left Column - Login Form */}
           <div className="w-full">
             {/* GDPR Section - Moved to top */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-6 pb-6 border-b border-gray-200">
+            <div className="flex flex-wrap items-center justify-center gap-6 mb-6">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <CheckCircle className="w-5 h-5 text-green-500" />
                 <span>GDPR megfelelő</span>

@@ -68,31 +68,6 @@ export default function AIGuidePage() {
         </div>
       </header>
 
-      {/* Table of Contents */}
-      <Card className="mb-12 border-l-4 border-l-blue-500 bg-blue-50/50">
-        <h2 className="mb-4 text-xl font-bold text-fg">Tartalomjegyzék</h2>
-        <nav className="space-y-2">
-          <a href="#bevezetes" className="block text-fg-muted hover:text-primary transition-colors">
-            1. Mi az AI-alapú szöveg generálás?
-          </a>
-          <a href="#elonyok" className="block text-fg-muted hover:text-primary transition-colors">
-            2. Előnyök és lehetőségek
-          </a>
-          <a href="#hasznalat" className="block text-fg-muted hover:text-primary transition-colors">
-            3. Hogyan használd hatékonyan?
-          </a>
-          <a href="#tippek" className="block text-fg-muted hover:text-primary transition-colors">
-            4. Pro tippek a legjobb eredményekhez
-          </a>
-          <a href="#peldak" className="block text-fg-muted hover:text-primary transition-colors">
-            5. Gyakorlati példák
-          </a>
-          <a href="#gyik" className="block text-fg-muted hover:text-primary transition-colors">
-            6. Gyakran ismételt kérdések
-          </a>
-        </nav>
-      </Card>
-
       {/* Main Content */}
       <article className="prose prose-lg max-w-none">
         {/* Section 1: Bevezetés */}

@@ -17,6 +17,10 @@ import {
   FileText,
   TrendingDown,
   Zap,
+  Settings,
+  Rocket,
+  Target,
+  Sparkles,
 } from 'lucide-react';
 import type { CaseStudy } from '@/types/case-study';
 import { getRelatedCaseStudies } from '@/lib/case-studies';
@@ -325,7 +329,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </section>
 
       {/* Enhanced Visual Timeline */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+      <section
+        className="py-16 bg-gradient-to-b from-gray-50 to-white"
+        aria-label="Eredmények idővonalon"
+      >
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-navy-900 text-center mb-12">
@@ -333,24 +340,56 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
             </h2>
 
             {/* Vertical Timeline */}
-            <div className="relative pl-8 md:pl-0">
-              {/* Vertical line - visible on all screen sizes */}
-              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-300 via-teal-400 to-teal-500 transform md:-translate-x-1/2 rounded-full"></div>
+            <ol className="relative pl-8 md:pl-0 list-none">
+              {/* Vertical line - more prominent with gradient */}
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1.5 bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 transform md:-translate-x-1/2 rounded-full shadow-sm"></div>
 
               {/* Timeline items */}
               <div className="space-y-12">
                 {caseStudy.resultTimeline.map((milestone, idx) => {
+                  // Determine icon based on milestone type
+                  const getMilestoneIcon = () => {
+                    const title = milestone.title.toLowerCase();
+                    if (
+                      title.includes('onboarding') ||
+                      title.includes('beállítás') ||
+                      title.includes('létrehozás')
+                    ) {
+                      return Settings;
+                    }
+                    if (
+                      title.includes('átállás') ||
+                      title.includes('tanulás') ||
+                      title.includes('fejlesztés')
+                    ) {
+                      return Rocket;
+                    }
+                    if (
+                      title.includes('maximális') ||
+                      title.includes('teljes') ||
+                      title.includes('hatékonyság')
+                    ) {
+                      return Target;
+                    }
+                    return Sparkles;
+                  };
+
+                  const MilestoneIcon = getMilestoneIcon();
+
                   return (
-                    <div key={idx} className="relative flex items-start gap-6 md:gap-8">
+                    <li key={idx} className="relative flex items-start gap-6 md:gap-8 group">
                       {/* Timeline dot and connector */}
                       <div className="relative flex-shrink-0 z-10">
-                        {/* Timeline dot */}
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-1/2 -translate-y-1/2 top-0">
-                          <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white"></div>
+                        {/* Timeline dot with checkmark for completed stages */}
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-1/2 -translate-y-1/2 top-0 group-hover:scale-110 transition-transform duration-300">
+                          <CheckCircle
+                            className="w-6 h-6 md:w-7 md:h-7 text-white"
+                            strokeWidth={2.5}
+                          />
                         </div>
                         {/* Week badge - mobile only, positioned above */}
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 md:hidden">
-                          <span className="text-xs font-bold text-teal-600 bg-white px-2 py-1 rounded-full shadow-sm border border-teal-200">
+                          <span className="text-xs font-semibold text-teal-700 bg-white px-2 py-1 rounded-full shadow-sm border border-teal-300">
                             {milestone.week}
                           </span>
                         </div>
@@ -358,34 +397,53 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                       {/* Content card */}
                       <div className="flex-1 pt-1">
-                        <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-teal-200 group max-w-2xl mx-auto">
-                          {/* Week and period header */}
-                          <div className="flex items-center justify-center gap-3 mb-3">
-                            <span className="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-200">
+                        <article className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-teal-300 group max-w-2xl mx-auto hover:-translate-y-1">
+                          {/* Week and period header - muted styling */}
+                          <div className="flex items-center justify-center gap-3 mb-4">
+                            <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-200/60">
                               {milestone.week}
                             </span>
-                            <span className="text-xs text-gray-500">{milestone.period}</span>
+                            <span className="text-xs text-gray-500 font-medium">
+                              {milestone.period}
+                            </span>
                           </div>
 
-                          <h3 className="font-bold text-lg md:text-xl mb-3 text-navy-900 group-hover:text-teal-600 transition-colors text-center">
-                            {milestone.title}
-                          </h3>
-                          <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4 text-center">
+                          {/* Title with icon */}
+                          <div className="flex items-center justify-center gap-2 mb-3">
+                            <MilestoneIcon className="w-5 h-5 text-teal-600 flex-shrink-0" />
+                            <h3 className="font-bold text-xl md:text-2xl text-navy-900 group-hover:text-teal-600 transition-colors text-center">
+                              {milestone.title}
+                            </h3>
+                          </div>
+
+                          {/* Description */}
+                          <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-6 text-center">
                             {milestone.description}
                           </p>
+
+                          {/* Enhanced Outcome Metrics */}
                           {milestone.metrics && (
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 text-green-700 rounded-lg font-semibold text-sm">
-                              <TrendingDown className="w-4 h-4" />
-                              <span>{milestone.metrics}</span>
+                            <div className="flex justify-center">
+                              <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 to-teal-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-green-400/30 min-w-[200px]">
+                                <div className="flex items-center gap-2">
+                                  <TrendingDown className="w-5 h-5" strokeWidth={2.5} />
+                                  <span className="text-xs uppercase tracking-wide opacity-90">
+                                    Eredmény
+                                  </span>
+                                </div>
+                                <span className="text-base md:text-lg text-center leading-tight">
+                                  {milestone.metrics}
+                                </span>
+                              </div>
                             </div>
                           )}
-                        </div>
+                        </article>
                       </div>
-                    </div>
+                    </li>
                   );
                 })}
               </div>
-            </div>
+            </ol>
           </div>
         </div>
       </section>

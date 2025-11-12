@@ -67,40 +67,6 @@ export default function GuidePage() {
         </div>
       </header>
 
-      {/* Table of Contents */}
-      <Card className="mb-12 border-l-4 border-l-blue-500 bg-blue-50/50">
-        <h2 className="mb-4 text-xl font-bold text-fg">Tartalomjegyzék</h2>
-        <nav className="space-y-2">
-          <a href="#bevezetes" className="block text-fg-muted hover:text-primary transition-colors">
-            1. Bevezetés
-          </a>
-          <a href="#struktura" className="block text-fg-muted hover:text-primary transition-colors">
-            2. Az ajánlat struktúrája
-          </a>
-          <a
-            href="#szovegiras"
-            className="block text-fg-muted hover:text-primary transition-colors"
-          >
-            3. Szövegírás és kommunikáció
-          </a>
-          <a href="#arak" className="block text-fg-muted hover:text-primary transition-colors">
-            4. Árazás és csomagolás
-          </a>
-          <a href="#vizualis" className="block text-fg-muted hover:text-primary transition-colors">
-            5. Vizuális prezentáció
-          </a>
-          <a
-            href="#kovetkezmenyek"
-            className="block text-fg-muted hover:text-primary transition-colors"
-          >
-            6. Következő lépések és CTA
-          </a>
-          <a href="#osszegzes" className="block text-fg-muted hover:text-primary transition-colors">
-            7. Összegzés
-          </a>
-        </nav>
-      </Card>
-
       {/* Main Content */}
       <article className="prose prose-lg max-w-none">
         {/* Section 1: Bevezetés */}
@@ -467,12 +433,6 @@ export default function GuidePage() {
                   d="M13 7l5 5m0 0l-5 5m5-5H6"
                 />
               </svg>
-            </Link>
-            <Link
-              href="/resources/templates"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-primary/40 bg-white px-8 py-4 text-base font-semibold text-primary transition-all hover:bg-primary/5"
-            >
-              Sablonok megtekintése
             </Link>
           </div>
         </div>

@@ -21,7 +21,6 @@ import {
   TrendingUp,
   Crown,
   Clock,
-  Zap,
   CheckCircle,
 } from 'lucide-react';
 
@@ -1066,8 +1065,8 @@ function PublicBillingLanding() {
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-400 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
+        <div className="container mx-auto px-4 relative z-10 flex-1 flex items-center">
+          <div className="max-w-5xl mx-auto text-center w-full">
             {/* Limited time badge */}
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white px-5 py-2 rounded-full mb-6 animate-pulse">
               <Sparkles className="w-4 h-4" />
@@ -1202,7 +1201,59 @@ function PublicBillingLanding() {
                 </div>
               </div>
 
-              {/* Standard Plan - RECOMMENDED */}
+              {/* Standard Plan */}
+              <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Vyndi Standard</h3>
+                  <p className="text-gray-600 text-sm mb-6">Kisvállalkozásoknak</p>
+
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-bold text-gray-900">
+                        {standardMonthly.toLocaleString('hu-HU')}
+                      </span>
+                      <span className="text-gray-600 text-lg">Ft/hó</span>
+                    </div>
+                    <p className="text-gray-600 text-sm mt-2">Havi számlázás</p>
+                  </div>
+
+                  <Link
+                    href="/login?redirect=/billing"
+                    className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-center min-h-[44px] flex items-center justify-center"
+                  >
+                    Indítsd a 14 napos próbát
+                  </Link>
+                </div>
+
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">3 felhasználó</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Korlátlan ajánlat</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Premium sablonok</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">AI segédlet</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Egyedi branding</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Email támogatás</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pro Plan - RECOMMENDED */}
               <div className="relative bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-8 shadow-2xl transform lg:scale-110 border-4 border-teal-400 h-full flex flex-col">
                 {/* Most Popular Badge */}
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -1213,13 +1264,13 @@ function PublicBillingLanding() {
                 </div>
 
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-2">Vyndi Standard</h3>
-                  <p className="text-teal-100 text-sm mb-6">Kisvállalkozásoknak</p>
+                  <h3 className="text-2xl font-bold text-white mb-2">Vyndi Pro</h3>
+                  <p className="text-teal-100 text-sm mb-6">Nagy csapatoknak</p>
 
                   <div className="mb-2">
                     <div className="flex items-baseline gap-2">
                       <span className="text-5xl font-bold text-white">
-                        {standardMonthly.toLocaleString('hu-HU')}
+                        {proMonthly.toLocaleString('hu-HU')}
                       </span>
                       <span className="text-teal-100 text-lg">Ft/hó</span>
                     </div>
@@ -1241,7 +1292,7 @@ function PublicBillingLanding() {
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">3 felhasználó</span>
+                    <span className="text-white text-sm font-medium">Korlátlan felhasználó</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
@@ -1249,19 +1300,19 @@ function PublicBillingLanding() {
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Premium sablonok</span>
+                    <span className="text-white text-sm font-medium">Minden Premium funkció</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">AI segédlet</span>
+                    <span className="text-white text-sm font-medium">Prioritási támogatás</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Egyedi branding</span>
+                    <span className="text-white text-sm font-medium">Dedikált fiókkezelő</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Email támogatás</span>
+                    <span className="text-white text-sm font-medium">API hozzáférés</span>
                   </div>
                 </div>
 
@@ -1270,64 +1321,6 @@ function PublicBillingLanding() {
                   <div className="flex items-center gap-2 text-white text-xs">
                     <Clock className="w-4 h-4" />
                     <span>12 felhasználó nézi most ezt a csomagot</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pro Plan */}
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 border-2 border-gray-700 hover:border-gray-600 transition-all h-full flex flex-col">
-                {/* Enterprise badge */}
-                <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-500/30 text-purple-300 px-3 py-1 rounded-full mb-4">
-                  <Zap className="w-3 h-3" />
-                  <span className="text-xs font-semibold">VÁLLALATI</span>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-2">Vyndi Pro</h3>
-                  <p className="text-gray-400 text-sm mb-6">Nagy csapatoknak</p>
-
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-bold text-white">
-                        {proMonthly.toLocaleString('hu-HU')}
-                      </span>
-                      <span className="text-gray-400 text-lg">Ft/hó</span>
-                    </div>
-                    <p className="text-gray-400 text-sm mt-2">Csapattól függően</p>
-                  </div>
-
-                  <Link
-                    href="/login?redirect=/billing"
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-xl font-semibold hover:from-purple-500 hover:to-purple-600 transition-all text-center min-h-[44px] flex items-center justify-center"
-                  >
-                    Indítsd a 14 napos próbát
-                  </Link>
-                </div>
-
-                <div className="space-y-3 flex-1">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm">Korlátlan felhasználó</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm">Korlátlan ajánlat</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm">Minden Premium funkció</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm">Prioritási támogatás</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm">Dedikált fiókkezelő</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-300 text-sm">API hozzáférés</span>
                   </div>
                 </div>
               </div>
@@ -1832,7 +1825,7 @@ function PublicBillingLanding() {
       </section>
 
       {/* Trust & Security Section */}
-      <section className="py-16 bg-gray-50 border-y border-gray-200">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-4 gap-8 text-center">

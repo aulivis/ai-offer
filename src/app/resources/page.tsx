@@ -40,7 +40,6 @@ function filterResources(
         Útmutatók: 'guide',
         'Blog cikkek': 'blog',
         Videók: 'video',
-        Sablonok: 'template',
       };
 
       // Check if resource type matches any selected filter
@@ -359,7 +358,7 @@ export default function ResourcesPage() {
               <span className="text-sm font-semibold text-gray-700">Szűrés:</span>
 
               {/* Primary category filters - pill style */}
-              {['Összes', 'Útmutatók', 'Blog cikkek', 'Videók', 'Sablonok'].map((type) => {
+              {['Összes', 'Útmutatók', 'Blog cikkek', 'Videók'].map((type) => {
                 const isAllSelected = filters.type.length === 0;
                 const isActive = type === 'Összes' ? isAllSelected : filters.type.includes(type);
                 return (

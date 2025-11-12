@@ -378,12 +378,6 @@ export default function ProTemplatesPage() {
                 />
               </svg>
             </Link>
-            <Link
-              href="/resources/templates"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-amber-500/40 bg-white px-8 py-4 text-base font-semibold text-amber-600 transition-all hover:bg-amber-50"
-            >
-              Ingyenes sablonok
-            </Link>
           </div>
         </div>
       </Card>
