@@ -1987,6 +1987,7 @@ export const hu = {
     unknown: 'Hiba történt. Próbáld újra vagy frissítsd az oldalt.',
     requestFailed: 'Hiba történt a kérés során. Próbáld újra vagy ellenőrizd a kapcsolatot.',
     requestStatus: 'Hiba a kérés során ({status}). Próbáld újra vagy frissítsd az oldalt.',
+    featureRequiresUpgrade: 'Ez a funkció fizetős előfizetést igényel.',
     auth: {
       requestFailed: 'Nem sikerült hitelesíteni a kérést. Próbáld újra vagy jelentkezz be újra.',
       sessionInvalid: 'A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra.',
