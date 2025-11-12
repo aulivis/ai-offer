@@ -78,10 +78,25 @@ export function useRequireAuth(
           error instanceof Error ? error : new Error(t('errors.auth.verificationUnknown'));
         setState({ status: 'unauthenticated', user: null, error: err });
         if (redirectOnUnauthenticated) {
-          const redirectQuery = redirectTarget
-            ? `?redirect=${encodeURIComponent(redirectTarget)}`
-            : '';
-          router.replace(`/login${redirectQuery}`);
+          // Prevent redirect loops: don't redirect to /login if already on /login
+          // Also check if redirectTarget is /login to avoid nested redirects
+          const isOnLoginPage = pathname === '/login';
+          
+          // Check if redirectTarget or the redirect query param points to /login
+          const redirectParam = searchParams?.get('redirect');
+          const decodedRedirect = redirectParam ? decodeURIComponent(redirectParam) : null;
+          const isRedirectingToLogin = 
+            redirectTarget === '/login' || 
+            redirectTarget?.startsWith('/login?') ||
+            decodedRedirect === '/login' ||
+            decodedRedirect?.startsWith('/login?');
+          
+          if (!isOnLoginPage && !isRedirectingToLogin) {
+            const redirectQuery = redirectTarget
+              ? `?redirect=${encodeURIComponent(redirectTarget)}`
+              : '';
+            router.replace(`/login${redirectQuery}`);
+          }
         }
       }
     };
@@ -92,7 +107,7 @@ export function useRequireAuth(
       active = false;
       abortController.abort();
     };
-  }, [redirectOnUnauthenticated, redirectTarget, router]);
+  }, [redirectOnUnauthenticated, redirectTarget, router, pathname, searchParams]);
 
   return state;
 }
