@@ -59,33 +59,6 @@ export function OnboardingTour({
     }
   }, [shouldShow, steps.length, isControlled, controlledOpen]);
 
-  useEffect(() => {
-    if (!isOpen || currentStep >= steps.length) return;
-
-    const step = steps[currentStep];
-    if (!step.target) {
-      setTargetElement(null);
-      setTooltipPosition({ top: window.innerHeight / 2, left: window.innerWidth / 2 });
-      return;
-    }
-
-    const element = document.querySelector(step.target) as HTMLElement;
-    if (!element) {
-      // Element not found, try again after a short delay
-      const timeout = setTimeout(() => {
-        const retryElement = document.querySelector(step.target!) as HTMLElement;
-        if (retryElement) {
-          setTargetElement(retryElement);
-          updateTooltipPosition(retryElement, step.position);
-        }
-      }, 100);
-      return () => clearTimeout(timeout);
-    }
-
-    setTargetElement(element);
-    updateTooltipPosition(element, step.position);
-  }, [isOpen, currentStep, steps, updateTooltipPosition]);
-
   const updateTooltipPosition = useCallback(
     (element: HTMLElement, position: TourStep['position'] = 'bottom') => {
       const rect = element.getBoundingClientRect();
@@ -127,6 +100,33 @@ export function OnboardingTour({
     },
     [],
   );
+
+  useEffect(() => {
+    if (!isOpen || currentStep >= steps.length) return;
+
+    const step = steps[currentStep];
+    if (!step.target) {
+      setTargetElement(null);
+      setTooltipPosition({ top: window.innerHeight / 2, left: window.innerWidth / 2 });
+      return;
+    }
+
+    const element = document.querySelector(step.target) as HTMLElement;
+    if (!element) {
+      // Element not found, try again after a short delay
+      const timeout = setTimeout(() => {
+        const retryElement = document.querySelector(step.target!) as HTMLElement;
+        if (retryElement) {
+          setTargetElement(retryElement);
+          updateTooltipPosition(retryElement, step.position);
+        }
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+
+    setTargetElement(element);
+    updateTooltipPosition(element, step.position);
+  }, [isOpen, currentStep, steps, updateTooltipPosition]);
 
   const handleComplete = useCallback(async () => {
     await completeStep(tourId);
