@@ -34,7 +34,10 @@ export function NotificationBell() {
 
     setLoading(true);
     try {
-      const response = await fetchWithSupabaseAuth('/api/notifications?limit=10&unreadOnly=false', {});
+      const response = await fetchWithSupabaseAuth(
+        '/api/notifications?limit=10&unreadOnly=false',
+        {},
+      );
 
       if (!response.ok) {
         throw new Error('Failed to load notifications');
