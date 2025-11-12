@@ -12,7 +12,7 @@ import {
   BoltIcon,
   Squares2X2Icon,
   ListBulletIcon,
-  FileTextIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
@@ -229,7 +229,7 @@ export default function TemplatesPage() {
 
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <FileTextIcon className="w-6 h-6 text-teal-600" />
+              <DocumentTextIcon className="w-6 h-6 text-teal-600" />
               <span className="bg-gradient-to-r from-teal-600 to-purple-600 text-white text-sm px-4 py-1.5 rounded-full font-semibold">
                 SABLONOK
               </span>
@@ -466,7 +466,7 @@ export default function TemplatesPage() {
                 {/* Template preview image */}
                 <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden">
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                    <FileTextIcon className="w-16 h-16 text-gray-400" />
+                    <DocumentTextIcon className="w-16 h-16 text-gray-400" />
                   </div>
 
                   {/* Hover overlay with actions */}
