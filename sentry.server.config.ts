@@ -1,10 +1,11 @@
 // Only initialize Sentry if DSN is provided
-if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+if (sentryDsn) {
   // Dynamically import Sentry to avoid build errors when not installed
   import('@sentry/nextjs')
     .then((Sentry) => {
       Sentry.init({
-        dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+        dsn: sentryDsn,
         environment: process.env.NODE_ENV,
         enabled: process.env.NODE_ENV === 'production',
 
