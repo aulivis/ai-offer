@@ -1,14 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import {
-  ArrowRight,
-  ChevronRight,
-  Calendar,
-  Clock,
-  Eye,
-  Bookmark,
-  ThumbsUp,
-} from 'lucide-react';
+import { ArrowRight, ChevronRight, Calendar, Clock, Eye, Bookmark, ThumbsUp } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getResourceBySlug, getRelatedResources } from '@/lib/resources';
 import { ResourceCard } from '@/components/resource-card';

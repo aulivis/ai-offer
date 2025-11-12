@@ -10,7 +10,12 @@ interface VideoPlayerProps {
   duration?: number;
 }
 
-export function VideoPlayer({ videoUrl, poster, title: _title, duration: _duration }: VideoPlayerProps) {
+export function VideoPlayer({
+  videoUrl,
+  poster,
+  title: _title,
+  duration: _duration,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
