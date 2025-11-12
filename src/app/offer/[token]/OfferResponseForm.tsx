@@ -122,7 +122,7 @@ export default function OfferResponseForm({ token }: OfferResponseFormProps) {
           type="submit"
           disabled={!decision || submitting}
           className="w-full"
-          variant={decision === 'accepted' ? 'primary' : 'default'}
+          variant={decision === 'accepted' ? 'primary' : 'secondary'}
         >
           {submitting ? 'Küldés...' : 'Válasz küldése'}
         </Button>
