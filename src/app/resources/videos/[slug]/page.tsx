@@ -144,7 +144,7 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
             videoUrl={resource.videoUrl || '/videos/intro-video.mp4'}
             {...(resource.featuredImage && { poster: resource.featuredImage })}
             title={resource.title}
-            duration={resource.videoDuration}
+            {...(resource.videoDuration !== undefined && { duration: resource.videoDuration })}
           />
         </div>
 
