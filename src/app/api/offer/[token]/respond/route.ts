@@ -5,7 +5,6 @@ import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
 import { handleValidationError } from '@/lib/errorHandling';
 import { getRequestIp } from '@/lib/auditLogging';
-import { headers } from 'next/headers';
 
 const respondRequestSchema = z.object({
   decision: z.enum(['accepted', 'rejected']),
@@ -91,9 +90,8 @@ export async function POST(request: Request, context: RouteParams) {
     }
 
     // Get IP and user agent
-    const headersList = await headers();
-    const ipAddress = getRequestIp(headersList);
-    const userAgent = headersList.get('user-agent') || '';
+    const ipAddress = getRequestIp(request);
+    const userAgent = request.headers.get('user-agent') || '';
 
     // Create response
     const { data: response, error: responseError } = await sb

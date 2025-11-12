@@ -31,8 +31,9 @@ export async function logAuditEvent(supabase: SupabaseClient, event: AuditLogEve
   }
 }
 
-export function getRequestIp(request: Request): string | null {
-  const xff = request.headers.get('x-forwarded-for');
+export function getRequestIp(request: Request | Headers): string | null {
+  const headers = request instanceof Request ? request.headers : request;
+  const xff = headers.get('x-forwarded-for');
   if (xff) {
     const first = xff.split(',')[0]?.trim();
     if (first) {
@@ -40,7 +41,7 @@ export function getRequestIp(request: Request): string | null {
     }
   }
 
-  const realIp = request.headers.get('x-real-ip');
+  const realIp = headers.get('x-real-ip');
   if (realIp) {
     return realIp;
   }
