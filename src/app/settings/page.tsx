@@ -43,6 +43,8 @@ import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
+import { SettingsOnboarding } from '@/components/onboarding/examples/SettingsOnboarding';
+import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 type SupabaseErrorLike = {
   message?: string | null;
@@ -69,6 +71,7 @@ export default function SettingsPage() {
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { completeStep } = useOnboarding();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -556,6 +559,10 @@ export default function SettingsPage() {
           brand_color_secondary: brandingData?.brand_color_secondary ?? secondary ?? null,
           offer_template: brandingData?.offer_template ?? templateId,
         }));
+
+        // Track onboarding step completion
+        await completeStep('settings-branding-configured');
+
         showToast({
           title: t('toasts.settings.saveSuccess'),
           description: t('toasts.settings.saveSuccess'),
@@ -650,6 +657,10 @@ export default function SettingsPage() {
         enable_testimonials: profile.enable_testimonials ?? false,
         default_activity_id: profile.default_activity_id ?? null,
       }));
+
+      // Track onboarding step completion
+      await completeStep('settings-company-configured');
+
       showToast({
         title: t('toasts.settings.saveSuccess'),
         description: t('toasts.settings.saveSuccess'),
@@ -990,6 +1001,7 @@ export default function SettingsPage() {
         ) : null
       }
     >
+      <SettingsOnboarding plan={plan} activeSection={activeSection} />
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Enhanced Sidebar Navigation */}
         <aside className="hidden lg:block lg:w-72 lg:flex-shrink-0">
@@ -1013,31 +1025,39 @@ export default function SettingsPage() {
             onLinkGoogle={startGoogleLink}
           />
 
-          <SettingsCompanySection
-            profile={profile}
-            errors={errors.general}
-            newIndustry={newIndustry}
-            onProfileChange={setProfile}
-            onNewIndustryChange={setNewIndustry}
-            onToggleIndustry={toggleIndustry}
-            onAddManualIndustry={handleManualIndustry}
-            onSave={() => saveProfile('all')}
-            saving={saving}
-          />
+          <section id="company" data-onboarding="settings-company-section" className="scroll-mt-24">
+            <SettingsCompanySection
+              profile={profile}
+              errors={errors.general}
+              newIndustry={newIndustry}
+              onProfileChange={setProfile}
+              onNewIndustryChange={setNewIndustry}
+              onToggleIndustry={toggleIndustry}
+              onAddManualIndustry={handleManualIndustry}
+              onSave={() => saveProfile('all')}
+              saving={saving}
+            />
+          </section>
 
-          <SettingsBrandingSection
-            profile={profile}
-            plan={plan}
-            errors={errors.branding}
-            logoUploading={logoUploading}
-            logoUploadProgress={logoUploadProgress}
-            onProfileChange={setProfile}
-            onTriggerLogoUpload={triggerLogoUpload}
-            onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
-            onSave={() => saveProfile('branding')}
-            onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-            saving={saving}
-          />
+          <section
+            id="branding"
+            data-onboarding="settings-branding-section"
+            className="scroll-mt-24"
+          >
+            <SettingsBrandingSection
+              profile={profile}
+              plan={plan}
+              errors={errors.branding}
+              logoUploading={logoUploading}
+              logoUploadProgress={logoUploadProgress}
+              onProfileChange={setProfile}
+              onTriggerLogoUpload={triggerLogoUpload}
+              onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
+              onSave={() => saveProfile('branding')}
+              onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+              saving={saving}
+            />
+          </section>
 
           <input
             ref={logoInputRef}
@@ -1047,11 +1067,17 @@ export default function SettingsPage() {
             onChange={handleLogoChange}
           />
 
-          <SettingsTemplatesSection
-            selectedTemplateId={selectedTemplateId}
-            plan={plan}
-            onTemplateSelect={handleTemplateSelect}
-          />
+          <section
+            id="templates"
+            data-onboarding="settings-templates-section"
+            className="scroll-mt-24"
+          >
+            <SettingsTemplatesSection
+              selectedTemplateId={selectedTemplateId}
+              plan={plan}
+              onTemplateSelect={handleTemplateSelect}
+            />
+          </section>
 
           <SettingsActivitiesSection
             activities={acts}

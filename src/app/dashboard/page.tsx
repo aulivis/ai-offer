@@ -62,6 +62,8 @@ import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIc
 import QuestionMarkCircleIcon from '@heroicons/react/24/outline/QuestionMarkCircleIcon';
 import { NotificationBar } from '@/components/dashboard/NotificationBar';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
+import { DashboardOnboarding } from '@/components/onboarding/examples/DashboardOnboarding';
+import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -1335,8 +1337,18 @@ export default function DashboardPage() {
     }
   };
 
+  const { completeStep } = useOnboarding();
+
+  // Track when first offer is created
+  useEffect(() => {
+    if (totalOffersCount > 0) {
+      completeStep('first-offer-created');
+    }
+  }, [totalOffersCount, completeStep]);
+
   return (
     <div className={latestNotification && !latestNotification.isRead ? 'pt-16' : ''}>
+      <DashboardOnboarding />
       {latestNotification && !latestNotification.isRead && (
         <div className="fixed top-0 left-0 right-0 z-50">
           <NotificationBar
@@ -1372,6 +1384,7 @@ export default function DashboardPage() {
             ) : null}
             <Link
               href="/new"
+              data-onboarding="create-offer-button"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {t('dashboard.actions.newOffer')}
@@ -1414,7 +1427,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Conversion Funnel Group - Mobile optimized: stack vertically on small screens */}
-          <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
+          <div
+            className="relative"
+            data-onboarding="metrics"
+            aria-busy={loading || isQuotaLoading}
+            aria-live="polite"
+          >
             <div
               className={`grid gap-3 sm:gap-4 ${
                 metricsViewMode === 'compact'
@@ -1953,7 +1971,7 @@ export default function DashboardPage() {
 
         {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
         {!loading && filtered.length > 0 && (
-          <>
+          <div data-onboarding="offers-list">
             {viewMode === 'card' ? (
               <OffersCardGrid
                 offers={filtered}
@@ -2035,7 +2053,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
       </AppFrame>
 

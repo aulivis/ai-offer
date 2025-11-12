@@ -140,11 +140,13 @@ export default function SuccessStoriesPage() {
             </h2>
             <Link
               href="/login?redirect=/new"
-              className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl min-h-[44px] relative overflow-hidden"
+              className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
             >
-              <span className="relative z-10">Ingyenes próba indítása</span>
-              <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-              <span className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              <span className="relative z-10 text-base md:text-lg text-white">
+                Próbáld ki most ingyen
+              </span>
+              <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+              <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </Link>
           </div>
         </div>
@@ -248,13 +250,7 @@ export default function SuccessStoriesPage() {
                       {/* Trust badge - Mobile optimized */}
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-3 md:mb-4">
                         <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-green-500 flex-shrink-0" />
-                        <span className="truncate">
-                          Ellenőrzött eredmény -{' '}
-                          {new Date(study.publishedDate).toLocaleDateString('hu-HU', {
-                            year: 'numeric',
-                            month: 'long',
-                          })}
-                        </span>
+                        <span className="truncate">Ellenőrzött eredmény</span>
                       </div>
 
                       {/* Client info - Mobile optimized */}
@@ -281,11 +277,10 @@ export default function SuccessStoriesPage() {
                       {/* CTA - Mobile optimized */}
                       <Link
                         href={`/success-stories/${study.slug}`}
-                        className="group w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 inline-flex items-center justify-center gap-2 min-h-[44px] relative overflow-hidden hover:shadow-lg"
+                        className="group w-full border-2 border-teal-500 text-teal-600 font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-teal-600 hover:text-teal-700 bg-transparent transition-colors flex items-center justify-center gap-2"
                       >
-                        <span className="relative z-10">Teljes történet</span>
-                        <ArrowRight className="w-3 h-3 md:w-4 md:h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-                        <span className="absolute inset-0 bg-gradient-to-r from-teal-600 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                        <span>Teljes történet</span>
+                        <ArrowRight className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
                       </Link>
                     </div>
                   </div>
@@ -302,11 +297,13 @@ export default function SuccessStoriesPage() {
                 <p className="text-gray-600 mb-4">Próbáld ki a Vyndit ingyen</p>
                 <Link
                   href="/login?redirect=/new"
-                  className="group inline-flex items-center gap-2 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl min-h-[44px] relative overflow-hidden"
+                  className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                 >
-                  <span className="relative z-10">Ingyenes próba indítása</span>
-                  <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-                  <span className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  <span className="relative z-10 text-base md:text-lg text-white">
+                    Próbáld ki most ingyen
+                  </span>
+                  <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </Link>
               </div>
             )}
@@ -315,12 +312,12 @@ export default function SuccessStoriesPage() {
       </section>
 
       {/* ROI Calculator Section */}
-      <section className="py-20 bg-white">
+      <section>
         <ROICalculatorLanding />
       </section>
 
       {/* Enhanced Bottom CTA Section */}
-      <section className="bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
+      <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>

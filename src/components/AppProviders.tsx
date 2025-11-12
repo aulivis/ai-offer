@@ -6,6 +6,7 @@ import { SupabaseProvider } from '@/components/SupabaseProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { PlanUpgradeDialogProvider } from '@/components/PlanUpgradeDialogProvider';
 import { BrandingProvider } from '@/components/BrandingProvider';
+import { OnboardingProvider } from '@/components/onboarding/OnboardingProvider';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 
 interface AppProvidersProps {
@@ -19,7 +20,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     <SupabaseProvider client={supabase}>
       <ToastProvider>
         <PlanUpgradeDialogProvider>
-          <BrandingProvider>{children}</BrandingProvider>
+          <OnboardingProvider>
+            <BrandingProvider>{children}</BrandingProvider>
+          </OnboardingProvider>
         </PlanUpgradeDialogProvider>
       </ToastProvider>
     </SupabaseProvider>

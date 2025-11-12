@@ -325,44 +325,58 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       </section>
 
       {/* Enhanced Visual Timeline */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-navy-900 text-center mb-12">
               Eredmények idővonalon
             </h2>
 
-            <div className="relative py-12">
-              {/* Horizontal line connecting columns */}
-              <div className="absolute left-1/4 right-1/4 top-0 bottom-0 w-0.5 bg-teal-200 hidden md:block"></div>
+            {/* Vertical Timeline */}
+            <div className="relative pl-8 md:pl-0">
+              {/* Vertical line - visible on all screen sizes */}
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-teal-300 via-teal-400 to-teal-500 transform md:-translate-x-1/2 rounded-full"></div>
 
-              {/* Timeline items - 2 column layout */}
-              <div className="grid md:grid-cols-2 gap-8">
+              {/* Timeline items */}
+              <div className="space-y-12">
                 {caseStudy.resultTimeline.map((milestone, idx) => {
-                  const isLeft = idx % 2 === 0;
                   return (
-                    <div key={idx} className={`relative ${isLeft ? 'md:pr-8' : 'md:pl-8'}`}>
-                      {/* Timeline dot - at top of card */}
-                      <div
-                        className={`absolute ${isLeft ? 'left-0' : 'right-0'} top-0 w-4 h-4 rounded-full bg-teal-500 ring-4 ring-teal-100 z-10 md:-translate-x-1/2 md:left-1/2`}
-                      ></div>
+                    <div key={idx} className="relative flex items-start gap-6 md:gap-8">
+                      {/* Timeline dot and connector */}
+                      <div className="relative flex-shrink-0 z-10">
+                        {/* Timeline dot */}
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-xl ring-4 ring-white relative z-10 transform -translate-x-3 md:-translate-x-6">
+                          <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-white"></div>
+                        </div>
+                        {/* Week badge - mobile only, positioned above */}
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 md:hidden">
+                          <span className="text-xs font-bold text-teal-600 bg-white px-2 py-1 rounded-full shadow-sm border border-teal-200">
+                            {milestone.week}
+                          </span>
+                        </div>
+                      </div>
 
                       {/* Content card */}
-                      <div className="pt-6">
-                        <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                          <div className="text-sm font-semibold text-teal-600 mb-2">
-                            {milestone.week}
+                      <div className="flex-1 pt-1">
+                        <div className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-teal-200 group">
+                          {/* Week and period header */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-200">
+                              {milestone.week}
+                            </span>
+                            <span className="text-xs text-gray-500">{milestone.period}</span>
                           </div>
-                          <div className="text-xs text-gray-600 mb-2">{milestone.period}</div>
-                          <h3 className="font-bold text-lg mb-2 text-navy-900">
+
+                          <h3 className="font-bold text-lg md:text-xl mb-3 text-navy-900 group-hover:text-teal-600 transition-colors">
                             {milestone.title}
                           </h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">
+                          <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4">
                             {milestone.description}
                           </p>
                           {milestone.metrics && (
-                            <div className="mt-4 inline-block px-4 py-2 bg-green-100 text-green-700 rounded-lg font-semibold text-sm">
-                              {milestone.metrics}
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 text-green-700 rounded-lg font-semibold text-sm">
+                              <TrendingDown className="w-4 h-4" />
+                              <span>{milestone.metrics}</span>
                             </div>
                           )}
                         </div>
@@ -594,10 +608,20 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Link>
             </div>
-            <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-white/90">
-              <span>✓ Nincs bankkártya</span>
-              <span>✓ 30 napos garancia</span>
-              <span>✓ Bármikor lemondható</span>
+            {/* Trust Indicators - 3 features from landing hero */}
+            <div className="flex flex-wrap justify-center gap-6 mt-8 text-white/90">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span>Kezdd el teljesen ingyen</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span>Nem kérünk bankkártyát</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span>Kész ajánlat 5 perc alatt</span>
+              </div>
             </div>
           </div>
         </div>

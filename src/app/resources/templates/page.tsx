@@ -244,31 +244,6 @@ export default function TemplatesPage() {
               és azonnal használható. Az ajánlat készítés egyszerű.
             </p>
 
-            {/* Trust indicators */}
-            <div className="flex items-center justify-center gap-8 mb-8 flex-wrap">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600">{mockTemplates.length}+</div>
-                <div className="text-sm text-gray-600">Sablon</div>
-              </div>
-              <div className="w-px h-12 bg-gray-300 hidden sm:block"></div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600">
-                  {mockTemplates.reduce((sum, t) => sum + t.downloads, 0).toLocaleString()}+
-                </div>
-                <div className="text-sm text-gray-600">Letöltés</div>
-              </div>
-              <div className="w-px h-12 bg-gray-300 hidden sm:block"></div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600">
-                  {(
-                    mockTemplates.reduce((sum, t) => sum + t.rating, 0) / mockTemplates.length
-                  ).toFixed(1)}
-                  ★
-                </div>
-                <div className="text-sm text-gray-600">Értékelés</div>
-              </div>
-            </div>
-
             {/* Quick filter/search */}
             <div className="max-w-2xl mx-auto">
               <div className="bg-white rounded-xl shadow-lg p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -476,12 +451,6 @@ export default function TemplatesPage() {
                       <EyeIcon className="w-4 h-4" />
                       <span>Előnézet</span>
                     </button>
-                    <Link
-                      href="/login?redirect=/new"
-                      className="w-full bg-teal-500 text-white py-2 rounded-lg font-semibold hover:bg-teal-600 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <span>Használat</span>
-                    </Link>
                   </div>
                 </div>
 

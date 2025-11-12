@@ -135,7 +135,10 @@ export function WizardPreviewPanel({
   }, [previewStatus, hasPreviewHtml, previewEnabled]);
 
   return (
-    <div className="flex min-h-0 flex-col gap-6 overflow-hidden md:sticky md:top-20 lg:top-24">
+    <div
+      data-onboarding="wizard-preview-panel"
+      className="flex min-h-0 flex-col gap-6 overflow-hidden md:sticky md:top-20 lg:top-24"
+    >
       <OfferPreviewCard
         isPreviewAvailable={previewEnabled}
         previewMarkup={previewDocumentHtml}

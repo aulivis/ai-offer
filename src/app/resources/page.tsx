@@ -16,7 +16,6 @@ import {
   Download,
   Eye,
   Flame,
-  Bell,
   SlidersHorizontal,
 } from 'lucide-react';
 import { t } from '@/copy';
@@ -25,6 +24,7 @@ import { getResources, getFeaturedResource } from '@/lib/resources';
 import { Resource, ResourceFilters } from '@/types/resource';
 import { ResourceCard } from '@/components/resource-card';
 import { ResourceFiltersComponent } from '@/components/resource-filters';
+import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 
 type SortOption = 'newest' | 'popular' | 'most-helpful';
 
@@ -213,6 +213,26 @@ export default function ResourcesPage() {
                 Hozzáférés útmutatókhoz, videókhoz, cikkekhez és további tartalmakhoz az
                 ajánlatkészítéshez
               </p>
+
+              {/* Primary CTA */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                <Link
+                  href="/login?redirect=/new"
+                  className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                >
+                  <span className="relative z-10 text-base md:text-lg text-white">
+                    Próbáld ki most ingyen
+                  </span>
+                  <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                </Link>
+                <a
+                  href="#main-content"
+                  className="border-2 border-white text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors flex items-center justify-center"
+                >
+                  További információ
+                </a>
+              </div>
 
               {/* Enhanced Search Bar */}
               <div className="relative mb-8 max-w-2xl">
@@ -527,39 +547,35 @@ export default function ResourcesPage() {
       )}
 
       {/* Enhanced Newsletter Section */}
-      <section className="py-16 bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl mx-4 md:mx-auto my-16 max-w-6xl">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center text-white">
-            {/* Icon */}
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6">
-              <Bell className="w-8 h-8 text-white" />
+      <section className="relative py-24 overflow-hidden">
+        {/* Enhanced gradient background with pattern overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-turquoise-500 via-turquoise-600 to-blue-600">
+          {/* Subtle pattern overlay */}
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          ></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            {/* Compelling headline with better messaging */}
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+                Szeretnéd elsőként kipróbálni az újdonságokat?
+              </h2>
+              <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
+                Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók indulásáról.
+                <br />
+                Csatlakozz több mint 200 vállalkozáshoz, akik már hatékonyabban dolgoznak az
+                ajánlatkészítésben.
+              </p>
             </div>
 
-            <h3 className="text-3xl font-bold mb-3">Ne maradj le az új tartalmakról!</h3>
-            <p className="text-white/90 text-lg mb-8">
-              Hetente új útmutatók, cikkek és videók közvetlenül az email fiókodba
-            </p>
-
-            {/* Email form - inline, no checkboxes */}
-            <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto mb-4">
-              <input
-                type="email"
-                placeholder="Add meg az email címed"
-                className="flex-1 px-6 py-4 rounded-xl text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 min-h-[44px]"
-                aria-label="Email cím"
-              />
-              <button className="bg-white text-teal-600 px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all whitespace-nowrap min-h-[44px]">
-                Feliratkozom
-              </button>
-            </div>
-
-            {/* Single line consent */}
-            <p className="text-white/70 text-sm">
-              A feliratkozással elfogadod az{' '}
-              <a href="/adatvedelem" className="underline hover:text-white">
-                Adatvédelmi szabályzatot
-              </a>
-            </p>
+            {/* Newsletter subscription form */}
+            <NewsletterSubscription source="landing_page" />
           </div>
         </div>
       </section>

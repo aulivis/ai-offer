@@ -46,6 +46,22 @@ export default function CookieBar() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    // Listen for consent updates to hide the bar when consent is saved
+    const handleConsentUpdated = () => {
+      const consent = getConsent();
+      if (consent && consent.version === CONSENT_VERSION) {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('consent:updated', handleConsentUpdated);
+
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated);
+    };
+  }, []);
+
   const handleAcceptAll = useCallback(() => {
     void saveConsent(true, true);
   }, [saveConsent]);
