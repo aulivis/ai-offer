@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { useOnboarding } from './OnboardingProvider';
 import Link from 'next/link';
 
@@ -90,14 +89,13 @@ export function OnboardingChecklist({ title, items, onItemClick }: OnboardingChe
                     {item.label}
                   </span>
                   {!item.completed && item.action && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      asChild
+                    <Link
+                      href={item.action.href}
                       onClick={() => onItemClick?.(item.id)}
+                      className="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary bg-transparent text-fg hover:bg-bg-muted hover:scale-105 active:scale-95 px-4 py-2.5 text-sm min-h-[44px]"
                     >
-                      <Link href={item.action.href}>{item.action.label}</Link>
-                    </Button>
+                      {item.action.label}
+                    </Link>
                   )}
                 </div>
                 {item.description && (
