@@ -1256,7 +1256,10 @@ export default function DashboardPage() {
     // Load latest unread notification
     const loadLatestNotification = async () => {
       try {
-        const response = await fetchWithSupabaseAuth('/api/notifications?limit=1&unreadOnly=true', {});
+        const response = await fetchWithSupabaseAuth(
+          '/api/notifications?limit=1&unreadOnly=true',
+          {},
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.notifications && data.notifications.length > 0) {
