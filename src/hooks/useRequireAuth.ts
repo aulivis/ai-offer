@@ -81,16 +81,16 @@ export function useRequireAuth(
           // Prevent redirect loops: don't redirect to /login if already on /login
           // Also check if redirectTarget is /login to avoid nested redirects
           const isOnLoginPage = pathname === '/login';
-          
+
           // Check if redirectTarget or the redirect query param points to /login
           const redirectParam = searchParams?.get('redirect');
           const decodedRedirect = redirectParam ? decodeURIComponent(redirectParam) : null;
-          const isRedirectingToLogin = 
-            redirectTarget === '/login' || 
+          const isRedirectingToLogin =
+            redirectTarget === '/login' ||
             redirectTarget?.startsWith('/login?') ||
             decodedRedirect === '/login' ||
             decodedRedirect?.startsWith('/login?');
-          
+
           if (!isOnLoginPage && !isRedirectingToLogin) {
             const redirectQuery = redirectTarget
               ? `?redirect=${encodeURIComponent(redirectTarget)}`
