@@ -142,7 +142,7 @@ export default async function VideoPage({ params }: { params: Promise<{ slug: st
         <div className="mb-8">
           <VideoPlayer
             videoUrl={resource.videoUrl || '/videos/intro-video.mp4'}
-            poster={resource.featuredImage}
+            {...(resource.featuredImage && { poster: resource.featuredImage })}
             title={resource.title}
             duration={resource.videoDuration}
           />
