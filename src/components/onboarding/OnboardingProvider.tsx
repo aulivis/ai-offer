@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 export type OnboardingProfile = {
   role: 'freelancer' | 'agency' | 'enterprise' | null;
@@ -52,7 +52,7 @@ interface OnboardingProviderProps {
 
 export function OnboardingProvider({ children }: OnboardingProviderProps) {
   const supabase = useSupabase();
-  const { user } = useRequireAuth();
+  const { user } = useAuthSession();
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [dismissedElements, setDismissedElements] = useState<Set<string>>(new Set());
   const [profile, setProfile] = useState<OnboardingProfile | null>(null);
