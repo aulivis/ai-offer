@@ -4,7 +4,7 @@ import { useState, FormEvent } from 'react';
 import { trackEmailCapture } from '@/lib/analytics';
 
 interface NewsletterSubscriptionProps {
-  source?: 'landing_page' | 'footer' | 'exit_intent' | 'other';
+  source?: 'landing_page' | 'footer' | 'exit_intent' | 'blog_page' | 'guide_page' | 'video_page' | 'other';
 }
 
 export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSubscriptionProps) {
