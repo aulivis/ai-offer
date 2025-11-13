@@ -570,8 +570,150 @@ When a Pro user wants to create a team:
 
 **Changes:**
 
-- Add filter option: "My offers" vs "Team offers" vs "All"
+- Add filter dropdown with options:
+  - "My offers" - only offers where `user_id = current_user_id`
+  - "Team offers" - only offers where `team_id` is set and user is a team member
+  - "All" - both personal and team offers
+  - Filter by team member - dropdown to select specific team member(s) to filter by `created_by`
 - Show team information in offer cards (if team_id is set)
+- Filter state should persist in URL query params or localStorage
+
+**Implementation:**
+
+```typescript
+type OfferFilter = 'my' | 'team' | 'all' | 'member';
+type TeamMemberFilter = {
+  type: 'member';
+  memberIds: string[]; // Array of user_ids to filter by
+};
+
+const [offerFilter, setOfferFilter] = useState<OfferFilter>('all');
+const [teamMemberFilter, setTeamMemberFilter] = useState<TeamMemberFilter | null>(null);
+```
+
+**Query Logic:**
+
+```typescript
+// Build query based on filter
+let query = sb.from('offers').select('*');
+
+if (offerFilter === 'my') {
+  query = query.eq('user_id', userId);
+} else if (offerFilter === 'team') {
+  query = query.not('team_id', 'is', null).in('team_id', teamIds);
+} else if (offerFilter === 'all') {
+  query = query.or(
+    `user_id.eq.${userId}${teamIds.length > 0 ? `,team_id.in.(${teamIds.join(',')})` : ''}`,
+  );
+} else if (offerFilter === 'member' && teamMemberFilter) {
+  query = query.in('created_by', teamMemberFilter.memberIds);
+}
+```
+
+**Team Member Filter Dropdown:**
+
+- Fetch all team members from teams user belongs to
+- Display as multi-select dropdown with member emails/names
+- When members selected, set `offerFilter` to `'member'` and `teamMemberFilter.memberIds` to selected user_ids
+
+**Example:**
+
+```typescript
+// Fetch team members for filter dropdown
+const { data: teamMembers } = await sb
+  .from('team_members')
+  .select(`
+    user_id,
+    user:user_id(id, email)
+  `)
+  .in('team_id', teamIds);
+
+// Display in dropdown
+<Select
+  value={teamMemberFilter?.memberIds || []}
+  onChange={(memberIds) => {
+    if (memberIds.length > 0) {
+      setOfferFilter('member');
+      setTeamMemberFilter({ type: 'member', memberIds });
+    } else {
+      setOfferFilter('all');
+      setTeamMemberFilter(null);
+    }
+  }}
+  options={teamMembers?.map(tm => ({
+    value: tm.user_id,
+    label: tm.user?.email || tm.user_id
+  })) || []}
+  multiple
+/>
+```
+
+#### KPI Toggle Enhancement
+
+**Location**: `web/src/app/dashboard/page.tsx`
+
+**Changes:**
+
+- Add toggle/switch in KPI section: "Personal" vs "Team" KPIs
+- When "Personal" is selected: Calculate metrics from user's own offers only
+- When "Team" is selected: Calculate metrics from all team offers (user's offers + team offers)
+- Toggle should only be visible if user is a member of at least one team
+- Toggle state should persist in localStorage
+
+**Implementation:**
+
+```typescript
+const [kpiScope, setKpiScope] = useState<'personal' | 'team'>('personal');
+
+// Calculate metrics based on scope
+const metricsOffers = useMemo(() => {
+  if (kpiScope === 'personal') {
+    return offers.filter((o) => o.user_id === userId);
+  } else {
+    // Include all offers user can see (personal + team)
+    return offers;
+  }
+}, [offers, kpiScope, userId]);
+
+// Recalculate all metrics from metricsOffers
+const totalCreated = metricsOffers.length;
+const inReview = metricsOffers.filter((o) => o.status === 'draft').length;
+const sent = metricsOffers.filter((o) => o.status === 'sent').length;
+const accepted = metricsOffers.filter((o) => o.status === 'accepted').length;
+const lost = metricsOffers.filter((o) => o.status === 'lost').length;
+// ... etc
+```
+
+**UI Component:**
+
+```tsx
+{
+  hasTeamMemberships && (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-fg-muted">Personal</span>
+      <Switch
+        checked={kpiScope === 'team'}
+        onChange={(checked) => {
+          setKpiScope(checked ? 'team' : 'personal');
+          localStorage.setItem('dashboard-kpi-scope', checked ? 'team' : 'personal');
+        }}
+      />
+      <span className="text-sm text-fg-muted">Team</span>
+    </div>
+  );
+}
+```
+
+**Placement:**
+
+- Place toggle in the KPI section header, next to the existing "Detailed/Compact" view toggle
+- Only show when `hasTeamMemberships` is true (user belongs to at least one team)
+
+**Metrics Calculation:**
+
+- All metrics (total created, in review, sent, accepted, lost, win rate, avg decision time) should be recalculated based on `metricsOffers`
+- Quota metric should always show personal quota (not team quota)
+- When switching between Personal/Team, metrics should update immediately without page reload
 
 ### 6. Team Selector Component
 
