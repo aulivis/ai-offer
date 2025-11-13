@@ -10,7 +10,9 @@ import { uuidSchema } from '@/lib/validation/schemas';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { loadTemplate } from '@/app/pdf/templates/engineRegistry';
 import { normalizeBranding } from '@/app/pdf/templates/theme';
+import type { TemplateId } from '@/app/pdf/templates/types';
 import { createTranslator, resolveLocale } from '@/copy';
+import type { PriceRow } from '@/app/lib/pricing';
 import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { enqueuePdfJob, dispatchPdfJob } from '@/lib/queue/pdf';
@@ -131,7 +133,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
     const resolvedLocale = resolveLocale(locale);
 
     // Load template
-    const template = loadTemplate(templateId as any);
+    const template = loadTemplate(templateId as TemplateId);
     const translator = createTranslator(resolvedLocale);
 
     // Get recipient info for storage path
@@ -160,16 +162,25 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
 
     // Normalize price rows
     const priceRows = Array.isArray(offer.price_json) ? offer.price_json : [];
-    const normalizedRows = priceRows.map((row: any) => ({
-      name: typeof row.name === 'string' ? row.name : undefined,
-      qty: typeof row.qty === 'number' && Number.isFinite(row.qty) ? row.qty : undefined,
-      unit: typeof row.unit === 'string' ? row.unit : undefined,
-      unitPrice:
-        typeof row.unitPrice === 'number' && Number.isFinite(row.unitPrice)
-          ? row.unitPrice
-          : undefined,
-      vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
-    }));
+    const normalizedRows = priceRows.map((row: unknown) => {
+      const priceRow = row as Partial<PriceRow>;
+      return {
+        name: typeof priceRow.name === 'string' ? priceRow.name : undefined,
+        qty:
+          typeof priceRow.qty === 'number' && Number.isFinite(priceRow.qty)
+            ? priceRow.qty
+            : undefined,
+        unit: typeof priceRow.unit === 'string' ? priceRow.unit : undefined,
+        unitPrice:
+          typeof priceRow.unitPrice === 'number' && Number.isFinite(priceRow.unitPrice)
+            ? priceRow.unitPrice
+            : undefined,
+        vat:
+          typeof priceRow.vat === 'number' && Number.isFinite(priceRow.vat)
+            ? priceRow.vat
+            : undefined,
+      };
+    });
 
     // Get company info from profile
     const { data: profileData } = await sb
