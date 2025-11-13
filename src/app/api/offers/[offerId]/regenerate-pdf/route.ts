@@ -19,7 +19,7 @@ import { enqueuePdfJob, dispatchPdfJob } from '@/lib/queue/pdf';
 import { getUserProfile } from '@/lib/services/user';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { currentMonthStart } from '@/lib/utils/dateHelpers';
-import { getUsageSnapshot } from '@/lib/services/quota';
+import { getUsageSnapshot } from '@/lib/services/usage';
 import { v4 as uuid } from 'uuid';
 import type { PdfJobInput } from '@/lib/queue/pdf';
 
