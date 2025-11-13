@@ -13,6 +13,7 @@ import {
   type PdfMetadata,
   type PuppeteerPage,
 } from '@/lib/pdfConfig';
+import { logger } from '@/lib/logger';
 
 const JOB_TIMEOUT_MS = 90_000;
 
@@ -77,26 +78,26 @@ async function setContentWithNetworkIdleLogging(page: Page, html: string, contex
   try {
     await page.setContent(html, { waitUntil: 'networkidle0' });
   } catch (error) {
-    console.error(`[${context}] page.setContent failed while waiting for networkidle0`, error);
+    logger.error(`[${context}] page.setContent failed while waiting for networkidle0`, error);
     throw error;
   } finally {
     detachPageListener(page, 'requestfailed', onRequestFailed as PageEventHandler);
     detachPageListener(page, 'response', onResponse as PageEventHandler);
 
     const elapsed = Date.now() - startedAt;
-    console.info(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
+    logger.info(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
 
     if (requestFailures.length > 0) {
-      console.warn(
+      logger.warn(
         `[${context}] ${requestFailures.length} request(s) failed while loading PDF content`,
-        requestFailures,
+        { requestFailures },
       );
     }
 
     if (responseErrors.length > 0) {
-      console.warn(
+      logger.warn(
         `[${context}] ${responseErrors.length} response(s) returned error status while loading PDF content`,
-        responseErrors,
+        { responseErrors },
       );
     }
   }
@@ -282,7 +283,7 @@ export async function processPdfJobInline(
               try {
                 await page.close();
               } catch (closeError) {
-                console.error('Failed to close Puppeteer page (inline worker):', closeError);
+                logger.error('Failed to close Puppeteer page (inline worker)', closeError);
               }
             }
           }
@@ -290,7 +291,7 @@ export async function processPdfJobInline(
           try {
             await browser.close();
           } catch (closeError) {
-            console.error('Failed to close Puppeteer browser (inline worker):', closeError);
+            logger.error('Failed to close Puppeteer browser (inline worker)', closeError);
           }
         }
       },
@@ -336,7 +337,7 @@ export async function processPdfJobInline(
     }
 
     if (!updatedOffer || updatedOffer.pdf_url !== pdfUrl) {
-      console.error('Offer update verification failed', {
+      logger.error('Offer update verification failed', {
         offerId: job.offerId,
         expectedPdfUrl: pdfUrl,
         actualPdfUrl: updatedOffer?.pdf_url,
@@ -344,7 +345,7 @@ export async function processPdfJobInline(
       throw new Error('Offer update verification failed - PDF URL was not set correctly');
     }
 
-    console.log('Offer updated successfully with PDF URL', {
+    logger.info('Offer updated successfully with PDF URL', {
       offerId: job.offerId,
       pdfUrl,
     });
@@ -358,16 +359,16 @@ export async function processPdfJobInline(
       .maybeSingle();
 
     if (doubleCheckError) {
-      console.error('Double-check query failed', { error: doubleCheckError });
+      logger.error('Double-check query failed', { error: doubleCheckError });
     } else if (!doubleCheck || doubleCheck.pdf_url !== pdfUrl) {
-      console.error('CRITICAL: Offer update did not persist!', {
+      logger.error('CRITICAL: Offer update did not persist!', {
         offerId: job.offerId,
         expectedPdfUrl: pdfUrl,
         actualPdfUrl: doubleCheck?.pdf_url,
       });
       throw new Error('Offer update did not persist in database');
     } else {
-      console.log('Verified: Offer update persisted correctly', {
+      logger.info('Verified: Offer update persisted correctly', {
         offerId: job.offerId,
         pdfUrl: doubleCheck.pdf_url,
       });
@@ -389,7 +390,7 @@ export async function processPdfJobInline(
       }
 
       if (!verifyResponse.ok) {
-        console.error('PDF verification failed - file not accessible', {
+        logger.error('PDF verification failed - file not accessible', {
           offerId: job.offerId,
           pdfUrl,
           status: verifyResponse.status,
@@ -403,7 +404,7 @@ export async function processPdfJobInline(
       // Verify it's actually a PDF by checking Content-Type
       const contentType = verifyResponse.headers.get('content-type');
       if (contentType && !contentType.includes('application/pdf')) {
-        console.error('PDF verification failed - incorrect content type', {
+        logger.error('PDF verification failed - incorrect content type', {
           offerId: job.offerId,
           pdfUrl,
           contentType,
@@ -411,14 +412,14 @@ export async function processPdfJobInline(
         throw new Error(`PDF has incorrect content type: ${contentType}`);
       }
 
-      console.log('Verified: PDF is accessible and downloadable', {
+      logger.info('Verified: PDF is accessible and downloadable', {
         offerId: job.offerId,
         pdfUrl,
         contentType,
       });
     } catch (verifyError) {
       const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
-      console.error('Failed to verify PDF accessibility', {
+      logger.error('Failed to verify PDF accessibility', {
         offerId: job.offerId,
         pdfUrl,
         error: errorMessage,
@@ -434,7 +435,7 @@ export async function processPdfJobInline(
 
     // Increment quota ONLY after PDF is verified as accessible and downloadable
     // If this fails, we can rollback the offer update if needed
-    console.log('Attempting to increment user quota', {
+    logger.info('Attempting to increment user quota', {
       userId: job.userId,
       limit: job.userLimit,
       periodStart: job.usagePeriodStart,
@@ -449,14 +450,14 @@ export async function processPdfJobInline(
       job.jobId, // Exclude this job from pending count
     );
 
-    console.log('User quota increment result', {
+    logger.info('User quota increment result', {
       allowed: usageResult.allowed,
       offersGenerated: usageResult.offersGenerated,
       periodStart: usageResult.periodStart,
     });
 
     if (!usageResult.allowed) {
-      console.error('User quota increment not allowed, rolling back offer update', {
+      logger.error('User quota increment not allowed, rolling back offer update', {
         userId: job.userId,
         offersGenerated: usageResult.offersGenerated,
         limit: job.userLimit,
@@ -470,13 +471,13 @@ export async function processPdfJobInline(
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
     userUsageIncremented = true;
-    console.log('User quota incremented successfully', {
+    logger.info('User quota incremented successfully', {
       userId: job.userId,
       newUsage: usageResult.offersGenerated,
     });
 
     if (job.deviceId && job.deviceLimit != null) {
-      console.log('Attempting to increment device quota', {
+      logger.info('Attempting to increment device quota', {
         userId: job.userId,
         deviceId: job.deviceId,
         limit: job.deviceLimit,
@@ -492,14 +493,14 @@ export async function processPdfJobInline(
         job.jobId, // Exclude this job from pending count
       );
 
-      console.log('Device quota increment result', {
+      logger.info('Device quota increment result', {
         allowed: deviceResult.allowed,
         offersGenerated: deviceResult.offersGenerated,
         periodStart: deviceResult.periodStart,
       });
 
       if (!deviceResult.allowed) {
-        console.error('Device quota increment not allowed, rolling back', {
+        logger.error('Device quota increment not allowed, rolling back', {
           userId: job.userId,
           deviceId: job.deviceId,
           offersGenerated: deviceResult.offersGenerated,
@@ -515,7 +516,7 @@ export async function processPdfJobInline(
         throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
       }
       deviceUsageIncremented = true;
-      console.log('Device quota incremented successfully', {
+      logger.info('Device quota incremented successfully', {
         userId: job.userId,
         deviceId: job.deviceId,
         newUsage: deviceResult.offersGenerated,
@@ -535,7 +536,7 @@ export async function processPdfJobInline(
     if (jobCompleteError) {
       // Job completion failed, but quota was already incremented
       // This is a critical error - log it but don't rollback quota since PDF is accessible
-      console.error('CRITICAL: Failed to mark job as completed after quota increment', {
+      logger.error('CRITICAL: Failed to mark job as completed after quota increment', {
         jobId: job.jobId,
         offerId: job.offerId,
         error: jobCompleteError.message,
@@ -560,17 +561,16 @@ export async function processPdfJobInline(
             }),
           });
         } catch (callbackError) {
-          console.error('Webhook error (inline worker):', callbackError);
+          logger.error('Webhook error (inline worker)', callbackError);
         }
       } else {
-        console.warn(
-          'Skipping webhook dispatch for disallowed URL (inline worker):',
-          job.callbackUrl,
-        );
+        logger.warn('Skipping webhook dispatch for disallowed URL (inline worker)', {
+          callbackUrl: job.callbackUrl,
+        });
       }
     }
 
-    console.log('PDF job completed successfully', {
+    logger.info('PDF job completed successfully', {
       jobId: job.jobId,
       offerId: job.offerId,
       pdfUrl,
@@ -586,7 +586,7 @@ export async function processPdfJobInline(
       try {
         await supabase.storage.from('offers').remove([job.storagePath]);
       } catch (cleanupError) {
-        console.error('Failed to remove uploaded PDF after inline worker error:', cleanupError);
+        logger.error('Failed to remove uploaded PDF after inline worker error', cleanupError);
       }
     }
 
@@ -600,7 +600,7 @@ export async function processPdfJobInline(
           .eq('id', job.offerId)
           .eq('user_id', job.userId);
       } catch (offerRollbackError) {
-        console.error('Failed to rollback offer update (inline worker):', offerRollbackError);
+        logger.error('Failed to rollback offer update (inline worker)', offerRollbackError);
       }
     }
 
@@ -608,7 +608,7 @@ export async function processPdfJobInline(
       try {
         await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart);
       } catch (rollbackError) {
-        console.error('Failed to rollback user usage increment (inline worker):', rollbackError);
+        logger.error('Failed to rollback user usage increment (inline worker)', rollbackError);
       }
     }
 
@@ -618,7 +618,7 @@ export async function processPdfJobInline(
           deviceId: job.deviceId,
         });
       } catch (rollbackError) {
-        console.error('Failed to rollback device usage increment (inline worker):', rollbackError);
+        logger.error('Failed to rollback device usage increment (inline worker)', rollbackError);
       }
     }
 

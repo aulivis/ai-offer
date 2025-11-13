@@ -131,3 +131,4 @@ COMMENT ON SCHEMA public IS
   'Public schema. Onboarding tables (onboarding_progress, onboarding_dismissals, onboarding_profiles) have been removed.';
 
 
+

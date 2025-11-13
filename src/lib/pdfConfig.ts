@@ -5,6 +5,8 @@
  * industry best practices for professional document output.
  */
 
+import { logger } from '@/lib/logger';
+
 export interface PdfMetadata {
   title?: string;
   author?: string;
@@ -234,6 +236,6 @@ export async function setPdfMetadata(page: PuppeteerPage, metadata: PdfMetadata)
     }
   } catch (error) {
     // Silently fail if evaluation fails (e.g., in some environments)
-    console.warn('Failed to set PDF metadata:', error);
+    logger.warn('Failed to set PDF metadata', error);
   }
 }

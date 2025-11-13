@@ -68,21 +68,47 @@ function validateRequestContext(req: NextRequest): NextResponse | null {
   const originToCheck = originHeader ?? extractOrigin(refererHeader);
 
   if (!isAllowedOrigin(originToCheck)) {
+    console.warn('Request origin validation failed', {
+      method: req.method,
+      url: req.url,
+      origin: originToCheck,
+      allowedOrigins: Array.from(allowedOrigins),
+      originHeader,
+      refererHeader,
+    });
     return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   const fetchSite = req.headers.get('sec-fetch-site');
   if (fetchSite && !allowedFetchSites.has(fetchSite)) {
+    console.warn('Request sec-fetch-site validation failed', {
+      method: req.method,
+      url: req.url,
+      secFetchSite: fetchSite,
+      allowedSites: Array.from(allowedFetchSites),
+    });
     return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   const fetchMode = req.headers.get('sec-fetch-mode');
   if (fetchMode && !allowedFetchModes.has(fetchMode)) {
+    console.warn('Request sec-fetch-mode validation failed', {
+      method: req.method,
+      url: req.url,
+      secFetchMode: fetchMode,
+      allowedModes: Array.from(allowedFetchModes),
+    });
     return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
   const fetchDest = req.headers.get('sec-fetch-dest');
   if (fetchDest && !allowedFetchDests.has(fetchDest)) {
+    console.warn('Request sec-fetch-dest validation failed', {
+      method: req.method,
+      url: req.url,
+      secFetchDest: fetchDest,
+      allowedDests: Array.from(allowedFetchDests),
+    });
     return NextResponse.json({ error: 'A kérés forrása nincs engedélyezve.' }, { status: 403 });
   }
 
@@ -107,6 +133,14 @@ async function authenticateRequest(req: NextRequest): Promise<AuthenticatedUser 
     const csrfHeader = req.headers.get('x-csrf-token');
     const csrfCookie = req.cookies.get(CSRF_COOKIE_NAME)?.value;
     if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
+      console.warn('CSRF token validation failed', {
+        method: req.method,
+        url: req.url,
+        hasCsrfHeader: !!csrfHeader,
+        hasCsrfCookie: !!csrfCookie,
+        csrfHeaderLength: csrfHeader?.length ?? 0,
+        csrfCookieLength: csrfCookie?.length ?? 0,
+      });
       return NextResponse.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
     }
   }

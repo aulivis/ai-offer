@@ -13,7 +13,7 @@ import { normalizeBranding } from '@/app/pdf/templates/theme';
 import { getBrandLogoUrl } from '@/lib/branding';
 import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import { normalizeTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
-import OpenAI from 'openai';
+import OpenAI, { APIError } from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
@@ -1190,6 +1190,42 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           );
         } catch (error) {
           log.error('OpenAI structured output error', error);
+
+          // Handle specific API errors
+          if (error instanceof APIError) {
+            const status = typeof error.status === 'number' ? error.status : 500;
+            const errorMessage =
+              typeof error.message === 'string' && error.message.trim().length > 0
+                ? error.message
+                : error.error && typeof error.error === 'object'
+                  ? String((error.error as { message?: unknown }).message ?? 'OpenAI API hiba')
+                  : 'OpenAI API hiba';
+
+            // Handle 403 Forbidden errors specifically
+            if (status === 403) {
+              log.error('OpenAI API 403 Forbidden error', {
+                status: error.status,
+                code: error.code,
+                message: error.message,
+                type: error.type,
+              });
+              return NextResponse.json(
+                {
+                  error:
+                    'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
+                },
+                { status: 403 },
+              );
+            }
+
+            // Handle other API errors
+            return NextResponse.json(
+              { error: errorMessage || 'OpenAI API hiba történt. Próbáld újra később.' },
+              { status },
+            );
+          }
+
+          // Handle non-API errors
           return NextResponse.json(
             { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
             { status: 502 },

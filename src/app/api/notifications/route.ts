@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
-import { getRequestId } from '@/lib/requestId';
-import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
-import { handleValidationError } from '@/lib/errorHandling';
+import {
+  createErrorResponse,
+  HttpStatus,
+  withAuthenticatedErrorHandling,
+} from '@/lib/errorHandling';
 
 const notificationsQuerySchema = z.object({
   unreadOnly: z
@@ -25,12 +27,8 @@ const notificationsQuerySchema = z.object({
  * GET /api/notifications
  * Get notifications for the authenticated user
  */
-export const GET = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
-
-  try {
+export const GET = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
     // Parse query parameters
     const url = new URL(request.url);
     const queryParsed = notificationsQuerySchema.safeParse({
@@ -40,7 +38,7 @@ export const GET = withAuth(async (request: AuthenticatedNextRequest) => {
     });
 
     if (!queryParsed.success) {
-      return handleValidationError(queryParsed.error, requestId);
+      throw queryParsed.error; // Will be handled by withAuthenticatedErrorHandling
     }
 
     const { unreadOnly, limit, offset } = queryParsed.data;
@@ -62,8 +60,7 @@ export const GET = withAuth(async (request: AuthenticatedNextRequest) => {
     const { data: notifications, error: notificationsError, count } = await query;
 
     if (notificationsError) {
-      log.error('Failed to load notifications', notificationsError);
-      return NextResponse.json({ error: 'Failed to load notifications' }, { status: 500 });
+      throw notificationsError; // Will be handled by withAuthenticatedErrorHandling
     }
 
     // Get unread count separately
@@ -78,22 +75,15 @@ export const GET = withAuth(async (request: AuthenticatedNextRequest) => {
       unreadCount: unreadCount || 0,
       total: count || 0,
     });
-  } catch (error) {
-    log.error('Unexpected error during notifications fetch', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-});
+  }),
+);
 
 /**
  * POST /api/notifications/read-all
  * Mark all notifications as read
  */
-export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
-
-  try {
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
@@ -108,21 +98,12 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         .eq('is_read', false);
 
       if (updateError) {
-        log.error('Failed to mark all notifications as read', updateError);
-        return NextResponse.json(
-          { error: 'Failed to mark all notifications as read' },
-          { status: 500 },
-        );
+        throw updateError; // Will be handled by withAuthenticatedErrorHandling
       }
-
-      log.info('All notifications marked as read');
 
       return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json({ error: 'Invalid endpoint' }, { status: 404 });
-  } catch (error) {
-    log.error('Unexpected error during mark all as read', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-});
+    return createErrorResponse('Invalid endpoint', HttpStatus.NOT_FOUND);
+  }),
+);

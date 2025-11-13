@@ -17,6 +17,7 @@
 import type { PdfMetadata, PdfGenerationOptions, PuppeteerPage } from './pdfConfig';
 import { createPdfOptions, toPuppeteerOptions, setPdfMetadata } from './pdfConfig';
 import { assertPdfEngineHtml } from './pdfHtmlSignature';
+import { logger } from '@/lib/logger';
 
 /**
  * Configuration for Vercel-native PDF generation
@@ -205,12 +206,12 @@ async function setContentWithNetworkIdleLogging(
   try {
     await page.setContent(html, { waitUntil: 'networkidle0' });
   } catch (error) {
-    console.error(`Failed to set content for ${context}:`, error);
+    logger.error(`Failed to set content for ${context}`, error);
     if (requestFailures.length > 0) {
-      console.warn(`Request failures in ${context}:`, requestFailures);
+      logger.warn(`Request failures in ${context}`, { requestFailures });
     }
     if (responseErrors.length > 0) {
-      console.warn(`Response errors in ${context}:`, responseErrors);
+      logger.warn(`Response errors in ${context}`, { responseErrors });
     }
     throw error;
   } finally {
@@ -325,7 +326,7 @@ export async function generatePdfVercelNative(
     try {
       await browser.close();
     } catch (error) {
-      console.error('Failed to close browser in Vercel-native PDF generation:', error);
+      logger.error('Failed to close browser in Vercel-native PDF generation', error);
     }
   }
 }

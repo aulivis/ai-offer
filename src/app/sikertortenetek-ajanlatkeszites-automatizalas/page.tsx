@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle, ChevronDown, Trophy, Zap, TrendingUp, Star } from 'lucide-react';
@@ -19,8 +18,6 @@ const customerLogos = [
 ];
 
 export default function SuccessStoriesPage() {
-  const [sortBy, setSortBy] = useState('newest');
-
   const caseStudies = getCaseStudies();
 
   // Generate Schema Markup for CollectionPage
@@ -40,26 +37,6 @@ export default function SuccessStoriesPage() {
     })),
   };
 
-  const sortedStudies = useMemo(() => {
-    let sorted = [...caseStudies];
-
-    // Sort
-    if (sortBy === 'newest') {
-      sorted = sorted.sort(
-        (a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime(),
-      );
-    } else if (sortBy === 'best-results') {
-      // Sort by improvement percentage
-      sorted = sorted.sort((a, b) => {
-        const aImprovement = a.metrics[0]?.improvement?.match(/\d+/)?.[0] || '0';
-        const bImprovement = b.metrics[0]?.improvement?.match(/\d+/)?.[0] || '0';
-        return Number(bImprovement) - Number(aImprovement);
-      });
-    }
-
-    return sorted;
-  }, [caseStudies, sortBy]);
-
   // Scroll to stories section
   const scrollToStories = () => {
     const storiesSection = document.getElementById('stories-section');
@@ -71,11 +48,11 @@ export default function SuccessStoriesPage() {
   // Get CTA link text based on study
   const getCTALinkText = (study: (typeof caseStudies)[0]) => {
     if (study.slug === 'creative-agency') {
-      return '📖 Teljes történet → Gyorsabb sablonok';
+      return 'Teljes történet: Gyorsabb sablonok';
     } else if (study.slug === 'tech-solutions') {
-      return '📄 Teljes történet → Hogyan értük el a 65%-ot?';
+      return 'Teljes történet: Hogyan értük el a 65%-ot?';
     } else if (study.slug === 'studio-ikon') {
-      return '📄 Teljes történet → A konverzió növelés titka';
+      return 'Teljes történet: A konverzió növelés titka';
     }
     return 'Teljes történet';
   };
@@ -175,24 +152,9 @@ export default function SuccessStoriesPage() {
         <section id="stories-section" className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
-              {/* Sort Option */}
-              <div className="flex justify-end mb-8">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Rendezés:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none min-h-[44px] bg-white"
-                  >
-                    <option value="newest">Legújabb</option>
-                    <option value="best-results">Legjobb eredmények</option>
-                  </select>
-                </div>
-              </div>
-
               {/* Grid Layout for Case Studies */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sortedStudies.map((study, index) => {
+                {caseStudies.map((study, index) => {
                   // Alternate gradient colors
                   const gradientClass =
                     index % 3 === 0
@@ -223,6 +185,11 @@ export default function SuccessStoriesPage() {
                     secondMetricValue = conversionMetric?.value || '+35%';
                     metricLabel = conversionMetric?.label || 'Konverzió növekedés';
                   }
+
+                  // Split mainResult by | to get company name and subtitle
+                  const mainResultParts = study.mainResult.split('|').map((part) => part.trim());
+                  const companyNameDisplay = mainResultParts[0] || study.companyName;
+                  const subtitleText = mainResultParts[1] || '';
 
                   return (
                     <div
@@ -255,21 +222,17 @@ export default function SuccessStoriesPage() {
                           </span>
                         </div>
                         <h3 className="text-xl md:text-2xl font-bold text-white mt-6 md:mt-8">
-                          {study.companyName}
+                          {companyNameDisplay}
                         </h3>
+                        {subtitleText && (
+                          <p className="text-sm md:text-base text-white/90 mt-2">{subtitleText}</p>
+                        )}
                       </div>
 
                       {/* Content section */}
                       <div className="p-4 md:p-6">
-                        {/* Key result headline */}
-                        <div className="mb-3 md:mb-4">
-                          <p className="text-xs md:text-sm font-semibold text-gray-700 line-clamp-2">
-                            {study.mainResult}
-                          </p>
-                        </div>
-
                         {/* Key metrics - compact, mobile optimized */}
-                        <div className="grid grid-cols-2 gap-2 md:gap-3 mb-3 md:mb-4">
+                        <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4 md:mb-6">
                           <div className="text-center p-2 md:p-3 bg-gray-50 rounded-lg">
                             <div className="text-xl md:text-2xl font-bold text-teal-600">
                               {improvementValue}%
@@ -293,12 +256,12 @@ export default function SuccessStoriesPage() {
                         </div>
 
                         {/* Testimonial - truncated, mobile optimized */}
-                        <blockquote className="text-xs md:text-sm text-gray-600 italic line-clamp-2 md:line-clamp-3 mb-3 md:mb-4 border-l-4 border-teal-200 pl-2 md:pl-3">
+                        <blockquote className="text-xs md:text-sm text-gray-600 italic line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 border-l-4 border-teal-200 pl-2 md:pl-3">
                           &ldquo;{study.testimonial.quote}&rdquo;
                         </blockquote>
 
                         {/* Client info - Mobile optimized */}
-                        <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 pb-3 md:pb-4 border-b border-gray-200">
+                        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                           <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-teal-100 flex-shrink-0">
                             <Image
                               src={getAuthorImage(study.testimonial.author)}
@@ -321,10 +284,9 @@ export default function SuccessStoriesPage() {
                         {/* CTA - Mobile optimized */}
                         <Link
                           href={`/sikertortenetek-ajanlatkeszites-automatizalas/${study.slug}`}
-                          className="group w-full border-2 border-teal-500 text-teal-600 font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-teal-600 hover:text-teal-700 bg-transparent transition-colors flex items-center justify-center gap-2"
+                          className="group w-full border-2 border-teal-500 text-teal-600 font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-teal-600 hover:text-teal-700 bg-transparent transition-colors flex items-center justify-center"
                         >
                           <span>{getCTALinkText(study)}</span>
-                          <ArrowRight className="w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
                         </Link>
                       </div>
                     </div>
@@ -380,10 +342,12 @@ export default function SuccessStoriesPage() {
               </p>
 
               {/* Key benefits */}
-              <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
+              <div className="grid md:grid-cols-3 gap-6 mb-12 max-w-[52.8rem] mx-auto">
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="flex items-center justify-center mb-2">
                     <Zap className="w-5 h-5 text-yellow-300" />
+                  </div>
+                  <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="text-4xl font-bold">70%</div>
                   </div>
                   <div className="text-lg font-semibold text-white mb-1">
@@ -392,16 +356,20 @@ export default function SuccessStoriesPage() {
                   <div className="text-xs text-white/80">Átlagos időmegtakarítás</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="flex items-center justify-center mb-2">
                     <TrendingUp className="w-5 h-5 text-green-300" />
+                  </div>
+                  <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="text-4xl font-bold">+35%</div>
                   </div>
                   <div className="text-lg font-semibold text-white mb-1">Konverzió növekedés</div>
                   <div className="text-xs text-white/80">Magasabb megrendelési arány</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur rounded-xl p-6">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="flex items-center justify-center mb-2">
                     <Star className="w-5 h-5 text-yellow-300" />
+                  </div>
+                  <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="text-4xl font-bold">98%</div>
                   </div>
                   <div className="text-lg font-semibold text-white mb-1">Ajánlási arány</div>

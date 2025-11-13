@@ -108,7 +108,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300',
         scrolled
           ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
-          : 'bg-white backdrop-blur-md border-b border-white/20',
+          : 'bg-transparent backdrop-blur-none border-b border-transparent',
         // Mobile: hide/show based on scroll direction
         isVisible ? 'translate-y-0' : '-translate-y-full',
         className,
@@ -170,8 +170,12 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 href={item.href}
                 className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
                   isNavItemActive(item.href)
-                    ? 'text-navy-900 font-semibold bg-gray-100/80'
-                    : 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
+                    ? scrolled
+                      ? 'text-navy-900 font-semibold bg-gray-100/80'
+                      : 'text-white font-semibold bg-white/20'
+                    : scrolled
+                      ? 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
+                      : 'text-white/90 hover:bg-white/20 hover:text-white'
                 }`}
                 {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
                 onClick={closeMenu}
@@ -179,7 +183,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {t(item.labelKey)}
                 {/* Subtle underline animation on hover */}
                 {!isNavItemActive(item.href) && (
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-turquoise-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
+                  <span
+                    className={`absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
+                      scrolled ? 'bg-turquoise-500' : 'bg-white'
+                    }`}
+                  ></span>
                 )}
               </Link>
             ))}
@@ -206,7 +214,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     e.preventDefault();
                     logout();
                   }}
-                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 transition-all duration-200"
+                  className={`px-5 py-2.5 text-base font-semibold rounded-lg border transition-all duration-200 ${
+                    scrolled
+                      ? 'border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50'
+                      : 'border-white text-white hover:bg-white/20'
+                  }`}
                 >
                   {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                 </Link>
@@ -216,7 +228,11 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {/* Enhanced "Bejelentkezés" button with hero secondary CTA style */}
                 <Link
                   href="/login"
-                  className="border-2 border-navy-900 text-navy-900 font-semibold rounded-xl px-5 py-2.5 text-base hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors"
+                  className={`border-2 font-semibold rounded-xl px-5 py-2.5 text-base bg-transparent transition-colors ${
+                    scrolled
+                      ? 'border-navy-900 text-navy-900 hover:border-orange-500 hover:text-orange-500'
+                      : 'border-white text-white hover:border-orange-500 hover:text-orange-500'
+                  }`}
                 >
                   {t('nav.login')}
                 </Link>
@@ -239,7 +255,9 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           {/* Enhanced Mobile menu button - moved to right */}
           <button
             type="button"
-            className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg text-navy-900 transition duration-200 hover:bg-gray-100/80 md:hidden min-h-[44px] min-w-[44px]"
+            className={`ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg transition duration-200 md:hidden min-h-[44px] min-w-[44px] ${
+              scrolled ? 'text-navy-900 hover:bg-gray-100/80' : 'text-white hover:bg-white/20'
+            }`}
             aria-label={t('nav.menuToggle')}
             aria-expanded={isMenuOpen}
             aria-controls="landing-navigation"

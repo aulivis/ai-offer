@@ -6,6 +6,7 @@
  */
 
 import { createFooterTemplate, createHeaderTemplate } from './pdfPageNumbers';
+import { logger } from '@/lib/logger';
 
 /**
  * Extract header/footer data from rendered HTML
@@ -130,7 +131,7 @@ export async function extractHeaderFooterData(page: {
 
     return { footerTemplate, headerTemplate };
   } catch (error) {
-    console.warn('Failed to extract header/footer data:', error);
+    logger.warn('Failed to extract header/footer data', error);
     return null;
   }
 }

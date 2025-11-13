@@ -85,3 +85,4 @@ for each row
 execute function public.handle_offer_response();
 
 
+

@@ -676,6 +676,29 @@ Különös figyelmet fordít a következőkre:
             : error.error && typeof error.error === 'object'
               ? String((error.error as { message?: unknown }).message ?? 'Preview failed')
               : 'Preview failed') || 'Preview failed';
+
+        // Handle 403 Forbidden errors specifically
+        if (status === 403) {
+          log.error('OpenAI API 403 Forbidden error in preview', {
+            status: error.status,
+            code: error.code,
+            message: error.message,
+            type: error.type,
+          });
+          const errorResponse = NextResponse.json(
+            {
+              error:
+                'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
+            },
+            { status: 403 },
+          );
+          errorResponse.headers.set('x-request-id', requestId);
+          if (rateLimitResult) {
+            addRateLimitHeaders(errorResponse, rateLimitResult);
+          }
+          return errorResponse;
+        }
+
         const errorResponse = NextResponse.json({ error: errorMessage }, { status });
         errorResponse.headers.set('x-request-id', requestId);
         if (rateLimitResult) {

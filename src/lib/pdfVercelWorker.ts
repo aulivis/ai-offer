@@ -19,6 +19,7 @@ import { generatePdfVercelNativeWithTimeout } from './pdfVercelNative';
 import { renderRuntimePdfHtml } from './pdfRuntime';
 import type { PdfJobInput } from './queue/pdf';
 import { envServer } from '@/env.server';
+import { logger } from '@/lib/logger';
 
 const JOB_TIMEOUT_MS = 90_000;
 
@@ -162,7 +163,10 @@ export async function processPdfJobVercelNative(
 
       if (offerUpdateError) {
         // Log but don't fail - offer update is not critical for all job types
-        console.warn(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
+        logger.warn('Failed to update offer with PDF URL', {
+          error: offerUpdateError.message,
+          offerId: job.offerId,
+        });
       }
     }
 
@@ -197,13 +201,17 @@ export async function processPdfJobVercelNative(
         });
 
         if (!webhookResponse.ok) {
-          console.warn(
-            `Webhook callback failed: ${webhookResponse.status} ${webhookResponse.statusText}`,
-          );
+          logger.warn('Webhook callback failed', {
+            status: webhookResponse.status,
+            statusText: webhookResponse.statusText,
+            callbackUrl: job.callbackUrl,
+          });
         }
       } catch (webhookError) {
         // Don't fail the job if webhook fails
-        console.error('Webhook callback error:', webhookError);
+        logger.error('Webhook callback error', webhookError, {
+          callbackUrl: job.callbackUrl,
+        });
       }
     }
 
@@ -237,7 +245,9 @@ export async function processPdfJobVercelNative(
         });
       } catch (webhookError) {
         // Ignore webhook errors
-        console.error('Webhook callback error:', webhookError);
+        logger.error('Webhook callback error', webhookError, {
+          callbackUrl: job.callbackUrl,
+        });
       }
     }
 
