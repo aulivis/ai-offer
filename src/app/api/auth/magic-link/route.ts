@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { envServer } from '@/env.server';
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
-import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { createAuthRequestLogger } from '@/lib/observability/authLogging';
 import {

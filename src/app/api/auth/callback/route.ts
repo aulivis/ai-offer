@@ -6,7 +6,7 @@ import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { clearAuthCookies } from '../../../../../lib/auth/cookies';
 import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf';
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
-import { supabaseServiceRole } from '../../../lib/supabaseServiceRole';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback, recordAuthRouteUsage } from '@/lib/observability/metrics';
 import { Argon2Algorithm, argon2Hash, type Argon2Options } from '../../../../../lib/auth/argon2';

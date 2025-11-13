@@ -5,7 +5,7 @@ import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
 import { supabaseServer } from '@/app/lib/supabaseServer';
-import { supabaseServiceRole } from '@/lib/supabaseServiceRole';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { uuidSchema } from '@/lib/validation/schemas';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { loadTemplate } from '@/app/pdf/templates/engineRegistry';
