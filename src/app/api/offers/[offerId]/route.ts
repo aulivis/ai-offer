@@ -126,7 +126,6 @@ export const DELETE = withAuth(
       log.info('Offer deleted successfully', { offerId, title: offer.title });
 
       // Audit log the deletion
-      const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
       await logAuditEvent(adminClient, {
         eventType: 'offer_deleted',
         userId: request.user.id,
