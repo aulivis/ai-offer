@@ -1,5 +1,5 @@
-import { getRequestLanguage } from '@/state/lang.server';
-import { withLanguage } from '@/state/lang';
+import { getRequestLanguage } from '@/app/lib/language';
+import { withLanguage } from '@/state/lang.server';
 
 export default async function OfferLayout({ children }: { children: React.ReactNode }) {
   const language = await getRequestLanguage();
