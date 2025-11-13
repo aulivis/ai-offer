@@ -1301,7 +1301,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           errorDetails: verifyError.details,
           errorHint: verifyError.hint,
         });
-        
+
         // Fallback: Try with service role client to diagnose RLS issues
         const sbService = supabaseServiceRole();
         const { data: serviceVerifyOffer, error: serviceVerifyError } = await sbService
@@ -1312,12 +1312,15 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           .maybeSingle();
 
         if (serviceVerifyError || !serviceVerifyOffer) {
-          log.error('CRITICAL: Offer not found even with service role - transaction rollback or trigger failure', {
-            offerId,
-            userId: user.id,
-            authenticatedError: verifyError.message,
-            serviceRoleError: serviceVerifyError?.message,
-          });
+          log.error(
+            'CRITICAL: Offer not found even with service role - transaction rollback or trigger failure',
+            {
+              offerId,
+              userId: user.id,
+              authenticatedError: verifyError.message,
+              serviceRoleError: serviceVerifyError?.message,
+            },
+          );
           return NextResponse.json(
             {
               error: t('errors.offer.saveFailed'),
@@ -1326,19 +1329,25 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             { status: 500 },
           );
         } else {
-          log.warn('Offer found with service role but not authenticated client - possible RLS policy issue', {
-            offerId,
-            userId: user.id,
-            authenticatedError: verifyError.message,
-          });
+          log.warn(
+            'Offer found with service role but not authenticated client - possible RLS policy issue',
+            {
+              offerId,
+              userId: user.id,
+              authenticatedError: verifyError.message,
+            },
+          );
           // Offer exists, continue (but log the RLS issue for investigation)
         }
       } else if (!verifyOffer) {
-        log.error('CRITICAL: Offer not found after insert - transaction rollback or trigger failure', {
-          offerId,
-          userId: user.id,
-          insertedOffer,
-        });
+        log.error(
+          'CRITICAL: Offer not found after insert - transaction rollback or trigger failure',
+          {
+            offerId,
+            userId: user.id,
+            insertedOffer,
+          },
+        );
         return NextResponse.json(
           {
             error: t('errors.offer.saveFailed'),
@@ -1397,10 +1406,13 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
               errorCode: serviceShareError.code,
             });
           } else if (serviceShare && !existingShare) {
-            log.warn('Share found with service role but not authenticated client - possible RLS issue', {
-              offerId,
-              userId: user.id,
-            });
+            log.warn(
+              'Share found with service role but not authenticated client - possible RLS issue',
+              {
+                offerId,
+                userId: user.id,
+              },
+            );
             shareToUse = serviceShare;
           }
         }
@@ -1435,17 +1447,20 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
               shareError.code === '23503' ||
               (typeof shareError.message === 'string' &&
                 shareError.message.includes('foreign key constraint'));
-            
+
             if (isForeignKeyError) {
-              log.error('CRITICAL: Failed to create fallback share - offer does not exist in database', {
-                offerId,
-                userId: user.id,
-                error: shareError,
-                errorMessage: shareError.message,
-                errorCode: shareError.code,
-                errorDetails: shareError.details,
-                errorHint: shareError.hint,
-              });
+              log.error(
+                'CRITICAL: Failed to create fallback share - offer does not exist in database',
+                {
+                  offerId,
+                  userId: user.id,
+                  error: shareError,
+                  errorMessage: shareError.message,
+                  errorCode: shareError.code,
+                  errorDetails: shareError.details,
+                  errorHint: shareError.hint,
+                },
+              );
               // This is a critical error - the offer was not actually saved
               return NextResponse.json(
                 {
@@ -1456,13 +1471,16 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
               );
             } else {
               // Non-foreign-key error (likely RLS or permissions) - try service role as fallback
-              log.warn('Failed to create fallback share link with authenticated client, trying service role', {
-                offerId,
-                userId: user.id,
-                error: shareError.message,
-                errorCode: shareError.code,
-              });
-              
+              log.warn(
+                'Failed to create fallback share link with authenticated client, trying service role',
+                {
+                  offerId,
+                  userId: user.id,
+                  error: shareError.message,
+                  errorCode: shareError.code,
+                },
+              );
+
               // Fallback: Try with service role (only for share creation, not offer creation)
               const sbService = supabaseServiceRole();
               const { data: fallbackShare, error: fallbackError } = await sbService
