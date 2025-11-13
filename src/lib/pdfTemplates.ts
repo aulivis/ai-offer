@@ -131,7 +131,9 @@ export async function extractHeaderFooterData(page: {
 
     return { footerTemplate, headerTemplate };
   } catch (error) {
-    logger.warn('Failed to extract header/footer data', error);
+    logger.warn('Failed to extract header/footer data', {
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+    });
     return null;
   }
 }

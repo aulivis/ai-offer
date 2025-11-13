@@ -236,6 +236,8 @@ export async function setPdfMetadata(page: PuppeteerPage, metadata: PdfMetadata)
     }
   } catch (error) {
     // Silently fail if evaluation fails (e.g., in some environments)
-    logger.warn('Failed to set PDF metadata', error);
+    logger.warn('Failed to set PDF metadata', {
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+    });
   }
 }
