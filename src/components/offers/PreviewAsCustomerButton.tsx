@@ -55,7 +55,7 @@ export function PreviewAsCustomerButton({
           projectDetailsText: projectDetailsText.trim(),
           previewHtml: previewHtml.trim(),
           pricingRows: pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
-            name: name.trim(),
+            name: (name || '').trim(),
             qty,
             unit: unit || undefined,
             unitPrice,
