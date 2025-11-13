@@ -7,6 +7,7 @@ This document explains how to set up automatic cleanup of expired preview offers
 If your Supabase project has the `pg_cron` extension enabled, the migration will automatically schedule the cleanup job. This runs daily at 2 AM UTC.
 
 To check if pg_cron is enabled:
+
 ```sql
 SELECT * FROM pg_extension WHERE extname = 'pg_cron';
 ```
@@ -59,6 +60,7 @@ curl -X POST \
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -94,7 +96,7 @@ To check when cleanup last ran and how many offers were deleted, you can query:
 
 ```sql
 -- Check for expired preview offers that should be cleaned up
-SELECT 
+SELECT
   COUNT(*) as expired_preview_offers
 FROM public.offers o
 INNER JOIN public.offer_shares os ON os.offer_id = o.id
@@ -111,16 +113,18 @@ WHERE o.status = 'draft'
 ## Troubleshooting
 
 ### pg_cron not available
+
 - Use Option 2 (Edge Function) instead
 - Check your Supabase plan - pg_cron may require a higher tier
 
 ### Edge Function not accessible
+
 - Verify the function is deployed: `supabase functions list`
 - Check function logs in Supabase Dashboard
 - Ensure service role key is correct
 
 ### Cleanup not running
+
 - Check cron job status in Supabase Dashboard
 - Verify the schedule expression is correct
 - Check Edge Function logs for errors
-
