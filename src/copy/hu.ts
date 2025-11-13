@@ -408,6 +408,8 @@ export const hu = {
       savePdfLoading: 'Mentés…',
       expand: 'Részletek megjelenítése',
       collapse: 'Részletek elrejtése',
+      shareUrlCopied: 'Link másolva',
+      shareUrlCopiedDesc: 'A megosztási link a vágólapra másolva.',
     },
     statusSteps: {
       sent: {
