@@ -1988,6 +1988,9 @@ export const hu = {
     requestFailed: 'Hiba történt a kérés során. Próbáld újra vagy ellenőrizd a kapcsolatot.',
     requestStatus: 'Hiba a kérés során ({status}). Próbáld újra vagy frissítsd az oldalt.',
     featureRequiresUpgrade: 'Ez a funkció fizetős előfizetést igényel.',
+    database: {
+      operationFailed: 'Adatbázis művelet sikertelen. Próbáld újra vagy ellenőrizd a kapcsolatot.',
+    },
     auth: {
       requestFailed: 'Nem sikerült hitelesíteni a kérést. Próbáld újra vagy jelentkezz be újra.',
       sessionInvalid: 'A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra.',
