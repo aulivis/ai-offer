@@ -8,7 +8,7 @@ import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
 import ArrowPathIcon from '@heroicons/react/24/outline/ArrowPathIcon';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import type { PriceRow } from '@/app/lib/pricing';
-import type { ProjectDetails } from '@/types/wizard';
+import type { ProjectDetails } from '@/lib/projectDetails';
 import { t } from '@/copy';
 
 interface PreviewAsCustomerButtonProps {
