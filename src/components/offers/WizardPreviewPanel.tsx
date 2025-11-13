@@ -150,7 +150,7 @@ export function WizardPreviewPanel({
         onTabChange={onTabChange}
         onAbortPreview={onAbort}
         onManualRefresh={onRefresh}
-        onOpenFullscreen={onOpenFullscreen}
+        {...(onOpenFullscreen && { onOpenFullscreen })}
         titleId="offer-preview-card-title"
         controls={
           <PreviewControls
