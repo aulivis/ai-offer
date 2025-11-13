@@ -36,7 +36,7 @@ function getTemplatePath(): string {
 
     // Fallback to the most likely path
     cachedTemplatePath = possiblePaths[0]!;
-    return cachedTemplatePath;
+    return possiblePaths[0]!;
   }
 
   // Client-side fallback (should never be called, but needed for type safety)
