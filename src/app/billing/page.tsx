@@ -20,7 +20,6 @@ import {
   Lock,
   TrendingUp,
   Crown,
-  Clock,
   CheckCircle,
 } from 'lucide-react';
 
@@ -142,44 +141,38 @@ const TESTIMONIALS = [
 
 const PRICING_FAQS = [
   {
-    question: 'Mennyi ideig tart az ingyenes próba?',
+    question: 'Mennyi ideig használhatom ingyen a Vyndit?',
     answer:
-      'Az ingyenes próba 14 napig tart, és nem szükséges hozzá bankkártya. Kipróbálhatod az összes Pro funkciót korlátozás nélkül.',
+      'A Vyndi alapcsomagja örökre ingyenes.\n\nNincs időkorlát, nincs bankkártya, nincs kötelező frissítés.',
   },
   {
     question: 'Lehet később csomagot váltani?',
     answer:
-      'Természetesen! Bármikor átválthatsz magasabb vagy alacsonyabb csomagra. A magasabb csomagra váltás azonnal érvénybe lép, alacsonyabb csomagra váltás esetén a következő számlázási ciklustól kezdve.',
+      'Igen.\n\nBármikor válthatsz feljebb vagy lejjebb.\n\n– Felfelé váltás: azonnal érvényes\n\n– Lefelé váltás: következő számlázási ciklustól',
   },
   {
     question: 'Milyen fizetési módokat fogadtok el?',
     answer:
-      'Elfogadunk minden nemzetközi bankkártyát (Visa, Mastercard, American Express) és átutalást is. A Stripe banki szintű titkosítással védi az adataidat.',
+      'Bankkártyás fizetés: Visa, Mastercard, American Express, Google Pay, Apple Pay.\n\nA Stripe biztonságos, banki szintű titkosítást használ.',
   },
   {
     question: 'Van pénzvisszafizetési garancia?',
-    answer:
-      'Igen! 30 napos pénzvisszafizetési garanciát adunk. Ha nem vagy elégedett a Vyndi-vel, teljes összeget visszatérítjük, kérdések nélkül.',
+    answer: '',
   },
   {
     question: 'Biztonságos az adataim tárolása?',
     answer:
-      'Igen! Az adataidat titkosítva tároljuk, rendszeresen biztonsági mentést készítünk, és GDPR kompatibilisek vagyunk. ISO 27001 tanúsítvánnyal rendelkezünk.',
+      'Igen.\n\nAdataid titkosított kapcsolaton (SSL) keresztül kerülnek feldolgozásra, GDPR-kompatibilis módon.\n\nRendszeres biztonsági mentést végzünk.',
   },
   {
-    question: 'Mi történik az adataimmal, ha lemondok?',
+    question: 'Mi történik az adataimmal, ha lemondom az előfizetést?',
     answer:
-      'Lemondás után 30 napig hozzáférhetsz az adataidhoz exportálás céljából. Ezután biztonságosan töröljük őket a rendszerünkből.',
+      'Lemondás után 30 napig hozzáférsz az adatok exportálásához.\n\nEzután a rendszer biztonságosan véglegesen törli őket.',
   },
   {
     question: 'Tudok számlát kérni?',
     answer:
-      'Természetesen! Minden fizetésről automatikusan számlát állítunk ki, amit azonnal megkapsz emailben és a fiókodban is elérhető.',
-  },
-  {
-    question: 'Mikor érhető el az éves fizetési opció?',
-    answer:
-      'Az éves fizetési opció hamarosan elérhető lesz, ami körülbelül 17% kedvezményt jelent a havi díjakhoz képest. Érdeklődj emailben az info@vyndi.com címen.',
+      'Igen.\n\nMinden fizetésről automatikusan számlát állítunk ki, amit emailben is megkapsz és a fiókodban is elérsz.',
   },
 ];
 
@@ -624,18 +617,19 @@ export default function BillingPage() {
     };
   }, [offersThisMonth, planLimit]);
 
-  if (authStatus === 'loading') {
-    return (
-      <main
-        id="main"
-        className="flex min-h-[60vh] items-center justify-center px-6 pb-20 pt-24 text-sm font-medium text-fg-muted"
-      >
-        {t('billing.loading')}
-      </main>
-    );
-  }
-
-  if (!isAuthenticated) {
+  // Show public landing page if not authenticated or still loading
+  // This prevents redirect loops and ensures public users see the pricing page
+  if (authStatus !== 'authenticated' || !user) {
+    if (authStatus === 'loading') {
+      return (
+        <main
+          id="main"
+          className="flex min-h-[60vh] items-center justify-center px-6 pb-20 pt-24 text-sm font-medium text-fg-muted"
+        >
+          {t('billing.loading')}
+        </main>
+      );
+    }
     return <PublicBillingLanding />;
   }
 
@@ -1076,32 +1070,33 @@ function PublicBillingLanding() {
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-balance">
-              Növeld az ajánlataid{' '}
+              Készíts{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-green-400">
-                sikerességét 75%-kal
-              </span>
+                3x gyorsabban
+              </span>{' '}
+              professzionális ajánlatokat
             </h1>
 
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed text-pretty">
-              Több mint 10,000 vállalkozás készít professzionális ajánlatokat a Vyndi-vel. Kezdj
-              ingyenesen, frissíts bármikor.
+              Már több mint 200 vállalkozás használja a Vyndit márkahű ajánlatok készítésére.
+              Indítsd el ingyen — nincs bankkártya, nincs kockázat.
             </p>
 
             {/* Social proof numbers */}
             <div className="flex items-center justify-center gap-8 mb-8 text-white flex-wrap">
               <div>
                 <div className="text-3xl font-bold text-teal-400">10K+</div>
-                <div className="text-gray-300 text-sm">Aktív felhasználó</div>
+                <div className="text-gray-300 text-sm">Ajánlat készült</div>
               </div>
               <div className="w-px h-12 bg-gray-600"></div>
               <div>
                 <div className="text-3xl font-bold text-teal-400">150K+</div>
-                <div className="text-gray-300 text-sm">Elkészített ajánlat</div>
+                <div className="text-gray-300 text-sm">Sor generált tartalom</div>
               </div>
               <div className="w-px h-12 bg-gray-600"></div>
               <div>
                 <div className="text-3xl font-bold text-teal-400">4.9★</div>
-                <div className="text-gray-300 text-sm">Ügyfél elégedettség</div>
+                <div className="text-gray-300 text-sm">Átlagos értékelés</div>
               </div>
             </div>
 
@@ -1112,7 +1107,7 @@ function PublicBillingLanding() {
                 className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
                 <span className="relative z-10 text-base md:text-lg text-white">
-                  Próbáld ki most ingyen
+                  Kezdd el ingyen
                 </span>
                 <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
                 <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
@@ -1156,7 +1151,9 @@ function PublicBillingLanding() {
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
                 <div className="mb-6">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Ingyenes</h3>
-                  <p className="text-gray-600 text-sm mb-6">Kezdőknek és kipróbáláshoz</p>
+                  <p className="text-gray-600 text-sm mb-6">
+                    Kezdd el kockázat nélkül — ideális az első ajánlatokhoz
+                  </p>
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
@@ -1176,27 +1173,27 @@ function PublicBillingLanding() {
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">1 felhasználó</span>
+                    <span className="text-gray-700 text-sm">2 ajánlat / hónap</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">5 aktív ajánlat</span>
+                    <span className="text-gray-700 text-sm">Alap sablon</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Alap sablonok</span>
+                    <span className="text-gray-700 text-sm">PDF-export</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-400 text-sm line-through">AI segédlet</span>
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Korlátozott branding (színek)</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-400 text-sm line-through">Egyedi branding</span>
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Tevékenység sablonok</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-400 text-sm line-through">Csapat együttműködés</span>
+                    <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Email támogatás</span>
                   </div>
                 </div>
               </div>
@@ -1205,7 +1202,10 @@ function PublicBillingLanding() {
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
                 <div className="mb-6">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Vyndi Standard</h3>
-                  <p className="text-gray-600 text-sm mb-6">Kisvállalkozásoknak</p>
+                  <p className="text-gray-600 text-sm mb-6">
+                    A legjobb választás kisvállalkozásoknak, akik rendszeresen készítenek
+                    ajánlatokat
+                  </p>
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
@@ -1221,30 +1221,30 @@ function PublicBillingLanding() {
                     href="/login?redirect=/billing"
                     className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-center min-h-[44px] flex items-center justify-center"
                   >
-                    Indítsd a 14 napos próbát
+                    Frissítés Standardra
                   </Link>
                 </div>
 
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">3 felhasználó</span>
+                    <span className="text-gray-700 text-sm">10 ajánlat / hónap</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Korlátlan ajánlat</span>
+                    <span className="text-gray-700 text-sm">Alap sablon</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Premium sablonok</span>
+                    <span className="text-gray-700 text-sm">PDF-export</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">AI segédlet</span>
+                    <span className="text-gray-700 text-sm">Korlátozott branding (színek)</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Egyedi branding</span>
+                    <span className="text-gray-700 text-sm">Tevékenység sablonok</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -1265,7 +1265,9 @@ function PublicBillingLanding() {
 
                 <div className="mb-6">
                   <h3 className="text-2xl font-bold text-white mb-2">Vyndi Pro</h3>
-                  <p className="text-teal-100 text-sm mb-6">Nagy csapatoknak</p>
+                  <p className="text-teal-100 text-sm mb-6">
+                    Haladó funkciók csapatoknak és ügynökségeknek
+                  </p>
 
                   <div className="mb-2">
                     <div className="flex items-baseline gap-2">
@@ -1280,47 +1282,51 @@ function PublicBillingLanding() {
                     href="/login?redirect=/billing"
                     className="w-full bg-white text-teal-600 py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all text-center min-h-[44px] flex items-center justify-center"
                   >
-                    Indítsd a 14 napos próbát
+                    Pro előfizetés indítása
                   </Link>
 
                   {/* Social proof */}
-                  <p className="text-teal-100 text-xs text-center mt-3">
-                    ⭐ 8,500+ elégedett ügyfél
-                  </p>
+                  <p className="text-teal-100 text-xs text-center mt-3">⭐ 500+ elégedett ügyfél</p>
                 </div>
 
                 <div className="space-y-3 flex-1">
-                  <div className="flex items-start gap-2">
-                    <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Korlátlan felhasználó</span>
-                  </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
                     <span className="text-white text-sm font-medium">Korlátlan ajánlat</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Minden Premium funkció</span>
+                    <span className="text-white text-sm font-medium">
+                      Online megosztás elfogadással & PDF-export
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Prioritási támogatás</span>
+                    <span className="text-white text-sm font-medium">
+                      Teljes branding (színek és logó)
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">Dedikált fiókkezelő</span>
+                    <span className="text-white text-sm font-medium">
+                      Tevékenység sablonok referenciafotókkal
+                    </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
-                    <span className="text-white text-sm font-medium">API hozzáférés</span>
+                    <span className="text-white text-sm font-medium">
+                      Ajánlások integrálása az ajánlatokba
+                    </span>
                   </div>
-                </div>
-
-                {/* Urgency indicator */}
-                <div className="mt-6 pt-6 border-t border-white/20">
-                  <div className="flex items-center gap-2 text-white text-xs">
-                    <Clock className="w-4 h-4" />
-                    <span>12 felhasználó nézi most ezt a csomagot</span>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                    <span className="text-white text-sm font-medium">Csapattag hozzáadása</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />
+                    <span className="text-white text-sm font-medium">
+                      Prioritásos ügyfélszolgálat
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1330,28 +1336,28 @@ function PublicBillingLanding() {
       </section>
 
       {/* Enhanced Enterprise Section */}
-      <section className="py-20 bg-gradient-to-br from-navy-900 to-navy-800 text-white">
+      <section className="py-16 bg-gradient-to-br from-navy-900 to-navy-800 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm mb-6 border border-turquoise-500/30">
                   <Building2 className="w-4 h-4" />
-                  {t('landing.enterprise.badge')}
+                  Vállalatoknak
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-balance">
-                  {t('landing.enterprise.title')}
+                  Nagyobb csapatban dolgoztok? Egyedi igényeitek vannak?
                 </h2>
                 <p className="text-xl text-gray-300 mb-8 leading-relaxed text-pretty">
-                  {t('landing.enterprise.description')}
+                  Kérj személyre szabott ajánlatot a Vyndi Business csomagra.
                 </p>
                 <ul className="space-y-4 mb-10">
                   {[
-                    t('landing.enterprise.features.0' as CopyKey),
-                    t('landing.enterprise.features.1' as CopyKey),
-                    t('landing.enterprise.features.2' as CopyKey),
-                    t('landing.enterprise.features.3' as CopyKey),
-                    t('landing.enterprise.features.4' as CopyKey),
+                    'Korlátlan csapattag',
+                    'Dedikált támogatás',
+                    'Haladó riportok',
+                    'Egyedi sablonok',
+                    'Egyedi integráció vállalati rendszerekkel',
                   ].map((feature, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <Check
@@ -1367,15 +1373,9 @@ function PublicBillingLanding() {
                     href="mailto:info@vyndi.com?subject=Enterprise megoldás érdeklődés"
                     className="inline-flex items-center justify-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
                   >
-                    {t('landing.enterprise.ctaPrimary')}
+                    Lépj kapcsolatba velünk
                     <ArrowRight className="w-5 h-5" />
                   </a>
-                  <Link
-                    href="/login?redirect=/billing"
-                    className="inline-flex items-center justify-center gap-2 border-2 border-white/30 hover:bg-white/10 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all min-h-[44px]"
-                  >
-                    {t('landing.enterprise.ctaSecondary')}
-                  </Link>
                 </div>
               </div>
               <div className="relative hidden md:block">
@@ -1422,10 +1422,10 @@ function PublicBillingLanding() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
-                Részletes funkció összehasonlítás
+                Hasonlítsd össze a Vyndi csomagokat
               </h2>
               <p className="text-xl text-gray-600 text-pretty">
-                Válaszd ki a számodra legmegfelelőbb csomagot
+                Válaszd ki a vállalkozásodhoz legjobbat
               </p>
             </div>
 
@@ -1446,19 +1446,19 @@ function PublicBillingLanding() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {[
+                    {([
                       {
-                        feature: 'Felhasználók száma',
-                        free: '1',
-                        standard: '1',
+                        feature: 'Ajánlatok / hó',
+                        free: '2',
+                        standard: '10',
                         pro: 'Korlátlan',
                         type: 'text' as const,
                       },
                       {
-                        feature: 'Aktív ajánlatok',
-                        free: '2',
-                        standard: '5',
-                        pro: 'Korlátlan',
+                        feature: 'Megosztás',
+                        free: 'PDF',
+                        standard: 'PDF',
+                        pro: 'Link & PDF',
                         type: 'text' as const,
                       },
                       {
@@ -1470,23 +1470,38 @@ function PublicBillingLanding() {
                       },
                       {
                         feature: 'Sablonok',
-                        free: '10',
-                        standard: '10+',
-                        pro: '100+',
+                        free: '1',
+                        standard: '1',
+                        pro: '10+',
                         type: 'text' as const,
                       },
                       {
                         feature: 'Egyedi branding',
+                        free: 'Részleges',
+                        standard: 'Részleges',
+                        standardGray: true,
+                        pro: true,
+                        type: 'check' as const,
+                      },
+                      {
+                        feature: 'Referenciafotók',
                         free: false,
-                        standard: true,
+                        standard: false,
+                        pro: true,
+                        type: 'check' as const,
+                      },
+                      {
+                        feature: 'Ajánlások integrálása',
+                        free: false,
+                        standard: false,
                         pro: true,
                         type: 'check' as const,
                       },
                       {
                         feature: 'Támogatás',
-                        free: 'Közösségi',
-                        standard: 'Közösségi',
-                        pro: 'Prioritás email',
+                        free: 'E-mail',
+                        standard: 'E-mail',
+                        pro: 'Kiemelt',
                         type: 'text' as const,
                       },
                       {
@@ -1496,21 +1511,32 @@ function PublicBillingLanding() {
                         pro: true,
                         type: 'check' as const,
                       },
-                    ].map((row, idx) => (
+                    ] as Array<{
+                      feature: string;
+                      free: string | boolean;
+                      standard: string | boolean;
+                      standardGray?: boolean;
+                      pro: string | boolean;
+                      type: 'text' | 'check';
+                    }>).map((row, idx) => (
                       <tr key={idx} className="transition-colors hover:bg-gray-50">
                         <td className="px-8 py-5 font-semibold text-navy-900">{row.feature}</td>
                         <td className="px-8 py-5 text-center">
                           {row.type === 'check' ? (
-                            row.free === true ? (
-                              <div className="flex justify-center">
-                                <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                  <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
+                            typeof row.free === 'boolean' ? (
+                              row.free === true ? (
+                                <div className="flex justify-center">
+                                  <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
+                                    <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
+                                  </div>
                                 </div>
-                              </div>
+                              ) : (
+                                <div className="flex justify-center">
+                                  <X className="w-6 h-6 text-gray-300" />
+                                </div>
+                              )
                             ) : (
-                              <div className="flex justify-center">
-                                <X className="w-6 h-6 text-gray-300" />
-                              </div>
+                              <span className="text-gray-700 font-medium">{row.free}</span>
                             )
                           ) : (
                             <span className="text-gray-700 font-medium">{row.free}</span>
@@ -1518,16 +1544,22 @@ function PublicBillingLanding() {
                         </td>
                         <td className="px-8 py-5 text-center bg-turquoise-50/20">
                           {row.type === 'check' ? (
-                            row.standard === true ? (
-                              <div className="flex justify-center">
-                                <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
-                                  <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
+                            typeof row.standard === 'boolean' ? (
+                              row.standard === true ? (
+                                <div className="flex justify-center">
+                                  <div className="w-7 h-7 bg-turquoise-100 rounded-full flex items-center justify-center">
+                                    <Check className="w-5 h-5 text-turquoise-600" strokeWidth={3} />
+                                  </div>
                                 </div>
-                              </div>
+                              ) : (
+                                <div className="flex justify-center">
+                                  <X className="w-6 h-6 text-gray-300" />
+                                </div>
+                              )
+                            ) : row.standardGray ? (
+                              <span className="text-gray-400 font-medium">{row.standard}</span>
                             ) : (
-                              <div className="flex justify-center">
-                                <X className="w-6 h-6 text-gray-300" />
-                              </div>
+                              <span className="text-gray-700 font-medium">{row.standard}</span>
                             )
                           ) : (
                             <span className="text-gray-700 font-medium">{row.standard}</span>
@@ -1571,10 +1603,11 @@ function PublicBillingLanding() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
-                Mit mondanak ügyfeleink?
+                Mit mondanak a Vyndiről a felhasználóink?
               </h2>
               <p className="text-xl text-gray-600 text-pretty">
-                Több mint 500 elégedett ügyfél használja a Vyndit
+                Több mint 200 elégedett vállalkozás készít gyorsabban és professzionálisabban
+                ajánlatokat a Vyndivel.
               </p>
             </div>
 
@@ -1582,24 +1615,24 @@ function PublicBillingLanding() {
             <div className="grid md:grid-cols-3 gap-8">
               {/* Testimonial with specific results */}
               <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-2xl p-8 border-2 border-teal-200">
-                <div className="flex items-center gap-1 mb-4">
+                <div className="flex items-center justify-center gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
 
                 {/* Specific metric callout */}
-                <div className="bg-white rounded-xl p-4 mb-4 border border-teal-200">
+                <div className="bg-white rounded-xl p-4 mb-4 border border-teal-200 text-center">
                   <div className="text-3xl font-bold text-teal-600 mb-1">+75%</div>
-                  <div className="text-sm text-gray-600">Növekedés az elfogadási arányban</div>
+                  <div className="text-sm text-gray-600">több elfogadott ajánlat</div>
                 </div>
 
-                <p className="text-gray-700 mb-6 leading-relaxed text-pretty">
+                <p className="text-gray-700 mb-6 leading-relaxed text-pretty text-center">
                   &ldquo;A Vyndi segítségével 3 hónap alatt 75%-kal nőtt az ajánlataink elfogadási
                   aránya. Az AI funkció hihetetlen időt spórol meg nekünk.&rdquo;
                 </p>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center gap-4">
                   <Image
                     src={TESTIMONIALS[0].image}
                     alt={TESTIMONIALS[0].author}
@@ -1607,7 +1640,7 @@ function PublicBillingLanding() {
                     height={56}
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
                   />
-                  <div>
+                  <div className="text-center">
                     <div className="font-bold text-gray-900">{TESTIMONIALS[0].author}</div>
                     <div className="text-sm text-gray-600">{TESTIMONIALS[0].role}</div>
                     <div className="text-sm text-gray-500">{TESTIMONIALS[0].company}</div>
@@ -1616,7 +1649,7 @@ function PublicBillingLanding() {
 
                 {/* Verification badge */}
                 <div className="mt-4 pt-4 border-t border-teal-200">
-                  <div className="flex items-center gap-2 text-teal-600 text-sm">
+                  <div className="flex items-center justify-center gap-2 text-teal-600 text-sm">
                     <CheckCircle className="w-4 h-4" />
                     <span>Ellenőrzött vásárló</span>
                   </div>
@@ -1625,23 +1658,23 @@ function PublicBillingLanding() {
 
               {/* Testimonial with time saved */}
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200">
-                <div className="flex items-center gap-1 mb-4">
+                <div className="flex items-center justify-center gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
 
-                <div className="bg-white rounded-xl p-4 mb-4 border border-purple-200">
+                <div className="bg-white rounded-xl p-4 mb-4 border border-purple-200 text-center">
                   <div className="text-3xl font-bold text-purple-600 mb-1">15 óra</div>
-                  <div className="text-sm text-gray-600">Megspórolt idő hetente</div>
+                  <div className="text-sm text-gray-600">megtakarítás hetente</div>
                 </div>
 
-                <p className="text-gray-700 mb-6 leading-relaxed text-pretty">
+                <p className="text-gray-700 mb-6 leading-relaxed text-pretty text-center">
                   &ldquo;Korábban 2-3 napig tartott egy ajánlat elkészítése. Most 30 perc alatt kész
                   vagyok, és még profibb is lett az eredmény.&rdquo;
                 </p>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center gap-4">
                   <Image
                     src={TESTIMONIALS[1].image}
                     alt={TESTIMONIALS[1].author}
@@ -1649,7 +1682,7 @@ function PublicBillingLanding() {
                     height={56}
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
                   />
-                  <div>
+                  <div className="text-center">
                     <div className="font-bold text-gray-900">{TESTIMONIALS[1].author}</div>
                     <div className="text-sm text-gray-600">{TESTIMONIALS[1].role}</div>
                     <div className="text-sm text-gray-500">{TESTIMONIALS[1].company}</div>
@@ -1657,7 +1690,7 @@ function PublicBillingLanding() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-purple-200">
-                  <div className="flex items-center gap-2 text-purple-600 text-sm">
+                  <div className="flex items-center justify-center gap-2 text-purple-600 text-sm">
                     <CheckCircle className="w-4 h-4" />
                     <span>Ellenőrzött vásárló</span>
                   </div>
@@ -1666,23 +1699,23 @@ function PublicBillingLanding() {
 
               {/* Testimonial with ROI */}
               <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-8 border-2 border-orange-200">
-                <div className="flex items-center gap-1 mb-4">
+                <div className="flex items-center justify-center gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
 
-                <div className="bg-white rounded-xl p-4 mb-4 border border-orange-200">
+                <div className="bg-white rounded-xl p-4 mb-4 border border-orange-200 text-center">
                   <div className="text-3xl font-bold text-orange-600 mb-1">5M Ft</div>
-                  <div className="text-sm text-gray-600">Extra bevétel 6 hónap alatt</div>
+                  <div className="text-sm text-gray-600">új bevétel ajánlatokból</div>
                 </div>
 
-                <p className="text-gray-700 mb-6 leading-relaxed text-pretty">
+                <p className="text-gray-700 mb-6 leading-relaxed text-pretty text-center">
                   &ldquo;A professzionális ajánlatok segítségével több nagy ügyfelet tudtunk
                   megnyerni. A befektetés megtérült már az első hónapban.&rdquo;
                 </p>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center gap-4">
                   <Image
                     src={TESTIMONIALS[2].image}
                     alt={TESTIMONIALS[2].author}
@@ -1690,7 +1723,7 @@ function PublicBillingLanding() {
                     height={56}
                     className="w-14 h-14 rounded-full border-2 border-white shadow-md object-cover"
                   />
-                  <div>
+                  <div className="text-center">
                     <div className="font-bold text-gray-900">{TESTIMONIALS[2].author}</div>
                     <div className="text-sm text-gray-600">{TESTIMONIALS[2].role}</div>
                     <div className="text-sm text-gray-500">{TESTIMONIALS[2].company}</div>
@@ -1698,7 +1731,7 @@ function PublicBillingLanding() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-orange-200">
-                  <div className="flex items-center gap-2 text-orange-600 text-sm">
+                  <div className="flex items-center justify-center gap-2 text-orange-600 text-sm">
                     <CheckCircle className="w-4 h-4" />
                     <span>Ellenőrzött vásárló</span>
                   </div>
@@ -1715,18 +1748,8 @@ function PublicBillingLanding() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
-                Gyakran ismételt kérdések
+                Gyakori kérdések az árazásról és a csomagokról
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto text-pretty">
-                Nem találod a választ? Írj nekünk bátran a{' '}
-                <a
-                  href="mailto:hello@vyndi.com"
-                  className="text-turquoise-600 hover:text-turquoise-700 font-semibold"
-                >
-                  hello@vyndi.com
-                </a>{' '}
-                címen.
-              </p>
             </div>
 
             {/* Enhanced accordion with highlighted money-back guarantee */}
@@ -1754,23 +1777,11 @@ function PublicBillingLanding() {
                 {openFAQ === 0 && (
                   <div className="px-6 pb-6">
                     <p className="text-gray-700 leading-relaxed mb-4">
-                      Igen! 30 napos pénz-visszafizetési garanciát kínálunk minden csomagra. Ha
-                      bármilyen okból nem vagy elégedett, teljes összegben visszatérítjük a díjat.
+                      Igen. A fizetős csomagokra 30 napos pénz-visszafizetési garancia vonatkozik.
                     </p>
-                    <div className="bg-white rounded-lg p-4 border border-teal-200">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-teal-500 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <div className="font-semibold text-gray-900 mb-1">
-                            Kockázatmentes próba
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            Nincs kérdés, nincs magyarázkodás. Egyszerű visszatérítés 30 napon
-                            belül.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-gray-700 leading-relaxed">
+                      Ha nem vagy elégedett, kérdés nélkül visszatérítjük a díjat.
+                    </p>
                   </div>
                 )}
               </div>
@@ -1779,8 +1790,6 @@ function PublicBillingLanding() {
               {PRICING_FAQS.map((faq, idx) => {
                 // Skip the money-back FAQ as we have it highlighted above
                 if (idx === 3) return null;
-                // Skip the annual payment FAQ
-                if (idx === 7) return null;
 
                 return (
                   <div
@@ -1800,7 +1809,9 @@ function PublicBillingLanding() {
                     </button>
                     {openFAQ === idx + 1 && (
                       <div className="px-6 pb-6 border-t border-gray-200 pt-6">
-                        <p className="text-gray-700 leading-relaxed text-pretty">{faq.answer}</p>
+                        <div className="text-gray-700 leading-relaxed text-pretty whitespace-pre-line">
+                          {faq.answer}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1811,11 +1822,14 @@ function PublicBillingLanding() {
             {/* Still have questions CTA */}
             <div className="mt-12 text-center bg-gray-50 rounded-2xl p-8">
               <MessageCircle className="w-12 h-12 text-teal-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Még mindig vannak kérdéseid?</h3>
-              <p className="text-gray-600 mb-6">Csapatunk szívesen válaszol minden kérdésedre</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Még maradt kérdésed?</h3>
+              <p className="text-gray-600 mb-6">
+                Írj nekünk bátran — segítünk kiválasztani a vállalkozásodhoz legjobban illő
+                csomagot.
+              </p>
               <Link
                 href="mailto:hello@vyndi.com"
-                className="bg-teal-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-600 transition-colors inline-flex items-center gap-2 min-h-[44px]"
+                className="border-2 border-teal-500 text-teal-600 px-8 py-3 rounded-lg font-semibold hover:bg-teal-50 transition-colors inline-flex items-center gap-2 min-h-[44px]"
               >
                 Kapcsolatfelvétel
               </Link>
@@ -1825,30 +1839,30 @@ function PublicBillingLanding() {
       </section>
 
       {/* Trust & Security Section */}
-      <section className="py-16">
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-4 gap-8 text-center">
               {[
                 {
                   icon: Shield,
-                  title: 'Biztonságos fizetés',
-                  description: '256-bit SSL titkosítás',
+                  title: 'Biztonságos infrastruktúra',
+                  description: 'EU adatközpontok, rendszeres mentések',
                 },
                 {
                   icon: Award,
-                  title: 'ISO 27001',
-                  description: 'Tanúsított biztonság',
+                  title: 'Adatvédelmi megfelelés',
+                  description: 'GDPR-kompatibilis adatkezelés',
                 },
                 {
                   icon: Lock,
-                  title: 'GDPR kompatibilis',
-                  description: 'Adatvédelmi garancia',
+                  title: '99.9% elérhető',
+                  description: 'Magas rendelkezésre állás',
                 },
                 {
                   icon: TrendingUp,
-                  title: '99.9% uptime',
-                  description: 'Megbízható szolgáltatás',
+                  title: '99.9% elérhető',
+                  description: 'Magas rendelkezésre állás',
                 },
               ].map((benefit, idx) => (
                 <div key={idx} className="text-center group cursor-default">

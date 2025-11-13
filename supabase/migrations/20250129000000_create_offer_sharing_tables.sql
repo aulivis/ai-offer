@@ -285,3 +285,4 @@ $$;
 -- Ensure service_role has full access
 grant all on table public.offer_share_access_logs to service_role;
 
+

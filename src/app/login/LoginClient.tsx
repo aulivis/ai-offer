@@ -223,15 +223,15 @@ export default function LoginClient() {
             <div className="flex flex-wrap items-center justify-center gap-6 mb-6">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>GDPR megfelelő</span>
+                <span>GDPR kompatibilis</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>ISO 27001 minősített</span>
+                <span>Biztonságos infrastruktúra</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                <span>SOC 2 Type II</span>
+                <span>99.9% elérhetőség</span>
               </div>
             </div>
 
@@ -243,7 +243,7 @@ export default function LoginClient() {
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white px-4 py-2 rounded-full mb-6">
                   <Zap className="w-4 h-4" />
                   <span className="text-sm font-semibold">
-                    Kezdés 30 másodperc alatt - Ingyenes
+                    Kezdd el 30 másodperc alatt — teljesen ingyen
                   </span>
                 </div>
 
@@ -251,7 +251,7 @@ export default function LoginClient() {
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                   {fromSource === 'cta' || fromSource === 'pricing'
                     ? 'Indítsd a 14 napos ingyenes próbát'
-                    : 'Kezdd el most'}
+                    : 'Lépj be egy kattintással'}
                 </h1>
 
                 {/* Dual-purpose subtitle */}
@@ -272,9 +272,10 @@ export default function LoginClient() {
                     </>
                   ) : (
                     <>
-                      Jelentkezz be vagy hozz létre új fiókot egyetlen kattintással.{' '}
+                      Beléphetsz vagy új fiókot hozhatsz létre egyetlen kattintással.
+                      <br />
                       <span className="text-teal-600 font-semibold">
-                        Nincs jelszó, nincs bonyolult regisztráció.
+                        *Nincs jelszó, nincs bankkártya, nincs bonyolult regisztráció*
                       </span>
                     </>
                   )}
@@ -456,14 +457,15 @@ export default function LoginClient() {
                 <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 flex items-start gap-2">
                   <Info className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-teal-700">
-                    Küldünk egy belépési linket az emailedre. Nincs jelszó, nincs regisztráció!
+                    Küldünk egy belépési linket az emailedre. Nincs jelszó, nincs külön
+                    regisztrációs folyamat!
                   </p>
                 </div>
               </form>
 
               {/* Privacy note */}
               <p className="mt-6 text-center text-xs text-gray-500">
-                A regisztrációval elfogadod az{' '}
+                A gombra kattintva elfogadod az{' '}
                 <Link href="/adatvedelem" className="underline hover:text-gray-700">
                   Adatvédelmi szabályzatot
                 </Link>{' '}
@@ -479,49 +481,11 @@ export default function LoginClient() {
           <div className="hidden lg:block">
             <div className="sticky top-24">
               <div className="space-y-8">
-                {/* Trust indicators */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center">
-                    <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Shield className="w-7 h-7 text-green-600" />
-                    </div>
-                    <div className="font-bold text-gray-900 mb-1">Nincs bankkártya</div>
-                    <div className="text-sm text-gray-600">Azonnal használható ingyenes fiók</div>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Lock className="w-7 h-7 text-blue-600" />
-                    </div>
-                    <div className="font-bold text-gray-900 mb-1">Biztonságos</div>
-                    <div className="text-sm text-gray-600">256-bit SSL titkosítás</div>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Zap className="w-7 h-7 text-purple-600" />
-                    </div>
-                    <div className="font-bold text-gray-900 mb-1">Villámgyors</div>
-                    <div className="text-sm text-gray-600">Belépés 5 másodperc alatt</div>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Users className="w-7 h-7 text-orange-600" />
-                    </div>
-                    <div className="font-bold text-gray-900 mb-1">24/7 Támogatás</div>
-                    <div className="text-sm text-gray-600">Mindig itt vagyunk neked</div>
-                  </div>
-                </div>
-
                 {/* What you get after signup */}
                 <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 border-2 border-gray-100">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Mit kapsz azonnal a regisztrációval?
+                    Mit kapsz azonnal a regisztráció után?
                   </h2>
-                  <p className="text-gray-600 mb-6">
-                    Minden funkció elérhető az ingyenes fiókkal, azonnal
-                  </p>
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
@@ -529,9 +493,9 @@ export default function LoginClient() {
                         <FileText className="w-5 h-5 text-teal-600" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 mb-1">5 aktív ajánlat</h3>
+                        <h3 className="font-bold text-gray-900 mb-1">2 aktív ajánlat</h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          Kezdj el azonnal professzionális ajánlatokat készíteni ingyen
+                          Kezdj el azonnal professzionális ajánlatokat készíteni — teljesen ingyen
                         </p>
                         <div className="flex items-center gap-2 text-teal-600 text-xs font-semibold">
                           <Check className="w-3 h-3" />
@@ -545,9 +509,9 @@ export default function LoginClient() {
                         <Palette className="w-5 h-5 text-purple-600" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 mb-1">Alap sablonok</h3>
+                        <h3 className="font-bold text-gray-900 mb-1">Kész sablon</h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          Használj 10+ profi sablont azonnali induláshoz
+                          Formázott sablon a vállalkozásod színeivel
                         </p>
                         <div className="flex items-center gap-2 text-teal-600 text-xs font-semibold">
                           <Check className="w-3 h-3" />
@@ -561,13 +525,13 @@ export default function LoginClient() {
                         <Sparkles className="w-5 h-5 text-orange-600" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 mb-1">14 napos próba</h3>
+                        <h3 className="font-bold text-gray-900 mb-1">PDF-export</h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          Kipróbálhatod az összes Premium funkciót ingyen
+                          Egy kattintással letölthető, ügyfélnek küldhető ajánlat
                         </p>
                         <div className="flex items-center gap-2 text-teal-600 text-xs font-semibold">
                           <Check className="w-3 h-3" />
-                          <span>Automatikusan aktiválva</span>
+                          <span>Azonnal elérhető</span>
                         </div>
                       </div>
                     </div>
@@ -577,11 +541,51 @@ export default function LoginClient() {
                   <div className="mt-6 bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl p-6 text-center">
                     <Crown className="w-6 h-6 mx-auto mb-2 text-white" />
                     <h3 className="text-lg font-bold text-white mb-1">
-                      Próbáld ki a Premium funkciókat 14 napig ingyen
+                      Szeretnél több funkciót korlátlanul?
                     </h3>
                     <p className="text-teal-100 text-sm">
-                      Korlátlan ajánlat, AI segédlet, egyedi branding és még sok más
+                      Frissíts bármikor Standard vagy Pro csomagra — több ajánlat, több sablon,
+                      teljes branding és haladó funkciók várnak rád.
                     </p>
+                  </div>
+                </div>
+
+                {/* Trust indicators */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Shield className="w-7 h-7 text-green-600" />
+                    </div>
+                    <div className="font-bold text-gray-900 mb-1">Nem kell bankkártya</div>
+                    <div className="text-sm text-gray-600">Azonnal használható, ingyenes fiók</div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Lock className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <div className="font-bold text-gray-900 mb-1">Biztonságos belépés</div>
+                    <div className="text-sm text-gray-600">
+                      256-bit SSL titkosítás és Magic Link
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Zap className="w-7 h-7 text-purple-600" />
+                    </div>
+                    <div className="font-bold text-gray-900 mb-1">Villámgyors</div>
+                    <div className="text-sm text-gray-600">
+                      Belépés 5 másodperc alatt, külön regisztráció nélkül
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Users className="w-7 h-7 text-orange-600" />
+                    </div>
+                    <div className="font-bold text-gray-900 mb-1">Segítünk, ha elakadsz</div>
+                    <div className="text-sm text-gray-600">Barátságos támogatás magyarul</div>
                   </div>
                 </div>
               </div>

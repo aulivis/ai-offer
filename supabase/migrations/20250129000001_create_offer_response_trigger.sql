@@ -84,3 +84,4 @@ after insert on public.offer_responses
 for each row
 execute function public.handle_offer_response();
 
+

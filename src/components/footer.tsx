@@ -53,7 +53,7 @@ export function Footer() {
               <h3 className="text-3xl font-bold text-turquoise-400 mb-4">Vyndi</h3>
               <p className="text-gray-300 text-lg leading-relaxed text-pretty">
                 AI-alapú ajánlatkészítő platform, amellyel percek alatt készíthetsz professzionális,
-                automatizált ajánlatokat – gyorsan, egységesen és márkahűen.
+                jól strukturált és márkahű ajánlatokat.
               </p>
             </div>
 
@@ -61,8 +61,7 @@ export function Footer() {
             <div className="bg-navy-800 rounded-2xl p-6 border border-navy-700 mb-6">
               <h4 className="font-bold text-xl mb-3">Iratkozz fel a Vyndi hírlevelére</h4>
               <p className="text-gray-400 text-sm mb-4 text-pretty">
-                Havi egyszer hasznos tippeket, új funkciókat és inspirációkat küldünk az
-                ajánlatkészítés hatékonyabbá tételéhez.
+                Hasznos tippek, új funkciók és ajánlatkészítési praktikák — havonta, spam nélkül.
               </p>
 
               {newsletterStatus === 'success' ? (
@@ -187,7 +186,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/success-stories"
+                  href="/sikertortenetek-ajanlatkeszites-automatizalas"
                   className="text-gray-300 hover:text-turquoise-400 transition-colors text-base"
                 >
                   Esettanulmányok

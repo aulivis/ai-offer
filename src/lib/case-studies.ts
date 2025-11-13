@@ -6,17 +6,17 @@ export function getCaseStudies(): CaseStudy[] {
     {
       id: '1',
       slug: 'studio-ikon',
-      companyName: t('landing.caseStudiesInline.studioFluo.company'),
+      companyName: 'Studio Fluo',
       companyLogo: '/logos/studio-ikon.png',
       industry: 'creative',
       industryLabel: t('landing.caseStudiesInline.studioFluo.industry'),
       companySize: '15 fő',
       plan: 'Pro',
-      timeline: '3 hónap',
+      timeline: '1 hónap',
       featured: true,
       shortDescription:
         'Egy marketing ügynökség története, amely 70%-kal gyorsabb lett az ajánlatkészítésben',
-      mainResult: '70%-kal gyorsabb ajánlatkészítés és +35% konverziós ráta',
+      mainResult: 'Studio Fluo | +35% Konverzió 1 Hónap Alatt',
       metrics: [
         {
           id: 'm1',
@@ -39,10 +39,10 @@ export function getCaseStudies(): CaseStudy[] {
         {
           id: 'm3',
           value: '+35%',
-          label: 'konverziós ráta',
-          description: 'Az ajánlatok elfogadási aránya jelentősen javult',
-          before: '15%',
-          after: '50%',
+          label: 'Konverzió növekedés',
+          description: 'A konverzió 32%-ról 43%-ra nőtt',
+          before: '32%',
+          after: '43%',
           improvement: '+35% növekedés',
         },
       ],
@@ -122,9 +122,10 @@ export function getCaseStudies(): CaseStudy[] {
         },
       ],
       testimonial: {
-        quote: t('landing.caseStudiesInline.studioFluo.quote'),
+        quote:
+          'A legnagyobb változás a professzionális megjelenés. Egy potenciális ügyfél azt mondta: "Ez az ajánlat annyira átlátható, hogy azonnal igent mondtunk." A konverziónk 32%-ról 43%-ra nőtt, és 3 nappal csökkent az átfutási idő.',
         fullQuote:
-          'Korábban napi 3-4 órát töltöttünk ajánlatkészítéssel, ami elég frusztráló volt, mert ez idő alatt nem tudtunk a kreatív munkára koncentrálni. A Vyndi bevezetése óta mindez megváltozott. Most egy ajánlat elkészítése átlagosan 1 óra, az AI segít a szövegekben, a sablonok pedig biztosítják, hogy minden ajánlat professzionális legyen. Az ügyfelek visszajelzései alapján az ajánlataink minősége is jelentősen javult, ami +35%-os konverziós ráta növekedésben is megmutatkozik. Már nem tudom elképzelni, hogyan dolgoznánk Vyndi nélkül.',
+          'A legnagyobb változás a professzionális megjelenés. Egy potenciális ügyfél azt mondta: "Ez az ajánlat annyira átlátható, hogy azonnal igent mondtunk." A konverziónk 32%-ról 43%-ra nőtt, és 3 nappal csökkent az átfutási idő. Korábban napi 3-4 órát töltöttünk ajánlatkészítéssel, ami elég frusztráló volt, mert ez idő alatt nem tudtunk a kreatív munkára koncentrálni. A Vyndi bevezetése óta mindez megváltozott. Most egy ajánlat elkészítése átlagosan 1 óra, az AI segít a szövegekben, a sablonok pedig biztosítják, hogy minden ajánlat professzionális legyen.',
         author: t('landing.caseStudiesInline.studioFluo.author'),
         authorInitials: 'KJ',
         role: t('landing.caseStudiesInline.studioFluo.role'),
@@ -133,7 +134,7 @@ export function getCaseStudies(): CaseStudy[] {
       featuredImage: '/case-studies/studio-ikon-hero.jpg',
       relatedCaseStudies: ['tech-solutions', 'creative-agency'],
       // Legacy support
-      company: t('landing.caseStudiesInline.studioFluo.company'),
+      company: 'Studio Fluo',
       results: [
         {
           metric: '70%',
@@ -159,23 +160,23 @@ export function getCaseStudies(): CaseStudy[] {
     {
       id: '2',
       slug: 'tech-solutions',
-      companyName: t('landing.caseStudiesInline.techSolutions.company'),
+      companyName: 'Tech Solutions Kft.',
       companyLogo: '/logos/tech-solutions.png',
       industry: 'it',
       industryLabel: t('landing.caseStudiesInline.techSolutions.industry'),
       companySize: '25 fő',
       plan: 'Pro',
-      timeline: '4 hónap',
+      timeline: '3 hét',
       featured: true,
       shortDescription: 'IT szolgáltató, amely 65%-kal csökkentette az ajánlatkészítési idejét',
-      mainResult: '65%-kal rövidebb ajánlatkészítési idő és 98% ügyfél elégedettség',
+      mainResult: 'Tech Solutions Kft. | 65% Gyorsulás 3 Hét Alatt',
       metrics: [
         {
           id: 'm1',
-          value: '-65%',
-          label: 'ajánlatkészítési idő',
-          description: 'Az ajánlatkészítési idő 8 óráról 2.8 órára csökkent',
-          before: '8 óra',
+          value: '2.8',
+          label: 'Heti szabadidő',
+          description: 'Heti 2.8 óra többet tudnak stratégiai munkára fordítani',
+          before: '0 óra',
           after: '2.8 óra',
           improvement: '65% időmegtakarítás',
         },
@@ -266,9 +267,10 @@ export function getCaseStudies(): CaseStudy[] {
         },
       ],
       testimonial: {
-        quote: t('landing.caseStudiesInline.techSolutions.quote'),
+        quote:
+          'Mielőtt a Vyndit használtuk, egy árajánlat 4,5 óránkba került - sablonkereséssel, árazással, egyeztetéssel. Most 1,7 óra alatt kész vagyunk. A csapat 2,8 órával többet tud stratégiai munkára fordítani, és az ügyfelek is érzik a gyorsaságot.',
         fullQuote:
-          'A Vyndi moduláris rendszere és AI funkciói lehetővé tették, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire. Az ajánlatkészítési időnk 65%-kal csökkent, és az ügyfeleink 98%-a elégedett az új ajánlatokkal. A rendszer rugalmassága lehetővé teszi, hogy különböző projekttípusokhoz különböző sablonokat használjunk, miközben a márka identitásunk konzisztens marad.',
+          'Mielőtt a Vyndit használtuk, egy árajánlat 4,5 óránkba került - sablonkereséssel, árazással, egyeztetéssel. Most 1,7 óra alatt kész vagyunk. A csapat 2,8 órával többet tud stratégiai munkára fordítani, és az ügyfelek is érzik a gyorsaságot. A Vyndi moduláris rendszere és AI funkciói lehetővé tették, hogy gyorsan és pontosan válaszoljunk az ügyfelek kéréseire. Az ajánlatkészítési időnk 65%-kal csökkent, és az ügyfeleink 98%-a elégedett az új ajánlatokkal.',
         author: t('landing.caseStudiesInline.techSolutions.author'),
         authorInitials: 'NP',
         role: t('landing.caseStudiesInline.techSolutions.role'),
@@ -277,7 +279,7 @@ export function getCaseStudies(): CaseStudy[] {
       featuredImage: '/case-studies/tech-solutions-hero.jpg',
       relatedCaseStudies: ['studio-ikon', 'creative-agency'],
       // Legacy support
-      company: t('landing.caseStudiesInline.techSolutions.company'),
+      company: 'Tech Solutions Kft.',
       results: [
         {
           metric: '-65%',
@@ -303,7 +305,7 @@ export function getCaseStudies(): CaseStudy[] {
     {
       id: '3',
       slug: 'creative-agency',
-      companyName: t('landing.caseStudiesInline.creativeAgency.company'),
+      companyName: 'Creative Agency',
       companyLogo: '/logos/creative-agency.png',
       industry: 'marketing',
       industryLabel: t('landing.caseStudiesInline.creativeAgency.industry'),
@@ -312,15 +314,15 @@ export function getCaseStudies(): CaseStudy[] {
       timeline: '2 hónap',
       featured: false,
       shortDescription: 'Marketing ügynökség, amely 80%-kal csökkentette a sablon készítési idejét',
-      mainResult: '80%-kal rövidebb sablon készítési idő és 100% konzisztens megjelenés',
+      mainResult: 'Creative Agency | 80%-kal Gyorsabb Sablonkészítés',
       metrics: [
         {
           id: 'm1',
           value: '-80%',
-          label: 'sablon készítési idő',
-          description: 'A sablon készítési idő 10 óráról 2 órára csökkent',
-          before: '10 óra',
-          after: '2 óra',
+          label: 'Megtakarítás sablononként',
+          description: 'A sablon készítési idő 2.5 óráról 0.5 órára csökkent',
+          before: '2.5 óra',
+          after: '0.5 óra',
           improvement: '80% időmegtakarítás',
         },
         {
@@ -411,9 +413,10 @@ export function getCaseStudies(): CaseStudy[] {
         },
       ],
       testimonial: {
-        quote: t('landing.caseStudiesInline.creativeAgency.quote'),
+        quote:
+          'A Vyndi előtt 2,5 órát töltöttünk egy sablonnal. Most 30 perc alatt kész vagyunk. Ráadásul minden ajánlatunk ugyanolyan profi kinézetű - ez növelte a megrendelési arányunkat is.',
         fullQuote:
-          'A Vyndi segített, hogy minden ajánlatunk profi megjelenésű legyen, miközben jelentősen csökkent az elkészítésük ideje. A sablonkönyvtár és a márkaidentitás-kezelés lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsünk ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek, és minden ajánlat konzisztens maradt a márka identitásunkkal. A csapat most 80%-kal gyorsabban dolgozik, és minden ajánlat 100%-ban konzisztens.',
+          'A Vyndi előtt 2,5 órát töltöttünk egy sablonnal. Most 30 perc alatt kész vagyunk. Ráadásul minden ajánlatunk ugyanolyan profi kinézetű - ez növelte a megrendelési arányunkat is. A sablonkönyvtár és a márkaidentitás-kezelés lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsünk ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek, és minden ajánlat konzisztens maradt a márka identitásunkkal.',
         author: t('landing.caseStudiesInline.creativeAgency.author'),
         authorInitials: 'SA',
         role: t('landing.caseStudiesInline.creativeAgency.role'),
@@ -422,7 +425,7 @@ export function getCaseStudies(): CaseStudy[] {
       featuredImage: '/case-studies/creative-agency-hero.jpg',
       relatedCaseStudies: ['studio-ikon', 'tech-solutions'],
       // Legacy support
-      company: t('landing.caseStudiesInline.creativeAgency.company'),
+      company: 'Creative Agency',
       results: [
         {
           metric: '-80%',

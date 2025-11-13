@@ -21,7 +21,7 @@ type NavItem = {
 };
 
 const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
-  { href: '/success-stories', labelKey: 'nav.successStories' },
+  { href: '/sikertortenetek-ajanlatkeszites-automatizalas', labelKey: 'nav.successStories' },
   { href: '/resources', labelKey: 'nav.resources' },
   { href: '/billing', labelKey: 'nav.billing' },
 ];
