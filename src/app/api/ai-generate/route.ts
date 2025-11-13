@@ -1246,6 +1246,9 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       }
 
       // Verify the offer was actually saved by querying it back
+      // Use a small delay to ensure trigger has completed
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      
       const { data: verifyOffer, error: verifyError } = await sb
         .from('offers')
         .select('id, user_id, title, created_at')
@@ -1258,8 +1261,19 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           error: verifyError,
           offerId,
           userId: user.id,
+          errorMessage: verifyError.message,
+          errorCode: verifyError.code,
+          errorDetails: verifyError.details,
+          errorHint: verifyError.hint,
         });
-        // Don't fail the request - offer might still be saved, just verification failed
+        // If verification fails, the offer might not be saved - fail the request
+        return NextResponse.json(
+          {
+            error: t('errors.offer.saveFailed'),
+            details: 'Failed to verify offer was saved to database',
+          },
+          { status: 500 },
+        );
       } else if (!verifyOffer) {
         log.error('CRITICAL: Offer not found after insert - RLS or transaction issue', {
           offerId,
@@ -1284,6 +1298,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
       // Ensure default share link exists (fallback if trigger failed)
       // The trigger should create it automatically, but we verify and create if missing
+      // Use service role client to bypass RLS for share creation
       try {
         const { data: existingShare } = await sb
           .from('offer_shares')
@@ -1295,31 +1310,64 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         if (!existingShare) {
           log.warn('Default share not found after offer creation, creating fallback share', {
             offerId,
+            userId: user.id,
+            requestId,
           });
+          
+          // Use service role client to bypass RLS when creating fallback share
+          const sbService = supabaseServiceRole();
           const { randomBytes } = await import('crypto');
           const token = randomBytes(32).toString('base64url');
-          const { error: shareError } = await sb.from('offer_shares').insert({
-            offer_id: offerId,
-            user_id: user.id,
-            token,
-            expires_at: null,
-            is_active: true,
-          });
+          
+          const { data: insertedShare, error: shareError } = await sbService
+            .from('offer_shares')
+            .insert({
+              offer_id: offerId,
+              user_id: user.id,
+              token,
+              expires_at: null,
+              is_active: true,
+            })
+            .select('id, token')
+            .single();
 
           if (shareError) {
             log.error('Failed to create fallback share link', {
               offerId,
+              userId: user.id,
               error: shareError,
+              errorMessage: shareError.message,
+              errorCode: shareError.code,
+              errorDetails: shareError.details,
+              errorHint: shareError.hint,
             });
             // Don't fail the request - offer is created, share can be created later
+            // But log this as a warning that needs attention
+          } else if (!insertedShare) {
+            log.error('Fallback share insert returned no data and no error', {
+              offerId,
+              userId: user.id,
+            });
           } else {
-            log.info('Fallback share link created successfully', { offerId });
+            log.info('Fallback share link created successfully', {
+              offerId,
+              shareId: insertedShare.id,
+              token: insertedShare.token.substring(0, 8) + '...',
+            });
           }
+        } else {
+          log.info('Default share link found after offer creation', {
+            offerId,
+            shareId: existingShare.id,
+            token: existingShare.token.substring(0, 8) + '...',
+          });
         }
       } catch (shareCheckError) {
         log.error('Error checking/creating default share link', {
           offerId,
-          error: shareCheckError,
+          userId: user.id,
+          error: shareCheckError instanceof Error ? shareCheckError.message : String(shareCheckError),
+          stack: shareCheckError instanceof Error ? shareCheckError.stack : undefined,
         });
         // Don't fail the request - offer is created, share can be created later
       }
