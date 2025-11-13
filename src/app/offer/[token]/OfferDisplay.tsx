@@ -83,22 +83,19 @@ function scopeCssToContainer(css: string, containerSelector: string): string {
 
   // Scope regular CSS rules (not inside @ rules initially)
   // Match: selector { declarations }
-  scopedCss = scopedCss.replace(
-    /([^{}@]+)\{([^{}]+)\}/g,
-    (match, selector, declarations) => {
-      const trimmedSelector = selector.trim();
-      // Skip if already scoped, is an @ rule, or is empty
-      if (
-        !trimmedSelector ||
-        trimmedSelector.includes(containerSelector) ||
-        trimmedSelector.startsWith('@')
-      ) {
-        return match;
-      }
-      // Scope the selector
-      return `${containerSelector} ${trimmedSelector} {${declarations}}`;
-    },
-  );
+  scopedCss = scopedCss.replace(/([^{}@]+)\{([^{}]+)\}/g, (match, selector, declarations) => {
+    const trimmedSelector = selector.trim();
+    // Skip if already scoped, is an @ rule, or is empty
+    if (
+      !trimmedSelector ||
+      trimmedSelector.includes(containerSelector) ||
+      trimmedSelector.startsWith('@')
+    ) {
+      return match;
+    }
+    // Scope the selector
+    return `${containerSelector} ${trimmedSelector} {${declarations}}`;
+  });
 
   // Handle @media queries - scope rules inside them
   scopedCss = scopedCss.replace(/@media[^{]+\{([^}]+)\}/g, (match, mediaContent) => {

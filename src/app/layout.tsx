@@ -6,7 +6,10 @@ import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '@/components/cookies/CookieBar';
 import { PreferencesModal } from '@/components/cookies/PreferencesModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { ConditionalLayout, ConditionalBackgroundDecorations } from '@/components/ConditionalLayout';
+import {
+  ConditionalLayout,
+  ConditionalBackgroundDecorations,
+} from '@/components/ConditionalLayout';
 import { AppProviders } from '@/components/AppProviders';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { AriaLiveAnnouncer } from '@/components/ui/AriaLiveAnnouncer';
