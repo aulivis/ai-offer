@@ -180,6 +180,7 @@ export default function DashboardPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -774,6 +775,40 @@ export default function DashboardPage() {
         });
       } finally {
         setDownloadingId(null);
+      }
+    },
+    [showToast],
+  );
+
+  const handleRegeneratePdf = useCallback(
+    async (offer: Offer) => {
+      setRegeneratingId(offer.id);
+      try {
+        const response = await fetchWithSupabaseAuth(`/api/offers/${offer.id}/regenerate-pdf`, {
+          method: 'POST',
+          defaultErrorMessage: 'Nem sikerült újragenerálni a PDF-et.',
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || 'Nem sikerült újragenerálni a PDF-et.');
+        }
+
+        showToast({
+          title: 'PDF újragenerálás elindítva',
+          description: 'A PDF hamarosan elérhető lesz.',
+          variant: 'success',
+        });
+      } catch (error) {
+        console.error('Failed to regenerate PDF', error);
+        showToast({
+          title: 'Hiba',
+          description:
+            error instanceof Error ? error.message : 'Nem sikerült újragenerálni a PDF-et.',
+          variant: 'error',
+        });
+      } finally {
+        setRegeneratingId(null);
       }
     },
     [showToast],
@@ -1960,12 +1995,14 @@ export default function DashboardPage() {
                 updatingId={updatingId}
                 downloadingId={downloadingId}
                 deletingId={deletingId}
+                regeneratingId={regeneratingId}
                 onMarkSent={markSent}
                 onMarkDecision={markDecision}
                 onRevertToSent={revertToSent}
                 onRevertToDraft={revertToDraft}
                 onDelete={setOfferToDelete}
                 onDownload={handleDownloadPdf}
+                onRegeneratePdf={handleRegeneratePdf}
               />
             ) : (
               <div

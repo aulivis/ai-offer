@@ -17,18 +17,22 @@ import { useEffect, useMemo, useState } from 'react';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
+import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
+import { ShareModal } from './ShareModal';
 
 export interface OfferCardProps {
   offer: Offer;
   isUpdating: boolean;
   isDownloading: boolean;
   isDeleting: boolean;
+  isRegenerating?: boolean;
   onMarkSent: (offer: Offer, date?: string) => void;
   onMarkDecision: (offer: Offer, decision: 'accepted' | 'lost', date?: string) => void;
   onRevertToSent: (offer: Offer) => void;
   onRevertToDraft: (offer: Offer) => void;
   onDelete: (offer: Offer) => void;
   onDownload: (offer: Offer) => void;
+  onRegeneratePdf?: (offer: Offer) => void;
 }
 
 type TimelineKey = 'draft' | 'sent' | 'decision';
@@ -39,19 +43,22 @@ export function OfferCard({
   isUpdating,
   isDownloading,
   isDeleting,
+  isRegenerating = false,
   onMarkSent,
   onMarkDecision,
   onRevertToSent,
   onRevertToDraft,
   onDelete,
   onDownload,
+  onRegeneratePdf,
 }: OfferCardProps) {
-  const isBusy = isUpdating || isDeleting || isDownloading;
+  const isBusy = isUpdating || isDeleting || isDownloading || isRegenerating;
   const isDecided = offer.status === 'accepted' || offer.status === 'lost';
   const companyName = (offer.recipient?.company_name ?? '').trim();
   const initials = useMemo(() => getInitials(companyName), [companyName]);
   const [decisionDate, setDecisionDate] = useState<string>(() => isoDateInput(offer.decided_at));
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const timelineStates: Record<TimelineKey, TimelineStatus> = {
     draft: getTimelineStatus('draft', offer.status),
@@ -63,6 +70,8 @@ export function OfferCard({
   const showRevertDecision = isDecided;
   const downloadLabel = t('dashboard.offerCard.savePdf');
   const openLabel = t('dashboard.offerCard.openPdf');
+  const shareLabel = 'Megosztás';
+  const regenerateLabel = 'PDF újragenerálása';
   const deleteLabel = isDeleting
     ? t('dashboard.actions.deleting')
     : t('dashboard.actions.deleteOffer');
@@ -173,7 +182,36 @@ export function OfferCard({
                   <span className="sr-only">{downloadLabel}</span>
                 </button>
               </>
-            ) : null}
+            ) : (
+              onRegeneratePdf && (
+                <button
+                  type="button"
+                  onClick={() => onRegeneratePdf(offer)}
+                  disabled={isBusy}
+                  className={`${actionButtonClass} hover:bg-amber-50 hover:border-amber-300 hover:text-amber-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+                  aria-label={regenerateLabel}
+                  title={regenerateLabel}
+                >
+                  {isRegenerating ? (
+                    <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">{regenerateLabel}</span>
+                </button>
+              )
+            )}
+            <button
+              type="button"
+              onClick={() => setIsShareModalOpen(true)}
+              disabled={isBusy}
+              className={`${actionButtonClass} hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+              aria-label={shareLabel}
+              title={shareLabel}
+            >
+              <LinkIcon aria-hidden="true" className="h-4 w-4" />
+              <span className="sr-only">{shareLabel}</span>
+            </button>
             <button
               type="button"
               onClick={() => onDelete(offer)}
@@ -426,6 +464,13 @@ export function OfferCard({
           </div>
         </div>
       )}
+
+      <ShareModal
+        offerId={offer.id}
+        offerTitle={offer.title || 'Névtelen ajánlat'}
+        open={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </Card>
   );
 }

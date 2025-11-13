@@ -9,12 +9,14 @@ type OffersCardGridProps = {
   updatingId: string | null;
   downloadingId: string | null;
   deletingId: string | null;
+  regeneratingId?: string | null;
   onMarkSent: (offer: Offer, date?: string) => void;
   onMarkDecision: (offer: Offer, decision: 'accepted' | 'lost', date?: string) => void;
   onRevertToSent: (offer: Offer) => void;
   onRevertToDraft: (offer: Offer) => void;
   onDelete: (offer: Offer) => void;
   onDownload: (offer: Offer) => void;
+  onRegeneratePdf?: (offer: Offer) => void;
 };
 
 /**
@@ -29,12 +31,14 @@ export function OffersCardGrid({
   updatingId,
   downloadingId,
   deletingId,
+  regeneratingId = null,
   onMarkSent,
   onMarkDecision,
   onRevertToSent,
   onRevertToDraft,
   onDelete,
   onDownload,
+  onRegeneratePdf,
 }: OffersCardGridProps) {
   return (
     <div
@@ -51,12 +55,14 @@ export function OffersCardGrid({
             isUpdating={updatingId === offer.id}
             isDownloading={downloadingId === offer.id}
             isDeleting={deletingId === offer.id}
+            isRegenerating={regeneratingId === offer.id}
             onMarkSent={onMarkSent}
             onMarkDecision={onMarkDecision}
             onRevertToSent={onRevertToSent}
             onRevertToDraft={onRevertToDraft}
             onDelete={onDelete}
             onDownload={onDownload}
+            onRegeneratePdf={onRegeneratePdf}
           />
         </div>
       ))}
