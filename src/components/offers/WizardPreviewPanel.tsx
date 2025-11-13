@@ -23,7 +23,7 @@ type WizardPreviewPanelProps = {
   onTabChange: (tab: OfferPreviewTab) => void;
   onRefresh: () => void;
   onAbort: () => void;
-  onOpenFullscreen: () => void;
+  onOpenFullscreen?: () => void;
   isStreaming: boolean;
   templateOptions: Array<OfferTemplate>;
   selectedTemplateId: TemplateId;

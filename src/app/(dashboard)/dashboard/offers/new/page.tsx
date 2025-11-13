@@ -556,7 +556,6 @@ export default function NewOfferPage() {
           onRefresh={refreshPreview}
           onAbort={abortPreview}
           // PDF preview modal removed - using Preview as Customer button instead
-          onOpenFullscreen={undefined}
           isStreaming={isStreaming}
           templateOptions={templateOptions}
           selectedTemplateId={selectedTemplateId}
