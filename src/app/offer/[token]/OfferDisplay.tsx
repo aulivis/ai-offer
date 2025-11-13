@@ -107,7 +107,7 @@ function scopeCssToContainer(css: string, containerSelector: string): string {
     // Scope each rule inside the media query
     const scopedMediaContent = mediaContent.replace(
       /([^{}]+)\{([^{}]+)\}/g,
-      (ruleMatch, ruleSelector, ruleDeclarations) => {
+      (ruleMatch: string, ruleSelector: string, ruleDeclarations: string) => {
         const trimmedRuleSelector = ruleSelector.trim();
         if (
           !trimmedRuleSelector ||
