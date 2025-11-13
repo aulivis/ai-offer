@@ -1447,6 +1447,14 @@ export const hu = {
         livePreview: 'Élő előnézet',
         contentGoesToPdf: 'Ez a tartalom kerül a PDF-be – finomhangold bátran.',
       },
+      previewAsCustomer: {
+        label: 'Előnézet ügyfélként',
+        loading: 'Előnézet készítése...',
+        success: 'Előnézet megnyitva',
+        successDesc: 'Az előnézet új fülben nyílt meg. Itt láthatod, hogyan fogja az ügyfél látni az ajánlatot.',
+        error: 'Hiba',
+        errorDesc: 'Nem sikerült létrehozni az előnézetet.',
+      },
       toast: {
         previewRequiredTitle: 'Előnézet szükséges',
         previewRequiredDescription: 'Generáld le az AI előnézetet a továbblépéshez.',
