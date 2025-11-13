@@ -62,7 +62,7 @@ export function OffersCardGrid({
             onRevertToDraft={onRevertToDraft}
             onDelete={onDelete}
             onDownload={onDownload}
-            onRegeneratePdf={onRegeneratePdf}
+            {...(onRegeneratePdf && { onRegeneratePdf })}
           />
         </div>
       ))}
