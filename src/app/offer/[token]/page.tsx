@@ -1,9 +1,17 @@
 import { notFound } from 'next/navigation';
 import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
 import { buildOfferHtml } from '@/app/pdf/templates/engine';
+import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
 import { normalizeBranding } from '@/app/pdf/templates/theme';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { getUserProfile } from '@/lib/services/user';
+import { resolveEffectivePlan } from '@/lib/subscription';
+import {
+  normalizeTemplateId,
+  DEFAULT_OFFER_TEMPLATE_ID,
+  type SubscriptionPlan,
+} from '@/app/lib/offerTemplates';
+import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
@@ -11,6 +19,7 @@ import { getRequestIp } from '@/lib/auditLogging';
 import { headers } from 'next/headers';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
+import { OfferDisplay } from './OfferDisplay';
 
 type PageProps = {
   params: Promise<{
@@ -83,26 +92,88 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     notFound();
   }
 
-  // Load user profile for branding
+  // Load user profile for branding and plan check
   const profile = await getUserProfile(sb, offer.user_id);
 
   // Parse offer data
   const inputs = (offer.inputs as Record<string, unknown>) || {};
   const priceRows = (offer.price_json as Array<unknown>) || [];
-  const templateId = (inputs.templateId as string) || 'free.minimal@1.0.0';
   const locale = (inputs.language as string) || 'hu';
 
-  // Build branding
+  // Check user plan
+  const plan: SubscriptionPlan = resolveEffectivePlan(
+    typeof profile?.plan === 'string' ? profile.plan : null,
+  );
+  const isProUser = plan === 'pro';
+
+  // Resolve template ID with fallback:
+  // 1. From offer inputs (templateId during creation)
+  // 2. From user profile (offer_template in settings)
+  // 3. Default template for plan
+  function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+    return plan === 'pro' ? 'premium' : 'free';
+  }
+
+  const planTier = planToTemplateTier(plan);
+  const allTemplates = listTemplates() as Array<OfferTemplate>;
+  const fallbackTemplate =
+    allTemplates.find((tpl) => tpl.id === DEFAULT_OFFER_TEMPLATE_ID) ||
+    loadTemplate(DEFAULT_OFFER_TEMPLATE_ID);
+
+  const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
+  const defaultTemplateForPlan =
+    planTier === 'premium'
+      ? allTemplates[0] || fallbackTemplate
+      : freeTemplates[0] || fallbackTemplate;
+
+  const requestedTemplateId = inputs.templateId
+    ? normalizeTemplateId(typeof inputs.templateId === 'string' ? inputs.templateId : null)
+    : null;
+
+  const requestedTemplate = requestedTemplateId
+    ? allTemplates.find((tpl) => tpl.id === requestedTemplateId) || null
+    : null;
+
+  const profileTemplateId = normalizeTemplateId(
+    typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+  );
+  const profileTemplate = profileTemplateId
+    ? allTemplates.find((tpl) => tpl.id === profileTemplateId) || null
+    : null;
+
+  const isTemplateAllowed = (tpl: OfferTemplate) => planTier === 'premium' || tpl.tier === 'free';
+
+  let template = defaultTemplateForPlan;
+  let resolvedTemplateId: TemplateId;
+
+  if (requestedTemplate) {
+    resolvedTemplateId = requestedTemplate.id;
+    template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
+  } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
+    template = profileTemplate;
+    resolvedTemplateId = template.id;
+  } else {
+    template = defaultTemplateForPlan;
+    resolvedTemplateId = template.id;
+  }
+
+  const templateId = resolvedTemplateId;
+
+  // Build branding:
+  // - Brand colors: available for all users
+  // - Logo: only for Pro users
   const brandingOptions = normalizeBranding({
     primaryColor:
       typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
     secondaryColor:
       typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
-    logoUrl: await getBrandLogoUrl(
-      sb,
-      typeof profile?.brand_logo_path === 'string' ? profile.brand_logo_path : null,
-      typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
-    ),
+    logoUrl: isProUser
+      ? await getBrandLogoUrl(
+          sb,
+          typeof profile?.brand_logo_path === 'string' ? profile.brand_logo_path : null,
+          typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
+        )
+      : null,
   });
 
   const translator = createTranslator(locale);
@@ -127,7 +198,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
     }));
 
-  const html = buildOfferHtml({
+  const fullHtml = buildOfferHtml({
     offer: {
       title: safeTitle || defaultTitle,
       companyName: sanitizeInput(profile?.company_name || ''),
@@ -195,11 +266,8 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
         {/* Download PDF Button - hidden in PDF mode */}
         {!isPdfMode && <DownloadPdfButton token={token} offerId={offer.id} />}
 
-        {/* Offer HTML Content */}
-        <div
-          className="mb-8 rounded-lg bg-white p-8 shadow-sm"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        {/* Offer HTML Content with Template and Branding */}
+        <OfferDisplay html={fullHtml} />
 
         {/* Response Form - hidden in PDF mode */}
         {!isPdfMode && (

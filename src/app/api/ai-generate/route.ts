@@ -7,10 +7,7 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 // Pricing calculations remain in `app/lib/pricing.ts`, while templates
 // live under `app/pdf/templates`.
 import { PriceRow } from '@/app/lib/pricing';
-import { buildOfferHtml } from '@/app/pdf/templates/engine';
 import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
-import { normalizeBranding } from '@/app/pdf/templates/theme';
-import { getBrandLogoUrl } from '@/lib/branding';
 import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
 import { normalizeTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI, { APIError } from 'openai';
@@ -18,7 +15,6 @@ import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/respon
 import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { ensureSafeHtml, sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
-import { formatOfferIssueDate } from '@/lib/datetime';
 import { getUserProfile } from '@/lib/services/user';
 import {
   currentMonthStart,
@@ -27,20 +23,8 @@ import {
   checkQuotaWithPending,
   checkDeviceQuotaWithPending,
 } from '@/lib/services/usage';
-import {
-  countPendingPdfJobs,
-  dispatchPdfJob,
-  enqueuePdfJob,
-  type PdfJobInput,
-} from '@/lib/queue/pdf';
-import { PdfWebhookValidationError, validatePdfWebhookUrl } from '@/lib/pdfWebhook';
-import { processPdfJobInline } from '@/lib/pdfInlineWorker';
 import { resolveEffectivePlan, getMonthlyOfferLimit } from '@/lib/subscription';
 import { t, createTranslator, resolveLocale, type Translator } from '@/copy';
-import {
-  recordTemplateRenderTelemetry,
-  resolveTemplateRenderErrorCode,
-} from '@/lib/observability/templateTelemetry';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -68,7 +52,7 @@ function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';
 }
 
-function normalizeUsageLimitError(
+function _normalizeUsageLimitError(
   message: string | undefined,
   translator?: Translator,
 ): string | null {
@@ -90,45 +74,6 @@ function normalizeUsageLimitError(
   }
 
   return null;
-}
-
-const FALLBACK_CUSTOMER_NAME = 'Ismeretlen ugyfel';
-const FALLBACK_TITLE = 'Ajanlat';
-const MAX_FILENAME_PART_LENGTH = 80;
-
-function sanitizeFileNamePart(value: string | null | undefined, fallback: string): string {
-  const base = typeof value === 'string' ? value : '';
-  const normalise = (input: string) =>
-    input
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9 _-]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-  const sanitizedFallback = normalise(fallback) || FALLBACK_TITLE;
-  const sanitized = normalise(base);
-  const candidate = sanitized || sanitizedFallback;
-  return candidate.slice(0, MAX_FILENAME_PART_LENGTH);
-}
-
-function createOfferStoragePath(params: {
-  userId: string;
-  offerId: string;
-  customerName?: string | null;
-  offerTitle?: string | null;
-  fallbackCompany?: string | null;
-  date?: Date;
-}): string {
-  const { userId, offerId, customerName, offerTitle, fallbackCompany, date } = params;
-  const issuedAt = (date ?? new Date()).toISOString().slice(0, 10);
-  const customerPart = sanitizeFileNamePart(
-    customerName ?? fallbackCompany ?? FALLBACK_CUSTOMER_NAME,
-    FALLBACK_CUSTOMER_NAME,
-  );
-  const titlePart = sanitizeFileNamePart(offerTitle ?? FALLBACK_TITLE, FALLBACK_TITLE);
-  const fileName = `${customerPart} - ${titlePart} - ${issuedAt}.pdf`;
-  return `${userId}/${offerId}/${fileName}`;
 }
 
 // System prompt for our OpenAI assistant.  The model should populate the
@@ -539,7 +484,7 @@ function sectionsToHtml(
   return sanitizeHTML(html);
 }
 
-function sanitizeSectionsOutput(sections: OfferSections): OfferSections {
+function _sanitizeSectionsOutput(sections: OfferSections): OfferSections {
   const sanitized: OfferSections = {
     introduction: sanitizeInput((sections.introduction || '').trim()),
     project_summary: sanitizeInput((sections.project_summary || '').trim()),
@@ -763,10 +708,6 @@ const aiGenerateRequestSchema = z
       (value) => (value === null || value === undefined || value === '' ? undefined : value),
       z.string().trim().optional(),
     ),
-    pdfWebhookUrl: z.preprocess(
-      (value) => (value === null || value === undefined || value === '' ? undefined : value),
-      z.string().url(t('validation.urlInvalid')).optional(),
-    ),
     imageAssets: z.preprocess(
       (value) => (value === null || value === undefined ? [] : value),
       z.array(imageAssetSchema).default([]),
@@ -777,23 +718,6 @@ const aiGenerateRequestSchema = z
     ),
   })
   .strict();
-
-function mapPdfWebhookError(error: PdfWebhookValidationError): string {
-  switch (error.reason) {
-    case 'invalid_url':
-      return t('validation.webhook.invalidUrl');
-    case 'protocol_not_allowed':
-      return t('validation.webhook.protocolNotAllowed');
-    case 'credentials_not_allowed':
-      return t('validation.webhook.credentialsNotAllowed');
-    case 'host_not_allowlisted':
-      return t('validation.webhook.hostNotAllowlisted');
-    case 'allowlist_empty':
-      return t('validation.webhook.allowlistEmpty');
-    default:
-      return t('validation.webhook.invalidUrl');
-  }
-}
 
 const IMG_TAG_REGEX = /<img\b[^>]*>/gi;
 
@@ -888,7 +812,6 @@ export const POST = withAuth(
         aiOverrideHtml,
         clientId,
         templateId,
-        pdfWebhookUrl,
         imageAssets,
         testimonials,
       } = parsed.data;
@@ -975,26 +898,14 @@ export const POST = withAuth(
             usagePeriodStart,
           );
         } catch (syncError) {
-          log.warn('Failed to sync usage counter before PDF generation', {
+          log.warn('Failed to sync usage counter before offer generation', {
             error: syncError,
             message: syncError instanceof Error ? syncError.message : String(syncError),
           });
         }
       }
 
-      let normalizedWebhookUrl: string | null = null;
-      try {
-        normalizedWebhookUrl = validatePdfWebhookUrl(pdfWebhookUrl);
-      } catch (error) {
-        if (error instanceof PdfWebhookValidationError) {
-          const message = mapPdfWebhookError(error);
-          return NextResponse.json({ error: message }, { status: 400 });
-        }
-        throw error;
-      }
-
-      // Atomically check quota including pending jobs to prevent race conditions
-      // This ensures accurate quota checking even under concurrent load
+      // Check quota for offer generation
       if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
         const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
         if (!quotaCheck.allowed) {
@@ -1019,25 +930,6 @@ export const POST = withAuth(
 
       const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
       if (deviceLimit !== null && deviceId) {
-        // Recalculate device usage from actual successful PDFs before checking
-        try {
-          const { recalculateDeviceUsageFromPdfs } = await import('@/lib/services/usage');
-          await recalculateDeviceUsageFromPdfs(sb, user.id, deviceId, usagePeriodStart).catch(
-            (err) => {
-              log.warn(
-                'Failed to recalculate device usage from PDFs, continuing with counter value',
-                {
-                  error: err,
-                },
-              );
-            },
-          );
-        } catch (recalcError) {
-          log.warn('Failed to recalculate device usage from PDFs, continuing with counter value', {
-            error: recalcError,
-          });
-        }
-
         const deviceQuotaCheck = await checkDeviceQuotaWithPending(
           sb,
           user.id,
@@ -1064,16 +956,10 @@ export const POST = withAuth(
         }
       }
 
-      // Get pending count for logging (non-atomic, but only for logging)
-      const pendingCount = await countPendingPdfJobs(sb, {
-        userId: user.id,
-        periodStart: usagePeriodStart,
-      });
       log.info('Usage quota snapshot', {
         plan,
         limit: planLimit,
         confirmed: usageSnapshot.offersGenerated,
-        pendingCount,
         periodStart: usagePeriodStart,
       });
 
@@ -1236,32 +1122,12 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       // ---- Ár tábla adatok ----
       const rows: PriceRow[] = prices;
 
-      const { pdfHtml: aiHtmlForPdf, storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(
-        aiHtml,
-        sanitizedImageAssets,
-      );
+      const { storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(aiHtml, sanitizedImageAssets);
 
-      // ---- PDF queueing ----
+      // ---- Offer creation ----
       const offerId = uuid();
-      const storagePath = createOfferStoragePath({
-        userId: user.id,
-        offerId,
-        customerName: clientCompanyName,
-        offerTitle: safeTitle,
-        fallbackCompany: typeof profile?.company_name === 'string' ? profile.company_name : null,
-      });
-      const brandingOptions = normalizeBranding({
-        primaryColor:
-          typeof profile?.brand_color_primary === 'string' ? profile.brand_color_primary : null,
-        secondaryColor:
-          typeof profile?.brand_color_secondary === 'string' ? profile.brand_color_secondary : null,
-        logoUrl: await getBrandLogoUrl(
-          sb,
-          typeof profile?.brand_logo_path === 'string' ? profile.brand_logo_path : null,
-          typeof profile?.brand_logo_url === 'string' ? profile.brand_logo_url : null,
-        ),
-      });
 
+      // Resolve template ID for saving (used for PDF generation later from dashboard)
       const planTier = planToTemplateTier(plan);
       const allTemplates = listTemplates() as Array<OfferTemplate>;
       const fallbackTemplate =
@@ -1303,132 +1169,16 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         planTier === 'premium' || tpl.tier === 'free';
 
       let template = defaultTemplateForPlan;
-      let resolvedRequestedTemplateId: TemplateId;
 
       if (requestedTemplate) {
-        resolvedRequestedTemplateId = requestedTemplate.id;
         template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
       } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
         template = profileTemplate;
-        resolvedRequestedTemplateId = template.id;
       } else {
         template = defaultTemplateForPlan;
-        resolvedRequestedTemplateId = template.id;
       }
 
       const resolvedTemplateId = template.id;
-      // Use template ID directly (no legacy ID needed)
-      const resolvedLegacyTemplateId = template.id.includes('@')
-        ? template.id.split('@')[0]
-        : template.id;
-
-      const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
-
-      const galleryImages = sanitizedImageAssets
-        .slice(0, MAX_IMAGE_COUNT)
-        .map((asset) => ({ key: asset.key, src: asset.dataUrl, alt: asset.alt }));
-
-      const renderStartedAt = performance.now();
-      let renderDuration: number | null = null;
-      let html: string;
-
-      try {
-        html = buildOfferHtml({
-          offer: {
-            title: safeTitle || defaultTitle,
-            companyName: sanitizeInput(profile?.company_name || ''),
-            bodyHtml: aiHtmlForPdf,
-            templateId: resolvedTemplateId,
-            legacyTemplateId: resolvedLegacyTemplateId,
-            locale: resolvedLocale,
-            issueDate: sanitizeInput(formatOfferIssueDate(new Date(), resolvedLocale)),
-            contactName: sanitizeInput(
-              (typeof profile?.company_contact_name === 'string'
-                ? profile.company_contact_name
-                : typeof profile?.representative === 'string'
-                  ? profile.representative
-                  : profile?.company_name) || '',
-            ),
-            contactEmail: sanitizeInput(
-              (typeof profile?.company_email === 'string'
-                ? profile.company_email
-                : req.user.email) || '',
-            ),
-            contactPhone: sanitizeInput(
-              (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
-            ),
-            companyWebsite: sanitizeInput(
-              (typeof profile?.company_website === 'string'
-                ? profile.company_website
-                : typeof profile?.website === 'string'
-                  ? profile.website
-                  : '') || '',
-            ),
-            companyAddress: sanitizeInput(
-              (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
-            ),
-            companyTaxId: sanitizeInput(
-              (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
-            ),
-          },
-          rows,
-          branding: brandingOptions,
-          i18n: translator,
-          templateId: resolvedTemplateId,
-          images: galleryImages,
-        });
-        renderDuration = performance.now() - renderStartedAt;
-      } catch (error) {
-        renderDuration = performance.now() - renderStartedAt;
-        await recordTemplateRenderTelemetry({
-          templateId: resolvedTemplateId,
-          renderer: 'api.ai_generate.render',
-          outcome: 'failure',
-          renderMs: renderDuration,
-          errorCode: resolveTemplateRenderErrorCode(error),
-        });
-        throw error;
-      }
-
-      await recordTemplateRenderTelemetry({
-        templateId: resolvedTemplateId,
-        renderer: 'api.ai_generate.render',
-        outcome: 'success',
-        renderMs: renderDuration,
-      });
-
-      const downloadToken = uuid();
-
-      // Verify Supabase client authentication
-      const { data: authUser, error: authError } = await sb.auth.getUser();
-      if (authError || !authUser?.user) {
-        log.error('Supabase client authentication check failed', {
-          error: authError,
-          userId: user.id,
-          authUser: authUser?.user?.id,
-        });
-        return NextResponse.json(
-          {
-            error: 'Authentication failed',
-            details: 'Supabase client authentication failed',
-          },
-          { status: 401 },
-        );
-      }
-
-      if (authUser.user.id !== user.id) {
-        log.error('User ID mismatch between auth middleware and Supabase client', {
-          middlewareUserId: user.id,
-          supabaseUserId: authUser.user.id,
-        });
-        return NextResponse.json(
-          {
-            error: 'Authentication failed',
-            details: 'User ID mismatch',
-          },
-          { status: 401 },
-        );
-      }
 
       // ---- Ajánlat mentése ----
       log.info('Attempting to insert offer', {
@@ -1436,7 +1186,6 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         userId: user.id,
         title: safeTitle,
         industry: sanitizeInput(industry),
-        authenticatedUserId: authUser.user.id,
       });
 
       const { data: insertedOffer, error: offerInsertError } = await sb
@@ -1575,329 +1324,16 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         // Don't fail the request - offer is created, share can be created later
       }
 
-      const pdfJobInput: PdfJobInput = {
-        jobId: downloadToken,
+      // Offer saved successfully - return success response
+      log.info('Offer created successfully', {
         offerId,
         userId: user.id,
-        storagePath,
-        html,
-        callbackUrl: normalizedWebhookUrl ?? null,
-        usagePeriodStart,
-        userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
-        deviceId: deviceLimit !== null ? deviceId : null,
-        deviceLimit,
-        templateId: resolvedTemplateId,
-        requestedTemplateId: resolvedRequestedTemplateId,
-      };
-
-      try {
-        await enqueuePdfJob(sb, pdfJobInput);
-        log.info('PDF job enqueued successfully', {
-          jobId: downloadToken,
-          offerId,
-          storagePath: pdfJobInput.storagePath,
-        });
-      } catch (error) {
-        log.error('PDF queue error (enqueue)', {
-          error,
-          jobId: downloadToken,
-          offerId,
-          storagePath: pdfJobInput.storagePath,
-          errorMessage: error instanceof Error ? error.message : String(error),
-          errorStack: error instanceof Error ? error.stack : undefined,
-        });
-        // Offer text is already saved, return success with PDF failure indication
-        return NextResponse.json({
-          ok: true,
-          id: offerId,
-          pdfUrl: null,
-          downloadToken,
-          status: 'failed' as const,
-          note: translator.t('errors.offer.savePdfFailed'),
-          sections: structuredSections ? sanitizeSectionsOutput(structuredSections) : null,
-          textSaved: true, // Indicate that the text was saved even though PDF failed
-        });
-      }
-
-      let immediatePdfUrl: string | null = null;
-      let responseStatus: 'pending' | 'completed' = 'pending';
-      let responseNote = translator.t('api.pdf.generating');
-
-      try {
-        await dispatchPdfJob(sb, downloadToken);
-        log.info('PDF job dispatched successfully', {
-          jobId: downloadToken,
-          offerId,
-        });
-      } catch (dispatchError) {
-        const message =
-          dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
-        log.error('PDF queue error (dispatch)', {
-          error: dispatchError,
-          message,
-          errorName: dispatchError instanceof Error ? dispatchError.name : undefined,
-          stack: dispatchError instanceof Error ? dispatchError.stack : undefined,
-          jobId: downloadToken,
-          offerId,
-        });
-
-        const dispatchLimitMessage = normalizeUsageLimitError(message, translator);
-        if (dispatchLimitMessage) {
-          return NextResponse.json({ error: dispatchLimitMessage }, { status: 402 });
-        }
-
-        // Before falling back to inline processing, check if edge worker already claimed the job
-        // This prevents double processing and quota double-increment
-        const { data: jobStatus } = await sb
-          .from('pdf_jobs')
-          .select('status, pdf_url')
-          .eq('id', downloadToken)
-          .maybeSingle();
-
-        if (jobStatus?.status === 'completed' && jobStatus.pdf_url) {
-          // Edge worker already completed the job successfully
-          log.info('PDF job already completed by edge worker', { jobId: downloadToken });
-          immediatePdfUrl = jobStatus.pdf_url;
-          responseStatus = 'completed';
-          responseNote = translator.t('api.pdf.completed');
-        } else if (jobStatus?.status === 'processing') {
-          // Edge worker is currently processing - don't start inline fallback
-          // The edge worker will complete or fail, and the user can check status later
-          log.info('PDF job already being processed by edge worker', { jobId: downloadToken });
-          responseStatus = 'pending';
-          responseNote = translator.t('api.pdf.processing');
-        } else if (jobStatus?.status === 'failed') {
-          // Job already failed - try inline fallback as last resort
-          log.warn('PDF job failed in edge worker, attempting inline fallback', {
-            jobId: downloadToken,
-          });
-          // Continue to inline fallback below
-        } else {
-          // Job is still pending or status unknown - safe to try inline fallback
-          log.info('Attempting inline PDF fallback after dispatch failure', {
-            jobId: downloadToken,
-            currentStatus: jobStatus?.status,
-          });
-        }
-
-        // Only attempt inline fallback if job is not already completed or being processed
-        // On Vercel, use Vercel-native Puppeteer (industry best practice)
-        // In other environments, use inline Puppeteer fallback
-        if (!immediatePdfUrl && jobStatus?.status !== 'processing') {
-          // Check if we're in a Vercel environment
-          const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
-          const useVercelNative = isVercel && process.env.USE_VERCEL_NATIVE_PDF !== 'false';
-
-          if (useVercelNative) {
-            // Use Vercel-native PDF processing (industry best practice)
-            try {
-              const { processPdfJobVercelNative } = await import('@/lib/pdfVercelWorker');
-              // Process asynchronously - don't await so we can return immediately
-              processPdfJobVercelNative(sb, pdfJobInput).catch((error) => {
-                log.error('Vercel-native PDF generation failed', { error, jobId: downloadToken });
-              });
-              responseStatus = 'pending';
-              responseNote = translator.t('api.pdf.processing');
-            } catch (error) {
-              log.error('Failed to start Vercel-native PDF processing', {
-                error,
-                jobId: downloadToken,
-              });
-              responseStatus = 'pending';
-              responseNote = translator.t('api.pdf.processing');
-            }
-          } else if (isVercel) {
-            // Vercel but Vercel-native disabled - use Supabase Edge Function (already dispatched)
-            responseStatus = 'pending';
-            responseNote = translator.t('api.pdf.processing');
-          } else {
-            // Not Vercel - use inline Puppeteer fallback
-            try {
-              const inlineJob: PdfJobInput = {
-                jobId: pdfJobInput.jobId,
-                offerId: pdfJobInput.offerId,
-                userId: pdfJobInput.userId,
-                storagePath: pdfJobInput.storagePath,
-                html: pdfJobInput.html,
-                usagePeriodStart: pdfJobInput.usagePeriodStart,
-                userLimit: pdfJobInput.userLimit,
-                ...(pdfJobInput.callbackUrl !== undefined
-                  ? { callbackUrl: pdfJobInput.callbackUrl }
-                  : {}),
-                ...(pdfJobInput.deviceId !== undefined ? { deviceId: pdfJobInput.deviceId } : {}),
-                ...(pdfJobInput.deviceLimit !== undefined
-                  ? { deviceLimit: pdfJobInput.deviceLimit }
-                  : {}),
-                ...(pdfJobInput.templateId !== undefined
-                  ? { templateId: pdfJobInput.templateId }
-                  : {}),
-                ...(pdfJobInput.requestedTemplateId !== undefined
-                  ? { requestedTemplateId: pdfJobInput.requestedTemplateId }
-                  : {}),
-                ...(pdfJobInput.metadata !== undefined ? { metadata: pdfJobInput.metadata } : {}),
-              };
-
-              const serviceClient = supabaseServiceRole();
-              immediatePdfUrl = await processPdfJobInline(serviceClient, inlineJob);
-              if (immediatePdfUrl) {
-                responseStatus = 'completed';
-                responseNote = translator.t('api.pdf.inlineCompleted');
-                log.info('Inline PDF fallback completed successfully', {
-                  jobId: downloadToken,
-                  pdfUrl: immediatePdfUrl,
-                });
-              } else {
-                log.error('Inline PDF fallback returned null PDF URL', {
-                  jobId: downloadToken,
-                });
-                throw new Error('PDF generation completed but no PDF URL was returned');
-              }
-            } catch (inlineError) {
-              const inlineMessage =
-                inlineError instanceof Error ? inlineError.message : String(inlineError);
-              log.error('Inline PDF fallback error', inlineError);
-
-              const limitMessage = normalizeUsageLimitError(inlineMessage, translator);
-              if (limitMessage) {
-                return NextResponse.json({ error: limitMessage }, { status: 402 });
-              }
-
-              // Offer text is already saved, return success with PDF failure indication
-              const sectionsPayload = structuredSections
-                ? sanitizeSectionsOutput(structuredSections)
-                : null;
-              return NextResponse.json({
-                ok: true,
-                id: offerId,
-                pdfUrl: null,
-                downloadToken,
-                status: 'failed' as const,
-                note: translator.t('errors.offer.savePdfFailed'),
-                sections: sectionsPayload,
-                textSaved: true, // Indicate that the text was saved even though PDF failed
-              });
-            }
-          }
-        }
-      }
-
-      const sectionsPayload = structuredSections
-        ? sanitizeSectionsOutput(structuredSections)
-        : null;
-
-      // Verify offer exists with PDF URL in database (using service role)
-      if (immediatePdfUrl) {
-        const { data: verifyOffer, error: verifyError } = await sb
-          .from('offers')
-          .select('id, title, pdf_url, created_at')
-          .eq('id', offerId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (verifyError) {
-          log.warn('Failed to verify offer after PDF generation', { error: verifyError });
-        } else if (verifyOffer) {
-          log.info('Offer verification after PDF generation', {
-            offerId: verifyOffer.id,
-            title: verifyOffer.title,
-            pdfUrl: verifyOffer.pdf_url,
-            created_at: verifyOffer.created_at,
-            matchesExpected: verifyOffer.pdf_url === immediatePdfUrl,
-          });
-
-          // Also verify it's queryable by checking if it appears in a list query (service role)
-          const { data: listCheck, error: listError } = await sb
-            .from('offers')
-            .select('id, pdf_url', { count: 'exact' })
-            .eq('user_id', user.id)
-            .eq('id', offerId)
-            .maybeSingle();
-
-          if (listError) {
-            log.warn('Failed to verify offer in list query', { error: listError });
-          } else if (listCheck) {
-            log.info('Offer is queryable in list query (service role)', {
-              offerId: listCheck.id,
-              pdfUrl: listCheck.pdf_url,
-            });
-          } else {
-            log.error('Offer not found in list query - possible RLS issue', { offerId });
-          }
-
-          // Also verify using authenticated user's context (simulate dashboard query)
-          // Create a client with the user's access token to test RLS
-          const { cookies } = await import('next/headers');
-          const cookieStore = await cookies();
-          const accessToken = cookieStore.get('propono_at')?.value;
-
-          if (accessToken) {
-            const { createClient } = await import('@supabase/supabase-js');
-            const { envServer } = await import('@/env.server');
-            const userClient = createClient(
-              envServer.NEXT_PUBLIC_SUPABASE_URL,
-              envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-              {
-                auth: { persistSession: false, autoRefreshToken: false },
-                global: {
-                  headers: {
-                    apikey: envServer.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                },
-              },
-            );
-
-            const { data: userListCheck, error: userListError } = await userClient
-              .from('offers')
-              .select('id, pdf_url')
-              .eq('user_id', user.id)
-              .eq('id', offerId)
-              .maybeSingle();
-
-            if (userListError) {
-              log.error('Offer NOT queryable with authenticated user context - RLS issue!', {
-                offerId,
-                error: userListError,
-                errorMessage: userListError.message,
-                errorCode: userListError.code,
-              });
-            } else if (userListCheck) {
-              log.info('Offer is queryable with authenticated user context', {
-                offerId: userListCheck.id,
-                pdfUrl: userListCheck.pdf_url,
-              });
-            } else {
-              log.error('Offer not found with authenticated user context - RLS blocking!', {
-                offerId,
-              });
-            }
-          } else {
-            log.warn(
-              'No access token found in cookies, skipping authenticated user context verification',
-            );
-          }
-        } else {
-          log.error('Offer not found after PDF generation', { offerId });
-        }
-      }
-
-      // Log final response state for debugging
-      log.info('PDF generation response', {
-        offerId,
-        pdfUrl: immediatePdfUrl,
-        status: responseStatus,
-        note: responseNote,
-        hasPdfUrl: !!immediatePdfUrl,
+        title: safeTitle,
       });
 
       const response = NextResponse.json({
         ok: true,
         id: offerId,
-        pdfUrl: immediatePdfUrl,
-        downloadToken,
-        status: responseStatus,
-        note: responseNote,
-        sections: sectionsPayload,
       });
 
       // Add rate limit headers to response
