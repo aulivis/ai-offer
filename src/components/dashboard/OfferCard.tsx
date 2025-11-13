@@ -13,12 +13,15 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
+import ClipboardIcon from '@heroicons/react/24/outline/ClipboardIcon';
 import { ShareModal } from './ShareModal';
+import { fetchWithSupabaseAuth } from '@/lib/api';
+import { useToast } from '@/components/ToastProvider';
 
 export interface OfferCardProps {
   offer: Offer;
@@ -59,6 +62,10 @@ export function OfferCard({
   const [decisionDate, setDecisionDate] = useState<string>(() => isoDateInput(offer.decided_at));
   const [isExpanded, setIsExpanded] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [defaultShareUrl, setDefaultShareUrl] = useState<string | null>(null);
+  const [shareUrlCopied, setShareUrlCopied] = useState(false);
+  const [isLoadingShareUrl, setIsLoadingShareUrl] = useState(false);
+  const { showToast } = useToast();
 
   const timelineStates: Record<TimelineKey, TimelineStatus> = {
     draft: getTimelineStatus('draft', offer.status),
@@ -79,6 +86,55 @@ export function OfferCard({
   useEffect(() => {
     setDecisionDate(isoDateInput(offer.decided_at));
   }, [offer.decided_at]);
+
+  // Load default share URL
+  const loadDefaultShareUrl = useCallback(async () => {
+    setIsLoadingShareUrl(true);
+    try {
+      const response = await fetchWithSupabaseAuth(`/api/offers/${offer.id}/default-share`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDefaultShareUrl(data.shareUrl || null);
+      }
+    } catch (error) {
+      // Silently fail - share link is optional
+      console.warn('Failed to load default share URL', error);
+    } finally {
+      setIsLoadingShareUrl(false);
+    }
+  }, [offer.id]);
+
+  useEffect(() => {
+    loadDefaultShareUrl();
+  }, [loadDefaultShareUrl]);
+
+  const copyShareUrl = useCallback(async () => {
+    if (!defaultShareUrl) {
+      await loadDefaultShareUrl();
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(defaultShareUrl);
+      setShareUrlCopied(true);
+      showToast({
+        title: t('dashboard.offerCard.shareUrlCopied') || 'Link másolva',
+        description:
+          t('dashboard.offerCard.shareUrlCopiedDesc') || 'A megosztási link a vágólapra másolva.',
+        variant: 'success',
+      });
+      setTimeout(() => setShareUrlCopied(false), 2000);
+    } catch (_error) {
+      showToast({
+        title: 'Hiba',
+        description: 'Nem sikerült másolni a linket.',
+        variant: 'error',
+      });
+    }
+  }, [defaultShareUrl, loadDefaultShareUrl, showToast]);
 
   const actionButtonClass =
     'inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
@@ -203,14 +259,31 @@ export function OfferCard({
             )}
             <button
               type="button"
+              onClick={copyShareUrl}
+              disabled={isBusy || isLoadingShareUrl}
+              className={`${actionButtonClass} hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 ${isBusy || isLoadingShareUrl ? actionButtonDisabledClass : ''}`}
+              aria-label={shareLabel}
+              title={defaultShareUrl ? 'Megosztási link másolása' : shareLabel}
+            >
+              {isLoadingShareUrl ? (
+                <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+              ) : shareUrlCopied ? (
+                <CheckIcon aria-hidden="true" className="h-4 w-4 text-green-600" />
+              ) : (
+                <LinkIcon aria-hidden="true" className="h-4 w-4" />
+              )}
+              <span className="sr-only">{shareLabel}</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setIsShareModalOpen(true)}
               disabled={isBusy}
-              className={`${actionButtonClass} hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 ${isBusy ? actionButtonDisabledClass : ''}`}
-              aria-label={shareLabel}
-              title={shareLabel}
+              className={`${actionButtonClass} hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+              aria-label="Megosztási beállítások"
+              title="Megosztási beállítások"
             >
-              <LinkIcon aria-hidden="true" className="h-4 w-4" />
-              <span className="sr-only">{shareLabel}</span>
+              <ClipboardIcon aria-hidden="true" className="h-4 w-4" />
+              <span className="sr-only">Megosztási beállítások</span>
             </button>
             <button
               type="button"

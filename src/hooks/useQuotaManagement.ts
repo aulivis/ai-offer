@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { t } from '@/copy';
@@ -124,20 +124,40 @@ export function useQuotaManagement() {
     }
   }, [authStatus, sb, user]);
 
+  // Use ref to store latest loadQuota callback
+  const loadQuotaRef = useRef(loadQuota);
+  useEffect(() => {
+    loadQuotaRef.current = loadQuota;
+  }, [loadQuota]);
+
   // Load quota on mount and when refresh trigger changes
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
       return;
     }
 
-    loadQuota();
-  }, [authStatus, user, refreshTrigger, loadQuota]);
+    loadQuotaRef.current();
+    // Only depend on authStatus, user.id, and refreshTrigger, not the callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, user?.id, refreshTrigger]);
 
   // Set up real-time subscriptions for quota updates
+  // Use refs and debouncing to prevent excessive refreshes
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
       return;
     }
+
+    // Debounce quota refreshes to prevent excessive calls
+    let quotaRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
+    const debouncedLoadQuota = () => {
+      if (quotaRefreshTimeout) {
+        clearTimeout(quotaRefreshTimeout);
+      }
+      quotaRefreshTimeout = setTimeout(() => {
+        loadQuotaRef.current();
+      }, 500);
+    };
 
     // Subscribe to usage_counters changes for this user
     const usageChannel = sb
@@ -152,7 +172,7 @@ export function useQuotaManagement() {
         },
         () => {
           // Refresh quota on any usage counter update (period check handled by get_quota_snapshot)
-          loadQuota();
+          debouncedLoadQuota();
         },
       )
       .on(
@@ -164,7 +184,7 @@ export function useQuotaManagement() {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          loadQuota();
+          debouncedLoadQuota();
         },
       )
       .subscribe();
@@ -183,18 +203,21 @@ export function useQuotaManagement() {
         },
         () => {
           // Debounce rapid changes
-          setTimeout(() => {
-            loadQuota();
-          }, 500);
+          debouncedLoadQuota();
         },
       )
       .subscribe();
 
     return () => {
+      if (quotaRefreshTimeout) {
+        clearTimeout(quotaRefreshTimeout);
+      }
       sb.removeChannel(usageChannel);
       sb.removeChannel(jobsChannel);
     };
-  }, [authStatus, sb, user, loadQuota]);
+    // Only depend on authStatus and user.id, not the callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, user?.id, sb]);
 
   const refreshQuota = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);

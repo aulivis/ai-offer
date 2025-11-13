@@ -1,7 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
@@ -469,6 +469,14 @@ export default function DashboardPage() {
     [sb, showToast],
   );
 
+  // Use refs to store latest callbacks to avoid unnecessary re-subscriptions
+  const fetchPageRef = useRef(fetchPage);
+  const showToastRef = useRef(showToast);
+  useEffect(() => {
+    fetchPageRef.current = fetchPage;
+    showToastRef.current = showToast;
+  }, [fetchPage, showToast]);
+
   useEffect(() => {
     let active = true;
     if (authStatus !== 'authenticated' || !user) {
@@ -481,7 +489,7 @@ export default function DashboardPage() {
       setLoading(true);
       try {
         setUserId(user.id);
-        const { items, count } = await fetchPage(user.id, 0);
+        const { items, count } = await fetchPageRef.current(user.id, 0);
         if (!active) return;
         setOffers(items);
         setPageIndex(0);
@@ -490,7 +498,7 @@ export default function DashboardPage() {
         console.error('Failed to load offers', error);
         const message =
           error instanceof Error ? error.message : t('toasts.offers.loadFailed.description');
-        showToast({
+        showToastRef.current({
           title: t('toasts.offers.loadFailed.title'),
           description: message || t('toasts.offers.loadFailed.description'),
           variant: 'error',
@@ -531,7 +539,9 @@ export default function DashboardPage() {
       active = false;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [authStatus, fetchPage, showToast, sb, user]);
+    // Only depend on authStatus and user.id, not the callbacks
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, user?.id]);
 
   // Track URL search params to detect refresh requests
   const [refreshKey, setRefreshKey] = useState(0);
@@ -588,6 +598,12 @@ export default function DashboardPage() {
     }
   }, [authStatus, sb, user]);
 
+  // Use ref to store latest loadQuota callback
+  const loadQuotaRef = useRef(loadQuota);
+  useEffect(() => {
+    loadQuotaRef.current = loadQuota;
+  }, [loadQuota]);
+
   // Load quota on mount and when refresh key changes
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
@@ -596,16 +612,30 @@ export default function DashboardPage() {
       return;
     }
 
-    loadQuota();
-  }, [authStatus, user, sb, refreshKey, loadQuota]);
+    loadQuotaRef.current();
+    // Only depend on authStatus, user.id, and refreshKey, not the callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, user?.id, refreshKey]);
 
   // Set up real-time subscriptions for quota updates
+  // Use refs and debouncing to prevent excessive refreshes
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
       return;
     }
 
     const { iso: expectedPeriod } = currentMonthStart();
+
+    // Debounce quota refreshes to prevent excessive calls
+    let quotaRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
+    const debouncedLoadQuota = () => {
+      if (quotaRefreshTimeout) {
+        clearTimeout(quotaRefreshTimeout);
+      }
+      quotaRefreshTimeout = setTimeout(() => {
+        loadQuotaRef.current();
+      }, 500);
+    };
 
     // Subscribe to usage_counters changes
     const usageChannel = sb
@@ -625,7 +655,7 @@ export default function DashboardPage() {
             userId: user.id,
             period: updated.period_start,
           });
-          loadQuota();
+          debouncedLoadQuota();
         },
       )
       .on(
@@ -642,7 +672,7 @@ export default function DashboardPage() {
             userId: user.id,
             period: inserted.period_start,
           });
-          loadQuota();
+          debouncedLoadQuota();
         },
       )
       .subscribe();
@@ -673,18 +703,21 @@ export default function DashboardPage() {
             jobId: job.id,
             status: job.status,
           });
-          setTimeout(() => {
-            loadQuota();
-          }, 500);
+          debouncedLoadQuota();
         },
       )
       .subscribe();
 
     return () => {
+      if (quotaRefreshTimeout) {
+        clearTimeout(quotaRefreshTimeout);
+      }
       sb.removeChannel(usageChannel);
       sb.removeChannel(jobsChannel);
     };
-  }, [authStatus, sb, user, loadQuota]);
+    // Only depend on authStatus and user.id, not the callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, user?.id, sb]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 

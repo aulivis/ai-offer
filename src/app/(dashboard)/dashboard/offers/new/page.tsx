@@ -11,6 +11,7 @@ import { OfferSummarySection } from '@/components/offers/OfferSummarySection';
 import { WizardActionBar } from '@/components/offers/WizardActionBar';
 import { WizardPreviewPanel } from '@/components/offers/WizardPreviewPanel';
 import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
+import { PreviewAsCustomerButton } from '@/components/offers/PreviewAsCustomerButton';
 import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
 import { useToast } from '@/components/ToastProvider';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
@@ -21,7 +22,6 @@ import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
 import { trackWizardEvent } from '@/lib/analytics/wizard';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
-import { Modal } from '@/components/ui/Modal';
 import type { OfferPreviewTab } from '@/types/preview';
 import { listTemplates } from '@/app/pdf/templates/engineRegistry';
 import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
@@ -91,7 +91,6 @@ export default function NewOfferPage() {
   });
 
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const templateOptions = useMemo(() => listTemplates() as Array<OfferTemplate>, []);
   const defaultTemplateId = useMemo<TemplateId>(() => {
@@ -274,7 +273,6 @@ export default function NewOfferPage() {
   useEffect(() => {
     if (step !== 3) {
       setActivePreviewTab('document');
-      setIsPreviewModalOpen(false);
     }
   }, [step]);
 
@@ -509,11 +507,25 @@ export default function NewOfferPage() {
 
             {step === 3 && (
               <StepErrorBoundary stepNumber={3}>
-                <OfferSummarySection
-                  title={title}
-                  projectDetails={projectDetails}
-                  totals={totals}
-                />
+                <div className="space-y-6">
+                  <OfferSummarySection
+                    title={title}
+                    projectDetails={projectDetails}
+                    totals={totals}
+                  />
+                  <PreviewAsCustomerButton
+                    title={title}
+                    projectDetails={projectDetails}
+                    projectDetailsText={projectDetailsText}
+                    previewHtml={previewHtml}
+                    pricingRows={pricingRows}
+                    selectedTemplateId={selectedTemplateId}
+                    brandingPrimary={brandingPrimary}
+                    brandingSecondary={brandingSecondary}
+                    brandingLogoUrl={brandingLogoUrl}
+                    disabled={isSubmitting || isStreaming || !previewHtml.trim() || !hasPricingRows}
+                  />
+                </div>
               </StepErrorBoundary>
             )}
 
@@ -543,7 +555,8 @@ export default function NewOfferPage() {
           onTabChange={setActivePreviewTab}
           onRefresh={refreshPreview}
           onAbort={abortPreview}
-          onOpenFullscreen={() => setIsPreviewModalOpen(true)}
+          // PDF preview modal removed - using Preview as Customer button instead
+          onOpenFullscreen={undefined}
           isStreaming={isStreaming}
           templateOptions={templateOptions}
           selectedTemplateId={selectedTemplateId}
@@ -557,39 +570,6 @@ export default function NewOfferPage() {
           onBrandingLogoChange={setBrandingLogoUrl}
         />
       </div>
-      <Modal
-        open={isPreviewModalOpen}
-        onClose={() => setIsPreviewModalOpen(false)}
-        labelledBy="preview-modal-title"
-      >
-        <WizardPreviewPanel
-          previewEnabled={previewEnabled}
-          previewHtml={previewHtml}
-          previewDocumentHtml={previewDocumentHtml}
-          previewStatus={previewStatus}
-          previewError={previewError}
-          previewSummary={previewSummary}
-          previewIssues={previewIssues}
-          validationIssues={validationPreviewIssues}
-          attemptedSteps={attemptedSteps}
-          activeTab={activePreviewTab}
-          onTabChange={setActivePreviewTab}
-          onRefresh={refreshPreview}
-          onAbort={abortPreview}
-          onOpenFullscreen={() => setIsPreviewModalOpen(false)}
-          isStreaming={isStreaming}
-          templateOptions={templateOptions}
-          selectedTemplateId={selectedTemplateId}
-          defaultTemplateId={defaultTemplateId}
-          brandingPrimary={brandingPrimary}
-          brandingSecondary={brandingSecondary}
-          brandingLogoUrl={brandingLogoUrl}
-          onTemplateChange={setSelectedTemplateId}
-          onBrandingPrimaryChange={setBrandingPrimary}
-          onBrandingSecondaryChange={setBrandingSecondary}
-          onBrandingLogoChange={setBrandingLogoUrl}
-        />
-      </Modal>
     </AppFrame>
   );
 }

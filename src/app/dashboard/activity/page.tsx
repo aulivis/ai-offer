@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -70,11 +70,19 @@ export default function ActivityLogPage() {
     [user, offset, limit],
   );
 
+  // Use ref to store latest callback to avoid unnecessary re-runs
+  const loadNotificationsRef = useRef(loadNotifications);
+  useEffect(() => {
+    loadNotificationsRef.current = loadNotifications;
+  }, [loadNotifications]);
+
   useEffect(() => {
     if (user) {
-      loadNotifications(true);
+      loadNotificationsRef.current(true);
     }
-  }, [user, loadNotifications]);
+    // Only depend on user.id, not the callback
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Set up realtime subscription
   useEffect(() => {
@@ -113,7 +121,9 @@ export default function ActivityLogPage() {
     return () => {
       sb.removeChannel(channel);
     };
-  }, [sb, user]);
+    // Only depend on user.id, not the entire user object
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, sb]);
 
   const markAsRead = async (notificationId: string) => {
     try {

@@ -7,7 +7,7 @@ import { handleValidationError } from '@/lib/errorHandling';
 import { getRequestIp } from '@/lib/auditLogging';
 
 const respondRequestSchema = z.object({
-  decision: z.enum(['accepted', 'rejected']),
+  decision: z.enum(['accepted', 'rejected', 'question']),
   comment: z.string().trim().max(1000).optional(),
   customerName: z.string().trim().max(200).optional(),
   customerEmail: z.string().email().max(200).optional(),

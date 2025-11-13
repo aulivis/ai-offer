@@ -451,7 +451,9 @@ export default function SettingsPage() {
     return () => {
       active = false;
     };
-  }, [authStatus, showToast, supabase, user]);
+    // Only depend on authStatus and user.id, not callbacks or entire user object
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, user?.id, supabase]);
 
   async function saveProfile(scope: 'all' | 'branding') {
     try {

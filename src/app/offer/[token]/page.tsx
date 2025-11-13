@@ -10,10 +10,14 @@ import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getRequestIp } from '@/lib/auditLogging';
 import { headers } from 'next/headers';
 import OfferResponseForm from './OfferResponseForm';
+import { DownloadPdfButton } from './DownloadPdfButton';
 
 type PageProps = {
   params: Promise<{
     token?: string;
+  }>;
+  searchParams: Promise<{
+    pdf?: string;
   }>;
 };
 
@@ -24,9 +28,11 @@ type PageProps = {
  * This page allows customers to view offers without authentication
  * and respond to them (accept/reject).
  */
-export default async function PublicOfferPage({ params }: PageProps) {
+export default async function PublicOfferPage({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const token = resolvedParams.token;
+  const isPdfMode = resolvedSearchParams.pdf === 'true';
 
   if (!token || typeof token !== 'string') {
     notFound();
@@ -186,26 +192,38 @@ export default async function PublicOfferPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl px-4 py-8">
+        {/* Download PDF Button - hidden in PDF mode */}
+        {!isPdfMode && <DownloadPdfButton token={token} offerId={offer.id} />}
+
         {/* Offer HTML Content */}
         <div
           className="mb-8 rounded-lg bg-white p-8 shadow-sm"
           dangerouslySetInnerHTML={{ __html: html }}
         />
 
-        {/* Response Form */}
-        {existingResponse ? (
-          <div className="rounded-lg bg-green-50 p-6 text-center">
-            <h2 className="mb-2 text-xl font-semibold text-green-800">Köszönjük a válaszát!</h2>
-            <p className="text-green-700">
-              Ön már {existingResponse.decision === 'accepted' ? 'elfogadta' : 'elutasította'} ezt
-              az ajánlatot.
-            </p>
-            <p className="mt-2 text-sm text-green-600">
-              Válasz ideje: {new Date(existingResponse.created_at).toLocaleString('hu-HU')}
-            </p>
-          </div>
-        ) : (
-          <OfferResponseForm shareId={share.id} offerId={offer.id} token={token} />
+        {/* Response Form - hidden in PDF mode */}
+        {!isPdfMode && (
+          <>
+            {existingResponse ? (
+              <div className="rounded-lg bg-green-50 p-6 text-center">
+                <h2 className="mb-2 text-xl font-semibold text-green-800">Köszönjük a válaszát!</h2>
+                <p className="text-green-700">
+                  Ön már{' '}
+                  {existingResponse.decision === 'accepted'
+                    ? 'elfogadta'
+                    : existingResponse.decision === 'rejected'
+                      ? 'elutasította'
+                      : 'kérdést tett fel'}{' '}
+                  ezt az ajánlatra.
+                </p>
+                <p className="mt-2 text-sm text-green-600">
+                  Válasz ideje: {new Date(existingResponse.created_at).toLocaleString('hu-HU')}
+                </p>
+              </div>
+            ) : (
+              <OfferResponseForm shareId={share.id} offerId={offer.id} token={token} />
+            )}
+          </>
         )}
       </div>
     </div>

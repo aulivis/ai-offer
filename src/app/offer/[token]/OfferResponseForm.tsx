@@ -11,7 +11,7 @@ interface OfferResponseFormProps {
 }
 
 export default function OfferResponseForm({ token }: OfferResponseFormProps) {
-  const [decision, setDecision] = useState<'accepted' | 'rejected' | null>(null);
+  const [decision, setDecision] = useState<'accepted' | 'rejected' | 'question' | null>(null);
   const [comment, setComment] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -68,28 +68,42 @@ export default function OfferResponseForm({ token }: OfferResponseFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Decision buttons */}
-        <div className="flex gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <button
             type="button"
             onClick={() => setDecision('accepted')}
-            className={`flex-1 rounded-lg border-2 p-4 font-semibold transition ${
+            className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 font-semibold transition ${
               decision === 'accepted'
                 ? 'border-green-500 bg-green-50 text-green-700'
                 : 'border-gray-200 bg-white text-gray-700 hover:border-green-300'
             }`}
           >
-            ✓ Elfogadom
+            <span className="text-2xl">✓</span>
+            <span className="text-sm">Elfogadom</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setDecision('question')}
+            className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 font-semibold transition ${
+              decision === 'question'
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300'
+            }`}
+          >
+            <span className="text-2xl">?</span>
+            <span className="text-sm">Kérdésem van</span>
           </button>
           <button
             type="button"
             onClick={() => setDecision('rejected')}
-            className={`flex-1 rounded-lg border-2 p-4 font-semibold transition ${
+            className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 font-semibold transition ${
               decision === 'rejected'
                 ? 'border-red-500 bg-red-50 text-red-700'
                 : 'border-gray-200 bg-white text-gray-700 hover:border-red-300'
             }`}
           >
-            ✗ Elutasítom
+            <span className="text-2xl">✗</span>
+            <span className="text-sm">Elutasítom</span>
           </button>
         </div>
 
@@ -110,9 +124,18 @@ export default function OfferResponseForm({ token }: OfferResponseFormProps) {
           <textarea
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             rows={4}
-            placeholder="Megjegyzés (opcionális)"
+            placeholder={
+              decision === 'question'
+                ? 'Kérjük, írja le kérdését...'
+                : decision === 'accepted'
+                  ? 'Megjegyzés (opcionális)'
+                  : decision === 'rejected'
+                    ? 'Okkal együtt (opcionális)'
+                    : 'Megjegyzés (opcionális)'
+            }
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            required={decision === 'question'}
           />
         </div>
 
@@ -120,9 +143,11 @@ export default function OfferResponseForm({ token }: OfferResponseFormProps) {
 
         <Button
           type="submit"
-          disabled={!decision || submitting}
+          disabled={!decision || submitting || (decision === 'question' && !comment.trim())}
           className="w-full"
-          variant={decision === 'accepted' ? 'primary' : 'secondary'}
+          variant={
+            decision === 'accepted' ? 'primary' : decision === 'question' ? 'primary' : 'secondary'
+          }
         >
           {submitting ? 'Küldés...' : 'Válasz küldése'}
         </Button>
