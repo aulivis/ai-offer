@@ -142,9 +142,9 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     unoptimized
                     placeholder="blur"
                     blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYigyNDAsIDI0MCwgMjQwKSIvPjwvc3ZnPg=="
-                    sizes="(max-width: 768px) 128px, 176px"
+                    sizes="(max-width: 768px) 96px, 120px"
                     className="h-auto w-auto object-contain"
-                    style={{ maxHeight: '22.4mm', maxWidth: '176px' }}
+                    style={{ maxHeight: '48px', maxWidth: '120px' }}
                   />
                 </div>
               </div>
@@ -175,7 +175,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                       : 'text-white font-semibold bg-white/20'
                     : scrolled
                       ? 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
-                      : 'text-white/90 hover:bg-white/20 hover:text-white'
+                      : 'text-white hover:bg-white/20 hover:text-white'
                 }`}
                 {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
                 onClick={closeMenu}

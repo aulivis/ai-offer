@@ -28,11 +28,11 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 let toastIdCounter = 0;
 
 const VARIANT_STYLES: Record<ToastVariant, string> = {
-  default: 'border-border bg-bg text-fg shadow-card',
-  success: 'border-success/30 bg-success/10 text-success shadow-card',
-  error: 'border-danger/30 bg-danger/10 text-danger shadow-card',
-  info: 'border-accent/30 bg-accent/10 text-accent shadow-card',
-  warning: 'border-warning/30 bg-warning/10 text-warning shadow-card',
+  default: 'border-border bg-bg-muted text-fg shadow-card',
+  success: 'border-success/30 bg-white text-success shadow-card',
+  error: 'border-danger/30 bg-white text-danger shadow-card',
+  info: 'border-accent/30 bg-white text-accent shadow-card',
+  warning: 'border-warning/30 bg-white text-warning shadow-card',
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {

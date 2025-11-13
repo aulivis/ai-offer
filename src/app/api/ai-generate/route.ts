@@ -1181,12 +1181,30 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       const resolvedTemplateId = template.id;
 
       // ---- Ajánlat mentése ----
+      // Use authenticated client to respect RLS policies (security best practice)
+      // Manually validate user_id matches authenticated user (defense in depth)
       log.info('Attempting to insert offer', {
         offerId,
         userId: user.id,
         title: safeTitle,
         industry: sanitizeInput(industry),
       });
+
+      // Security: Ensure user_id matches authenticated user
+      if (user.id !== req.user.id) {
+        log.error('User ID mismatch - potential security issue', {
+          authenticatedUserId: req.user.id,
+          providedUserId: user.id,
+          offerId,
+        });
+        return NextResponse.json(
+          {
+            error: t('errors.offer.saveFailed'),
+            details: 'Authentication mismatch',
+          },
+          { status: 403 },
+        );
+      }
 
       const { data: insertedOffer, error: offerInsertError } = await sb
         .from('offers')
@@ -1232,7 +1250,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       }
 
       if (!insertedOffer) {
-        log.error('Offer insert returned no data and no error', {
+        log.error('Offer insert returned no data and no error - possible RLS issue', {
           offerId,
           userId: user.id,
         });
@@ -1245,7 +1263,24 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         );
       }
 
+      // Security: Verify the inserted offer belongs to the authenticated user
+      if (insertedOffer.user_id !== user.id) {
+        log.error('CRITICAL: Inserted offer user_id does not match authenticated user', {
+          offerId: insertedOffer.id,
+          insertedUserId: insertedOffer.user_id,
+          authenticatedUserId: user.id,
+        });
+        return NextResponse.json(
+          {
+            error: t('errors.offer.saveFailed'),
+            details: 'Security validation failed',
+          },
+          { status: 500 },
+        );
+      }
+
       // Verify the offer was actually saved by querying it back
+      // Use authenticated client first (respects RLS)
       // Use a small delay to ensure trigger has completed
       await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -1257,7 +1292,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         .maybeSingle();
 
       if (verifyError) {
-        log.error('Failed to verify offer after insert', {
+        log.error('Failed to verify offer after insert (authenticated client)', {
           error: verifyError,
           offerId,
           userId: user.id,
@@ -1266,16 +1301,40 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           errorDetails: verifyError.details,
           errorHint: verifyError.hint,
         });
-        // If verification fails, the offer might not be saved - fail the request
-        return NextResponse.json(
-          {
-            error: t('errors.offer.saveFailed'),
-            details: 'Failed to verify offer was saved to database',
-          },
-          { status: 500 },
-        );
+        
+        // Fallback: Try with service role client to diagnose RLS issues
+        const sbService = supabaseServiceRole();
+        const { data: serviceVerifyOffer, error: serviceVerifyError } = await sbService
+          .from('offers')
+          .select('id, user_id, title, created_at')
+          .eq('id', offerId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (serviceVerifyError || !serviceVerifyOffer) {
+          log.error('CRITICAL: Offer not found even with service role - transaction rollback or trigger failure', {
+            offerId,
+            userId: user.id,
+            authenticatedError: verifyError.message,
+            serviceRoleError: serviceVerifyError?.message,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: 'Offer was not saved to database',
+            },
+            { status: 500 },
+          );
+        } else {
+          log.warn('Offer found with service role but not authenticated client - possible RLS policy issue', {
+            offerId,
+            userId: user.id,
+            authenticatedError: verifyError.message,
+          });
+          // Offer exists, continue (but log the RLS issue for investigation)
+        }
       } else if (!verifyOffer) {
-        log.error('CRITICAL: Offer not found after insert - RLS or transaction issue', {
+        log.error('CRITICAL: Offer not found after insert - transaction rollback or trigger failure', {
           offerId,
           userId: user.id,
           insertedOffer,
@@ -1298,28 +1357,66 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
       // Ensure default share link exists (fallback if trigger failed)
       // The trigger should create it automatically, but we verify and create if missing
-      // Use service role client to bypass RLS for share creation
+      // Try authenticated client first, fall back to service role only if needed
       try {
-        const { data: existingShare } = await sb
+        // First try with authenticated client (respects RLS)
+        const { data: existingShare, error: shareCheckError } = await sb
           .from('offer_shares')
           .select('id, token')
           .eq('offer_id', offerId)
           .eq('is_active', true)
           .maybeSingle();
 
-        if (!existingShare) {
+        let shareToUse = existingShare;
+
+        // If authenticated client fails, try service role as fallback (for diagnosis)
+        if (shareCheckError || !existingShare) {
+          if (shareCheckError) {
+            log.warn('Error checking for existing share link with authenticated client', {
+              offerId,
+              userId: user.id,
+              error: shareCheckError.message,
+              errorCode: shareCheckError.code,
+            });
+          }
+
+          // Fallback: Check with service role to see if share exists but RLS is blocking
+          const sbService = supabaseServiceRole();
+          const { data: serviceShare, error: serviceShareError } = await sbService
+            .from('offer_shares')
+            .select('id, token')
+            .eq('offer_id', offerId)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (serviceShareError) {
+            log.warn('Error checking for existing share link with service role', {
+              offerId,
+              userId: user.id,
+              error: serviceShareError.message,
+              errorCode: serviceShareError.code,
+            });
+          } else if (serviceShare && !existingShare) {
+            log.warn('Share found with service role but not authenticated client - possible RLS issue', {
+              offerId,
+              userId: user.id,
+            });
+            shareToUse = serviceShare;
+          }
+        }
+
+        if (!shareToUse) {
           log.warn('Default share not found after offer creation, creating fallback share', {
             offerId,
             userId: user.id,
             requestId,
           });
 
-          // Use service role client to bypass RLS when creating fallback share
-          const sbService = supabaseServiceRole();
+          // Use authenticated client first for share creation (respects RLS)
           const { randomBytes } = await import('crypto');
           const token = randomBytes(32).toString('base64url');
 
-          const { data: insertedShare, error: shareError } = await sbService
+          const { data: insertedShare, error: shareError } = await sb
             .from('offer_shares')
             .insert({
               offer_id: offerId,
@@ -1332,17 +1429,71 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             .single();
 
           if (shareError) {
-            log.error('Failed to create fallback share link', {
-              offerId,
-              userId: user.id,
-              error: shareError,
-              errorMessage: shareError.message,
-              errorCode: shareError.code,
-              errorDetails: shareError.details,
-              errorHint: shareError.hint,
-            });
-            // Don't fail the request - offer is created, share can be created later
-            // But log this as a warning that needs attention
+            // Check if the error is a foreign key constraint violation
+            // This would indicate the offer doesn't actually exist in the database
+            const isForeignKeyError =
+              shareError.code === '23503' ||
+              (typeof shareError.message === 'string' &&
+                shareError.message.includes('foreign key constraint'));
+            
+            if (isForeignKeyError) {
+              log.error('CRITICAL: Failed to create fallback share - offer does not exist in database', {
+                offerId,
+                userId: user.id,
+                error: shareError,
+                errorMessage: shareError.message,
+                errorCode: shareError.code,
+                errorDetails: shareError.details,
+                errorHint: shareError.hint,
+              });
+              // This is a critical error - the offer was not actually saved
+              return NextResponse.json(
+                {
+                  error: t('errors.offer.saveFailed'),
+                  details: 'Offer was not saved to database (foreign key constraint failed)',
+                },
+                { status: 500 },
+              );
+            } else {
+              // Non-foreign-key error (likely RLS or permissions) - try service role as fallback
+              log.warn('Failed to create fallback share link with authenticated client, trying service role', {
+                offerId,
+                userId: user.id,
+                error: shareError.message,
+                errorCode: shareError.code,
+              });
+              
+              // Fallback: Try with service role (only for share creation, not offer creation)
+              const sbService = supabaseServiceRole();
+              const { data: fallbackShare, error: fallbackError } = await sbService
+                .from('offer_shares')
+                .insert({
+                  offer_id: offerId,
+                  user_id: user.id,
+                  token,
+                  expires_at: null,
+                  is_active: true,
+                })
+                .select('id, token')
+                .single();
+
+              if (fallbackError) {
+                log.error('Failed to create fallback share link even with service role', {
+                  offerId,
+                  userId: user.id,
+                  error: fallbackError.message,
+                  errorCode: fallbackError.code,
+                });
+                // Don't fail the request - offer is created, share can be created later
+              } else if (fallbackShare) {
+                log.info('Fallback share link created successfully with service role', {
+                  offerId,
+                  shareId: fallbackShare.id,
+                  token: fallbackShare.token.substring(0, 8) + '...',
+                });
+                shareToUse = fallbackShare;
+              }
+            }
           } else if (!insertedShare) {
             log.error('Fallback share insert returned no data and no error', {
               offerId,
@@ -1354,12 +1505,13 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
               shareId: insertedShare.id,
               token: insertedShare.token.substring(0, 8) + '...',
             });
+            shareToUse = insertedShare;
           }
         } else {
           log.info('Default share link found after offer creation', {
             offerId,
-            shareId: existingShare.id,
-            token: existingShare.token.substring(0, 8) + '...',
+            shareId: shareToUse.id,
+            token: shareToUse.token.substring(0, 8) + '...',
           });
         }
       } catch (shareCheckError) {
