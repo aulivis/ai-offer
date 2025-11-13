@@ -19,6 +19,7 @@ import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
 import ClipboardIcon from '@heroicons/react/24/outline/ClipboardIcon';
+import ArrowTopRightOnSquareIcon from '@heroicons/react/24/outline/ArrowTopRightOnSquareIcon';
 import { ShareModal } from './ShareModal';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { useToast } from '@/components/ToastProvider';
@@ -274,6 +275,19 @@ export function OfferCard({
               )}
               <span className="sr-only">{shareLabel}</span>
             </button>
+            {defaultShareUrl && (
+              <a
+                href={defaultShareUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${actionButtonClass} hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600`}
+                aria-label="Megosztási link megnyitása új ablakban"
+                title="Megosztási link megnyitása új ablakban"
+              >
+                <ArrowTopRightOnSquareIcon aria-hidden="true" className="h-4 w-4" />
+                <span className="sr-only">Megosztási link megnyitása új ablakban</span>
+              </a>
+            )}
             <button
               type="button"
               onClick={() => setIsShareModalOpen(true)}
