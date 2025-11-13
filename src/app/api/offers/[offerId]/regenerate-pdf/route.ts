@@ -123,7 +123,15 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
       .eq('user_id', request.user.id)
       .maybeSingle();
 
-    const normalizedBranding = normalizeBranding(brandingData);
+    const normalizedBranding = normalizeBranding(
+      brandingData
+        ? {
+            primaryColor: brandingData.primary_color ?? null,
+            secondaryColor: brandingData.secondary_color ?? null,
+            logoUrl: brandingData.logo_url ?? null,
+          }
+        : undefined,
+    );
 
     // Get offer inputs
     const inputs = (offer.inputs as Record<string, unknown>) || {};
