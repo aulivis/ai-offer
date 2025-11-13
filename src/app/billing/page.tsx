@@ -1052,14 +1052,14 @@ function PublicBillingLanding() {
   return (
     <main id="main" className="flex flex-col pb-24">
       {/* Enhanced Hero Section with Urgency & Value Proposition */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-teal-900 text-white min-h-screen flex flex-col">
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-teal-900 text-white min-h-screen flex flex-col -mt-14 md:-mt-20">
         {/* Decorative background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-96 h-96 bg-teal-400 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-400 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="container mx-auto px-4 relative z-10 flex-1 flex items-center">
+        <div className="container mx-auto px-4 relative z-10 flex-1 flex items-center pt-14 md:pt-20">
           <div className="max-w-5xl mx-auto text-center w-full">
             {/* Limited time badge */}
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white px-5 py-2 rounded-full mb-6 animate-pulse">

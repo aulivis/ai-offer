@@ -1399,35 +1399,180 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
       const downloadToken = uuid();
 
+      // Verify Supabase client authentication
+      const { data: authUser, error: authError } = await sb.auth.getUser();
+      if (authError || !authUser?.user) {
+        log.error('Supabase client authentication check failed', {
+          error: authError,
+          userId: user.id,
+          authUser: authUser?.user?.id,
+        });
+        return NextResponse.json(
+          {
+            error: 'Authentication failed',
+            details: 'Supabase client authentication failed',
+          },
+          { status: 401 },
+        );
+      }
+
+      if (authUser.user.id !== user.id) {
+        log.error('User ID mismatch between auth middleware and Supabase client', {
+          middlewareUserId: user.id,
+          supabaseUserId: authUser.user.id,
+        });
+        return NextResponse.json(
+          {
+            error: 'Authentication failed',
+            details: 'User ID mismatch',
+          },
+          { status: 401 },
+        );
+      }
+
       // ---- Ajánlat mentése ----
-      const { error: offerInsertError } = await sb.from('offers').insert({
-        id: offerId,
-        user_id: user.id,
+      log.info('Attempting to insert offer', {
+        offerId,
+        userId: user.id,
         title: safeTitle,
         industry: sanitizeInput(industry),
-        recipient_id: clientId || null,
-        inputs: {
-          projectDetails: sanitizedDetails,
-          deadline,
-          language,
-          brandVoice,
-          style,
-          templateId: resolvedTemplateId,
-        },
-        ai_text: aiHtmlForStorage,
-        price_json: rows,
-        pdf_url: null,
-        status: 'draft',
+        authenticatedUserId: authUser.user.id,
       });
 
+      const { data: insertedOffer, error: offerInsertError } = await sb
+        .from('offers')
+        .insert({
+          id: offerId,
+          user_id: user.id,
+          title: safeTitle,
+          industry: sanitizeInput(industry),
+          recipient_id: clientId || null,
+          inputs: {
+            projectDetails: sanitizedDetails,
+            deadline,
+            language,
+            brandVoice,
+            style,
+            templateId: resolvedTemplateId,
+          },
+          ai_text: aiHtmlForStorage,
+          price_json: rows,
+          pdf_url: null,
+          status: 'draft',
+        })
+        .select('id, user_id, title, created_at')
+        .single();
+
       if (offerInsertError) {
-        log.error('Offer insert error', offerInsertError);
+        log.error('Offer insert error', {
+          error: offerInsertError,
+          offerId,
+          userId: user.id,
+          errorMessage: offerInsertError.message,
+          errorCode: offerInsertError.code,
+          errorDetails: offerInsertError.details,
+          errorHint: offerInsertError.hint,
+        });
         return NextResponse.json(
           {
             error: t('errors.offer.saveFailed'),
+            details: offerInsertError.message,
           },
           { status: 500 },
         );
+      }
+
+      if (!insertedOffer) {
+        log.error('Offer insert returned no data and no error', {
+          offerId,
+          userId: user.id,
+        });
+        return NextResponse.json(
+          {
+            error: t('errors.offer.saveFailed'),
+            details: 'Offer insert returned no data',
+          },
+          { status: 500 },
+        );
+      }
+
+      // Verify the offer was actually saved by querying it back
+      const { data: verifyOffer, error: verifyError } = await sb
+        .from('offers')
+        .select('id, user_id, title, created_at')
+        .eq('id', offerId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (verifyError) {
+        log.error('Failed to verify offer after insert', {
+          error: verifyError,
+          offerId,
+          userId: user.id,
+        });
+        // Don't fail the request - offer might still be saved, just verification failed
+      } else if (!verifyOffer) {
+        log.error('CRITICAL: Offer not found after insert - RLS or transaction issue', {
+          offerId,
+          userId: user.id,
+          insertedOffer,
+        });
+        return NextResponse.json(
+          {
+            error: t('errors.offer.saveFailed'),
+            details: 'Offer was not saved to database',
+          },
+          { status: 500 },
+        );
+      } else {
+        log.info('Offer successfully inserted and verified', {
+          offerId: verifyOffer.id,
+          userId: verifyOffer.user_id,
+          title: verifyOffer.title,
+          created_at: verifyOffer.created_at,
+        });
+      }
+
+      // Ensure default share link exists (fallback if trigger failed)
+      // The trigger should create it automatically, but we verify and create if missing
+      try {
+        const { data: existingShare } = await sb
+          .from('offer_shares')
+          .select('id, token')
+          .eq('offer_id', offerId)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (!existingShare) {
+          log.warn('Default share not found after offer creation, creating fallback share', {
+            offerId,
+          });
+          const { randomBytes } = await import('crypto');
+          const token = randomBytes(32).toString('base64url');
+          const { error: shareError } = await sb.from('offer_shares').insert({
+            offer_id: offerId,
+            user_id: user.id,
+            token,
+            expires_at: null,
+            is_active: true,
+          });
+
+          if (shareError) {
+            log.error('Failed to create fallback share link', {
+              offerId,
+              error: shareError,
+            });
+            // Don't fail the request - offer is created, share can be created later
+          } else {
+            log.info('Fallback share link created successfully', { offerId });
+          }
+        }
+      } catch (shareCheckError) {
+        log.error('Error checking/creating default share link', {
+          offerId,
+          error: shareCheckError,
+        });
+        // Don't fail the request - offer is created, share can be created later
       }
 
       const pdfJobInput: PdfJobInput = {
@@ -1447,8 +1592,20 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
       try {
         await enqueuePdfJob(sb, pdfJobInput);
+        log.info('PDF job enqueued successfully', {
+          jobId: downloadToken,
+          offerId,
+          storagePath: pdfJobInput.storagePath,
+        });
       } catch (error) {
-        log.error('PDF queue error (enqueue)', error);
+        log.error('PDF queue error (enqueue)', {
+          error,
+          jobId: downloadToken,
+          offerId,
+          storagePath: pdfJobInput.storagePath,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+        });
         // Offer text is already saved, return success with PDF failure indication
         return NextResponse.json({
           ok: true,
@@ -1468,14 +1625,20 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
       try {
         await dispatchPdfJob(sb, downloadToken);
+        log.info('PDF job dispatched successfully', {
+          jobId: downloadToken,
+          offerId,
+        });
       } catch (dispatchError) {
         const message =
           dispatchError instanceof Error ? dispatchError.message : String(dispatchError);
-        log.warn('PDF queue error (dispatch)', {
+        log.error('PDF queue error (dispatch)', {
           error: dispatchError,
           message,
           errorName: dispatchError instanceof Error ? dispatchError.name : undefined,
           stack: dispatchError instanceof Error ? dispatchError.stack : undefined,
+          jobId: downloadToken,
+          offerId,
         });
 
         const dispatchLimitMessage = normalizeUsageLimitError(message, translator);
