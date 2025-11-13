@@ -6,8 +6,7 @@ import AnalyticsScriptGate from '@/components/consent/AnalyticsScriptGate';
 import CookieBar from '@/components/cookies/CookieBar';
 import { PreferencesModal } from '@/components/cookies/PreferencesModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import LandingHeader from '@/components/LandingHeader';
-import { Footer } from '@/components/footer';
+import { ConditionalLayout, ConditionalBackgroundDecorations } from '@/components/ConditionalLayout';
 import { AppProviders } from '@/components/AppProviders';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { AriaLiveAnnouncer } from '@/components/ui/AriaLiveAnnouncer';
@@ -53,16 +52,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AppProviders>
             <ErrorBoundary>
               <div className="relative min-h-screen overflow-x-hidden bg-bg text-fg">
-                <div className="pointer-events-none absolute inset-x-0 top-20 h-[520px] bg-[radial-gradient(circle_at_top,_rgba(var(--color-primary-rgb),0.18),_transparent_65%)]" />
-                <div className="pointer-events-none absolute -left-32 top-72 h-80 w-80 rounded-full bg-accent/16 blur-3xl" />
-                <div className="pointer-events-none absolute -right-28 bottom-40 h-72 w-72 rounded-full bg-primary/14 blur-3xl" />
+                <ConditionalBackgroundDecorations />
 
                 <div className="relative z-10 flex min-h-screen flex-col">
                   <AriaLiveAnnouncer />
                   <WebVitalsReporter />
-                  <LandingHeader />
-                  <div className="flex-1">{children}</div>
-                  <Footer />
+                  <ConditionalLayout>{children}</ConditionalLayout>
                 </div>
               </div>
               {/* Global UI elements rendered outside main container to avoid stacking context issues */}
