@@ -1,37 +1,54 @@
-import { existsSync } from 'fs';
-import { join } from 'path';
-
 import type { OfferTemplate } from '../../types';
 import { renderHtmlTemplate } from '../engine';
 import type { RenderCtx } from '../../types';
 
-// Resolve template path - works in both dev and production
-function getTemplatePath(): string {
-  // Try multiple possible paths
-  const possiblePaths = [
-    join(process.cwd(), 'src/app/pdf/templates/html/premium.professional.html'),
-    join(process.cwd(), 'web/src/app/pdf/templates/html/premium.professional.html'),
-    join(__dirname, 'premium.professional.html'),
-  ];
+// Resolve template path lazily - only when rendering (server-side only)
+// This avoids importing fs at module load time, which breaks client bundles
+let cachedTemplatePath: string | null = null;
 
-  for (const path of possiblePaths) {
-    if (existsSync(path)) {
-      return path;
-    }
+function getTemplatePath(): string {
+  if (cachedTemplatePath) {
+    return cachedTemplatePath;
   }
 
-  // Fallback to the most likely path
-  return possiblePaths[0]!;
-}
+  // Only resolve path on server-side (Node.js environment)
+  // Check for process instead of window for better Node.js detection
+  if (typeof process !== 'undefined' && process.versions?.node) {
+    // Dynamic require to avoid bundling fs in client
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { existsSync } = require('fs');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { join } = require('path');
 
-const TEMPLATE_PATH = getTemplatePath();
+    // Try multiple possible paths
+    const possiblePaths = [
+      join(process.cwd(), 'src/app/pdf/templates/html/premium.professional.html'),
+      join(process.cwd(), 'web/src/app/pdf/templates/html/premium.professional.html'),
+      join(__dirname, 'premium.professional.html'),
+    ];
+
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        cachedTemplatePath = path;
+        return path;
+      }
+    }
+
+    // Fallback to the most likely path
+    cachedTemplatePath = possiblePaths[0]!;
+    return cachedTemplatePath;
+  }
+
+  // Client-side fallback (should never be called, but needed for type safety)
+  throw new Error('Template path resolution is only available on the server');
+}
 
 /**
  * Render head section for HTML template
  * Extracts the <head> content including styles from the rendered HTML
  */
 function renderHead(ctx: RenderCtx): string {
-  const fullHtml = renderHtmlTemplate(ctx, TEMPLATE_PATH);
+  const fullHtml = renderHtmlTemplate(ctx, getTemplatePath());
 
   // Extract head content (everything between <head> and </head>)
   const headMatch = fullHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
@@ -47,7 +64,7 @@ function renderHead(ctx: RenderCtx): string {
  * Extracts the <body> content from the rendered HTML
  */
 function renderBody(ctx: RenderCtx): string {
-  const fullHtml = renderHtmlTemplate(ctx, TEMPLATE_PATH);
+  const fullHtml = renderHtmlTemplate(ctx, getTemplatePath());
 
   // Extract body content (everything between <body> and </body>)
   const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);

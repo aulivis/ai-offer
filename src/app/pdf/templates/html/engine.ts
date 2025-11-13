@@ -1,5 +1,3 @@
-import { readFileSync } from 'fs';
-
 import { sanitizeInput } from '@/lib/sanitize';
 import { summarize } from '@/app/lib/pricing';
 import type { PriceRow } from '@/app/lib/pricing';
@@ -244,9 +242,19 @@ function preparePricingRows(rows: PriceRow[]): Array<{
 
 /**
  * Load HTML template from file
+ * Only works on server-side (uses fs module)
  */
 export function loadHtmlTemplate(templatePath: string): string {
+  // Only load on server-side (Node.js environment)
+  // Check for process instead of window for better Node.js detection
+  if (typeof process === 'undefined' || !process.versions?.node) {
+    throw new Error('loadHtmlTemplate can only be called on the server');
+  }
+
   try {
+    // Dynamic require to avoid bundling fs in client
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { readFileSync } = require('fs');
     return readFileSync(templatePath, 'utf-8');
   } catch (error) {
     throw new Error(`Failed to load HTML template from ${templatePath}: ${error}`);

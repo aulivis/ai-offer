@@ -80,6 +80,13 @@ const nextConfig: NextConfig = {
           message: /Critical dependency: the request of a dependency is an expression/,
         },
       ];
+    } else {
+      // Client-side: exclude Node.js built-in modules like 'fs' and 'path'
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      };
     }
     return config;
   },
