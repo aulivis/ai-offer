@@ -1451,7 +1451,8 @@ export const hu = {
         label: 'Előnézet ügyfélként',
         loading: 'Előnézet készítése...',
         success: 'Előnézet megnyitva',
-        successDesc: 'Az előnézet új fülben nyílt meg. Itt láthatod, hogyan fogja az ügyfél látni az ajánlatot.',
+        successDesc:
+          'Az előnézet új fülben nyílt meg. Itt láthatod, hogyan fogja az ügyfél látni az ajánlatot.',
         error: 'Hiba',
         errorDesc: 'Nem sikerült létrehozni az előnézetet.',
       },
