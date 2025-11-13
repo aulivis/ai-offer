@@ -1,6 +1,6 @@
 /**
  * Diagnostic script to check and fix missing offer share links
- * 
+ *
  * This script:
  * 1. Checks if the offer_shares table exists
  * 2. Checks if the trigger exists
@@ -29,10 +29,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function checkTableExists() {
   console.log('\n1. Checking if offer_shares table exists...');
-  const { data, error } = await supabase
-    .from('offer_shares')
-    .select('id')
-    .limit(1);
+  const { data, error } = await supabase.from('offer_shares').select('id').limit(1);
 
   if (error) {
     console.error('  ✗ Table does not exist or is not accessible:', error.message);
@@ -197,4 +194,3 @@ main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-

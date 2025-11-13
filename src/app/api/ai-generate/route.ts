@@ -1248,7 +1248,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       // Verify the offer was actually saved by querying it back
       // Use a small delay to ensure trigger has completed
       await new Promise((resolve) => setTimeout(resolve, 100));
-      
+
       const { data: verifyOffer, error: verifyError } = await sb
         .from('offers')
         .select('id, user_id, title, created_at')
@@ -1313,12 +1313,12 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             userId: user.id,
             requestId,
           });
-          
+
           // Use service role client to bypass RLS when creating fallback share
           const sbService = supabaseServiceRole();
           const { randomBytes } = await import('crypto');
           const token = randomBytes(32).toString('base64url');
-          
+
           const { data: insertedShare, error: shareError } = await sbService
             .from('offer_shares')
             .insert({
@@ -1366,7 +1366,8 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         log.error('Error checking/creating default share link', {
           offerId,
           userId: user.id,
-          error: shareCheckError instanceof Error ? shareCheckError.message : String(shareCheckError),
+          error:
+            shareCheckError instanceof Error ? shareCheckError.message : String(shareCheckError),
           stack: shareCheckError instanceof Error ? shareCheckError.stack : undefined,
         });
         // Don't fail the request - offer is created, share can be created later
