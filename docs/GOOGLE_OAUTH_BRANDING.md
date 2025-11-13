@@ -17,6 +17,7 @@ This shows the Supabase project URL instead of your brand name.
 ### Finding Your Google Cloud Project
 
 If you already have Google OAuth credentials configured in Supabase:
+
 1. Check your environment variables for `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`
 2. The Client ID format is: `xxxxx.apps.googleusercontent.com`
 3. This Client ID belongs to a Google Cloud project
