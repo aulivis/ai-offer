@@ -84,7 +84,7 @@ export function handleApiError(
 
   const status = error.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
   return createErrorResponse(error.message, status, {
-    requestId,
+    ...(requestId ? { requestId } : {}),
   });
 }
 
@@ -116,7 +116,9 @@ export function handleSupabaseError(
   const status =
     error.code && statusMap[error.code] ? statusMap[error.code] : HttpStatus.INTERNAL_SERVER_ERROR;
 
-  return createErrorResponse(error.message || defaultMessage, status, { requestId });
+  return createErrorResponse(error.message || defaultMessage, status, {
+    ...(requestId ? { requestId } : {}),
+  });
 }
 
 /**
