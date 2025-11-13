@@ -97,7 +97,7 @@ export async function POST(request: Request, context: RouteParams) {
       log.info('PDF generated on-demand (public)', { offerId: share.offer_id, token });
 
       // Return PDF as buffer
-      return new NextResponse(pdfBuffer, {
+      return new NextResponse(pdfBuffer as BodyInit, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="offer-${share.offer_id}.pdf"`,
