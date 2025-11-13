@@ -32,7 +32,7 @@ const allowedOrigins = (() => {
     const appUrl = new URL(envServer.APP_URL);
     const appOrigin = appUrl.origin;
     const origins = new Set([appOrigin]);
-    
+
     // Also allow the opposite protocol (HTTP <-> HTTPS) for the same domain
     // This handles cases where APP_URL is HTTP but requests come via HTTPS (or vice versa)
     if (appUrl.protocol === 'http:') {
@@ -42,7 +42,7 @@ const allowedOrigins = (() => {
       const httpOrigin = `http://${appUrl.host}`;
       origins.add(httpOrigin);
     }
-    
+
     return origins;
   } catch (error) {
     console.error('Failed to parse APP_URL for origin checks.', error);
