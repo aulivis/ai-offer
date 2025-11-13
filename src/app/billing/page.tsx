@@ -1446,79 +1446,81 @@ function PublicBillingLanding() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {([
-                      {
-                        feature: 'Ajánlatok / hó',
-                        free: '2',
-                        standard: '10',
-                        pro: 'Korlátlan',
-                        type: 'text' as const,
-                      },
-                      {
-                        feature: 'Megosztás',
-                        free: 'PDF',
-                        standard: 'PDF',
-                        pro: 'Link & PDF',
-                        type: 'text' as const,
-                      },
-                      {
-                        feature: 'AI szöveggenerálás',
-                        free: true,
-                        standard: true,
-                        pro: true,
-                        type: 'check' as const,
-                      },
-                      {
-                        feature: 'Sablonok',
-                        free: '1',
-                        standard: '1',
-                        pro: '10+',
-                        type: 'text' as const,
-                      },
-                      {
-                        feature: 'Egyedi branding',
-                        free: 'Részleges',
-                        standard: 'Részleges',
-                        standardGray: true,
-                        pro: true,
-                        type: 'check' as const,
-                      },
-                      {
-                        feature: 'Referenciafotók',
-                        free: false,
-                        standard: false,
-                        pro: true,
-                        type: 'check' as const,
-                      },
-                      {
-                        feature: 'Ajánlások integrálása',
-                        free: false,
-                        standard: false,
-                        pro: true,
-                        type: 'check' as const,
-                      },
-                      {
-                        feature: 'Támogatás',
-                        free: 'E-mail',
-                        standard: 'E-mail',
-                        pro: 'Kiemelt',
-                        type: 'text' as const,
-                      },
-                      {
-                        feature: 'Csapat együttműködés',
-                        free: false,
-                        standard: false,
-                        pro: true,
-                        type: 'check' as const,
-                      },
-                    ] as Array<{
-                      feature: string;
-                      free: string | boolean;
-                      standard: string | boolean;
-                      standardGray?: boolean;
-                      pro: string | boolean;
-                      type: 'text' | 'check';
-                    }>).map((row, idx) => (
+                    {(
+                      [
+                        {
+                          feature: 'Ajánlatok / hó',
+                          free: '2',
+                          standard: '10',
+                          pro: 'Korlátlan',
+                          type: 'text' as const,
+                        },
+                        {
+                          feature: 'Megosztás',
+                          free: 'PDF',
+                          standard: 'PDF',
+                          pro: 'Link & PDF',
+                          type: 'text' as const,
+                        },
+                        {
+                          feature: 'AI szöveggenerálás',
+                          free: true,
+                          standard: true,
+                          pro: true,
+                          type: 'check' as const,
+                        },
+                        {
+                          feature: 'Sablonok',
+                          free: '1',
+                          standard: '1',
+                          pro: '10+',
+                          type: 'text' as const,
+                        },
+                        {
+                          feature: 'Egyedi branding',
+                          free: 'Részleges',
+                          standard: 'Részleges',
+                          standardGray: true,
+                          pro: true,
+                          type: 'check' as const,
+                        },
+                        {
+                          feature: 'Referenciafotók',
+                          free: false,
+                          standard: false,
+                          pro: true,
+                          type: 'check' as const,
+                        },
+                        {
+                          feature: 'Ajánlások integrálása',
+                          free: false,
+                          standard: false,
+                          pro: true,
+                          type: 'check' as const,
+                        },
+                        {
+                          feature: 'Támogatás',
+                          free: 'E-mail',
+                          standard: 'E-mail',
+                          pro: 'Kiemelt',
+                          type: 'text' as const,
+                        },
+                        {
+                          feature: 'Csapat együttműködés',
+                          free: false,
+                          standard: false,
+                          pro: true,
+                          type: 'check' as const,
+                        },
+                      ] as Array<{
+                        feature: string;
+                        free: string | boolean;
+                        standard: string | boolean;
+                        standardGray?: boolean;
+                        pro: string | boolean;
+                        type: 'text' | 'check';
+                      }>
+                    ).map((row, idx) => (
                       <tr key={idx} className="transition-colors hover:bg-gray-50">
                         <td className="px-8 py-5 font-semibold text-navy-900">{row.feature}</td>
                         <td className="px-8 py-5 text-center">
