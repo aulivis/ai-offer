@@ -17,6 +17,7 @@ const testimonialsIcon = `<svg ${ICON_BASE}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4
 const guaranteesIcon = `<svg ${ICON_BASE}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`;
 const pricingIcon = `<svg ${ICON_BASE}><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4M8 18h8"/><circle cx="12" cy="14" r="1"/></svg>`;
 const galleryIcon = `<svg ${ICON_BASE}><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="9" cy="12" r="1.5"/><path d="M3 16l4.5-4.5 4 4 2.5-2.5L21 18"/></svg>`;
+const referencePhotosIcon = `<svg ${ICON_BASE}><rect x="3" y="5" width="7" height="7" rx="1"/><rect x="14" y="5" width="7" height="7" rx="1"/><rect x="3" y="15" width="7" height="4" rx="1"/><rect x="14" y="15" width="7" height="4" rx="1"/><circle cx="6.5" cy="8.5" r="1"/><path d="m3 11 2.5-2.5 2 2"/></svg>`;
 
 export const SECTION_ICONS = {
   overview: overviewIcon,
@@ -31,6 +32,7 @@ export const SECTION_ICONS = {
   guarantees: guaranteesIcon,
   pricing: pricingIcon,
   gallery: galleryIcon,
+  referencePhotos: referencePhotosIcon,
 } as const;
 
 export type OfferSectionId = keyof typeof SECTION_ICONS;
