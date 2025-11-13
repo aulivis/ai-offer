@@ -102,6 +102,7 @@ export function WizardStep2Pricing({
     }>
   >([]);
   const hasShownInitialModalRef = useRef(false);
+  const [fullSizeImageUrl, setFullSizeImageUrl] = useState<string | null>(null);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(
@@ -450,19 +451,19 @@ export function WizardStep2Pricing({
                   return (
                     <div
                       key={path}
-                      className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${
+                      className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
                         isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-border'
                       }`}
-                      onClick={() => {
-                        if (isSelected) {
-                          onSelectedImagesChange(selectedImages.filter((img) => img !== path));
-                        } else {
-                          onSelectedImagesChange([...selectedImages, path]);
-                        }
-                      }}
                     >
                       {url ? (
                         <>
+                          <div
+                            className="absolute inset-0 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFullSizeImageUrl(url);
+                            }}
+                          />
                           <Image
                             src={url}
                             alt="Reference"
@@ -470,13 +471,29 @@ export function WizardStep2Pricing({
                             className="object-cover"
                             unoptimized
                           />
-                          {isSelected && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
-                              <div className="rounded-full bg-primary p-2">
-                                <CheckIcon className="h-5 w-5 text-white" />
-                              </div>
+                          <div
+                            className="absolute top-2 right-2 z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isSelected) {
+                                onSelectedImagesChange(
+                                  selectedImages.filter((img) => img !== path),
+                                );
+                              } else {
+                                onSelectedImagesChange([...selectedImages, path]);
+                              }
+                            }}
+                          >
+                            <div
+                              className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 transition-all ${
+                                isSelected
+                                  ? 'border-primary bg-primary'
+                                  : 'border-white bg-white/80 hover:bg-white'
+                              }`}
+                            >
+                              {isSelected && <CheckIcon className="h-4 w-4 text-white" />}
                             </div>
-                          )}
+                          </div>
                         </>
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-slate-100">
@@ -502,6 +519,22 @@ export function WizardStep2Pricing({
                 {t('offers.wizard.actions.next')}
               </Button>
             </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Full Size Image Modal */}
+      {fullSizeImageUrl && (
+        <Modal open={!!fullSizeImageUrl} onClose={() => setFullSizeImageUrl(null)} size="xl">
+          <div className="relative flex items-center justify-center">
+            <Image
+              src={fullSizeImageUrl}
+              alt="Reference image full size"
+              width={1200}
+              height={1200}
+              className="max-h-[80vh] w-auto object-contain"
+              unoptimized
+            />
           </div>
         </Modal>
       )}

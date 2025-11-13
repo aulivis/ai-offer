@@ -6,6 +6,7 @@ import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
 import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
 import { renderMarketingFooter } from '../../shared/marketingFooter';
+import { renderReferencePhotos } from '../../shared/referencePhotos';
 
 function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -149,12 +150,22 @@ export function renderBody(ctx: RenderCtx): string {
   const header = partialHeader(ctx);
   const sections = partialSections(ctx);
   const priceTable = partialPriceTable(ctx);
+  const referencePhotos = renderReferencePhotos(ctx.offer.images || ctx.images, ctx.i18n);
   const footer = partialFooter(ctx);
   const marketingFooter = renderMarketingFooter(ctx.i18n);
 
   // Order: main header first (so it's on page 1), then slim header/footer, then content
   // This allows CSS to hide slim header when it's on the same "visual page" as main header
-  const content = [header, slimHeader, slimFooter, sections, priceTable, footer, marketingFooter]
+  const content = [
+    header,
+    slimHeader,
+    slimFooter,
+    sections,
+    priceTable,
+    referencePhotos,
+    footer,
+    marketingFooter,
+  ]
     .filter(Boolean)
     .join('\n');
 

@@ -2115,6 +2115,7 @@ export const hu = {
         guarantees: 'Garanciák',
         pricing: 'Árképzés',
         gallery: 'Galéria',
+        referencePhotos: 'Referenciafotók',
       },
       marketing: {
         generatedBy: 'Ez az ajánlat a',

@@ -6,6 +6,7 @@ import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
 import { renderSlimHeader, renderSlimFooter } from '../../shared/slimHeaderFooter';
 import { validateImageAssets } from '../../shared/urlValidation';
+import { renderReferencePhotos } from '../../shared/referencePhotos';
 
 function partialHeader(ctx: RenderCtx): string {
   const safeCtx = buildHeaderFooterCtx(ctx);
@@ -179,11 +180,27 @@ export function renderBody(ctx: RenderCtx): string {
   const sections = partialSections(ctx);
   const priceTable = partialPriceTable(ctx);
   const gallery = partialGallery(ctx);
+  // Reference photos should exclude gallery images (non-ref images)
+  const availableImages = Array.isArray(ctx.offer.images)
+    ? ctx.offer.images
+    : Array.isArray(ctx.images)
+      ? ctx.images
+      : [];
+  const referencePhotos = renderReferencePhotos(availableImages, ctx.i18n);
   const footer = partialFooter(ctx);
 
   // Order: main header first (page 1), then slim header/footer, then content
   // CSS will hide slim header when first-page header is present
-  const content = [header, slimHeader, slimFooter, sections, priceTable, gallery, footer]
+  const content = [
+    header,
+    slimHeader,
+    slimFooter,
+    sections,
+    priceTable,
+    gallery,
+    referencePhotos,
+    footer,
+  ]
     .filter(Boolean)
     .join('\n');
 

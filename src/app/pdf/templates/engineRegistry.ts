@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { freeMinimalTemplate } from './free.minimal';
 import { premiumExecutiveTemplate } from './premium.executive';
+import { freeMinimalHtmlTemplate } from './html/free.minimal';
+import { premiumProfessionalHtmlTemplate } from './html/premium.professional';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
 
 const renderFunctionSchema = z.custom<OfferTemplate['renderHead']>(
@@ -323,7 +325,12 @@ export function updateTemplateMetadata(
 }
 
 // Register built-in templates
-const builtinTemplates = [freeMinimalTemplate, premiumExecutiveTemplate];
+const builtinTemplates = [
+  freeMinimalTemplate,
+  premiumExecutiveTemplate,
+  freeMinimalHtmlTemplate,
+  premiumProfessionalHtmlTemplate,
+];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);

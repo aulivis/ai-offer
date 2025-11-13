@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="{{locale}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{title}} - Árajánlat</title>
+    <style>
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
+
+      /* Using CSS variables for dynamic brand colors */
+      :root {
+          /* Brand colors - these should be replaced dynamically */
+          --brand-primary: {{primaryColorHex}};
+          --brand-secondary: {{secondaryColorHex}};
+
+          /* Computed colors based on brand colors */
+          --primary-light: color-mix(in srgb, var(--brand-primary) 20%, white);
+          --primary-dark: color-mix(in srgb, var(--brand-primary) 80%, black);
+          --secondary-light: color-mix(in srgb, var(--brand-secondary) 20%, white);
+          --secondary-glow: color-mix(in srgb, var(--brand-secondary) 30%, transparent);
+
+          /* Neutral colors */
+          --text: #0f172a;
+          --text-muted: #64748b;
+          --background: #ffffff;
+          --surface: #f8fafc;
+          --border: #e2e8f0;
+          --shadow: rgba(0, 0, 0, 0.1);
+      }
+
+      @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+      }
+
+      @keyframes slideInUp {
+          from {
+              opacity: 0;
+              transform: translateY(30px);
+          }
+          to {
+              opacity: 1;
+              transform: translateY(0);
+          }
+      }
+
+      body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+          background: var(--background);
+          color: var(--text);
+          line-height: 1.6;
+          position: relative;
+      }
+
+      /* Abstract geometric background elements - universal for any industry */
+      .background-decoration {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 0;
+          pointer-events: none;
+          overflow: hidden;
+      }
+
+      .shape {
+          position: absolute;
+          opacity: 0.05;
+          animation: float 12s ease-in-out infinite;
+      }
+
+      .shape-1 {
+          width: 400px;
+          height: 400px;
+          border: 60px solid var(--brand-primary);
+          border-radius: 50%;
+          top: -100px;
+          right: -100px;
+          animation-delay: 0s;
+      }
+
+      .shape-2 {
+          width: 300px;
+          height: 300px;
+          background: var(--brand-secondary);
+          border-radius: 40px;
+          bottom: -80px;
+          left: -80px;
+          animation-delay: 3s;
+          transform: rotate(45deg);
+      }
+
+      .shape-3 {
+          width: 200px;
+          height: 200px;
+          border: 40px solid var(--brand-primary);
+          border-radius: 20px;
+          top: 40%;
+          right: 10%;
+          animation-delay: 6s;
+      }
+
+      .container {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 60px 24px;
+          position: relative;
+          z-index: 1;
+      }
+
+      /* Header with dynamic logo placeholder */
+      .header {
+          text-align: center;
+          margin-bottom: 60px;
+          animation: slideInUp 0.8s ease-out;
+          position: relative;
+      }
+
+      .logo {
+          width: 180px;
+          height: 80px;
+          margin: 0 auto 24px;
+          background: var(--surface);
+          border: 2px dashed var(--border);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-muted);
+          font-size: 14px;
+          font-weight: 600;
+          overflow: hidden;
+      }
+
+      .logo img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+      }
+
+      .premium-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          color: white;
+          padding: 10px 24px;
+          border-radius: 100px;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 1px;
+          margin-bottom: 24px;
+          box-shadow: 0 4px 20px var(--secondary-glow);
+          text-transform: uppercase;
+      }
+
+      .header h1 {
+          font-size: 48px;
+          font-weight: 800;
+          color: var(--text);
+          margin-bottom: 16px;
+          letter-spacing: -2px;
+          line-height: 1.2;
+      }
+
+      .header-subtitle {
+          font-size: 18px;
+          color: var(--text-muted);
+          max-width: 600px;
+          margin: 0 auto;
+      }
+
+      .header-meta {
+          display: flex;
+          justify-content: center;
+          gap: 32px;
+          margin-top: 32px;
+          flex-wrap: wrap;
+      }
+
+      .meta-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--text-muted);
+          font-size: 14px;
+          font-weight: 500;
+      }
+
+      /* Universal shape indicators instead of specific icons */
+      .meta-indicator {
+          width: 24px;
+          height: 24px;
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          border-radius: 6px;
+      }
+
+      /* Card System */
+      .card {
+          background: var(--background);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 40px;
+          margin-bottom: 32px;
+          position: relative;
+          overflow: hidden;
+          animation: slideInUp 0.8s ease-out;
+          transition: all 0.3s ease;
+          box-shadow: 0 1px 3px var(--shadow);
+      }
+
+      .card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+      }
+
+      .card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 40px var(--shadow);
+          border-color: var(--brand-primary);
+      }
+
+      /* Section Heading */
+      .section-heading {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 32px;
+          color: var(--text);
+      }
+
+      /* Universal shape icon system */
+      .section-icon {
+          width: 48px;
+          height: 48px;
+          min-width: 48px;
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+      }
+
+      .section-icon::before {
+          content: '';
+          position: absolute;
+          width: 20px;
+          height: 20px;
+          background: white;
+          border-radius: 4px;
+      }
+
+      /* Client Info Grid */
+      .client-info {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+      }
+
+      .info-group {
+          position: relative;
+          padding: 20px;
+          background: var(--surface);
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          transition: all 0.3s ease;
+      }
+
+      .info-group:hover {
+          background: var(--primary-light);
+          border-color: var(--brand-primary);
+          transform: translateY(-2px);
+      }
+
+      .info-label {
+          font-size: 12px;
+          color: var(--brand-primary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-weight: 700;
+          margin-bottom: 8px;
+      }
+
+      .info-value {
+          font-size: 16px;
+          color: var(--text);
+          font-weight: 600;
+      }
+
+      /* Universal item list with minimal decoration */
+      .item-list {
+          display: grid;
+          gap: 16px;
+      }
+
+      .item {
+          display: flex;
+          gap: 16px;
+          padding: 24px;
+          background: var(--surface);
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          transition: all 0.3s ease;
+          position: relative;
+      }
+
+      .item::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: linear-gradient(180deg, var(--brand-primary), var(--brand-secondary));
+          opacity: 0;
+          transition: opacity 0.3s ease;
+      }
+
+      .item:hover {
+          background: white;
+          border-color: var(--brand-primary);
+          transform: translateX(4px);
+          box-shadow: 0 4px 12px var(--shadow);
+      }
+
+      .item:hover::before {
+          opacity: 1;
+      }
+
+      /* Numbered indicator instead of specific icons */
+      .item-number {
+          width: 48px;
+          height: 48px;
+          min-width: 48px;
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          color: white;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          font-size: 20px;
+      }
+
+      .item-content h3 {
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 8px;
+          color: var(--text);
+      }
+
+      .item-content p {
+          font-size: 14px;
+          color: var(--text-muted);
+          line-height: 1.7;
+      }
+
+      /* Package Cards */
+      .packages {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 24px;
+      }
+
+      .package-card {
+          background: var(--surface);
+          border: 2px solid var(--border);
+          border-radius: 20px;
+          padding: 32px;
+          transition: all 0.4s ease;
+          position: relative;
+      }
+
+      .package-card::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          border-radius: 20px;
+          opacity: 0;
+          transition: opacity 0.4s ease;
+          z-index: -1;
+      }
+
+      .package-card:hover {
+          transform: translateY(-8px);
+          background: white;
+          box-shadow: 0 20px 60px var(--shadow);
+      }
+
+      .package-card:hover::before {
+          opacity: 1;
+      }
+
+      .package-header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 20px;
+      }
+
+      /* Simple shape indicator for packages */
+      .package-indicator {
+          width: 56px;
+          height: 56px;
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 800;
+          font-size: 24px;
+      }
+
+      .package-name {
+          font-size: 22px;
+          font-weight: 700;
+          color: var(--text);
+      }
+
+      .package-description {
+          font-size: 14px;
+          color: var(--text-muted);
+          margin-bottom: 24px;
+          line-height: 1.7;
+      }
+
+      .package-features {
+          list-style: none;
+      }
+
+      .package-features li {
+          padding: 12px 0;
+          color: var(--text);
+          font-size: 15px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border-bottom: 1px solid var(--border);
+      }
+
+      .package-features li:last-child {
+          border-bottom: none;
+      }
+
+      .package-features li::before {
+          content: '';
+          width: 20px;
+          height: 20px;
+          background: var(--brand-primary);
+          border-radius: 4px;
+          flex-shrink: 0;
+      }
+
+      /* Pricing Table */
+      .pricing-table {
+          background: var(--surface);
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+      }
+
+      .table-header {
+          background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+          color: white;
+          padding: 20px 32px;
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+          gap: 16px;
+          font-weight: 700;
+          font-size: 13px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+      }
+
+      .table-row {
+          padding: 20px 32px;
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+          gap: 16px;
+          align-items: center;
+          border-bottom: 1px solid var(--border);
+          transition: all 0.3s ease;
+          background: white;
+      }
+
+      .table-row:hover {
+          background: var(--primary-light);
+      }
+
+      .table-row:last-child {
+          border-bottom: none;
+      }
+
+      .table-cell {
+          font-size: 15px;
+      }
+
+      .table-cell.name {
+          font-weight: 600;
+          color: var(--text);
+      }
+
+      .table-cell.number {
+          text-align: right;
+          color: var(--text-muted);
+          font-weight: 500;
+      }
+
+      .table-footer {
+          background: var(--brand-primary);
+          color: white;
+          padding: 24px 32px;
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+          gap: 16px;
+          font-weight: 700;
+      }
+
+      .table-footer .total {
+          grid-column: 4;
+          text-align: right;
+      }
+
+      .table-footer .total-value {
+          grid-column: 5;
+          text-align: right;
+          font-size: 28px;
+          font-weight: 800;
+      }
+
+      /* Gallery/Images */
+      .gallery {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1rem;
+          margin-bottom: 2rem;
+      }
+
+      .gallery-item {
+          position: relative;
+          aspect-ratio: 16 / 9;
+          overflow: hidden;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+      }
+
+      .gallery-item img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+
+      /* Footer */
+      .footer {
+          margin-top: 60px;
+          padding-top: 40px;
+          border-top: 2px solid var(--border);
+          animation: slideInUp 1s ease-out;
+      }
+
+      .footer-content {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 40px;
+          margin-bottom: 40px;
+      }
+
+      .footer-section h4 {
+          font-size: 14px;
+          color: var(--brand-primary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 16px;
+          font-weight: 700;
+      }
+
+      .footer-section p {
+          font-size: 14px;
+          color: var(--text-muted);
+          line-height: 1.8;
+      }
+
+      .footer-logo-section {
+          text-align: center;
+      }
+
+      .footer-logo {
+          width: 140px;
+          height: 60px;
+          margin: 0 auto 16px;
+          background: var(--surface);
+          border: 2px dashed var(--border);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-muted);
+          font-size: 12px;
+          font-weight: 600;
+          overflow: hidden;
+      }
+
+      .footer-logo img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+      }
+
+      .copyright {
+          text-align: center;
+          padding-top: 32px;
+          border-top: 1px solid var(--border);
+          color: var(--text-muted);
+          font-size: 14px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+          .header h1 {
+              font-size: 32px;
+          }
+
+          .card {
+              padding: 24px;
+          }
+
+          .client-info {
+              grid-template-columns: 1fr;
+          }
+
+          .packages {
+              grid-template-columns: 1fr;
+          }
+
+          .table-header,
+          .table-row,
+          .table-footer {
+              grid-template-columns: 1fr;
+              gap: 8px;
+          }
+
+          .table-cell.number {
+              text-align: left;
+          }
+
+          .table-footer .total,
+          .table-footer .total-value {
+              grid-column: 1;
+              text-align: left;
+          }
+
+          .footer-content {
+              grid-template-columns: 1fr;
+          }
+      }
+
+      /* Print Styles */
+      @media print {
+          .background-decoration {
+              display: none;
+          }
+
+          body {
+              background: white;
+          }
+
+          .card {
+              break-inside: avoid;
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Abstract background shapes - universal for any industry -->
+    <div class="background-decoration">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+
+    <div class="container">
+      <!-- Header with logo placeholder -->
+      <div class="header">
+        {{#if logoUrl}}
+        <div class="logo">
+          <img src="{{logoUrl}}" alt="{{logoAlt}}" />
+        </div>
+        {{else}}
+        <div class="logo">{{monogram}}</div>
+        {{/if}}
+        <div class="premium-badge">Prémium Ajánlat</div>
+        <h1>{{title}}</h1>
+        <p class="header-subtitle">Személyre szabott megoldás az Ön igényeire</p>
+        <div class="header-meta">
+          <div class="meta-item">
+            <div class="meta-indicator"></div>
+            {{issueDate}}
+          </div>
+          {{#if offerNumber}}
+          <div class="meta-item">
+            <div class="meta-indicator"></div>
+            Ajánlat #{{offerNumber}}
+          </div>
+          {{/if}}
+          <div class="meta-item">
+            <div class="meta-indicator"></div>
+            30 nap érvényesség
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Information -->
+      <div class="card">
+        <div class="section-heading">
+          <div class="section-icon"></div>
+          Ügyfél információk
+        </div>
+
+        <div class="client-info">
+          <div class="info-group">
+            <div class="info-label">Ügyfél neve</div>
+            <div class="info-value">{{companyName}}</div>
+          </div>
+
+          {{#if contactName}}
+          <div class="info-group">
+            <div class="info-label">Kapcsolattartó</div>
+            <div class="info-value">{{contactName}}</div>
+          </div>
+          {{/if}} {{#if contactEmail}}
+          <div class="info-group">
+            <div class="info-label">Email cím</div>
+            <div class="info-value">{{contactEmail}}</div>
+          </div>
+          {{/if}} {{#if contactPhone}}
+          <div class="info-group">
+            <div class="info-label">Telefonszám</div>
+            <div class="info-value">{{contactPhone}}</div>
+          </div>
+          {{/if}} {{#if companyAddress}}
+          <div class="info-group">
+            <div class="info-label">Cím</div>
+            <div class="info-value">{{companyAddress}}</div>
+          </div>
+          {{/if}} {{#if companyTaxId}}
+          <div class="info-group">
+            <div class="info-label">Adószám</div>
+            <div class="info-value">{{companyTaxId}}</div>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Services with single paragraph - universal approach -->
+      {{#if bodyHtml}}
+      <div class="card">
+        <div class="section-heading">
+          <div class="section-icon"></div>
+          Szolgáltatások részletesen
+        </div>
+
+        <div style="font-size: 16px; line-height: 1.8; color: var(--text); padding: 8px 0">
+          {{{bodyHtml}}}
+        </div>
+      </div>
+      {{/if}}
+
+      <!-- Pricing Table -->
+      {{#if hasPricing}}
+      <div class="card">
+        <div class="section-heading">
+          <div class="section-icon"></div>
+          Részletes árazás
+        </div>
+
+        <div class="pricing-table">
+          <div class="table-header">
+            <div>Tétel megnevezése</div>
+            <div>Mennyiség</div>
+            <div>Egységár</div>
+            <div>ÁFA (%)</div>
+            <div>Összesen</div>
+          </div>
+
+          {{#each pricingRows}}
+          <div class="table-row">
+            <div class="table-cell name">{{name}}</div>
+            <div class="table-cell number">{{qty}}</div>
+            <div class="table-cell number">{{unitPrice}}</div>
+            <div class="table-cell number">{{vat}}%</div>
+            <div class="table-cell number">{{total}}</div>
+          </div>
+          {{/each}}
+
+          <div class="table-footer">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div class="total">Végösszeg:</div>
+            <div class="total-value">{{grossTotal}}</div>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
+      <!-- Reference Images / Gallery -->
+      {{#if hasImages}}
+      <div class="card">
+        <div class="section-heading">
+          <div class="section-icon"></div>
+          Referencia képek
+        </div>
+        <div class="gallery">
+          {{#each images}}
+          <div class="gallery-item">
+            <img src="{{src}}" alt="{{alt}}" />
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+
+      <!-- Terms and Conditions -->
+      {{#if termsItems}}
+      <div class="card">
+        <div class="section-heading">
+          <div class="section-icon"></div>
+          Feltételek és megjegyzések
+        </div>
+
+        <div class="item-list">
+          {{#each termsItems}}
+          <div class="item">
+            <div class="item-number">{{number}}</div>
+            <div class="item-content">
+              <h3>{{title}}</h3>
+              <p>{{description}}</p>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      {{else}} {{#if termsText}}
+      <div class="card">
+        <div class="section-heading">
+          <div class="section-icon"></div>
+          Feltételek és megjegyzések
+        </div>
+
+        <div style="font-size: 16px; line-height: 1.8; color: var(--text); padding: 8px 0">
+          <p>{{termsText}}</p>
+        </div>
+      </div>
+      {{/if}} {{/if}}
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-content">
+          <div class="footer-section footer-logo-section">
+            {{#if logoUrl}}
+            <div class="footer-logo">
+              <img src="{{logoUrl}}" alt="{{logoAlt}}" />
+            </div>
+            {{else}}
+            <div class="footer-logo">{{monogram}}</div>
+            {{/if}}
+            <p>Professzionális szolgáltatások kiváló minőségben</p>
+          </div>
+
+          {{#if contactEmail}}
+          <div class="footer-section">
+            <h4>Kapcsolat</h4>
+            <p>
+              {{contactEmail}}<br />
+              {{#if contactPhone}}{{contactPhone}}<br />{{/if}} {{#if
+              companyAddress}}{{companyAddress}}{{/if}}
+            </p>
+          </div>
+          {{/if}} {{#if companyTaxId}}
+          <div class="footer-section">
+            <h4>Vállalati adatok</h4>
+            <p>
+              {{companyName}}<br />
+              {{#if companyTaxId}}Adószám: {{companyTaxId}}<br />{{/if}}
+            </p>
+          </div>
+          {{/if}} {{#if companyWebsite}}
+          <div class="footer-section">
+            <h4>További információk</h4>
+            <p>{{companyWebsite}}<br /></p>
+          </div>
+          {{/if}}
+        </div>
+
+        <div class="copyright">
+          © {{currentYear}} {{companyName}}. Minden jog fenntartva. | Ez az ajánlat bizalmas
+          információkat tartalmaz.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

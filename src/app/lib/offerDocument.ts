@@ -572,6 +572,35 @@ export const OFFER_DOCUMENT_STYLES = `
     object-fit: cover;
     width: 100%;
   }
+  .section-card--reference-photos {
+    background: transparent;
+    border: none;
+    margin-top: var(--space-xl, 2.75rem);
+  }
+  .offer-doc__reference-photos-grid {
+    display: grid;
+    gap: var(--space-md, 1rem);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-top: var(--space-md, 1rem);
+  }
+  .offer-doc__reference-photo-item {
+    background: rgba(15, 23, 42, 0.06);
+    border-radius: var(--radius-md, 1.25rem);
+    overflow: hidden;
+    margin: 0;
+  }
+  .offer-doc__reference-photo-image {
+    display: block;
+    height: auto;
+    max-height: 200mm;
+    object-fit: contain;
+    width: 100%;
+  }
+  @media (max-width: 640px) {
+    .offer-doc__reference-photos-grid {
+      grid-template-columns: 1fr;
+    }
+  }
   .offer-doc__pricing-table {
     border-collapse: collapse;
     font-size: 0.9rem;
