@@ -19,7 +19,7 @@ function generateShareToken(): string {
 
 const previewShareRequestSchema = z.object({
   title: z.string().trim().min(1).max(500),
-  projectDetails: z.record(z.string()).optional(),
+  projectDetails: z.record(z.string(), z.string()).optional(),
   projectDetailsText: z.string().optional(),
   previewHtml: z.string().trim().min(1),
   pricingRows: z.array(
