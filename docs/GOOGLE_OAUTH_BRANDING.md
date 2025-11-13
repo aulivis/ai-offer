@@ -12,13 +12,20 @@ This shows the Supabase project URL instead of your brand name.
 
 ## Solution 1: Configure Google OAuth Consent Screen (Recommended - Quick Fix)
 
-The application name shown in Google's consent screen is controlled by your Google Cloud Console OAuth settings.
+**Important**: Even though you enabled Google OAuth in Supabase, the branding (app name) is controlled by the Google Cloud project that owns your OAuth credentials. You need to configure the OAuth consent screen in Google Cloud Console.
 
-### Steps:
+### Finding Your Google Cloud Project
+
+If you already have Google OAuth credentials configured in Supabase:
+1. Check your environment variables for `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`
+2. The Client ID format is: `xxxxx.apps.googleusercontent.com`
+3. This Client ID belongs to a Google Cloud project
+
+### Option A: If You Already Have a Google Cloud Project
 
 1. **Go to Google Cloud Console**
    - Visit: https://console.cloud.google.com/
-   - Select the project that contains your Google OAuth credentials
+   - Select the project that contains your OAuth credentials (the one with your Client ID)
 
 2. **Navigate to OAuth Consent Screen**
    - Go to: **APIs & Services** → **OAuth consent screen**
@@ -31,11 +38,44 @@ The application name shown in Google's consent screen is controlled by your Goog
    - **Application home page**: Enter your app URL (e.g., `https://vyndi.com`)
    - **Privacy policy URL**: Enter your privacy policy URL
    - **Terms of service URL**: Enter your terms of service URL (if applicable)
+   - **Authorized domains**: Add your domain (e.g., `vyndi.com`) and your Supabase domain (e.g., `fqyukwpuutiwkdljoxif.supabase.co`)
 
 4. **Save and Publish**
    - Click "Save and Continue" through the steps
    - If your app is in "Testing" mode, you may need to add test users
    - For production, you may need to submit for verification (depending on scopes)
+
+### Option B: If You Need to Create a Google Cloud Project
+
+If you don't have a Google Cloud project yet (or don't know which one has your credentials):
+
+1. **Create a New Google Cloud Project**
+   - Visit: https://console.cloud.google.com/
+   - Click the project dropdown at the top → **New Project**
+   - Name it "Vyndi" (or similar)
+   - Click **Create**
+
+2. **Enable Google+ API** (if needed)
+   - Go to: **APIs & Services** → **Library**
+   - Search for "Google+ API" and enable it (some OAuth flows require this)
+
+3. **Create OAuth 2.0 Credentials**
+   - Go to: **APIs & Services** → **Credentials**
+   - Click **Create Credentials** → **OAuth client ID**
+   - Application type: **Web application**
+   - Name: "Vyndi Web Client" (or similar)
+   - **Authorized redirect URIs**: Add:
+     - `https://fqyukwpuutiwkdljoxif.supabase.co/auth/v1/callback`
+     - (Add your custom domain callback URL if you have one)
+   - Click **Create**
+   - **Copy the Client ID and Client Secret** - you'll need these
+
+4. **Update Supabase with New Credentials**
+   - Go to Supabase Dashboard → **Authentication** → **Providers** → **Google**
+   - Update the **Client ID** and **Client Secret** with the new values
+   - Save
+
+5. **Configure OAuth Consent Screen** (same as Option A, step 3-4 above)
 
 ### Result:
 
@@ -109,9 +149,17 @@ Users will see your custom domain throughout the authentication flow, providing 
 
 Your current Google OAuth setup:
 
+- **Enabled in**: Supabase Dashboard → Authentication → Providers → Google
 - **Redirect URI**: Configured in `SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI` environment variable
-- **Client ID/Secret**: Stored in environment variables (not in code)
+- **Client ID/Secret**: Stored in environment variables (`SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` and `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET`)
 - **OAuth Flow**: PKCE flow (secure)
+
+## Important Notes
+
+- **Even when OAuth is enabled in Supabase**, you still need a Google Cloud project to control branding
+- The app name shown in Google's consent screen comes from the Google Cloud project, not Supabase
+- If you don't know which Google Cloud project your credentials belong to, you may need to create new credentials
+- The Client ID format (`xxxxx.apps.googleusercontent.com`) indicates it belongs to a Google Cloud project
 
 ## Notes
 
