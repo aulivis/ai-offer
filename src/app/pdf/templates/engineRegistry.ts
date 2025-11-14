@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-import { freeMinimalTemplate } from './free.minimal';
-import { premiumExecutiveTemplate } from './premium.executive';
 import { freeMinimalHtmlTemplate } from './html/free.minimal';
 import { premiumProfessionalHtmlTemplate } from './html/premium.professional';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
@@ -123,8 +121,14 @@ const legacyTemplates = new Map<string, OfferTemplate>();
 const templateMetadata = new Map<TemplateId, TemplateMetadata>();
 const templateCache = new Map<TemplateId, TemplateCacheEntry>();
 
+const TEMPLATE_ALIAS_MAP: Record<string, TemplateId> = {};
+
 // Cache TTL: 1 hour in milliseconds
 const CACHE_TTL_MS = 60 * 60 * 1000;
+
+function resolveTemplateAlias(id: TemplateId): TemplateId {
+  return TEMPLATE_ALIAS_MAP[id] ?? id;
+}
 
 function formatValidationError(error: z.ZodError) {
   return error.issues
@@ -199,6 +203,13 @@ export function registerTemplate(templateModule: unknown): OfferTemplate {
   // Store template ID in legacy map for backward compatibility (allows lookup by template ID)
   legacyTemplates.set(template.id, template);
 
+  // Register alias lookups for deprecated IDs pointing to this template
+  for (const [alias, target] of Object.entries(TEMPLATE_ALIAS_MAP)) {
+    if (target === template.id) {
+      legacyTemplates.set(alias, template);
+    }
+  }
+
   // Store metadata
   const metadata = extractTemplateMetadata(template);
   templateMetadata.set(template.id, metadata);
@@ -230,7 +241,8 @@ export function listTemplates({ tier }: { tier?: TemplateTier } = {}): OfferTemp
  * Get template metadata
  */
 export function getTemplateMetadata(id: TemplateId): TemplateMetadata | null {
-  return templateMetadata.get(id) ?? null;
+  const resolvedId = resolveTemplateAlias(id);
+  return templateMetadata.get(resolvedId) ?? null;
 }
 
 /**
@@ -254,22 +266,24 @@ export function listTemplateMetadata({ tier }: { tier?: TemplateTier } = {}): Te
  * Load template with caching support
  */
 export function loadTemplate(id: TemplateId): OfferTemplate {
+  const resolvedId = resolveTemplateAlias(id);
+
   // Check cache first
-  const cached = templateCache.get(id);
+  const cached = templateCache.get(resolvedId);
   if (cached && isCacheValid(cached)) {
     return cached.template;
   }
 
   // Load from registry
-  const template = templates.get(id);
+  const template = templates.get(resolvedId);
 
   if (!template) {
     throw new TemplateNotFoundError(id);
   }
 
   // Cache template
-  const metadata = templateMetadata.get(id) ?? extractTemplateMetadata(template);
-  templateCache.set(id, {
+  const metadata = templateMetadata.get(resolvedId) ?? extractTemplateMetadata(template);
+  templateCache.set(resolvedId, {
     template,
     metadata,
     cachedAt: Date.now(),
@@ -282,7 +296,11 @@ export function loadTemplate(id: TemplateId): OfferTemplate {
  * Get template by legacy ID
  */
 export function getOfferTemplateByLegacyId(legacyId: string): OfferTemplate {
-  const template = legacyTemplates.get(legacyId) ?? templates.get(legacyId as TemplateId);
+  const resolvedId = resolveTemplateAlias(legacyId as TemplateId);
+  const template =
+    legacyTemplates.get(legacyId) ??
+    legacyTemplates.get(resolvedId) ??
+    templates.get(resolvedId as TemplateId);
 
   if (!template) {
     throw new TemplateNotFoundError(legacyId as TemplateId);
@@ -296,7 +314,7 @@ export function getOfferTemplateByLegacyId(legacyId: string): OfferTemplate {
  */
 export function clearTemplateCache(id?: TemplateId): void {
   if (id) {
-    templateCache.delete(id);
+    templateCache.delete(resolveTemplateAlias(id));
   } else {
     templateCache.clear();
   }
@@ -309,25 +327,24 @@ export function updateTemplateMetadata(
   id: TemplateId,
   updates: Partial<Omit<TemplateMetadata, 'id' | 'version' | 'tier'>>,
 ): void {
-  const existing = templateMetadata.get(id);
+  const resolvedId = resolveTemplateAlias(id);
+  const existing = templateMetadata.get(resolvedId);
   if (!existing) {
     throw new TemplateNotFoundError(id);
   }
 
-  templateMetadata.set(id, {
+  templateMetadata.set(resolvedId, {
     ...existing,
     ...updates,
     updatedAt: new Date().toISOString(),
   });
 
   // Invalidate cache
-  templateCache.delete(id);
+  templateCache.delete(resolvedId);
 }
 
 // Register built-in templates
 const builtinTemplates = [
-  freeMinimalTemplate,
-  premiumExecutiveTemplate,
   freeMinimalHtmlTemplate,
   premiumProfessionalHtmlTemplate,
 ];

@@ -79,7 +79,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const safeTitle = sanitizeInput(title);
     const safeHtml = sanitizeHTML(previewHtml);
     const normalizedDetails = projectDetails || {};
-    const resolvedTemplateId = templateId || 'free.minimal@1.0.0';
+    const resolvedTemplateId = templateId || 'free.minimal.html@1.0.0';
 
     // Create temporary offer (marked as preview in inputs metadata)
     const offerId = uuid();

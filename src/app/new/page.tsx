@@ -111,6 +111,12 @@ type Activity = {
   industries: string[];
   reference_images?: string[] | null;
 };
+
+type GuaranteeDefinition = {
+  id: string;
+  text: string;
+  activity_ids: string[];
+};
 type Client = {
   id: string;
   company_name: string;
@@ -258,7 +264,7 @@ function prepareImagesForSubmission(
 const DEFAULT_PREVIEW_PLACEHOLDER_HTML =
   '<p>Írd be fent a projekt részleteit, és megjelenik az előnézet.</p>';
 
-const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
+const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
 
 type OfferTextTemplatePayload = {
   industry: string;
@@ -440,6 +446,7 @@ export default function NewOfferWizard() {
   const [rows, setRows] = useState<PriceRow[]>([
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
+  const [guarantees, setGuarantees] = useState<GuaranteeDefinition[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedTestimonials, setSelectedTestimonials] = useState<string[]>([]);
   const [selectedTestimonialsContent, setSelectedTestimonialsContent] = useState<
@@ -454,6 +461,7 @@ export default function NewOfferWizard() {
     enable_reference_photos: false,
     enable_testimonials: false,
   });
+  const [selectedGuaranteeIds, setSelectedGuaranteeIds] = useState<string[]>([]);
 
   const fetchTestimonialsByIds = useCallback(
     async (ids: string[]): Promise<Array<{ id: string; text: string }>> => {
@@ -502,6 +510,7 @@ export default function NewOfferWizard() {
       scheduleInput,
       guaranteeInput,
       selectedTestimonials,
+      selectedGuaranteeIds,
     }),
     [
       step,
@@ -515,6 +524,7 @@ export default function NewOfferWizard() {
       scheduleInput,
       guaranteeInput,
       selectedTestimonials,
+      selectedGuaranteeIds,
     ],
   );
 
@@ -564,6 +574,11 @@ export default function NewOfferWizard() {
             saved.selectedTestimonials.filter((id): id is string => typeof id === 'string'),
           );
         }
+        if (Array.isArray(saved.selectedGuaranteeIds)) {
+          setSelectedGuaranteeIds(
+            saved.selectedGuaranteeIds.filter((id): id is string => typeof id === 'string'),
+          );
+        }
       }
     };
     loadSavedDraft();
@@ -599,7 +614,7 @@ export default function NewOfferWizard() {
     [scheduleInput],
   );
 
-  const guaranteeItems = useMemo(
+  const manualGuaranteeItems = useMemo(
     () =>
       guaranteeInput
         .split('\n')
@@ -607,6 +622,105 @@ export default function NewOfferWizard() {
         .filter(Boolean)
         .slice(0, MAX_GUARANTEE_ITEMS),
     [guaranteeInput],
+  );
+  const manualGuaranteeCount = manualGuaranteeItems.length;
+
+  const selectedGuaranteeTexts = useMemo(
+    () =>
+      selectedGuaranteeIds
+        .map((id) => guarantees.find((guarantee) => guarantee.id === id)?.text.trim())
+        .filter((text): text is string => Boolean(text && text.length > 0)),
+    [guarantees, selectedGuaranteeIds],
+  );
+
+  const guaranteeItems = useMemo(() => {
+    const merged: string[] = [];
+    const addItem = (item: string) => {
+      if (!item || merged.includes(item)) {
+        return;
+      }
+      merged.push(item);
+    };
+    selectedGuaranteeTexts.forEach(addItem);
+    manualGuaranteeItems.forEach(addItem);
+    return merged.slice(0, MAX_GUARANTEE_ITEMS);
+  }, [manualGuaranteeItems, selectedGuaranteeTexts]);
+
+  const guaranteeActivityMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    guarantees.forEach((guarantee) => {
+      guarantee.activity_ids.forEach((activityId) => {
+        if (!map[activityId]) {
+          map[activityId] = [];
+        }
+        map[activityId].push(guarantee.id);
+      });
+    });
+    return map;
+  }, [guarantees]);
+
+  const handleToggleGuarantee = useCallback(
+    (guaranteeId: string) => {
+      setSelectedGuaranteeIds((prev) => {
+        if (prev.includes(guaranteeId)) {
+          return prev.filter((id) => id !== guaranteeId);
+        }
+        if (prev.length + manualGuaranteeCount >= MAX_GUARANTEE_ITEMS) {
+          showToast({
+            title: t('offers.wizard.guarantees.sectionTitle'),
+            description: t('offers.wizard.guarantees.limitReached', {
+              count: MAX_GUARANTEE_ITEMS,
+            }),
+            variant: 'warning',
+          });
+          return prev;
+        }
+        return [...prev, guaranteeId];
+      });
+    },
+    [manualGuaranteeCount, showToast],
+  );
+
+  useEffect(() => {
+    setSelectedGuaranteeIds((prev) =>
+      prev.filter((id) => guarantees.some((guarantee) => guarantee.id === id)),
+    );
+  }, [guarantees]);
+
+  const handleActivityGuaranteeAttach = useCallback(
+    (activityId: string) => {
+      const linkedGuarantees = guaranteeActivityMap[activityId] || [];
+      if (linkedGuarantees.length === 0) {
+        return;
+      }
+      setSelectedGuaranteeIds((prev) => {
+        const next = [...prev];
+        let total = manualGuaranteeCount + next.length;
+        let added = false;
+        for (const guaranteeId of linkedGuarantees) {
+          if (next.includes(guaranteeId)) {
+            continue;
+          }
+          if (total >= MAX_GUARANTEE_ITEMS) {
+            break;
+          }
+          next.push(guaranteeId);
+          total += 1;
+          added = true;
+        }
+        if (!added && total >= MAX_GUARANTEE_ITEMS) {
+          showToast({
+            title: t('offers.wizard.guarantees.sectionTitle'),
+            description: t('offers.wizard.guarantees.limitReached', {
+              count: MAX_GUARANTEE_ITEMS,
+            }),
+            variant: 'warning',
+          });
+        }
+        return next;
+      });
+    },
+    [guaranteeActivityMap, manualGuaranteeCount, showToast],
   );
 
   const testimonialTexts = useMemo(
@@ -756,6 +870,25 @@ export default function NewOfferWizard() {
     setActivities(acts || []);
   }, [sb, user]);
 
+  const reloadGuarantees = useCallback(async () => {
+    if (!user) return;
+    const { data } = await sb
+      .from('guarantees')
+      .select('id, text, activity_guarantees(activity_id)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+    setGuarantees(
+      (data || []).map((row) => ({
+        id: row.id,
+        text: row.text,
+        activity_ids:
+          row.activity_guarantees
+            ?.map((link) => link.activity_id)
+            .filter((id): id is string => typeof id === 'string') ?? [],
+      })),
+    );
+  }, [sb, user]);
+
   // Load profile settings and activities on mount
   useEffect(() => {
     if (!user) return;
@@ -775,6 +908,8 @@ export default function NewOfferWizard() {
 
       // Load activities
       await reloadActivities();
+      await reloadGuarantees();
+      await reloadGuarantees();
 
       // Initialize rows with default activity if available
       if (prof?.default_activity_id) {
@@ -794,6 +929,7 @@ export default function NewOfferWizard() {
               vat: Number(defaultActivity.default_vat || 27),
             }),
           ]);
+          handleActivityGuaranteeAttach(defaultActivity.id);
           // If default activity has reference images, show them
           if (
             prof.enable_reference_photos &&
@@ -806,7 +942,7 @@ export default function NewOfferWizard() {
         }
       }
     })();
-  }, [user, sb, reloadActivities]);
+  }, [user, sb, reloadActivities, reloadGuarantees, handleActivityGuaranteeAttach]);
 
   // auth + preload
   useEffect(() => {
@@ -939,7 +1075,7 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
-  }, [allPdfTemplates, authStatus, reloadActivities, sb, user]);
+  }, [allPdfTemplates, authStatus, reloadActivities, reloadGuarantees, sb, user]);
 
   useEffect(() => {
     setImageAssets((prev) => {
@@ -2581,6 +2717,12 @@ export default function NewOfferWizard() {
               onSelectedImagesChange={setSelectedImages}
               selectedTestimonials={selectedTestimonials}
               onSelectedTestimonialsChange={setSelectedTestimonials}
+              guarantees={guarantees}
+              selectedGuaranteeIds={selectedGuaranteeIds}
+              onToggleGuarantee={handleToggleGuarantee}
+              manualGuaranteeCount={manualGuaranteeCount}
+              guaranteeLimit={MAX_GUARANTEE_ITEMS}
+              onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
             />
           )}
 

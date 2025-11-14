@@ -25,6 +25,14 @@ export type ActivityRow = {
   reference_images?: string[] | null;
 };
 
+export type GuaranteeRow = {
+  id: string;
+  text: string;
+  activity_ids: string[];
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type Testimonial = {
   id: string;
   user_id: string;

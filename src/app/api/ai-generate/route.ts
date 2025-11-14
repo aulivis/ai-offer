@@ -47,7 +47,7 @@ export const runtime = 'nodejs';
 
 // These messages are now in translation files - use createTranslator() at call site
 
-const DEFAULT_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
+const DEFAULT_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
 
 function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
   return plan === 'pro' ? 'premium' : 'free';
@@ -1051,7 +1051,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       const { storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(aiHtml, sanitizedImageAssets);
 
       // Prepare AI blocks for storage (if we have structured sections)
-      let aiBlocksForStorage: unknown = null;
+      let aiBlocksForStorage: unknown = {};
       if (structuredSections) {
         const blocks = convertSectionsToBlocks(structuredSections);
         // Convert to JSON-serializable format

@@ -4,17 +4,17 @@ import { getOfferTemplateByLegacyId, loadTemplate } from '@/app/pdf/templates/en
 export type SubscriptionPlan = 'free' | 'standard' | 'pro';
 
 // Default template ID using the new template system
-export const DEFAULT_OFFER_TEMPLATE_ID: TemplateId = 'free.minimal@1.0.0';
+export const DEFAULT_OFFER_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
 
 // Legacy ID mappings for backward compatibility during migration
 const LEGACY_ID_MAP: Record<string, TemplateId> = {
-  modern: 'free.minimal@1.0.0',
-  'free.base': 'free.minimal@1.0.0',
-  'premium-banner': 'premium.executive@1.0.0',
-  premium: 'premium.executive@1.0.0',
-  premium_banner: 'premium.executive@1.0.0',
-  'premium.elegant': 'premium.executive@1.0.0',
-  'premium.modern': 'premium.executive@1.0.0',
+  modern: 'free.minimal.html@1.0.0',
+  'free.base': 'free.minimal.html@1.0.0',
+  'premium-banner': 'premium.professional.html@1.0.0',
+  premium: 'premium.professional.html@1.0.0',
+  premium_banner: 'premium.professional.html@1.0.0',
+  'premium.elegant': 'premium.professional.html@1.0.0',
+  'premium.modern': 'premium.professional.html@1.0.0',
 };
 
 /**

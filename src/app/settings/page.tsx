@@ -31,6 +31,7 @@ import {
   LockClosedIcon,
   ChatBubbleLeftRightIcon,
   EnvelopeIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { SettingsAuthSection } from '@/components/settings/SettingsAuthSection';
@@ -38,10 +39,11 @@ import { SettingsCompanySection } from '@/components/settings/SettingsCompanySec
 import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
 import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
 import { SettingsActivitiesSection } from '@/components/settings/SettingsActivitiesSection';
+import { SettingsGuaranteesSection } from '@/components/settings/SettingsGuaranteesSection';
 import { SettingsEmailSubscriptionSection } from '@/components/settings/SettingsEmailSubscriptionSection';
 import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import { SectionNav } from '@/components/settings/SectionNav';
-import type { Profile, ActivityRow } from '@/components/settings/types';
+import type { Profile, ActivityRow, GuaranteeRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
 
 type SupabaseErrorLike = {
@@ -89,6 +91,9 @@ export default function SettingsPage() {
     industries: [] as string[],
   });
   const [actSaving, setActSaving] = useState(false);
+  const [guarantees, setGuarantees] = useState<GuaranteeRow[]>([]);
+  const [guaranteeAddLoading, setGuaranteeAddLoading] = useState(false);
+  const [guaranteeBusyId, setGuaranteeBusyId] = useState<string | null>(null);
   const [testimonials, setTestimonials] = useState<
     Array<{
       id: string;
@@ -137,6 +142,42 @@ export default function SettingsPage() {
 
     return { general, branding };
   }, [profile]);
+
+  const mapGuaranteeRow = useCallback(
+    (row: {
+      id: string;
+      text: string;
+      created_at?: string;
+      updated_at?: string;
+      activity_guarantees?: Array<{ activity_id: string | null }>;
+    }): GuaranteeRow => ({
+      id: row.id,
+      text: row.text,
+      activity_ids:
+        row.activity_guarantees
+          ?.map((link) => link.activity_id)
+          .filter((value): value is string => typeof value === 'string') ?? [],
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }),
+    [],
+  );
+
+  const loadGuarantees = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('guarantees')
+      .select('id, text, created_at, updated_at, activity_guarantees(activity_id)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('Failed to load guarantees', error);
+      return;
+    }
+    setGuarantees(
+      (data || []).map((row) => mapGuaranteeRow(row as Parameters<typeof mapGuaranteeRow>[0])),
+    );
+  }, [mapGuaranteeRow, supabase, user]);
 
   useEffect(() => {
     if (!searchParams) return;
@@ -193,6 +234,12 @@ export default function SettingsPage() {
       label: t('settings.activities.title'),
       icon: <CubeIcon className="h-5 w-5" />,
       href: '#activities',
+    },
+    {
+      id: 'guarantees',
+      label: t('settings.guarantees.title'),
+      icon: <ShieldCheckIcon className="h-5 w-5" />,
+      href: '#guarantees',
     },
     {
       id: 'email-subscription',
@@ -432,6 +479,11 @@ export default function SettingsPage() {
         return;
       }
       setActs((list as ActivityRow[]) || []);
+
+      await loadGuarantees();
+      if (!active) {
+        return;
+      }
 
       // Load testimonials
       const { data: testimonialsList } = await supabase
@@ -906,6 +958,161 @@ export default function SettingsPage() {
     setActs((prev) => prev.filter((a) => a.id !== id));
   }
 
+  async function addGuaranteeEntry(text: string) {
+    if (!user) return;
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+    try {
+      setGuaranteeAddLoading(true);
+      const { error } = await supabase
+        .from('guarantees')
+        .insert({ user_id: user.id, text: trimmed });
+      if (error) {
+        throw createSupabaseError(error);
+      }
+      await loadGuarantees();
+      showToast({
+        title: t('settings.guarantees.saveSuccess'),
+        description: '',
+        variant: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to add guarantee', error);
+      showToast({
+        title: t('errors.settings.saveFailed', { message: trimmed }),
+        description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
+        variant: 'error',
+      });
+    } finally {
+      setGuaranteeAddLoading(false);
+    }
+  }
+
+  async function updateGuaranteeEntry(id: string, text: string) {
+    if (!user) return;
+    const trimmed = text.trim();
+    if (!trimmed) {
+      showToast({
+        title: t('errors.settings.validationRequired'),
+        description: t('settings.guarantees.validationMessage'),
+        variant: 'error',
+      });
+      return;
+    }
+    try {
+      setGuaranteeBusyId(id);
+      const { error } = await supabase
+        .from('guarantees')
+        .update({ text: trimmed })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (error) {
+        throw createSupabaseError(error);
+      }
+      setGuarantees((prev) =>
+        prev.map((guarantee) =>
+          guarantee.id === id ? { ...guarantee, text: trimmed } : guarantee,
+        ),
+      );
+      showToast({
+        title: t('settings.guarantees.saveSuccess'),
+        description: '',
+        variant: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to update guarantee', error);
+      showToast({
+        title: t('errors.settings.saveFailed', { message: text }),
+        description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
+        variant: 'error',
+      });
+    } finally {
+      setGuaranteeBusyId(null);
+    }
+  }
+
+  async function deleteGuaranteeEntry(id: string) {
+    if (!user) return;
+    try {
+      setGuaranteeBusyId(id);
+      const { error } = await supabase
+        .from('guarantees')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+      if (error) {
+        throw createSupabaseError(error);
+      }
+      setGuarantees((prev) => prev.filter((guarantee) => guarantee.id !== id));
+      showToast({
+        title: t('settings.guarantees.deleteSuccess'),
+        description: '',
+        variant: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to delete guarantee', error);
+      showToast({
+        title: t('errors.settings.saveFailed', { message: id }),
+        description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
+        variant: 'error',
+      });
+    } finally {
+      setGuaranteeBusyId(null);
+    }
+  }
+
+  async function toggleGuaranteeAttachment(
+    guaranteeId: string,
+    activityId: string,
+    shouldAttach: boolean,
+  ) {
+    if (!user) return;
+    try {
+      setGuaranteeBusyId(guaranteeId);
+      if (shouldAttach) {
+        const { error } = await supabase
+          .from('activity_guarantees')
+          .insert({ guarantee_id: guaranteeId, activity_id: activityId, user_id: user.id });
+        if (error) {
+          throw createSupabaseError(error);
+        }
+      } else {
+        const { error } = await supabase
+          .from('activity_guarantees')
+          .delete()
+          .eq('guarantee_id', guaranteeId)
+          .eq('activity_id', activityId)
+          .eq('user_id', user.id);
+        if (error) {
+          throw createSupabaseError(error);
+        }
+      }
+      setGuarantees((prev) =>
+        prev.map((guarantee) =>
+          guarantee.id === guaranteeId
+            ? {
+                ...guarantee,
+                activity_ids: shouldAttach
+                  ? Array.from(new Set([...guarantee.activity_ids, activityId]))
+                  : guarantee.activity_ids.filter((value) => value !== activityId),
+              }
+            : guarantee,
+        ),
+      );
+    } catch (error) {
+      console.error('Failed to toggle guarantee attachment', error);
+      showToast({
+        title: t('errors.settings.saveFailed', { message: guaranteeId }),
+        description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
+        variant: 'error',
+      });
+    } finally {
+      setGuaranteeBusyId(null);
+    }
+  }
+
   function toggleIndustry(rawTarget: string) {
     const target = rawTarget.trim();
     if (!target) return;
@@ -1130,6 +1337,19 @@ export default function SettingsPage() {
             }}
             onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
           />
+
+          <section id="guarantees" className="scroll-mt-24">
+            <SettingsGuaranteesSection
+              activities={acts}
+              guarantees={guarantees}
+              addLoading={guaranteeAddLoading}
+              busyGuaranteeId={guaranteeBusyId}
+              onAddGuarantee={addGuaranteeEntry}
+              onUpdateGuarantee={updateGuaranteeEntry}
+              onDeleteGuarantee={deleteGuaranteeEntry}
+              onToggleAttachment={toggleGuaranteeAttachment}
+            />
+          </section>
 
           <SettingsEmailSubscriptionSection />
 

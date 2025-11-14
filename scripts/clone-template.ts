@@ -5,7 +5,7 @@ import path from 'path';
 /**
  * Clone an existing template to create a new one
  * Usage: pnpm template:clone <source-template-id> "<New Template Name>" [tier] [legacy-id]
- * Example: pnpm template:clone free.minimal "Modern Minimal" premium
+ * Example: pnpm template:clone html/free.minimal "Modern Minimal" premium
  */
 
 const args = process.argv.slice(2);
@@ -13,10 +13,10 @@ if (args.length < 2) {
   console.error(
     'Usage: pnpm template:clone <source-template-id> "<New Template Name>" [tier] [legacy-id]',
   );
-  console.error('  source-template-id: e.g., free.minimal or premium.executive');
+  console.error('  source-template-id: e.g., html/free.minimal or html/premium.professional');
   console.error('  tier: free (default) or premium');
   console.error('  legacy-id: optional legacy template identifier');
-  console.error('\nExample: pnpm template:clone free.minimal "Modern Minimal" premium');
+  console.error('\nExample: pnpm template:clone html/free.minimal "Modern Minimal" premium');
   process.exit(1);
 }
 
@@ -25,7 +25,7 @@ const newName = args[1];
 const tier = (args[2] === 'premium' ? 'premium' : 'free') as 'free' | 'premium';
 const legacyId = args[3]?.trim() || undefined;
 
-// Extract template name from ID (e.g., "free.minimal" -> "minimal")
+// Extract template name from ID (e.g., "html/free.minimal" -> "minimal")
 const sourceParts = sourceTemplateId.split('.');
 const sourceName = sourceParts[sourceParts.length - 1] || sourceTemplateId;
 

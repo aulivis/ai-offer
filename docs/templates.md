@@ -370,5 +370,5 @@ pnpm format:fix
 
 - **Template Types**: `src/app/pdf/templates/types.ts`
 - **Shared Utilities**: `src/app/pdf/templates/shared/`
-- **Example Templates**: `src/app/pdf/templates/free.minimal/`, `src/app/pdf/templates/premium.executive/`
+- **Example Templates**: `src/app/pdf/templates/html/free.minimal/`, `src/app/pdf/templates/html/premium.professional/`
 - **Registry**: `src/app/pdf/templates/engineRegistry.ts`

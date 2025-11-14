@@ -23,7 +23,7 @@ const registry = buildVariableRegistry({
     title: 'Website Development Offer',
     issue_date: '2025-11-15',
     locale: 'hu',
-    template_id: 'premium.executive',
+    template_id: 'premium.professional.html',
     schedule: ['Phase 1: Design (2 weeks)', 'Phase 2: Development (4 weeks)'],
     testimonials: ['Great service!', 'Highly recommended.'],
     guarantees: ['30-day money-back guarantee'],

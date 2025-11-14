@@ -1,7 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -62,6 +62,16 @@ type WizardStep2PricingProps = {
   onSelectedImagesChange: (images: string[]) => void;
   selectedTestimonials: string[];
   onSelectedTestimonialsChange: (testimonials: string[]) => void;
+  guarantees: Array<{
+    id: string;
+    text: string;
+    activity_ids: string[];
+  }>;
+  selectedGuaranteeIds: string[];
+  onToggleGuarantee: (id: string) => void;
+  manualGuaranteeCount: number;
+  guaranteeLimit: number;
+  onActivityGuaranteesAttach?: (activityId: string) => void;
 };
 
 export function WizardStep2Pricing({
@@ -84,6 +94,12 @@ export function WizardStep2Pricing({
   onSelectedImagesChange,
   selectedTestimonials,
   onSelectedTestimonialsChange,
+  guarantees,
+  selectedGuaranteeIds,
+  onToggleGuarantee,
+  manualGuaranteeCount,
+  guaranteeLimit,
+  onActivityGuaranteesAttach,
 }: WizardStep2PricingProps) {
   const supabase = useSupabase();
   const { user } = useRequireAuth();
@@ -91,7 +107,7 @@ export function WizardStep2Pricing({
   const [savingActivityId, setSavingActivityId] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [pendingActivity, setPendingActivity] = useState<Activity | null>(null);
-  const [activityImageUrls, setActivityImageUrls] = useState<Record<string, string>>({});
+  const [imageUrlCache, setImageUrlCache] = useState<Record<string, string>>({});
   const [loadingImageUrls, setLoadingImageUrls] = useState(false);
   const [showTestimonialsModal, setShowTestimonialsModal] = useState(false);
   const [availableTestimonials, setAvailableTestimonials] = useState<
@@ -103,6 +119,65 @@ export function WizardStep2Pricing({
   >([]);
   const hasShownInitialModalRef = useRef(false);
   const [fullSizeImageUrl, setFullSizeImageUrl] = useState<string | null>(null);
+  const rowNameSet = useMemo(() => new Set(rows.map((row) => row.name)), [rows]);
+  const activityNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    activities.forEach((activity) => {
+      map.set(activity.id, activity.name);
+    });
+    return map;
+  }, [activities]);
+  const totalGuaranteesSelected = manualGuaranteeCount + selectedGuaranteeIds.length;
+  const guaranteesSelectionFull = totalGuaranteesSelected >= guaranteeLimit;
+  const toggleReferenceImageSelection = useCallback(
+    (path: string) => {
+      if (selectedImages.includes(path)) {
+        onSelectedImagesChange(selectedImages.filter((img) => img !== path));
+      } else {
+        onSelectedImagesChange([...selectedImages, path]);
+      }
+    },
+    [onSelectedImagesChange, selectedImages],
+  );
+  const activitiesWithReferenceImages = useMemo(() => {
+    if (!enableReferencePhotos) {
+      return [];
+    }
+    return activities
+      .filter((activity) => rowNameSet.has(activity.name))
+      .map((activity) => ({
+        id: activity.id,
+        name: activity.name,
+        reference_images: Array.isArray(activity.reference_images)
+          ? (activity.reference_images as string[])
+          : [],
+      }))
+      .filter((activity) => activity.reference_images.length > 0);
+  }, [activities, enableReferencePhotos, rowNameSet]);
+  const activityReferenceImagePathSet = useMemo(() => {
+    const paths = new Set<string>();
+    activitiesWithReferenceImages.forEach((activity) => {
+      activity.reference_images.forEach((path) => {
+        if (typeof path === 'string' && path.trim().length > 0) {
+          paths.add(path);
+        }
+      });
+    });
+    return paths;
+  }, [activitiesWithReferenceImages]);
+  const allReferenceImagePaths = useMemo(() => {
+    const all = new Set<string>(activityReferenceImagePathSet);
+    selectedImages.forEach((path) => {
+      if (typeof path === 'string' && path.trim().length > 0) {
+        all.add(path);
+      }
+    });
+    return Array.from(all);
+  }, [activityReferenceImagePathSet, selectedImages]);
+  const orphanedSelectedImages = useMemo(
+    () => selectedImages.filter((path) => !activityReferenceImagePathSet.has(path)),
+    [activityReferenceImagePathSet, selectedImages],
+  );
 
   const filteredActivities = useMemo(() => {
     return activities.filter(
@@ -153,16 +228,19 @@ export function WizardStep2Pricing({
     if (showImageModal && pendingActivity && enableReferencePhotos) {
       const images = (pendingActivity.reference_images as string[] | null) || [];
       if (images.length === 0) {
-        setActivityImageUrls({});
         setLoadingImageUrls(false);
         return;
       }
 
       setLoadingImageUrls(true);
+      let active = true;
       (async () => {
         const urls: Record<string, string> = {};
         for (const path of images) {
           try {
+            if (imageUrlCache[path]) {
+              continue;
+            }
             const { data } = await supabase.storage
               .from('brand-assets')
               .createSignedUrl(path, 60 * 60 * 24); // 1 day
@@ -173,11 +251,53 @@ export function WizardStep2Pricing({
             console.error('Failed to load image URL:', error);
           }
         }
-        setActivityImageUrls(urls);
+        if (!active) return;
+        if (Object.keys(urls).length > 0) {
+          setImageUrlCache((prev) => ({ ...prev, ...urls }));
+        }
         setLoadingImageUrls(false);
       })();
+
+      return () => {
+        active = false;
+      };
     }
-  }, [showImageModal, pendingActivity, enableReferencePhotos, supabase]);
+  }, [showImageModal, pendingActivity, enableReferencePhotos, supabase, imageUrlCache]);
+
+  // Preload reference image URLs for currently selected activities and chosen images
+  useEffect(() => {
+    if (!enableReferencePhotos || allReferenceImagePaths.length === 0) {
+      return;
+    }
+    const missingPaths = allReferenceImagePaths.filter((path) => !imageUrlCache[path]);
+    if (missingPaths.length === 0) {
+      return;
+    }
+    let active = true;
+    (async () => {
+      const urls: Record<string, string> = {};
+      for (const path of missingPaths) {
+        try {
+          const { data } = await supabase.storage
+            .from('brand-assets')
+            .createSignedUrl(path, 60 * 60 * 24);
+          if (data?.signedUrl) {
+            urls[path] = data.signedUrl;
+          }
+        } catch (error) {
+          console.error('Failed to preload reference image URL:', error);
+        }
+      }
+      if (!active) return;
+      if (Object.keys(urls).length > 0) {
+        setImageUrlCache((prev) => ({ ...prev, ...urls }));
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [allReferenceImagePaths, enableReferencePhotos, imageUrlCache, supabase]);
 
   const handleActivityClick = async (activity: Activity) => {
     // Add activity to rows
@@ -191,6 +311,7 @@ export function WizardStep2Pricing({
       }),
       ...rows,
     ]);
+    onActivityGuaranteesAttach?.(activity.id);
 
     // Check if activity has images and feature is enabled
     const refImages = activity.reference_images as string[] | null | undefined;
@@ -330,6 +451,205 @@ export function WizardStep2Pricing({
         </Card>
       )}
 
+      {/* Reference Photos Overview */}
+      {enableReferencePhotos && activitiesWithReferenceImages.length > 0 && (
+        <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">
+                {t('offers.wizard.images.inlineTitle')}
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                {t('offers.wizard.images.inlineDescription')}
+              </p>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {t('offers.wizard.images.inlineSelectedCount', { count: selectedImages.length })}
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {activitiesWithReferenceImages.map((activity) => {
+              const selectedCount = activity.reference_images.filter((path) =>
+                selectedImages.includes(path),
+              ).length;
+              return (
+                <div
+                  key={activity.id ?? activity.name}
+                  className="space-y-3 rounded-2xl border border-border/60 bg-white/60 p-4"
+                >
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{activity.name}</p>
+                      <p className="text-xs text-slate-500">
+                        {t('offers.wizard.images.activityHelper', {
+                          count: activity.reference_images.length,
+                        })}
+                      </p>
+                    </div>
+                    <span className="text-xs font-semibold text-slate-600">
+                      {t('offers.wizard.images.activitySelectedCount', { count: selectedCount })}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {activity.reference_images.map((path) => {
+                      const url = imageUrlCache[path];
+                      const isSelected = selectedImages.includes(path);
+                      return (
+                        <div
+                          key={path}
+                          className={`relative aspect-[4/3] overflow-hidden rounded-xl border-2 transition-all ${
+                            isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border'
+                          }`}
+                        >
+                          {url ? (
+                            <>
+                              <button
+                                type="button"
+                                className="absolute inset-0 z-[1] cursor-zoom-in"
+                                aria-label={t('offers.wizard.images.viewFullSize')}
+                                onClick={() => setFullSizeImageUrl(url)}
+                              />
+                              <Image src={url} alt={activity.name} fill className="object-cover" />
+                            </>
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                              <PhotoIcon className="h-8 w-8 text-slate-400" />
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleReferenceImageSelection(path);
+                            }}
+                            className={`absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition ${
+                              isSelected
+                                ? 'border-primary bg-primary text-white'
+                                : 'border-white/70 bg-white/80 text-slate-600 hover:bg-white'
+                            }`}
+                            aria-pressed={isSelected}
+                          >
+                            {isSelected ? '✓' : '+'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {orphanedSelectedImages.length > 0 && (
+            <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+              <div>
+                <p className="text-sm font-semibold text-amber-900">
+                  {t('offers.wizard.images.orphanedTitle')}
+                </p>
+                <p className="text-xs text-amber-800">
+                  {t('offers.wizard.images.orphanedDescription')}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {orphanedSelectedImages.map((path) => {
+                  const url = imageUrlCache[path];
+                  return (
+                    <div
+                      key={`orphan-${path}`}
+                      className="relative aspect-[4/3] overflow-hidden rounded-xl border-2 border-amber-200 bg-white"
+                    >
+                      {url ? (
+                        <>
+                          <button
+                            type="button"
+                            className="absolute inset-0 z-[1] cursor-zoom-in"
+                            aria-label={t('offers.wizard.images.viewFullSize')}
+                            onClick={() => setFullSizeImageUrl(url)}
+                          />
+                          <Image src={url} alt="Reference" fill className="object-cover" />
+                        </>
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                          <PhotoIcon className="h-8 w-8 text-slate-400" />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleReferenceImageSelection(path);
+                        }}
+                        className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-amber-400 bg-white/90 text-xs font-semibold text-amber-900 transition hover:bg-white"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {guarantees.length > 0 && (
+        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">
+                {t('offers.wizard.guarantees.sectionTitle')}
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                {t('offers.wizard.guarantees.sectionDescription')}
+              </p>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {totalGuaranteesSelected}/{guaranteeLimit}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {guarantees.map((guarantee) => {
+              const isSelected = selectedGuaranteeIds.includes(guarantee.id);
+              const linkedNames = (guarantee.activity_ids || [])
+                .map((id) => activityNameMap.get(id))
+                .filter((name): name is string => Boolean(name));
+              const helperText =
+                linkedNames.length > 0
+                  ? t('offers.wizard.guarantees.linkedActivities', {
+                      activities: linkedNames.join(', '),
+                    })
+                  : t('offers.wizard.guarantees.unlinked');
+              const disableToggle = !isSelected && guaranteesSelectionFull;
+              return (
+                <div
+                  key={guarantee.id}
+                  className={`space-y-3 rounded-2xl border p-4 transition ${
+                    isSelected ? 'border-primary bg-primary/5' : 'border-border bg-white'
+                  }`}
+                >
+                  <p className="text-sm text-slate-900">{guarantee.text}</p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-[11px] text-slate-500">{helperText}</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isSelected ? 'primary' : 'secondary'}
+                      disabled={disableToggle}
+                      onClick={() => onToggleGuarantee(guarantee.id)}
+                    >
+                      {isSelected
+                        ? t('offers.wizard.guarantees.selected')
+                        : t('offers.wizard.guarantees.select')}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* Pricing Table */}
       <Card className="border-none bg-white/95 shadow-lg ring-1 ring-slate-900/5 overflow-hidden">
         <div className="p-5 sm:p-6 border-b border-slate-200">
@@ -457,8 +777,10 @@ export function WizardStep2Pricing({
                     >
                       {url ? (
                         <>
-                          <div
-                            className="absolute inset-0 cursor-pointer"
+                          <button
+                            type="button"
+                            className="absolute inset-0 z-[1] cursor-zoom-in"
+                            aria-label={t('offers.wizard.images.viewFullSize')}
                             onClick={(e) => {
                               e.stopPropagation();
                               setFullSizeImageUrl(url);
@@ -471,17 +793,12 @@ export function WizardStep2Pricing({
                             className="object-cover"
                             unoptimized
                           />
-                          <div
+                          <button
+                            type="button"
                             className="absolute top-2 right-2 z-10"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (isSelected) {
-                                onSelectedImagesChange(
-                                  selectedImages.filter((img) => img !== path),
-                                );
-                              } else {
-                                onSelectedImagesChange([...selectedImages, path]);
-                              }
+                              toggleReferenceImageSelection(path);
                             }}
                           >
                             <div
@@ -493,7 +810,7 @@ export function WizardStep2Pricing({
                             >
                               {isSelected && <CheckIcon className="h-4 w-4 text-white" />}
                             </div>
-                          </div>
+                          </button>
                         </>
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-slate-100">
