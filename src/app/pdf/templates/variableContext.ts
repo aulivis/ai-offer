@@ -1,8 +1,4 @@
-import {
-  buildVariableRegistry,
-  VariableResolver,
-  TemplateParser,
-} from '@/lib/template-variables';
+import { buildVariableRegistry, VariableResolver, TemplateParser } from '@/lib/template-variables';
 import { blocksToVariableData } from '@/lib/ai/blocks';
 import type { AIResponseBlocks as TemplateAIResponseBlocks } from '@/lib/template-variables';
 
