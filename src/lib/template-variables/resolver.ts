@@ -92,10 +92,10 @@ export class VariableResolver {
     }
 
     // Apply sanitizer if available
-    let sanitized = value;
+    let sanitized: ResolvedVariable = value as ResolvedVariable;
     if (definition.sanitizer) {
       try {
-        sanitized = definition.sanitizer(value);
+        sanitized = definition.sanitizer(value) as ResolvedVariable;
       } catch (error) {
         console.warn(`Sanitization failed for ${path}:`, error);
         sanitized = value;
