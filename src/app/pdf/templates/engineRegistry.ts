@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
+import { freeClassicHtmlTemplate } from './html/free.classic';
 import { freeMinimalHtmlTemplate } from './html/free.minimal';
+import { freeMinimalistHtmlTemplate } from './html/free.minimalist';
+import { premiumBrutalistHtmlTemplate } from './html/premium.brutalist';
+import { premiumLuxuryHtmlTemplate } from './html/premium.luxury';
 import { premiumProfessionalHtmlTemplate } from './html/premium.professional';
 import type { OfferTemplate, TemplateId, TemplateTier } from './types';
 
@@ -344,7 +348,14 @@ export function updateTemplateMetadata(
 }
 
 // Register built-in templates
-const builtinTemplates = [freeMinimalHtmlTemplate, premiumProfessionalHtmlTemplate];
+const builtinTemplates = [
+  freeMinimalHtmlTemplate,
+  freeClassicHtmlTemplate,
+  freeMinimalistHtmlTemplate,
+  premiumProfessionalHtmlTemplate,
+  premiumLuxuryHtmlTemplate,
+  premiumBrutalistHtmlTemplate,
+];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);

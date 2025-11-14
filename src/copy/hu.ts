@@ -760,6 +760,13 @@ export const hu = {
       title: 'Tevékenység-sablonok',
       subtitle:
         'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
+      toggle: {
+        collapse: 'Kártya elrejtése',
+        expand: 'Kártya megnyitása',
+        disabled: 'Már van mentett tevékenység vagy referenciafotó, ezért nem rejthető el.',
+      },
+      collapsedNotice:
+        'A szakasz jelenleg el van rejtve. Kapcsold vissza a kapcsolóval, ha használni szeretnéd.',
       addNewHeading: 'Új tevékenység hozzáadása',
       deleteAriaLabel: '{name} törlése',
       fields: {
@@ -797,11 +804,22 @@ export const hu = {
         uploadFailed: 'Nem sikerült feltölteni a képet',
         deleteSuccess: 'Kép sikeresen törölve',
         deleteFailed: 'Nem sikerült törölni a képet',
+        previewOpen: 'Referenciafotó megnyitása nagyban',
+        previewTitle: 'Referenciafotó nagyban',
+        previewSubtitle: 'Ellenőrizd a részleteket teljes méretben.',
+        previewAlt: 'Teljes méretű referenciafotó',
       },
     },
     guarantees: {
       title: 'Garancia sablonok',
       subtitle: 'Mentsd el a gyakran használt garanciákat, és kösd össze őket a tevékenységeiddel.',
+      toggle: {
+        collapse: 'Kártya elrejtése',
+        expand: 'Kártya megnyitása',
+        disabled: 'Már van mentett garanciád, ezért nem rejthető el.',
+      },
+      collapsedNotice:
+        'A szakasz jelenleg el van rejtve. Kapcsold vissza a kapcsolóval, ha szerkesztenéd.',
       addLabel: 'Új garancia szövege',
       addPlaceholder: 'Pl. 30 napos hibajavítás minden hibára',
       addButton: 'Garancia hozzáadása',

@@ -164,6 +164,18 @@ function hexToHsl(hex: string): string {
   return `${h} ${s}% ${lPercent}%`;
 }
 
+function splitHslComponents(hsl: string): { h: string; s: string; l: string } {
+  const [h, s, l] = hsl
+    .split(' ')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  return {
+    h: h ?? '0',
+    s: s ?? '0%',
+    l: l ?? '0%',
+  };
+}
+
 /**
  * Normalize hex color (ensure it has # prefix)
  */
@@ -276,6 +288,16 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
   const secondaryColorHex = normalizeHexColor(secondaryColor);
   const primaryColorHsl = hexToHsl(primaryColorHex);
   const secondaryColorHsl = hexToHsl(secondaryColorHex);
+  const {
+    h: primaryColorH,
+    s: primaryColorS,
+    l: primaryColorL,
+  } = splitHslComponents(primaryColorHsl);
+  const {
+    h: secondaryColorH,
+    s: secondaryColorS,
+    l: secondaryColorL,
+  } = splitHslComponents(secondaryColorHsl);
 
   // Prepare pricing data
   const pricingRows = preparePricingRows(ctx.rows);
@@ -328,6 +350,8 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
 
   // Get current year
   const currentYear = new Date().getFullYear();
+  const hasTerms = termsItems.length > 0 || Boolean(termsText);
+  const showMonogramFallback = !safeCtx.logoUrl;
 
   // Prepare template data
   const templateData: Record<string, unknown> = {
@@ -343,6 +367,12 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
     secondaryColorHex,
     primaryColorHsl,
     secondaryColorHsl,
+    primaryColorH,
+    primaryColorS,
+    primaryColorL,
+    secondaryColorH,
+    secondaryColorS,
+    secondaryColorL,
     bodyHtml,
     hasPricing,
     pricingRows,
@@ -360,7 +390,9 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
     companyTaxId: safeCtx.companyTaxId.isPlaceholder ? null : safeCtx.companyTaxId.value,
     termsText,
     termsItems: termsItems.length > 0 ? termsItems : null,
+    hasTerms,
     currentYear,
+    showMonogramFallback,
     offerNumber: null, // Could be derived from offer ID if needed
   };
 

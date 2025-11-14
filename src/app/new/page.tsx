@@ -413,6 +413,10 @@ export default function NewOfferWizard() {
       })),
     [lockedPdfTemplates, lockedTemplateDefaultHighlight],
   );
+  const lockedTemplateIds = useMemo(
+    () => lockedPdfTemplates.map((template) => template.id),
+    [lockedPdfTemplates],
+  );
 
   const [availableIndustries, setAvailableIndustries] = useState<string[]>([
     'Marketing',
@@ -462,6 +466,16 @@ export default function NewOfferWizard() {
     enable_testimonials: false,
   });
   const [selectedGuaranteeIds, setSelectedGuaranteeIds] = useState<string[]>([]);
+  const hasReferencePhotoData = useMemo(
+    () =>
+      activities.some(
+        (activity) =>
+          Array.isArray(activity.reference_images) && activity.reference_images.length > 0,
+      ) || selectedImages.length > 0,
+    [activities, selectedImages],
+  );
+  const enableReferencePhotosForWizard =
+    profileSettings.enable_reference_photos || hasReferencePhotoData;
 
   const fetchTestimonialsByIds = useCallback(
     async (ids: string[]): Promise<Array<{ id: string; text: string }>> => {
@@ -1240,19 +1254,34 @@ export default function NewOfferWizard() {
     setShowClientDrop(false);
   }
 
+  const attemptPdfTemplateSelection = useCallback(
+    (templateId: TemplateId) => {
+      const targetTemplate = allPdfTemplates.find((template) => template.id === templateId);
+      if (!targetTemplate) {
+        return false;
+      }
+      const isAllowed = targetTemplate.tier === 'free' || userTemplateTier === 'premium';
+      if (!isAllowed) {
+        openPlanUpgradeDialog({
+          description: t('app.planUpgradeModal.reasons.proTemplates'),
+        });
+        return false;
+      }
+      setSelectedPdfTemplateId(templateId);
+      return true;
+    },
+    [allPdfTemplates, openPlanUpgradeDialog, userTemplateTier],
+  );
+
   const handlePdfTemplateChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const templateId = event.target.value as TemplateId;
       if (!templateId) {
         return;
       }
-      const isAllowed = availablePdfTemplates.some((template) => template.id === templateId);
-      if (!isAllowed) {
-        return;
-      }
-      setSelectedPdfTemplateId(templateId);
+      attemptPdfTemplateSelection(templateId);
     },
-    [availablePdfTemplates],
+    [attemptPdfTemplateSelection],
   );
 
   const handleTemplateSelect = useCallback(
@@ -2711,7 +2740,7 @@ export default function NewOfferWizard() {
               onClientDropdownToggle={setShowClientDrop}
               filteredClients={filteredClients}
               onActivitySaved={reloadActivities}
-              enableReferencePhotos={profileSettings.enable_reference_photos}
+              enableReferencePhotos={enableReferencePhotosForWizard}
               enableTestimonials={profileSettings.enable_testimonials}
               selectedImages={selectedImages}
               onSelectedImagesChange={setSelectedImages}
@@ -3207,11 +3236,14 @@ export default function NewOfferWizard() {
                     wrapperClassName="flex flex-col gap-2"
                     aria-label="PDF sablon kiválasztása"
                   >
-                    {availablePdfTemplates.map((template) => (
-                      <option key={template.id} value={template.id}>
-                        {template.label}
-                      </option>
-                    ))}
+                    {allPdfTemplates.map((template) => {
+                      const locked = template.tier === 'premium' && userTemplateTier !== 'premium';
+                      return (
+                        <option key={template.id} value={template.id} disabled={locked}>
+                          {template.label}
+                        </option>
+                      );
+                    })}
                   </Select>
                 </div>
 
@@ -3426,11 +3458,12 @@ export default function NewOfferWizard() {
           showMarginGuides={showMarginGuides}
           onToggleMarginGuides={setShowMarginGuides}
           title={t('wizard.preview.fullscreenTitle')}
-          templateOptions={availablePdfTemplates}
+          templateOptions={allPdfTemplates}
+          lockedTemplateIds={lockedTemplateIds}
           selectedTemplateId={selectedPdfTemplateId ?? availablePdfTemplates[0]?.id}
           defaultTemplateId={availablePdfTemplates[0]?.id}
           onTemplateChange={(templateId) => {
-            setSelectedPdfTemplateId(templateId);
+            attemptPdfTemplateSelection(templateId);
           }}
         />
       </AppFrame>

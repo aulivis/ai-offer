@@ -46,6 +46,9 @@ import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow, GuaranteeRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
 
+const ACTIVITIES_COLLAPSE_STORAGE_KEY = 'settings.activities.collapsed';
+const GUARANTEES_COLLAPSE_STORAGE_KEY = 'settings.guarantees.collapsed';
+
 type SupabaseErrorLike = {
   message?: string | null;
   details?: string | null;
@@ -94,6 +97,8 @@ export default function SettingsPage() {
   const [guarantees, setGuarantees] = useState<GuaranteeRow[]>([]);
   const [guaranteeAddLoading, setGuaranteeAddLoading] = useState(false);
   const [guaranteeBusyId, setGuaranteeBusyId] = useState<string | null>(null);
+  const [activitiesCollapsed, setActivitiesCollapsed] = useState(false);
+  const [guaranteesCollapsed, setGuaranteesCollapsed] = useState(false);
   const [testimonials, setTestimonials] = useState<
     Array<{
       id: string;
@@ -276,6 +281,65 @@ export default function SettingsPage() {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loading]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const storedActivities = window.localStorage.getItem(ACTIVITIES_COLLAPSE_STORAGE_KEY);
+    const storedGuarantees = window.localStorage.getItem(GUARANTEES_COLLAPSE_STORAGE_KEY);
+    if (storedActivities === '1') {
+      setActivitiesCollapsed(true);
+    }
+    if (storedGuarantees === '1') {
+      setGuaranteesCollapsed(true);
+    }
+  }, []);
+
+  const hasActivityContent = useMemo(
+    () =>
+      acts.length > 0 ||
+      acts.some(
+        (activity) =>
+          Array.isArray(activity.reference_images) && activity.reference_images.length > 0,
+      ),
+    [acts],
+  );
+  const hasGuaranteeContent = guarantees.length > 0;
+
+  useEffect(() => {
+    if (hasActivityContent && activitiesCollapsed) {
+      setActivitiesCollapsed(false);
+    }
+  }, [activitiesCollapsed, hasActivityContent]);
+
+  useEffect(() => {
+    if (hasGuaranteeContent && guaranteesCollapsed) {
+      setGuaranteesCollapsed(false);
+    }
+  }, [guaranteesCollapsed, hasGuaranteeContent]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (hasActivityContent) {
+      window.localStorage.removeItem(ACTIVITIES_COLLAPSE_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(ACTIVITIES_COLLAPSE_STORAGE_KEY, activitiesCollapsed ? '1' : '0');
+  }, [activitiesCollapsed, hasActivityContent]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (hasGuaranteeContent) {
+      window.localStorage.removeItem(GUARANTEES_COLLAPSE_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(GUARANTEES_COLLAPSE_STORAGE_KEY, guaranteesCollapsed ? '1' : '0');
+  }, [guaranteesCollapsed, hasGuaranteeContent]);
 
   const hasGeneralErrors = Object.keys(errors.general).length > 0;
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
@@ -1276,6 +1340,9 @@ export default function SettingsPage() {
             saving={actSaving}
             plan={plan}
             defaultActivityId={profile.default_activity_id}
+            collapsed={activitiesCollapsed}
+            collapseDisabled={hasActivityContent}
+            onCollapsedChange={(value) => setActivitiesCollapsed(value)}
             onNewActivityChange={setNewAct}
             onToggleNewActivityIndustry={toggleNewActIndustry}
             onAddActivity={addActivity}
@@ -1344,6 +1411,9 @@ export default function SettingsPage() {
               guarantees={guarantees}
               addLoading={guaranteeAddLoading}
               busyGuaranteeId={guaranteeBusyId}
+              collapsed={guaranteesCollapsed}
+              collapseDisabled={hasGuaranteeContent}
+              onCollapsedChange={(value) => setGuaranteesCollapsed(value)}
               onAddGuarantee={addGuaranteeEntry}
               onUpdateGuarantee={updateGuaranteeEntry}
               onDeleteGuarantee={deleteGuaranteeEntry}

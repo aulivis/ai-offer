@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="{{locale}}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{title}}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: {{primaryColorHsl}};
+        --secondary: {{secondaryColorHsl}};
+        --foreground: 0 0% 15%;
+        --muted-foreground: 0 0% 45%;
+        --border: 0 0% 88%;
+      }
+
+      body {
+        font-family: Georgia, 'Times New Roman', Times, serif;
+        background: #ffffff;
+        color: hsl(var(--foreground));
+        line-height: 1.8;
+        padding: 2rem 1rem;
+      }
+
+      .container {
+        max-width: 52rem;
+        margin: 0 auto;
+        background: white;
+        border: 2px solid hsl(var(--border));
+      }
+
+      .header-stripe {
+        height: 8px;
+        background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+      }
+
+      .header {
+        padding: 3rem 3rem 2rem;
+        border-bottom: 1px solid hsl(var(--border));
+      }
+
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+      }
+
+      .logo-section {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .logo-box {
+        width: 3.5rem;
+        height: 3.5rem;
+        border: 2px solid hsl(var(--primary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+      }
+
+      .monogram {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: hsl(var(--primary));
+        font-family: Georgia, serif;
+      }
+
+      .company-info h1 {
+        font-size: 1.75rem;
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        margin-bottom: 0.25rem;
+      }
+
+      .company-info p {
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+        font-family: system-ui, sans-serif;
+      }
+
+      .document-badge {
+        padding: 0.5rem 1.25rem;
+        background: white;
+        border: 2px solid hsl(var(--primary));
+        color: hsl(var(--primary));
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-family: system-ui, sans-serif;
+      }
+
+      .info-table {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.75rem 2rem;
+        font-family: system-ui, sans-serif;
+        font-size: 0.875rem;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: hsl(var(--foreground));
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+      }
+
+      .info-value {
+        color: hsl(var(--muted-foreground));
+      }
+
+      .section {
+        padding: 2.5rem 3rem;
+        border-bottom: 1px solid hsl(var(--border));
+      }
+
+      .section:last-of-type {
+        border-bottom: none;
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 400;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid hsl(var(--primary));
+        display: inline-block;
+        letter-spacing: 0.02em;
+      }
+
+      .body-content {
+        font-size: 0.9375rem;
+        line-height: 1.8;
+        color: hsl(var(--foreground));
+      }
+
+      .body-content p {
+        margin-bottom: 1rem;
+      }
+
+      .pricing-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: system-ui, sans-serif;
+        font-size: 0.875rem;
+        margin-top: 1.5rem;
+      }
+
+      .pricing-table thead {
+        background: hsl(var(--primary) / 0.05);
+        border-top: 2px solid hsl(var(--primary));
+        border-bottom: 2px solid hsl(var(--primary));
+      }
+
+      .pricing-table th {
+        padding: 0.875rem;
+        text-align: left;
+        font-weight: 600;
+        color: hsl(var(--foreground));
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .pricing-table td {
+        padding: 0.875rem;
+        border-bottom: 1px solid hsl(var(--border));
+        color: hsl(var(--foreground));
+      }
+
+      .pricing-table tbody tr:last-child td {
+        border-bottom: 2px solid hsl(var(--border));
+      }
+
+      .total-row {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem;
+        background: white;
+        border: 2px solid hsl(var(--primary));
+        font-family: system-ui, sans-serif;
+      }
+
+      .total-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: hsl(var(--foreground));
+      }
+
+      .total-amount {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: hsl(var(--primary));
+      }
+
+      .images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .images-grid img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border: 1px solid hsl(var(--border));
+      }
+
+      .terms-list {
+        margin-top: 1rem;
+      }
+
+      .term-item {
+        margin-bottom: 1.25rem;
+        padding-left: 1.5rem;
+        position: relative;
+      }
+
+      .term-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 6px;
+        height: 6px;
+        background: hsl(var(--primary));
+        border-radius: 50%;
+      }
+
+      .term-title {
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+        font-family: system-ui, sans-serif;
+      }
+
+      .term-description {
+        font-size: 0.875rem;
+        color: hsl(var(--muted-foreground));
+        line-height: 1.6;
+      }
+
+      .footer {
+        padding: 2rem 3rem;
+        background: hsl(var(--primary) / 0.02);
+        border-top: 1px solid hsl(var(--border));
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        font-family: system-ui, sans-serif;
+      }
+
+      .footer-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .footer-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: hsl(var(--muted-foreground));
+      }
+
+      .footer-value {
+        font-size: 0.875rem;
+        color: hsl(var(--foreground));
+      }
+
+      .footer-divider {
+        height: 1px;
+        background: hsl(var(--border));
+        margin: 1.5rem 0;
+      }
+
+      .copyright {
+        text-align: center;
+        font-size: 0.75rem;
+        color: hsl(var(--muted-foreground));
+        font-family: system-ui, sans-serif;
+      }
+
+      @media print {
+        body {
+          padding: 0;
+        }
+
+        .container {
+          border: none;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .header,
+        .section,
+        .footer {
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
+        }
+
+        .header-top {
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .info-table {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .footer-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header-stripe"></div>
+
+      <div class="header">
+        <div class="header-top">
+          <div class="logo-section">
+            {{#if logoUrl}}
+            <img
+              src="{{logoUrl}}"
+              alt="{{logoAlt}}"
+              style="width: 3.5rem; height: 3.5rem; object-fit: contain"
+            />
+            {{/if}} {{#if showMonogramFallback}}
+            <div class="logo-box">
+              <span class="monogram">{{monogram}}</span>
+            </div>
+            {{/if}}
+            <div class="company-info">
+              <h1>{{title}}</h1>
+              <p>{{companyName}}</p>
+            </div>
+          </div>
+          {{#if tierLabel}}
+          <div class="document-badge">{{tierLabel}}</div>
+          {{/if}}
+        </div>
+
+        <div class="info-table">
+          {{#if contactName}}
+          <div class="info-label">Kapcsolattartó:</div>
+          <div class="info-value">{{contactName}}</div>
+          {{/if}} {{#if issueDate}}
+          <div class="info-label">Kiállítás dátuma:</div>
+          <div class="info-value">{{issueDate}}</div>
+          {{/if}} {{#if offerNumber}}
+          <div class="info-label">Ajánlat száma:</div>
+          <div class="info-value">{{offerNumber}}</div>
+          {{/if}}
+        </div>
+      </div>
+
+      {{#if bodyHtml}}
+      <div class="section">
+        <h2 class="section-title">Szolgáltatások részletesen</h2>
+        <div class="body-content">{{{bodyHtml}}}</div>
+      </div>
+      {{/if}} {{#if hasPricing}}
+      <div class="section">
+        <h2 class="section-title">Árazás</h2>
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th>Megnevezés</th>
+              <th>Mennyiség</th>
+              <th>Egységár</th>
+              <th>ÁFA</th>
+              <th>Összesen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each pricingRows}}
+            <tr>
+              <td>{{name}}</td>
+              <td>{{qty}}</td>
+              <td>{{unitPrice}}</td>
+              <td>{{vat}}</td>
+              <td>{{total}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        <div class="total-row">
+          <span class="total-label">Végösszeg</span>
+          <span class="total-amount">{{grossTotal}}</span>
+        </div>
+      </div>
+      {{/if}} {{#if hasImages}}
+      <div class="section">
+        <h2 class="section-title">Képek és referenciák</h2>
+        <div class="images-grid">
+          {{#each images}}
+          <img src="{{src}}" alt="{{alt}}" />
+          {{/each}}
+        </div>
+      </div>
+      {{/if}} {{#if hasTerms}}
+      <div class="section">
+        <h2 class="section-title">Feltételek</h2>
+        {{#if termsItems}}
+        <div class="terms-list">
+          {{#each termsItems}}
+          <div class="term-item">
+            <div class="term-title">{{number}}. {{title}}</div>
+            <div class="term-description">{{description}}</div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}} {{#if termsText}}
+        <div class="body-content" style="margin-top: 1rem">
+          <p>{{termsText}}</p>
+        </div>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      <div class="footer">
+        <div class="footer-grid">
+          {{#if contactEmail}}
+          <div class="footer-item">
+            <span class="footer-label">E-mail</span>
+            <span class="footer-value">{{contactEmail}}</span>
+          </div>
+          {{/if}} {{#if contactPhone}}
+          <div class="footer-item">
+            <span class="footer-label">Telefon</span>
+            <span class="footer-value">{{contactPhone}}</span>
+          </div>
+          {{/if}} {{#if companyWebsite}}
+          <div class="footer-item">
+            <span class="footer-label">Weboldal</span>
+            <span class="footer-value">{{companyWebsite}}</span>
+          </div>
+          {{/if}} {{#if companyTaxId}}
+          <div class="footer-item">
+            <span class="footer-label">Adószám</span>
+            <span class="footer-value">{{companyTaxId}}</span>
+          </div>
+          {{/if}} {{#if companyAddress}}
+          <div class="footer-item">
+            <span class="footer-label">Cím</span>
+            <span class="footer-value">{{companyAddress}}</span>
+          </div>
+          {{/if}}
+        </div>
+        <div class="footer-divider"></div>
+        <div class="copyright">© {{currentYear}} {{companyName}}. Minden jog fenntartva.</div>
+      </div>
+    </div>
+  </body>
+</html>

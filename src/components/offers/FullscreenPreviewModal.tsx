@@ -22,6 +22,7 @@ type FullscreenPreviewModalProps = {
   selectedTemplateId?: TemplateId;
   defaultTemplateId?: TemplateId;
   onTemplateChange?: (templateId: TemplateId) => void;
+  lockedTemplateIds?: TemplateId[];
 };
 
 export function FullscreenPreviewModal({
@@ -37,6 +38,7 @@ export function FullscreenPreviewModal({
   selectedTemplateId,
   defaultTemplateId,
   onTemplateChange,
+  lockedTemplateIds = [],
 }: FullscreenPreviewModalProps) {
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -143,7 +145,11 @@ export function FullscreenPreviewModal({
                   className="flex-1 bg-slate-700 text-white border-slate-600"
                 >
                   {templateOptions.map((template) => (
-                    <option key={template.id} value={template.id}>
+                    <option
+                      key={template.id}
+                      value={template.id}
+                      disabled={lockedTemplateIds.includes(template.id)}
+                    >
                       {template.label}
                     </option>
                   ))}

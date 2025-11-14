@@ -79,7 +79,7 @@ function renderBody(ctx: RenderCtx): string {
 export const premiumProfessionalHtmlTemplate: OfferTemplate = {
   id: 'premium.professional.html@1.0.0',
   tier: 'premium',
-  label: 'Professzionális (HTML)',
+  label: 'Valeria Professional',
   version: '1.0.0',
   marketingHighlight:
     'Modern, prémium dizájn animált elemekkel és gradiens színekkel, amely kiemeli az ajánlatot.',

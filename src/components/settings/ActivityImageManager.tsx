@@ -12,6 +12,7 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { uploadWithProgress } from '@/lib/uploadWithProgress';
 import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
 import Image from 'next/image';
@@ -60,6 +61,7 @@ export function ActivityImageManager({
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [loadingUrls, setLoadingUrls] = useState(true);
   const [showInfoTooltip, setShowInfoTooltip] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Load signed URLs for existing images
   useEffect(() => {
@@ -324,11 +326,17 @@ export function ActivityImageManager({
                     className="object-cover"
                     unoptimized
                   />
+                  <button
+                    type="button"
+                    onClick={() => setPreviewUrl(imageUrls[path])}
+                    className="absolute inset-0 z-10 cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                    aria-label={t('settings.activities.images.previewOpen')}
+                  />
                   {enabled && (
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(path)}
-                      className="absolute right-1 top-1 rounded-full bg-rose-500 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute right-1 top-1 z-20 rounded-full bg-rose-500 p-1 opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       <TrashIcon className="h-3 w-3 text-white" />
                     </button>
@@ -343,6 +351,35 @@ export function ActivityImageManager({
           ))}
         </div>
       )}
+
+      <Modal
+        open={Boolean(previewUrl)}
+        onClose={() => setPreviewUrl(null)}
+        size="xl"
+        preventBodyScroll
+      >
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">
+              {t('settings.activities.images.previewTitle')}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t('settings.activities.images.previewSubtitle')}
+            </p>
+          </div>
+          {previewUrl && (
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-slate-100">
+              <Image
+                src={previewUrl}
+                alt={t('settings.activities.images.previewAlt')}
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

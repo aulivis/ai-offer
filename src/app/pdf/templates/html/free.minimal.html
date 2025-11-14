@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{title}} - Árajánlat</title>
+    <title>{{title}}</title>
     <style>
       * {
         margin: 0;
@@ -11,10 +11,11 @@
         box-sizing: border-box;
       }
 
+      /* Using dynamic HSL color variables from template data */
       :root {
         --primary: {{primaryColorHsl}};
-        --primary-foreground: 0 0% 100%;
         --secondary: {{secondaryColorHsl}};
+        --primary-foreground: 0 0% 100%;
         --background: 0 0% 100%;
         --foreground: 222 47% 11%;
         --muted: 210 40% 96%;
@@ -48,26 +49,32 @@
         overflow: hidden;
       }
 
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(hsl(var(--primary) / 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, hsl(var(--primary) / 0.02) 1px, transparent 1px);
+        background-size: 50px 50px;
+      }
+
       .bg-shape-1 {
         position: absolute;
-        width: 16rem;
-        height: 16rem;
+        width: 20rem;
+        height: 20rem;
         right: -5rem;
         top: 5rem;
-        background: hsl(var(--primary) / 0.05);
+        background: radial-gradient(circle, hsl(var(--primary) / 0.08) 0%, transparent 70%);
         border-radius: 50%;
-        filter: blur(60px);
       }
 
       .bg-shape-2 {
         position: absolute;
-        width: 24rem;
-        height: 24rem;
-        left: -5rem;
+        width: 28rem;
+        height: 28rem;
+        left: -8rem;
         bottom: 10rem;
-        background: hsl(var(--secondary) / 0.3);
+        background: radial-gradient(circle, hsl(var(--secondary) / 0.06) 0%, transparent 70%);
         border-radius: 50%;
-        filter: blur(60px);
       }
 
       .content {
@@ -75,50 +82,47 @@
         z-index: 1;
       }
 
-      /* Header */
       .header {
-        margin-bottom: 3rem;
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+        border-top: 3px solid hsl(var(--primary));
+        position: relative;
+        overflow: hidden;
+      }
+
+      .corner-accent {
+        position: absolute;
+        width: 4rem;
+        height: 4rem;
+        opacity: 0.15;
+      }
+
+      .corner-accent-tl {
+        top: 0;
+        left: 0;
+      }
+
+      .corner-accent-br {
+        bottom: 0;
+        right: 0;
+        transform: rotate(180deg);
       }
 
       .header-top {
         display: flex;
-        align-items: flex-start;
         justify-content: space-between;
-        margin-bottom: 2rem;
-        gap: 1rem;
-        flex-wrap: wrap;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
       }
 
       .header-left {
         display: flex;
-        align-items: flex-start;
         gap: 1rem;
-      }
-
-      .logo-container {
-        display: flex;
         align-items: center;
-        justify-content: center;
-        width: 3rem;
-        height: 3rem;
-        background: hsl(var(--primary) / 0.1);
-        border-radius: 0.5rem;
-        flex-shrink: 0;
-        overflow: hidden;
-      }
-
-      .logo-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-
-      .logo-container .logo-fallback {
-        width: 1.5rem;
-        height: 1.5rem;
-        stroke: hsl(var(--primary));
-        fill: none;
-        stroke-width: 2;
       }
 
       .icon-box {
@@ -128,24 +132,16 @@
         width: 3rem;
         height: 3rem;
         background: hsl(var(--primary) / 0.1);
+        border: 2px solid hsl(var(--primary) / 0.2);
         border-radius: 0.5rem;
-        flex-shrink: 0;
-      }
-
-      .icon {
-        width: 1.5rem;
-        height: 1.5rem;
-        stroke: hsl(var(--primary));
-        fill: none;
-        stroke-width: 2;
+        box-shadow: 0 2px 8px hsl(var(--primary) / 0.15);
       }
 
       .title {
-        font-size: 2rem;
-        font-weight: 300;
-        letter-spacing: -0.025em;
+        font-size: 1.5rem;
+        font-weight: 700;
         color: hsl(var(--foreground));
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
       }
 
       .subtitle {
@@ -154,27 +150,29 @@
       }
 
       .badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.875rem;
         font-size: 0.75rem;
-        background: hsl(var(--secondary) / 0.2);
-        color: hsl(var(--foreground));
-        border-radius: 0.375rem;
-        white-space: nowrap;
+        font-weight: 600;
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
+        color: hsl(var(--primary));
+        border: 1px solid hsl(var(--primary) / 0.2);
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
 
       .separator {
         height: 1px;
         background: hsl(var(--border));
-        margin: 2rem 0;
+        margin: 1.5rem 0;
       }
 
-      /* Client Info */
       .info-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.5rem;
-        margin-bottom: 3rem;
       }
 
       .info-item {
@@ -183,183 +181,144 @@
 
       .info-label {
         font-size: 0.75rem;
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: hsl(var(--muted-foreground));
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
       }
 
       .info-value {
-        font-size: 0.875rem;
-        color: hsl(var(--foreground));
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: hsl(var(--foreground));
+        padding-bottom: 0.5rem;
       }
 
       .info-underline {
-        height: 1px;
-        width: 3rem;
-        background: hsl(var(--primary) / 0.3);
-        margin-top: 0.5rem;
-        transition: width 0.3s ease;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        width: 2rem;
+        background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+        border-radius: 2px;
       }
 
-      .info-item:hover .info-underline {
-        width: 5rem;
+      .icon {
+        flex-shrink: 0;
       }
 
-      /* Card */
       .card {
         background: hsl(var(--card));
         border: 1px solid hsl(var(--border));
-        border-radius: 0.5rem;
+        border-radius: 0.75rem;
         padding: 2rem;
         margin-bottom: 2rem;
-        position: relative;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
       }
 
       .card-accent {
-        background: hsl(var(--accent) / 0.5);
-        border-color: hsl(var(--primary) / 0.1);
-        overflow: hidden;
+        position: relative;
+        border-left: 4px solid;
+        border-image: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%) 1;
       }
 
       .card-decoration {
         position: absolute;
+        top: 0;
+        right: 0;
         width: 8rem;
         height: 8rem;
-        right: 0;
-        top: 0;
         background: hsl(var(--primary) / 0.05);
-        border-radius: 50%;
+        border-radius: 0 0.75rem 0 0;
         filter: blur(40px);
+        pointer-events: none;
+      }
+
+      .card-accent::before {
+        content: '';
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 6rem;
+        height: 6rem;
+        background-image: radial-gradient(circle, hsl(var(--primary) / 0.1) 2px, transparent 2px);
+        background-size: 12px 12px;
+        pointer-events: none;
       }
 
       .card-title {
         font-size: 1.25rem;
-        font-weight: 300;
+        font-weight: 700;
+        color: hsl(var(--foreground));
         margin-bottom: 1.5rem;
-        color: hsl(var(--foreground));
       }
 
-      /* Services */
-      .service-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .service-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .check-icon {
-        width: 1.25rem;
-        height: 1.25rem;
-        stroke: hsl(var(--primary));
-        flex-shrink: 0;
-        margin-top: 0.125rem;
-      }
-
-      .service-text {
-        font-size: 0.875rem;
-        line-height: 1.6;
-        color: hsl(var(--foreground));
-      }
-
-      /* Package Details */
-      .detail-list {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .detail-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid hsl(var(--border));
-      }
-
-      .detail-item:last-child {
-        border-bottom: none;
-      }
-
-      .detail-label {
-        font-size: 0.875rem;
-        color: hsl(var(--muted-foreground));
-      }
-
-      .detail-value {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: hsl(var(--foreground));
-      }
-
-      /* Pricing Table */
       .table-header {
         position: relative;
-        background: hsl(var(--primary));
-        padding: 1rem;
-        border-radius: 0.5rem 0.5rem 0 0;
-        overflow: hidden;
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--secondary) / 0.08) 100%);
+        padding: 1.5rem;
+        border-bottom: 2px solid hsl(var(--primary) / 0.3);
       }
 
       .table-header-decoration {
         position: absolute;
-        width: 6rem;
-        height: 6rem;
-        right: 0;
         top: 0;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        filter: blur(30px);
+        right: 0;
+        width: 12rem;
+        height: 100%;
+        background: hsl(var(--primary) / 0.1);
+        border-radius: 0 0.75rem 0 0;
+        filter: blur(40px);
+        pointer-events: none;
+      }
+
+      .table-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4rem;
+        height: 3px;
+        background: linear-gradient(90deg, hsl(var(--primary)) 0%, transparent 100%);
       }
 
       .table-header h2 {
-        position: relative;
-        font-size: 1.125rem;
-        font-weight: 300;
-        color: hsl(var(--primary-foreground));
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: hsl(var(--foreground));
+        margin: 0;
       }
 
       .pricing-table {
         width: 100%;
-        font-size: 0.875rem;
         border-collapse: collapse;
+        font-size: 0.875rem;
       }
 
-      .pricing-table thead th {
+      .pricing-table th {
         text-align: left;
-        font-weight: 500;
-        color: hsl(var(--muted-foreground));
-        padding-bottom: 0.75rem;
+        font-weight: 600;
+        padding: 0.75rem;
+        border-bottom: 2px solid hsl(var(--border));
+        color: hsl(var(--foreground));
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .pricing-table td {
+        padding: 0.75rem;
         border-bottom: 1px solid hsl(var(--border));
-      }
-
-      .pricing-table thead th:not(:first-child) {
-        text-align: right;
-      }
-
-      .pricing-table tbody tr {
-        border-bottom: 1px solid hsl(var(--border));
-        transition: background-color 0.2s ease;
-      }
-
-      .pricing-table tbody tr:hover {
-        background: hsl(var(--accent) / 0.3);
-      }
-
-      .pricing-table tbody td {
-        padding: 1rem 0;
         color: hsl(var(--foreground));
       }
 
-      .pricing-table tbody td:not(:first-child) {
-        text-align: right;
+      .pricing-table tbody tr:hover {
+        background: hsl(var(--muted) / 0.5);
       }
 
       .total-box {
@@ -367,117 +326,88 @@
         justify-content: space-between;
         align-items: center;
         margin-top: 1.5rem;
-        padding: 1.5rem;
-        background: hsl(var(--primary) / 0.05);
-        border: 1px solid hsl(var(--primary) / 0.2);
+        padding: 1rem;
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--secondary) / 0.06) 100%);
+        border: 2px solid hsl(var(--primary) / 0.2);
         border-radius: 0.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .total-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
       }
 
       .total-label {
+        font-weight: 700;
         font-size: 1rem;
-        font-weight: 500;
         color: hsl(var(--foreground));
       }
 
       .total-amount {
+        font-weight: 700;
         font-size: 1.5rem;
-        font-weight: 300;
         color: hsl(var(--primary));
       }
 
-      /* Terms */
       .terms-card {
         background: hsl(var(--muted) / 0.3);
-        border-color: hsl(var(--border) / 0.5);
       }
 
       .terms-text {
         font-size: 0.875rem;
-        line-height: 1.6;
         color: hsl(var(--muted-foreground));
-        margin-bottom: 1rem;
+        line-height: 1.7;
       }
 
-      .terms-text:last-child {
-        margin-bottom: 0;
-      }
-
-      /* Footer */
       .footer {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.5rem;
-        font-size: 0.75rem;
-        color: hsl(var(--muted-foreground));
+        padding: 1.5rem 0;
       }
 
       .footer-item {
         display: flex;
+        gap: 1rem;
         align-items: flex-start;
-        gap: 0.75rem;
       }
 
       .footer-icon-box {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        background: hsl(var(--primary) / 0.1);
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
+        border: 1px solid hsl(var(--primary) / 0.2);
         border-radius: 0.5rem;
         flex-shrink: 0;
       }
 
       .footer-icon {
-        width: 1rem;
-        height: 1rem;
+        width: 1.25rem;
+        height: 1.25rem;
         stroke: hsl(var(--primary));
+        stroke-width: 2;
       }
 
       .footer-label {
-        font-weight: 500;
-        color: hsl(var(--foreground));
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: hsl(var(--muted-foreground));
         margin-bottom: 0.25rem;
       }
 
-      /* Reference Images */
-      .gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-
-      .gallery-item {
-        position: relative;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-        border-radius: 0.5rem;
-        border: 1px solid hsl(var(--border));
-      }
-
-      .gallery-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      @media (max-width: 640px) {
-        .title {
-          font-size: 1.5rem;
-        }
-
-        .card {
-          padding: 1.5rem;
-        }
-
-        .pricing-table {
-          font-size: 0.75rem;
-        }
-
-        .total-amount {
-          font-size: 1.25rem;
-        }
+      .footer-item > div > p:last-child {
+        font-size: 0.875rem;
+        color: hsl(var(--foreground));
       }
 
       @media print {
@@ -488,11 +418,37 @@
         body {
           padding: 0;
         }
+
+        .card,
+        .header {
+          box-shadow: none;
+          page-break-inside: avoid;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer {
+          grid-template-columns: 1fr;
+        }
+
+        .header-top {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .badge {
+          align-self: flex-start;
+        }
       }
     </style>
   </head>
   <body>
     <div class="bg-decoration">
+      <div class="bg-grid"></div>
       <div class="bg-shape-1"></div>
       <div class="bg-shape-2"></div>
     </div>
@@ -501,31 +457,33 @@
       <div class="content">
         <!-- Header -->
         <div class="header">
+          <svg class="corner-accent corner-accent-tl" viewBox="0 0 100 100" fill="none">
+            <path
+              d="M0 0 L100 0 L100 20 L20 20 L20 100 L0 100 Z"
+              fill="currentColor"
+              style="color: hsl(var(--primary))"
+            />
+          </svg>
+
           <div class="header-top">
             <div class="header-left">
+              <!-- Dynamic logo or monogram fallback -->
               {{#if logoUrl}}
-              <div class="logo-container">
-                <img src="{{logoUrl}}" alt="{{logoAlt}}" />
-              </div>
-              {{else}}
+              <img
+                src="{{logoUrl}}"
+                alt="{{logoAlt}}"
+                style="width: 3rem; height: 3rem; object-fit: contain; border-radius: 0.5rem"
+              />
+              {{/if}} {{#if showMonogramFallback}}
               <div class="icon-box">
-                <svg
-                  class="icon"
-                  viewBox="0 0 24 24"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                <span style="font-weight: 700; font-size: 1.125rem; color: hsl(var(--primary))"
+                  >{{monogram}}</span
                 >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
-                </svg>
               </div>
               {{/if}}
               <div>
                 <h1 class="title">{{title}}</h1>
-                <p class="subtitle">Árajánlat</p>
+                <p class="subtitle">{{companyName}}</p>
               </div>
             </div>
             <span class="badge">{{tierLabel}}</span>
@@ -533,13 +491,15 @@
 
           <div class="separator"></div>
 
-          <!-- Client Info -->
+          <!-- Client Info with conditional rendering -->
           <div class="info-grid">
+            {{#if contactName}}
             <div class="info-item">
-              <p class="info-label">Ügyfél</p>
-              <p class="info-value">{{companyName}}</p>
+              <p class="info-label">Kapcsolattartó</p>
+              <p class="info-value">{{contactName}}</p>
               <div class="info-underline"></div>
             </div>
+            {{/if}} {{#if issueDate}}
             <div class="info-item">
               <p class="info-label">Dátum</p>
               <div class="info-value">
@@ -560,36 +520,35 @@
               </div>
               <div class="info-underline"></div>
             </div>
+            {{/if}} {{#if offerNumber}}
+            <div class="info-item">
+              <p class="info-label">Ajánlat száma</p>
+              <p class="info-value">{{offerNumber}}</p>
+              <div class="info-underline"></div>
+            </div>
+            {{/if}}
           </div>
         </div>
 
-        <!-- Services / Body Content -->
+        <!-- AI-generated body content -->
         {{#if bodyHtml}}
         <div class="card card-accent">
           <div class="card-decoration"></div>
-          <h2 class="card-title">Szolgáltatások</h2>
-          <div class="service-list" style="position: relative">{{{bodyHtml}}}</div>
-        </div>
-        {{/if}}
-
-        <!-- Package Details (if available) -->
-        {{#if packageDetails}}
-        <div>
-          <h2 class="card-title">Csomag részletei</h2>
-          <div class="card">
-            <div class="detail-list">
-              {{#each packageDetails}}
-              <div class="detail-item">
-                <span class="detail-label">{{label}}</span>
-                <span class="detail-value">{{value}}</span>
-              </div>
-              {{/each}}
-            </div>
+          <h2 class="card-title">Szolgáltatások részletesen</h2>
+          <div
+            style="
+              position: relative;
+              font-size: 0.875rem;
+              line-height: 1.7;
+              color: hsl(var(--foreground));
+            "
+          >
+            {{{bodyHtml}}}
           </div>
         </div>
         {{/if}}
 
-        <!-- Pricing Table -->
+        <!-- Pricing Table with conditional rendering -->
         {{#if hasPricing}}
         <div class="card" style="padding: 0; overflow: hidden">
           <div class="table-header">
@@ -614,7 +573,7 @@
                     <td>{{name}}</td>
                     <td>{{qty}}</td>
                     <td>{{unitPrice}}</td>
-                    <td>{{vat}} %</td>
+                    <td>{{vat}}</td>
                     <td>{{total}}</td>
                   </tr>
                   {{/each}}
@@ -630,31 +589,56 @@
         </div>
         {{/if}}
 
-        <!-- Reference Images / Gallery -->
+        <!-- Images section with conditional rendering -->
         {{#if hasImages}}
         <div>
-          <h2 class="card-title">Referencia képek</h2>
-          <div class="gallery">
-            {{#each images}}
-            <div class="gallery-item">
-              <img src="{{src}}" alt="{{alt}}" />
+          <h2 class="card-title">Képek és referenciák</h2>
+          <div class="card">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1rem;
+              "
+            >
+              {{#each images}}
+              <img
+                src="{{src}}"
+                alt="{{alt}}"
+                style="
+                  width: 100%;
+                  height: 200px;
+                  object-fit: cover;
+                  border-radius: 0.5rem;
+                  border: 1px solid hsl(var(--border));
+                "
+              />
+              {{/each}}
             </div>
-            {{/each}}
           </div>
         </div>
         {{/if}}
 
-        <!-- Terms -->
+        <!-- Terms with conditional rendering -->
         {{#if termsText}}
         <div>
           <h2 class="card-title">Feltételek</h2>
           <div class="card terms-card">
+            {{#if termsItems}} {{#each termsItems}}
+            <div style="margin-bottom: 1rem">
+              <p style="font-weight: 600; color: hsl(var(--foreground)); margin-bottom: 0.25rem">
+                {{number}}. {{title}}
+              </p>
+              <p class="terms-text">{{description}}</p>
+            </div>
+            {{/each}} {{/if}} {{#if termsText}}
             <p class="terms-text">{{termsText}}</p>
+            {{/if}}
           </div>
         </div>
         {{/if}}
 
-        <!-- Footer -->
+        <!-- Footer with dynamic contact info -->
         <div class="separator"></div>
         <div class="footer">
           {{#if contactEmail}}
@@ -747,10 +731,8 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
               </svg>
             </div>
             <div>
@@ -759,6 +741,16 @@
             </div>
           </div>
           {{/if}}
+        </div>
+        <div
+          style="
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+          "
+        >
+          © {{currentYear}} {{companyName}}. Minden jog fenntartva.
         </div>
       </div>
     </div>

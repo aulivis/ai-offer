@@ -79,7 +79,7 @@ function renderBody(ctx: RenderCtx): string {
 export const freeMinimalHtmlTemplate: OfferTemplate = {
   id: 'free.minimal.html@1.0.0',
   tier: 'free',
-  label: 'Minimális (HTML)',
+  label: 'Vera Minimal',
   version: '1.0.0',
   marketingHighlight:
     'Tiszta, professzionális dizájn, amely tökéletesen megfelel az üzleti ajánlatokhoz.',
