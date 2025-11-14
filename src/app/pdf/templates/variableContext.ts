@@ -1,4 +1,5 @@
 import { buildVariableRegistry, VariableResolver, TemplateParser } from '@/lib/template-variables';
+import { blocksToVariableData } from '@/lib/ai/blocks';
 
 import type { RenderCtx } from './types';
 
@@ -8,12 +9,13 @@ export function attachTemplateVariables(ctx: RenderCtx): RenderCtx {
   }
 
   try {
+    const aiBlocks = ctx.offer.aiBlocks ? blocksToVariableData(ctx.offer.aiBlocks) : null;
     const registry = buildVariableRegistry({
       offer: ctx.offer,
-      branding: ctx.branding,
+      branding: ctx.branding ?? null,
       pricingRows: ctx.rows,
-      aiBlocks: ctx.offer.aiBlocks ?? null,
-      locale: ctx.offer.locale,
+      aiBlocks,
+      ...(ctx.offer.locale ? { locale: ctx.offer.locale } : {}),
     });
 
     const resolver = new VariableResolver(registry);
