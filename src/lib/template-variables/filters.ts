@@ -152,7 +152,9 @@ export function sizeFilter(value: unknown): number {
 /**
  * Filter registry
  */
-export const FILTERS: Record<string, (value: unknown, ...args: string[]) => unknown> = {
+type FilterFunction = (value: unknown, ...args: unknown[]) => unknown;
+
+export const FILTERS: Record<string, FilterFunction> = {
   date: dateFilter,
   money: moneyFilter,
   truncate: truncateFilter,
@@ -168,7 +170,7 @@ export const FILTERS: Record<string, (value: unknown, ...args: string[]) => unkn
 /**
  * Apply a filter to a value
  */
-export function applyFilter(filterName: string, value: unknown, ...args: string[]): unknown {
+export function applyFilter(filterName: string, value: unknown, ...args: unknown[]): unknown {
   const filter = FILTERS[filterName];
   if (!filter) {
     console.warn(`Unknown filter: ${filterName}`);
