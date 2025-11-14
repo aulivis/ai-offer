@@ -344,10 +344,7 @@ export function updateTemplateMetadata(
 }
 
 // Register built-in templates
-const builtinTemplates = [
-  freeMinimalHtmlTemplate,
-  premiumProfessionalHtmlTemplate,
-];
+const builtinTemplates = [freeMinimalHtmlTemplate, premiumProfessionalHtmlTemplate];
 
 for (const template of builtinTemplates) {
   registerTemplate(template);
