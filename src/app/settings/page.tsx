@@ -157,8 +157,8 @@ export default function SettingsPage() {
         row.activity_guarantees
           ?.map((link) => link.activity_id)
           .filter((value): value is string => typeof value === 'string') ?? [],
-      created_at: row.created_at,
-      updated_at: row.updated_at,
+      ...(row.created_at ? { created_at: row.created_at } : {}),
+      ...(row.updated_at ? { updated_at: row.updated_at } : {}),
     }),
     [],
   );

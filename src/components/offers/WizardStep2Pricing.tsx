@@ -766,7 +766,7 @@ export function WizardStep2Pricing({
             ) : (
               <div className="grid grid-cols-3 gap-4">
                 {((pendingActivity.reference_images as string[] | null) || []).map((path) => {
-                  const url = activityImageUrls[path];
+                  const url = imageUrlCache[path];
                   const isSelected = selectedImages.includes(path);
                   return (
                     <div
