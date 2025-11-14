@@ -8,7 +8,7 @@
 /**
  * Format a date value
  */
-export function dateFilter(value: unknown, format?: string): string {
+export function dateFilter(value: unknown, formatArg?: unknown): string {
   if (!value) return '';
 
   let date: Date;
@@ -23,6 +23,8 @@ export function dateFilter(value: unknown, format?: string): string {
   if (isNaN(date.getTime())) {
     return String(value);
   }
+
+  const format = typeof formatArg === 'string' ? formatArg : undefined;
 
   // Default format: ISO date
   if (!format || format === 'iso') {
@@ -48,10 +50,12 @@ export function dateFilter(value: unknown, format?: string): string {
 /**
  * Format a number as currency
  */
-export function moneyFilter(value: unknown, currency = 'HUF'): string {
+export function moneyFilter(value: unknown, currencyArg?: unknown): string {
   if (typeof value !== 'number') {
     return String(value || '');
   }
+
+  const currency = typeof currencyArg === 'string' ? currencyArg : 'HUF';
 
   // Format number with thousand separators
   const formatted = new Intl.NumberFormat('hu-HU', {
@@ -67,10 +71,13 @@ export function moneyFilter(value: unknown, currency = 'HUF'): string {
 /**
  * Truncate a string
  */
-export function truncateFilter(value: unknown, length = 50, suffix = '...'): string {
+export function truncateFilter(value: unknown, lengthArg?: unknown, suffixArg?: unknown): string {
   if (typeof value !== 'string') {
     return String(value || '');
   }
+
+  const length = typeof lengthArg === 'number' ? lengthArg : 50;
+  const suffix = typeof suffixArg === 'string' ? suffixArg : '...';
 
   if (value.length <= length) {
     return value;
@@ -82,10 +89,12 @@ export function truncateFilter(value: unknown, length = 50, suffix = '...'): str
 /**
  * Join an array with a separator
  */
-export function joinFilter(value: unknown, separator = ', '): string {
+export function joinFilter(value: unknown, separatorArg?: unknown): string {
   if (!Array.isArray(value)) {
     return String(value || '');
   }
+
+  const separator = typeof separatorArg === 'string' ? separatorArg : ', ';
 
   return value.map(String).join(separator);
 }
