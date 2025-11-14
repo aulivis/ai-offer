@@ -239,9 +239,15 @@ function sanitiseTag(tagName: string, rawAttributes: string, isSelfClosing: bool
  * @param input The raw user input.
  * @returns An escaped string safe for insertion into HTML.
  */
-export function sanitizeInput(input: string | undefined | null): string {
-  if (!input) return '';
-  return escapeHtml(String(input));
+export function sanitizeInput(input: unknown): string {
+  if (input === undefined || input === null) {
+    return '';
+  }
+  const stringValue = typeof input === 'string' ? input : String(input);
+  if (!stringValue) {
+    return '';
+  }
+  return escapeHtml(stringValue);
 }
 
 export function ensureSafeHtml(html: string, context = 'HTML output'): void {
