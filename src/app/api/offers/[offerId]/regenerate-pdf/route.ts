@@ -22,6 +22,7 @@ import { currentMonthStart } from '@/lib/utils/dateHelpers';
 import { getUsageSnapshot } from '@/lib/services/usage';
 import { v4 as uuid } from 'uuid';
 import type { PdfJobInput } from '@/lib/queue/pdf';
+import type { AIResponseBlocks } from '@/lib/ai/blocks';
 
 const offerIdParamsSchema = z.object({
   offerId: uuidSchema,
@@ -93,7 +94,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
     // Load offer and verify ownership
     const { data: offer, error: offerError } = await sb
       .from('offers')
-      .select('id, user_id, title, ai_text, price_json, inputs, recipient_id')
+      .select(
+        'id, user_id, title, ai_text, ai_blocks, schedule, testimonials, guarantees, price_json, inputs, recipient_id',
+      )
       .eq('id', offerId)
       .maybeSingle();
 
@@ -190,6 +193,28 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
       };
     });
 
+    const sanitizeList = (value: unknown): string[] =>
+      Array.isArray(value)
+        ? value
+            .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+            .map((item) => sanitizeInput(item))
+        : [];
+
+    const offerRecord = offer as {
+      schedule?: unknown;
+      testimonials?: unknown;
+      guarantees?: unknown;
+      ai_blocks?: unknown;
+    };
+
+    const scheduleItems = sanitizeList(offerRecord.schedule);
+    const testimonialsList = sanitizeList(offerRecord.testimonials);
+    const guaranteesList = sanitizeList(offerRecord.guarantees);
+    const aiBlocks =
+      offerRecord.ai_blocks && typeof offerRecord.ai_blocks === 'object'
+        ? (offerRecord.ai_blocks as AIResponseBlocks)
+        : null;
+
     // Get company info from profile
     const { data: profileData } = await sb
       .from('user_profiles')
@@ -217,6 +242,10 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
         companyWebsite: sanitizeInput(profileData?.company_website ?? ''),
         companyAddress: sanitizeInput(profileData?.company_address ?? ''),
         companyTaxId: sanitizeInput(profileData?.company_tax_id ?? ''),
+        schedule: scheduleItems,
+        testimonials: testimonialsList.length ? testimonialsList : null,
+        guarantees: guaranteesList.length ? guaranteesList : null,
+        aiBlocks,
       },
       rows: normalizedRows,
       branding: normalizedBranding,

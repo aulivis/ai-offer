@@ -65,6 +65,8 @@ const brandingSchema = z
   .partial()
   .optional();
 
+const stringArrayField = z.array(optionalTrimmedString).optional();
+
 const previewRequestSchema = z
   .object({
     title: optionalTrimmedString,
@@ -82,6 +84,9 @@ const previewRequestSchema = z
     companyWebsite: optionalTrimmedString,
     companyAddress: optionalTrimmedString,
     companyTaxId: optionalTrimmedString,
+    schedule: stringArrayField,
+    testimonials: stringArrayField,
+    guarantees: stringArrayField,
   })
   .strict();
 
@@ -190,6 +195,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
     companyWebsite,
     companyAddress,
     companyTaxId,
+    schedule,
+    testimonials,
+    guarantees,
   } = parsed.data;
 
   let template;
@@ -217,6 +225,17 @@ async function handlePost(req: AuthenticatedNextRequest) {
   const translator = createTranslator(resolvedLocale);
   const defaultTitle = translator.t('pdf.templates.common.defaultTitle');
 
+  const sanitizeList = (items?: Array<string | null | undefined>): string[] =>
+    Array.isArray(items)
+      ? items
+          .map((item) => (typeof item === 'string' ? sanitizeInput(item) : ''))
+          .filter((item) => Boolean(item && item.trim().length > 0))
+      : [];
+
+  const sanitizedSchedule = sanitizeList(schedule);
+  const sanitizedTestimonials = sanitizeList(testimonials);
+  const sanitizedGuarantees = sanitizeList(guarantees);
+
   const renderStartedAt = performance.now();
   let renderDuration: number | null = null;
   let html: string;
@@ -241,6 +260,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
         companyWebsite: sanitizeInput(companyWebsite ?? ''),
         companyAddress: sanitizeInput(companyAddress ?? ''),
         companyTaxId: sanitizeInput(companyTaxId ?? ''),
+        schedule: sanitizedSchedule,
+        testimonials: sanitizedTestimonials.length ? sanitizedTestimonials : null,
+        guarantees: sanitizedGuarantees.length ? sanitizedGuarantees : null,
       },
       rows: normalizedRows,
       branding: normalizedBranding,

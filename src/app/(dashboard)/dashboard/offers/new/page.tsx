@@ -159,6 +159,9 @@ export default function NewOfferPage() {
       templateId: resolvedTemplateId,
       branding: brandingPayload,
       locale: 'hu',
+      schedule: [],
+      testimonials: [],
+      guarantees: [],
     };
 
     (async () => {
@@ -373,6 +376,9 @@ export default function NewOfferPage() {
           aiOverrideHtml: trimmedPreview,
           clientId: null,
           imageAssets: [],
+          schedule: [],
+          testimonials: [],
+          guarantees: [],
         }),
         authErrorMessage: t('errors.offer.saveAuth'),
         errorMessageBuilder: (status) => t('errors.offer.saveStatus', { status }),
@@ -523,6 +529,9 @@ export default function NewOfferPage() {
                     brandingPrimary={brandingPrimary}
                     brandingSecondary={brandingSecondary}
                     brandingLogoUrl={brandingLogoUrl}
+                    scheduleItems={[]}
+                    testimonials={[]}
+                    guarantees={[]}
                     disabled={isSubmitting || isStreaming || !previewHtml.trim() || !hasPricingRows}
                   />
                 </div>

@@ -1447,6 +1447,16 @@ export const hu = {
         livePreview: 'Élő előnézet',
         contentGoesToPdf: 'Ez a tartalom kerül a PDF-be – finomhangold bátran.',
       },
+      customSections: {
+        scheduleTitle: 'Ütemterv elemei',
+        scheduleDescription: 'Legfeljebb {count} mérföldkövet adhatsz meg, soronként egyet.',
+        schedulePlaceholder: 'Pl. Discovery workshop 2025. január 15-ig',
+        guaranteeTitle: 'Garanciák',
+        guaranteeDescription: 'Legfeljebb {count} garanciát adhatsz meg, soronként egyet.',
+        guaranteePlaceholder: 'Pl. 30 napos hibajavítás minden hibára',
+        testimonialsTitle: 'Kiválasztott ügyfélvélemények',
+        testimonialsEmpty: 'Még nem adtál hozzá testimonialokat az Ár szekcióban.',
+      },
       previewAsCustomer: {
         label: 'Előnézet ügyfélként',
         loading: 'Előnézet készítése...',

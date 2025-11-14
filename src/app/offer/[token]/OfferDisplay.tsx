@@ -60,7 +60,7 @@ export function OfferDisplay({ html }: OfferDisplayProps) {
   return (
     <div
       id="offer-content-container"
-      className="mb-8 rounded-lg bg-white p-8 shadow-sm"
+      className="mb-8"
       dangerouslySetInnerHTML={{ __html: bodyContent }}
     />
   );

@@ -2,6 +2,7 @@ import type { OfferTemplate, RenderCtx, TemplateId } from './types';
 import { loadTemplate } from './engineRegistry';
 import { createThemeCssVariables, createThemeTokens } from './theme';
 import { PDF_ENGINE_META_TAG } from '@/lib/pdfHtmlSignature';
+import { attachTemplateVariables } from './variableContext';
 
 const HTML_ROOT_PATTERN = /^<html[\s\S]*<\/html>$/i;
 const UNSAFE_HTML_PATTERN = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
@@ -153,5 +154,7 @@ export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
     ...(normalizedImages ? { images: normalizedImages } : {}),
   };
 
-  return renderWithTemplate(ctx, template);
+  const ctxWithVariables = attachTemplateVariables(ctx);
+
+  return renderWithTemplate(ctxWithVariables, template);
 }

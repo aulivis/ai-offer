@@ -101,3 +101,4 @@ CREATE TRIGGER on_offer_create_share
 GRANT EXECUTE ON FUNCTION public.handle_new_offer_share() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_share_token() TO authenticated;
 
+

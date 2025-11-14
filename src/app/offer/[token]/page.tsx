@@ -20,6 +20,7 @@ import { headers } from 'next/headers';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
+import type { AIResponseBlocks } from '@/lib/ai/blocks';
 
 type PageProps = {
   params: Promise<{
@@ -86,6 +87,10 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
         price_json: unknown;
         inputs: unknown;
         created_at: string;
+        ai_blocks?: unknown;
+        schedule?: unknown;
+        testimonials?: unknown;
+        guarantees?: unknown;
       } | null);
 
   if (!offer) {
@@ -198,6 +203,21 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
     }));
 
+  const sanitizeList = (value: unknown): string[] =>
+    Array.isArray(value)
+      ? value
+          .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          .map((item) => sanitizeInput(item))
+      : [];
+
+  const scheduleItems = sanitizeList(offer.schedule);
+  const testimonialsList = sanitizeList(offer.testimonials);
+  const guaranteesList = sanitizeList(offer.guarantees);
+  const aiBlocks =
+    offer.ai_blocks && typeof offer.ai_blocks === 'object'
+      ? (offer.ai_blocks as AIResponseBlocks)
+      : null;
+
   const fullHtml = buildOfferHtml({
     offer: {
       title: safeTitle || defaultTitle,
@@ -233,6 +253,10 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       companyTaxId: sanitizeInput(
         (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
       ),
+      schedule: scheduleItems,
+      testimonials: testimonialsList.length ? testimonialsList : null,
+      guarantees: guaranteesList.length ? guaranteesList : null,
+      aiBlocks,
     },
     rows: normalizedRows,
     branding: brandingOptions,

@@ -35,6 +35,9 @@ const previewShareRequestSchema = z.object({
   brandingPrimary: z.string().optional(),
   brandingSecondary: z.string().optional(),
   brandingLogoUrl: z.string().url().optional().or(z.literal('')),
+  schedule: z.array(z.string().trim()).optional(),
+  testimonials: z.array(z.string().trim()).optional(),
+  guarantees: z.array(z.string().trim()).optional(),
 });
 
 /**
@@ -65,6 +68,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       brandingPrimary,
       brandingSecondary,
       brandingLogoUrl,
+      schedule,
+      testimonials,
+      guarantees,
     } = bodyParsed.data;
 
     const sb = await supabaseServer();
@@ -101,6 +107,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         },
       },
       ai_text: safeHtml,
+      schedule: (schedule || []).map((item) => sanitizeInput(item)).filter(Boolean),
+      testimonials: (testimonials || []).map((item) => sanitizeInput(item)).filter(Boolean),
+      guarantees: (guarantees || []).map((item) => sanitizeInput(item)).filter(Boolean),
       price_json: pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
         name,
         qty,

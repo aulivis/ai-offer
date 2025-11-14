@@ -54,11 +54,23 @@
           color: var(--text);
           line-height: 1.6;
           position: relative;
+          margin: 0;
+          padding: 0;
       }
 
-      /* Abstract geometric background elements - universal for any industry */
+      /* A4-proportioned container for the offer */
+      .offer-container {
+          max-width: 210mm; /* A4 width */
+          width: 100%;
+          margin: 0 auto;
+          background: var(--background);
+          position: relative;
+          min-height: 100vh;
+      }
+
+      /* Abstract geometric background elements - scoped to offer container */
       .background-decoration {
-          position: fixed;
+          position: absolute;
           top: 0;
           left: 0;
           width: 100%;
@@ -106,7 +118,7 @@
       }
 
       .container {
-          max-width: 1100px;
+          max-width: 100%;
           margin: 0 auto;
           padding: 60px 24px;
           position: relative;
@@ -140,6 +152,12 @@
       .logo img {
           max-width: 100%;
           max-height: 100%;
+          object-fit: contain;
+      }
+
+      .logo-placeholder {
+          width: 100%;
+          height: 100%;
           object-fit: contain;
       }
 
@@ -624,6 +642,12 @@
           object-fit: contain;
       }
 
+      .footer-logo-placeholder {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+      }
+
       .copyright {
           text-align: center;
           padding-top: 32px;
@@ -634,6 +658,10 @@
 
       /* Responsive */
       @media (max-width: 768px) {
+          .offer-container {
+              max-width: 100%;
+          }
+
           .header h1 {
               font-size: 32px;
           }
@@ -689,230 +717,240 @@
     </style>
   </head>
   <body>
-    <!-- Abstract background shapes - universal for any industry -->
-    <div class="background-decoration">
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
-    </div>
+    <div class="offer-container">
+      <!-- Abstract background shapes - universal for any industry -->
+      <div class="background-decoration">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+      </div>
 
-    <div class="container">
-      <!-- Header with logo placeholder -->
-      <div class="header">
-        {{#if logoUrl}}
-        <div class="logo">
-          <img src="{{logoUrl}}" alt="{{logoAlt}}" />
-        </div>
-        {{else}}
-        <div class="logo">{{monogram}}</div>
-        {{/if}}
-        <div class="premium-badge">Prémium Ajánlat</div>
-        <h1>{{title}}</h1>
-        <p class="header-subtitle">Személyre szabott megoldás az Ön igényeire</p>
-        <div class="header-meta">
-          <div class="meta-item">
-            <div class="meta-indicator"></div>
-            {{issueDate}}
+      <div class="container">
+        <!-- Header with logo placeholder -->
+        <div class="header">
+          {{#if logoUrl}}
+          <div class="logo">
+            <img src="{{logoUrl}}" alt="{{logoAlt}}" />
           </div>
-          {{#if offerNumber}}
-          <div class="meta-item">
-            <div class="meta-indicator"></div>
-            Ajánlat #{{offerNumber}}
+          {{else}}
+          <div class="logo">
+            <img src="/logo-placeholder.svg" alt="{{logoAlt}}" class="logo-placeholder" />
           </div>
           {{/if}}
-          <div class="meta-item">
-            <div class="meta-indicator"></div>
-            30 nap érvényesség
-          </div>
-        </div>
-      </div>
-
-      <!-- Client Information -->
-      <div class="card">
-        <div class="section-heading">
-          <div class="section-icon"></div>
-          Ügyfél információk
-        </div>
-
-        <div class="client-info">
-          <div class="info-group">
-            <div class="info-label">Ügyfél neve</div>
-            <div class="info-value">{{companyName}}</div>
-          </div>
-
-          {{#if contactName}}
-          <div class="info-group">
-            <div class="info-label">Kapcsolattartó</div>
-            <div class="info-value">{{contactName}}</div>
-          </div>
-          {{/if}} {{#if contactEmail}}
-          <div class="info-group">
-            <div class="info-label">Email cím</div>
-            <div class="info-value">{{contactEmail}}</div>
-          </div>
-          {{/if}} {{#if contactPhone}}
-          <div class="info-group">
-            <div class="info-label">Telefonszám</div>
-            <div class="info-value">{{contactPhone}}</div>
-          </div>
-          {{/if}} {{#if companyAddress}}
-          <div class="info-group">
-            <div class="info-label">Cím</div>
-            <div class="info-value">{{companyAddress}}</div>
-          </div>
-          {{/if}} {{#if companyTaxId}}
-          <div class="info-group">
-            <div class="info-label">Adószám</div>
-            <div class="info-value">{{companyTaxId}}</div>
-          </div>
-          {{/if}}
-        </div>
-      </div>
-
-      <!-- Services with single paragraph - universal approach -->
-      {{#if bodyHtml}}
-      <div class="card">
-        <div class="section-heading">
-          <div class="section-icon"></div>
-          Szolgáltatások részletesen
-        </div>
-
-        <div style="font-size: 16px; line-height: 1.8; color: var(--text); padding: 8px 0">
-          {{{bodyHtml}}}
-        </div>
-      </div>
-      {{/if}}
-
-      <!-- Pricing Table -->
-      {{#if hasPricing}}
-      <div class="card">
-        <div class="section-heading">
-          <div class="section-icon"></div>
-          Részletes árazás
-        </div>
-
-        <div class="pricing-table">
-          <div class="table-header">
-            <div>Tétel megnevezése</div>
-            <div>Mennyiség</div>
-            <div>Egységár</div>
-            <div>ÁFA (%)</div>
-            <div>Összesen</div>
-          </div>
-
-          {{#each pricingRows}}
-          <div class="table-row">
-            <div class="table-cell name">{{name}}</div>
-            <div class="table-cell number">{{qty}}</div>
-            <div class="table-cell number">{{unitPrice}}</div>
-            <div class="table-cell number">{{vat}}%</div>
-            <div class="table-cell number">{{total}}</div>
-          </div>
-          {{/each}}
-
-          <div class="table-footer">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div class="total">Végösszeg:</div>
-            <div class="total-value">{{grossTotal}}</div>
-          </div>
-        </div>
-      </div>
-      {{/if}}
-
-      <!-- Reference Images / Gallery -->
-      {{#if hasImages}}
-      <div class="card">
-        <div class="section-heading">
-          <div class="section-icon"></div>
-          Referencia képek
-        </div>
-        <div class="gallery">
-          {{#each images}}
-          <div class="gallery-item">
-            <img src="{{src}}" alt="{{alt}}" />
-          </div>
-          {{/each}}
-        </div>
-      </div>
-      {{/if}}
-
-      <!-- Terms and Conditions -->
-      {{#if termsItems}}
-      <div class="card">
-        <div class="section-heading">
-          <div class="section-icon"></div>
-          Feltételek és megjegyzések
-        </div>
-
-        <div class="item-list">
-          {{#each termsItems}}
-          <div class="item">
-            <div class="item-number">{{number}}</div>
-            <div class="item-content">
-              <h3>{{title}}</h3>
-              <p>{{description}}</p>
+          <div class="premium-badge">Prémium Ajánlat</div>
+          <h1>{{title}}</h1>
+          <p class="header-subtitle">Személyre szabott megoldás az Ön igényeire</p>
+          <div class="header-meta">
+            <div class="meta-item">
+              <div class="meta-indicator"></div>
+              {{issueDate}}
             </div>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-      {{else}} {{#if termsText}}
-      <div class="card">
-        <div class="section-heading">
-          <div class="section-icon"></div>
-          Feltételek és megjegyzések
-        </div>
-
-        <div style="font-size: 16px; line-height: 1.8; color: var(--text); padding: 8px 0">
-          <p>{{termsText}}</p>
-        </div>
-      </div>
-      {{/if}} {{/if}}
-
-      <!-- Footer -->
-      <div class="footer">
-        <div class="footer-content">
-          <div class="footer-section footer-logo-section">
-            {{#if logoUrl}}
-            <div class="footer-logo">
-              <img src="{{logoUrl}}" alt="{{logoAlt}}" />
+            {{#if offerNumber}}
+            <div class="meta-item">
+              <div class="meta-indicator"></div>
+              Ajánlat #{{offerNumber}}
             </div>
-            {{else}}
-            <div class="footer-logo">{{monogram}}</div>
             {{/if}}
-            <p>Professzionális szolgáltatások kiváló minőségben</p>
+            <div class="meta-item">
+              <div class="meta-indicator"></div>
+              30 nap érvényesség
+            </div>
           </div>
-
-          {{#if contactEmail}}
-          <div class="footer-section">
-            <h4>Kapcsolat</h4>
-            <p>
-              {{contactEmail}}<br />
-              {{#if contactPhone}}{{contactPhone}}<br />{{/if}} {{#if
-              companyAddress}}{{companyAddress}}{{/if}}
-            </p>
-          </div>
-          {{/if}} {{#if companyTaxId}}
-          <div class="footer-section">
-            <h4>Vállalati adatok</h4>
-            <p>
-              {{companyName}}<br />
-              {{#if companyTaxId}}Adószám: {{companyTaxId}}<br />{{/if}}
-            </p>
-          </div>
-          {{/if}} {{#if companyWebsite}}
-          <div class="footer-section">
-            <h4>További információk</h4>
-            <p>{{companyWebsite}}<br /></p>
-          </div>
-          {{/if}}
         </div>
 
-        <div class="copyright">
-          © {{currentYear}} {{companyName}}. Minden jog fenntartva. | Ez az ajánlat bizalmas
-          információkat tartalmaz.
+        <!-- Client Information -->
+        <div class="card">
+          <div class="section-heading">
+            <div class="section-icon"></div>
+            Ügyfél információk
+          </div>
+
+          <div class="client-info">
+            <div class="info-group">
+              <div class="info-label">Ügyfél neve</div>
+              <div class="info-value">{{companyName}}</div>
+            </div>
+
+            {{#if contactName}}
+            <div class="info-group">
+              <div class="info-label">Kapcsolattartó</div>
+              <div class="info-value">{{contactName}}</div>
+            </div>
+            {{/if}} {{#if contactEmail}}
+            <div class="info-group">
+              <div class="info-label">Email cím</div>
+              <div class="info-value">{{contactEmail}}</div>
+            </div>
+            {{/if}} {{#if contactPhone}}
+            <div class="info-group">
+              <div class="info-label">Telefonszám</div>
+              <div class="info-value">{{contactPhone}}</div>
+            </div>
+            {{/if}} {{#if companyAddress}}
+            <div class="info-group">
+              <div class="info-label">Cím</div>
+              <div class="info-value">{{companyAddress}}</div>
+            </div>
+            {{/if}} {{#if companyTaxId}}
+            <div class="info-group">
+              <div class="info-label">Adószám</div>
+              <div class="info-value">{{companyTaxId}}</div>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+
+        <!-- Services with single paragraph - universal approach -->
+        {{#if bodyHtml}}
+        <div class="card">
+          <div class="section-heading">
+            <div class="section-icon"></div>
+            Szolgáltatások részletesen
+          </div>
+
+          <div style="font-size: 16px; line-height: 1.8; color: var(--text); padding: 8px 0">
+            {{{bodyHtml}}}
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Pricing Table -->
+        {{#if hasPricing}}
+        <div class="card">
+          <div class="section-heading">
+            <div class="section-icon"></div>
+            Részletes árazás
+          </div>
+
+          <div class="pricing-table">
+            <div class="table-header">
+              <div>Tétel megnevezése</div>
+              <div>Mennyiség</div>
+              <div>Egységár</div>
+              <div>ÁFA (%)</div>
+              <div>Összesen</div>
+            </div>
+
+            {{#each pricingRows}}
+            <div class="table-row">
+              <div class="table-cell name">{{name}}</div>
+              <div class="table-cell number">{{qty}}</div>
+              <div class="table-cell number">{{unitPrice}}</div>
+              <div class="table-cell number">{{vat}}%</div>
+              <div class="table-cell number">{{total}}</div>
+            </div>
+            {{/each}}
+
+            <div class="table-footer">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div class="total">Végösszeg:</div>
+              <div class="total-value">{{grossTotal}}</div>
+            </div>
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Reference Images / Gallery -->
+        {{#if hasImages}}
+        <div class="card">
+          <div class="section-heading">
+            <div class="section-icon"></div>
+            Referencia képek
+          </div>
+          <div class="gallery">
+            {{#each images}}
+            <div class="gallery-item">
+              <img src="{{src}}" alt="{{alt}}" />
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Terms and Conditions -->
+        {{#if termsItems}}
+        <div class="card">
+          <div class="section-heading">
+            <div class="section-icon"></div>
+            Feltételek és megjegyzések
+          </div>
+
+          <div class="item-list">
+            {{#each termsItems}}
+            <div class="item">
+              <div class="item-number">{{number}}</div>
+              <div class="item-content">
+                <h3>{{title}}</h3>
+                <p>{{description}}</p>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{else}} {{#if termsText}}
+        <div class="card">
+          <div class="section-heading">
+            <div class="section-icon"></div>
+            Feltételek és megjegyzések
+          </div>
+
+          <div style="font-size: 16px; line-height: 1.8; color: var(--text); padding: 8px 0">
+            <p>{{termsText}}</p>
+          </div>
+        </div>
+        {{/if}} {{/if}}
+
+        <!-- Footer -->
+        <div class="footer">
+          <div class="footer-content">
+            <div class="footer-section footer-logo-section">
+              {{#if logoUrl}}
+              <div class="footer-logo">
+                <img src="{{logoUrl}}" alt="{{logoAlt}}" />
+              </div>
+              {{else}}
+              <div class="footer-logo">
+                <img
+                  src="/logo-placeholder.svg"
+                  alt="{{logoAlt}}"
+                  class="footer-logo-placeholder"
+                />
+              </div>
+              {{/if}}
+              <p>Professzionális szolgáltatások kiváló minőségben</p>
+            </div>
+
+            {{#if contactEmail}}
+            <div class="footer-section">
+              <h4>Kapcsolat</h4>
+              <p>
+                {{contactEmail}}<br />
+                {{#if contactPhone}}{{contactPhone}}<br />{{/if}} {{#if
+                companyAddress}}{{companyAddress}}{{/if}}
+              </p>
+            </div>
+            {{/if}} {{#if companyTaxId}}
+            <div class="footer-section">
+              <h4>Vállalati adatok</h4>
+              <p>
+                {{companyName}}<br />
+                {{#if companyTaxId}}Adószám: {{companyTaxId}}<br />{{/if}}
+              </p>
+            </div>
+            {{/if}} {{#if companyWebsite}}
+            <div class="footer-section">
+              <h4>További információk</h4>
+              <p>{{companyWebsite}}<br /></p>
+            </div>
+            {{/if}}
+          </div>
+
+          <div class="copyright">
+            © {{currentYear}} {{companyName}}. Minden jog fenntartva. | Ez az ajánlat bizalmas
+            információkat tartalmaz.
+          </div>
         </div>
       </div>
     </div>

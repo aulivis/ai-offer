@@ -1,6 +1,8 @@
 import type { OfferBrandingOptions } from '@/app/lib/offerDocument';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { Translator } from '@/copy';
+import type { AIResponseBlocks } from '@/lib/ai/blocks';
+import type { VariableRegistry, VariableResolver, TemplateParser } from '@/lib/template-variables';
 
 export type Branding = OfferBrandingOptions;
 export interface ThemeTokens {
@@ -71,6 +73,10 @@ export interface OfferData {
     text?: string;
   };
   includeTOC?: boolean;
+  schedule?: string[];
+  testimonials?: string[] | null;
+  guarantees?: string[] | null;
+  aiBlocks?: AIResponseBlocks | null;
 }
 
 export interface TemplateImageAsset {
@@ -86,4 +92,8 @@ export interface RenderCtx {
   i18n: Translator;
   tokens: ThemeTokens;
   images?: TemplateImageAsset[];
+  variables?: VariableRegistry;
+  variableResolver?: VariableResolver;
+  templateParser?: TemplateParser;
+  renderTemplate?: (template: string) => string;
 }

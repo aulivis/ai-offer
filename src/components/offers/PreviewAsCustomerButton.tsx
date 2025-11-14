@@ -21,6 +21,9 @@ interface PreviewAsCustomerButtonProps {
   brandingPrimary: string;
   brandingSecondary: string;
   brandingLogoUrl: string;
+  scheduleItems: string[];
+  testimonials: string[];
+  guarantees: string[];
   disabled?: boolean;
 }
 
@@ -34,6 +37,9 @@ export function PreviewAsCustomerButton({
   brandingPrimary,
   brandingSecondary,
   brandingLogoUrl,
+  scheduleItems,
+  testimonials,
+  guarantees,
   disabled = false,
 }: PreviewAsCustomerButtonProps) {
   const { showToast } = useToast();
@@ -65,6 +71,9 @@ export function PreviewAsCustomerButton({
           brandingPrimary: brandingPrimary.trim() || undefined,
           brandingSecondary: brandingSecondary.trim() || undefined,
           brandingLogoUrl: brandingLogoUrl.trim() || undefined,
+          schedule: scheduleItems,
+          testimonials,
+          guarantees,
         }),
         authErrorMessage: t('errors.auth.notLoggedIn') || 'Not logged in',
         errorMessageBuilder: (status) =>

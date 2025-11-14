@@ -1,6 +1,6 @@
 import { countRenderablePricingRows, priceTableHtml } from '@/app/lib/pricing';
 import { renderSectionHeading } from '@/app/lib/offerSections';
-import { ensureSafeHtml } from '@/lib/sanitize';
+import { ensureSafeHtml, sanitizeInput } from '@/lib/sanitize';
 
 import type { RenderCtx } from '../../types';
 import { buildHeaderFooterCtx } from '../../shared/headerFooter';
@@ -33,12 +33,63 @@ function partialSections(ctx: RenderCtx): string {
     return '';
   }
 
+  const scheduleItems = Array.isArray(ctx.offer.schedule) ? ctx.offer.schedule.filter(Boolean) : [];
+  const testimonials = Array.isArray(ctx.offer.testimonials)
+    ? ctx.offer.testimonials.filter(Boolean)
+    : [];
+  const guarantees = Array.isArray(ctx.offer.guarantees)
+    ? ctx.offer.guarantees.filter(Boolean)
+    : [];
+
+  const renderList = (items: string[]) => {
+    if (!items.length) {
+      return '';
+    }
+    const sanitizedItems = items.map((item) => sanitizeInput(item));
+    return `<ul>${sanitizedItems.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+  };
+
+  const scheduleSection =
+    scheduleItems.length > 0
+      ? `
+    <section class="section-card--minimal">
+      ${renderSectionHeading(ctx.i18n.t('pdf.templates.sections.timeline'), 'timeline')}
+      ${renderList(scheduleItems)}
+    </section>
+  `
+      : '';
+
+  const testimonialsSection =
+    testimonials.length > 0
+      ? `
+    <section class="section-card--minimal">
+      ${renderSectionHeading(ctx.i18n.t('pdf.templates.sections.testimonials'), 'testimonials')}
+      ${renderList(testimonials)}
+    </section>
+  `
+      : '';
+
+  const guaranteesSection =
+    guarantees.length > 0
+      ? `
+    <section class="section-card--minimal">
+      ${renderSectionHeading(ctx.i18n.t('pdf.templates.sections.guarantees'), 'guarantees')}
+      ${renderList(guarantees)}
+    </section>
+  `
+      : '';
+
+  const dynamicSections = [scheduleSection, testimonialsSection, guaranteesSection]
+    .filter(Boolean)
+    .join('\n');
+
   return `
     <section class="section-card--minimal">
       <div class="offer-doc__content--minimal">
         ${ctx.offer.bodyHtml}
       </div>
     </section>
+    ${dynamicSections}
   `;
 }
 

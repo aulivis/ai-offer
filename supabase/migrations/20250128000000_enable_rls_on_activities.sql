@@ -93,3 +93,4 @@ COMMENT ON TABLE public.activities IS 'User activities with RLS enabled. Users c
 
 
 
+

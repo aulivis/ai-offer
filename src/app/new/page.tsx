@@ -204,6 +204,8 @@ const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
 const MAX_PREVIEW_TIMEOUT_RETRIES = WIZARD_CONFIG.MAX_PREVIEW_RETRIES;
 const MAX_IMAGE_COUNT = WIZARD_CONFIG.MAX_IMAGE_COUNT;
 const MAX_IMAGE_SIZE_BYTES = WIZARD_CONFIG.MAX_IMAGE_SIZE_BYTES;
+const MAX_SCHEDULE_ITEMS = 5;
+const MAX_GUARANTEE_ITEMS = 3;
 
 type PreparedImagePayload = { key: string; dataUrl: string; alt: string };
 
@@ -440,6 +442,11 @@ export default function NewOfferWizard() {
   ]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedTestimonials, setSelectedTestimonials] = useState<string[]>([]);
+  const [selectedTestimonialsContent, setSelectedTestimonialsContent] = useState<
+    Array<{ id: string; text: string }>
+  >([]);
+  const [scheduleInput, setScheduleInput] = useState('');
+  const [guaranteeInput, setGuaranteeInput] = useState('');
   const [profileSettings, setProfileSettings] = useState<{
     enable_reference_photos: boolean;
     enable_testimonials: boolean;
@@ -447,6 +454,32 @@ export default function NewOfferWizard() {
     enable_reference_photos: false,
     enable_testimonials: false,
   });
+
+  const fetchTestimonialsByIds = useCallback(
+    async (ids: string[]): Promise<Array<{ id: string; text: string }>> => {
+      const userId = user?.id;
+      if (ids.length === 0 || !userId) return [];
+
+      try {
+        const { data, error } = await sb
+          .from('testimonials')
+          .select('id, text')
+          .eq('user_id', userId)
+          .in('id', ids);
+
+        if (error) {
+          console.error('Failed to fetch testimonials:', error);
+          return [];
+        }
+
+        return (data || []).map((t) => ({ id: t.id, text: t.text }));
+      } catch (error) {
+        console.error('Error fetching testimonials:', error);
+        return [];
+      }
+    },
+    [sb, user?.id],
+  );
 
   // edit on step 3 (declared early for use in draft persistence)
   const [editedHtml, setEditedHtml] = useState<string>('');
@@ -466,8 +499,23 @@ export default function NewOfferWizard() {
       previewHtml,
       previewLocked,
       selectedPdfTemplateId,
+      scheduleInput,
+      guaranteeInput,
+      selectedTestimonials,
     }),
-    [step, form, client, rows, editedHtml, previewHtml, previewLocked, selectedPdfTemplateId],
+    [
+      step,
+      form,
+      client,
+      rows,
+      editedHtml,
+      previewHtml,
+      previewLocked,
+      selectedPdfTemplateId,
+      scheduleInput,
+      guaranteeInput,
+      selectedTestimonials,
+    ],
   );
 
   const {
@@ -509,11 +557,63 @@ export default function NewOfferWizard() {
         if (saved.previewHtml) setPreviewHtml(saved.previewHtml);
         if (typeof saved.previewLocked === 'boolean') setPreviewLocked(saved.previewLocked);
         if (saved.selectedPdfTemplateId) setSelectedPdfTemplateId(saved.selectedPdfTemplateId);
+        if (typeof saved.scheduleInput === 'string') setScheduleInput(saved.scheduleInput);
+        if (typeof saved.guaranteeInput === 'string') setGuaranteeInput(saved.guaranteeInput);
+        if (Array.isArray(saved.selectedTestimonials)) {
+          setSelectedTestimonials(
+            saved.selectedTestimonials.filter((id): id is string => typeof id === 'string'),
+          );
+        }
       }
     };
     loadSavedDraft();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
+
+  useEffect(() => {
+    let active = true;
+    if (!user || !profileSettings.enable_testimonials || selectedTestimonials.length === 0) {
+      setSelectedTestimonialsContent([]);
+      return;
+    }
+
+    (async () => {
+      const fetched = await fetchTestimonialsByIds(selectedTestimonials);
+      if (active) {
+        setSelectedTestimonialsContent(fetched);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [fetchTestimonialsByIds, profileSettings.enable_testimonials, selectedTestimonials, user]);
+
+  const scheduleItems = useMemo(
+    () =>
+      scheduleInput
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, MAX_SCHEDULE_ITEMS),
+    [scheduleInput],
+  );
+
+  const guaranteeItems = useMemo(
+    () =>
+      guaranteeInput
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, MAX_GUARANTEE_ITEMS),
+    [guaranteeInput],
+  );
+
+  const testimonialTexts = useMemo(
+    () =>
+      selectedTestimonialsContent.map((item) => item.text.trim()).filter((text) => text.length > 0),
+    [selectedTestimonialsContent],
+  );
 
   // Real-time validation with debouncing (must be after form and rows declarations)
   const { errors: validationErrors } = useRealTimeValidation({
@@ -915,6 +1015,9 @@ export default function NewOfferWizard() {
         secondaryColor: pdfBranding.secondaryColor,
         logoUrl: pdfBranding.logoUrl,
       },
+      schedule: scheduleItems,
+      testimonials: testimonialTexts,
+      guarantees: guaranteeItems,
     };
 
     (async () => {
@@ -959,6 +1062,9 @@ export default function NewOfferWizard() {
     rows,
     selectedLegacyTemplateId,
     selectedPdfTemplateId,
+    scheduleItems,
+    testimonialTexts,
+    guaranteeItems,
   ]);
 
   useEffect(() => {
@@ -1710,31 +1816,6 @@ export default function NewOfferWizard() {
     return results;
   }
 
-  // Fetch testimonials by IDs
-  async function fetchTestimonialsByIds(
-    ids: string[],
-  ): Promise<Array<{ id: string; text: string }>> {
-    if (ids.length === 0 || !user) return [];
-
-    try {
-      const { data, error } = await sb
-        .from('testimonials')
-        .select('id, text')
-        .eq('user_id', user.id)
-        .in('id', ids);
-
-      if (error) {
-        console.error('Failed to fetch testimonials:', error);
-        return [];
-      }
-
-      return (data || []).map((t) => ({ id: t.id, text: t.text }));
-    } catch (error) {
-      console.error('Error fetching testimonials:', error);
-      return [];
-    }
-  }
-
   async function generate() {
     try {
       if (quotaLoading) {
@@ -1788,14 +1869,19 @@ export default function NewOfferWizard() {
         }
       }
 
-      // Fetch testimonials
-      const testimonialsData: Array<{ id: string; text: string }> = [];
-      if (selectedTestimonials.length > 0 && profileSettings.enable_testimonials) {
+      // Ensure testimonials are loaded
+      let testimonialsData = selectedTestimonialsContent;
+      if (
+        selectedTestimonials.length > 0 &&
+        profileSettings.enable_testimonials &&
+        selectedTestimonialsContent.length !== selectedTestimonials.length
+      ) {
         try {
-          const fetched = await fetchTestimonialsByIds(selectedTestimonials);
-          testimonialsData.push(...fetched);
+          testimonialsData = await fetchTestimonialsByIds(selectedTestimonials);
+          setSelectedTestimonialsContent(testimonialsData);
         } catch (error) {
           console.error('Failed to fetch testimonials:', error);
+          testimonialsData = [];
         }
       }
 
@@ -1836,7 +1922,9 @@ export default function NewOfferWizard() {
             clientId: cid,
             imageAssets: imagePayload,
             templateId: selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID,
-            testimonials: testimonialsData.map((t) => t.text),
+            testimonials: testimonialsData.map((t) => t.text.trim()).filter(Boolean),
+            schedule: scheduleItems,
+            guarantees: guaranteeItems,
           }),
           authErrorMessage: t('errors.auth.notLoggedIn'),
           errorMessageBuilder: (status) => t('errors.offer.generateStatus', { status }),
@@ -2677,6 +2765,83 @@ export default function NewOfferWizard() {
                     </Button>
                   </div>
                 )}
+
+                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white/90 p-5">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t('offers.wizard.customSections.scheduleTitle')}
+                      </p>
+                      <span className="text-[11px] text-slate-500">
+                        {scheduleItems.length}/{MAX_SCHEDULE_ITEMS}
+                      </span>
+                    </div>
+                    <Textarea
+                      value={scheduleInput}
+                      onChange={(event) => setScheduleInput(event.target.value)}
+                      rows={3}
+                      placeholder={t('offers.wizard.customSections.schedulePlaceholder')}
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      {t('offers.wizard.customSections.scheduleDescription', {
+                        count: MAX_SCHEDULE_ITEMS,
+                      })}
+                    </p>
+                    {scheduleItems.length > 0 ? (
+                      <ul className="list-disc list-inside text-sm text-slate-700">
+                        {scheduleItems.map((item, index) => (
+                          <li key={`schedule-${index}`}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t('offers.wizard.customSections.guaranteeTitle')}
+                      </p>
+                      <span className="text-[11px] text-slate-500">
+                        {guaranteeItems.length}/{MAX_GUARANTEE_ITEMS}
+                      </span>
+                    </div>
+                    <Textarea
+                      value={guaranteeInput}
+                      onChange={(event) => setGuaranteeInput(event.target.value)}
+                      rows={2}
+                      placeholder={t('offers.wizard.customSections.guaranteePlaceholder')}
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      {t('offers.wizard.customSections.guaranteeDescription', {
+                        count: MAX_GUARANTEE_ITEMS,
+                      })}
+                    </p>
+                    {guaranteeItems.length > 0 ? (
+                      <ul className="list-disc list-inside text-sm text-slate-700">
+                        {guaranteeItems.map((item, index) => (
+                          <li key={`guarantee-${index}`}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {t('offers.wizard.customSections.testimonialsTitle')}
+                    </p>
+                    {testimonialTexts.length > 0 ? (
+                      <ul className="list-disc list-inside text-sm text-slate-700">
+                        {testimonialTexts.map((text, index) => (
+                          <li key={`testimonial-${index}`}>{text}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-[11px] text-slate-500">
+                        {t('offers.wizard.customSections.testimonialsEmpty')}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </Card>
 
               {/* Preview and Summary Section - 2 Column Layout */}

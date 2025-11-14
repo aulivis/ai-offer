@@ -15,6 +15,7 @@ import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/respon
 import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { ensureSafeHtml, sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
+import { convertSectionsToBlocks } from '@/lib/ai/blocks';
 import { getUserProfile } from '@/lib/services/user';
 import {
   currentMonthStart,
@@ -143,12 +144,9 @@ type OfferSections = {
   scope: string[];
   deliverables: string[];
   expected_outcomes?: string[];
-  schedule: string[];
   assumptions: string[];
   next_steps: string[];
   closing: string;
-  testimonials?: string[];
-  guarantees?: string[];
   client_context?: string;
 };
 
@@ -165,7 +163,6 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       'project_summary',
       'scope',
       'deliverables',
-      'schedule',
       'assumptions',
       'next_steps',
       'closing',
@@ -228,18 +225,6 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
           maxLength: 100,
         },
       },
-      schedule: {
-        type: 'array',
-        minItems: 3,
-        maxItems: 5,
-        items: {
-          type: 'string',
-          description:
-            'Kulcs mérföldkő vagy ütemezési pont konkrét dátumokkal vagy időkerettel (pl. "2025. február 15-ig", "2 hét alatt"). Legyen konkrét és érthető (min. 25, max. 100 karakter).',
-          minLength: 25,
-          maxLength: 100,
-        },
-      },
       assumptions: {
         type: 'array',
         minItems: 3,
@@ -270,30 +255,6 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
           'Udvarias, meggyőző záró bekezdés (2-3 mondat), amely összefoglalja az ajánlat értékét és erősen cselekvésre ösztönzi a címzettet. Tartalmazzon egyértelmű következő lépés javaslatot. Legyen pozitív és együttműködésre ösztönző.',
         minLength: 60,
         maxLength: 250,
-      },
-      testimonials: {
-        type: 'array',
-        minItems: 1,
-        maxItems: 3,
-        items: {
-          type: 'string',
-          description:
-            'Opcionális: Ügyfél vélemény vagy tesztimonál a bizalom építéséhez. Legyen rövid és meggyőző (min. 40, max. 200 karakter).',
-          minLength: 40,
-          maxLength: 200,
-        },
-      },
-      guarantees: {
-        type: 'array',
-        minItems: 1,
-        maxItems: 3,
-        items: {
-          type: 'string',
-          description:
-            'Opcionális: Garancia vagy biztonsági jelző, amely csökkenti a vevő kockázatérzetét (pl. "100% elégedettségi garancia", "30 napos pénzvisszafizetési garancia"). Legyen rövid és meggyőző (min. 30, max. 120 karakter).',
-          minLength: 30,
-          maxLength: 120,
-        },
       },
       client_context: {
         type: 'string',
@@ -388,10 +349,6 @@ function sectionsToHtml(
             ${safeList(limitList(sections.deliverables, 3))}
           </div>
           <div class="offer-doc__compact-card">
-            ${renderSectionHeading(labels.timeline, 'timeline', { level: 'h3' })}
-            ${safeList(limitList(sections.schedule, 3))}
-          </div>
-          <div class="offer-doc__compact-card">
             ${renderSectionHeading(labels.assumptions, 'assumptions', { level: 'h3' })}
             ${safeList(limitList(sections.assumptions, 3))}
           </div>
@@ -402,14 +359,6 @@ function sectionsToHtml(
             ${nextSteps}
             ${closingNote}
           </div>
-          ${
-            sections.guarantees && sections.guarantees.length > 0
-              ? `<div class="offer-doc__compact-card offer-doc__compact-card--closing">
-                ${renderSectionHeading(labels.guarantees, 'guarantees', { level: 'h3' })}
-                ${safeList(limitList(sections.guarantees, 3))}
-              </div>`
-              : ''
-          }
         </section>
       </div>
     `;
@@ -450,29 +399,9 @@ function sectionsToHtml(
           : ''
       }
       <section class="offer-doc__section">
-        ${renderSectionHeading(labels.timeline, 'timeline')}
-        ${safeList(sections.schedule)}
-      </section>
-      <section class="offer-doc__section">
         ${renderSectionHeading(labels.assumptions, 'assumptions')}
         ${safeList(sections.assumptions)}
       </section>
-      ${
-        sections.testimonials && sections.testimonials.length > 0
-          ? `<section class="offer-doc__section">
-            ${renderSectionHeading(labels.testimonials, 'testimonials')}
-            ${safeList(sections.testimonials)}
-          </section>`
-          : ''
-      }
-      ${
-        sections.guarantees && sections.guarantees.length > 0
-          ? `<section class="offer-doc__section">
-            ${renderSectionHeading(labels.guarantees, 'guarantees')}
-            ${safeList(sections.guarantees)}
-          </section>`
-          : ''
-      }
       <section class="offer-doc__section">
         ${renderSectionHeading(labels.nextSteps, 'nextSteps')}
         ${safeList(sections.next_steps)}
@@ -492,9 +421,6 @@ function _sanitizeSectionsOutput(sections: OfferSections): OfferSections {
     deliverables: (sections.deliverables || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
-    schedule: (sections.schedule || [])
-      .map((item) => sanitizeInput((item || '').trim()))
-      .filter(Boolean),
     assumptions: (sections.assumptions || [])
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean),
@@ -510,16 +436,6 @@ function _sanitizeSectionsOutput(sections: OfferSections): OfferSections {
   }
   if (sections.expected_outcomes && sections.expected_outcomes.length > 0) {
     sanitized.expected_outcomes = sections.expected_outcomes
-      .map((item) => sanitizeInput((item || '').trim()))
-      .filter(Boolean);
-  }
-  if (sections.testimonials && sections.testimonials.length > 0) {
-    sanitized.testimonials = sections.testimonials
-      .map((item) => sanitizeInput((item || '').trim()))
-      .filter(Boolean);
-  }
-  if (sections.guarantees && sections.guarantees.length > 0) {
-    sanitized.guarantees = sections.guarantees
       .map((item) => sanitizeInput((item || '').trim()))
       .filter(Boolean);
   }
@@ -716,6 +632,14 @@ const aiGenerateRequestSchema = z
       (value) => (value === null || value === undefined ? [] : value),
       z.array(z.string().trim()).default([]),
     ),
+    schedule: z.preprocess(
+      (value) => (value === null || value === undefined ? [] : value),
+      z.array(z.string().trim()).default([]),
+    ),
+    guarantees: z.preprocess(
+      (value) => (value === null || value === undefined ? [] : value),
+      z.array(z.string().trim()).default([]),
+    ),
   })
   .strict();
 
@@ -814,6 +738,8 @@ export const POST = withAuth(
         templateId,
         imageAssets,
         testimonials,
+        schedule,
+        guarantees,
       } = parsed.data;
 
       const sb = await supabaseServer();
@@ -1124,6 +1050,27 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
       const { storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(aiHtml, sanitizedImageAssets);
 
+      // Prepare AI blocks for storage (if we have structured sections)
+      let aiBlocksForStorage: unknown = null;
+      if (structuredSections) {
+        const blocks = convertSectionsToBlocks(structuredSections);
+        // Convert to JSON-serializable format
+        aiBlocksForStorage = JSON.parse(JSON.stringify(blocks));
+      }
+
+      // Sanitize user-provided content
+      const sanitizedSchedule = Array.isArray(schedule)
+        ? schedule.map((item) => sanitizeInput(item)).filter(Boolean)
+        : [];
+      const sanitizedTestimonials =
+        Array.isArray(testimonials) && testimonials.length > 0
+          ? testimonials.map((item) => sanitizeInput(item)).filter(Boolean)
+          : null;
+      const sanitizedGuarantees =
+        Array.isArray(guarantees) && guarantees.length > 0
+          ? guarantees.map((item) => sanitizeInput(item)).filter(Boolean)
+          : null;
+
       // ---- Offer creation ----
       const offerId = uuid();
 
@@ -1223,6 +1170,10 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             templateId: resolvedTemplateId,
           },
           ai_text: aiHtmlForStorage,
+          ai_blocks: aiBlocksForStorage,
+          schedule: sanitizedSchedule,
+          testimonials: sanitizedTestimonials,
+          guarantees: sanitizedGuarantees,
           price_json: rows,
           pdf_url: null,
           status: 'draft',

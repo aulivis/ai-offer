@@ -93,3 +93,4 @@ $$ language plpgsql security definer;
 
 comment on function public.handle_offer_response() is 'Trigger function that updates offer status (for accepted/rejected) and creates notifications when customers respond to shared offers.';
 
+
