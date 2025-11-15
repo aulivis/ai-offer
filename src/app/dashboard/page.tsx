@@ -490,8 +490,8 @@ export default function DashboardPage() {
           pdf_url: entry.pdf_url ?? null,
           recipient_id: entry.recipient_id ?? null,
           recipient: recipientValue,
-          user_id: typeof entry.user_id === 'string' ? entry.user_id : undefined,
-          created_by: typeof entry.created_by === 'string' ? entry.created_by : undefined,
+          ...(typeof entry.user_id === 'string' ? { user_id: entry.user_id } : {}),
+          ...(typeof entry.created_by === 'string' ? { created_by: entry.created_by } : {}),
           updated_by: typeof entry.updated_by === 'string' ? entry.updated_by : null,
           team_id: typeof entry.team_id === 'string' ? entry.team_id : null,
           created_by_user: createdByUserValue
