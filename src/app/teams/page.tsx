@@ -32,7 +32,7 @@ export default function TeamsPage() {
     const loadTeams = async () => {
       setLoading(true);
       try {
-        const response = await fetchWithSupabaseAuth('/api/teams');
+        const response = await fetchWithSupabaseAuth('/api/teams', {});
         if (response.ok) {
           const data = await response.json();
           setTeams(data.teams || []);
@@ -72,7 +72,7 @@ export default function TeamsPage() {
           variant: 'success',
         });
         // Reload teams
-        const teamsResponse = await fetchWithSupabaseAuth('/api/teams');
+        const teamsResponse = await fetchWithSupabaseAuth('/api/teams', {});
         if (teamsResponse.ok) {
           const teamsData = await teamsResponse.json();
           setTeams(teamsData.teams || []);
