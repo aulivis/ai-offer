@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import {
   HttpStatus,
   createErrorResponse,
