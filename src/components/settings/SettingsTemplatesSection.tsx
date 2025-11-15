@@ -15,7 +15,7 @@ type SettingsTemplatesSectionProps = {
 
 export function SettingsTemplatesSection({
   selectedTemplateId,
-  _plan,
+  plan: _plan,
   onTemplateSelect,
 }: SettingsTemplatesSectionProps) {
   const allTemplates = useMemo(() => listTemplateMetadata(), []);
