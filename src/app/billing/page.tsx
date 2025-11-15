@@ -235,6 +235,7 @@ function PlanCard({
   isPopular,
   isDowngrade,
   cta,
+  plan,
   isLoading,
 }: {
   planType: 'standard' | 'pro';
