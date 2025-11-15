@@ -15,7 +15,15 @@ export type Offer = {
   pdf_url: string | null;
   recipient_id: string | null;
   recipient?: { company_name: string | null } | null | undefined;
+  user_id?: string;
+  created_by?: string;
+  updated_by?: string | null;
+  team_id?: string | null;
+  created_by_user?: { id: string; email: string } | null;
+  updated_by_user?: { id: string; email: string } | null;
 };
+
+export type OfferFilter = 'my' | 'team' | 'all' | 'member';
 
 export const STATUS_LABEL_KEYS: Record<OfferStatus, CopyKey> = {
   draft: 'dashboard.status.labels.draft',

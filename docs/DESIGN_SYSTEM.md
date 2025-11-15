@@ -665,7 +665,7 @@ import { SPACING_SCALE, TYPOGRAPHY_SCALE } from '@/styles/designTokens';
 ## Resources
 
 - [Component Usage Guidelines](./COMPONENT_USAGE_GUIDELINES.md)
-- [Accessibility Guidelines](./ACCESSIBILITY.md)
+- [Performance Monitoring](./PERFORMANCE_MONITORING.md)
 
 ## Files
 

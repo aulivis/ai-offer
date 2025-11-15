@@ -175,33 +175,38 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
 
           {/* Enhanced Desktop Navigation Links */}
           <nav className="hidden flex-1 items-center justify-center gap-4 text-base font-medium md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
-                  isNavItemActive(item.href)
-                    ? scrolled || !shouldUseWhiteNavbar
-                      ? 'text-navy-900 font-semibold bg-gray-100/80'
-                      : 'text-white font-semibold bg-white/20'
-                    : scrolled || !shouldUseWhiteNavbar
-                      ? 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
-                      : 'text-white hover:bg-white/20 hover:text-white'
-                }`}
-                {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
-                onClick={closeMenu}
-              >
-                {t(item.labelKey)}
-                {/* Subtle underline animation on hover */}
-                {!isNavItemActive(item.href) && (
-                  <span
-                    className={`absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
-                      scrolled || !shouldUseWhiteNavbar ? 'bg-turquoise-500' : 'bg-white'
-                    }`}
-                  ></span>
-                )}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              // Determine if we should use white text (transparent navbar on dark background)
+              const useWhiteText = !scrolled && shouldUseWhiteNavbar;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
+                    isNavItemActive(item.href)
+                      ? useWhiteText
+                        ? 'text-white font-semibold bg-white/20'
+                        : 'text-navy-900 font-semibold bg-gray-100/80'
+                      : useWhiteText
+                        ? 'text-white hover:bg-white/20 hover:text-white'
+                        : 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
+                  }`}
+                  {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
+                  onClick={closeMenu}
+                >
+                  {t(item.labelKey)}
+                  {/* Subtle underline animation on hover */}
+                  {!isNavItemActive(item.href) && (
+                    <span
+                      className={`absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
+                        useWhiteText ? 'bg-white' : 'bg-turquoise-500'
+                      }`}
+                    ></span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Enhanced CTA Section - Hidden on mobile */}

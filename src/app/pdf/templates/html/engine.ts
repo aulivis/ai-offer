@@ -308,6 +308,14 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
   const images = ctx.offer.images || ctx.images || [];
   const hasImages = images.length > 0;
 
+  // Prepare guarantees
+  const guarantees = ctx.offer.guarantees || [];
+  const hasGuarantees = Array.isArray(guarantees) && guarantees.length > 0;
+
+  // Prepare schedule (milestones)
+  const schedule = ctx.offer.schedule || [];
+  const hasSchedule = Array.isArray(schedule) && schedule.length > 0;
+
   // Prepare body HTML - it's already HTML content from AI generation
   // The template will render it within the service-list container
   const bodyHtml = ctx.offer.bodyHtml || '';
@@ -394,6 +402,10 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
     currentYear,
     showMonogramFallback,
     offerNumber: null, // Could be derived from offer ID if needed
+    guarantees: hasGuarantees ? guarantees : null,
+    hasGuarantees,
+    schedule: hasSchedule ? schedule : null,
+    hasSchedule,
   };
 
   return engine.render(templateData);

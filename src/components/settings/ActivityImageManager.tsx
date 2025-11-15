@@ -16,6 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import { uploadWithProgress } from '@/lib/uploadWithProgress';
 import { fetchWithSupabaseAuth, ApiError } from '@/lib/api';
 import Image from 'next/image';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 type ActivityImageManagerProps = {
   activityId: string;
@@ -29,8 +30,10 @@ type ActivityImageManagerProps = {
 const MAX_IMAGES = 3;
 const BUCKET_ID = 'brand-assets';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getActivityImageUrl(supabase: any, imagePath: string): Promise<string | null> {
+async function getActivityImageUrl(
+  supabase: SupabaseClient,
+  imagePath: string,
+): Promise<string | null> {
   try {
     const { data, error } = await supabase.storage
       .from(BUCKET_ID)

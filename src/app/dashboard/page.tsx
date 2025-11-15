@@ -44,7 +44,7 @@ const KeyboardShortcutsModal = dynamic(
     ssr: false,
   },
 );
-import type { Offer } from '@/app/dashboard/types';
+import type { Offer, OfferFilter } from '@/app/dashboard/types';
 import { STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 import { OfferCardSkeleton, MetricSkeleton } from '@/components/ui/Skeleton';
@@ -170,6 +170,33 @@ export default function DashboardPage() {
   // keresés/szűrés/rendezés
   const [q, setQ] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>('all');
+  const [offerFilter, setOfferFilter] = useState<OfferFilter>(
+    (() => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dashboard-offer-filter');
+        if (saved === 'my' || saved === 'team' || saved === 'all' || saved === 'member') {
+          return saved;
+        }
+      }
+      return 'all';
+    })(),
+  );
+  const [teamMemberFilter, setTeamMemberFilter] = useState<string[]>([]);
+  const [kpiScope, setKpiScope] = useState<'personal' | 'team'>(
+    (() => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dashboard-kpi-scope');
+        if (saved === 'personal' || saved === 'team') {
+          return saved;
+        }
+      }
+      return 'personal';
+    })(),
+  );
+  const [teamIds, setTeamIds] = useState<string[]>([]);
+  const [teamMembers, setTeamMembers] = useState<Array<{ user_id: string; email: string | null }>>(
+    [],
+  );
   const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
@@ -225,6 +252,18 @@ export default function DashboardPage() {
     }
   }, [metricsViewMode]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard-offer-filter', offerFilter);
+    }
+  }, [offerFilter]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard-kpi-scope', kpiScope);
+    }
+  }, [kpiScope]);
+
   const isAdmin = useMemo(() => {
     if (!user) {
       return false;
@@ -243,8 +282,63 @@ export default function DashboardPage() {
     );
   }, [user]);
 
+  // Load team memberships
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !user) {
+      setTeamIds([]);
+      setTeamMembers([]);
+      return;
+    }
+
+    const loadTeams = async () => {
+      try {
+        const { getUserTeams } = await import('@/lib/services/teams');
+        const ids = await getUserTeams(sb, user.id);
+        setTeamIds(ids);
+
+        // Load all team members
+        if (ids.length > 0) {
+          const allMembers = new Map<string, { user_id: string; email: string | null }>();
+          await Promise.all(
+            ids.map(async (teamId) => {
+              try {
+                const { getTeamMembers } = await import('@/lib/services/teams');
+                const members = await getTeamMembers(sb, teamId);
+                members.forEach((m) => {
+                  if (!allMembers.has(m.user_id)) {
+                    allMembers.set(m.user_id, {
+                      user_id: m.user_id,
+                      email: (m.user as { email?: string })?.email || null,
+                    });
+                  }
+                });
+              } catch (error) {
+                console.error('Failed to load team members', error);
+              }
+            }),
+          );
+          setTeamMembers(Array.from(allMembers.values()));
+        } else {
+          setTeamMembers([]);
+        }
+      } catch (error) {
+        console.error('Failed to load teams', error);
+        setTeamIds([]);
+        setTeamMembers([]);
+      }
+    };
+
+    loadTeams();
+  }, [authStatus, user, sb]);
+
   const fetchPage = useCallback(
-    async (user: string, pageNumber: number): Promise<{ items: Offer[]; count: number | null }> => {
+    async (
+      user: string,
+      pageNumber: number,
+      filter: OfferFilter = 'all',
+      memberIds: string[] = [],
+      teamIdsParam: string[] = [],
+    ): Promise<{ items: Offer[]; count: number | null }> => {
       const from = pageNumber * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
@@ -310,84 +404,46 @@ export default function DashboardPage() {
         throw new Error('Session verification failed. Please refresh the page.');
       }
 
-      // First, try a simple query without the join to see if that's the issue
-      const {
-        data: simpleData,
-        error: simpleError,
-        count: simpleCount,
-      } = await sb
+      // Build query based on filter
+      let query = sb
         .from('offers')
         .select(
-          'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id',
+          'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name ),created_by_user:created_by ( id, email ),updated_by_user:updated_by ( id, email )',
           { count: 'exact' },
-        )
-        .eq('user_id', user)
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        );
 
-      console.log('Dashboard simple query (no join)', {
-        userId: user,
-        pageNumber,
-        count: simpleCount,
-        itemsCount: Array.isArray(simpleData) ? simpleData.length : 0,
-        error: simpleError,
-        errorMessage: simpleError?.message,
-        errorCode: simpleError?.code,
-        errorDetails: simpleError?.details,
-        offerIds: Array.isArray(simpleData)
-          ? simpleData.map((item: { id?: string }) => item.id).slice(0, 5)
-          : [],
-      });
+      if (filter === 'my') {
+        query = query.eq('user_id', user);
+      } else if (filter === 'team') {
+        if (teamIdsParam.length === 0) {
+          return { items: [], count: 0 };
+        }
+        query = query.not('team_id', 'is', null).in('team_id', teamIdsParam);
+      } else if (filter === 'all') {
+        if (teamIdsParam.length > 0) {
+          query = query.or(`user_id.eq.${user},team_id.in.(${teamIdsParam.join(',')})`);
+        } else {
+          query = query.eq('user_id', user);
+        }
+      } else if (filter === 'member' && memberIds.length > 0) {
+        query = query.in('created_by', memberIds);
+      } else {
+        query = query.eq('user_id', user);
+      }
 
-      // Now try with the join
-      const { data, error, count } = await sb
-        .from('offers')
-        .select(
-          'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id, recipient:recipient_id ( company_name )',
-          { count: 'exact' },
-        )
-        .eq('user_id', user)
+      const { data, error, count } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) {
-        console.error('Dashboard fetch error (with join)', {
+        console.error('Dashboard fetch error', {
           error,
           errorMessage: error.message,
           errorCode: error.code,
           errorDetails: error.details,
           errorHint: error.hint,
         });
-        // If join fails, fall back to simple query
-        if (simpleError) {
-          throw simpleError;
-        }
-        // Use simple data if join failed but simple query succeeded
-        const finalData = simpleData;
-        const finalCount = simpleCount;
-        console.log('Using simple query results due to join error', {
-          itemsCount: Array.isArray(finalData) ? finalData.length : 0,
-        });
-
-        const rawItems = Array.isArray(finalData) ? finalData : [];
-        const items: Offer[] = rawItems.map((entry) => ({
-          id: String(entry.id),
-          title: typeof entry.title === 'string' ? entry.title : '',
-          industry: typeof entry.industry === 'string' ? entry.industry : '',
-          status: (entry.status ?? 'draft') as Offer['status'],
-          created_at: entry.created_at ?? null,
-          sent_at: entry.sent_at ?? null,
-          decided_at: entry.decided_at ?? null,
-          decision: (entry.decision ?? null) as Offer['decision'],
-          pdf_url: entry.pdf_url ?? null,
-          recipient_id: entry.recipient_id ?? null,
-          recipient: null, // No recipient data due to join failure
-        }));
-
-        return {
-          items,
-          count: typeof finalCount === 'number' ? finalCount : null,
-        };
+        throw error;
       }
 
       console.log('Dashboard fetched offers', {
@@ -414,6 +470,14 @@ export default function DashboardPage() {
           ? (entry.recipient[0] ?? null)
           : (entry.recipient ?? null);
 
+        const createdByUserValue = Array.isArray(entry.created_by_user)
+          ? (entry.created_by_user[0] ?? null)
+          : (entry.created_by_user ?? null);
+
+        const updatedByUserValue = Array.isArray(entry.updated_by_user)
+          ? (entry.updated_by_user[0] ?? null)
+          : (entry.updated_by_user ?? null);
+
         return {
           id: String(entry.id),
           title: typeof entry.title === 'string' ? entry.title : '',
@@ -426,6 +490,22 @@ export default function DashboardPage() {
           pdf_url: entry.pdf_url ?? null,
           recipient_id: entry.recipient_id ?? null,
           recipient: recipientValue,
+          user_id: typeof entry.user_id === 'string' ? entry.user_id : undefined,
+          created_by: typeof entry.created_by === 'string' ? entry.created_by : undefined,
+          updated_by: typeof entry.updated_by === 'string' ? entry.updated_by : null,
+          team_id: typeof entry.team_id === 'string' ? entry.team_id : null,
+          created_by_user: createdByUserValue
+            ? {
+                id: createdByUserValue.id || '',
+                email: createdByUserValue.email || '',
+              }
+            : null,
+          updated_by_user: updatedByUserValue
+            ? {
+                id: updatedByUserValue.id || '',
+                email: updatedByUserValue.email || '',
+              }
+            : null,
         };
       });
 
@@ -457,7 +537,14 @@ export default function DashboardPage() {
       setLoading(true);
       try {
         setUserId(user.id);
-        const { items, count } = await fetchPageRef.current(user.id, 0);
+        const memberIds = offerFilter === 'member' ? teamMemberFilter : [];
+        const { items, count } = await fetchPageRef.current(
+          user.id,
+          0,
+          offerFilter,
+          memberIds,
+          teamIds,
+        );
         if (!active) return;
         setOffers(items);
         setPageIndex(0);
@@ -507,9 +594,9 @@ export default function DashboardPage() {
       active = false;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-    // Only depend on authStatus and user.id, not the callbacks
+    // Depend on filter state to reload offers when filter changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStatus, user?.id]);
+  }, [authStatus, user?.id, offerFilter, teamMemberFilter, teamIds]);
 
   // Track URL search params to detect refresh requests
   const [refreshKey, setRefreshKey] = useState(0);
@@ -954,39 +1041,47 @@ export default function DashboardPage() {
     return list;
   }, [offers, q, statusFilter, industryFilter, sortBy, sortDir]);
 
-  /** Metrikák (enhanced with previous period comparison) */
+  /** Metrikák (enhanced with previous period comparison) - filtered by KPI scope */
+  const metricsOffers = useMemo(() => {
+    if (kpiScope === 'personal' && user) {
+      return offers.filter((o) => o.user_id === user.id);
+    }
+    // Team scope: include all offers user can see
+    return offers;
+  }, [offers, kpiScope, user]);
+
   const stats = useMemo(() => {
-    const total = offers.length;
+    const total = metricsOffers.length;
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
 
     // Current period stats
-    const createdThisMonth = offers.filter((offer) => {
+    const createdThisMonth = metricsOffers.filter((offer) => {
       if (!offer.created_at) return false;
       const created = new Date(offer.created_at).getTime();
       return Number.isFinite(created) && created >= monthStart;
     }).length;
 
     // Previous period stats
-    const createdLastMonth = offers.filter((offer) => {
+    const createdLastMonth = metricsOffers.filter((offer) => {
       if (!offer.created_at) return false;
       const created = new Date(offer.created_at).getTime();
       return Number.isFinite(created) && created >= lastMonthStart && created < monthStart;
     }).length;
 
     const sentStatuses: Offer['status'][] = ['sent', 'accepted', 'lost'];
-    const sent = offers.filter((offer) => sentStatuses.includes(offer.status)).length;
-    const accepted = offers.filter((offer) => offer.status === 'accepted').length;
-    const lost = offers.filter((offer) => offer.status === 'lost').length;
-    const inReview = offers.filter((offer) => offer.status === 'sent').length;
-    const drafts = offers.filter((offer) => offer.status === 'draft').length;
+    const sent = metricsOffers.filter((offer) => sentStatuses.includes(offer.status)).length;
+    const accepted = metricsOffers.filter((offer) => offer.status === 'accepted').length;
+    const lost = metricsOffers.filter((offer) => offer.status === 'lost').length;
+    const inReview = metricsOffers.filter((offer) => offer.status === 'sent').length;
+    const drafts = metricsOffers.filter((offer) => offer.status === 'draft').length;
 
     const acceptanceRate = sent > 0 ? (accepted / sent) * 100 : null;
     const winRate = accepted + lost > 0 ? (accepted / (accepted + lost)) * 100 : null;
 
     const decisionDurations: number[] = [];
-    offers.forEach((offer) => {
+    metricsOffers.forEach((offer) => {
       if (offer.status !== 'accepted' || !offer.decided_at) return;
       const decided = new Date(offer.decided_at).getTime();
       const sentAt = offer.sent_at
@@ -1015,7 +1110,7 @@ export default function DashboardPage() {
       createdThisMonth,
       createdLastMonth,
     };
-  }, [offers]);
+  }, [metricsOffers]);
 
   /** Realtime frissítések (változatlan logika) */
   useEffect(() => {
@@ -1323,9 +1418,15 @@ export default function DashboardPage() {
     }
   };
 
+  const hasNoOffers = !loading && totalOffersCount === 0;
+
   return (
     <div
-      className={`min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50 ${latestNotification && !latestNotification.isRead ? 'pt-16' : ''}`}
+      className={`min-h-screen ${
+        hasNoOffers
+          ? 'bg-gradient-to-br from-teal-50 via-white to-blue-50'
+          : 'bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50'
+      } ${latestNotification && !latestNotification.isRead ? 'pt-16' : ''}`}
     >
       {latestNotification && !latestNotification.isRead && (
         <div className="fixed top-0 left-0 right-0 z-50">
@@ -1370,7 +1471,7 @@ export default function DashboardPage() {
         }
       >
         {/* Progressive Disclosure: Empty State for New Users */}
-        {!loading && totalOffersCount === 0 ? (
+        {hasNoOffers ? (
           <EmptyState />
         ) : (
           <>
@@ -1384,32 +1485,60 @@ export default function DashboardPage() {
                     {t('dashboard.metricsView.description')}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
-                  }
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
-                  title={
-                    metricsViewMode === 'compact'
-                      ? t('dashboard.metricsView.detailedTitle')
-                      : t('dashboard.metricsView.compactTitle')
-                  }
-                >
-                  {metricsViewMode === 'compact' ? (
-                    <>
-                      <ArrowsPointingOutIcon className="h-4 w-4" />
-                      <span className="hidden sm:inline">
-                        {t('dashboard.metricsView.detailed')}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <ArrowsPointingInIcon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{t('dashboard.metricsView.compact')}</span>
-                    </>
+                <div className="flex items-center gap-3">
+                  {teamIds.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-fg-muted">Personal</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newScope = kpiScope === 'team' ? 'personal' : 'team';
+                          setKpiScope(newScope);
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          kpiScope === 'team' ? 'bg-primary' : 'bg-fg-muted'
+                        }`}
+                        role="switch"
+                        aria-checked={kpiScope === 'team'}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            kpiScope === 'team' ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                      <span className="text-sm text-fg-muted">Team</span>
+                    </div>
                   )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
+                    title={
+                      metricsViewMode === 'compact'
+                        ? t('dashboard.metricsView.detailedTitle')
+                        : t('dashboard.metricsView.compactTitle')
+                    }
+                  >
+                    {metricsViewMode === 'compact' ? (
+                      <>
+                        <ArrowsPointingOutIcon className="h-4 w-4" />
+                        <span className="hidden sm:inline">
+                          {t('dashboard.metricsView.detailed')}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <ArrowsPointingInIcon className="h-4 w-4" />
+                        <span className="hidden sm:inline">
+                          {t('dashboard.metricsView.compact')}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Conversion Funnel Group - Progressive disclosure based on offer count */}
@@ -1808,6 +1937,53 @@ export default function DashboardPage() {
                 {/* Advanced Filters & Controls */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
                   <div className="flex flex-wrap items-end gap-3 flex-1">
+                    {teamIds.length > 0 && (
+                      <Select
+                        label="Ajánlat szűrő"
+                        value={offerFilter}
+                        onChange={(e) => {
+                          const value = e.target.value as OfferFilter;
+                          setOfferFilter(value);
+                          if (value !== 'member') {
+                            setTeamMemberFilter([]);
+                          }
+                        }}
+                        className="min-w-[180px]"
+                        wrapperClassName="flex-1 sm:flex-none"
+                      >
+                        <option value="all">Összes</option>
+                        <option value="my">Saját ajánlataim</option>
+                        <option value="team">Csapat ajánlatai</option>
+                        <option value="member">Csapat tag szerint</option>
+                      </Select>
+                    )}
+                    {offerFilter === 'member' && teamMembers.length > 0 && (
+                      <div className="flex-1 sm:flex-none min-w-[200px]">
+                        <label className="block text-xs font-semibold uppercase tracking-wide text-fg-muted mb-1.5">
+                          Csapat tag
+                        </label>
+                        <Select
+                          value={teamMemberFilter[0] || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value) {
+                              setTeamMemberFilter([value]);
+                            } else {
+                              setTeamMemberFilter([]);
+                              setOfferFilter('all');
+                            }
+                          }}
+                          className="w-full"
+                        >
+                          <option value="">Válassz csapat tagot...</option>
+                          {teamMembers.map((member) => (
+                            <option key={member.user_id} value={member.user_id}>
+                              {member.email || member.user_id}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                    )}
                     {industries.length > 0 && (
                       <Select
                         label={t('dashboard.filters.industry.label')}

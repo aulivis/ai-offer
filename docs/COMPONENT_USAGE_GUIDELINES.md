@@ -766,10 +766,8 @@ The `Card` component automatically enables container queries:
 
 ## Resources
 
-- [Design Tokens Documentation](./DESIGN_TOKENS.md)
 - [Design System Documentation](./DESIGN_SYSTEM.md)
-- [Accessibility Guidelines](./ACCESSIBILITY.md)
-- [Component API Reference](./COMPONENT_API.md)
+- [Performance Monitoring](./PERFORMANCE_MONITORING.md)
 
 ## Support
 

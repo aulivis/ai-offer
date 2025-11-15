@@ -220,6 +220,7 @@ export default function SettingsPage() {
         'templates',
         'activities',
         'guarantees',
+        'testimonials',
         'notifications',
       ].includes(hash)
     ) {
@@ -257,6 +258,11 @@ export default function SettingsPage() {
       id: 'guarantees',
       label: t('settings.guarantees.title'),
       icon: <ShieldCheckIcon className="h-5 w-5" />,
+    },
+    {
+      id: 'testimonials',
+      label: 'Ajánlások',
+      icon: <ChatBubbleLeftRightIcon className="h-5 w-5" />,
     },
     {
       id: 'notifications',
@@ -1227,349 +1233,366 @@ export default function SettingsPage() {
   }
 
   return (
-    <AppFrame
-      title={t('settings.title')}
-      description={t('settings.description')}
-      actions={
-        email ? (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <span>{t('settings.actions.loggedInAs')}</span>
-            <span className="font-semibold text-slate-700">{email}</span>
-          </div>
-        ) : null
-      }
-    >
-      <div className="relative min-h-screen bg-gradient-to-br from-navy-50 via-slate-50 to-turquoise-50 overflow-hidden">
-        {/* Decorative gradient blobs - subtle version for settings */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-        <div
-          className="absolute bottom-0 left-0 w-96 h-96 bg-navy-200 rounded-full blur-3xl opacity-20 animate-pulse"
-          style={{ animationDelay: '1s' }}
-        ></div>
-        <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/10 rounded-full blur-2xl opacity-40"></div>
+    <div className="relative min-h-screen bg-gradient-to-br from-navy-50 via-slate-50 to-turquoise-50 overflow-hidden">
+      {/* Decorative gradient blobs - subtle version for settings */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+      <div
+        className="absolute bottom-0 left-0 w-96 h-96 bg-navy-200 rounded-full blur-3xl opacity-20 animate-pulse"
+        style={{ animationDelay: '1s' }}
+      ></div>
+      <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/10 rounded-full blur-2xl opacity-40"></div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-6 py-8 md:py-10">
-          {/* Tab navigation */}
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-xl">
-            {/* Subtle inner glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-turquoise-50/20 pointer-events-none"></div>
+      <div className="relative z-10">
+        <AppFrame
+          title={t('settings.title')}
+          description={t('settings.description')}
+          actions={
+            email ? (
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <span>{t('settings.actions.loggedInAs')}</span>
+                <span className="font-semibold text-slate-700">{email}</span>
+              </div>
+            ) : null
+          }
+        >
+          <div className="mx-auto max-w-7xl px-6 py-8 md:py-10">
+            {/* Tab navigation */}
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-xl">
+              {/* Subtle inner glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-turquoise-50/20 pointer-events-none"></div>
 
-            {/* Tab header */}
-            <div className="relative z-10 border-b border-slate-200/60 bg-gradient-to-b from-slate-50/50 to-white/50">
-              <div className="flex items-center gap-2 overflow-x-auto px-6">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`group relative flex items-center gap-2 whitespace-nowrap px-6 py-4 font-semibold transition-all duration-300 ${
-                      activeTab === tab.id ? 'text-primary' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {/* Active indicator with gradient */}
-                    {activeTab === tab.id && (
-                      <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-turquoise-500 to-primary rounded-t-full"></span>
-                    )}
-                    {/* Hover effect */}
-                    <span
-                      className={`absolute inset-0 bg-slate-50 rounded-t-xl transition-opacity duration-300 ${
-                        activeTab === tab.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'
+              {/* Tab header */}
+              <div className="relative z-10 border-b border-slate-200/60 bg-gradient-to-b from-slate-50/50 to-white/50">
+                <div className="flex items-center gap-2 overflow-x-auto px-6 scrollbar-hide">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => handleTabChange(tab.id)}
+                      className={`group relative flex items-center gap-2 whitespace-nowrap px-6 py-4 font-semibold transition-all duration-300 flex-shrink-0 ${
+                        activeTab === tab.id
+                          ? 'text-primary'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
-                    ></span>
-                    <span className="relative z-10 flex items-center gap-2">
-                      {tab.icon}
-                      <span>{tab.label}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Tab content */}
-            <div className="relative z-10 p-8 md:p-10 lg:p-12">
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'profile' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'profile' && (
-                  <SettingsCompanySection
-                    profile={profile}
-                    errors={errors.general}
-                    newIndustry={newIndustry}
-                    onProfileChange={setProfile}
-                    onNewIndustryChange={setNewIndustry}
-                    onToggleIndustry={toggleIndustry}
-                    onAddManualIndustry={handleManualIndustry}
-                    onSave={() => saveProfile('all')}
-                    saving={saving}
-                  />
-                )}
+                    >
+                      {/* Active indicator with gradient */}
+                      {activeTab === tab.id && (
+                        <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-turquoise-500 to-primary rounded-t-full"></span>
+                      )}
+                      {/* Hover effect */}
+                      <span
+                        className={`absolute inset-0 bg-slate-50 rounded-t-xl transition-opacity duration-300 ${
+                          activeTab === tab.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'
+                        }`}
+                      ></span>
+                      <span className="relative z-10 flex items-center gap-2">
+                        {tab.icon}
+                        <span>{tab.label}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'security' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'security' && (
-                  <SettingsSecurityTab
-                    googleLinked={googleLinked}
-                    linkingGoogle={linkingGoogle}
-                    email={email}
-                    onLinkGoogle={startGoogleLink}
-                  />
-                )}
-              </div>
-
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'branding' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'branding' && (
-                  <div className="space-y-6">
-                    <SettingsBrandingSection
+              {/* Tab content */}
+              <div className="relative z-10 p-8 md:p-10 lg:p-12">
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'profile' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'profile' && (
+                    <SettingsCompanySection
                       profile={profile}
-                      plan={plan}
-                      errors={errors.branding}
-                      logoUploading={logoUploading}
-                      logoUploadProgress={logoUploadProgress}
+                      errors={errors.general}
+                      newIndustry={newIndustry}
                       onProfileChange={setProfile}
-                      onTriggerLogoUpload={triggerLogoUpload}
-                      onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
-                      onSave={() => saveProfile('branding')}
-                      onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                      onNewIndustryChange={setNewIndustry}
+                      onToggleIndustry={toggleIndustry}
+                      onAddManualIndustry={handleManualIndustry}
+                      onSave={() => saveProfile('all')}
                       saving={saving}
                     />
-                    <input
-                      ref={logoInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/svg+xml"
-                      className="hidden"
-                      onChange={handleLogoChange}
+                  )}
+                </div>
+
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'security' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'security' && (
+                    <SettingsSecurityTab
+                      googleLinked={googleLinked}
+                      linkingGoogle={linkingGoogle}
+                      email={email}
+                      onLinkGoogle={startGoogleLink}
                     />
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'templates' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'templates' && (
-                  <SettingsTemplatesSection
-                    selectedTemplateId={selectedTemplateId}
-                    plan={plan}
-                    onTemplateSelect={handleTemplateSelect}
-                  />
-                )}
-              </div>
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'branding' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'branding' && (
+                    <div className="space-y-6">
+                      <SettingsBrandingSection
+                        profile={profile}
+                        plan={plan}
+                        errors={errors.branding}
+                        logoUploading={logoUploading}
+                        logoUploadProgress={logoUploadProgress}
+                        onProfileChange={setProfile}
+                        onTriggerLogoUpload={triggerLogoUpload}
+                        onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
+                        onSave={() => saveProfile('branding')}
+                        onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                        saving={saving}
+                      />
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml"
+                        className="hidden"
+                        onChange={handleLogoChange}
+                      />
+                    </div>
+                  )}
+                </div>
 
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'activities' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'activities' && (
-                  <SettingsActivitiesSection
-                    activities={acts}
-                    newActivity={newAct}
-                    saving={actSaving}
-                    plan={plan}
-                    defaultActivityId={profile.default_activity_id}
-                    collapsed={activitiesCollapsed}
-                    collapseDisabled={hasActivityContent}
-                    onCollapsedChange={(value) => setActivitiesCollapsed(value)}
-                    onNewActivityChange={setNewAct}
-                    onToggleNewActivityIndustry={toggleNewActIndustry}
-                    onAddActivity={addActivity}
-                    onDeleteActivity={deleteActivity}
-                    onActivityImagesChange={async (activityId, imagePaths) => {
-                      if (!user) return;
-                      try {
-                        const { error } = await supabase
-                          .from('activities')
-                          .update({ reference_images: imagePaths })
-                          .eq('id', activityId)
-                          .eq('user_id', user.id);
-                        if (error) {
-                          throw error;
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'templates' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'templates' && (
+                    <SettingsTemplatesSection
+                      selectedTemplateId={selectedTemplateId}
+                      plan={plan}
+                      onTemplateSelect={handleTemplateSelect}
+                    />
+                  )}
+                </div>
+
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'activities' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'activities' && (
+                    <SettingsActivitiesSection
+                      activities={acts}
+                      newActivity={newAct}
+                      saving={actSaving}
+                      plan={plan}
+                      defaultActivityId={profile.default_activity_id}
+                      collapsed={activitiesCollapsed}
+                      collapseDisabled={hasActivityContent}
+                      onCollapsedChange={(value) => setActivitiesCollapsed(value)}
+                      onNewActivityChange={setNewAct}
+                      onToggleNewActivityIndustry={toggleNewActIndustry}
+                      onAddActivity={addActivity}
+                      onDeleteActivity={deleteActivity}
+                      onActivityImagesChange={async (activityId, imagePaths) => {
+                        if (!user) return;
+                        try {
+                          const { error } = await supabase
+                            .from('activities')
+                            .update({ reference_images: imagePaths })
+                            .eq('id', activityId)
+                            .eq('user_id', user.id);
+                          if (error) {
+                            throw error;
+                          }
+                          setActs((prev) =>
+                            prev.map((a) =>
+                              a.id === activityId ? { ...a, reference_images: imagePaths } : a,
+                            ),
+                          );
+                        } catch (error) {
+                          console.error('Failed to save reference images:', error);
+                          showToast({
+                            title: t('errors.settings.saveFailed', {
+                              message: 'Nem sikerült menteni a referenciafotókat',
+                            }),
+                            description: error instanceof Error ? error.message : 'Ismeretlen hiba',
+                            variant: 'error',
+                          });
                         }
-                        setActs((prev) =>
-                          prev.map((a) =>
-                            a.id === activityId ? { ...a, reference_images: imagePaths } : a,
-                          ),
-                        );
-                      } catch (error) {
-                        console.error('Failed to save reference images:', error);
-                        showToast({
-                          title: t('errors.settings.saveFailed', {
-                            message: 'Nem sikerült menteni a referenciafotókat',
-                          }),
-                          description: error instanceof Error ? error.message : 'Ismeretlen hiba',
-                          variant: 'error',
-                        });
-                      }
-                    }}
-                    onDefaultActivityChange={async (activityId) => {
-                      if (!user) return;
-                      try {
-                        setProfile((p) => ({ ...p, default_activity_id: activityId }));
-                        const { error } = await supabase
-                          .from('profiles')
-                          .update({ default_activity_id: activityId })
-                          .eq('id', user.id);
-                        if (error) {
-                          throw error;
+                      }}
+                      onDefaultActivityChange={async (activityId) => {
+                        if (!user) return;
+                        try {
+                          setProfile((p) => ({ ...p, default_activity_id: activityId }));
+                          const { error } = await supabase
+                            .from('profiles')
+                            .update({ default_activity_id: activityId })
+                            .eq('id', user.id);
+                          if (error) {
+                            throw error;
+                          }
+                          showToast({
+                            title: t('toasts.settings.saveSuccess'),
+                            description: '',
+                            variant: 'success',
+                          });
+                        } catch (error) {
+                          console.error('Failed to save default activity:', error);
+                          showToast({
+                            title: t('errors.settings.saveFailed', {
+                              message: 'Nem sikerült menteni az alapértelmezett tevékenységet',
+                            }),
+                            description: error instanceof Error ? error.message : 'Ismeretlen hiba',
+                            variant: 'error',
+                          });
                         }
-                        showToast({
-                          title: t('toasts.settings.saveSuccess'),
-                          description: '',
-                          variant: 'success',
-                        });
-                      } catch (error) {
-                        console.error('Failed to save default activity:', error);
-                        showToast({
-                          title: t('errors.settings.saveFailed', {
-                            message: 'Nem sikerült menteni az alapértelmezett tevékenységet',
-                          }),
-                          description: error instanceof Error ? error.message : 'Ismeretlen hiba',
-                          variant: 'error',
-                        });
-                      }
-                    }}
-                    onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-                  />
-                )}
-              </div>
+                      }}
+                      onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                    />
+                  )}
+                </div>
 
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'guarantees' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'guarantees' && (
-                  <SettingsGuaranteesSection
-                    activities={acts}
-                    guarantees={guarantees}
-                    addLoading={guaranteeAddLoading}
-                    busyGuaranteeId={guaranteeBusyId}
-                    collapsed={guaranteesCollapsed}
-                    collapseDisabled={hasGuaranteeContent}
-                    onCollapsedChange={(value) => setGuaranteesCollapsed(value)}
-                    onAddGuarantee={addGuaranteeEntry}
-                    onUpdateGuarantee={updateGuaranteeEntry}
-                    onDeleteGuarantee={deleteGuaranteeEntry}
-                    onToggleAttachment={toggleGuaranteeAttachment}
-                  />
-                )}
-              </div>
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'guarantees' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'guarantees' && (
+                    <SettingsGuaranteesSection
+                      activities={acts}
+                      guarantees={guarantees}
+                      addLoading={guaranteeAddLoading}
+                      busyGuaranteeId={guaranteeBusyId}
+                      collapsed={guaranteesCollapsed}
+                      collapseDisabled={hasGuaranteeContent}
+                      onCollapsedChange={(value) => setGuaranteesCollapsed(value)}
+                      onAddGuarantee={addGuaranteeEntry}
+                      onUpdateGuarantee={updateGuaranteeEntry}
+                      onDeleteGuarantee={deleteGuaranteeEntry}
+                      onToggleAttachment={toggleGuaranteeAttachment}
+                    />
+                  )}
+                </div>
 
-              <div
-                className={`transition-all duration-300 ${
-                  activeTab === 'notifications' ? 'opacity-100 translate-y-0' : 'hidden'
-                }`}
-              >
-                {activeTab === 'notifications' && (
-                  <div className="space-y-6">
-                    <SettingsEmailSubscriptionSection />
-                    <Card
-                      as="section"
-                      header={
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
-                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
-                                <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'testimonials' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'testimonials' && (
+                    <div className="space-y-6">
+                      <Card
+                        as="section"
+                        header={
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
+                                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
+                                  <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
+                                    {t('settings.testimonials.title')}
+                                  </h2>
+                                  <p className="text-sm md:text-base text-slate-500">
+                                    {t('settings.testimonials.subtitle')}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
-                                  {t('settings.testimonials.title')}
-                                </h2>
-                                <p className="text-sm md:text-base text-slate-500">
-                                  {t('settings.testimonials.subtitle')}
-                                </p>
-                              </div>
-                            </div>
-                            {plan === 'pro' && (
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  const newValue = !(profile.enable_testimonials ?? false);
-                                  setProfile((p) => ({ ...p, enable_testimonials: newValue }));
-                                  await saveProfile('all');
-                                }}
-                                disabled={saving}
-                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                                  profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
-                                }`}
-                              >
-                                <span
-                                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                    profile.enable_testimonials ? 'translate-x-5' : 'translate-x-0'
+                              {plan === 'pro' && (
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const newValue = !(profile.enable_testimonials ?? false);
+                                    setProfile((p) => ({ ...p, enable_testimonials: newValue }));
+                                    await saveProfile('all');
+                                  }}
+                                  disabled={saving}
+                                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                                    profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
                                   }`}
-                                />
-                              </button>
-                            )}
+                                >
+                                  <span
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                      profile.enable_testimonials
+                                        ? 'translate-x-5'
+                                        : 'translate-x-0'
+                                    }`}
+                                  />
+                                </button>
+                              )}
+                            </div>
+                          </CardHeader>
+                        }
+                      >
+                        {plan === 'pro' ? (
+                          profile.enable_testimonials ? (
+                            <TestimonialsManager
+                              testimonials={testimonials}
+                              activities={acts}
+                              enabled={true}
+                              plan={plan}
+                              onTestimonialsChange={async () => {
+                                if (!user) return;
+                                const { data: testimonialsList } = await supabase
+                                  .from('testimonials')
+                                  .select('*')
+                                  .eq('user_id', user.id)
+                                  .order('created_at', { ascending: false });
+                                setTestimonials((testimonialsList as typeof testimonials) || []);
+                              }}
+                            />
+                          ) : null
+                        ) : (
+                          <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                              <LockClosedIcon className="h-6 w-6 text-amber-600" />
+                            </div>
+                            <h3 className="mt-4 text-sm font-semibold text-slate-900">
+                              {t('settings.proFeatures.testimonials.upgradeTitle')}
+                            </h3>
+                            <p className="mt-2 text-xs text-slate-600">
+                              {t('settings.proFeatures.testimonials.upgradeDescription')}
+                            </p>
+                            <Button
+                              onClick={() =>
+                                openPlanUpgradeDialog({
+                                  description: t(
+                                    'settings.proFeatures.testimonials.upgradeDescription',
+                                  ),
+                                })
+                              }
+                              variant="primary"
+                              className="mt-4"
+                            >
+                              {t('settings.proFeatures.testimonials.upgradeButton')}
+                            </Button>
                           </div>
-                        </CardHeader>
-                      }
-                    >
-                      {plan === 'pro' ? (
-                        profile.enable_testimonials ? (
-                          <TestimonialsManager
-                            testimonials={testimonials}
-                            activities={acts}
-                            enabled={true}
-                            plan={plan}
-                            onTestimonialsChange={async () => {
-                              if (!user) return;
-                              const { data: testimonialsList } = await supabase
-                                .from('testimonials')
-                                .select('*')
-                                .eq('user_id', user.id)
-                                .order('created_at', { ascending: false });
-                              setTestimonials((testimonialsList as typeof testimonials) || []);
-                            }}
-                          />
-                        ) : null
-                      ) : (
-                        <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
-                          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-                            <LockClosedIcon className="h-6 w-6 text-amber-600" />
-                          </div>
-                          <h3 className="mt-4 text-sm font-semibold text-slate-900">
-                            {t('settings.proFeatures.testimonials.upgradeTitle')}
-                          </h3>
-                          <p className="mt-2 text-xs text-slate-600">
-                            {t('settings.proFeatures.testimonials.upgradeDescription')}
-                          </p>
-                          <Button
-                            onClick={() =>
-                              openPlanUpgradeDialog({
-                                description: t(
-                                  'settings.proFeatures.testimonials.upgradeDescription',
-                                ),
-                              })
-                            }
-                            variant="primary"
-                            className="mt-4"
-                          >
-                            {t('settings.proFeatures.testimonials.upgradeButton')}
-                          </Button>
-                        </div>
-                      )}
-                    </Card>
-                  </div>
-                )}
+                        )}
+                      </Card>
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={`transition-all duration-300 ${
+                    activeTab === 'notifications' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'notifications' && (
+                    <div className="space-y-6">
+                      <SettingsEmailSubscriptionSection />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </AppFrame>
       </div>
-    </AppFrame>
+    </div>
   );
 }

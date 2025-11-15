@@ -171,6 +171,13 @@ Comprehensive documentation is available in the `docs/` directory:
 
 - **[Best Practices Comparison](./docs/BEST_PRACTICES_COMPARISON_2025.md)** - Industry best practices analysis and recommendations
 - **[UI/UX Review](./docs/UI_UX_REVIEW_2025.md)** - Frontend UI/UX review and recommendations
+- **[Codebase Improvements](./docs/CODEBASE_IMPROVEMENTS.md)** - Historical codebase improvement summary
+
+### Implemented Features
+
+- **[Team Collaboration](./docs/future/TEAM_COLLABORATION_INVESTIGATION.md)** - Team collaboration feature for Pro users (✅ Implemented)
+- **[Offer Sharing](./docs/OFFER_SHARING.md)** - Share offers with customers via secure links (✅ Implemented)
+- **[Template Variables System](./src/lib/template-variables/README.md)** - Shopify-style dynamic template variable system (✅ Implemented)
 
 ### Future Implementations
 

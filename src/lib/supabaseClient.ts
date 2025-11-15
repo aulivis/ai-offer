@@ -44,16 +44,6 @@ export function getSupabaseClient(): SupabaseClient {
  * instead of Supabase's default cookie names.
  *
  * This function will re-initialize the session if cookies are present but session is not set.
- *
- * @param expectedUserId - Optional user ID to validate the session matches. If provided and
- *   the session user ID doesn't match, the session will be re-initialized.
- */
-/**
- * Ensures the Supabase session is initialized from cookies before making queries.
- * This is critical because the client uses custom cookie names (propono_at, propono_rt)
- * instead of Supabase's default cookie names.
- *
- * This function will re-initialize the session if cookies are present but session is not set.
  * Uses exponential backoff retry logic for post-OAuth scenarios.
  *
  * @param expectedUserId - Optional user ID to validate the session matches. If provided and

@@ -12,7 +12,6 @@ import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/template
 import { normalizeTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI, { APIError } from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
-import { v4 as uuid } from 'uuid';
 import { envServer } from '@/env.server';
 import { ensureSafeHtml, sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { convertSectionsToBlocks } from '@/lib/ai/blocks';
@@ -1072,7 +1071,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           : null;
 
       // ---- Offer creation ----
-      const offerId = uuid();
+      const offerId = randomUUID();
 
       // Resolve template ID for saving (used for PDF generation later from dashboard)
       const planTier = planToTemplateTier(plan);

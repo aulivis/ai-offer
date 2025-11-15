@@ -783,7 +783,7 @@
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              Kapcsolattartó
+              Címzett:
             </div>
             <div class="info-value">{{contactName}}</div>
           </div>
@@ -865,12 +865,35 @@
           </div>
         </div>
       </section>
+      {{/if}} {{#if hasSchedule}}
+      <section class="card">
+        <h2 class="section-title">Projekt mérföldkövek</h2>
+        <div class="terms-list">
+          {{#each schedule}}
+          <div class="term-item">
+            <p>{{this}}</p>
+          </div>
+          {{/each}}
+        </div>
+      </section>
       {{/if}} {{#if hasImages}}
       <section class="card">
+        <h2 class="section-title">Képek és referenciák</h2>
         <div class="images-grid">
           {{#each images}}
           <div class="image-item">
             <img src="{{src}}" alt="{{alt}}" />
+          </div>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}} {{#if hasGuarantees}}
+      <section class="card">
+        <h2 class="section-title">Garanciák</h2>
+        <div class="terms-list">
+          {{#each guarantees}}
+          <div class="term-item">
+            <p>{{this}}</p>
           </div>
           {{/each}}
         </div>

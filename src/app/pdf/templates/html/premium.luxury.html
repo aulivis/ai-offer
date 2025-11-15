@@ -1022,14 +1022,40 @@
         </div>
         <div class="card-corner-bottom"></div>
       </section>
+      {{/if}} {{#if hasSchedule}}
+      <section class="card">
+        <div class="card-corner-top"></div>
+        <h2 class="card-title">Projekt mérföldkövek</h2>
+        <div class="terms-list">
+          {{#each schedule}}
+          <div class="term-item">
+            <p>{{this}}</p>
+          </div>
+          {{/each}}
+        </div>
+        <div class="card-corner-bottom"></div>
+      </section>
       {{/if}} {{#if hasImages}}
       <section class="card">
         <div class="card-corner-top"></div>
-        <h2 class="card-title">Képek</h2>
+        <h2 class="card-title">Képek és referenciák</h2>
         <div class="images-grid">
           {{#each images}}
           <div class="image-item">
             <img src="{{src}}" alt="{{alt}}" />
+          </div>
+          {{/each}}
+        </div>
+        <div class="card-corner-bottom"></div>
+      </section>
+      {{/if}} {{#if hasGuarantees}}
+      <section class="card">
+        <div class="card-corner-top"></div>
+        <h2 class="card-title">Garanciák</h2>
+        <div class="terms-list">
+          {{#each guarantees}}
+          <div class="term-item">
+            <p>{{this}}</p>
           </div>
           {{/each}}
         </div>

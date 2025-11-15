@@ -20,7 +20,7 @@ The application uses Web Vitals to track Core Web Vitals and other performance m
   - Needs improvement: 200ms - 500ms
   - Poor: > 500ms
 
-  Note: FID (First Input Delay) is deprecated and replaced by INP in newer versions of web-vitals.
+  **Note:** FID (First Input Delay) has been deprecated and replaced by INP (Interaction to Next Paint) in newer versions of web-vitals. The codebase now uses INP for measuring interactivity.
 
 - **CLS (Cumulative Layout Shift)**: Measures visual stability
   - Target: < 0.1 (good)

@@ -634,7 +634,7 @@
           <div class="info-grid">
             {{#if contactName}}
             <div class="info-item">
-              <p class="info-label">Kapcsolattartó</p>
+              <p class="info-label">Címzett:</p>
               <p class="info-value">{{contactName}}</p>
               <div class="info-underline"></div>
             </div>
@@ -719,6 +719,33 @@
         </div>
         {{/if}}
 
+        <!-- Schedule (milestones) section -->
+        {{#if hasSchedule}}
+        <div>
+          <h2 class="card-title">Projekt mérföldkövek</h2>
+          <div class="card">
+            <div style="display: flex; flex-direction: column; gap: 1rem">
+              {{#each schedule}}
+              <div style="padding-left: 1.5rem; position: relative">
+                <div
+                  style="
+                    position: absolute;
+                    left: 0;
+                    top: 0.5rem;
+                    width: 6px;
+                    height: 6px;
+                    background: hsl(var(--primary));
+                    border-radius: 50%;
+                  "
+                ></div>
+                <p class="terms-text">{{this}}</p>
+              </div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+        {{/if}}
+
         <!-- Images section with conditional rendering -->
         {{#if hasImages}}
         <div>
@@ -743,6 +770,33 @@
                   border: 1px solid hsl(var(--border));
                 "
               />
+              {{/each}}
+            </div>
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Guarantees section -->
+        {{#if hasGuarantees}}
+        <div>
+          <h2 class="card-title">Garanciák</h2>
+          <div class="card">
+            <div style="display: flex; flex-direction: column; gap: 1rem">
+              {{#each guarantees}}
+              <div style="padding-left: 1.5rem; position: relative">
+                <div
+                  style="
+                    position: absolute;
+                    left: 0;
+                    top: 0.5rem;
+                    width: 6px;
+                    height: 6px;
+                    background: hsl(var(--primary));
+                    border-radius: 50%;
+                  "
+                ></div>
+                <p class="terms-text">{{this}}</p>
+              </div>
               {{/each}}
             </div>
           </div>

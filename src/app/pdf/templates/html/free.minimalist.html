@@ -493,7 +493,7 @@
         <div class="meta-grid">
           {{#if contactName}}
           <div class="meta-item">
-            <div class="meta-label">Kapcsolattartó</div>
+            <div class="meta-label">Címzett:</div>
             <div class="meta-value">{{contactName}}</div>
           </div>
           {{/if}} {{#if issueDate}}
@@ -549,12 +549,34 @@
           </div>
         </div>
       </section>
+      {{/if}} {{#if hasSchedule}}
+      <section class="section">
+        <h2 class="section-header">Projekt mérföldkövek</h2>
+        <div class="terms-container">
+          {{#each schedule}}
+          <div class="term-block">
+            <div class="term-text">{{this}}</div>
+          </div>
+          {{/each}}
+        </div>
+      </section>
       {{/if}} {{#if hasImages}}
       <section class="section">
         <h2 class="section-header">Képek és referenciák</h2>
         <div class="images-container">
           {{#each images}}
           <img src="{{src}}" alt="{{alt}}" />
+          {{/each}}
+        </div>
+      </section>
+      {{/if}} {{#if hasGuarantees}}
+      <section class="section">
+        <h2 class="section-header">Garanciák</h2>
+        <div class="terms-container">
+          {{#each guarantees}}
+          <div class="term-block">
+            <div class="term-text">{{this}}</div>
+          </div>
           {{/each}}
         </div>
       </section>

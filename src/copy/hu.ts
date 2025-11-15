@@ -757,7 +757,7 @@ export const hu = {
         'A Prémium sablon a Pro csomaggal választható. Frissíts a számlázási oldalon, ha szükséged van rá.',
     },
     activities: {
-      title: 'Tevékenység-sablonok',
+      title: 'Tevékenységek',
       subtitle:
         'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
       toggle: {
@@ -811,7 +811,7 @@ export const hu = {
       },
     },
     guarantees: {
-      title: 'Garancia sablonok',
+      title: 'Garanciák',
       subtitle: 'Mentsd el a gyakran használt garanciákat, és kösd össze őket a tevékenységeiddel.',
       toggle: {
         collapse: 'Kártya elrejtése',

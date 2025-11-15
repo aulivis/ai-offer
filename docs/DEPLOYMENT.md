@@ -141,7 +141,6 @@ To customize:
 - [ ] Error pages work (404, 500)
 - [ ] Security headers are present
 - [ ] CSP policies are working
-- [ ] Auth routes migration verified (see [Auth Routes Migration](./AUTH_ROUTES_MIGRATION.md))
 
 ## Monitoring
 
