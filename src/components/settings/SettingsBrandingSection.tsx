@@ -54,14 +54,17 @@ export function SettingsBrandingSection({
 
   return (
     <div className="space-y-8">
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <PaintBrushIcon className="h-5 w-5 text-primary" />
+      <div className="mb-8">
+        <div className="flex items-center gap-4">
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
+            <PaintBrushIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">{t('settings.branding.title')}</h2>
-            <p className="text-sm text-slate-600">{t('settings.branding.subtitle')}</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+              {t('settings.branding.title')}
+            </h2>
+            <p className="text-sm md:text-base text-slate-600">{t('settings.branding.subtitle')}</p>
           </div>
         </div>
       </div>

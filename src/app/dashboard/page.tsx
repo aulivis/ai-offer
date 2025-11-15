@@ -1324,7 +1324,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className={latestNotification && !latestNotification.isRead ? 'pt-16' : ''}>
+    <div
+      className={`min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50 ${latestNotification && !latestNotification.isRead ? 'pt-16' : ''}`}
+    >
       {latestNotification && !latestNotification.isRead && (
         <div className="fixed top-0 left-0 right-0 z-50">
           <NotificationBar

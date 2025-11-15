@@ -84,8 +84,9 @@ export function Input({
           className={[
             'w-full rounded-2xl border px-4 py-2.5 text-base',
             'bg-bg text-fg placeholder:text-fg-muted border-border',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-            error ? 'border-danger focus-visible:ring-danger' : '',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2',
+            'focus-visible:border-primary/50 transition-all duration-200',
+            error ? 'border-danger focus-visible:ring-danger/20 focus-visible:border-danger' : '',
             loading ? 'pr-10' : '',
             isDisabled ? 'cursor-not-allowed opacity-60' : '',
             className,

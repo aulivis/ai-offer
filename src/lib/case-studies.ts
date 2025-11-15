@@ -132,7 +132,7 @@ export function getCaseStudies(): CaseStudy[] {
       },
       publishedDate: '2025-01-15',
       featuredImage: '/case-studies/studio-ikon-hero.jpg',
-      relatedCaseStudies: ['tech-solutions', 'creative-agency'],
+      relatedCaseStudies: ['tech-solutions', 'marketing-ugynokseg-sablon-automatizacio'],
       // Legacy support
       company: 'Studio Fluo',
       results: [
@@ -277,7 +277,7 @@ export function getCaseStudies(): CaseStudy[] {
       },
       publishedDate: '2025-01-20',
       featuredImage: '/case-studies/tech-solutions-hero.jpg',
-      relatedCaseStudies: ['studio-ikon', 'creative-agency'],
+      relatedCaseStudies: ['studio-ikon', 'marketing-ugynokseg-sablon-automatizacio'],
       // Legacy support
       company: 'Tech Solutions Kft.',
       results: [
@@ -304,55 +304,55 @@ export function getCaseStudies(): CaseStudy[] {
     },
     {
       id: '3',
-      slug: 'creative-agency',
-      companyName: 'Creative Agency',
+      slug: 'marketing-ugynokseg-sablon-automatizacio',
+      companyName: 'Creative Agency (Budapest)',
       companyLogo: '/logos/creative-agency.png',
       industry: 'marketing',
       industryLabel: t('landing.caseStudiesInline.creativeAgency.industry'),
-      companySize: '12 fő',
+      companySize: '12 fős csapat',
       plan: 'Pro',
-      timeline: '2 hónap',
+      timeline: '2 hónap alatt',
       featured: false,
-      shortDescription: 'Marketing ügynökség, amely 80%-kal csökkentette a sablon készítési idejét',
-      mainResult: 'Creative Agency | 80%-kal Gyorsabb Sablonkészítés',
+      shortDescription:
+        'A Vyndi előtt egy hónapban 20 ajánlatot tudtunk készíteni. Most 40-et. Ugyanannyi emberrel, dupla bevétellel.',
+      mainResult: 'Hogyan Spórolt 96 Munkaórát Havonta a 12 Fős Creative Agency',
       metrics: [
         {
           id: 'm1',
-          value: '-80%',
-          label: 'Megtakarítás sablononként',
-          description: 'A sablon készítési idő 2.5 óráról 0.5 órára csökkent',
-          before: '2.5 óra',
-          after: '0.5 óra',
+          value: '10 óra → 2 óra',
+          label: 'Sablonkészítés idő',
+          description: '10 óra → 2 óra egy sablonra. Ez évi 96 munkaóra megtakarítás a csapatnak.',
+          before: '10 óra',
+          after: '2 óra',
           improvement: '80% időmegtakarítás',
         },
         {
           id: 'm2',
-          value: '100%',
-          label: 'konzisztens megjelenés',
-          description: 'Minden ajánlat konzisztens megjelenésű és márkahű',
+          value: '60% → 100%',
+          label: 'Márkakonzisztencia',
+          description: '60% → 100% konzisztens ajánlatok. 0 visszautasítás dizájn miatt.',
           before: '60%',
           after: '100%',
           improvement: '+40% konzisztencia',
         },
         {
           id: 'm3',
-          value: '40+',
-          label: 'ajánlat/hónap',
-          description: 'Havi 40+ ajánlat elkészítése zökkenőmentesen',
+          value: '20 → 40+',
+          label: 'Ajánlat/hónap',
+          description: '20 → 40+ ajánlat ugyanannyi emberrel. +100% kapacitás = dupla bevétel.',
           before: '20',
           after: '40+',
           improvement: '+100% kapacitás',
         },
       ],
-      challenge: t('landing.caseStudiesInline.creativeAgency.challenge'),
+      challenge: 'Egy hétvége alatt 5 ajánlat - lehetetlen',
       challengePoints: [
-        'A marketing kampányokhoz rendszeresen kellett ajánlatokat készíteni',
-        'A sablonok nehezen testreszabhatók voltak',
-        'A vizuális megjelenés nem volt konzisztens',
-        'Sok idő ment el a formázásra és dizájnra',
-        'Nehéz volt követni a márka irányelveket',
+        'Egy sablon készítése 10 óra - mire kész, addigra már elavult',
+        'Minden ajánlat kinézete más volt - az ügyfelek megkérdőjelezték a profizmusunkat',
+        'A csapat túlórázott, 2 designer majdnem felmondott',
+        'Egy ajánlat elkészítése 60.000 Ft-ba került munkaidőben',
       ],
-      solution: t('landing.caseStudiesInline.creativeAgency.solution'),
+      solution: 'Egy héten belül 5 sablon, 0 túlóra',
       featuresUsed: [
         'Sablonkönyvtár',
         'Márkaidentitás-kezelés',
@@ -364,28 +364,31 @@ export function getCaseStudies(): CaseStudy[] {
       resultTimeline: [
         {
           week: '1',
-          period: '1. hét',
-          title: 'Márka identitás beállítás',
-          description: 'Beállítottuk a márka identitást és létrehoztuk az alapvető sablonokat.',
-          metrics: '5 sablon létrehozva',
+          period: 'Január',
+          title: 'Márka identitás feltöltése',
+          description:
+            'Logó, színek, betűtípusok - 30 perc alatt beállítva. A csapat 5 alapsablonnal kezdett.',
+          metrics: '5 sablon kész, 0 túlóra',
         },
         {
           week: '2-4',
-          period: '2-4. hét',
-          title: 'Sablon fejlesztés',
-          description: 'Kifejlesztettük a marketing kampányokhoz szükséges sablonokat.',
-          metrics: '50%-os időmegtakarítás',
+          period: 'Január',
+          title: 'AI tanítása a szövegstílusunkra',
+          description:
+            '10 korábbi ajánlat feltöltése, az AI megtanulta a stílusunkat. Most 3 perc alatt generál ütős szöveget.',
+          metrics: '50% időmegtakarítás',
         },
         {
           week: '6',
-          period: '6. hét',
-          title: 'Teljes átállás',
-          description: 'Minden új ajánlatot a Vyndi-vel készítettek.',
-          metrics: '70%-os időmegtakarítás',
+          period: 'Február',
+          title: 'Teljes átállás a Vyndire',
+          description:
+            'A csapat már nem a Word/PDF-et használja. Az első 40 ajánlatot zökkenőmentesen küldtük ki.',
+          metrics: '70% gyorsulás',
         },
         {
           week: '8',
-          period: '2. hónap',
+          period: 'Február vége',
           title: 'Optimalizált folyamatok',
           description: 'A folyamatok teljesen optimalizálva lettek, 80%-os időmegtakarítás elérve.',
           metrics: '80% időmegtakarítás + 100% konzisztencia',
@@ -393,30 +396,26 @@ export function getCaseStudies(): CaseStudy[] {
       ],
       implementationSteps: [
         {
-          title: 'Márka identitás beállítás',
-          description: 'Beállítottuk a márka színeit, betűtípusait és logóját a Vyndi rendszerben.',
+          title: 'Márka identitás feltöltése',
+          description:
+            'Logó, színek, betűtípusok - 30 perc alatt beállítva. A csapat 5 alapsablonnal kezdett.',
         },
         {
-          title: 'Sablon fejlesztés',
+          title: 'AI tanítása a szövegstílusunkra',
           description:
-            'Létrehoztuk a marketing kampányokhoz szükséges sablonokat, amelyek automatikusan használják a márka identitást.',
+            '10 korábbi ajánlat feltöltése, az AI megtanulta a stílusunkat. Most 3 perc alatt generál ütős szöveget.',
         },
         {
-          title: 'AI beállítás',
+          title: 'Teljes átállás a Vyndire',
           description:
-            'Beállítottuk az AI-t a marketing szövegek generálásához, amelyek tükrözik a márka hangvételét.',
-        },
-        {
-          title: 'Csapat képzés',
-          description:
-            'Képzést tartottunk a csapatnak a sablonok használatáról és a legjobb gyakorlatokról.',
+            'A csapat már nem a Word/PDF-et használja. Az első 40 ajánlatot zökkenőmentesen küldtük ki.',
         },
       ],
       testimonial: {
         quote:
-          'A Vyndi előtt 2,5 órát töltöttünk egy sablonnal. Most 30 perc alatt kész vagyunk. Ráadásul minden ajánlatunk ugyanolyan profi kinézetű - ez növelte a megrendelési arányunkat is.',
+          'A Vyndi előtt egy hónapban 20 ajánlatot tudtunk készíteni. Most 40-et. Ugyanannyi emberrel, dupla bevétellel.',
         fullQuote:
-          'A Vyndi előtt 2,5 órát töltöttünk egy sablonnal. Most 30 perc alatt kész vagyunk. Ráadásul minden ajánlatunk ugyanolyan profi kinézetű - ez növelte a megrendelési arányunkat is. A sablonkönyvtár és a márkaidentitás-kezelés lehetővé tette, hogy gyorsan, egységes megjelenéssel készítsünk ajánlatokat. Az AI segítségével a marketing szövegek is gyorsan elkészültek, és minden ajánlat konzisztens maradt a márka identitásunkkal.',
+          '2024. januárjában Szabó Anna, a Creative Agency projektmenedzsere azzal a problémával küzdött, hogy egy nagy kampányhoz 5 komplex ajánlatot kellett volna készíteniük 3 nap alatt. A csapat már teljes kapacitáson dolgozott. Az egyik ügyfél visszaküldte az ajánlatot, mert "nem nézett ki professzionálisan". Pedig a tartalom tökéletes volt. A dizájn rombolt meg mindent. Anna először szkeptikus volt. "Már megpróbáltunk sablonrendszert, de sose működött." Aztán látta a Vyndi moduláris megoldását és a AI szövegvarázslót. Az a pillanat, amikor az egyik designer azt mondta: "Most végre a kreatív munkára tudok koncentrálni, a sablonozást hagyom a robotra." Akkor tudtam, hogy ez működik.',
         author: t('landing.caseStudiesInline.creativeAgency.author'),
         authorInitials: 'SA',
         role: t('landing.caseStudiesInline.creativeAgency.role'),
@@ -425,19 +424,19 @@ export function getCaseStudies(): CaseStudy[] {
       featuredImage: '/case-studies/creative-agency-hero.jpg',
       relatedCaseStudies: ['studio-ikon', 'tech-solutions'],
       // Legacy support
-      company: 'Creative Agency',
+      company: 'Creative Agency (Budapest)',
       results: [
         {
-          metric: '-80%',
-          label: t('landing.caseStudiesInline.creativeAgency.results.templateTime'),
+          metric: '10 óra → 2 óra',
+          label: 'Sablonkészítés idő',
         },
         {
-          metric: '100%',
-          label: t('landing.caseStudiesInline.creativeAgency.results.consistentAppearance'),
+          metric: '60% → 100%',
+          label: 'Márkakonzisztencia',
         },
         {
-          metric: '40+',
-          label: t('landing.caseStudiesInline.creativeAgency.results.offersPerMonth'),
+          metric: '20 → 40+',
+          label: 'Ajánlat/hónap',
         },
       ],
       stats: {

@@ -47,7 +47,7 @@ export default function SuccessStoriesPage() {
 
   // Get CTA link text based on study
   const getCTALinkText = (study: (typeof caseStudies)[0]) => {
-    if (study.slug === 'creative-agency') {
+    if (study.slug === 'marketing-ugynokseg-sablon-automatizacio') {
       return 'Teljes történet: Gyorsabb sablonok';
     } else if (study.slug === 'tech-solutions') {
       return 'Teljes történet: Hogyan értük el a 65%-ot?';
@@ -171,7 +171,7 @@ export default function SuccessStoriesPage() {
                   let secondMetricValue = primaryMetric?.after || primaryMetric?.value || 'N/A';
                   let metricLabel = primaryMetric?.label || 'Eredmény';
 
-                  if (study.slug === 'creative-agency') {
+                  if (study.slug === 'marketing-ugynokseg-sablon-automatizacio') {
                     // For Creative Agency, show the metric value with label "Megtakarítás sablononként"
                     metricLabel = study.metrics[0]?.label || 'Megtakarítás sablononként';
                     secondMetricValue = study.metrics[0]?.after || study.metrics[0]?.value || 'N/A';
@@ -238,7 +238,7 @@ export default function SuccessStoriesPage() {
                               {improvementValue}%
                             </div>
                             <div className="text-xs text-gray-600">
-                              {study.slug === 'creative-agency'
+                              {study.slug === 'marketing-ugynokseg-sablon-automatizacio'
                                 ? 'Időmegtakarítás sablonkészítésben'
                                 : study.slug === 'studio-ikon'
                                   ? 'Gyorsabb ajánlatkészítés'
@@ -284,9 +284,9 @@ export default function SuccessStoriesPage() {
                         {/* CTA - Mobile optimized */}
                         <Link
                           href={`/sikertortenetek-ajanlatkeszites-automatizalas/${study.slug}`}
-                          className="group w-full border-2 border-teal-500 text-teal-600 font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-teal-600 hover:text-teal-700 bg-transparent transition-colors flex items-center justify-center"
+                          className="group w-full border-2 border-teal-500 text-teal-600 font-semibold rounded-xl px-8 py-4 min-h-[56px] hover:border-teal-600 hover:text-teal-700 bg-transparent transition-colors flex items-center justify-center text-center"
                         >
-                          <span>{getCTALinkText(study)}</span>
+                          <span className="text-center">{getCTALinkText(study)}</span>
                         </Link>
                       </div>
                     </div>
@@ -302,7 +302,7 @@ export default function SuccessStoriesPage() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-4">
-                Inspirálódtál? Kezdj el a saját sikertörténetedet még ma
+                Inspirálódtál? Kezdd el megírni a saját sikertörténetedet még ma!
               </h2>
               <Link
                 href="/login?redirect=/new"

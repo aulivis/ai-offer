@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 import { t } from '@/copy';
@@ -17,7 +16,6 @@ export function useAuthSession(): AuthSessionState {
     status: 'loading',
     user: null,
   });
-  const pathname = usePathname();
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +65,8 @@ export function useAuthSession(): AuthSessionState {
     return () => {
       cancelled = true;
     };
-  }, [pathname]);
+    // Only run once on mount, not on every pathname change
+  }, []);
 
   return state;
 }

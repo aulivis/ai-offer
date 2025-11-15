@@ -29,13 +29,17 @@ export default function AppFrame({
 }: AppFrameProps) {
   const pathname = usePathname();
   const { showToast } = useToast();
+  // Only check auth if requireAuth is true, to avoid unnecessary API calls
+  const shouldCheckAuth = requireAuth || redirectOnUnauthenticated === true;
   const { error, status } = useRequireAuth(undefined, {
     redirectOnUnauthenticated: redirectOnUnauthenticated ?? requireAuth,
+    skip: !shouldCheckAuth,
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!error) {
+    // Only show error toast if we're actually checking auth
+    if (!error || !shouldCheckAuth) {
       return;
     }
     console.error('Failed to verify authentication status.', error);
@@ -44,7 +48,7 @@ export default function AppFrame({
       description: error.message || t('toasts.auth.verificationFailed.description'),
       variant: 'error',
     });
-  }, [error, showToast]);
+  }, [error, showToast, shouldCheckAuth]);
 
   useEffect(() => {
     setIsSidebarOpen(false);

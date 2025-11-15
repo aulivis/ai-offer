@@ -18,7 +18,7 @@ const base = [
 
 const variantClasses: Record<NonNullable<Props['variant']>, string> = {
   primary:
-    'bg-[var(--btn-bg)] text-[var(--btn-fg)] enabled:hover:brightness-110 enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',
+    'bg-gradient-to-r from-[var(--btn-bg)] via-[var(--btn-bg)] to-turquoise-600 text-[var(--btn-fg)] enabled:hover:from-[var(--btn-bg)]/90 enabled:hover:via-[var(--btn-bg)]/90 enabled:hover:to-turquoise-700 enabled:hover:scale-105 enabled:hover:shadow-lg enabled:active:scale-95 transition-all duration-300 shadow-md',
   secondary: [
     'border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]',
     'enabled:hover:border-[var(--btn-hover-border)] enabled:hover:bg-[var(--btn-hover-bg)] enabled:hover:text-[var(--btn-hover-fg)] enabled:hover:scale-105 enabled:active:scale-95 transition-all duration-200',

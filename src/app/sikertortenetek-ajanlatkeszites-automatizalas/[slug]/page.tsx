@@ -18,6 +18,21 @@ export async function generateMetadata({
     };
   }
 
+  // Special metadata for marketing-ugynokseg-sablon-automatizacio
+  if (slug === 'marketing-ugynokseg-sablon-automatizacio') {
+    return {
+      title: 'Creative Agency | 80% gyorsulás ajánlatkészítésben - Vyndi esettanulmány',
+      description:
+        'Hogyan spórolt 96 munkaórát a 12 fős Creative Agency a Vyndi-vel? Valós eredmények: 80% időmegtakarítás, 100% márkakonzisztencia. Olvasd el a teljes történetet!',
+      openGraph: {
+        title: 'Creative Agency | 80% gyorsulás ajánlatkészítésben - Vyndi esettanulmány',
+        description:
+          'Hogyan spórolt 96 munkaórát a 12 fős Creative Agency a Vyndi-vel? Valós eredmények: 80% időmegtakarítás, 100% márkakonzisztencia. Olvasd el a teljes történetet!',
+        type: 'article',
+      },
+    };
+  }
+
   return {
     title: `${caseStudy.companyName} sikertörténete | Vyndi`,
     description: caseStudy.shortDescription,

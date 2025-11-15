@@ -101,6 +101,17 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  // Pages that should have white navbar text by default
+  const whiteNavbarPages = [
+    '/',
+    '/resources',
+    '/sikertortenetek-ajanlatkeszites-automatizalas',
+    '/billing',
+  ];
+  const shouldUseWhiteNavbar = whiteNavbarPages.some(
+    (page) => pathname === page || pathname.startsWith(`${page}/`),
+  );
+
   // Enhanced header classes with scroll-based styling and mobile visibility
   const headerClass = useMemo(
     () =>
@@ -170,10 +181,10 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 href={item.href}
                 className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
                   isNavItemActive(item.href)
-                    ? scrolled
+                    ? scrolled || !shouldUseWhiteNavbar
                       ? 'text-navy-900 font-semibold bg-gray-100/80'
                       : 'text-white font-semibold bg-white/20'
-                    : scrolled
+                    : scrolled || !shouldUseWhiteNavbar
                       ? 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
                       : 'text-white hover:bg-white/20 hover:text-white'
                 }`}
@@ -185,7 +196,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {!isNavItemActive(item.href) && (
                   <span
                     className={`absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
-                      scrolled ? 'bg-turquoise-500' : 'bg-white'
+                      scrolled || !shouldUseWhiteNavbar ? 'bg-turquoise-500' : 'bg-white'
                     }`}
                   ></span>
                 )}
@@ -215,7 +226,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     logout();
                   }}
                   className={`px-5 py-2.5 text-base font-semibold rounded-lg border transition-all duration-200 ${
-                    scrolled
+                    scrolled || !shouldUseWhiteNavbar
                       ? 'border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50'
                       : 'border-white text-white hover:bg-white/20'
                   }`}
@@ -229,7 +240,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 <Link
                   href="/login"
                   className={`border-2 font-semibold rounded-xl px-5 py-2.5 text-base bg-transparent transition-colors ${
-                    scrolled
+                    scrolled || !shouldUseWhiteNavbar
                       ? 'border-navy-900 text-navy-900 hover:border-orange-500 hover:text-orange-500'
                       : 'border-white text-white hover:border-orange-500 hover:text-orange-500'
                   }`}
@@ -256,7 +267,9 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           <button
             type="button"
             className={`ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg transition duration-200 md:hidden min-h-[44px] min-w-[44px] ${
-              scrolled ? 'text-navy-900 hover:bg-gray-100/80' : 'text-white hover:bg-white/20'
+              scrolled || !shouldUseWhiteNavbar
+                ? 'text-navy-900 hover:bg-gray-100/80'
+                : 'text-white hover:bg-white/20'
             }`}
             aria-label={t('nav.menuToggle')}
             aria-expanded={isMenuOpen}

@@ -104,13 +104,16 @@ export function SettingsEmailSubscriptionSection() {
         className="scroll-mt-24"
         header={
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <EnvelopeIcon className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
+                <EnvelopeIcon className="relative z-10 h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Email hírlevél</h2>
-                <p className="text-sm text-slate-500">Betöltés...</p>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
+                  Email hírlevél
+                </h2>
+                <p className="text-sm md:text-base text-slate-500">Betöltés...</p>
               </div>
             </div>
           </CardHeader>
@@ -131,13 +134,16 @@ export function SettingsEmailSubscriptionSection() {
       header={
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <EnvelopeIcon className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
+                <EnvelopeIcon className="relative z-10 h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Email hírlevél</h2>
-                <p className="text-sm text-slate-500">
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
+                  Email hírlevél
+                </h2>
+                <p className="text-sm md:text-base text-slate-500">
                   Kapj értesítéseket az újdonságokról és hasznos tippekről
                 </p>
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -9,13 +9,13 @@ import {
   ChevronDown,
   Building2,
   Clock,
-  Award,
   AlertCircle,
   Lightbulb,
   CheckCircle,
   XCircle,
   FileText,
   TrendingDown,
+  TrendingUp,
   Zap,
   Settings,
   Rocket,
@@ -32,23 +32,7 @@ interface CaseStudyDetailClientProps {
 
 export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [showFloatingCTA, setShowFloatingCTA] = useState(false);
   const relatedCaseStudies = getRelatedCaseStudies(caseStudy.slug, 3);
-
-  // Show floating CTA after scrolling past hero
-  useEffect(() => {
-    const handleScroll = () => {
-      const heroHeight = 400; // Approximate hero section height
-      setShowFloatingCTA(window.scrollY > heroHeight);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Get primary metric for hero display
-  const primaryMetric = caseStudy.metrics[0];
-  const improvementValue = primaryMetric?.improvement?.match(/\d+/)?.[0] || '0';
 
   return (
     <div className="min-h-screen bg-white">
@@ -75,7 +59,9 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
             {/* Eyebrow text */}
             <div className="text-center mb-6">
               <span className="inline-block px-4 py-2 bg-turquoise-500/20 text-turquoise-300 rounded-full font-semibold text-sm border border-turquoise-500/30">
-                SIKERTÖRTÉNET
+                {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                  ? '📊 ESETTANULMÁNY'
+                  : 'SIKERTÖRTÉNET'}
               </span>
             </div>
 
@@ -128,28 +114,39 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
               </p>
             </div>
 
-            {/* Quick facts */}
-            <div className="flex flex-wrap justify-center gap-6 text-sm border-t border-white/20 pt-8">
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-turquoise-400" />
-                <span>{caseStudy.plan} csomag</span>
-              </div>
-              {primaryMetric && (
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-turquoise-400" />
-                  <span>{improvementValue}% javulás</span>
-                </div>
-              )}
+            {/* Scroll down button */}
+            <div className="flex flex-col items-center gap-2 animate-bounce mt-8">
+              <button
+                onClick={() => {
+                  const metricsSection = document.getElementById('metrics-section');
+                  if (metricsSection) {
+                    metricsSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="text-white/80 hover:text-white transition-colors flex flex-col items-center gap-2 group"
+                aria-label="Scroll to metrics"
+              >
+                <span className="text-sm font-medium">
+                  {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                    ? 'Nézd meg, hogyan csináltuk'
+                    : '📊 Nézd meg a számokat'}
+                </span>
+                <ChevronDown className="w-6 h-6 group-hover:translate-y-1 transition-transform" />
+              </button>
             </div>
           </div>
         </div>
       </section>
 
       {/* Enhanced Metrics Section */}
-      <section className="py-16 bg-white">
+      <section id="metrics-section" className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">Elért eredmények</h2>
+            <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">
+              {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                ? 'Havi 480.000 Ft megtakarítás és 100%-os márkakonzisztencia - Hogyan?'
+                : 'Elért eredmények'}
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
               {caseStudy.metrics.map((metric, index) => {
@@ -157,7 +154,10 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 const iconMap: Record<number, typeof Clock> = {
                   0: Clock,
                   1: FileText,
-                  2: TrendingDown,
+                  2:
+                    caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                      ? Zap
+                      : TrendingDown,
                 };
                 const Icon = iconMap[index] || Clock;
 
@@ -180,17 +180,20 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                     ></div>
 
                     <div className="relative z-10">
-                      <Icon
-                        className={`w-6 md:w-8 h-6 md:h-8 ${colors.icon} mb-3 ${
-                          isPrimary ? 'md:w-10 md:h-10' : ''
-                        }`}
-                      />
-                      <div
-                        className={`font-bold mb-2 ${colors.text} ${
-                          isPrimary ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
-                        }`}
-                      >
-                        {metric.value}
+                      {/* Icons after numbers - same row for all pages */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <div
+                          className={`font-bold ${colors.text} ${
+                            isPrimary ? 'text-4xl md:text-5xl' : 'text-3xl md:text-4xl'
+                          }`}
+                        >
+                          {metric.value}
+                        </div>
+                        <Icon
+                          className={`w-6 md:w-8 h-6 md:h-8 ${colors.icon} ${
+                            isPrimary ? 'md:w-10 md:h-10' : ''
+                          }`}
+                        />
                       </div>
                       <div
                         className={`font-semibold mb-1 ${
@@ -207,56 +210,6 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                 );
               })}
             </div>
-
-            {/* Enhanced Before/After Comparisons */}
-            {caseStudy.metrics.some((m) => m.before && m.after) && (
-              <div className="space-y-8">
-                <h3 className="text-2xl font-bold text-navy-900 text-center mb-8">
-                  Eredmények számokban
-                </h3>
-                {caseStudy.metrics
-                  .filter((m) => m.before && m.after)
-                  .map((metric) => (
-                    <div
-                      key={metric.id}
-                      className="bg-gradient-to-r from-red-50 to-green-50 rounded-xl p-6 md:p-8 border border-gray-200"
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                        {/* Before - Red/Orange tint */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-red-200 shadow-sm text-center">
-                          <div className="text-xs text-red-600 font-semibold mb-2 uppercase tracking-wide">
-                            Előtte
-                          </div>
-                          <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">
-                            {metric.before}
-                          </div>
-                          <div className="text-sm text-gray-600">{metric.label}</div>
-                        </div>
-
-                        {/* Arrow with improvement */}
-                        <div className="text-center flex flex-col items-center justify-center">
-                          <ArrowRight className="w-12 h-16 md:w-16 md:h-20 mx-auto text-gray-400 mb-3 hidden md:block" />
-                          <div className="bg-green-500 text-white px-4 py-2 rounded-full inline-flex items-center gap-2 shadow-lg">
-                            <TrendingDown className="w-4 h-4" />
-                            <span className="font-bold">{metric.improvement || 'Javulás'}</span>
-                          </div>
-                        </div>
-
-                        {/* After - Green tint */}
-                        <div className="bg-white rounded-xl p-6 border-2 border-green-200 shadow-sm text-center">
-                          <div className="text-xs text-green-600 font-semibold mb-2 uppercase tracking-wide">
-                            Utána
-                          </div>
-                          <div className="text-3xl md:text-4xl font-bold text-green-600 mb-1">
-                            {metric.after}
-                          </div>
-                          <div className="text-sm text-gray-600">Vyndi-val</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -265,32 +218,72 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-8 h-8 text-red-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">A kihívás</h2>
-                  <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.challenge}</p>
-                </div>
-              </div>
+            {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio' ? (
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-6">
+                  A Kihívás: &quot;Egy hétvége alatt 5 ajánlat - lehetetlen&quot;
+                </h2>
 
-              {/* Challenge details with better spacing */}
-              <div className="space-y-4">
-                {caseStudy.challengePoints.map((point, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="font-semibold text-gray-800">{point}</div>
-                    </div>
+                <div className="story-content">
+                  <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                    2024. januárjában Szabó Anna, a Creative Agency projektmenedzsere azzal a
+                    problémával küzdött, hogy egy nagy kampányhoz 5 komplex ajánlatot kellett volna
+                    készíteniük 3 nap alatt. A csapat már teljes kapacitáson dolgozott.
+                  </p>
+
+                  <div className="pain-points mb-6">
+                    <h3 className="font-bold text-xl text-navy-900 mb-4">A fájdalmas valóság:</h3>
+                    <ul className="space-y-3">
+                      {caseStudy.challengePoints.map((point, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                          <span
+                            className="text-gray-700"
+                            dangerouslySetInnerHTML={{ __html: point }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                ))}
+
+                  <blockquote className="border-l-4 border-red-400 pl-6 py-4 bg-red-50 rounded-r-lg my-6">
+                    <p className="text-gray-700 italic mb-2">
+                      &quot;Az egyik ügyfél visszaküldte az ajánlatot, mert &apos;nem nézett ki
+                      professzionálisan&apos;. Pedig a tartalom tökéletes volt. A dizájn rombolt meg
+                      mindent.&quot;
+                    </p>
+                    <footer className="text-gray-600 font-semibold">- Szabó Anna</footer>
+                  </blockquote>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-8 h-8 text-red-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">A kihívás</h2>
+                    <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.challenge}</p>
+                  </div>
+                </div>
+
+                {/* Challenge details with better spacing */}
+                <div className="space-y-4">
+                  {caseStudy.challengePoints.map((point, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <XCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-gray-800">{point}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -299,31 +292,84 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
       <section className="py-16 bg-gradient-to-br from-teal-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="w-16 h-16 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">A megoldás</h2>
-                  <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.solution}</p>
-                </div>
-              </div>
+            {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio' ? (
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-6">
+                  A Megoldás: &quot;Egy héten belül 5 sablon, 0 túlóra&quot;
+                </h2>
 
-              {/* Solution features used */}
-              <div className="space-y-3">
-                <h3 className="font-bold text-navy-900 mb-4 text-lg">Használt Vyndi funkciók:</h3>
-                {caseStudy.featuresUsed.map((feature, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-teal-100"
-                  >
-                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
+                <div className="solution-story">
+                  <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                    Anna először szkeptikus volt. &quot;Már megpróbáltunk sablonrendszert, de sose
+                    működött.&quot; Aztán látta a Vyndi <strong>moduláris megoldását</strong> és a{' '}
+                    <strong>AI szövegvarázslót</strong>.
+                  </p>
+
+                  <div className="implementation-steps space-y-6">
+                    {caseStudy.implementationSteps.map((step, idx) => {
+                      const weekLabels = ['1. Hét', '2-4. Hét', '6. Hét'];
+                      const outcomeLabels = [
+                        '✅ 5 sablon kész, 0 túlóra',
+                        '✅ 50% időmegtakarítás',
+                        '✅ 70% gyorsulás',
+                      ];
+                      return (
+                        <div
+                          key={idx}
+                          className="step bg-teal-50 rounded-lg p-6 border border-teal-200"
+                        >
+                          <div className="week bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
+                            {weekLabels[idx] || step.title}
+                          </div>
+                          <h3 className="font-bold text-xl text-navy-900 mb-2">{step.title}</h3>
+                          <p className="text-gray-700 mb-3">{step.description}</p>
+                          <div className="outcome bg-green-500 text-white px-4 py-2 rounded-lg inline-block text-sm font-semibold">
+                            {outcomeLabels[idx] || ''}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+
+                  <blockquote className="border-l-4 border-teal-400 pl-6 py-4 bg-teal-50 rounded-r-lg my-6">
+                    <p className="text-gray-700 italic mb-2">
+                      &quot;Az a pillanat, amikor az egyik designer azt mondta: &apos;Most végre a
+                      kreatív munkára tudok koncentrálni, a sablonozást hagyom a robotra.&apos;
+                      Akkor tudtam, hogy ez működik.&quot;
+                    </p>
+                    <footer className="text-gray-600 font-semibold">- Szabó Anna</footer>
+                  </blockquote>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-xl p-8 shadow-lg">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-xl bg-teal-500 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2">
+                      A megoldás
+                    </h2>
+                    <p className="text-lg text-gray-700 leading-relaxed">{caseStudy.solution}</p>
+                  </div>
+                </div>
+
+                {/* Solution features used */}
+                <div className="space-y-3">
+                  <h3 className="font-bold text-navy-900 mb-4 text-lg">Használt Vyndi funkciók:</h3>
+                  {caseStudy.featuresUsed.map((feature, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm border border-teal-100"
+                    >
+                      <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                      <span className="text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -336,7 +382,9 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-navy-900 text-center mb-12">
-              Eredmények idővonalon
+              {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                ? '2 Hónap, 4 Mérföldkő - Így Értük El'
+                : 'Eredmények idővonalon'}
             </h2>
 
             {/* Vertical Timeline */}
@@ -398,13 +446,20 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                       {/* Content card */}
                       <div className="flex-1 pt-1">
                         <article className="bg-white rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-teal-300 group max-w-2xl mx-auto hover:-translate-y-1">
-                          {/* Week and period header - muted styling */}
+                          {/* Week and period header - unified formatting for all pages */}
                           <div className="flex items-center justify-center gap-3 mb-4">
                             <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-200/60">
-                              {milestone.week}
-                            </span>
-                            <span className="text-xs text-gray-500 font-medium">
-                              {milestone.period}
+                              {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                                ? milestone.week === '1'
+                                  ? 'Január 1. hét'
+                                  : milestone.week === '2-4'
+                                    ? 'Január 2-4. hét'
+                                    : milestone.week === '6'
+                                      ? 'Február 6. hét'
+                                      : milestone.week === '8'
+                                        ? 'Február vége'
+                                        : milestone.week
+                                : `${milestone.period}`}
                             </span>
                           </div>
 
@@ -418,7 +473,14 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
                           {/* Description */}
                           <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-6 text-center">
-                            {milestone.description}
+                            {milestone.description.includes(
+                              'Minden új ajánlatot a Vyndi-vel készítettek',
+                            )
+                              ? milestone.description.replace(
+                                  'Minden új ajánlatot a Vyndi-vel készítettek',
+                                  'Minden új ajánlatot a Vyndi-vel készítettünk',
+                                )
+                              : milestone.description}
                           </p>
 
                           {/* Enhanced Outcome Metrics */}
@@ -426,7 +488,12 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
                             <div className="flex justify-center">
                               <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 to-teal-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 border-green-400/30 min-w-[200px]">
                                 <div className="flex items-center gap-2">
-                                  <TrendingDown className="w-5 h-5" strokeWidth={2.5} />
+                                  {/* Use TrendingUp for last milestone, TrendingDown for others */}
+                                  {idx === caseStudy.resultTimeline.length - 1 ? (
+                                    <TrendingUp className="w-5 h-5" strokeWidth={2.5} />
+                                  ) : (
+                                    <TrendingDown className="w-5 h-5" strokeWidth={2.5} />
+                                  )}
                                   <span className="text-xs uppercase tracking-wide opacity-90">
                                     Eredmény
                                   </span>
@@ -540,7 +607,9 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-3xl font-bold text-navy-900 text-center mb-12">
-                Hasonló sikertörténetek
+                {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                  ? 'Hasonló cégek, akik így növekednek'
+                  : 'Hasonló sikertörténetek'}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -625,18 +694,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
         </section>
       )}
 
-      {/* Back to Stories Link */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <Link
-            href="/sikertortenetek-ajanlatkeszites-automatizalas"
-            className="inline-flex items-center gap-2 text-teal-600 font-semibold hover:gap-3 transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            További sikertörténetek
-          </Link>
-        </div>
-      </section>
+      {/* Back to Stories Link - Removed for all pages */}
 
       {/* Bottom CTA */}
       <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 text-white relative overflow-hidden">
@@ -647,10 +705,15 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Érj el hasonló eredményeket</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                ? 'Legyen a Te céged a következő sikertörténet?'
+                : 'Érj el hasonló eredményeket'}
+            </h2>
             <p className="text-xl mb-8 text-white/90">
-              Csatlakozz {caseStudy.companyName}-hoz és 500+ céghez, akik már átlagosan 70%-kal
-              gyorsabban készítik ajánlataikat
+              {caseStudy.slug === 'marketing-ugynokseg-sablon-automatizacio'
+                ? 'Próbáld ki a Vyndi-t ingyen és készítsd el az első ajánlatod 5 perc alatt. Nincs bankkártya, nincs kockázat.'
+                : `Csatlakozz ${caseStudy.companyName}-hoz és 500+ céghez, akik már átlagosan 70%-kal gyorsabban készítik ajánlataikat`}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -683,18 +746,7 @@ export function CaseStudyDetailClient({ caseStudy }: CaseStudyDetailClientProps)
         </div>
       </section>
 
-      {/* Floating CTA */}
-      {showFloatingCTA && (
-        <div className="fixed bottom-6 left-6 z-50 animate-in slide-in-from-bottom-5 duration-300">
-          <Link
-            href="/login?redirect=/new"
-            className="group bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-full shadow-2xl hover:bg-orange-600 flex items-center gap-2 transition-all hover:scale-105"
-          >
-            <span className="font-semibold">Próbáld ki ingyen</span>
-            <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
-        </div>
-      )}
+      {/* Floating CTA - Removed for all pages */}
     </div>
   );
 }

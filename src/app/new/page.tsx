@@ -2319,1160 +2319,1171 @@ export default function NewOfferWizard() {
         console.error('Wizard error:', error, errorInfo);
       }}
     >
-      <AppFrame
-        title={t('offers.wizard.pageTitle')}
-        description={t('offers.wizard.pageDescription')}
-      >
-        {/* Skip link for accessibility */}
-        <a
-          href="#wizard-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50">
+        <AppFrame
+          title={t('offers.wizard.pageTitle')}
+          description={t('offers.wizard.pageDescription')}
         >
-          Ugrás a tartalomhoz
-        </a>
-        <div className="space-y-6 sm:space-y-8" id="wizard-content">
-          <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
-            <StepIndicator steps={wizardSteps} />
-            <WizardProgressIndicator
-              step={step as WizardStep}
-              completedFields={completedFields}
-              totalFields={totalFields}
+          {/* Skip link for accessibility */}
+          <a
+            href="#wizard-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          >
+            Ugrás a tartalomhoz
+          </a>
+          <div className="space-y-6 sm:space-y-8" id="wizard-content">
+            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-lg ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
+              <StepIndicator steps={wizardSteps} />
+              <WizardProgressIndicator
+                step={step as WizardStep}
+                completedFields={completedFields}
+                totalFields={totalFields}
+              />
+            </Card>
+
+            {/* Enhanced draft save indicator with error handling */}
+            <DraftSaveIndicator
+              status={autosaveStatus}
+              lastSaved={lastSaved}
+              error={autosaveError}
+              retryCount={retryCount}
+              onRetry={manualSave}
             />
-          </Card>
 
-          {/* Enhanced draft save indicator with error handling */}
-          <DraftSaveIndicator
-            status={autosaveStatus}
-            lastSaved={lastSaved}
-            error={autosaveError}
-            retryCount={retryCount}
-            onRetry={manualSave}
-          />
+            {step === 1 && (
+              <section className="space-y-6">
+                <WizardStep1Details
+                  form={form}
+                  onFormChange={(updates) => setForm((prev) => ({ ...prev, ...updates }))}
+                  client={client}
+                  onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+                  clientList={clientList}
+                  onClientSelect={pickClient}
+                  availableIndustries={availableIndustries}
+                  validationErrors={validationErrors}
+                  showClientDropdown={showClientDrop}
+                  onClientDropdownToggle={setShowClientDrop}
+                  filteredClients={filteredClients}
+                  textTemplates={textTemplates.map((t) => ({ id: t.id, name: t.name }))}
+                  selectedTemplateId={selectedTemplateId}
+                  onTemplateSelect={(templateId) => {
+                    const event = {
+                      target: { value: templateId },
+                    } as ChangeEvent<HTMLSelectElement>;
+                    handleTemplateSelect(event);
+                  }}
+                  quotaInfo={{
+                    title: quotaTitle,
+                    description: quotaDescription,
+                    remainingText: quotaRemainingText,
+                    pendingText: quotaPendingText,
+                    isExhausted: isQuotaExhausted,
+                  }}
+                />
+              </section>
+            )}
+            {step === 1 && false && (
+              <section className="space-y-6">
+                <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
+                  <div className="space-y-3">
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      {t('offers.wizard.steps.details')}
+                    </h2>
+                    <p className="text-sm text-slate-600">
+                      {t('offers.wizard.forms.details.sections.overviewHint')}
+                    </p>
+                  </div>
 
-          {step === 1 && (
-            <section className="space-y-6">
-              <WizardStep1Details
-                form={form}
-                onFormChange={(updates) => setForm((prev) => ({ ...prev, ...updates }))}
+                  <div
+                    className={`rounded-2xl border p-4 transition ${
+                      isQuotaExhausted
+                        ? 'border-rose-200 bg-rose-50/90 text-rose-700'
+                        : 'border-slate-200 bg-slate-50/90 text-slate-700'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold">{quotaTitle}</p>
+                      <p className="text-xs text-current/80">{quotaDescription}</p>
+                      {quotaRemainingText ? (
+                        <p className="text-xs font-semibold text-current">{quotaRemainingText}</p>
+                      ) : null}
+                      {quotaPendingText ? (
+                        <p className="text-[11px] text-current/70">{quotaPendingText}</p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <section className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-white/70 p-5">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        {t('offers.wizard.forms.details.templates.heading')}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {t('offers.wizard.forms.details.templates.helper')}
+                      </p>
+                    </div>
+                    {textTemplates.length > 0 ? (
+                      <Select
+                        label={t('offers.wizard.forms.details.templates.selectLabel')}
+                        value={selectedTemplateId}
+                        onChange={handleTemplateSelect}
+                      >
+                        <option value="">
+                          {t('offers.wizard.forms.details.templates.selectPlaceholder')}
+                        </option>
+                        {textTemplates.map((template) => (
+                          <option key={template.id} value={template.id}>
+                            {template.name}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <p className="text-xs text-slate-500">
+                        {t('offers.wizard.forms.details.templates.empty')}
+                      </p>
+                    )}
+                  </section>
+
+                  <section className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        {t('offers.wizard.forms.details.sections.style')}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {t('offers.wizard.forms.details.sections.styleHelper')}
+                      </p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {[
+                        {
+                          value: 'compact' as const,
+                          label: t('offers.wizard.forms.details.styleOptions.compact.label'),
+                          description: t(
+                            'offers.wizard.forms.details.styleOptions.compact.description',
+                          ),
+                        },
+                        {
+                          value: 'detailed' as const,
+                          label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
+                          description: t(
+                            'offers.wizard.forms.details.styleOptions.detailed.description',
+                          ),
+                        },
+                      ].map((option) => {
+                        const active = form.style === option.value;
+                        return (
+                          <Button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, style: option.value }))}
+                            className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                              active
+                                ? 'border-slate-900 bg-slate-900 text-white shadow-lg'
+                                : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
+                            }`}
+                          >
+                            <span className="text-sm font-semibold">{option.label}</span>
+                            <span className="text-xs text-current/80">{option.description}</span>
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  <section className="space-y-4">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        {t('offers.wizard.forms.details.sections.overview')}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {t('offers.wizard.forms.details.sections.overviewHelper')}
+                      </p>
+                    </div>
+                    <div className="grid gap-6">
+                      {form.style === 'detailed' ? (
+                        <Select
+                          label={t('offers.wizard.forms.details.industryLabel')}
+                          value={form.industry}
+                          onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
+                        >
+                          {availableIndustries.map((ind) => (
+                            <option key={ind} value={ind}>
+                              {ind}
+                            </option>
+                          ))}
+                        </Select>
+                      ) : null}
+
+                      <Input
+                        label={t('offers.wizard.forms.details.titleLabel')}
+                        placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
+                        value={form.title}
+                        onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                      />
+
+                      <Textarea
+                        label={t('offers.wizard.forms.details.descriptionLabel')}
+                        placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
+                        value={form.projectDetails.overview}
+                        maxLength={PROJECT_DETAIL_LIMITS.overview}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            projectDetails: {
+                              ...f.projectDetails,
+                              overview: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+
+                      {form.style === 'detailed' ? (
+                        <div className="space-y-4">
+                          <div className="space-y-4 rounded-2xl border border-border/70 bg-white/70 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="text-sm font-semibold text-fg">
+                                  {t('offers.wizard.forms.details.tips.title')}
+                                </p>
+                                <p className="text-xs text-fg-muted">
+                                  {t('offers.wizard.forms.details.tips.subtitle')}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setDetailsTipsOpen((value) => !value)}
+                                className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-fg transition hover:border-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              >
+                                {detailsTipsOpen
+                                  ? t('offers.wizard.forms.details.tips.hide')
+                                  : t('offers.wizard.forms.details.tips.show')}
+                              </button>
+                            </div>
+                            {detailsTipsOpen && (
+                              <ul className="list-disc space-y-2 pl-5 text-xs text-fg-muted">
+                                <li>{t('offers.wizard.forms.details.tips.items.overview')}</li>
+                                <li>{t('offers.wizard.forms.details.tips.items.deliverables')}</li>
+                                <li>{t('offers.wizard.forms.details.tips.items.timeline')}</li>
+                                <li>{t('offers.wizard.forms.details.tips.items.constraints')}</li>
+                              </ul>
+                            )}
+                          </div>
+
+                          {PROJECT_DETAIL_FIELDS.filter((field) => field !== 'overview').map(
+                            (field) => (
+                              <Textarea
+                                key={field}
+                                value={form.projectDetails[field]}
+                                onChange={(event) =>
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    projectDetails: {
+                                      ...prev.projectDetails,
+                                      [field]: event.target.value,
+                                    },
+                                  }))
+                                }
+                                label={t(
+                                  `offers.wizard.forms.details.fields.${field}.label` as const,
+                                )}
+                                placeholder={t(
+                                  `offers.wizard.forms.details.fields.${field}.placeholder` as const,
+                                )}
+                                help={t(
+                                  `offers.wizard.forms.details.fields.${field}.help` as const,
+                                )}
+                                maxLength={PROJECT_DETAIL_LIMITS[field]}
+                                showCounter
+                                className="min-h-[7.5rem]"
+                              />
+                            ),
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  </section>
+
+                  {form.style === 'detailed' ? (
+                    <section className="space-y-4">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          {t('offers.wizard.forms.details.sections.scope')}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          {t('offers.wizard.forms.details.sections.scopeHelper')}
+                        </p>
+                      </div>
+                      <div className="grid gap-6 sm:grid-cols-3">
+                        <Input
+                          label={t('offers.wizard.forms.details.deadlineLabel')}
+                          value={form.deadline}
+                          onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
+                        />
+                        <Select
+                          label={t('offers.wizard.forms.details.languageLabel')}
+                          value={form.language}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              language: e.target.value as Step1Form['language'],
+                            }))
+                          }
+                        >
+                          <option value="hu">
+                            {t('offers.wizard.forms.details.languageOptions.hu')}
+                          </option>
+                          <option value="en">
+                            {t('offers.wizard.forms.details.languageOptions.en')}
+                          </option>
+                        </Select>
+                        <Select
+                          label={t('offers.wizard.forms.details.voiceLabel')}
+                          value={form.brandVoice}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              brandVoice: e.target.value as Step1Form['brandVoice'],
+                            }))
+                          }
+                        >
+                          <option value="friendly">
+                            {t('offers.wizard.forms.details.voiceOptions.friendly')}
+                          </option>
+                          <option value="formal">
+                            {t('offers.wizard.forms.details.voiceOptions.formal')}
+                          </option>
+                        </Select>
+                      </div>
+                    </section>
+                  ) : null}
+
+                  <section className="space-y-5 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700">
+                          {t('offers.wizard.forms.details.sections.client')}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {t('offers.wizard.forms.details.sections.clientHelper')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        label={t('offers.wizard.forms.details.clientLookupLabel')}
+                        placeholder={t('offers.wizard.forms.details.clientLookupPlaceholder')}
+                        value={client.company_name}
+                        onChange={(e) => {
+                          setClientId(undefined);
+                          setClient((c) => ({ ...c, company_name: e.target.value }));
+                          setShowClientDrop(true);
+                        }}
+                        onFocus={() => setShowClientDrop(true)}
+                      />
+                      {showClientDrop && filteredClients.length > 0 && (
+                        <div className="absolute z-10 mt-2 max-h-52 w-full overflow-auto rounded-2xl border border-border/70 bg-white shadow-xl">
+                          {filteredClients.map((c) => (
+                            <Button
+                              key={c.id}
+                              type="button"
+                              className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                              onMouseDown={() => pickClient(c)}
+                            >
+                              <span className="font-medium text-slate-700">{c.company_name}</span>
+                              {c.email ? (
+                                <span className="text-xs text-slate-500">{c.email}</span>
+                              ) : null}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <Input
+                        label={t('offers.wizard.forms.details.clientFieldAddress')}
+                        placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
+                        value={client.address || ''}
+                        onChange={(e) => setClient((c) => ({ ...c, address: e.target.value }))}
+                      />
+                      <Input
+                        label={t('offers.wizard.forms.details.clientFieldTax')}
+                        placeholder={t('offers.wizard.forms.details.clientFieldTax')}
+                        value={client.tax_id || ''}
+                        onChange={(e) => setClient((c) => ({ ...c, tax_id: e.target.value }))}
+                      />
+                      <Input
+                        label={t('offers.wizard.forms.details.clientFieldRepresentative')}
+                        placeholder={t('offers.wizard.forms.details.clientFieldRepresentative')}
+                        value={client.representative || ''}
+                        onChange={(e) =>
+                          setClient((c) => ({ ...c, representative: e.target.value }))
+                        }
+                      />
+                      <Input
+                        label={t('offers.wizard.forms.details.clientFieldPhone')}
+                        placeholder={t('offers.wizard.forms.details.clientFieldPhone')}
+                        value={client.phone || ''}
+                        onChange={(e) => setClient((c) => ({ ...c, phone: e.target.value }))}
+                      />
+                      <div className="sm:col-span-2">
+                        <Input
+                          label={t('offers.wizard.forms.details.clientFieldEmail')}
+                          placeholder={t('offers.wizard.forms.details.clientFieldEmail')}
+                          value={client.email || ''}
+                          onChange={(e) => setClient((c) => ({ ...c, email: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  </section>
+                </Card>
+              </section>
+            )}
+            {step === 2 && (
+              <WizardStep2Pricing
+                rows={rows}
+                onRowsChange={setRows}
+                activities={activities}
+                industry={form.industry}
+                {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
                 client={client}
                 onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
                 clientList={clientList}
                 onClientSelect={pickClient}
-                availableIndustries={availableIndustries}
-                validationErrors={validationErrors}
                 showClientDropdown={showClientDrop}
                 onClientDropdownToggle={setShowClientDrop}
                 filteredClients={filteredClients}
-                textTemplates={textTemplates.map((t) => ({ id: t.id, name: t.name }))}
-                selectedTemplateId={selectedTemplateId}
-                onTemplateSelect={(templateId) => {
-                  const event = { target: { value: templateId } } as ChangeEvent<HTMLSelectElement>;
-                  handleTemplateSelect(event);
-                }}
-                quotaInfo={{
-                  title: quotaTitle,
-                  description: quotaDescription,
-                  remainingText: quotaRemainingText,
-                  pendingText: quotaPendingText,
-                  isExhausted: isQuotaExhausted,
-                }}
+                onActivitySaved={reloadActivities}
+                enableReferencePhotos={enableReferencePhotosForWizard}
+                enableTestimonials={profileSettings.enable_testimonials}
+                selectedImages={selectedImages}
+                onSelectedImagesChange={setSelectedImages}
+                selectedTestimonials={selectedTestimonials}
+                onSelectedTestimonialsChange={setSelectedTestimonials}
+                guarantees={guarantees}
+                selectedGuaranteeIds={selectedGuaranteeIds}
+                onToggleGuarantee={handleToggleGuarantee}
+                manualGuaranteeCount={manualGuaranteeCount}
+                guaranteeLimit={MAX_GUARANTEE_ITEMS}
+                onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
               />
-            </section>
-          )}
-          {step === 1 && false && (
-            <section className="space-y-6">
-              <Card className="space-y-8 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
-                <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    {t('offers.wizard.steps.details')}
-                  </h2>
-                  <p className="text-sm text-slate-600">
-                    {t('offers.wizard.forms.details.sections.overviewHint')}
-                  </p>
-                </div>
+            )}
 
-                <div
-                  className={`rounded-2xl border p-4 transition ${
-                    isQuotaExhausted
-                      ? 'border-rose-200 bg-rose-50/90 text-rose-700'
-                      : 'border-slate-200 bg-slate-50/90 text-slate-700'
-                  }`}
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{quotaTitle}</p>
-                    <p className="text-xs text-current/80">{quotaDescription}</p>
-                    {quotaRemainingText ? (
-                      <p className="text-xs font-semibold text-current">{quotaRemainingText}</p>
-                    ) : null}
-                    {quotaPendingText ? (
-                      <p className="text-[11px] text-current/70">{quotaPendingText}</p>
-                    ) : null}
+            {step === 3 && (
+              <section className="space-y-5" aria-label="Összegzés és előnézet">
+                <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-bold text-slate-900">
+                        {t('offers.wizard.steps.summary')}
+                      </h2>
+                      <p className="text-xs text-slate-600">
+                        {t('offers.wizard.previewTemplates.contentGoesToPdf')}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                      {t('offers.wizard.previewTemplates.livePreview')}
+                    </span>
                   </div>
-                </div>
-
-                <section className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-white/70 p-5">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      {t('offers.wizard.forms.details.templates.heading')}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.templates.helper')}
-                    </p>
+                  {/* Tips for text editing */}
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-primary text-base">💡</span>
+                      <p className="text-xs font-semibold text-slate-900">
+                        {t('wizard.preview.tipsTitle')}
+                      </p>
+                    </div>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-slate-700 ml-3">
+                      <li>{t('richTextEditor.placeholderReminder')}</li>
+                      <li>{t('wizard.preview.tipsItems.useLists')}</li>
+                      <li>{t('wizard.preview.tipsItems.highlight')}</li>
+                      <li>{t('wizard.preview.tipsItems.keepShort')}</li>
+                      <li>{t('wizard.preview.tipsItems.useHeadings')}</li>
+                    </ul>
                   </div>
-                  {textTemplates.length > 0 ? (
-                    <Select
-                      label={t('offers.wizard.forms.details.templates.selectLabel')}
-                      value={selectedTemplateId}
-                      onChange={handleTemplateSelect}
-                    >
-                      <option value="">
-                        {t('offers.wizard.forms.details.templates.selectPlaceholder')}
-                      </option>
-                      {textTemplates.map((template) => (
-                        <option key={template.id} value={template.id}>
-                          {template.name}
-                        </option>
-                      ))}
-                    </Select>
-                  ) : (
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.templates.empty')}
-                    </p>
-                  )}
-                </section>
 
-                <section className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      {t('offers.wizard.forms.details.sections.style')}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.sections.styleHelper')}
-                    </p>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {[
-                      {
-                        value: 'compact' as const,
-                        label: t('offers.wizard.forms.details.styleOptions.compact.label'),
-                        description: t(
-                          'offers.wizard.forms.details.styleOptions.compact.description',
-                        ),
-                      },
-                      {
-                        value: 'detailed' as const,
-                        label: t('offers.wizard.forms.details.styleOptions.detailed.label'),
-                        description: t(
-                          'offers.wizard.forms.details.styleOptions.detailed.description',
-                        ),
-                      },
-                    ].map((option) => {
-                      const active = form.style === option.value;
-                      return (
-                        <Button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setForm((f) => ({ ...f, style: option.value }))}
-                          className={`flex h-full w-full flex-col items-start gap-1 rounded-2xl border px-4 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                            active
-                              ? 'border-slate-900 bg-slate-900 text-white shadow-lg'
-                              : 'border-border/70 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:shadow-sm'
-                          }`}
-                        >
-                          <span className="text-sm font-semibold">{option.label}</span>
-                          <span className="text-xs text-current/80">{option.description}</span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                <section className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      {t('offers.wizard.forms.details.sections.overview')}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      {t('offers.wizard.forms.details.sections.overviewHelper')}
-                    </p>
-                  </div>
-                  <div className="grid gap-6">
-                    {form.style === 'detailed' ? (
-                      <Select
-                        label={t('offers.wizard.forms.details.industryLabel')}
-                        value={form.industry}
-                        onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-                      >
-                        {availableIndustries.map((ind) => (
-                          <option key={ind} value={ind}>
-                            {ind}
-                          </option>
-                        ))}
-                      </Select>
-                    ) : null}
-
-                    <Input
-                      label={t('offers.wizard.forms.details.titleLabel')}
-                      placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
-                      value={form.title}
-                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    />
-
-                    <Textarea
-                      label={t('offers.wizard.forms.details.descriptionLabel')}
-                      placeholder={t('offers.wizard.forms.details.descriptionPlaceholder')}
-                      value={form.projectDetails.overview}
-                      maxLength={PROJECT_DETAIL_LIMITS.overview}
-                      onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          projectDetails: {
-                            ...f.projectDetails,
-                            overview: e.target.value,
-                          },
-                        }))
-                      }
-                    />
-
-                    {form.style === 'detailed' ? (
-                      <div className="space-y-4">
-                        <div className="space-y-4 rounded-2xl border border-border/70 bg-white/70 p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <p className="text-sm font-semibold text-fg">
-                                {t('offers.wizard.forms.details.tips.title')}
+                  <div className="relative">
+                    {previewLoading && !previewHtml ? (
+                      <div className="rounded-xl border border-slate-200 bg-white p-6">
+                        <SkeletonLoader />
+                        <div className="mt-4 flex items-center gap-2 text-center text-xs text-slate-500">
+                          <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          <span>{t('offers.wizard.preview.loading')}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <RichTextEditor
+                          ref={richTextEditorRef}
+                          value={editedHtml || previewHtml}
+                          onChange={(html) => {
+                            setEditedHtml(html);
+                          }}
+                          placeholder={t('richTextEditor.placeholderHint')}
+                          aria-label={t('richTextEditor.placeholderHint')}
+                        />
+                        {/* Content length warning */}
+                        {(() => {
+                          const textLength = (editedHtml || previewHtml || '').replace(
+                            /<[^>]*>/g,
+                            '',
+                          ).length;
+                          if (textLength > 4000) {
+                            return (
+                              <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2">
+                                <p className="text-xs font-medium text-amber-800">
+                                  {t('wizard.preview.longContentWarning', { length: textLength })}
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                        {previewLoading && previewHtml ? (
+                          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
+                            <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
+                            <div className="space-y-0.5 text-center">
+                              <p className="text-xs font-medium text-slate-700">
+                                {t('offers.wizard.preview.loading')}
                               </p>
-                              <p className="text-xs text-fg-muted">
-                                {t('offers.wizard.forms.details.tips.subtitle')}
+                              <p className="text-[11px] text-slate-500">
+                                {t('offers.wizard.preview.loadingHint')}
                               </p>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => setDetailsTipsOpen((value) => !value)}
-                              className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-fg transition hover:border-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            >
-                              {detailsTipsOpen
-                                ? t('offers.wizard.forms.details.tips.hide')
-                                : t('offers.wizard.forms.details.tips.show')}
-                            </button>
                           </div>
-                          {detailsTipsOpen && (
-                            <ul className="list-disc space-y-2 pl-5 text-xs text-fg-muted">
-                              <li>{t('offers.wizard.forms.details.tips.items.overview')}</li>
-                              <li>{t('offers.wizard.forms.details.tips.items.deliverables')}</li>
-                              <li>{t('offers.wizard.forms.details.tips.items.timeline')}</li>
-                              <li>{t('offers.wizard.forms.details.tips.items.constraints')}</li>
-                            </ul>
-                          )}
-                        </div>
-
-                        {PROJECT_DETAIL_FIELDS.filter((field) => field !== 'overview').map(
-                          (field) => (
-                            <Textarea
-                              key={field}
-                              value={form.projectDetails[field]}
-                              onChange={(event) =>
-                                setForm((prev) => ({
-                                  ...prev,
-                                  projectDetails: {
-                                    ...prev.projectDetails,
-                                    [field]: event.target.value,
-                                  },
-                                }))
-                              }
-                              label={t(
-                                `offers.wizard.forms.details.fields.${field}.label` as const,
-                              )}
-                              placeholder={t(
-                                `offers.wizard.forms.details.fields.${field}.placeholder` as const,
-                              )}
-                              help={t(`offers.wizard.forms.details.fields.${field}.help` as const)}
-                              maxLength={PROJECT_DETAIL_LIMITS[field]}
-                              showCounter
-                              className="min-h-[7.5rem]"
-                            />
-                          ),
-                        )}
-                      </div>
-                    ) : null}
-                  </div>
-                </section>
-
-                {form.style === 'detailed' ? (
-                  <section className="space-y-4">
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">
-                        {t('offers.wizard.forms.details.sections.scope')}
-                      </h3>
-                      <p className="text-xs text-slate-500">
-                        {t('offers.wizard.forms.details.sections.scopeHelper')}
-                      </p>
-                    </div>
-                    <div className="grid gap-6 sm:grid-cols-3">
-                      <Input
-                        label={t('offers.wizard.forms.details.deadlineLabel')}
-                        value={form.deadline}
-                        onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
-                      />
-                      <Select
-                        label={t('offers.wizard.forms.details.languageLabel')}
-                        value={form.language}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            language: e.target.value as Step1Form['language'],
-                          }))
-                        }
-                      >
-                        <option value="hu">
-                          {t('offers.wizard.forms.details.languageOptions.hu')}
-                        </option>
-                        <option value="en">
-                          {t('offers.wizard.forms.details.languageOptions.en')}
-                        </option>
-                      </Select>
-                      <Select
-                        label={t('offers.wizard.forms.details.voiceLabel')}
-                        value={form.brandVoice}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            brandVoice: e.target.value as Step1Form['brandVoice'],
-                          }))
-                        }
-                      >
-                        <option value="friendly">
-                          {t('offers.wizard.forms.details.voiceOptions.friendly')}
-                        </option>
-                        <option value="formal">
-                          {t('offers.wizard.forms.details.voiceOptions.formal')}
-                        </option>
-                      </Select>
-                    </div>
-                  </section>
-                ) : null}
-
-                <section className="space-y-5 rounded-2xl border border-dashed border-border/70 bg-slate-50/80 p-5">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-700">
-                        {t('offers.wizard.forms.details.sections.client')}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {t('offers.wizard.forms.details.sections.clientHelper')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      label={t('offers.wizard.forms.details.clientLookupLabel')}
-                      placeholder={t('offers.wizard.forms.details.clientLookupPlaceholder')}
-                      value={client.company_name}
-                      onChange={(e) => {
-                        setClientId(undefined);
-                        setClient((c) => ({ ...c, company_name: e.target.value }));
-                        setShowClientDrop(true);
-                      }}
-                      onFocus={() => setShowClientDrop(true)}
-                    />
-                    {showClientDrop && filteredClients.length > 0 && (
-                      <div className="absolute z-10 mt-2 max-h-52 w-full overflow-auto rounded-2xl border border-border/70 bg-white shadow-xl">
-                        {filteredClients.map((c) => (
-                          <Button
-                            key={c.id}
-                            type="button"
-                            className="flex w-full flex-col items-start gap-0.5 rounded-none border-none px-4 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            onMouseDown={() => pickClient(c)}
-                          >
-                            <span className="font-medium text-slate-700">{c.company_name}</span>
-                            {c.email ? (
-                              <span className="text-xs text-slate-500">{c.email}</span>
-                            ) : null}
-                          </Button>
-                        ))}
-                      </div>
+                        ) : null}
+                      </>
                     )}
                   </div>
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldAddress')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldAddress')}
-                      value={client.address || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, address: e.target.value }))}
-                    />
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldTax')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldTax')}
-                      value={client.tax_id || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, tax_id: e.target.value }))}
-                    />
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldRepresentative')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldRepresentative')}
-                      value={client.representative || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, representative: e.target.value }))}
-                    />
-                    <Input
-                      label={t('offers.wizard.forms.details.clientFieldPhone')}
-                      placeholder={t('offers.wizard.forms.details.clientFieldPhone')}
-                      value={client.phone || ''}
-                      onChange={(e) => setClient((c) => ({ ...c, phone: e.target.value }))}
-                    />
-                    <div className="sm:col-span-2">
-                      <Input
-                        label={t('offers.wizard.forms.details.clientFieldEmail')}
-                        placeholder={t('offers.wizard.forms.details.clientFieldEmail')}
-                        value={client.email || ''}
-                        onChange={(e) => setClient((c) => ({ ...c, email: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                </section>
-              </Card>
-            </section>
-          )}
-          {step === 2 && (
-            <WizardStep2Pricing
-              rows={rows}
-              onRowsChange={setRows}
-              activities={activities}
-              industry={form.industry}
-              {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
-              client={client}
-              onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
-              clientList={clientList}
-              onClientSelect={pickClient}
-              showClientDropdown={showClientDrop}
-              onClientDropdownToggle={setShowClientDrop}
-              filteredClients={filteredClients}
-              onActivitySaved={reloadActivities}
-              enableReferencePhotos={enableReferencePhotosForWizard}
-              enableTestimonials={profileSettings.enable_testimonials}
-              selectedImages={selectedImages}
-              onSelectedImagesChange={setSelectedImages}
-              selectedTestimonials={selectedTestimonials}
-              onSelectedTestimonialsChange={setSelectedTestimonials}
-              guarantees={guarantees}
-              selectedGuaranteeIds={selectedGuaranteeIds}
-              onToggleGuarantee={handleToggleGuarantee}
-              manualGuaranteeCount={manualGuaranteeCount}
-              guaranteeLimit={MAX_GUARANTEE_ITEMS}
-              onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
-            />
-          )}
-
-          {step === 3 && (
-            <section className="space-y-5" aria-label="Összegzés és előnézet">
-              <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-bold text-slate-900">
-                      {t('offers.wizard.steps.summary')}
-                    </h2>
-                    <p className="text-xs text-slate-600">
-                      {t('offers.wizard.previewTemplates.contentGoesToPdf')}
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                    {t('offers.wizard.previewTemplates.livePreview')}
-                  </span>
-                </div>
-                {/* Tips for text editing */}
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-primary text-base">💡</span>
-                    <p className="text-xs font-semibold text-slate-900">
-                      {t('wizard.preview.tipsTitle')}
-                    </p>
-                  </div>
-                  <ul className="list-disc list-inside space-y-1 text-xs text-slate-700 ml-3">
-                    <li>{t('richTextEditor.placeholderReminder')}</li>
-                    <li>{t('wizard.preview.tipsItems.useLists')}</li>
-                    <li>{t('wizard.preview.tipsItems.highlight')}</li>
-                    <li>{t('wizard.preview.tipsItems.keepShort')}</li>
-                    <li>{t('wizard.preview.tipsItems.useHeadings')}</li>
-                  </ul>
-                </div>
-
-                <div className="relative">
-                  {previewLoading && !previewHtml ? (
-                    <div className="rounded-xl border border-slate-200 bg-white p-6">
-                      <SkeletonLoader />
-                      <div className="mt-4 flex items-center gap-2 text-center text-xs text-slate-500">
-                        <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        <span>{t('offers.wizard.preview.loading')}</span>
+                  {isProPlan ? (
+                    <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">
+                            {t('richTextEditor.imageSection.heading')}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {t('richTextEditor.imageSection.description')}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={handlePickImage}
+                          disabled={imageLimitReached || !previewLocked || previewLoading}
+                          className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                        >
+                          {t('richTextEditor.imageSection.insert')}
+                        </Button>
                       </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleImageInputChange}
+                      />
+                      {!previewLocked ? (
+                        <p className="text-[11px] text-slate-500">
+                          {t('richTextEditor.imageSection.notAvailable')}
+                        </p>
+                      ) : null}
+                      {imageAssets.length > 0 ? (
+                        <ul className="grid gap-2 sm:grid-cols-2">
+                          {imageAssets.map((asset) => {
+                            const sizeKb = Math.max(1, Math.ceil(asset.size / 1024));
+                            return (
+                              <li
+                                key={asset.key}
+                                className="flex gap-2 rounded-xl border border-border/70 bg-white p-2 shadow-sm"
+                              >
+                                <Image
+                                  src={asset.dataUrl}
+                                  alt={asset.alt}
+                                  width={48}
+                                  height={48}
+                                  className="h-12 w-12 rounded-lg object-cover shadow-sm"
+                                  unoptimized
+                                />
+                                <div className="flex flex-1 flex-col justify-between text-[11px] text-slate-500">
+                                  <div>
+                                    <p className="font-semibold text-slate-700">{asset.name}</p>
+                                    <p className="mt-0.5">
+                                      {sizeKb} KB • alt: {asset.alt}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    onClick={() => handleRemoveImage(asset.key)}
+                                    className="self-start text-[11px] font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                  >
+                                    Eltávolítás
+                                  </Button>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : (
+                        <p className="text-[11px] text-slate-500">
+                          Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek
+                          meg.
+                        </p>
+                      )}
                     </div>
                   ) : (
-                    <>
-                      <RichTextEditor
-                        ref={richTextEditorRef}
-                        value={editedHtml || previewHtml}
-                        onChange={(html) => {
-                          setEditedHtml(html);
-                        }}
-                        placeholder={t('richTextEditor.placeholderHint')}
-                        aria-label={t('richTextEditor.placeholderHint')}
-                      />
-                      {/* Content length warning */}
-                      {(() => {
-                        const textLength = (editedHtml || previewHtml || '').replace(
-                          /<[^>]*>/g,
-                          '',
-                        ).length;
-                        if (textLength > 4000) {
-                          return (
-                            <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2">
-                              <p className="text-xs font-medium text-amber-800">
-                                {t('wizard.preview.longContentWarning', { length: textLength })}
-                              </p>
-                            </div>
-                          );
+                    <div className="space-y-2 rounded-xl border border-dashed border-border/70 bg-slate-50/60 p-3">
+                      <p className="text-[11px] text-slate-500">
+                        {t('richTextEditor.imageSection.proUpsell')}
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() =>
+                          openPlanUpgradeDialog({
+                            description: t('app.planUpgradeModal.reasons.previewImages'),
+                          })
                         }
-                        return null;
-                      })()}
-                      {previewLoading && previewHtml ? (
-                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
-                          <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
-                          <div className="space-y-0.5 text-center">
-                            <p className="text-xs font-medium text-slate-700">
-                              {t('offers.wizard.preview.loading')}
-                            </p>
-                            <p className="text-[11px] text-slate-500">
-                              {t('offers.wizard.preview.loadingHint')}
-                            </p>
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
+                        className="self-start"
+                      >
+                        {t('app.planUpgradeModal.primaryCta')}
+                      </Button>
+                    </div>
                   )}
+
+                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white/90 p-5">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {t('offers.wizard.customSections.scheduleTitle')}
+                        </p>
+                        <span className="text-[11px] text-slate-500">
+                          {scheduleItems.length}/{MAX_SCHEDULE_ITEMS}
+                        </span>
+                      </div>
+                      <Textarea
+                        value={scheduleInput}
+                        onChange={(event) => setScheduleInput(event.target.value)}
+                        rows={3}
+                        placeholder={t('offers.wizard.customSections.schedulePlaceholder')}
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        {t('offers.wizard.customSections.scheduleDescription', {
+                          count: MAX_SCHEDULE_ITEMS,
+                        })}
+                      </p>
+                      {scheduleItems.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm text-slate-700">
+                          {scheduleItems.map((item, index) => (
+                            <li key={`schedule-${index}`}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {t('offers.wizard.customSections.guaranteeTitle')}
+                        </p>
+                        <span className="text-[11px] text-slate-500">
+                          {guaranteeItems.length}/{MAX_GUARANTEE_ITEMS}
+                        </span>
+                      </div>
+                      <Textarea
+                        value={guaranteeInput}
+                        onChange={(event) => setGuaranteeInput(event.target.value)}
+                        rows={2}
+                        placeholder={t('offers.wizard.customSections.guaranteePlaceholder')}
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        {t('offers.wizard.customSections.guaranteeDescription', {
+                          count: MAX_GUARANTEE_ITEMS,
+                        })}
+                      </p>
+                      {guaranteeItems.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm text-slate-700">
+                          {guaranteeItems.map((item, index) => (
+                            <li key={`guarantee-${index}`}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t('offers.wizard.customSections.testimonialsTitle')}
+                      </p>
+                      {testimonialTexts.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm text-slate-700">
+                          {testimonialTexts.map((text, index) => (
+                            <li key={`testimonial-${index}`}>{text}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-[11px] text-slate-500">
+                          {t('offers.wizard.customSections.testimonialsEmpty')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Preview and Summary Section - 2 Column Layout */}
+                <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-2">
+                  {/* Left Column: Preview Section */}
+                  <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+                    <div>
+                      <h2 className="text-sm font-semibold text-slate-900">
+                        {t('offers.wizard.previewTemplates.previewHeading')}
+                      </h2>
+                      {selectedPdfTemplate && (
+                        <p className="mt-0.5 text-xs text-slate-600">
+                          Sablon: <span className="font-semibold">{selectedPdfTemplate.label}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={() => setIsPreviewModalOpen(true)}
+                      disabled={!previewDocumentHtml && !previewLoading}
+                      className="w-full rounded-lg border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
+                    >
+                      {previewLoading && !previewDocumentHtml ? (
+                        <span className="flex items-center gap-2">
+                          <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          {t('offers.wizard.preview.loading')}
+                        </span>
+                      ) : previewDocumentHtml ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                          </svg>
+                          {t('wizard.preview.openPreview')}
+                        </span>
+                      ) : (
+                        t('wizard.preview.noPreview')
+                      )}
+                    </Button>
+
+                    {previewDocumentHtml && (
+                      <p className="text-xs text-slate-500 text-center">
+                        {t('offers.wizard.previewTemplates.previewHint')}
+                      </p>
+                    )}
+                  </Card>
+
+                  {/* Right Column: Summary Section */}
+                  <Card className="space-y-5 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
+                    <div>
+                      <h2 className="text-sm font-semibold text-slate-900">
+                        {t('offers.wizard.steps.summary')}
+                      </h2>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {t('wizard.preview.afterGeneration')}
+                      </p>
+                    </div>
+                    <dl className="space-y-3 text-sm text-slate-600">
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="text-slate-500">Cím</dt>
+                        <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="text-slate-500">Iparág</dt>
+                        <dd className="font-medium text-slate-800">{form.industry}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="text-slate-500">Címzett</dt>
+                        <dd className="font-medium text-slate-800">{client.company_name || '—'}</dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="text-slate-500">Stílus</dt>
+                        <dd className="font-medium text-slate-800">
+                          {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
+                        </dd>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <dt className="text-slate-500">
+                          {t('offers.wizard.previewTemplates.summaryLabel')}
+                        </dt>
+                        <dd className="font-medium text-slate-800">
+                          {selectedPdfTemplateLabel || availablePdfTemplates[0]?.label || '—'}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="rounded-2xl border border-border/70 bg-slate-50 px-4 py-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Bruttó összesen</span>
+                        <span className="text-base font-semibold text-slate-900">
+                          {totals.gross.toLocaleString('hu-HU')} Ft
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        type="button"
+                        onClick={handleOpenTemplateModal}
+                        disabled={loading}
+                        className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                      >
+                        {t('offers.wizard.forms.details.templates.saveAction')}
+                      </Button>
+                      <Button
+                        onClick={generate}
+                        disabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
+                        className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
+                      >
+                        {loading ? 'Generálás…' : 'PDF generálása és mentés'}
+                      </Button>
+                      {!previewLocked && !previewLoading && (
+                        <p className="text-[11px] text-slate-500 text-center">
+                          Az AI előnézet betöltése után lesz elérhető a PDF generálás.
+                        </p>
+                      )}
+                    </div>
+                  </Card>
                 </div>
-                {isProPlan ? (
-                  <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-700">
-                          {t('richTextEditor.imageSection.heading')}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {t('richTextEditor.imageSection.description')}
-                        </p>
+              </section>
+            )}
+
+            <WizardActionBar
+              step={step as WizardStep}
+              onPrev={() => goToStep(Math.max(1, step - 1))}
+              onNext={() => goToStep(Math.min(3, step + 1))}
+              onSubmit={generate}
+              isNextDisabled={isQuotaExhausted || quotaLoading}
+              isSubmitDisabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
+              isSubmitting={loading}
+              isQuotaExhausted={isQuotaExhausted}
+              isQuotaLoading={quotaLoading}
+            />
+          </div>
+          <Modal
+            open={isTemplateModalOpen}
+            onClose={handleTemplateModalClose}
+            labelledBy={templateModalTitleId}
+            describedBy={templateModalDescriptionId}
+          >
+            <form className="space-y-6" onSubmit={handleTemplateSave}>
+              <div className="space-y-2">
+                <h2 id={templateModalTitleId} className="text-lg font-semibold text-slate-900">
+                  {t('offers.wizard.forms.details.templates.modal.title')}
+                </h2>
+                <p id={templateModalDescriptionId} className="text-sm text-slate-600">
+                  {t('offers.wizard.forms.details.templates.modal.description')}
+                </p>
+              </div>
+              <Input
+                id={templateNameFieldId}
+                label={t('offers.wizard.forms.details.templates.modal.nameLabel')}
+                placeholder={t('offers.wizard.forms.details.templates.modal.namePlaceholder')}
+                value={templateName}
+                onChange={handleTemplateNameChange}
+                error={templateNameError || undefined}
+              />
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleTemplateModalClose}
+                  disabled={templateSaving}
+                >
+                  {t('offers.wizard.forms.details.templates.modal.cancel')}
+                </Button>
+                <Button type="submit" loading={templateSaving} disabled={templateSaving}>
+                  {templateSaving
+                    ? t('offers.wizard.forms.details.templates.modal.saving')
+                    : t('offers.wizard.forms.details.templates.modal.save')}
+                </Button>
+              </div>
+            </form>
+          </Modal>
+
+          {/* PDF Preview Modal */}
+          <Modal
+            open={isPreviewModalOpen}
+            onClose={() => setIsPreviewModalOpen(false)}
+            labelledBy="preview-modal-title"
+            className="max-w-7xl"
+          >
+            <div className="flex flex-col space-y-4 max-h-[85vh]">
+              {/* Header */}
+              <div className="flex items-center justify-between flex-shrink-0">
+                <h2 id="preview-modal-title" className="text-lg font-semibold text-slate-900">
+                  {t('offers.wizard.previewTemplates.previewHeading')}
+                </h2>
+                {selectedPdfTemplate && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                    {selectedPdfTemplate.label}
+                  </span>
+                )}
+              </div>
+
+              {/* 2 Column Layout: Settings (left) and Preview (right) */}
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-4 lg:gap-6 flex-1 min-h-0 overflow-hidden">
+                {/* Left Column: Settings */}
+                <div className="flex flex-col space-y-4 overflow-y-auto pr-2 lg:max-h-[calc(85vh-120px)]">
+                  {/* Template Selector */}
+                  <div className="space-y-2">
+                    <Select
+                      label={t('offers.wizard.previewTemplates.heading')}
+                      help={t('offers.wizard.previewTemplates.helper')}
+                      value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
+                      onChange={handlePdfTemplateChange}
+                      wrapperClassName="flex flex-col gap-2"
+                      aria-label="PDF sablon kiválasztása"
+                    >
+                      {allPdfTemplates.map((template) => {
+                        const locked =
+                          template.tier === 'premium' && userTemplateTier !== 'premium';
+                        return (
+                          <option key={template.id} value={template.id} disabled={locked}>
+                            {template.label}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                  </div>
+
+                  {/* Locked Templates Info */}
+                  {showLockedTemplates && (
+                    <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-4">
+                      <div className="flex items-start gap-2.5">
+                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+                          <LockBadgeIcon className="h-3.5 w-3.5" />
+                        </span>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-semibold text-slate-700">
+                              {t('offers.wizard.previewTemplates.lockedTitle')}
+                            </p>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                              {t('app.planUpgradeModal.badge')}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600">
+                            {t('offers.wizard.previewTemplates.lockedDescription')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        {lockedTemplateSummaries.map((template) => (
+                          <div
+                            key={template.label}
+                            className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm"
+                          >
+                            <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                              <LockBadgeIcon className="h-3 w-3" />
+                            </span>
+                            <div className="space-y-0.5">
+                              <p className="text-xs font-semibold text-slate-700">
+                                {template.label}
+                              </p>
+                              <p className="text-[11px] text-slate-500">{template.highlight}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                       <Button
                         type="button"
-                        onClick={handlePickImage}
-                        disabled={imageLimitReached || !previewLocked || previewLoading}
-                        className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                        size="sm"
+                        onClick={() =>
+                          openPlanUpgradeDialog({
+                            description: t('app.planUpgradeModal.reasons.proTemplates'),
+                          })
+                        }
+                        className="w-full"
                       >
-                        {t('richTextEditor.imageSection.insert')}
+                        {t('app.planUpgradeModal.primaryCta')}
                       </Button>
                     </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleImageInputChange}
-                    />
-                    {!previewLocked ? (
-                      <p className="text-[11px] text-slate-500">
-                        {t('richTextEditor.imageSection.notAvailable')}
-                      </p>
-                    ) : null}
-                    {imageAssets.length > 0 ? (
-                      <ul className="grid gap-2 sm:grid-cols-2">
-                        {imageAssets.map((asset) => {
-                          const sizeKb = Math.max(1, Math.ceil(asset.size / 1024));
-                          return (
-                            <li
-                              key={asset.key}
-                              className="flex gap-2 rounded-xl border border-border/70 bg-white p-2 shadow-sm"
-                            >
-                              <Image
-                                src={asset.dataUrl}
-                                alt={asset.alt}
-                                width={48}
-                                height={48}
-                                className="h-12 w-12 rounded-lg object-cover shadow-sm"
-                                unoptimized
-                              />
-                              <div className="flex flex-1 flex-col justify-between text-[11px] text-slate-500">
-                                <div>
-                                  <p className="font-semibold text-slate-700">{asset.name}</p>
-                                  <p className="mt-0.5">
-                                    {sizeKb} KB • alt: {asset.alt}
-                                  </p>
-                                </div>
-                                <Button
-                                  type="button"
-                                  onClick={() => handleRemoveImage(asset.key)}
-                                  className="self-start text-[11px] font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                                >
-                                  Eltávolítás
-                                </Button>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    ) : (
-                      <p className="text-[11px] text-slate-500">
-                        Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek
-                        meg.
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-2 rounded-xl border border-dashed border-border/70 bg-slate-50/60 p-3">
-                    <p className="text-[11px] text-slate-500">
-                      {t('richTextEditor.imageSection.proUpsell')}
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        openPlanUpgradeDialog({
-                          description: t('app.planUpgradeModal.reasons.previewImages'),
-                        })
-                      }
-                      className="self-start"
-                    >
-                      {t('app.planUpgradeModal.primaryCta')}
-                    </Button>
-                  </div>
-                )}
+                  )}
 
-                <div className="space-y-6 rounded-2xl border border-slate-200 bg-white/90 p-5">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {t('offers.wizard.customSections.scheduleTitle')}
-                      </p>
-                      <span className="text-[11px] text-slate-500">
-                        {scheduleItems.length}/{MAX_SCHEDULE_ITEMS}
-                      </span>
+                  {/* Preview Controls */}
+                  <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                    <h3 className="text-sm font-semibold text-slate-700">Beállítások</h3>
+
+                    {/* Zoom controls */}
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="modal-preview-zoom"
+                        className="text-sm font-medium text-slate-700"
+                      >
+                        {t('wizard.preview.zoom')}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          id="modal-preview-zoom"
+                          type="range"
+                          min="50"
+                          max="200"
+                          step="25"
+                          value={previewZoom}
+                          onChange={(e) => setPreviewZoom(Number(e.target.value))}
+                          className="h-2 flex-1 rounded-lg bg-slate-200"
+                          aria-label={t('wizard.preview.zoomAria')}
+                        />
+                        <span className="min-w-[3rem] text-sm font-medium text-slate-700 text-right">
+                          {previewZoom}%
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewZoom(100)}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+                        aria-label={t('wizard.preview.zoomResetAria')}
+                      >
+                        {t('wizard.preview.zoomReset')}
+                      </button>
                     </div>
-                    <Textarea
-                      value={scheduleInput}
-                      onChange={(event) => setScheduleInput(event.target.value)}
-                      rows={3}
-                      placeholder={t('offers.wizard.customSections.schedulePlaceholder')}
-                    />
-                    <p className="text-[11px] text-slate-500">
-                      {t('offers.wizard.customSections.scheduleDescription', {
-                        count: MAX_SCHEDULE_ITEMS,
-                      })}
-                    </p>
-                    {scheduleItems.length > 0 ? (
-                      <ul className="list-disc list-inside text-sm text-slate-700">
-                        {scheduleItems.map((item, index) => (
-                          <li key={`schedule-${index}`}>{item}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {t('offers.wizard.customSections.guaranteeTitle')}
-                      </p>
-                      <span className="text-[11px] text-slate-500">
-                        {guaranteeItems.length}/{MAX_GUARANTEE_ITEMS}
+                    {/* Margin guides */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showMarginGuides}
+                        onChange={(e) => setShowMarginGuides(e.target.checked)}
+                        className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
+                        aria-label={t('wizard.preview.showMarginsAria')}
+                      />
+                      <span className="text-sm text-slate-700">
+                        {t('wizard.preview.showMargins')}
                       </span>
-                    </div>
-                    <Textarea
-                      value={guaranteeInput}
-                      onChange={(event) => setGuaranteeInput(event.target.value)}
-                      rows={2}
-                      placeholder={t('offers.wizard.customSections.guaranteePlaceholder')}
-                    />
-                    <p className="text-[11px] text-slate-500">
-                      {t('offers.wizard.customSections.guaranteeDescription', {
-                        count: MAX_GUARANTEE_ITEMS,
-                      })}
-                    </p>
-                    {guaranteeItems.length > 0 ? (
-                      <ul className="list-disc list-inside text-sm text-slate-700">
-                        {guaranteeItems.map((item, index) => (
-                          <li key={`guarantee-${index}`}>{item}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
+                    </label>
 
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {t('offers.wizard.customSections.testimonialsTitle')}
-                    </p>
-                    {testimonialTexts.length > 0 ? (
-                      <ul className="list-disc list-inside text-sm text-slate-700">
-                        {testimonialTexts.map((text, index) => (
-                          <li key={`testimonial-${index}`}>{text}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-[11px] text-slate-500">
-                        {t('offers.wizard.customSections.testimonialsEmpty')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Card>
-
-              {/* Preview and Summary Section - 2 Column Layout */}
-              <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-2">
-                {/* Left Column: Preview Section */}
-                <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-900">
-                      {t('offers.wizard.previewTemplates.previewHeading')}
-                    </h2>
-                    {selectedPdfTemplate && (
-                      <p className="mt-0.5 text-xs text-slate-600">
-                        Sablon: <span className="font-semibold">{selectedPdfTemplate.label}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={() => setIsPreviewModalOpen(true)}
-                    disabled={!previewDocumentHtml && !previewLoading}
-                    className="w-full rounded-lg border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
-                  >
-                    {previewLoading && !previewDocumentHtml ? (
-                      <span className="flex items-center gap-2">
-                        <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        {t('offers.wizard.preview.loading')}
-                      </span>
-                    ) : previewDocumentHtml ? (
-                      <span className="flex items-center justify-center gap-2">
+                    {/* Fullscreen button */}
+                    {previewDocumentHtml && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsPreviewModalOpen(false);
+                          setIsPreviewFullscreen(true);
+                        }}
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                        aria-label={t('wizard.preview.fullscreenButton')}
+                      >
                         <svg
-                          className="h-4 w-4"
+                          className="h-5 w-5"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          strokeWidth={2}
                         >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
                           />
                         </svg>
-                        {t('wizard.preview.openPreview')}
-                      </span>
-                    ) : (
-                      t('wizard.preview.noPreview')
-                    )}
-                  </Button>
-
-                  {previewDocumentHtml && (
-                    <p className="text-xs text-slate-500 text-center">
-                      {t('offers.wizard.previewTemplates.previewHint')}
-                    </p>
-                  )}
-                </Card>
-
-                {/* Right Column: Summary Section */}
-                <Card className="space-y-5 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-900">
-                      {t('offers.wizard.steps.summary')}
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {t('wizard.preview.afterGeneration')}
-                    </p>
-                  </div>
-                  <dl className="space-y-3 text-sm text-slate-600">
-                    <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Cím</dt>
-                      <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Iparág</dt>
-                      <dd className="font-medium text-slate-800">{form.industry}</dd>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Címzett</dt>
-                      <dd className="font-medium text-slate-800">{client.company_name || '—'}</dd>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Stílus</dt>
-                      <dd className="font-medium text-slate-800">
-                        {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
-                      </dd>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">
-                        {t('offers.wizard.previewTemplates.summaryLabel')}
-                      </dt>
-                      <dd className="font-medium text-slate-800">
-                        {selectedPdfTemplateLabel || availablePdfTemplates[0]?.label || '—'}
-                      </dd>
-                    </div>
-                  </dl>
-                  <div className="rounded-2xl border border-border/70 bg-slate-50 px-4 py-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Bruttó összesen</span>
-                      <span className="text-base font-semibold text-slate-900">
-                        {totals.gross.toLocaleString('hu-HU')} Ft
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <Button
-                      type="button"
-                      onClick={handleOpenTemplateModal}
-                      disabled={loading}
-                      className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
-                    >
-                      {t('offers.wizard.forms.details.templates.saveAction')}
-                    </Button>
-                    <Button
-                      onClick={generate}
-                      disabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
-                      className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
-                    >
-                      {loading ? 'Generálás…' : 'PDF generálása és mentés'}
-                    </Button>
-                    {!previewLocked && !previewLoading && (
-                      <p className="text-[11px] text-slate-500 text-center">
-                        Az AI előnézet betöltése után lesz elérhető a PDF generálás.
-                      </p>
+                        {t('wizard.preview.fullscreenButton')}
+                      </button>
                     )}
                   </div>
-                </Card>
-              </div>
-            </section>
-          )}
-
-          <WizardActionBar
-            step={step as WizardStep}
-            onPrev={() => goToStep(Math.max(1, step - 1))}
-            onNext={() => goToStep(Math.min(3, step + 1))}
-            onSubmit={generate}
-            isNextDisabled={isQuotaExhausted || quotaLoading}
-            isSubmitDisabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
-            isSubmitting={loading}
-            isQuotaExhausted={isQuotaExhausted}
-            isQuotaLoading={quotaLoading}
-          />
-        </div>
-        <Modal
-          open={isTemplateModalOpen}
-          onClose={handleTemplateModalClose}
-          labelledBy={templateModalTitleId}
-          describedBy={templateModalDescriptionId}
-        >
-          <form className="space-y-6" onSubmit={handleTemplateSave}>
-            <div className="space-y-2">
-              <h2 id={templateModalTitleId} className="text-lg font-semibold text-slate-900">
-                {t('offers.wizard.forms.details.templates.modal.title')}
-              </h2>
-              <p id={templateModalDescriptionId} className="text-sm text-slate-600">
-                {t('offers.wizard.forms.details.templates.modal.description')}
-              </p>
-            </div>
-            <Input
-              id={templateNameFieldId}
-              label={t('offers.wizard.forms.details.templates.modal.nameLabel')}
-              placeholder={t('offers.wizard.forms.details.templates.modal.namePlaceholder')}
-              value={templateName}
-              onChange={handleTemplateNameChange}
-              error={templateNameError || undefined}
-            />
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleTemplateModalClose}
-                disabled={templateSaving}
-              >
-                {t('offers.wizard.forms.details.templates.modal.cancel')}
-              </Button>
-              <Button type="submit" loading={templateSaving} disabled={templateSaving}>
-                {templateSaving
-                  ? t('offers.wizard.forms.details.templates.modal.saving')
-                  : t('offers.wizard.forms.details.templates.modal.save')}
-              </Button>
-            </div>
-          </form>
-        </Modal>
-
-        {/* PDF Preview Modal */}
-        <Modal
-          open={isPreviewModalOpen}
-          onClose={() => setIsPreviewModalOpen(false)}
-          labelledBy="preview-modal-title"
-          className="max-w-7xl"
-        >
-          <div className="flex flex-col space-y-4 max-h-[85vh]">
-            {/* Header */}
-            <div className="flex items-center justify-between flex-shrink-0">
-              <h2 id="preview-modal-title" className="text-lg font-semibold text-slate-900">
-                {t('offers.wizard.previewTemplates.previewHeading')}
-              </h2>
-              {selectedPdfTemplate && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                  {selectedPdfTemplate.label}
-                </span>
-              )}
-            </div>
-
-            {/* 2 Column Layout: Settings (left) and Preview (right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-4 lg:gap-6 flex-1 min-h-0 overflow-hidden">
-              {/* Left Column: Settings */}
-              <div className="flex flex-col space-y-4 overflow-y-auto pr-2 lg:max-h-[calc(85vh-120px)]">
-                {/* Template Selector */}
-                <div className="space-y-2">
-                  <Select
-                    label={t('offers.wizard.previewTemplates.heading')}
-                    help={t('offers.wizard.previewTemplates.helper')}
-                    value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
-                    onChange={handlePdfTemplateChange}
-                    wrapperClassName="flex flex-col gap-2"
-                    aria-label="PDF sablon kiválasztása"
-                  >
-                    {allPdfTemplates.map((template) => {
-                      const locked = template.tier === 'premium' && userTemplateTier !== 'premium';
-                      return (
-                        <option key={template.id} value={template.id} disabled={locked}>
-                          {template.label}
-                        </option>
-                      );
-                    })}
-                  </Select>
                 </div>
 
-                {/* Locked Templates Info */}
-                {showLockedTemplates && (
-                  <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-4">
-                    <div className="flex items-start gap-2.5">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-slate-600">
-                        <LockBadgeIcon className="h-3.5 w-3.5" />
-                      </span>
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-slate-700">
-                            {t('offers.wizard.previewTemplates.lockedTitle')}
-                          </p>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
-                            {t('app.planUpgradeModal.badge')}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-600">
-                          {t('offers.wizard.previewTemplates.lockedDescription')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid gap-2">
-                      {lockedTemplateSummaries.map((template) => (
-                        <div
-                          key={template.label}
-                          className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 shadow-sm"
-                        >
-                          <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                            <LockBadgeIcon className="h-3 w-3" />
-                          </span>
-                          <div className="space-y-0.5">
-                            <p className="text-xs font-semibold text-slate-700">{template.label}</p>
-                            <p className="text-[11px] text-slate-500">{template.highlight}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        openPlanUpgradeDialog({
-                          description: t('app.planUpgradeModal.reasons.proTemplates'),
-                        })
-                      }
-                      className="w-full"
-                    >
-                      {t('app.planUpgradeModal.primaryCta')}
-                    </Button>
-                  </div>
-                )}
-
-                {/* Preview Controls */}
-                <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-700">Beállítások</h3>
-
-                  {/* Zoom controls */}
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="modal-preview-zoom"
-                      className="text-sm font-medium text-slate-700"
-                    >
-                      {t('wizard.preview.zoom')}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        id="modal-preview-zoom"
-                        type="range"
-                        min="50"
-                        max="200"
-                        step="25"
-                        value={previewZoom}
-                        onChange={(e) => setPreviewZoom(Number(e.target.value))}
-                        className="h-2 flex-1 rounded-lg bg-slate-200"
-                        aria-label={t('wizard.preview.zoomAria')}
-                      />
-                      <span className="min-w-[3rem] text-sm font-medium text-slate-700 text-right">
-                        {previewZoom}%
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewZoom(100)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
-                      aria-label={t('wizard.preview.zoomResetAria')}
-                    >
-                      {t('wizard.preview.zoomReset')}
-                    </button>
-                  </div>
-
-                  {/* Margin guides */}
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={showMarginGuides}
-                      onChange={(e) => setShowMarginGuides(e.target.checked)}
-                      className="rounded border-border text-primary focus:ring-2 focus:ring-primary"
-                      aria-label={t('wizard.preview.showMarginsAria')}
-                    />
-                    <span className="text-sm text-slate-700">
-                      {t('wizard.preview.showMargins')}
-                    </span>
-                  </label>
-
-                  {/* Fullscreen button */}
-                  {previewDocumentHtml && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsPreviewModalOpen(false);
-                        setIsPreviewFullscreen(true);
+                {/* Right Column: Preview */}
+                <div className="flex flex-col min-h-0">
+                  <div className="flex-1 overflow-auto rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 lg:max-h-[calc(85vh-120px)]">
+                    <div
+                      className="mx-auto bg-white shadow-lg relative"
+                      style={{
+                        width: '210mm',
+                        maxWidth: '100%',
+                        aspectRatio: '210/297',
+                        position: 'relative',
+                        transform: `scale(${previewZoom / 100})`,
+                        transformOrigin: 'top center',
+                        marginBottom: `${(previewZoom - 100) * 2}px`,
                       }}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                      aria-label={t('wizard.preview.fullscreenButton')}
                     >
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                      {/* Margin guides overlay */}
+                      {showMarginGuides && <PreviewMarginGuides enabled={showMarginGuides} />}
+
+                      {previewLoading && !previewDocumentHtml ? (
+                        <div className="flex h-full min-h-[720px] items-center justify-center p-8">
+                          <PreviewSkeletonLoader />
+                        </div>
+                      ) : (
+                        <iframe
+                          ref={modalPreviewFrameRef}
+                          className="offer-template-preview block w-full h-full"
+                          sandbox="allow-same-origin"
+                          srcDoc={previewDocumentHtml}
+                          style={{
+                            border: '0',
+                            width: '100%',
+                            height: `${modalPreviewFrameHeight}px`,
+                            minHeight: '720px',
+                            backgroundColor: 'white',
+                            display: 'block',
+                            margin: 0,
+                            padding: 0,
+                          }}
+                          title={t('offers.wizard.previewTemplates.previewHeading')}
+                          aria-label={t('offers.wizard.previewTemplates.previewHeading')}
                         />
-                      </svg>
-                      {t('wizard.preview.fullscreenButton')}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Column: Preview */}
-              <div className="flex flex-col min-h-0">
-                <div className="flex-1 overflow-auto rounded-xl border border-slate-200 bg-slate-50 shadow-inner p-3 lg:max-h-[calc(85vh-120px)]">
-                  <div
-                    className="mx-auto bg-white shadow-lg relative"
-                    style={{
-                      width: '210mm',
-                      maxWidth: '100%',
-                      aspectRatio: '210/297',
-                      position: 'relative',
-                      transform: `scale(${previewZoom / 100})`,
-                      transformOrigin: 'top center',
-                      marginBottom: `${(previewZoom - 100) * 2}px`,
-                    }}
-                  >
-                    {/* Margin guides overlay */}
-                    {showMarginGuides && <PreviewMarginGuides enabled={showMarginGuides} />}
-
-                    {previewLoading && !previewDocumentHtml ? (
-                      <div className="flex h-full min-h-[720px] items-center justify-center p-8">
-                        <PreviewSkeletonLoader />
-                      </div>
-                    ) : (
-                      <iframe
-                        ref={modalPreviewFrameRef}
-                        className="offer-template-preview block w-full h-full"
-                        sandbox="allow-same-origin"
-                        srcDoc={previewDocumentHtml}
-                        style={{
-                          border: '0',
-                          width: '100%',
-                          height: `${modalPreviewFrameHeight}px`,
-                          minHeight: '720px',
-                          backgroundColor: 'white',
-                          display: 'block',
-                          margin: 0,
-                          padding: 0,
-                        }}
-                        title={t('offers.wizard.previewTemplates.previewHeading')}
-                        aria-label={t('offers.wizard.previewTemplates.previewHeading')}
-                      />
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-slate-200 flex-shrink-0">
-              <p className="text-xs text-slate-500">
-                {t('offers.wizard.previewTemplates.previewHint')}
-              </p>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setIsPreviewModalOpen(false)}
-                className="text-sm"
-              >
-                {t('common.close')}
-              </Button>
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-3 border-t border-slate-200 flex-shrink-0">
+                <p className="text-xs text-slate-500">
+                  {t('offers.wizard.previewTemplates.previewHint')}
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsPreviewModalOpen(false)}
+                  className="text-sm"
+                >
+                  {t('common.close')}
+                </Button>
+              </div>
             </div>
-          </div>
-        </Modal>
+          </Modal>
 
-        {/* Fullscreen preview modal */}
-        <FullscreenPreviewModal
-          open={isPreviewFullscreen}
-          onClose={() => setIsPreviewFullscreen(false)}
-          previewHtml={previewDocumentHtml}
-          zoom={fullscreenZoom}
-          onZoomChange={(newZoom) => {
-            setFullscreenZoom(newZoom);
-            setPreviewZoom(newZoom);
-          }}
-          showMarginGuides={showMarginGuides}
-          onToggleMarginGuides={setShowMarginGuides}
-          title={t('wizard.preview.fullscreenTitle')}
-          templateOptions={allPdfTemplates}
-          lockedTemplateIds={lockedTemplateIds}
-          selectedTemplateId={selectedPdfTemplateId ?? availablePdfTemplates[0]?.id}
-          defaultTemplateId={availablePdfTemplates[0]?.id}
-          onTemplateChange={(templateId) => {
-            attemptPdfTemplateSelection(templateId);
-          }}
-        />
-      </AppFrame>
+          {/* Fullscreen preview modal */}
+          <FullscreenPreviewModal
+            open={isPreviewFullscreen}
+            onClose={() => setIsPreviewFullscreen(false)}
+            previewHtml={previewDocumentHtml}
+            zoom={fullscreenZoom}
+            onZoomChange={(newZoom) => {
+              setFullscreenZoom(newZoom);
+              setPreviewZoom(newZoom);
+            }}
+            showMarginGuides={showMarginGuides}
+            onToggleMarginGuides={setShowMarginGuides}
+            title={t('wizard.preview.fullscreenTitle')}
+            templateOptions={allPdfTemplates}
+            lockedTemplateIds={lockedTemplateIds}
+            selectedTemplateId={selectedPdfTemplateId ?? availablePdfTemplates[0]?.id}
+            defaultTemplateId={availablePdfTemplates[0]?.id}
+            onTemplateChange={(templateId) => {
+              attemptPdfTemplateSelection(templateId);
+            }}
+          />
+        </AppFrame>
+      </div>
     </ErrorBoundary>
   );
 }

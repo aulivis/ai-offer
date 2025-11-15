@@ -17,6 +17,7 @@ export type RequireAuthState = {
 
 type RequireAuthOptions = {
   redirectOnUnauthenticated?: boolean;
+  skip?: boolean;
 };
 
 export function useRequireAuth(
@@ -39,6 +40,7 @@ export function useRequireAuth(
   }, [pathname, redirectOverride, searchString]);
 
   const redirectOnUnauthenticated = options?.redirectOnUnauthenticated ?? true;
+  const skip = options?.skip ?? false;
 
   const [state, setState] = useState<RequireAuthState>({
     status: 'loading',
@@ -47,6 +49,12 @@ export function useRequireAuth(
   });
 
   useEffect(() => {
+    // Skip auth check if skip is true
+    if (skip) {
+      setState({ status: 'unauthenticated', user: null, error: null });
+      return;
+    }
+
     let active = true;
     const abortController = new AbortController();
 
@@ -107,7 +115,10 @@ export function useRequireAuth(
       active = false;
       abortController.abort();
     };
-  }, [redirectOnUnauthenticated, redirectTarget, router, pathname, searchParams]);
+    // Only re-run when redirectOnUnauthenticated, redirectTarget, or skip changes
+    // Don't re-run on every pathname/searchParams change to prevent excessive API calls
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [redirectOnUnauthenticated, redirectTarget, skip]);
 
   return state;
 }
