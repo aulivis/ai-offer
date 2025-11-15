@@ -45,8 +45,8 @@ export default function TeamDetailPage() {
       setLoading(true);
       try {
         const [teamResponse, invitationsResponse] = await Promise.all([
-          fetchWithSupabaseAuth(`/api/teams/${teamId}`),
-          fetchWithSupabaseAuth(`/api/teams/${teamId}/invitations`),
+          fetchWithSupabaseAuth(`/api/teams/${teamId}`, {}),
+          fetchWithSupabaseAuth(`/api/teams/${teamId}/invitations`, {}),
         ]);
 
         if (teamResponse.ok) {
@@ -105,7 +105,7 @@ export default function TeamDetailPage() {
         });
         setInviteEmail('');
         // Reload invitations
-        const invitationsResponse = await fetchWithSupabaseAuth(`/api/teams/${teamId}/invitations`);
+        const invitationsResponse = await fetchWithSupabaseAuth(`/api/teams/${teamId}/invitations`, {});
         if (invitationsResponse.ok) {
           const invitationsData = await invitationsResponse.json();
           setInvitations(invitationsData.invitations || []);
