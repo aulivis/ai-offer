@@ -510,7 +510,13 @@ export function WizardStep2Pricing({
                                 aria-label={t('offers.wizard.images.viewFullSize')}
                                 onClick={() => setFullSizeImageUrl(url)}
                               />
-                              <Image src={url} alt={activity.name} fill className="object-cover" />
+                              <Image
+                                src={url}
+                                alt={activity.name}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
                             </>
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-slate-100">
@@ -523,10 +529,10 @@ export function WizardStep2Pricing({
                               event.stopPropagation();
                               toggleReferenceImageSelection(path);
                             }}
-                            className={`absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition ${
+                            className={`absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition shadow-md ${
                               isSelected
-                                ? 'border-primary bg-primary text-white'
-                                : 'border-white/70 bg-white/80 text-slate-600 hover:bg-white'
+                                ? 'border-primary bg-primary text-white shadow-lg'
+                                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-lg'
                             }`}
                             aria-pressed={isSelected}
                           >
@@ -567,7 +573,13 @@ export function WizardStep2Pricing({
                             aria-label={t('offers.wizard.images.viewFullSize')}
                             onClick={() => setFullSizeImageUrl(url)}
                           />
-                          <Image src={url} alt="Reference" fill className="object-cover" />
+                          <Image
+                            src={url}
+                            alt="Reference"
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
                         </>
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-slate-100">
@@ -802,10 +814,10 @@ export function WizardStep2Pricing({
                             }}
                           >
                             <div
-                              className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 transition-all ${
+                              className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 transition-all shadow-md ${
                                 isSelected
-                                  ? 'border-primary bg-primary'
-                                  : 'border-white bg-white/80 hover:bg-white'
+                                  ? 'border-primary bg-primary shadow-lg'
+                                  : 'border-slate-300 bg-white hover:bg-slate-50 shadow-lg'
                               }`}
                             >
                               {isSelected && <CheckIcon className="h-4 w-4 text-white" />}

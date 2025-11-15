@@ -1,9 +1,11 @@
 'use client';
 
 import { t } from '@/copy';
-import { Card, CardHeader } from '@/components/ui/Card';
-import { DocumentTextIcon } from '@heroicons/react/24/outline';
-import { TemplateSelector } from '@/components/templates/TemplateSelector';
+import { Button } from '@/components/ui/Button';
+import { DocumentTextIcon, StarIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
+import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 
@@ -16,36 +18,107 @@ type SettingsTemplatesSectionProps = {
 export function SettingsTemplatesSection({
   selectedTemplateId,
   plan,
-  onTemplateSelect,
 }: SettingsTemplatesSectionProps) {
+  const router = useRouter();
+
+  const templateStats = useMemo(() => {
+    const allTemplates = listTemplateMetadata();
+    const availableCount = allTemplates.length;
+    const defaultTemplate = allTemplates.find((t) => t.id === selectedTemplateId);
+
+    return {
+      available: availableCount,
+      default: defaultTemplate,
+    };
+  }, [selectedTemplateId]);
+
   return (
-    <Card
-      id="templates"
-      as="section"
-      className="scroll-mt-24"
-      header={
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <DocumentTextIcon className="h-5 w-5 text-primary" />
+    <div className="space-y-8">
+      <div>
+        <h2 className="mb-2 text-2xl font-bold text-slate-900">{t('settings.templates.title')}</h2>
+        <p className="mb-6 text-slate-600">
+          Kezeld a sablonokat és állítsd be az alapértelmezetteket
+        </p>
+
+        {/* Quick stats */}
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-xl border-2 border-slate-200 bg-white p-6">
+            <div className="mb-1 text-3xl font-bold text-slate-900">{templateStats.available}</div>
+            <div className="text-sm text-slate-600">Elérhető sablon</div>
+          </div>
+          <div className="rounded-xl border-2 border-slate-200 bg-white p-6">
+            <div className="mb-1 text-3xl font-bold text-slate-900">1</div>
+            <div className="text-sm text-slate-600">Alapértelmezett</div>
+          </div>
+          <div className="rounded-xl border-2 border-slate-200 bg-white p-6">
+            <div className="mb-1 text-3xl font-bold text-slate-900">
+              {plan === 'pro' ? 'Pro' : 'Free'}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{t('settings.templates.title')}</h2>
-              <p className="text-sm text-slate-500">{t('settings.templates.subtitle')}</p>
+            <div className="text-sm text-slate-600">Csomag szint</div>
+          </div>
+        </div>
+
+        {/* Default template */}
+        {templateStats.default && (
+          <div className="mb-6 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-blue-50 p-6">
+            <h3 className="mb-4 flex items-center gap-2 font-bold text-slate-900">
+              <StarIcon className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+              <span>Alapértelmezett sablon</span>
+            </h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-primary/30 bg-white">
+                  <DocumentTextIcon className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <div className="mb-1 font-bold text-slate-900">{templateStats.default.label}</div>
+                  <div className="text-sm text-slate-600">
+                    {templateStats.default.description || 'Professzionális elrendezés'}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => router.push('/new')}
+                >
+                  Előnézet
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => router.push('/new')}
+                >
+                  Szerkesztés
+                </Button>
+              </div>
             </div>
           </div>
-        </CardHeader>
-      }
-    >
-      <div className="space-y-6">
-        <TemplateSelector
-          selectedTemplateId={selectedTemplateId}
-          plan={plan}
-          onTemplateSelect={onTemplateSelect}
-          gridCols={3}
-          showDescription={true}
-        />
+        )}
+
+        {/* CTA to template library */}
+        <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 p-8 text-center text-white">
+          <DocumentTextIcon className="mx-auto mb-4 h-16 w-16 opacity-90" />
+          <h3 className="mb-3 text-2xl font-bold">Fedezd fel a sablonkönyvtárat</h3>
+          <p className="mb-6 mx-auto max-w-2xl text-purple-100">
+            Böngészd át az összes elérhető sablont, hozz létre sajátokat, vagy szabd testre a
+            meglévőket
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            onClick={() => router.push('/new')}
+            className="bg-white text-purple-600 hover:bg-purple-50"
+          >
+            Sablonkönyvtár megnyitása
+            <ArrowRightIcon className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

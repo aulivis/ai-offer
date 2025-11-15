@@ -16,11 +16,19 @@ const notificationsQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 50)),
+    .transform((val) => {
+      if (!val) return 50;
+      const parsed = parseInt(val, 10);
+      return Number.isNaN(parsed) || parsed < 1 ? 50 : Math.min(parsed, 100);
+    }),
   offset: z
     .string()
     .optional()
-    .transform((val) => (val ? parseInt(val, 10) : 0)),
+    .transform((val) => {
+      if (!val) return 0;
+      const parsed = parseInt(val, 10);
+      return Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    }),
 });
 
 /**

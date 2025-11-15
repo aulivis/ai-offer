@@ -75,3 +75,5 @@ WHERE share_token IS NULL;
 COMMENT ON COLUMN public.offers.share_token IS 'Secure token for sharing this offer. Used in URL: /offer/{share_token}';
 
 
+
+

@@ -2,7 +2,6 @@
 
 import { t } from '@/copy';
 import { Button } from '@/components/ui/Button';
-import { Card, CardHeader } from '@/components/ui/Card';
 import {
   PaintBrushIcon,
   PhotoIcon,
@@ -54,24 +53,18 @@ export function SettingsBrandingSection({
   const hasBrandingErrors = Object.keys(errors).length > 0;
 
   return (
-    <Card
-      id="branding"
-      as="section"
-      className="scroll-mt-24"
-      header={
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <PaintBrushIcon className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{t('settings.branding.title')}</h2>
-              <p className="text-sm text-slate-500">{t('settings.branding.subtitle')}</p>
-            </div>
+    <div className="space-y-8">
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <PaintBrushIcon className="h-5 w-5 text-primary" />
           </div>
-        </CardHeader>
-      }
-    >
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">{t('settings.branding.title')}</h2>
+            <p className="text-sm text-slate-600">{t('settings.branding.subtitle')}</p>
+          </div>
+        </div>
+      </div>
       <div className="space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           <ColorPicker
@@ -217,6 +210,6 @@ export function SettingsBrandingSection({
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

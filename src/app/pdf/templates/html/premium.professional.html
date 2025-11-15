@@ -364,15 +364,116 @@
         color: hsl(var(--muted-foreground));
       }
 
+      .body-content h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 2rem 0 1rem;
+        color: var(--primary);
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 0.5rem;
+      }
+
+      .body-content h4 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        color: hsl(var(--foreground));
+      }
+
+      .body-content h1:first-child,
+      .body-content h2:first-child,
+      .body-content h3:first-child {
+        margin-top: 0;
+      }
+
       .body-content ul,
       .body-content ol {
-        margin-left: 24px;
-        margin-bottom: 16px;
+        margin: 1rem 0 1rem 1.5rem;
+        padding: 0;
+        list-style-position: outside;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .body-content ul {
+        list-style-type: disc;
+      }
+
+      .body-content ol {
+        list-style-type: decimal;
+      }
+
+      .body-content ul ul,
+      .body-content ol ol,
+      .body-content ul ol,
+      .body-content ol ul {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .body-content ul ul {
+        list-style-type: circle;
+      }
+
+      .body-content ol ol {
+        list-style-type: lower-alpha;
       }
 
       .body-content li {
-        margin-bottom: 8px;
+        margin-bottom: 0.5rem;
+        break-inside: avoid;
+        page-break-inside: avoid;
         color: hsl(var(--muted-foreground));
+      }
+
+      .body-content li:last-child {
+        margin-bottom: 0;
+      }
+
+      .body-content blockquote {
+        margin: 1.5rem 0;
+        padding: 1rem 1.5rem;
+        border-left: 3px solid var(--primary);
+        background: hsl(var(--primary) / 0.05);
+        font-style: italic;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .body-content blockquote p {
+        margin-bottom: 0.5rem;
+      }
+
+      .body-content blockquote p:last-child {
+        margin-bottom: 0;
+      }
+
+      .body-content > div,
+      .body-content > section {
+        margin: 1.5rem 0;
+        padding: 1rem 0;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .body-content > div:first-child,
+      .body-content > section:first-child {
+        margin-top: 0;
+      }
+
+      .body-content > div:last-child,
+      .body-content > section:last-child {
+        margin-bottom: 0;
+      }
+
+      .body-content > div + div,
+      .body-content > section + section,
+      .body-content > div + section,
+      .body-content > section + div {
+        border-top: 1px solid hsl(var(--border));
+        padding-top: 1.5rem;
+        margin-top: 2rem;
       }
 
       .pricing-section {

@@ -53,7 +53,6 @@ import DocumentCheckIcon from '@heroicons/react/24/outline/DocumentCheckIcon';
 import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import MagnifyingGlassIcon from '@heroicons/react/24/outline/MagnifyingGlassIcon';
-import FunnelIcon from '@heroicons/react/24/outline/FunnelIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import XCircleIcon from '@heroicons/react/24/outline/XCircleIcon';
 import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
@@ -62,6 +61,7 @@ import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIc
 import QuestionMarkCircleIcon from '@heroicons/react/24/outline/QuestionMarkCircleIcon';
 import { NotificationBar } from '@/components/dashboard/NotificationBar';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
+import { EmptyState } from '@/components/dashboard/EmptyState';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -85,18 +85,6 @@ type UsageQuotaSnapshot = {
   devicePending: number | null;
   periodStart: string | null;
 };
-
-function parsePeriodStart(value: string | null | undefined): Date | null {
-  if (!value) {
-    return null;
-  }
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-  parsed.setHours(0, 0, 0, 0);
-  return parsed;
-}
 
 function getDeviceIdFromCookie(name = 'propono_device_id'): string | null {
   if (typeof document === 'undefined') {
@@ -125,26 +113,6 @@ function getDeviceIdFromCookie(name = 'propono_device_id'): string | null {
   }
 
   return null;
-}
-
-function computeNextResetDate(periodStart: string | null | undefined): Date | null {
-  const parsed = parsePeriodStart(periodStart);
-  if (!parsed) {
-    return null;
-  }
-
-  const next = new Date(parsed);
-  next.setHours(0, 0, 0, 0);
-  next.setMonth(next.getMonth() + 1, 1);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  while (next <= today) {
-    next.setMonth(next.getMonth() + 1, 1);
-  }
-
-  return next;
 }
 
 function hasAdminFlag(value: unknown): boolean {
@@ -1172,21 +1140,6 @@ export default function DashboardPage() {
     };
   }, [authStatus, sb, user]);
 
-  const quotaResetLabel = useMemo(() => {
-    if (!quotaSnapshot?.periodStart) {
-      return null;
-    }
-    const reset = computeNextResetDate(quotaSnapshot.periodStart);
-    if (!reset) {
-      return null;
-    }
-    return reset.toLocaleDateString('hu-HU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }, [quotaSnapshot?.periodStart]);
-
   const quotaValue = useMemo(() => {
     if (isQuotaLoading) {
       return t('dashboard.metrics.quota.loading');
@@ -1215,39 +1168,6 @@ export default function DashboardPage() {
       limit: displayLimit.toLocaleString('hu-HU'),
     });
   }, [isQuotaLoading, quotaSnapshot]);
-
-  const quotaHelper = useMemo(() => {
-    if (isQuotaLoading || !quotaSnapshot) {
-      return undefined;
-    }
-    // Always determine limit based on plan, not API response
-    let displayLimit: number | null = null;
-    if (quotaSnapshot.plan === 'pro') {
-      displayLimit = null; // Unlimited for pro
-    } else if (quotaSnapshot.plan === 'standard') {
-      displayLimit = 5;
-    } else {
-      displayLimit = 2; // Free plan
-    }
-    // For unlimited plans, show only the plan info
-    if (displayLimit === null) {
-      return t('dashboard.metrics.quota.helperUnlimited', {
-        confirmed: quotaSnapshot.used.toLocaleString('hu-HU'),
-        pending: quotaSnapshot.pending.toLocaleString('hu-HU'),
-      });
-    }
-    // For limited plans, show reset date if available
-    if (quotaResetLabel) {
-      const remaining = displayLimit - quotaSnapshot.used - quotaSnapshot.pending;
-      return t('dashboard.metrics.quota.helperLimitedWithReset', {
-        confirmed: quotaSnapshot.used.toLocaleString('hu-HU'),
-        pending: quotaSnapshot.pending.toLocaleString('hu-HU'),
-        remaining: remaining.toLocaleString('hu-HU'),
-        resetDate: quotaResetLabel,
-      });
-    }
-    return undefined;
-  }, [isQuotaLoading, quotaResetLabel, quotaSnapshot]);
 
   /** Derived UI szövegek */
   const acceptanceLabel =
@@ -1416,7 +1336,7 @@ export default function DashboardPage() {
       )}
       <AppFrame
         title={t('dashboard.title')}
-        description={t('dashboard.description')}
+        description="Kezeld az összes ajánlatodat egy helyen. Keresés, szűrés és státusz követés egyszerűen."
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <NotificationBell />
@@ -1447,665 +1367,753 @@ export default function DashboardPage() {
           </div>
         }
       >
-        {/* Enhanced KPI Dashboard with Visual Funnel */}
-        <div className="space-y-6 pb-8 border-b border-border/40">
-          {/* Header with View Toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
-              <p className="text-sm text-fg-muted mt-1">{t('dashboard.metricsView.description')}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
-              }
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
-              title={
-                metricsViewMode === 'compact'
-                  ? t('dashboard.metricsView.detailedTitle')
-                  : t('dashboard.metricsView.compactTitle')
-              }
-            >
-              {metricsViewMode === 'compact' ? (
-                <>
-                  <ArrowsPointingOutIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('dashboard.metricsView.detailed')}</span>
-                </>
-              ) : (
-                <>
-                  <ArrowsPointingInIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('dashboard.metricsView.compact')}</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Conversion Funnel Group - Mobile optimized: stack vertically on small screens */}
-          <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
-            <div
-              className={`grid gap-3 sm:gap-4 ${
-                metricsViewMode === 'compact'
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
-              }`}
-            >
-              {loading ? (
-                <>
-                  {Array.from({ length: metricsViewMode === 'compact' ? 7 : 7 }).map((_, i) => (
-                    <MetricSkeleton key={i} />
-                  ))}
-                </>
-              ) : (
-                <>
-                  {/* Quota Card */}
-                  <MetricCard
-                    label={t('dashboard.metrics.quota.label')}
-                    value={quotaValue}
-                    {...(quotaHelper && metricsViewMode === 'detailed'
-                      ? { helper: quotaHelper }
-                      : {})}
-                    {...(quotaSnapshot && quotaSnapshot.plan !== 'pro'
-                      ? {
-                          progress: {
-                            used: quotaSnapshot.used + quotaSnapshot.pending,
-                            limit: quotaSnapshot.plan === 'standard' ? 5 : 2,
-                            label: 'Használat',
-                          },
-                        }
-                      : {})}
-                    icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="info"
-                    isEmpty={totalOffersCount === 0}
-                    emptyMessage={t('dashboard.emptyStates.noOffersMessage')}
-                  />
-
-                  {/* Created Offers - Funnel Start */}
-                  <MetricCard
-                    label={t('dashboard.metrics.created.label')}
-                    value={totalOffersCount.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
-                    icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="primary"
-                    trend={
-                      stats.createdThisMonth > 0
-                        ? 'up'
-                        : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
-                          ? 'down'
-                          : 'neutral'
-                    }
-                    {...(stats.createdThisMonth > 0
-                      ? { trendValue: `+${stats.createdThisMonth}` }
-                      : {})}
-                    {...(createdComparison ? { comparison: createdComparison } : {})}
-                    onClick={() => handleMetricClick('all')}
-                    isEmpty={totalOffersCount === 0}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
-                  />
-
-                  {/* Active Offers (In Review) */}
-                  <MetricCard
-                    label={t('dashboard.metrics.inReview.label')}
-                    value={stats.inReview.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed'
-                      ? {
-                          helper: t('dashboard.metrics.inReview.helper', {
-                            count: stats.inReview.toLocaleString('hu-HU'),
-                          }),
-                        }
-                      : {})}
-                    icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="info"
-                    onClick={() => handleMetricClick('sent')}
-                    isEmpty={stats.inReview === 0}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
-                  />
-
-                  {/* Sent Offers */}
-                  <MetricCard
-                    label={t('dashboard.metrics.sent.label')}
-                    value={stats.sent.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed'
-                      ? {
-                          helper: t('dashboard.metrics.sent.helper', {
-                            sent: stats.sent.toLocaleString('hu-HU'),
-                            pending: stats.inReview.toLocaleString('hu-HU'),
-                          }),
-                        }
-                      : {})}
-                    icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="info"
-                    onClick={() => handleMetricClick('sent')}
-                    isEmpty={stats.sent === 0}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
-                  />
-
-                  {/* Accepted Offers */}
-                  <MetricCard
-                    label={t('dashboard.metrics.accepted.label')}
-                    value={stats.accepted.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed'
-                      ? {
-                          helper: t('dashboard.metrics.accepted.helper', {
-                            accepted: stats.accepted.toLocaleString('hu-HU'),
-                            rate: acceptanceLabel,
-                          }),
-                        }
-                      : {})}
-                    icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="success"
-                    trend={
-                      stats.acceptanceRate !== null && stats.acceptanceRate > 50
-                        ? 'up'
-                        : stats.acceptanceRate !== null && stats.acceptanceRate < 30
-                          ? 'down'
-                          : 'neutral'
-                    }
-                    {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
-                    onClick={() => handleMetricClick('accepted')}
-                    isEmpty={stats.accepted === 0}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
-                  />
-
-                  {/* Lost Offers - NEW */}
-                  <MetricCard
-                    label={t('dashboard.metrics.lost.label')}
-                    value={stats.lost.toLocaleString('hu-HU')}
-                    {...(metricsViewMode === 'detailed'
-                      ? {
-                          helper: t('dashboard.metrics.lost.helper', {
-                            count: stats.lost.toLocaleString('hu-HU'),
-                          }),
-                        }
-                      : {})}
-                    icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="danger"
-                    onClick={() => handleMetricClick('lost')}
-                    isEmpty={stats.lost === 0}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
-                  />
-
-                  {/* Win Rate - NEW */}
-                  <MetricCard
-                    label={t('dashboard.metrics.winRate.label')}
-                    value={winRateLabel}
-                    {...(metricsViewMode === 'detailed'
-                      ? {
-                          helper: t('dashboard.metrics.winRate.helper', {
-                            rate: winRateLabel !== '—' ? winRateLabel : '—',
-                          }),
-                        }
-                      : {})}
-                    icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
-                    color={
-                      stats.winRate !== null && stats.winRate > 50
-                        ? 'success'
-                        : stats.winRate !== null && stats.winRate < 30
-                          ? 'danger'
-                          : 'warning'
-                    }
-                    trend={
-                      stats.winRate !== null && stats.winRate > 50
-                        ? 'up'
-                        : stats.winRate !== null && stats.winRate < 30
-                          ? 'down'
-                          : 'neutral'
-                    }
-                    {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
-                    isEmpty={stats.winRate === null}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
-                  />
-
-                  {/* Average Decision Time */}
-                  <MetricCard
-                    label={t('dashboard.metrics.avgDecision.label')}
-                    value={avgDecisionLabel}
-                    {...(metricsViewMode === 'detailed'
-                      ? {
-                          helper: t('dashboard.metrics.avgDecision.helper', {
-                            days:
-                              stats.avgDecisionDays !== null
-                                ? stats.avgDecisionDays.toLocaleString('hu-HU', {
-                                    maximumFractionDigits: 1,
-                                  })
-                                : '—',
-                            drafts: stats.drafts.toLocaleString('hu-HU'),
-                          }),
-                        }
-                      : {})}
-                    icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
-                    color="warning"
-                    isEmpty={stats.avgDecisionDays === null}
-                    emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Search & Filters */}
-        <Card as="section" className="mb-8">
-          <div className="space-y-6">
-            {/* Search Bar */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-fg-muted" aria-hidden="true" />
-              </div>
-              <Input
-                placeholder={t('dashboard.filters.search.placeholder')}
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="pl-11 pr-4 py-3 text-base shadow-sm"
-                wrapperClassName=""
-              />
-              {q.trim() && (
+        {/* Progressive Disclosure: Empty State for New Users */}
+        {!loading && totalOffersCount === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            {/* Enhanced KPI Dashboard with Visual Funnel */}
+            <div className="space-y-6 pb-8 border-b border-border/40">
+              {/* Header with View Toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
+                  <p className="text-sm text-fg-muted mt-1">
+                    {t('dashboard.metricsView.description')}
+                  </p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setQ('')}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-fg-muted hover:text-fg transition-colors"
-                  aria-label={t('dashboard.filters.remove')}
+                  onClick={() =>
+                    setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
+                  }
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
+                  title={
+                    metricsViewMode === 'compact'
+                      ? t('dashboard.metricsView.detailedTitle')
+                      : t('dashboard.metricsView.compactTitle')
+                  }
                 >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              )}
-            </div>
-
-            {/* Quick Filter Chips - Keyboard navigable */}
-            <div
-              className="flex flex-wrap items-center gap-2"
-              role="group"
-              aria-label={t('dashboard.filters.status.label')}
-            >
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted flex items-center gap-2">
-                <FunnelIcon className="h-4 w-4" aria-hidden="true" />
-                {t('dashboard.filters.status.label')}:
-              </span>
-              {STATUS_FILTER_OPTIONS.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() => setStatusFilter(status)}
-                  onKeyDown={(e) => {
-                    // Keyboard navigation: Arrow keys to navigate between filter chips
-                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                      e.preventDefault();
-                      const currentIndex = STATUS_FILTER_OPTIONS.indexOf(status);
-                      const direction = e.key === 'ArrowRight' ? 1 : -1;
-                      const nextIndex =
-                        (currentIndex + direction + STATUS_FILTER_OPTIONS.length) %
-                        STATUS_FILTER_OPTIONS.length;
-                      const nextStatus = STATUS_FILTER_OPTIONS[nextIndex];
-                      setStatusFilter(nextStatus);
-                      // Focus the next button after state update
-                      setTimeout(() => {
-                        const buttons = Array.from(
-                          e.currentTarget.parentElement?.querySelectorAll('button') || [],
-                        );
-                        const nextButton = buttons.find(
-                          (btn) => btn.getAttribute('aria-pressed') === 'true',
-                        );
-                        nextButton?.focus();
-                      }, 0);
-                    }
-                    // Home/End keys to jump to first/last
-                    if (e.key === 'Home') {
-                      e.preventDefault();
-                      setStatusFilter(STATUS_FILTER_OPTIONS[0]);
-                      setTimeout(() => {
-                        const buttons = Array.from(
-                          e.currentTarget.parentElement?.querySelectorAll('button') || [],
-                        );
-                        buttons[0]?.focus();
-                      }, 0);
-                    }
-                    if (e.key === 'End') {
-                      e.preventDefault();
-                      const lastStatus = STATUS_FILTER_OPTIONS[STATUS_FILTER_OPTIONS.length - 1];
-                      setStatusFilter(lastStatus);
-                      setTimeout(() => {
-                        const buttons = Array.from(
-                          e.currentTarget.parentElement?.querySelectorAll('button') || [],
-                        );
-                        buttons[buttons.length - 1]?.focus();
-                      }, 0);
-                    }
-                  }}
-                  aria-pressed={statusFilter === status}
-                  aria-label={`${t('dashboard.filters.status.label')}: ${
-                    status === 'all'
-                      ? t('dashboard.filters.status.options.all')
-                      : t(STATUS_LABEL_KEYS[status])
-                  }`}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                    statusFilter === status
-                      ? 'bg-primary text-primary-ink shadow-md scale-105'
-                      : 'bg-bg-muted text-fg-muted hover:bg-bg hover:text-fg border border-border/60'
-                  }`}
-                >
-                  {status === 'all' ? (
-                    t('dashboard.filters.status.options.all')
+                  {metricsViewMode === 'compact' ? (
+                    <>
+                      <ArrowsPointingOutIcon className="h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {t('dashboard.metricsView.detailed')}
+                      </span>
+                    </>
                   ) : (
                     <>
-                      <span
-                        className={`h-2 w-2 rounded-full ${
-                          status === 'draft'
-                            ? 'bg-amber-500'
-                            : status === 'sent'
-                              ? 'bg-blue-500'
-                              : status === 'accepted'
-                                ? 'bg-emerald-500'
-                                : 'bg-rose-500'
-                        }`}
-                        aria-hidden="true"
-                      />
-                      {t(STATUS_LABEL_KEYS[status])}
+                      <ArrowsPointingInIcon className="h-4 w-4" />
+                      <span className="hidden sm:inline">{t('dashboard.metricsView.compact')}</span>
                     </>
                   )}
                 </button>
-              ))}
-            </div>
-
-            {/* Advanced Filters & Controls */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
-              <div className="flex flex-wrap items-end gap-3 flex-1">
-                {industries.length > 0 && (
-                  <Select
-                    label={t('dashboard.filters.industry.label')}
-                    value={industryFilter}
-                    onChange={(e) => setIndustryFilter(e.target.value)}
-                    className="min-w-[180px]"
-                    wrapperClassName="flex-1 sm:flex-none"
-                  >
-                    <option value="all">{t('dashboard.filters.industry.options.all')}</option>
-                    {industries.map((ind) => (
-                      <option key={ind} value={ind}>
-                        {ind}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-                <Select
-                  label={t('dashboard.filters.sortBy.label')}
-                  value={sortBy}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (isSortByValue(value)) setSortBy(value);
-                  }}
-                  className="min-w-[160px]"
-                  wrapperClassName="flex-1 sm:flex-none"
-                >
-                  <option value="created">{t('dashboard.filters.sortBy.options.created')}</option>
-                  <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
-                  <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
-                  <option value="recipient">
-                    {t('dashboard.filters.sortBy.options.recipient')}
-                  </option>
-                  <option value="industry">{t('dashboard.filters.sortBy.options.industry')}</option>
-                </Select>
-                <Select
-                  label={t('dashboard.filters.sortDir.label')}
-                  value={sortDir}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (isSortDirectionValue(value)) setSortDir(value);
-                  }}
-                  className="min-w-[140px]"
-                  wrapperClassName="flex-1 sm:flex-none"
-                >
-                  <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
-                  <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
-                </Select>
               </div>
 
-              <div className="flex items-center gap-4">
-                {filtered.length > 0 && (
-                  <div className="hidden sm:flex items-center gap-2 text-sm">
-                    <span className="font-semibold text-fg">
-                      {filtered.length.toLocaleString('hu-HU')}
-                    </span>
-                    <span className="text-fg-muted">{t('dashboard.filters.results')}</span>
+              {/* Conversion Funnel Group - Progressive disclosure based on offer count */}
+              <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
+                <div
+                  className={`grid gap-3 sm:gap-4 ${
+                    totalOffersCount < 5
+                      ? 'grid-cols-1 sm:grid-cols-3'
+                      : metricsViewMode === 'compact'
+                        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
+                        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
+                  }`}
+                >
+                  {loading ? (
+                    <>
+                      {Array.from({
+                        length: totalOffersCount < 5 ? 3 : metricsViewMode === 'compact' ? 7 : 8,
+                      }).map((_, i) => (
+                        <MetricSkeleton key={i} />
+                      ))}
+                    </>
+                  ) : totalOffersCount < 5 ? (
+                    <>
+                      {/* Simplified metrics for users with 1-4 offers */}
+                      <MetricCard
+                        label={t('dashboard.metrics.created.label')}
+                        value={totalOffersCount.toLocaleString('hu-HU')}
+                        icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="primary"
+                        trend={
+                          stats.createdThisMonth > 0
+                            ? 'up'
+                            : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
+                              ? 'down'
+                              : 'neutral'
+                        }
+                        {...(stats.createdThisMonth > 0
+                          ? { trendValue: `+${stats.createdThisMonth}` }
+                          : {})}
+                        onClick={() => handleMetricClick('all')}
+                      />
+                      <MetricCard
+                        label={t('dashboard.metrics.sent.label')}
+                        value={stats.sent.toLocaleString('hu-HU')}
+                        icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="info"
+                        onClick={() => handleMetricClick('sent')}
+                        isEmpty={stats.sent === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
+                      />
+                      <MetricCard
+                        label={t('dashboard.metrics.accepted.label')}
+                        value={stats.accepted.toLocaleString('hu-HU')}
+                        icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="success"
+                        trend={
+                          stats.acceptanceRate !== null && stats.acceptanceRate > 50
+                            ? 'up'
+                            : stats.acceptanceRate !== null && stats.acceptanceRate < 30
+                              ? 'down'
+                              : 'neutral'
+                        }
+                        {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
+                        onClick={() => handleMetricClick('accepted')}
+                        isEmpty={stats.accepted === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {/* Full metrics for power users with 5+ offers */}
+                      {/* Quota Card - Featured */}
+                      <div className="sm:col-span-2">
+                        <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl h-full">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                              <ChartBarIcon className="w-6 h-6" />
+                            </div>
+                            <div className="text-sm font-semibold opacity-90">
+                              {t('dashboard.metrics.quota.label')}
+                            </div>
+                          </div>
+                          <div className="text-4xl font-bold mb-2">{quotaValue}</div>
+                          {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
+                            <div className="text-sm opacity-80 flex items-center gap-2">
+                              <span>Pro csomag előny</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Created Offers - Funnel Start */}
+                      <MetricCard
+                        label={t('dashboard.metrics.created.label')}
+                        value={totalOffersCount.toLocaleString('hu-HU')}
+                        {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
+                        icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="primary"
+                        trend={
+                          stats.createdThisMonth > 0
+                            ? 'up'
+                            : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
+                              ? 'down'
+                              : 'neutral'
+                        }
+                        {...(stats.createdThisMonth > 0
+                          ? { trendValue: `+${stats.createdThisMonth}` }
+                          : {})}
+                        {...(createdComparison ? { comparison: createdComparison } : {})}
+                        onClick={() => handleMetricClick('all')}
+                        isEmpty={totalOffersCount === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
+                      />
+
+                      {/* Active Offers (In Review) */}
+                      <MetricCard
+                        label={t('dashboard.metrics.inReview.label')}
+                        value={stats.inReview.toLocaleString('hu-HU')}
+                        {...(metricsViewMode === 'detailed'
+                          ? {
+                              helper: t('dashboard.metrics.inReview.helper', {
+                                count: stats.inReview.toLocaleString('hu-HU'),
+                              }),
+                            }
+                          : {})}
+                        icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="info"
+                        onClick={() => handleMetricClick('sent')}
+                        isEmpty={stats.inReview === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
+                      />
+
+                      {/* Sent Offers */}
+                      <MetricCard
+                        label={t('dashboard.metrics.sent.label')}
+                        value={stats.sent.toLocaleString('hu-HU')}
+                        {...(metricsViewMode === 'detailed'
+                          ? {
+                              helper: t('dashboard.metrics.sent.helper', {
+                                sent: stats.sent.toLocaleString('hu-HU'),
+                                pending: stats.inReview.toLocaleString('hu-HU'),
+                              }),
+                            }
+                          : {})}
+                        icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="info"
+                        onClick={() => handleMetricClick('sent')}
+                        isEmpty={stats.sent === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
+                      />
+
+                      {/* Accepted Offers */}
+                      <MetricCard
+                        label={t('dashboard.metrics.accepted.label')}
+                        value={stats.accepted.toLocaleString('hu-HU')}
+                        {...(metricsViewMode === 'detailed'
+                          ? {
+                              helper: t('dashboard.metrics.accepted.helper', {
+                                accepted: stats.accepted.toLocaleString('hu-HU'),
+                                rate: acceptanceLabel,
+                              }),
+                            }
+                          : {})}
+                        icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="success"
+                        trend={
+                          stats.acceptanceRate !== null && stats.acceptanceRate > 50
+                            ? 'up'
+                            : stats.acceptanceRate !== null && stats.acceptanceRate < 30
+                              ? 'down'
+                              : 'neutral'
+                        }
+                        {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
+                        onClick={() => handleMetricClick('accepted')}
+                        isEmpty={stats.accepted === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
+                      />
+
+                      {/* Lost Offers - NEW */}
+                      <MetricCard
+                        label={t('dashboard.metrics.lost.label')}
+                        value={stats.lost.toLocaleString('hu-HU')}
+                        {...(metricsViewMode === 'detailed'
+                          ? {
+                              helper: t('dashboard.metrics.lost.helper', {
+                                count: stats.lost.toLocaleString('hu-HU'),
+                              }),
+                            }
+                          : {})}
+                        icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="danger"
+                        onClick={() => handleMetricClick('lost')}
+                        isEmpty={stats.lost === 0}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
+                      />
+
+                      {/* Win Rate - NEW */}
+                      <MetricCard
+                        label={t('dashboard.metrics.winRate.label')}
+                        value={winRateLabel}
+                        {...(metricsViewMode === 'detailed'
+                          ? {
+                              helper: t('dashboard.metrics.winRate.helper', {
+                                rate: winRateLabel !== '—' ? winRateLabel : '—',
+                              }),
+                            }
+                          : {})}
+                        icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
+                        color={
+                          stats.winRate !== null && stats.winRate > 50
+                            ? 'success'
+                            : stats.winRate !== null && stats.winRate < 30
+                              ? 'danger'
+                              : 'warning'
+                        }
+                        trend={
+                          stats.winRate !== null && stats.winRate > 50
+                            ? 'up'
+                            : stats.winRate !== null && stats.winRate < 30
+                              ? 'down'
+                              : 'neutral'
+                        }
+                        {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
+                        isEmpty={stats.winRate === null}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
+                      />
+
+                      {/* Average Decision Time */}
+                      <MetricCard
+                        label={t('dashboard.metrics.avgDecision.label')}
+                        value={avgDecisionLabel}
+                        {...(metricsViewMode === 'detailed'
+                          ? {
+                              helper: t('dashboard.metrics.avgDecision.helper', {
+                                days:
+                                  stats.avgDecisionDays !== null
+                                    ? stats.avgDecisionDays.toLocaleString('hu-HU', {
+                                        maximumFractionDigits: 1,
+                                      })
+                                    : '—',
+                                drafts: stats.drafts.toLocaleString('hu-HU'),
+                              }),
+                            }
+                          : {})}
+                        icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
+                        color="warning"
+                        isEmpty={stats.avgDecisionDays === null}
+                        emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Search & Filters */}
+            <Card as="section" className="mb-8">
+              <div className="space-y-6">
+                {/* Search Bar */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-fg-muted" aria-hidden="true" />
                   </div>
-                )}
-                <ViewSwitcher value={viewMode} onChange={setViewMode} />
-              </div>
-            </div>
-
-            {/* Active Filters Summary */}
-            {(q.trim() || statusFilter !== 'all' || industryFilter !== 'all') && (
-              <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
-                  {t('dashboard.filters.active')}:
-                </span>
-                {q.trim() && (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
-                    {t('dashboard.filters.search.label')}: &quot;{q}&quot;
+                  <Input
+                    placeholder="Keresés ajánlat címe vagy cég neve alapján..."
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    className="pl-11 pr-4 py-3 text-base shadow-sm"
+                    wrapperClassName=""
+                  />
+                  {q.trim() && (
                     <button
                       type="button"
                       onClick={() => setQ('')}
-                      className="rounded-full hover:bg-border/60 p-0.5 transition"
+                      className="absolute inset-y-0 right-0 flex items-center pr-4 text-fg-muted hover:text-fg transition-colors"
                       aria-label={t('dashboard.filters.remove')}
                     >
-                      <XMarkIcon className="h-3 w-3" />
+                      <XMarkIcon className="h-5 w-5" />
                     </button>
+                  )}
+                </div>
+
+                {/* Quick Filter Chips - Simplified design */}
+                <div
+                  className="flex flex-wrap items-center gap-3"
+                  role="group"
+                  aria-label={t('dashboard.filters.status.label')}
+                >
+                  <span className="text-sm font-semibold text-gray-700">
+                    {t('dashboard.filters.status.label')}:
                   </span>
-                )}
-                {statusFilter !== 'all' && (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
-                    {t('dashboard.filters.status.label')}: {t(STATUS_LABEL_KEYS[statusFilter])}
-                    <button
+                  {STATUS_FILTER_OPTIONS.map((status) => {
+                    // Calculate counts from offers matching current search/industry filters (but not status)
+                    const baseFiltered = offers.filter((o) => {
+                      const matchesSearch =
+                        !q.trim() ||
+                        o.title?.toLowerCase().includes(q.toLowerCase()) ||
+                        (o.recipient?.company_name || '').toLowerCase().includes(q.toLowerCase());
+                      const matchesIndustry =
+                        industryFilter === 'all' || o.industry === industryFilter;
+                      return matchesSearch && matchesIndustry;
+                    });
+                    const count =
+                      status === 'all'
+                        ? baseFiltered.length
+                        : baseFiltered.filter((o) => o.status === status).length;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setStatusFilter(status)}
+                        onKeyDown={(e) => {
+                          // Keyboard navigation: Arrow keys to navigate between filter chips
+                          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                            e.preventDefault();
+                            const currentIndex = STATUS_FILTER_OPTIONS.indexOf(status);
+                            const direction = e.key === 'ArrowRight' ? 1 : -1;
+                            const nextIndex =
+                              (currentIndex + direction + STATUS_FILTER_OPTIONS.length) %
+                              STATUS_FILTER_OPTIONS.length;
+                            const nextStatus = STATUS_FILTER_OPTIONS[nextIndex];
+                            setStatusFilter(nextStatus);
+                            // Focus the next button after state update
+                            setTimeout(() => {
+                              const buttons = Array.from(
+                                e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                              );
+                              const nextButton = buttons.find(
+                                (btn) => btn.getAttribute('aria-pressed') === 'true',
+                              );
+                              nextButton?.focus();
+                            }, 0);
+                          }
+                          // Home/End keys to jump to first/last
+                          if (e.key === 'Home') {
+                            e.preventDefault();
+                            setStatusFilter(STATUS_FILTER_OPTIONS[0]);
+                            setTimeout(() => {
+                              const buttons = Array.from(
+                                e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                              );
+                              buttons[0]?.focus();
+                            }, 0);
+                          }
+                          if (e.key === 'End') {
+                            e.preventDefault();
+                            const lastStatus =
+                              STATUS_FILTER_OPTIONS[STATUS_FILTER_OPTIONS.length - 1];
+                            setStatusFilter(lastStatus);
+                            setTimeout(() => {
+                              const buttons = Array.from(
+                                e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                              );
+                              buttons[buttons.length - 1]?.focus();
+                            }, 0);
+                          }
+                        }}
+                        aria-pressed={statusFilter === status}
+                        aria-label={`${t('dashboard.filters.status.label')}: ${
+                          status === 'all'
+                            ? t('dashboard.filters.status.options.all')
+                            : t(STATUS_LABEL_KEYS[status])
+                        }`}
+                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                          statusFilter === status
+                            ? 'bg-teal-500 text-white shadow-sm'
+                            : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        {status === 'all' ? (
+                          <>
+                            {t('dashboard.filters.status.options.all')} ({count})
+                          </>
+                        ) : (
+                          <>
+                            <span
+                              className={`h-2 w-2 rounded-full ${
+                                status === 'draft'
+                                  ? 'bg-amber-500'
+                                  : status === 'sent'
+                                    ? 'bg-blue-500'
+                                    : status === 'accepted'
+                                      ? 'bg-emerald-500'
+                                      : 'bg-rose-500'
+                              }`}
+                              aria-hidden="true"
+                            />
+                            {t(STATUS_LABEL_KEYS[status])} ({count})
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Advanced Filters & Controls */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
+                  <div className="flex flex-wrap items-end gap-3 flex-1">
+                    {industries.length > 0 && (
+                      <Select
+                        label={t('dashboard.filters.industry.label')}
+                        value={industryFilter}
+                        onChange={(e) => setIndustryFilter(e.target.value)}
+                        className="min-w-[180px]"
+                        wrapperClassName="flex-1 sm:flex-none"
+                      >
+                        <option value="all">{t('dashboard.filters.industry.options.all')}</option>
+                        {industries.map((ind) => (
+                          <option key={ind} value={ind}>
+                            {ind}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                    <Select
+                      label={t('dashboard.filters.sortBy.label')}
+                      value={sortBy}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (isSortByValue(value)) setSortBy(value);
+                      }}
+                      className="min-w-[160px]"
+                      wrapperClassName="flex-1 sm:flex-none"
+                    >
+                      <option value="created">
+                        {t('dashboard.filters.sortBy.options.created')}
+                      </option>
+                      <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
+                      <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
+                      <option value="recipient">
+                        {t('dashboard.filters.sortBy.options.recipient')}
+                      </option>
+                      <option value="industry">
+                        {t('dashboard.filters.sortBy.options.industry')}
+                      </option>
+                    </Select>
+                    <Select
+                      label={t('dashboard.filters.sortDir.label')}
+                      value={sortDir}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (isSortDirectionValue(value)) setSortDir(value);
+                      }}
+                      className="min-w-[140px]"
+                      wrapperClassName="flex-1 sm:flex-none"
+                    >
+                      <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
+                      <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {filtered.length > 0 && (
+                      <div className="hidden sm:flex items-center gap-2 text-sm">
+                        <span className="font-semibold text-fg">
+                          {filtered.length.toLocaleString('hu-HU')}
+                        </span>
+                        <span className="text-fg-muted">{t('dashboard.filters.results')}</span>
+                      </div>
+                    )}
+                    <ViewSwitcher value={viewMode} onChange={setViewMode} />
+                  </div>
+                </div>
+
+                {/* Active Filters Summary */}
+                {(q.trim() || statusFilter !== 'all' || industryFilter !== 'all') && (
+                  <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                      {t('dashboard.filters.active')}:
+                    </span>
+                    {q.trim() && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                        {t('dashboard.filters.search.label')}: &quot;{q}&quot;
+                        <button
+                          type="button"
+                          onClick={() => setQ('')}
+                          className="rounded-full hover:bg-border/60 p-0.5 transition"
+                          aria-label={t('dashboard.filters.remove')}
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    {statusFilter !== 'all' && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                        {t('dashboard.filters.status.label')}: {t(STATUS_LABEL_KEYS[statusFilter])}
+                        <button
+                          type="button"
+                          onClick={() => setStatusFilter('all')}
+                          className="rounded-full hover:bg-border/60 p-0.5 transition"
+                          aria-label={t('dashboard.filters.remove')}
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    {industryFilter !== 'all' && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                        {t('dashboard.filters.industry.label')}: {industryFilter}
+                        <button
+                          type="button"
+                          onClick={() => setIndustryFilter('all')}
+                          className="rounded-full hover:bg-border/60 p-0.5 transition"
+                          aria-label={t('dashboard.filters.remove')}
+                        >
+                          <XMarkIcon className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    <Button
                       type="button"
-                      onClick={() => setStatusFilter('all')}
-                      className="rounded-full hover:bg-border/60 p-0.5 transition"
-                      aria-label={t('dashboard.filters.remove')}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setQ('');
+                        setStatusFilter('all');
+                        setIndustryFilter('all');
+                      }}
+                      className="text-xs"
                     >
-                      <XMarkIcon className="h-3 w-3" />
-                    </button>
-                  </span>
+                      {t('dashboard.filters.clearAll')}
+                    </Button>
+                  </div>
                 )}
-                {industryFilter !== 'all' && (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
-                    {t('dashboard.filters.industry.label')}: {industryFilter}
-                    <button
-                      type="button"
-                      onClick={() => setIndustryFilter('all')}
-                      className="rounded-full hover:bg-border/60 p-0.5 transition"
-                      aria-label={t('dashboard.filters.remove')}
-                    >
-                      <XMarkIcon className="h-3 w-3" />
-                    </button>
-                  </span>
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setQ('');
-                    setStatusFilter('all');
-                    setIndustryFilter('all');
-                  }}
-                  className="text-xs"
-                >
-                  {t('dashboard.filters.clearAll')}
-                </Button>
               </div>
-            )}
-          </div>
-        </Card>
+            </Card>
 
-        {/* Skeleton Loaders - Mobile optimized */}
-        {loading && (
-          <div
-            className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            aria-busy="true"
-            aria-live="polite"
-          >
-            {Array.from({ length: 6 }).map((_, i) => (
-              <OfferCardSkeleton key={i} />
-            ))}
-          </div>
-        )}
-
-        {/* Enhanced Empty State - Improved accessibility and mobile design */}
-        {!loading && filtered.length === 0 && (
-          <Card
-            className="flex flex-col items-center justify-center gap-6 md:gap-8 p-12 md:p-16 text-center"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            <div className="relative">
-              <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-                <DocumentTextIcon
-                  className="h-10 w-10 md:h-12 md:w-12 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-              <div className="absolute -top-2 -right-2 flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
-                <MagnifyingGlassIcon
-                  className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-            <div className="space-y-3 max-w-md">
-              <h3 className="text-lg md:text-xl font-bold text-fg">{emptyMessage}</h3>
-              {noOffersLoaded ? (
-                <>
-                  <p className="text-sm md:text-base leading-relaxed text-fg-muted">
-                    {t('dashboard.emptyStates.noOffersMessage')}
-                  </p>
-                  <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
-                    Kezdj el egy új ajánlatot, hogy láthasd azokat itt.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm md:text-base leading-relaxed text-fg-muted">
-                    {t('dashboard.emptyStates.noResultsMessage')}
-                  </p>
-                  <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
-                    Próbálj meg más szűrőket használni vagy töröld a keresést.
-                  </p>
-                </>
-              )}
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
-              {noOffersLoaded && (
-                <Link
-                  href="/new"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
-                >
-                  <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
-                  {t('dashboard.actions.newOffer')}
-                </Link>
-              )}
-              {!noOffersLoaded && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setQ('');
-                    setStatusFilter('all');
-                    setIndustryFilter('all');
-                  }}
-                  className="min-w-[140px]"
-                >
-                  Szűrők törlése
-                </Button>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
-        {!loading && filtered.length > 0 && (
-          <div>
-            {viewMode === 'card' ? (
-              <OffersCardGrid
-                offers={filtered}
-                updatingId={updatingId}
-                downloadingId={downloadingId}
-                deletingId={deletingId}
-                regeneratingId={regeneratingId}
-                onMarkSent={markSent}
-                onMarkDecision={markDecision}
-                onRevertToSent={revertToSent}
-                onRevertToDraft={revertToDraft}
-                onDelete={setOfferToDelete}
-                onDownload={handleDownloadPdf}
-                onRegeneratePdf={handleRegeneratePdf}
-              />
-            ) : (
+            {/* Skeleton Loaders - Mobile optimized */}
+            {loading && (
               <div
-                className="flex flex-col gap-3"
-                role="region"
-                aria-label={t('dashboard.offersList.label') || 'Offers list'}
-                aria-busy={updatingId !== null || deletingId !== null}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+                aria-busy="true"
+                aria-live="polite"
               >
-                {filtered.map((o) => (
-                  <OfferListItem
-                    key={o.id}
-                    offer={o}
-                    isUpdating={updatingId === o.id}
-                    isDownloading={downloadingId === o.id}
-                    isDeleting={deletingId === o.id}
-                    onMarkSent={(offer, date) => markSent(offer, date)}
-                    onMarkDecision={(offer, decision, date) => markDecision(offer, decision, date)}
-                    onRevertToSent={(offer) => revertToSent(offer)}
-                    onRevertToDraft={(offer) => revertToDraft(offer)}
-                    onDelete={(offer) => setOfferToDelete(offer)}
-                    onDownload={(offer) => handleDownloadPdf(offer)}
-                  />
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <OfferCardSkeleton key={i} />
                 ))}
               </div>
             )}
 
-            {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}
-            <div ref={loadMoreRef} className="mt-6 flex flex-col items-center gap-3 text-center">
-              {paginationSummary ? (
-                <p
-                  className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {paginationSummary}
-                </p>
-              ) : null}
+            {/* Enhanced Empty State - Improved accessibility and mobile design */}
+            {!loading && filtered.length === 0 && (
+              <Card
+                className="flex flex-col items-center justify-center gap-6 md:gap-8 p-12 md:p-16 text-center"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <div className="relative">
+                  <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+                    <DocumentTextIcon
+                      className="h-10 w-10 md:h-12 md:w-12 text-primary"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="absolute -top-2 -right-2 flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
+                    <MagnifyingGlassIcon
+                      className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-3 max-w-md">
+                  <h3 className="text-lg md:text-xl font-bold text-fg">{emptyMessage}</h3>
+                  {noOffersLoaded ? (
+                    <>
+                      <p className="text-sm md:text-base leading-relaxed text-fg-muted">
+                        {t('dashboard.emptyStates.noOffersMessage')}
+                      </p>
+                      <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
+                        Kezdj el egy új ajánlatot, hogy láthasd azokat itt.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm md:text-base leading-relaxed text-fg-muted">
+                        {t('dashboard.emptyStates.noResultsMessage')}
+                      </p>
+                      <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
+                        Próbálj meg más szűrőket használni vagy töröld a keresést.
+                      </p>
+                    </>
+                  )}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
+                  {noOffersLoaded && (
+                    <Link
+                      href="/new"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
+                    >
+                      <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
+                      {t('dashboard.actions.newOffer')}
+                    </Link>
+                  )}
+                  {!noOffersLoaded && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setQ('');
+                        setStatusFilter('all');
+                        setIndustryFilter('all');
+                      }}
+                      className="min-w-[140px]"
+                    >
+                      Szűrők törlése
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            )}
 
-              {/* Load More Button - Also serves as intersection observer target for auto-loading */}
-              {hasMore && (
-                <div className="w-full">
-                  <LoadMoreButton
-                    currentPage={currentPage}
-                    totalPages={totalPages ?? null}
-                    hasNext={hasMore}
-                    onClick={handleLoadMore}
-                    isLoading={isLoadingMore}
+            {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
+            {!loading && filtered.length > 0 && (
+              <div>
+                {viewMode === 'card' ? (
+                  <OffersCardGrid
+                    offers={filtered}
+                    updatingId={updatingId}
+                    downloadingId={downloadingId}
+                    deletingId={deletingId}
+                    regeneratingId={regeneratingId}
+                    onMarkSent={markSent}
+                    onMarkDecision={markDecision}
+                    onRevertToSent={revertToSent}
+                    onRevertToDraft={revertToDraft}
+                    onDelete={setOfferToDelete}
+                    onDownload={handleDownloadPdf}
+                    onRegeneratePdf={handleRegeneratePdf}
                   />
-                </div>
-              )}
+                ) : (
+                  <div
+                    className="flex flex-col gap-3"
+                    role="region"
+                    aria-label={t('dashboard.offersList.label') || 'Offers list'}
+                    aria-busy={updatingId !== null || deletingId !== null}
+                  >
+                    {filtered.map((o) => (
+                      <OfferListItem
+                        key={o.id}
+                        offer={o}
+                        isUpdating={updatingId === o.id}
+                        isDownloading={downloadingId === o.id}
+                        isDeleting={deletingId === o.id}
+                        onMarkSent={(offer, date) => markSent(offer, date)}
+                        onMarkDecision={(offer, decision, date) =>
+                          markDecision(offer, decision, date)
+                        }
+                        onRevertToSent={(offer) => revertToSent(offer)}
+                        onRevertToDraft={(offer) => revertToDraft(offer)}
+                        onDelete={(offer) => setOfferToDelete(offer)}
+                        onDownload={(offer) => handleDownloadPdf(offer)}
+                      />
+                    ))}
+                  </div>
+                )}
 
-              {!hasMore && offers.length > 0 && (
-                <p className="text-xs text-fg-muted" role="status" aria-live="polite">
-                  {t('dashboard.pagination.allLoaded')}
-                </p>
-              )}
-
-              {/* Loading indicator for progressive loading */}
-              {isLoadingMore && (
+                {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}
                 <div
-                  className="flex items-center gap-2 text-sm text-fg-muted"
-                  aria-busy="true"
-                  aria-live="polite"
+                  ref={loadMoreRef}
+                  className="mt-6 flex flex-col items-center gap-3 text-center"
                 >
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                  <span>{t('dashboard.pagination.loading') || 'Loading more offers...'}</span>
+                  {paginationSummary ? (
+                    <p
+                      className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {paginationSummary}
+                    </p>
+                  ) : null}
+
+                  {/* Load More Button - Also serves as intersection observer target for auto-loading */}
+                  {hasMore && (
+                    <div className="w-full">
+                      <LoadMoreButton
+                        currentPage={currentPage}
+                        totalPages={totalPages ?? null}
+                        hasNext={hasMore}
+                        onClick={handleLoadMore}
+                        isLoading={isLoadingMore}
+                      />
+                    </div>
+                  )}
+
+                  {!hasMore && offers.length > 0 && (
+                    <p className="text-xs text-fg-muted" role="status" aria-live="polite">
+                      {t('dashboard.pagination.allLoaded')}
+                    </p>
+                  )}
+
+                  {/* Loading indicator for progressive loading */}
+                  {isLoadingMore && (
+                    <div
+                      className="flex items-center gap-2 text-sm text-fg-muted"
+                      aria-busy="true"
+                      aria-live="polite"
+                    >
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <span>{t('dashboard.pagination.loading') || 'Loading more offers...'}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            )}
+          </>
         )}
       </AppFrame>
 

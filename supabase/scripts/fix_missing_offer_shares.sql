@@ -82,3 +82,5 @@ LEFT JOIN public.offer_shares os ON os.offer_id = o.id
   AND (os.expires_at IS NULL OR os.expires_at > NOW());
 
 
+
+

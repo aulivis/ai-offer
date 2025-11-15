@@ -23,8 +23,6 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
-  KeyIcon,
-  BuildingOfficeIcon,
   PaintBrushIcon,
   CubeIcon,
   DocumentTextIcon,
@@ -32,9 +30,10 @@ import {
   ChatBubbleLeftRightIcon,
   EnvelopeIcon,
   ShieldCheckIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import type { TemplateId } from '@/app/pdf/templates/types';
-import { SettingsAuthSection } from '@/components/settings/SettingsAuthSection';
+import { SettingsSecurityTab } from '@/components/settings/SettingsSecurityTab';
 import { SettingsCompanySection } from '@/components/settings/SettingsCompanySection';
 import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
 import { SettingsTemplatesSection } from '@/components/settings/SettingsTemplatesSection';
@@ -42,7 +41,6 @@ import { SettingsActivitiesSection } from '@/components/settings/SettingsActivit
 import { SettingsGuaranteesSection } from '@/components/settings/SettingsGuaranteesSection';
 import { SettingsEmailSubscriptionSection } from '@/components/settings/SettingsEmailSubscriptionSection';
 import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
-import { SectionNav } from '@/components/settings/SectionNav';
 import type { Profile, ActivityRow, GuaranteeRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
 
@@ -207,80 +205,72 @@ export default function SettingsPage() {
     router.replace('/settings', { scroll: false });
   }, [router, searchParams, showToast]);
 
-  const [activeSection, setActiveSection] = useState<string>('auth');
+  const [activeTab, setActiveTab] = useState<string>('profile');
 
-  const sections = [
+  // Initialize tab from URL hash if present
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash.replace('#', '');
+    if (
+      hash &&
+      [
+        'profile',
+        'security',
+        'branding',
+        'templates',
+        'activities',
+        'guarantees',
+        'notifications',
+      ].includes(hash)
+    ) {
+      setActiveTab(hash);
+    }
+  }, []);
+
+  const tabs = [
     {
-      id: 'auth',
-      label: t('settings.authMethods.title'),
-      icon: <KeyIcon className="h-5 w-5" />,
-      href: '#auth',
+      id: 'profile',
+      label: 'Profil',
+      icon: <UserIcon className="h-5 w-5" />,
     },
     {
-      id: 'company',
-      label: t('settings.company.title'),
-      icon: <BuildingOfficeIcon className="h-5 w-5" />,
-      href: '#company',
+      id: 'security',
+      label: 'Biztonság',
+      icon: <LockClosedIcon className="h-5 w-5" />,
     },
     {
       id: 'branding',
-      label: t('settings.branding.title'),
+      label: 'Branding',
       icon: <PaintBrushIcon className="h-5 w-5" />,
-      href: '#branding',
     },
     {
       id: 'templates',
-      label: t('settings.templates.title'),
+      label: 'Sablonok',
       icon: <DocumentTextIcon className="h-5 w-5" />,
-      href: '#templates',
     },
     {
       id: 'activities',
       label: t('settings.activities.title'),
       icon: <CubeIcon className="h-5 w-5" />,
-      href: '#activities',
     },
     {
       id: 'guarantees',
       label: t('settings.guarantees.title'),
       icon: <ShieldCheckIcon className="h-5 w-5" />,
-      href: '#guarantees',
     },
     {
-      id: 'email-subscription',
-      label: 'Email hírlevél',
+      id: 'notifications',
+      label: 'Értesítések',
       icon: <EnvelopeIcon className="h-5 w-5" />,
-      href: '#email-subscription',
     },
   ];
 
-  useEffect(() => {
-    if (loading) return;
-
-    const handleScroll = () => {
-      const sectionIds = [
-        'auth',
-        'company',
-        'branding',
-        'templates',
-        'activities',
-        'email-subscription',
-      ];
-      const scrollPosition = window.scrollY + 200;
-
-      for (let i = sectionIds.length - 1; i >= 0; i--) {
-        const element = document.getElementById(sectionIds[i]);
-        if (element && element.offsetTop <= scrollPosition) {
-          setActiveSection(sectionIds[i]);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loading]);
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `#${tabId}`);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -1217,22 +1207,6 @@ export default function SettingsPage() {
     setNewIndustry('');
   }
 
-  const handleSectionChange = useCallback((id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 96;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-
-      setActiveSection(id);
-    }
-  }, []);
-
   if (loading) {
     return (
       <AppFrame title={t('settings.title')} description={t('settings.loadingDescription')}>
@@ -1265,251 +1239,277 @@ export default function SettingsPage() {
         ) : null
       }
     >
-      <div className="flex flex-col gap-8 lg:flex-row">
-        {/* Enhanced Sidebar Navigation */}
-        <aside className="hidden lg:block lg:w-72 lg:flex-shrink-0">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-border/60 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-200">
-            <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
-              {t('settings.sidebarTitle')}
-            </h2>
-            <SectionNav
-              sections={sections}
-              activeSection={activeSection}
-              onSectionChange={handleSectionChange}
-            />
+      <div className="min-h-screen bg-slate-50">
+        <div className="mx-auto max-w-7xl px-6 py-8">
+          {/* Settings header */}
+          <div className="mb-8">
+            <h1 className="mb-2 text-4xl font-bold text-slate-900">{t('settings.title')}</h1>
+            <p className="text-lg text-slate-600">{t('settings.description')}</p>
           </div>
-        </aside>
 
-        {/* Main Content */}
-        <div className="flex-1 space-y-8">
-          <SettingsAuthSection
-            googleLinked={googleLinked}
-            linkingGoogle={linkingGoogle}
-            onLinkGoogle={startGoogleLink}
-          />
-
-          <section id="company" className="scroll-mt-24">
-            <SettingsCompanySection
-              profile={profile}
-              errors={errors.general}
-              newIndustry={newIndustry}
-              onProfileChange={setProfile}
-              onNewIndustryChange={setNewIndustry}
-              onToggleIndustry={toggleIndustry}
-              onAddManualIndustry={handleManualIndustry}
-              onSave={() => saveProfile('all')}
-              saving={saving}
-            />
-          </section>
-
-          <section id="branding" className="scroll-mt-24">
-            <SettingsBrandingSection
-              profile={profile}
-              plan={plan}
-              errors={errors.branding}
-              logoUploading={logoUploading}
-              logoUploadProgress={logoUploadProgress}
-              onProfileChange={setProfile}
-              onTriggerLogoUpload={triggerLogoUpload}
-              onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
-              onSave={() => saveProfile('branding')}
-              onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-              saving={saving}
-            />
-          </section>
-
-          <input
-            ref={logoInputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/svg+xml"
-            className="hidden"
-            onChange={handleLogoChange}
-          />
-
-          <section id="templates" className="scroll-mt-24">
-            <SettingsTemplatesSection
-              selectedTemplateId={selectedTemplateId}
-              plan={plan}
-              onTemplateSelect={handleTemplateSelect}
-            />
-          </section>
-
-          <SettingsActivitiesSection
-            activities={acts}
-            newActivity={newAct}
-            saving={actSaving}
-            plan={plan}
-            defaultActivityId={profile.default_activity_id}
-            collapsed={activitiesCollapsed}
-            collapseDisabled={hasActivityContent}
-            onCollapsedChange={(value) => setActivitiesCollapsed(value)}
-            onNewActivityChange={setNewAct}
-            onToggleNewActivityIndustry={toggleNewActIndustry}
-            onAddActivity={addActivity}
-            onDeleteActivity={deleteActivity}
-            onActivityImagesChange={async (activityId, imagePaths) => {
-              if (!user) return;
-              try {
-                const { error } = await supabase
-                  .from('activities')
-                  .update({ reference_images: imagePaths })
-                  .eq('id', activityId)
-                  .eq('user_id', user.id);
-                if (error) {
-                  throw error;
-                }
-                // Update local state only after successful database update
-                setActs((prev) =>
-                  prev.map((a) =>
-                    a.id === activityId ? { ...a, reference_images: imagePaths } : a,
-                  ),
-                );
-              } catch (error) {
-                console.error('Failed to save reference images:', error);
-                showToast({
-                  title: t('errors.settings.saveFailed', {
-                    message: 'Nem sikerült menteni a referenciafotókat',
-                  }),
-                  description: error instanceof Error ? error.message : 'Ismeretlen hiba',
-                  variant: 'error',
-                });
-              }
-            }}
-            onDefaultActivityChange={async (activityId) => {
-              if (!user) return;
-              try {
-                setProfile((p) => ({ ...p, default_activity_id: activityId }));
-                const { error } = await supabase
-                  .from('profiles')
-                  .update({ default_activity_id: activityId })
-                  .eq('id', user.id);
-                if (error) {
-                  throw error;
-                }
-                showToast({
-                  title: t('toasts.settings.saveSuccess'),
-                  description: '',
-                  variant: 'success',
-                });
-              } catch (error) {
-                console.error('Failed to save default activity:', error);
-                showToast({
-                  title: t('errors.settings.saveFailed', {
-                    message: 'Nem sikerült menteni az alapértelmezett tevékenységet',
-                  }),
-                  description: error instanceof Error ? error.message : 'Ismeretlen hiba',
-                  variant: 'error',
-                });
-              }
-            }}
-            onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-          />
-
-          <section id="guarantees" className="scroll-mt-24">
-            <SettingsGuaranteesSection
-              activities={acts}
-              guarantees={guarantees}
-              addLoading={guaranteeAddLoading}
-              busyGuaranteeId={guaranteeBusyId}
-              collapsed={guaranteesCollapsed}
-              collapseDisabled={hasGuaranteeContent}
-              onCollapsedChange={(value) => setGuaranteesCollapsed(value)}
-              onAddGuarantee={addGuaranteeEntry}
-              onUpdateGuarantee={updateGuaranteeEntry}
-              onDeleteGuarantee={deleteGuaranteeEntry}
-              onToggleAttachment={toggleGuaranteeAttachment}
-            />
-          </section>
-
-          <SettingsEmailSubscriptionSection />
-
-          <Card
-            id="testimonials"
-            as="section"
-            className="scroll-mt-24"
-            header={
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                      <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t('settings.testimonials.title')}
-                      </h2>
-                      <p className="text-sm text-slate-500">
-                        {t('settings.testimonials.subtitle')}
-                      </p>
-                    </div>
-                  </div>
-                  {plan === 'pro' && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const newValue = !(profile.enable_testimonials ?? false);
-                        setProfile((p) => ({ ...p, enable_testimonials: newValue }));
-                        await saveProfile('all');
-                      }}
-                      disabled={saving}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                        profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          profile.enable_testimonials ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  )}
-                </div>
-              </CardHeader>
-            }
-          >
-            {plan === 'pro' ? (
-              profile.enable_testimonials ? (
-                <TestimonialsManager
-                  testimonials={testimonials}
-                  activities={acts}
-                  enabled={true}
-                  plan={plan}
-                  onTestimonialsChange={async () => {
-                    if (!user) return;
-                    const { data: testimonialsList } = await supabase
-                      .from('testimonials')
-                      .select('*')
-                      .eq('user_id', user.id)
-                      .order('created_at', { ascending: false });
-                    setTestimonials((testimonialsList as typeof testimonials) || []);
-                  }}
-                />
-              ) : null
-            ) : (
-              <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-                  <LockClosedIcon className="h-6 w-6 text-amber-600" />
-                </div>
-                <h3 className="mt-4 text-sm font-semibold text-slate-900">
-                  {t('settings.proFeatures.testimonials.upgradeTitle')}
-                </h3>
-                <p className="mt-2 text-xs text-slate-600">
-                  {t('settings.proFeatures.testimonials.upgradeDescription')}
-                </p>
-                <Button
-                  onClick={() =>
-                    openPlanUpgradeDialog({
-                      description: t('settings.proFeatures.testimonials.upgradeDescription'),
-                    })
-                  }
-                  variant="primary"
-                  className="mt-4"
-                >
-                  {t('settings.proFeatures.testimonials.upgradeButton')}
-                </Button>
+          {/* Tab navigation */}
+          <div className="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-lg">
+            {/* Tab header */}
+            <div className="border-b-2 border-slate-100">
+              <div className="flex items-center gap-2 overflow-x-auto px-6">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`flex items-center gap-2 whitespace-nowrap border-b-4 px-6 py-4 font-semibold transition-colors ${
+                      activeTab === tab.id
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
               </div>
-            )}
-          </Card>
+            </div>
+
+            {/* Tab content */}
+            <div className="p-8">
+              {activeTab === 'profile' && (
+                <SettingsCompanySection
+                  profile={profile}
+                  errors={errors.general}
+                  newIndustry={newIndustry}
+                  onProfileChange={setProfile}
+                  onNewIndustryChange={setNewIndustry}
+                  onToggleIndustry={toggleIndustry}
+                  onAddManualIndustry={handleManualIndustry}
+                  onSave={() => saveProfile('all')}
+                  saving={saving}
+                />
+              )}
+
+              {activeTab === 'security' && (
+                <SettingsSecurityTab
+                  googleLinked={googleLinked}
+                  linkingGoogle={linkingGoogle}
+                  email={email}
+                  onLinkGoogle={startGoogleLink}
+                />
+              )}
+
+              {activeTab === 'branding' && (
+                <div className="space-y-6">
+                  <SettingsBrandingSection
+                    profile={profile}
+                    plan={plan}
+                    errors={errors.branding}
+                    logoUploading={logoUploading}
+                    logoUploadProgress={logoUploadProgress}
+                    onProfileChange={setProfile}
+                    onTriggerLogoUpload={triggerLogoUpload}
+                    onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
+                    onSave={() => saveProfile('branding')}
+                    onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                    saving={saving}
+                  />
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml"
+                    className="hidden"
+                    onChange={handleLogoChange}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'templates' && (
+                <SettingsTemplatesSection
+                  selectedTemplateId={selectedTemplateId}
+                  plan={plan}
+                  onTemplateSelect={handleTemplateSelect}
+                />
+              )}
+
+              {activeTab === 'activities' && (
+                <SettingsActivitiesSection
+                  activities={acts}
+                  newActivity={newAct}
+                  saving={actSaving}
+                  plan={plan}
+                  defaultActivityId={profile.default_activity_id}
+                  collapsed={activitiesCollapsed}
+                  collapseDisabled={hasActivityContent}
+                  onCollapsedChange={(value) => setActivitiesCollapsed(value)}
+                  onNewActivityChange={setNewAct}
+                  onToggleNewActivityIndustry={toggleNewActIndustry}
+                  onAddActivity={addActivity}
+                  onDeleteActivity={deleteActivity}
+                  onActivityImagesChange={async (activityId, imagePaths) => {
+                    if (!user) return;
+                    try {
+                      const { error } = await supabase
+                        .from('activities')
+                        .update({ reference_images: imagePaths })
+                        .eq('id', activityId)
+                        .eq('user_id', user.id);
+                      if (error) {
+                        throw error;
+                      }
+                      setActs((prev) =>
+                        prev.map((a) =>
+                          a.id === activityId ? { ...a, reference_images: imagePaths } : a,
+                        ),
+                      );
+                    } catch (error) {
+                      console.error('Failed to save reference images:', error);
+                      showToast({
+                        title: t('errors.settings.saveFailed', {
+                          message: 'Nem sikerült menteni a referenciafotókat',
+                        }),
+                        description: error instanceof Error ? error.message : 'Ismeretlen hiba',
+                        variant: 'error',
+                      });
+                    }
+                  }}
+                  onDefaultActivityChange={async (activityId) => {
+                    if (!user) return;
+                    try {
+                      setProfile((p) => ({ ...p, default_activity_id: activityId }));
+                      const { error } = await supabase
+                        .from('profiles')
+                        .update({ default_activity_id: activityId })
+                        .eq('id', user.id);
+                      if (error) {
+                        throw error;
+                      }
+                      showToast({
+                        title: t('toasts.settings.saveSuccess'),
+                        description: '',
+                        variant: 'success',
+                      });
+                    } catch (error) {
+                      console.error('Failed to save default activity:', error);
+                      showToast({
+                        title: t('errors.settings.saveFailed', {
+                          message: 'Nem sikerült menteni az alapértelmezett tevékenységet',
+                        }),
+                        description: error instanceof Error ? error.message : 'Ismeretlen hiba',
+                        variant: 'error',
+                      });
+                    }
+                  }}
+                  onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                />
+              )}
+
+              {activeTab === 'guarantees' && (
+                <SettingsGuaranteesSection
+                  activities={acts}
+                  guarantees={guarantees}
+                  addLoading={guaranteeAddLoading}
+                  busyGuaranteeId={guaranteeBusyId}
+                  collapsed={guaranteesCollapsed}
+                  collapseDisabled={hasGuaranteeContent}
+                  onCollapsedChange={(value) => setGuaranteesCollapsed(value)}
+                  onAddGuarantee={addGuaranteeEntry}
+                  onUpdateGuarantee={updateGuaranteeEntry}
+                  onDeleteGuarantee={deleteGuaranteeEntry}
+                  onToggleAttachment={toggleGuaranteeAttachment}
+                />
+              )}
+
+              {activeTab === 'notifications' && (
+                <div className="space-y-6">
+                  <SettingsEmailSubscriptionSection />
+                  <Card
+                    as="section"
+                    header={
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                              <ChatBubbleLeftRightIcon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <h2 className="text-xl font-bold text-slate-900">
+                                {t('settings.testimonials.title')}
+                              </h2>
+                              <p className="text-sm text-slate-500">
+                                {t('settings.testimonials.subtitle')}
+                              </p>
+                            </div>
+                          </div>
+                          {plan === 'pro' && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const newValue = !(profile.enable_testimonials ?? false);
+                                setProfile((p) => ({ ...p, enable_testimonials: newValue }));
+                                await saveProfile('all');
+                              }}
+                              disabled={saving}
+                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                                profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
+                              }`}
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                  profile.enable_testimonials ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                          )}
+                        </div>
+                      </CardHeader>
+                    }
+                  >
+                    {plan === 'pro' ? (
+                      profile.enable_testimonials ? (
+                        <TestimonialsManager
+                          testimonials={testimonials}
+                          activities={acts}
+                          enabled={true}
+                          plan={plan}
+                          onTestimonialsChange={async () => {
+                            if (!user) return;
+                            const { data: testimonialsList } = await supabase
+                              .from('testimonials')
+                              .select('*')
+                              .eq('user_id', user.id)
+                              .order('created_at', { ascending: false });
+                            setTestimonials((testimonialsList as typeof testimonials) || []);
+                          }}
+                        />
+                      ) : null
+                    ) : (
+                      <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                          <LockClosedIcon className="h-6 w-6 text-amber-600" />
+                        </div>
+                        <h3 className="mt-4 text-sm font-semibold text-slate-900">
+                          {t('settings.proFeatures.testimonials.upgradeTitle')}
+                        </h3>
+                        <p className="mt-2 text-xs text-slate-600">
+                          {t('settings.proFeatures.testimonials.upgradeDescription')}
+                        </p>
+                        <Button
+                          onClick={() =>
+                            openPlanUpgradeDialog({
+                              description: t(
+                                'settings.proFeatures.testimonials.upgradeDescription',
+                              ),
+                            })
+                          }
+                          variant="primary"
+                          className="mt-4"
+                        >
+                          {t('settings.proFeatures.testimonials.upgradeButton')}
+                        </Button>
+                      </div>
+                    )}
+                  </Card>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </AppFrame>

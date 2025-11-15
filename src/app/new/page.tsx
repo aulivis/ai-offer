@@ -1968,8 +1968,14 @@ export default function NewOfferWizard() {
         });
 
         const dataUrl = await base64Promise;
+        // Use a more descriptive key based on the path to ensure uniqueness
+        const pathKey =
+          path
+            .split('/')
+            .pop()
+            ?.replace(/\.[^.]+$/, '') || `ref-img-${i}`;
         results.push({
-          key: `ref-img-${i}`,
+          key: `ref-${pathKey}-${i}`,
           dataUrl,
           alt: `Reference image ${i + 1}`,
         });

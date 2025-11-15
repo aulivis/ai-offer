@@ -3,7 +3,6 @@
 import { t } from '@/copy';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardHeader } from '@/components/ui/Card';
 import {
   BuildingOfficeIcon,
   CheckCircleIcon,
@@ -43,24 +42,18 @@ export function SettingsCompanySection({
   const hasErrors = Object.keys(errors).length > 0;
 
   return (
-    <Card
-      id="company"
-      as="section"
-      className="scroll-mt-24"
-      header={
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <BuildingOfficeIcon className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{t('settings.company.title')}</h2>
-              <p className="text-sm text-slate-500">{t('settings.company.subtitle')}</p>
-            </div>
+    <div className="space-y-6">
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <BuildingOfficeIcon className="h-5 w-5 text-primary" />
           </div>
-        </CardHeader>
-      }
-    >
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">{t('settings.company.title')}</h2>
+            <p className="text-sm text-slate-600">{t('settings.company.subtitle')}</p>
+          </div>
+        </div>
+      </div>
       <div className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <Input
@@ -186,6 +179,6 @@ export function SettingsCompanySection({
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -19,8 +19,20 @@ import {
   Award,
   Lock,
   TrendingUp,
+  TrendingDown,
   Crown,
   CheckCircle,
+  AlertTriangle,
+  Calendar,
+  CreditCard,
+  FileText,
+  Infinity,
+  Receipt,
+  Pause,
+  Target,
+  Palette,
+  Headphones,
+  Building,
 } from 'lucide-react';
 
 import { envClient } from '@/env.client';
@@ -267,7 +279,9 @@ function PlanCard({
         'relative flex h-full flex-col transition-all duration-300',
         isCurrent
           ? 'border-primary/60 bg-gradient-to-br from-primary/5 via-white to-white shadow-xl ring-2 ring-primary/20'
-          : 'border-border/70 bg-white shadow-lg hover:shadow-xl hover:-translate-y-1',
+          : isDowngrade && !isCurrent
+            ? 'border-border/70 bg-white shadow-lg opacity-75 hover:opacity-100 hover:shadow-xl hover:-translate-y-1'
+            : 'border-border/70 bg-white shadow-lg hover:shadow-xl hover:-translate-y-1',
         isPopular && !isCurrent ? 'border-primary/40' : '',
       ]
         .filter(Boolean)
@@ -300,6 +314,15 @@ function PlanCard({
         </div>
       )}
 
+      {/* Downgrade Badge - Previous Plan */}
+      {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
+        <div className="absolute top-6 right-6">
+          <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-bold">
+            Korábbi csomag
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col">
         {/* Plan Badge */}
         {!isCurrent && (
@@ -314,8 +337,26 @@ function PlanCard({
         {/* Description */}
         <p className="mt-3 text-sm leading-relaxed text-slate-600">{data.description}</p>
 
-        {/* Downgrade Warning */}
-        {isDowngrade && !isCurrent && (
+        {/* Downgrade Warning - Enhanced for Pro users viewing Standard */}
+        {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
+          <div className="mt-4 bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-900">
+                <p className="font-semibold mb-1">Visszalépés esetén elveszíted:</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• Korlátlan ajánlatok (csak 5/hó)</li>
+                  <li>• AI generált szövegek</li>
+                  <li>• Prémium sablonok</li>
+                  <li>• Prioritásos támogatás</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Standard downgrade warning for other cases */}
+        {isDowngrade && !isCurrent && !(plan === 'pro' && planType === 'standard') && (
           <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
             <p className="text-xs font-medium text-amber-800">
               {t(
@@ -335,25 +376,33 @@ function PlanCard({
           </span>
         </div>
 
+        {/* Savings message for downgrade */}
+        {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
+          <p className="text-sm text-gray-600 mt-2">Visszalépés 5 500 Ft/hó megtakarítás</p>
+        )}
+
         {/* Features List */}
         <ul className="mt-6 flex-1 space-y-3">
           {data.features.map((feature, idx) => (
             <li key={idx} className="flex items-start gap-3">
-              <svg
-                className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
               <span className="text-sm text-slate-700">{feature}</span>
             </li>
           ))}
+
+          {/* Show removed features with strikethrough for Pro downgrading to Standard */}
+          {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
+            <>
+              <li className="flex items-start gap-3">
+                <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
+                <span className="text-sm text-gray-400 line-through">Korlátlan ajánlatok</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
+                <span className="text-sm text-gray-400 line-through">AI generált szövegek</span>
+              </li>
+            </>
+          )}
         </ul>
 
         {/* CTA Button */}
@@ -362,58 +411,22 @@ function PlanCard({
           disabled={cta.disabled}
           variant={cta.variant}
           size="lg"
-          className="mt-8 w-full"
+          className={[
+            'mt-8 w-full',
+            isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard'
+              ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           loading={isLoading}
         >
-          {cta.label}
+          {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard'
+            ? 'Visszalépés Standard-ra'
+            : cta.label}
         </Button>
       </div>
     </Card>
-  );
-}
-
-// Usage Stat Card Component
-function UsageStatCard({
-  title,
-  value,
-  helper,
-  progress,
-  icon,
-}: {
-  title: string;
-  value: string;
-  helper: string;
-  progress?: { percentage: number; isWarning: boolean; isDanger: boolean };
-  icon?: JSX.Element;
-}) {
-  return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-white to-slate-50/50 p-6 transition-all duration-200 hover:border-primary/40 hover:shadow-md">
-      {icon && (
-        <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          {icon}
-        </div>
-      )}
-      <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</dt>
-      <dd className="mt-2 text-2xl font-bold text-slate-900">{value}</dd>
-      {progress && (
-        <div className="mt-4">
-          <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="text-slate-600">Használat</span>
-            <span className="font-semibold text-slate-700">{progress.percentage}%</span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-            <div
-              className={`h-full transition-all duration-500 ${
-                progress.isDanger ? 'bg-danger' : progress.isWarning ? 'bg-warning' : 'bg-primary'
-              }`}
-              style={{ width: `${Math.min(progress.percentage, 100)}%` }}
-              aria-label={`${progress.percentage}% használva`}
-            />
-          </div>
-        </div>
-      )}
-      <p className="mt-3 text-xs text-slate-500">{helper}</p>
-    </div>
   );
 }
 
@@ -570,9 +583,6 @@ export default function BillingPage() {
       : t('billing.currentPlan.limit.limited', {
           count: planLimit.toLocaleString('hu-HU'),
         });
-  const offersThisMonthLabel = t('billing.currentPlan.offersThisMonth.value', {
-    count: offersThisMonth.toLocaleString('hu-HU'),
-  });
   const remainingQuotaLabel =
     planLimit === null
       ? t('billing.currentPlan.remaining.unlimited')
@@ -680,27 +690,24 @@ export default function BillingPage() {
         )}
 
         {/* Current Plan Section */}
-        <Card
-          as="section"
-          className="border-primary/20 bg-gradient-to-br from-primary/5 via-white to-white"
-          header={
-            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">
-                  {t('billing.currentPlan.title')}
-                </h2>
-                <p className="mt-1 text-sm text-slate-600">{t('billing.currentPlan.subtitle')}</p>
-              </div>
-              {isLoadingData ? (
-                <Skeleton className="h-8 w-32 rounded-full" />
-              ) : (
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-                  {plan ? t(planLabelKeys[plan]) : '—'}
-                </span>
-              )}
-            </CardHeader>
-          }
-        >
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                {t('billing.currentPlan.title')}
+              </h2>
+              <p className="text-gray-600">{t('billing.currentPlan.subtitle')}</p>
+            </div>
+            {isLoadingData ? (
+              <Skeleton className="h-8 w-32 rounded-full" />
+            ) : (
+              <span className="px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-xl font-bold shadow-lg flex items-center gap-2">
+                <Crown className="w-5 h-5" />
+                {plan ? t(planLabelKeys[plan]) : '—'}
+              </span>
+            )}
+          </div>
+
           {isLoadingData ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[1, 2, 3, 4].map((i) => (
@@ -708,209 +715,340 @@ export default function BillingPage() {
               ))}
             </div>
           ) : (
-            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <UsageStatCard
-                title={t('billing.currentPlan.limit.title')}
-                value={planLimitLabel}
-                helper={t('billing.currentPlan.limit.helper')}
-                icon={
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                }
-              />
-              <UsageStatCard
-                title={t('billing.currentPlan.offersThisMonth.title')}
-                value={offersThisMonthLabel}
-                helper={t('billing.currentPlan.offersThisMonth.helper')}
-                {...(usageProgress !== undefined ? { progress: usageProgress } : {})}
-                icon={
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                }
-              />
-              <UsageStatCard
-                title={t('billing.currentPlan.remaining.title')}
-                value={remainingQuotaLabel}
-                helper={t('billing.currentPlan.remaining.helper')}
-                icon={
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                }
-              />
-              <UsageStatCard
-                title={t('billing.currentPlan.reset.title')}
-                value={resetLabel}
-                helper={t('billing.currentPlan.reset.helper')}
-                icon={
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                }
-              />
-            </dl>
-          )}
-        </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Card 1: Usage - Most important, make it prominent */}
+              <div className="bg-gradient-to-br from-teal-500 to-blue-600 text-white rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-wide opacity-90">
+                    Havi használat
+                  </div>
+                </div>
+                <div className="text-5xl font-bold mb-2">{offersThisMonth}</div>
+                <div className="text-sm opacity-90 mb-4">ajánlat készítve ebben a hónapban</div>
 
-        {/* Plan Comparison Table */}
-        <Card
-          as="section"
-          header={
-            <CardHeader>
-              <h2 className="text-xl font-bold text-slate-900">{t('billing.comparison.title')}</h2>
-              <p className="mt-1 text-sm text-slate-600">{t('billing.comparison.subtitle')}</p>
-            </CardHeader>
-          }
-        >
-          <div className="overflow-x-auto -mx-6 px-6">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b-2 border-border">
-                  <th className="pb-4 text-left font-semibold text-slate-900">
-                    {t('billing.comparison.feature')}
-                  </th>
-                  <th className="pb-4 text-center font-semibold text-slate-700">Free</th>
-                  <th className="pb-4 text-center font-semibold text-slate-700">Standard</th>
-                  <th className="pb-4 text-center font-bold text-primary">Pro</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                <tr className="transition-colors hover:bg-slate-50/50">
-                  <td className="py-4 font-medium text-slate-700">
-                    {t('billing.comparison.offersPerMonth')}
-                  </td>
-                  <td className="py-4 text-center text-slate-600">2</td>
-                  <td className="py-4 text-center text-slate-600">5</td>
-                  <td className="py-4 text-center font-bold text-primary">∞</td>
-                </tr>
-                <tr className="transition-colors hover:bg-slate-50/50">
-                  <td className="py-4 font-medium text-slate-700">
-                    {t('billing.comparison.brandLogo')}
-                  </td>
-                  <td className="py-4 text-center">
-                    <span className="text-slate-400">—</span>
-                  </td>
-                  <td className="py-4 text-center">
-                    <svg
-                      className="mx-auto h-5 w-5 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </td>
-                  <td className="py-4 text-center">
-                    <svg
-                      className="mx-auto h-5 w-5 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </td>
-                </tr>
-                <tr className="transition-colors hover:bg-slate-50/50">
-                  <td className="py-4 font-medium text-slate-700">
-                    {t('billing.comparison.proTemplates')}
-                  </td>
-                  <td className="py-4 text-center">
-                    <span className="text-slate-400">—</span>
-                  </td>
-                  <td className="py-4 text-center">
-                    <span className="text-slate-400">—</span>
-                  </td>
-                  <td className="py-4 text-center">
-                    <svg
-                      className="mx-auto h-5 w-5 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </td>
-                </tr>
-                <tr className="transition-colors hover:bg-slate-50/50">
-                  <td className="py-4 font-medium text-slate-700">
-                    {t('billing.comparison.aiGeneration')}
-                  </td>
-                  <td className="py-4 text-center">
-                    <svg
-                      className="mx-auto h-5 w-5 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </td>
-                  <td className="py-4 text-center">
-                    <svg
-                      className="mx-auto h-5 w-5 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </td>
-                  <td className="py-4 text-center">
-                    <svg
-                      className="mx-auto h-5 w-5 text-primary"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                <div className="bg-white/10 backdrop-blur rounded-lg p-3">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="opacity-90">
+                      {planLimit === null ? 'Korlátlan kvóta' : planLimitLabel}
+                    </span>
+                    {planLimit === null && <Infinity className="w-5 h-5" />}
+                  </div>
+                  {planLimit === null ? (
+                    <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-white rounded-full animate-pulse"
+                        style={{ width: `${Math.min((offersThisMonth / 10) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  ) : usageProgress ? (
+                    <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          usageProgress.isDanger
+                            ? 'bg-red-300'
+                            : usageProgress.isWarning
+                              ? 'bg-yellow-300'
+                              : 'bg-white'
+                        }`}
+                        style={{ width: `${Math.min(usageProgress.percentage, 100)}%` }}
+                      ></div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Card 2: Unlimited quota explanation or remaining */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-teal-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
+                    {planLimit === null ? (
+                      <Infinity className="w-5 h-5 text-teal-600" />
+                    ) : (
+                      <svg
+                        className="w-5 h-5 text-teal-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+                    {planLimit === null
+                      ? 'Felhasználási keret'
+                      : t('billing.currentPlan.remaining.title')}
+                  </div>
+                </div>
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  {planLimit === null ? 'Korlátlan' : remainingQuotaLabel}
+                </div>
+                <div className="text-sm text-gray-600 mb-4">
+                  {planLimit === null
+                    ? 'Ajánlatok készítése'
+                    : t('billing.currentPlan.remaining.helper')}
+                </div>
+
+                {planLimit === null && (
+                  <div className="flex items-center gap-2 text-sm text-teal-700 bg-teal-50 px-3 py-2 rounded-lg">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="font-semibold">Pro előny</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Card 3: Next billing date with countdown */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+                    Következő fizetés
+                  </div>
+                </div>
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  {resetDate.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}
+                </div>
+                <div className="text-sm text-gray-600 mb-4">{resetLabel}</div>
+
+                {(() => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const diffTime = resetDate.getTime() - today.getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  return (
+                    <div className="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                      {diffDays > 0 ? `${diffDays} nap múlva` : 'Ma'} • Automatikus megújulás
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Card 4: Payment amount */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+                    Havi díjszabás
+                  </div>
+                </div>
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  {plan === 'pro' ? '6 990' : plan === 'standard' ? '1 490' : '0'} Ft
+                </div>
+                <div className="text-sm text-gray-600 mb-4">havonta számlázva</div>
+
+                {plan === 'pro' && (
+                  <button
+                    onClick={() => {
+                      // TODO: Implement annual billing switch
+                      showToast({
+                        title: 'Éves fizetésre váltás',
+                        description: 'Ez a funkció hamarosan elérhető lesz.',
+                        variant: 'info',
+                      });
+                    }}
+                    className="text-sm text-teal-600 font-semibold hover:underline flex items-center gap-1"
+                  >
+                    Éves fizetésre váltás
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pro Benefits Showcase for Pro users, Comparison Table for others */}
+        {plan === 'pro' ? (
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">A Vyndi Pro előnyei</h3>
+              <p className="text-gray-600">Nézd meg, mit kapsz a Pro csomagban</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Feature 1 */}
+              <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-2xl p-6 border-2 border-teal-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
+                  <Infinity className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Korlátlan ajánlatok</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  Készíts annyi ajánlatot, amennyit csak szeretnél. Nincs havi limit.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-teal-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Aktív előnyöd</span>
+                </div>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">AI szövegírás</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  Generálj professzionális ajánlatszövegeket mesterséges intelligenciával.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-purple-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Aktív előnyöd</span>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 border-2 border-orange-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center mb-4">
+                  <Palette className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Prémium sablonok</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  Hozzáférés 15+ exkluzív, professzionális ajánlat sablonhoz.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-orange-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Aktív előnyöd</span>
+                </div>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
+                  <Headphones className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Prioritásos support</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  1 órán belüli válaszidő minden kérdésedre és problémádra.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-green-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Aktív előnyöd</span>
+                </div>
+              </div>
+
+              {/* Feature 5 */}
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border-2 border-blue-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">PDF export márkázással</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  Töltsd le ajánlataidat professzionális PDF formátumban, saját logóval.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-blue-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Aktív előnyöd</span>
+                </div>
+              </div>
+
+              {/* Feature 6 */}
+              <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-6 border-2 border-indigo-200">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center mb-4">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">Haladó elemzések</h4>
+                <p className="text-sm text-gray-700 mb-4">
+                  Részletes statisztikák az ajánlataidról és az ügyfél interakciókról.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-indigo-700">
+                  <Check className="w-4 h-4" />
+                  <span className="font-semibold">Aktív előnyöd</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </Card>
+        ) : (
+          <Card
+            as="section"
+            header={
+              <CardHeader>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {t('billing.comparison.title')}
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">{t('billing.comparison.subtitle')}</p>
+              </CardHeader>
+            }
+          >
+            <div className="overflow-x-auto -mx-6 px-6">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 border-border">
+                    <th className="pb-4 text-left font-semibold text-slate-900">
+                      {t('billing.comparison.feature')}
+                    </th>
+                    <th className="pb-4 text-center font-semibold text-slate-700">Free</th>
+                    <th className="pb-4 text-center font-semibold text-slate-700">Standard</th>
+                    <th className="pb-4 text-center font-bold text-primary">Pro</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  <tr className="transition-colors hover:bg-slate-50/50">
+                    <td className="py-4 font-medium text-slate-700">
+                      {t('billing.comparison.offersPerMonth')}
+                    </td>
+                    <td className="py-4 text-center text-slate-600">2</td>
+                    <td className="py-4 text-center text-slate-600">5</td>
+                    <td className="py-4 text-center font-bold text-primary">∞</td>
+                  </tr>
+                  <tr className="transition-colors hover:bg-slate-50/50">
+                    <td className="py-4 font-medium text-slate-700">
+                      {t('billing.comparison.brandLogo')}
+                    </td>
+                    <td className="py-4 text-center">
+                      <span className="text-slate-400">—</span>
+                    </td>
+                    <td className="py-4 text-center">
+                      <Check className="mx-auto h-5 w-5 text-primary" />
+                    </td>
+                    <td className="py-4 text-center">
+                      <Check className="mx-auto h-5 w-5 text-primary" />
+                    </td>
+                  </tr>
+                  <tr className="transition-colors hover:bg-slate-50/50">
+                    <td className="py-4 font-medium text-slate-700">
+                      {t('billing.comparison.proTemplates')}
+                    </td>
+                    <td className="py-4 text-center">
+                      <span className="text-slate-400">—</span>
+                    </td>
+                    <td className="py-4 text-center">
+                      <span className="text-slate-400">—</span>
+                    </td>
+                    <td className="py-4 text-center">
+                      <Check className="mx-auto h-5 w-5 text-primary" />
+                    </td>
+                  </tr>
+                  <tr className="transition-colors hover:bg-slate-50/50">
+                    <td className="py-4 font-medium text-slate-700">
+                      {t('billing.comparison.aiGeneration')}
+                    </td>
+                    <td className="py-4 text-center">
+                      <Check className="mx-auto h-5 w-5 text-primary" />
+                    </td>
+                    <td className="py-4 text-center">
+                      <Check className="mx-auto h-5 w-5 text-primary" />
+                    </td>
+                    <td className="py-4 text-center">
+                      <Check className="mx-auto h-5 w-5 text-primary" />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
 
         {/* Plan Selection Cards */}
         <section>
@@ -942,6 +1080,100 @@ export default function BillingPage() {
           </div>
         </section>
 
+        {/* Subscription Management Section */}
+        {(plan === 'pro' || plan === 'standard') && (
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Előfizetés kezelése</h3>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Payment method card */}
+              <Card className="border-2 border-gray-200">
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <CreditCard className="w-6 h-6 text-gray-900" />
+                    <h4 className="text-lg font-bold text-gray-900">Fizetési mód</h4>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <CreditCard className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Visa ••4242</div>
+                      <div className="text-sm text-gray-600">Lejár: 12/2027</div>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => {
+                      showToast({
+                        title: 'Kártya frissítése',
+                        description: 'Ez a funkció hamarosan elérhető lesz.',
+                        variant: 'info',
+                      });
+                    }}
+                  >
+                    Kártya frissítése
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Billing frequency card */}
+              <Card className="border-2 border-gray-200">
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Calendar className="w-6 h-6 text-gray-900" />
+                    <h4 className="text-lg font-bold text-gray-900">Számlázási gyakoriság</h4>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="font-semibold text-gray-900">Havi fizetés</div>
+                      <div className="text-sm text-gray-600">
+                        {plan === 'pro' ? '6 990' : '1 490'} Ft / hónap
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-bold">
+                      Aktív
+                    </span>
+                  </div>
+
+                  {plan === 'pro' && (
+                    <div className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-start gap-3">
+                        <TrendingDown className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-semibold text-green-900 mb-1">
+                            Takarítsd meg 13 980 Ft-ot évente!
+                          </p>
+                          <p className="text-xs text-green-700">
+                            Éves fizetéssel 2 hónap ingyen: 6 290 Ft/hó (75 480 Ft/év)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white"
+                    onClick={() => {
+                      showToast({
+                        title: 'Éves fizetésre váltás',
+                        description: 'Ez a funkció hamarosan elérhető lesz.',
+                        variant: 'info',
+                      });
+                    }}
+                  >
+                    Váltás éves fizetésre
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
         {/* Invoices Section */}
         <Card
           as="section"
@@ -956,26 +1188,67 @@ export default function BillingPage() {
             </CardHeader>
           }
         >
-          <div className="rounded-2xl border-2 border-dashed border-border/60 bg-slate-50/50 p-12 text-center">
-            <svg
-              className="mx-auto h-12 w-12 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <h3 className="mt-4 text-base font-semibold text-slate-700">
+          <div className="bg-white rounded-2xl p-12 shadow-lg border-2 border-gray-100">
+            {/* Icon */}
+            <div className="w-20 h-20 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Receipt className="w-10 h-10 text-teal-600" />
+            </div>
+
+            {/* Message */}
+            <h4 className="text-xl font-bold text-gray-900 mb-3 text-center">
               {t('billing.invoices.emptyState.title')}
-            </h3>
-            <p className="mt-2 text-sm text-slate-500">
-              {t('billing.invoices.emptyState.description')}
+            </h4>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto text-center">
+              Az első számlád automatikusan generálódik a következő fizetési időpontban
             </p>
+
+            {/* Next invoice info card */}
+            {(plan === 'pro' || plan === 'standard') && (
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 max-w-lg mx-auto mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="font-bold text-gray-900 mb-3">Következő számla</h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Dátum:</span>
+                        <span className="font-semibold text-gray-900">{resetLabel}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Összeg:</span>
+                        <span className="font-semibold text-gray-900">
+                          {plan === 'pro' ? '6 990' : '1 490'} Ft
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Formátum:</span>
+                        <span className="font-semibold text-gray-900">PDF letöltés</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-semibold text-gray-900">Automatikus</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Info about billing address */}
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-3">
+                A számlázási adataid a Beállítások → Cégadatok menüpontban módosíthatók
+              </p>
+              <Link
+                href="/settings"
+                className="text-teal-600 font-semibold hover:underline flex items-center gap-2 mx-auto justify-center"
+              >
+                <Building className="w-4 h-4" />
+                Számlázási adatok megtekintése
+              </Link>
+            </div>
           </div>
         </Card>
 
@@ -1013,6 +1286,94 @@ export default function BillingPage() {
             </div>
           </div>
         </Card>
+
+        {/* Subscription Actions - for paid plans */}
+        {(plan === 'pro' || plan === 'standard') && (
+          <div className="mb-12">
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Előfizetés módosítása</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Downgrade to Standard */}
+                {plan === 'pro' && (
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          'Biztosan vissza szeretnél lépni a Standard csomagra? A változás a következő számlázási ciklustól lép életbe.',
+                        )
+                      ) {
+                        startCheckout(STANDARD_PRICE);
+                      }
+                    }}
+                    className="flex items-start gap-4 p-5 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all text-left"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <TrendingDown className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-900 mb-1">Visszalépés Standard-ra</div>
+                      <p className="text-sm text-gray-600">5 500 Ft/hó megtakarítás</p>
+                    </div>
+                  </button>
+                )}
+
+                {/* Pause subscription */}
+                <button
+                  onClick={() => {
+                    showToast({
+                      title: 'Előfizetés szüneteltetése',
+                      description: 'Ez a funkció hamarosan elérhető lesz.',
+                      variant: 'info',
+                    });
+                  }}
+                  className="flex items-start gap-4 p-5 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all text-left"
+                >
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Pause className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900 mb-1">Előfizetés szüneteltetése</div>
+                    <p className="text-sm text-gray-600">Ideiglenesen leállítás</p>
+                  </div>
+                </button>
+
+                {/* Cancel subscription */}
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        'Biztosan le szeretnéd mondani az előfizetést? A Pro funkciók a következő számlázási ciklus végéig elérhetők maradnak.',
+                      )
+                    ) {
+                      showToast({
+                        title: 'Előfizetés lemondása',
+                        description:
+                          'Ez a funkció hamarosan elérhető lesz. Kérlek vedd fel velünk a kapcsolatot: hello@vyndi.com',
+                        variant: 'info',
+                      });
+                    }
+                  }}
+                  className="flex items-start gap-4 p-5 bg-white hover:bg-red-50 border-2 border-gray-200 hover:border-red-300 rounded-xl transition-all text-left"
+                >
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <X className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900 mb-1">Előfizetés lemondása</div>
+                    <p className="text-sm text-gray-600">Véglegesen leállítás</p>
+                  </div>
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-4 text-center">
+                Bármilyen módosítás után a jelenlegi számlázási időszak végéig (
+                {resetDate.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })})
+                továbbra is elérheted a {plan === 'pro' ? 'Pro' : 'Standard'} funkciókat
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Account Info */}
         <div className="rounded-2xl border border-border/60 bg-white/50 p-6">

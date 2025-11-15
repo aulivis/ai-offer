@@ -73,3 +73,5 @@ CREATE INDEX IF NOT EXISTS idx_offers_ai_blocks
 CREATE INDEX IF NOT EXISTS idx_offers_schedule 
   ON public.offers USING GIN (schedule);
 
+
+
