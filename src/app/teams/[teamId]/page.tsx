@@ -105,7 +105,10 @@ export default function TeamDetailPage() {
         });
         setInviteEmail('');
         // Reload invitations
-        const invitationsResponse = await fetchWithSupabaseAuth(`/api/teams/${teamId}/invitations`, {});
+        const invitationsResponse = await fetchWithSupabaseAuth(
+          `/api/teams/${teamId}/invitations`,
+          {},
+        );
         if (invitationsResponse.ok) {
           const invitationsData = await invitationsResponse.json();
           setInvitations(invitationsData.invitations || []);
