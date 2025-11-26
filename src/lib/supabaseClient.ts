@@ -361,10 +361,7 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
     }
   } catch (error) {
     getSessionLogger().warn('Error initializing Supabase session from custom cookies', {
-      error:
-        error instanceof Error
-          ? { name: error.name, message: error.message }
-          : String(error),
+      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
     });
     sessionInitialized = false;
   }
