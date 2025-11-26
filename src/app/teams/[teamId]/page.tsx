@@ -37,7 +37,7 @@ export default function TeamDetailPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const logger = createClientLogger({
-    userId: user?.id,
+    ...(user?.id && { userId: user.id }),
     component: 'TeamDetailPage',
     teamId,
   });

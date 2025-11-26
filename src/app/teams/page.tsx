@@ -25,7 +25,7 @@ export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const logger = createClientLogger({
-    userId: user?.id,
+    ...(user?.id && { userId: user.id }),
     component: 'TeamsPage',
   });
 
