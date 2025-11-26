@@ -986,7 +986,7 @@ export default function DashboardPage() {
         variant: 'success',
       });
     } catch (error) {
-      logger.error('Failed to delete offer', error, { offerId: offer.id });
+      logger.error('Failed to delete offer', error, { offerId: offerToDelete.id });
       const message =
         error instanceof Error ? error.message : t('toasts.offers.deleteFailed.description');
       showToast({
