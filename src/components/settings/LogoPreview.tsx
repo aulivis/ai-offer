@@ -39,7 +39,7 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
       } catch (_error) {
         // Only log in development to reduce noise
         if (process.env.NODE_ENV !== 'production') {
-          clientLogger.debug('Failed to load logo preview', undefined, { logoPath });
+          clientLogger.debug('Failed to load logo preview', { logoPath });
         }
         if (active) {
           setLogoUrl(null);

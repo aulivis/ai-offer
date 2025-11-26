@@ -23,7 +23,7 @@ export default function AuthCallbackPage() {
 
     // Development-only logging for auth callback debugging
     if (process.env.NODE_ENV !== 'production') {
-      clientLogger.debug('AuthCallback URL analysis', undefined, {
+      clientLogger.debug('AuthCallback URL analysis', {
         urlLength,
         hashLength,
         searchLength,
@@ -57,7 +57,7 @@ export default function AuthCallbackPage() {
 
     // Development-only logging for auth callback debugging
     if (process.env.NODE_ENV !== 'production') {
-      clientLogger.debug('AuthCallback parameters received', undefined, {
+      clientLogger.debug('AuthCallback parameters received', {
         hashParams: {
           access_token: redactToken(hashParams.get('access_token')),
           refresh_token: redactToken(hashParams.get('refresh_token')),
@@ -96,7 +96,7 @@ export default function AuthCallbackPage() {
 
       // Development-only logging for auth callback debugging
       if (process.env.NODE_ENV !== 'production') {
-        clientLogger.debug('AuthCallback implicit flow detected', undefined, {
+        clientLogger.debug('AuthCallback implicit flow detected', {
           accessTokenLength: accessToken.length,
           refreshTokenLength: refreshToken.length,
           expiresIn,
@@ -107,7 +107,7 @@ export default function AuthCallbackPage() {
 
       // Warn if refresh token seems truncated (Supabase refresh tokens are typically 100+ chars)
       if (refreshToken.length < 50) {
-        clientLogger.warn('AuthCallback: Refresh token appears to be truncated', undefined, {
+        clientLogger.warn('AuthCallback: Refresh token appears to be truncated', {
           refreshTokenLength: refreshToken.length,
           fullUrlLength: urlLength,
           hashLength,
@@ -119,7 +119,7 @@ export default function AuthCallbackPage() {
     }
 
     if (!hasImplicit && !hasTokenHash) {
-      clientLogger.error('AuthCallback: Missing required parameters', undefined, {
+      clientLogger.error('AuthCallback: Missing required parameters', {
         hasImplicit,
         hasTokenHash,
         fullUrl: fullUrl.substring(0, 500), // Log first 500 chars for debugging
@@ -135,7 +135,7 @@ export default function AuthCallbackPage() {
 
     // Development-only logging for auth callback debugging
     if (process.env.NODE_ENV !== 'production') {
-      clientLogger.debug('AuthCallback redirecting to API callback', undefined, {
+      clientLogger.debug('AuthCallback redirecting to API callback', {
         callbackUrlLength: callbackUrl.length,
         usingTokenHash: hasTokenHash,
         usingImplicit: hasImplicit,
