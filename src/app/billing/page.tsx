@@ -508,6 +508,7 @@ export default function BillingPage() {
     periodStart: string | null;
   } | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
 
   useEffect(() => {
     setStatus(searchParams?.get('status') || null);
@@ -1421,7 +1422,11 @@ export default function BillingPage() {
                             'Biztosan vissza szeretnél lépni a Standard csomagra? A változás a következő számlázási ciklustól lép életbe.',
                           )
                         ) {
-                          startCheckout(STANDARD_PRICE);
+                          startCheckout(
+                            billingInterval === 'annual'
+                              ? STANDARD_PRICE_ANNUAL || STANDARD_PRICE_MONTHLY
+                              : STANDARD_PRICE_MONTHLY,
+                          );
                         }
                       }}
                       className="flex items-start gap-4 p-5 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all text-left"
