@@ -29,7 +29,8 @@ export default function ActivityLogPage() {
   const sb = useSupabase();
   const { user } = useRequireAuth();
   const logger = useMemo(
-    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'ActivityLogPage' }),
+    () =>
+      createClientLogger({ ...(user?.id && { userId: user.id }), component: 'ActivityLogPage' }),
     [user?.id],
   );
   const [notifications, setNotifications] = useState<Notification[]>([]);

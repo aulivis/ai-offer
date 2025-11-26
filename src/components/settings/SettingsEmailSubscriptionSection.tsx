@@ -14,7 +14,11 @@ export function SettingsEmailSubscriptionSection() {
   const { user } = useRequireAuth();
   const { showToast } = useToast();
   const logger = useMemo(
-    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'SettingsEmailSubscriptionSection' }),
+    () =>
+      createClientLogger({
+        ...(user?.id && { userId: user.id }),
+        component: 'SettingsEmailSubscriptionSection',
+      }),
     [user?.id],
   );
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
