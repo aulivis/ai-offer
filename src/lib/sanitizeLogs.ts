@@ -108,7 +108,7 @@ export function sanitizeError(error: unknown): {
     return {
       name: error.name,
       message: sanitizeLogString(error.message),
-      stack: error.stack ? sanitizeLogString(error.stack) : undefined,
+      ...(error.stack && { stack: sanitizeLogString(error.stack) }),
     };
   }
 
