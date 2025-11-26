@@ -264,7 +264,12 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (signOutError) {
           // Ignore sign out errors, continue with session setting
-          getSessionLogger().warn('Error during sign out before session re-init', signOutError);
+          getSessionLogger().warn('Error during sign out before session re-init', {
+            error:
+              signOutError instanceof Error
+                ? { name: signOutError.name, message: signOutError.message }
+                : String(signOutError),
+          });
         }
       }
 
@@ -274,7 +279,9 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
       });
 
       if (error) {
-        getSessionLogger().warn('Failed to set Supabase session from custom cookies', error);
+        getSessionLogger().warn('Failed to set Supabase session from custom cookies', {
+          error: error.message || String(error),
+        });
         // Don't mark as initialized if there was an error
         sessionInitialized = false;
         return;
@@ -298,14 +305,10 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
           } = await client.auth.getSession();
 
           if (checkError) {
-            getSessionLogger().warn(
-              `Session verification attempt ${attempt + 1} failed`,
-              undefined,
-              {
-                error: checkError.message,
-                attempt: attempt + 1,
-              },
-            );
+            getSessionLogger().warn(`Session verification attempt ${attempt + 1} failed`, {
+              error: checkError.message,
+              attempt: attempt + 1,
+            });
             continue;
           }
 
@@ -331,7 +334,6 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
           sessionInitialized = false;
           getSessionLogger().warn(
             'Session set but could not verify it was applied after multiple attempts',
-            undefined,
             {
               expectedUserId: data.session.user.id,
               attempts: 5,
@@ -341,7 +343,7 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
         }
       } else {
         sessionInitialized = false;
-        getSessionLogger().warn('Session set but no user found in response', undefined, {
+        getSessionLogger().warn('Session set but no user found in response', {
           hasSession: !!data.session,
           hasUser: !!data.session?.user,
         });
@@ -358,7 +360,12 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
       }
     }
   } catch (error) {
-    getSessionLogger().warn('Error initializing Supabase session from custom cookies', error);
+    getSessionLogger().warn('Error initializing Supabase session from custom cookies', {
+      error:
+        error instanceof Error
+          ? { name: error.name, message: error.message }
+          : String(error),
+    });
     sessionInitialized = false;
   }
 }
