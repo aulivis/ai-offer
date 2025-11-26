@@ -53,7 +53,9 @@ function normalizeLogo(input: string | undefined): string | undefined {
     const decoded = decodeURIComponent(trimmed);
     return decoded || undefined;
   } catch (error) {
-    logger.warn('Failed to decode logo url', error);
+    logger.warn('Failed to decode logo url', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return undefined;
   }
 }
