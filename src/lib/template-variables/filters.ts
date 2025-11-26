@@ -184,14 +184,14 @@ export const FILTERS: Record<string, FilterFunction> = {
 export function applyFilter(filterName: string, value: unknown, ...args: unknown[]): unknown {
   const filter = FILTERS[filterName];
   if (!filter) {
-    logger.warn(`Unknown filter: ${filterName}`, undefined, { filterName, argsCount: args.length });
+    logger.warn(`Unknown filter: ${filterName}`, { filterName, argsCount: args.length });
     return value;
   }
 
   try {
     return filter(value, ...args);
   } catch (error) {
-    logger.warn(`Filter ${filterName} failed`, error, { filterName, argsCount: args.length });
+    logger.warn(`Filter ${filterName} failed`, { error, filterName, argsCount: args.length });
     return value;
   }
 }

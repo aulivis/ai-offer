@@ -168,7 +168,8 @@ function sendToGoogleAnalytics(metric: Metric) {
   } catch (error) {
     // Fail silently - analytics shouldn't break the app
     if (process.env.NODE_ENV === 'development') {
-      logger.warn('Performance monitoring failed to send to GA', error, {
+      logger.warn('Performance monitoring failed to send to GA', {
+        error,
         metricName: metric.name,
       });
     }

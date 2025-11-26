@@ -127,7 +127,7 @@ export async function getBrandLogoSignedUrl(
       }
       // Only log in development for debugging
       if (process.env.NODE_ENV !== 'production') {
-        logger.debug('Failed to generate signed URL for logo', undefined, {
+        logger.debug('Failed to generate signed URL for logo', {
           logoPath: sanitizedPath,
           error: error?.message,
         });
@@ -149,7 +149,7 @@ export async function getBrandLogoSignedUrl(
     }
     // Only log in development for debugging
     if (process.env.NODE_ENV !== 'production') {
-      logger.debug('Error generating signed URL for logo', undefined, {
+      logger.debug('Error generating signed URL for logo', {
         logoPath: sanitizedPath,
         error: errorMessage,
       });

@@ -42,7 +42,7 @@ export function trackWizardEvent(event: WizardEvent) {
   } catch (error) {
     // Fail silently - analytics shouldn't break the app
     if (process.env.NODE_ENV === 'development') {
-      clientLogger.warn('Analytics tracking failed', error, { eventType: event.type });
+      clientLogger.warn('Analytics tracking failed', { error, eventType: event.type });
     }
   }
 }

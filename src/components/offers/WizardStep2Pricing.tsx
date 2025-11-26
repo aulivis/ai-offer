@@ -374,7 +374,7 @@ export function WizardStep2Pricing({
       // Notify parent to reload activities
       onActivitySaved?.();
     } catch (error) {
-      logger.error('Failed to save activity', error, { activityId: activity.id });
+      logger.error('Failed to save activity', error, { activityName: row.name });
       showToast({
         title: t('errors.settings.saveFailed') || 'Hiba',
         description:

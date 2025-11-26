@@ -56,7 +56,7 @@ export async function recordTemplateRenderTelemetry(
   const renderer = normaliseIdentifier(event.renderer);
 
   if (!templateId || !renderer) {
-    logger.warn('Skipping template render telemetry due to missing identifiers', undefined, {
+    logger.warn('Skipping template render telemetry due to missing identifiers', {
       templateId: event.templateId,
       renderer: event.renderer,
     });

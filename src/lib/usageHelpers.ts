@@ -209,7 +209,7 @@ export async function incrementUsage<K extends CounterKind>(
 
   // Debug logging for quota increment (only in development)
   if (process.env.NODE_ENV !== 'production') {
-    logger.debug('Calling quota increment RPC', undefined, {
+    logger.debug('Calling quota increment RPC', {
       rpc: config.rpc,
       kind,
       target,
@@ -238,7 +238,7 @@ export async function incrementUsage<K extends CounterKind>(
       combined.includes('multiple function variants') ||
       combined.includes('could not find function')
     ) {
-      logger.warn('Falling back to non-RPC increment due to RPC function error', undefined, {
+      logger.warn('Falling back to non-RPC increment due to RPC function error', {
         rpc: config.rpc,
         kind,
         target,
@@ -257,7 +257,7 @@ export async function incrementUsage<K extends CounterKind>(
 
   // Debug logging for quota increment result (only in development)
   if (process.env.NODE_ENV !== 'production') {
-    logger.debug('Quota increment RPC result', undefined, {
+    logger.debug('Quota increment RPC result', {
       rpc: config.rpc,
       kind,
       target,
@@ -266,7 +266,7 @@ export async function incrementUsage<K extends CounterKind>(
   }
 
   if (!incrementResult.allowed) {
-    logger.warn('Quota increment not allowed', undefined, {
+    logger.warn('Quota increment not allowed', {
       rpc: config.rpc,
       kind,
       target,
@@ -300,12 +300,12 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const { data: existing, error } = await buildQuery().maybeSingle();
   if (error) {
-    logger.warn('Failed to load usage counter for rollback', error, { kind, target });
+    logger.warn('Failed to load usage counter for rollback', { error, kind, target });
     return;
   }
 
   if (!existing) {
-    logger.warn('Usage rollback skipped: counter not found', undefined, {
+    logger.warn('Usage rollback skipped: counter not found', {
       kind,
       target,
       expectedPeriod: normalizedExpected,
@@ -325,7 +325,8 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     const { data: normalizedRow, error: normalizedError } = await normalizedQuery.maybeSingle();
 
     if (normalizedError) {
-      logger.warn('Failed to load normalized usage counter for rollback', normalizedError, {
+      logger.warn('Failed to load normalized usage counter for rollback', {
+        error: normalizedError,
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -334,7 +335,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     }
 
     if (!normalizedRow) {
-      logger.warn('Usage rollback skipped: period mismatch', undefined, {
+      logger.warn('Usage rollback skipped: period mismatch', {
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -350,7 +351,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     );
 
     if (periodStart !== normalizedExpected) {
-      logger.warn('Usage rollback skipped: period mismatch', undefined, {
+      logger.warn('Usage rollback skipped: period mismatch', {
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -362,7 +363,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const currentCount = Number((record as { offers_generated?: unknown }).offers_generated ?? 0);
   if (!Number.isFinite(currentCount) || currentCount <= 0) {
-    logger.warn('Usage rollback skipped: non-positive counter', undefined, {
+    logger.warn('Usage rollback skipped: non-positive counter', {
       kind,
       target,
       expectedPeriod: normalizedExpected,
@@ -384,7 +385,8 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const { error: updateError } = await updateBuilder;
   if (updateError) {
-    logger.warn('Failed to rollback usage counter increment', updateError, {
+    logger.warn('Failed to rollback usage counter increment', {
+      error: updateError,
       kind,
       target,
       expectedPeriod: normalizedExpected,

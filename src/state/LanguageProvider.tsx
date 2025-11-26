@@ -22,7 +22,7 @@ function persistLanguage(language: LocaleKey) {
   try {
     document.cookie = `${LANGUAGE_COOKIE_NAME}=${language}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
   } catch (error) {
-    clientLogger.warn('Failed to persist language preference', error, { language });
+    clientLogger.warn('Failed to persist language preference', { error, language });
   }
 }
 

@@ -104,7 +104,6 @@ async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
     if (isRefreshFunctionMissing(message)) {
       logger.warn(
         'refresh_pdf_jobs_schema_cache RPC is missing; attempting PostgREST schema cache reload.',
-        undefined,
         {},
       );
       try {
@@ -158,13 +157,13 @@ async function resolvePlanTier(sb: SupabaseClient, userId: string): Promise<Plan
     const { data, error } = await sb.from('profiles').select('plan').eq('id', userId).maybeSingle();
 
     if (error) {
-      logger.warn('Failed to resolve user plan for PDF job', error, { userId });
+      logger.warn('Failed to resolve user plan for PDF job', { error, userId });
       return 'free';
     }
 
     return normalizePlanTier(data?.plan);
   } catch (error) {
-    logger.warn('Unexpected error while resolving user plan for PDF job', error, { userId });
+    logger.warn('Unexpected error while resolving user plan for PDF job', { error, userId });
     return 'free';
   }
 }
@@ -224,7 +223,8 @@ function resolveTemplateForPlan(
       requestedTemplate = getOfferTemplateByLegacyId(requestedRaw);
       requestedCanonicalId = requestedTemplate.id;
     } catch (error) {
-      logger.warn('Requested template is not registered; falling back to default', error, {
+      logger.warn('Requested template is not registered; falling back to default', {
+        error,
         requestedTemplateId: requestedRaw,
       });
       metadataNotes.push(

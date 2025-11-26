@@ -18,7 +18,7 @@ export function useDraftPersistence<T>(key: string, data: T, enabled = true) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(data));
       } catch (err) {
-        clientLogger.warn('Failed to save draft', err, { storageKey });
+        clientLogger.warn('Failed to save draft', { error: err, storageKey });
       }
     }, 2000); // Save 2 seconds after last change
 

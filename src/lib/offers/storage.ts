@@ -11,7 +11,8 @@ export function extractOfferStoragePath(pdfUrl: string): string | null {
     try {
       return removeLeadingSlash(decodeURIComponent(value));
     } catch (error) {
-      logger.warn('Failed to decode offer PDF storage path', error, {
+      logger.warn('Failed to decode offer PDF storage path', {
+        error,
         pdfUrl: pdfUrl.substring(0, 100),
       });
       return removeLeadingSlash(value);
@@ -38,7 +39,8 @@ export function extractOfferStoragePath(pdfUrl: string): string | null {
       }
     } catch (error) {
       if (normalized.includes('://')) {
-        logger.warn('Failed to parse offer PDF storage path', error, {
+        logger.warn('Failed to parse offer PDF storage path', {
+          error,
           pdfUrl: pdfUrl.substring(0, 100),
         });
       }

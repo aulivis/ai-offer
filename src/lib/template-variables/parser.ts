@@ -69,7 +69,7 @@ export class TemplateParser {
     // Parse filter name and arguments
     const match = filterExpr.match(/^(\w+)(?::\s*(.+))?$/);
     if (!match) {
-      logger.warn(`Invalid filter expression: ${filterExpr}`, undefined, { filterExpr });
+      logger.warn(`Invalid filter expression: ${filterExpr}`, { filterExpr });
       return value;
     }
 

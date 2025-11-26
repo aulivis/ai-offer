@@ -79,14 +79,14 @@ export class VariableResolver {
 
     // If no definition exists, return value as-is (with basic sanitization)
     if (!definition) {
-      logger.warn(`No definition found for variable: ${path}`, undefined, { path });
+      logger.warn(`No definition found for variable: ${path}`, { path });
       return this.sanitizeUnknown(value);
     }
 
     // Handle null/undefined values
     if (value === null || value === undefined) {
       if (definition.required && definition.defaultValue === undefined) {
-        logger.warn(`Required variable ${path} is missing and has no default`, undefined, { path });
+        logger.warn(`Required variable ${path} is missing and has no default`, { path });
         return null;
       }
       return definition.defaultValue ?? null;
@@ -98,7 +98,7 @@ export class VariableResolver {
       try {
         sanitized = definition.sanitizer(value) as ResolvedVariable;
       } catch (error) {
-        logger.warn(`Sanitization failed for ${path}`, error, { path });
+        logger.warn(`Sanitization failed for ${path}`, { error, path });
         sanitized = value;
       }
     }
@@ -106,7 +106,7 @@ export class VariableResolver {
     // Apply validator if available
     if (definition.validator) {
       if (!definition.validator(sanitized)) {
-        logger.warn(`Validation failed for ${path}, using default`, undefined, {
+        logger.warn(`Validation failed for ${path}, using default`, {
           path,
           valueType: typeof sanitized,
         });
@@ -116,7 +116,7 @@ export class VariableResolver {
       // Use type-based validator if no custom validator
       const typeValidator = this.getTypeValidator(definition.type);
       if (typeValidator && !typeValidator(sanitized)) {
-        logger.warn(`Type validation failed for ${path}, using default`, undefined, {
+        logger.warn(`Type validation failed for ${path}, using default`, {
           path,
           expectedType: definition.type,
           valueType: typeof sanitized,

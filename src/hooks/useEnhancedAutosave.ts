@@ -214,7 +214,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
         const saveFunction = saveFn || defaultSaveFn;
         saveFunction(key, data);
       } catch (err) {
-        clientLogger.warn('Failed to save on beforeunload', err, { key });
+        clientLogger.warn('Failed to save on beforeunload', { error: err, key });
       }
     };
 
@@ -236,7 +236,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
       }
       return resolvedResult;
     } catch (err) {
-      clientLogger.warn('Failed to load autosave data', err, { key });
+      clientLogger.warn('Failed to load autosave data', { error: err, key });
       return null;
     }
   }, [key, loadFn, defaultLoadFn]);
@@ -250,7 +250,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
       setStatus('idle');
       setError(null);
     } catch (err) {
-      clientLogger.warn('Failed to clear autosave data', err, { key });
+      clientLogger.warn('Failed to clear autosave data', { error: err, key });
     }
   }, [key]);
 
