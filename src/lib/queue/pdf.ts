@@ -114,7 +114,6 @@ async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
         if (fallbackMessage.toLowerCase().includes(PGREST_SCHEMA_CACHE_RPC_FRAGMENT)) {
           logger.warn(
             'pgrest.schema_cache_reload RPC is missing; attempting direct HTTP refresh.',
-            undefined,
             {},
           );
           await refreshSchemaCacheViaHttp();
