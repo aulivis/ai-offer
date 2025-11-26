@@ -44,8 +44,8 @@ export default function ActivityLogPage() {
       if (!user) return;
 
       setLoading(true);
+      const currentOffset = reset ? 0 : offset;
       try {
-        const currentOffset = reset ? 0 : offset;
         const response = await fetchWithSupabaseAuth(
           `/api/notifications?limit=${limit}&offset=${currentOffset}`,
           {},
