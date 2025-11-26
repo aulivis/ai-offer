@@ -569,7 +569,13 @@ export default function NewOfferWizard() {
       // Optional: Track save success
     },
     onSaveError: (error) => {
-      logger.warn('Autosave failed', error);
+      logger.warn('Autosave failed', {
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        },
+      });
     },
   });
 
@@ -1954,14 +1960,17 @@ export default function NewOfferWizard() {
           .createSignedUrl(path, 60 * 60); // 1 hour
 
         if (signedError || !signedData?.signedUrl) {
-          logger.warn('Failed to get signed URL for image', signedError, { path });
+          logger.warn('Failed to get signed URL for image', {
+            error: signedError,
+            path,
+          });
           continue;
         }
 
         // Fetch image as blob
         const response = await fetch(signedData.signedUrl);
         if (!response.ok) {
-          logger.warn('Failed to fetch image', undefined, { path, status: response.status });
+          logger.warn('Failed to fetch image', { path, status: response.status });
           continue;
         }
 
