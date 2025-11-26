@@ -211,9 +211,9 @@ export const POST = withAuth(
           teamId,
           token,
           expiresAt: data.expires_at,
-          teamName,
-          inviterName,
-          inviterEmail,
+          ...(teamName !== undefined && { teamName }),
+          ...(inviterName !== undefined && { inviterName }),
+          ...(inviterEmail !== undefined && { inviterEmail }),
         });
       } catch (emailError) {
         // Log email error but don't fail the request - invitation is already created
