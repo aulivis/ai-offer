@@ -127,7 +127,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
           // This prevents errors on landing page when user is not authenticated
           // Only log in development to reduce noise
           if (process.env.NODE_ENV !== 'production') {
-            logger.debug('Could not load brand logo URL', undefined, {
+            logger.debug('Could not load brand logo URL', {
               logoPath: data?.brand_logo_path,
               logoUrl: data?.brand_logo_url,
             });
