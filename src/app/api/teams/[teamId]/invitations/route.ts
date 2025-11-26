@@ -196,7 +196,8 @@ export const POST = withAuth(
         }
       } catch (detailsError) {
         // Log but don't fail - email can still be sent without personalization
-        log.warn('Failed to fetch team/inviter details for email personalization', detailsError, {
+        log.warn('Failed to fetch team/inviter details for email personalization', {
+          error: detailsError,
           teamId,
           userId: request.user.id,
         });
@@ -216,7 +217,8 @@ export const POST = withAuth(
         });
       } catch (emailError) {
         // Log email error but don't fail the request - invitation is already created
-        log.warn('Invitation email sending failed (invitation still created)', emailError, {
+        log.warn('Invitation email sending failed (invitation still created)', {
+          error: emailError,
           teamId,
           email,
         });
