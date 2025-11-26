@@ -2,11 +2,12 @@
 
 import { t } from '@/copy';
 import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useMemo } from 'react';
 
 import { useToast } from './ToastProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { BottomSheet } from '@/components/ui/BottomSheet';
+import { createClientLogger } from '@/lib/clientLogger';
 
 export type AppFrameProps = {
   title: string;
@@ -31,10 +32,14 @@ export default function AppFrame({
   const { showToast } = useToast();
   // Only check auth if requireAuth is true, to avoid unnecessary API calls
   const shouldCheckAuth = requireAuth || redirectOnUnauthenticated === true;
-  const { error, status } = useRequireAuth(undefined, {
+  const { error, status, user } = useRequireAuth(undefined, {
     redirectOnUnauthenticated: redirectOnUnauthenticated ?? requireAuth,
     skip: !shouldCheckAuth,
   });
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'AppFrame' }),
+    [user?.id],
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -42,12 +47,13 @@ export default function AppFrame({
     if (!error || !shouldCheckAuth) {
       return;
     }
-    console.error('Failed to verify authentication status.', error);
+    logger.error('Failed to verify authentication status', error);
     showToast({
       title: t('toasts.auth.verificationFailed.title'),
       description: error.message || t('toasts.auth.verificationFailed.description'),
       variant: 'error',
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error, showToast, shouldCheckAuth]);
 
   useEffect(() => {

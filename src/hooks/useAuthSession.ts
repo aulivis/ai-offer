@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 
 import { t } from '@/copy';
 import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
+import { clientLogger } from '@/lib/clientLogger';
 
 type AuthSessionState = {
   status: 'loading' | 'authenticated' | 'unauthenticated';
@@ -53,7 +54,7 @@ export function useAuthSession(): AuthSessionState {
           return;
         }
 
-        console.error('Failed to load authentication session.', error);
+        clientLogger.error('Failed to load authentication session', error);
         setState((prev) =>
           prev.status === 'authenticated' ? prev : { status: 'unauthenticated', user: null },
         );

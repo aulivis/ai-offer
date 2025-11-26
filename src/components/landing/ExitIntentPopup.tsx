@@ -4,6 +4,7 @@ import { useEffect, useState, FormEvent } from 'react';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
 import { trackConversion, trackEmailCapture } from '@/lib/analytics';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface ExitIntentPopupProps {
   onClose: () => void;
@@ -71,7 +72,7 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
       trackConversion('exit_intent_converted');
       setStatus('success');
     } catch (error) {
-      console.error('Exit intent email submission error:', error);
+      clientLogger.error('Exit intent email submission error', error, { source: 'exit_intent' });
       // Handle error silently or show message
       setStatus('idle');
     }

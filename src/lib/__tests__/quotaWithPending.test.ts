@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { checkQuotaWithPending, checkDeviceQuotaWithPending } from '../services/usage';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { createTypedMockSupabaseClient } from './testUtils';
 
 describe('checkQuotaWithPending', () => {
   const rpc = vi.fn();
   const from = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockClient = { rpc, from } as any as SupabaseClient;
+  const mockClient = createTypedMockSupabaseClient({ rpc, from }) as SupabaseClient;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -158,8 +158,7 @@ describe('checkQuotaWithPending', () => {
 describe('checkDeviceQuotaWithPending', () => {
   const rpc = vi.fn();
   const from = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockClient = { rpc, from } as any as SupabaseClient;
+  const mockClient = createTypedMockSupabaseClient({ rpc, from }) as SupabaseClient;
 
   beforeEach(() => {
     vi.useFakeTimers();

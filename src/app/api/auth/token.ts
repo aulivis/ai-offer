@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export type DecodedRefreshToken = {
   sub?: string;
   iat?: number;
@@ -23,7 +25,7 @@ export function decodeRefreshToken(token: string): DecodedRefreshToken | null {
   } catch (error) {
     // Log error in development but don't expose details in production
     if (process.env.NODE_ENV === 'development') {
-      console.error('Failed to decode refresh token.', error);
+      logger.error('Failed to decode refresh token', error);
     }
     return null;
   }

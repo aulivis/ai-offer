@@ -4,6 +4,7 @@ import { t } from '@/copy';
 import Link from 'next/link';
 import { useEffect, useState, useMemo, FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { clientLogger } from '@/lib/clientLogger';
 import {
   Zap,
   Users,
@@ -91,7 +92,7 @@ export default function LoginClient() {
         setIsGoogleAvailable(enabled);
         setGoogleStatusMessage(enabled ? null : message);
       } catch (e) {
-        console.error('Failed to query Google sign-in availability.', e);
+        clientLogger.error('Failed to query Google sign-in availability', e);
         if (ignore) return;
         setIsGoogleAvailable(false);
         setGoogleStatusMessage(t('login.googleUnavailable'));

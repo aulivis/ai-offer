@@ -8,6 +8,7 @@ import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { WIZARD_CONFIG } from '@/constants/wizard';
 import { t } from '@/copy';
 import type { ProjectDetails } from '@/lib/projectDetails';
+import { clientLogger } from '@/lib/clientLogger';
 
 type PreviewState =
   | { status: 'idle' }
@@ -153,7 +154,9 @@ export function usePreviewGeneration({
                 break;
               }
             } catch (err: unknown) {
-              console.error('Failed to parse preview stream data', err, jsonPart);
+              clientLogger.error('Failed to parse preview stream data', err, {
+                jsonPart: jsonPart?.substring(0, 200),
+              });
             }
           }
 
@@ -193,7 +196,10 @@ export function usePreviewGeneration({
             : error instanceof Error
               ? error.message
               : t('errors.preview.fetchUnknown');
-        console.error('Preview generation error:', message, error);
+        clientLogger.error('Preview generation error', error, {
+          message,
+          requestId: nextRequestId,
+        });
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewHtml('<p>(nincs elĹ‘nĂ©zet)</p>');
           setPreviewState({ status: 'error', message });

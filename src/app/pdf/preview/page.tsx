@@ -7,6 +7,7 @@ import { buildTokens } from '@/app/pdf/sdk/tokens';
 import type { OfferTemplate, RenderContext } from '@/app/pdf/sdk/types';
 import { getTemplateMeta } from '@/app/pdf/templates/registry';
 import { createTranslator } from '@/copy';
+import { logger } from '@/lib/logger';
 
 export const metadata: Metadata = {
   title: 'PDF Template Preview',
@@ -52,7 +53,7 @@ function normalizeLogo(input: string | undefined): string | undefined {
     const decoded = decodeURIComponent(trimmed);
     return decoded || undefined;
   } catch (error) {
-    console.warn('Failed to decode logo url', error);
+    logger.warn('Failed to decode logo url', error);
     return undefined;
   }
 }
@@ -102,12 +103,14 @@ export default async function PdfPreviewPage({
   try {
     template = templateMeta.factory();
   } catch (error) {
-    console.error('Failed to create template instance', error);
+    logger.error('Failed to create template instance', error, { templateId });
     return <TemplateError message="Unexpected error while loading template." />;
   }
 
   if (!template) {
-    console.error('Template factory returned an invalid template instance');
+    logger.error('Template factory returned an invalid template instance', undefined, {
+      templateId,
+    });
     return <TemplateError message="Unexpected error while loading template." />;
   }
 

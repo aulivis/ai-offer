@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { deriveBrandMonogram, normalizeBrandHex, getBrandLogoUrl } from '@/lib/branding';
+import { createClientLogger } from '@/lib/clientLogger';
 
 const FALLBACK_COLORS = {
   primary: '#1c274c',
@@ -68,6 +69,10 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
   const supabase = useSupabase();
   const { status, user } = useAuthSession();
   const userId = user?.id ?? null;
+  const logger = useMemo(
+    () => createClientLogger({ userId, component: 'BrandingProvider' }),
+    [userId],
+  );
   const [state, setState] = useState<BrandingFetchState>(DEFAULT_FETCH_STATE);
 
   useEffect(() => {
@@ -99,7 +104,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
         }
 
         if (error) {
-          console.error('Failed to load branding settings.', error);
+          logger.error('Failed to load branding settings', error);
           setState(DEFAULT_FETCH_STATE);
           return;
         }
@@ -117,10 +122,16 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
             data?.brand_logo_path ?? null,
             data?.brand_logo_url ?? null,
           );
-        } catch (error) {
+        } catch (_error) {
           // Silently handle storage errors (e.g., bucket doesn't exist, file not found)
           // This prevents errors on landing page when user is not authenticated
-          console.debug('Could not load brand logo URL:', error);
+          // Only log in development to reduce noise
+          if (process.env.NODE_ENV !== 'production') {
+            logger.debug('Could not load brand logo URL', undefined, {
+              logoPath: data?.brand_logo_path,
+              logoUrl: data?.brand_logo_url,
+            });
+          }
           logoUrl = null;
         }
 
@@ -144,7 +155,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
         if (!active) {
           return;
         }
-        console.error('Failed to load branding settings.', error);
+        logger.error('Failed to load branding settings', error);
         setState(DEFAULT_FETCH_STATE);
       }
     })();
@@ -152,6 +163,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, supabase, userId]);
 
   const colors = useMemo(() => {

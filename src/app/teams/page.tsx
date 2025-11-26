@@ -7,6 +7,7 @@ import { useToast } from '@/components/ToastProvider';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { fetchWithSupabaseAuth } from '@/lib/api';
+import { createClientLogger } from '@/lib/clientLogger';
 import Link from 'next/link';
 
 type Team = {
@@ -23,6 +24,10 @@ export default function TeamsPage() {
   const { showToast } = useToast();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const logger = createClientLogger({
+    userId: user?.id,
+    component: 'TeamsPage',
+  });
 
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user) {
@@ -45,7 +50,9 @@ export default function TeamsPage() {
           });
         }
       } catch (error) {
-        console.error('Failed to load teams', error);
+        logger.error('Failed to load teams', error, {
+          userId: user.id,
+        });
         showToast({
           title: 'Hiba',
           description: 'Nem sikerült betölteni a csapatokat.',
@@ -57,6 +64,7 @@ export default function TeamsPage() {
     };
 
     loadTeams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user, showToast]);
 
   const handleCreateTeam = async () => {
@@ -86,7 +94,9 @@ export default function TeamsPage() {
         });
       }
     } catch (error) {
-      console.error('Failed to create team', error);
+      logger.error('Failed to create team', error, {
+        userId: user?.id,
+      });
       showToast({
         title: 'Hiba',
         description: 'Nem sikerült létrehozni a csapatot.',

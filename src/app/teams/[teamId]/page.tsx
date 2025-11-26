@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { fetchWithSupabaseAuth } from '@/lib/api';
+import { createClientLogger } from '@/lib/clientLogger';
 
 type TeamMember = {
   user_id: string;
@@ -35,6 +36,11 @@ export default function TeamDetailPage() {
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
+  const logger = createClientLogger({
+    userId: user?.id,
+    component: 'TeamDetailPage',
+    teamId,
+  });
 
   useEffect(() => {
     if (authStatus !== 'authenticated' || !user || !teamId) {
@@ -65,7 +71,10 @@ export default function TeamDetailPage() {
           setInvitations(invitationsData.invitations || []);
         }
       } catch (error) {
-        console.error('Failed to load team', error);
+        logger.error('Failed to load team', error, {
+          teamId,
+          userId: user?.id,
+        });
         showToast({
           title: 'Hiba',
           description: 'Nem sikerült betölteni a csapatot.',
@@ -77,6 +86,7 @@ export default function TeamDetailPage() {
     };
 
     loadTeam();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user, teamId, showToast]);
 
   const handleInvite = async () => {
@@ -122,7 +132,11 @@ export default function TeamDetailPage() {
         });
       }
     } catch (error) {
-      console.error('Failed to send invitation', error);
+      logger.error('Failed to send invitation', error, {
+        teamId,
+        email: inviteEmail.trim(),
+        userId: user?.id,
+      });
       showToast({
         title: 'Hiba',
         description: 'Nem sikerült elküldeni a meghívót.',
@@ -159,7 +173,10 @@ export default function TeamDetailPage() {
         });
       }
     } catch (error) {
-      console.error('Failed to leave team', error);
+      logger.error('Failed to leave team', error, {
+        teamId,
+        userId: user?.id,
+      });
       showToast({
         title: 'Hiba',
         description: 'Nem sikerült elhagyni a csapatot.',

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 export type AuditLogEvent = {
   eventType: 'offer_deleted' | 'payment_initiated' | 'auth_logout' | 'auth_session_revoked';
@@ -24,10 +25,18 @@ export async function logAuditEvent(supabase: SupabaseClient, event: AuditLogEve
     });
 
     if (error) {
-      console.error('Failed to write audit log', { error, event });
+      logger.error('Failed to write audit log', error, {
+        eventType: event.eventType,
+        userId: event.userId,
+        requestId: event.requestId,
+      });
     }
   } catch (error) {
-    console.error('Exception while writing audit log', { error, event });
+    logger.error('Exception while writing audit log', error, {
+      eventType: event.eventType,
+      userId: event.userId,
+      requestId: event.requestId,
+    });
   }
 }
 

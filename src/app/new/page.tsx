@@ -35,6 +35,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import dynamic from 'next/dynamic';
 import type { RichTextEditorHandle } from '@/components/RichTextEditor';
 import { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
+import { createClientLogger } from '@/lib/clientLogger';
 
 // Lazy load RichTextEditor to reduce initial bundle size
 const RichTextEditor = dynamic(
@@ -371,6 +372,10 @@ export default function NewOfferWizard() {
   const { status: authStatus, user } = useRequireAuth();
   const { showToast } = useToast();
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'NewOfferWizard' }),
+    [user?.id],
+  );
   useWizardValidation();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -490,16 +495,17 @@ export default function NewOfferWizard() {
           .in('id', ids);
 
         if (error) {
-          console.error('Failed to fetch testimonials:', error);
+          logger.error('Failed to fetch testimonials', error, { ids });
           return [];
         }
 
         return (data || []).map((t) => ({ id: t.id, text: t.text }));
       } catch (error) {
-        console.error('Error fetching testimonials:', error);
+        logger.error('Error fetching testimonials', error, { ids });
         return [];
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sb, user?.id],
   );
 
@@ -563,7 +569,7 @@ export default function NewOfferWizard() {
       // Optional: Track save success
     },
     onSaveError: (error) => {
-      console.warn('Autosave failed:', error);
+      logger.warn('Autosave failed', error);
     },
   });
 
@@ -1021,7 +1027,7 @@ export default function NewOfferWizard() {
         if (!active) {
           return;
         }
-        console.error('Failed to load usage quota for new offer wizard.', quotaLoadError);
+        logger.error('Failed to load usage quota for new offer wizard', quotaLoadError);
         if (normalizedPlan === 'pro') {
           setQuotaSnapshot({ limit: null, used: 0, pending: 0, periodStart: null });
           setQuotaError(null);
@@ -1089,6 +1095,7 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allPdfTemplates, authStatus, reloadActivities, reloadGuarantees, sb, user]);
 
   useEffect(() => {
@@ -1188,7 +1195,7 @@ export default function NewOfferWizard() {
         if (isAbortError(error)) {
           return;
         }
-        console.error('Failed to render preview document', error);
+        logger.error('Failed to render preview document', error);
         if (!controller.signal.aborted) {
           const fallbackMessage = t('errors.preview.fetchUnknown');
           setPreviewDocumentHtml(
@@ -1201,6 +1208,7 @@ export default function NewOfferWizard() {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     form.language,
     form.title,
@@ -1463,7 +1471,7 @@ export default function NewOfferWizard() {
         setTemplateName('');
         setTemplateNameError(null);
       } catch (error: unknown) {
-        console.error('Nem sikerült menteni a szövegsablont', error);
+        logger.error('Nem sikerült menteni a szövegsablont', error);
         showToast({
           title: t('toasts.templates.saveFailed.title'),
           description: t('toasts.templates.saveFailed.description'),
@@ -1473,6 +1481,7 @@ export default function NewOfferWizard() {
         setTemplateSaving(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       form.brandVoice,
       form.deadline,
@@ -1599,7 +1608,7 @@ export default function NewOfferWizard() {
                 break;
               }
             } catch (err: unknown) {
-              console.error('Nem sikerült feldolgozni az AI előnézet adatát', err, jsonPart);
+              logger.error('Nem sikerült feldolgozni az AI előnézet adatát', err, { jsonPart });
             }
           }
 
@@ -1639,7 +1648,7 @@ export default function NewOfferWizard() {
             : error instanceof Error
               ? error.message
               : t('errors.preview.fetchUnknown');
-        console.error(t('api.preview.error'), message, error);
+        logger.error(t('api.preview.error'), error, { message });
         if (previewRequestIdRef.current === nextRequestId) {
           setPreviewHtml('<p>(nincs előnézet)</p>');
           setPreviewLocked(false);
@@ -1699,6 +1708,7 @@ export default function NewOfferWizard() {
     } finally {
       setPreviewLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     form.brandVoice,
     form.deadline,
@@ -1855,7 +1865,7 @@ export default function NewOfferWizard() {
             mime: file.type || 'image/png',
           });
         } catch (error) {
-          console.error('Nem sikerült beolvasni a képet', error);
+          logger.error('Nem sikerült beolvasni a képet', error, { fileName: file.name });
           showToast({
             title: t('toasts.preview.imageReadError.title'),
             description: t('toasts.preview.imageReadError.description', { name: file.name }),
@@ -1877,6 +1887,7 @@ export default function NewOfferWizard() {
 
       event.target.value = '';
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       imageAssets.length,
       isProPlan,
@@ -1943,14 +1954,14 @@ export default function NewOfferWizard() {
           .createSignedUrl(path, 60 * 60); // 1 hour
 
         if (signedError || !signedData?.signedUrl) {
-          console.warn('Failed to get signed URL for image:', path);
+          logger.warn('Failed to get signed URL for image', signedError, { path });
           continue;
         }
 
         // Fetch image as blob
         const response = await fetch(signedData.signedUrl);
         if (!response.ok) {
-          console.warn('Failed to fetch image:', path);
+          logger.warn('Failed to fetch image', undefined, { path, status: response.status });
           continue;
         }
 
@@ -1980,7 +1991,7 @@ export default function NewOfferWizard() {
           alt: `Reference image ${i + 1}`,
         });
       } catch (error) {
-        console.error('Error converting storage path to base64:', path, error);
+        logger.error('Error converting storage path to base64', error, { path });
       }
     }
 
@@ -2031,7 +2042,7 @@ export default function NewOfferWizard() {
           const converted = await convertStoragePathsToBase64(selectedImages);
           referenceImagePayload.push(...converted);
         } catch (error) {
-          console.error('Failed to convert reference images:', error);
+          logger.error('Failed to convert reference images', error);
           showToast({
             title: 'Nem sikerült a referenciafotók konvertálása',
             description: 'Próbáld újra később.',
@@ -2051,7 +2062,9 @@ export default function NewOfferWizard() {
           testimonialsData = await fetchTestimonialsByIds(selectedTestimonials);
           setSelectedTestimonialsContent(testimonialsData);
         } catch (error) {
-          console.error('Failed to fetch testimonials:', error);
+          logger.error('Failed to fetch testimonials', error, {
+            selectedIds: selectedTestimonials,
+          });
           testimonialsData = [];
         }
       }
@@ -2132,7 +2145,9 @@ export default function NewOfferWizard() {
         try {
           payload = JSON.parse(raw);
         } catch (err: unknown) {
-          console.error('Nem sikerült értelmezni az AI válaszát', err, raw);
+          logger.error('Nem sikerült értelmezni az AI válaszát', err, {
+            raw: raw.substring(0, 500),
+          });
         }
       }
 
@@ -2316,7 +2331,9 @@ export default function NewOfferWizard() {
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
-        console.error('Wizard error:', error, errorInfo);
+        logger.error('Wizard error', error, {
+          errorInfo: errorInfo?.componentStack?.substring(0, 500),
+        });
       }}
     >
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50">

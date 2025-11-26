@@ -12,6 +12,7 @@ import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/engineRegistry';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import type { RuntimePdfPayload } from '../pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
+import { logger } from '@/lib/logger';
 
 export interface PdfJobMetadata {
   notes?: string[];
@@ -101,8 +102,10 @@ async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
   if (error) {
     const message = error.message || '';
     if (isRefreshFunctionMissing(message)) {
-      console.warn(
+      logger.warn(
         'refresh_pdf_jobs_schema_cache RPC is missing; attempting PostgREST schema cache reload.',
+        undefined,
+        {},
       );
       try {
         await refreshSchemaCacheViaPostgrest(sb);
@@ -110,8 +113,10 @@ async function refreshPdfJobsSchemaCache(sb: SupabaseClient) {
         const fallbackMessage =
           fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
         if (fallbackMessage.toLowerCase().includes(PGREST_SCHEMA_CACHE_RPC_FRAGMENT)) {
-          console.warn(
+          logger.warn(
             'pgrest.schema_cache_reload RPC is missing; attempting direct HTTP refresh.',
+            undefined,
+            {},
           );
           await refreshSchemaCacheViaHttp();
           return;
@@ -153,16 +158,13 @@ async function resolvePlanTier(sb: SupabaseClient, userId: string): Promise<Plan
     const { data, error } = await sb.from('profiles').select('plan').eq('id', userId).maybeSingle();
 
     if (error) {
-      console.warn('Failed to resolve user plan for PDF job.', {
-        userId,
-        error: error.message,
-      });
+      logger.warn('Failed to resolve user plan for PDF job', error, { userId });
       return 'free';
     }
 
     return normalizePlanTier(data?.plan);
   } catch (error) {
-    console.warn('Unexpected error while resolving user plan for PDF job.', error);
+    logger.warn('Unexpected error while resolving user plan for PDF job', error, { userId });
     return 'free';
   }
 }
@@ -222,9 +224,8 @@ function resolveTemplateForPlan(
       requestedTemplate = getOfferTemplateByLegacyId(requestedRaw);
       requestedCanonicalId = requestedTemplate.id;
     } catch (error) {
-      console.warn('Requested template is not registered; falling back to default.', {
+      logger.warn('Requested template is not registered; falling back to default', error, {
         requestedTemplateId: requestedRaw,
-        error: error instanceof Error ? error.message : String(error),
       });
       metadataNotes.push(
         `Requested template "${requestedRaw}" is not registered. Using "${fallbackTemplate.id}" instead.`,

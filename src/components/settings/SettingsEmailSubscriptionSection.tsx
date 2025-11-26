@@ -2,16 +2,21 @@
 
 import { Card, CardHeader } from '@/components/ui/Card';
 import { EnvelopeIcon } from '@heroicons/react/24/outline';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/components/ToastProvider';
 import { fetchWithSupabaseAuth } from '@/lib/api';
+import { createClientLogger } from '@/lib/clientLogger';
 
 export function SettingsEmailSubscriptionSection() {
   const supabase = useSupabase();
   const { user } = useRequireAuth();
   const { showToast } = useToast();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'SettingsEmailSubscriptionSection' }),
+    [user?.id],
+  );
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
@@ -38,14 +43,14 @@ export function SettingsEmailSubscriptionSection() {
 
         if (error && error.code !== 'PGRST116') {
           // PGRST116 is "not found" which is fine
-          console.error('Failed to load subscription status:', error);
+          logger.error('Failed to load subscription status', error);
           setSubscribed(null);
         } else {
           // If no record exists or unsubscribed_at is null, user is subscribed
           setSubscribed(data ? data.unsubscribed_at === null : null);
         }
       } catch (error) {
-        console.error('Error loading subscription status:', error);
+        logger.error('Error loading subscription status', error);
         setSubscribed(null);
       } finally {
         setLoading(false);
@@ -53,6 +58,7 @@ export function SettingsEmailSubscriptionSection() {
     }
 
     loadSubscriptionStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, supabase]);
 
   const handleToggle = async () => {
@@ -84,7 +90,7 @@ export function SettingsEmailSubscriptionSection() {
         variant: 'success',
       });
     } catch (error) {
-      console.error('Failed to toggle subscription:', error);
+      logger.error('Failed to toggle subscription', error, { newState: !subscribed });
       showToast({
         title: 'Hiba történt',
         description:

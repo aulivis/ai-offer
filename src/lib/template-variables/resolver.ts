@@ -6,6 +6,7 @@
 
 import type { VariableRegistry, VariableDefinition, ResolvedVariable } from './types';
 import { getVariableDefinition, getAllVariableDefinitions } from './registry';
+import { logger } from '@/lib/logger';
 
 export class VariableResolver {
   private registry: VariableRegistry;
@@ -78,14 +79,14 @@ export class VariableResolver {
 
     // If no definition exists, return value as-is (with basic sanitization)
     if (!definition) {
-      console.warn(`No definition found for variable: ${path}`);
+      logger.warn(`No definition found for variable: ${path}`, undefined, { path });
       return this.sanitizeUnknown(value);
     }
 
     // Handle null/undefined values
     if (value === null || value === undefined) {
       if (definition.required && definition.defaultValue === undefined) {
-        console.warn(`Required variable ${path} is missing and has no default`);
+        logger.warn(`Required variable ${path} is missing and has no default`, undefined, { path });
         return null;
       }
       return definition.defaultValue ?? null;
@@ -97,7 +98,7 @@ export class VariableResolver {
       try {
         sanitized = definition.sanitizer(value) as ResolvedVariable;
       } catch (error) {
-        console.warn(`Sanitization failed for ${path}:`, error);
+        logger.warn(`Sanitization failed for ${path}`, error, { path });
         sanitized = value;
       }
     }
@@ -105,14 +106,21 @@ export class VariableResolver {
     // Apply validator if available
     if (definition.validator) {
       if (!definition.validator(sanitized)) {
-        console.warn(`Validation failed for ${path}, using default`);
+        logger.warn(`Validation failed for ${path}, using default`, undefined, {
+          path,
+          valueType: typeof sanitized,
+        });
         return definition.defaultValue ?? null;
       }
     } else {
       // Use type-based validator if no custom validator
       const typeValidator = this.getTypeValidator(definition.type);
       if (typeValidator && !typeValidator(sanitized)) {
-        console.warn(`Type validation failed for ${path}, using default`);
+        logger.warn(`Type validation failed for ${path}, using default`, undefined, {
+          path,
+          expectedType: definition.type,
+          valueType: typeof sanitized,
+        });
         return definition.defaultValue ?? null;
       }
     }

@@ -6,6 +6,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { t } from '@/copy';
 import { PhotoIcon } from '@heroicons/react/24/outline';
+import { clientLogger } from '@/lib/clientLogger';
 
 type LogoPreviewProps = {
   logoPath: string | null | undefined;
@@ -35,8 +36,11 @@ export function LogoPreview({ logoPath }: LogoPreviewProps) {
           setLogoUrl(url);
           setIsLoading(false);
         }
-      } catch (error) {
-        console.debug('Failed to load logo preview:', error);
+      } catch (_error) {
+        // Only log in development to reduce noise
+        if (process.env.NODE_ENV !== 'production') {
+          clientLogger.debug('Failed to load logo preview', undefined, { logoPath });
+        }
         if (active) {
           setLogoUrl(null);
           setIsLoading(false);

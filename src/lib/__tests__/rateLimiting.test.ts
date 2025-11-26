@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { consumeRateLimit, getClientIdentifier } from '../rateLimiting';
 import type { RateLimitClient } from '../rateLimiting';
+import { createMockRateLimitClient } from './testUtils';
 
 describe('consumeRateLimit', () => {
   const rpc = vi.fn();
   const from = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockClient = { rpc, from } as any as RateLimitClient;
+  const mockClient = createMockRateLimitClient({ rpc, from }) as RateLimitClient;
 
   beforeEach(() => {
     vi.useFakeTimers();

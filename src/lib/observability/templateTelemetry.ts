@@ -1,4 +1,5 @@
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
+import { logger } from '@/lib/logger';
 
 export type TemplateRenderOutcome = 'success' | 'failure';
 
@@ -55,7 +56,7 @@ export async function recordTemplateRenderTelemetry(
   const renderer = normaliseIdentifier(event.renderer);
 
   if (!templateId || !renderer) {
-    console.warn('Skipping template render telemetry due to missing identifiers.', {
+    logger.warn('Skipping template render telemetry due to missing identifiers', undefined, {
       templateId: event.templateId,
       renderer: event.renderer,
     });
@@ -79,10 +80,10 @@ export async function recordTemplateRenderTelemetry(
       throw error;
     }
   } catch (error) {
-    console.error('Failed to record template render telemetry.', {
-      error: error instanceof Error ? { name: error.name, message: error.message } : error,
+    logger.error('Failed to record template render telemetry', error, {
       templateId,
       renderer,
+      outcome: event.outcome,
     });
   }
 }

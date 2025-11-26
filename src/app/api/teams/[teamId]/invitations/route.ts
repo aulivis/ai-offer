@@ -11,6 +11,7 @@ import {
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { verifyProUser, isTeamMember } from '@/lib/services/teams';
+import { sendTeamInvitationEmail } from '@/lib/email/teamInvitation';
 import { z } from 'zod';
 import { uuidSchema } from '@/lib/validation/schemas';
 import { randomBytes } from 'crypto';
@@ -160,7 +161,67 @@ export const POST = withAuth(
         );
       }
 
-      // TODO: Send invitation email here
+      // Fetch team name and inviter details for personalized email
+      let teamName: string | undefined;
+      let inviterName: string | undefined;
+      let inviterEmail: string | undefined;
+
+      try {
+        // Fetch team details
+        const { data: team } = await sb.from('teams').select('name').eq('id', teamId).maybeSingle();
+        if (team?.name) {
+          teamName = team.name;
+        }
+
+        // Fetch inviter profile details
+        const { data: inviterProfile } = await sb
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', request.user.id)
+          .maybeSingle();
+        if (inviterProfile?.full_name) {
+          inviterName = inviterProfile.full_name;
+        }
+        if (inviterProfile?.email) {
+          inviterEmail = inviterProfile.email;
+        }
+
+        // Fallback to user email if profile email is missing
+        // Note: We can safely access user email from the authenticated request
+        if (!inviterEmail) {
+          const userEmail = request.user.email;
+          if (userEmail) {
+            inviterEmail = userEmail;
+          }
+        }
+      } catch (detailsError) {
+        // Log but don't fail - email can still be sent without personalization
+        log.warn('Failed to fetch team/inviter details for email personalization', detailsError, {
+          teamId,
+          userId: request.user.id,
+        });
+      }
+
+      // Send invitation email (if email service is configured)
+      // Note: Email sending is non-blocking - invitation is created even if email fails
+      try {
+        await sendTeamInvitationEmail({
+          email,
+          teamId,
+          token,
+          expiresAt: data.expires_at,
+          teamName,
+          inviterName,
+          inviterEmail,
+        });
+      } catch (emailError) {
+        // Log email error but don't fail the request - invitation is already created
+        log.warn('Invitation email sending failed (invitation still created)', emailError, {
+          teamId,
+          email,
+        });
+      }
+
       log.info('Invitation created', { teamId, email, token });
 
       return NextResponse.json({

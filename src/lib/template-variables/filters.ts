@@ -5,6 +5,8 @@
  * Similar to Shopify Liquid filters
  */
 
+import { logger } from '@/lib/logger';
+
 /**
  * Format a date value
  */
@@ -182,14 +184,14 @@ export const FILTERS: Record<string, FilterFunction> = {
 export function applyFilter(filterName: string, value: unknown, ...args: unknown[]): unknown {
   const filter = FILTERS[filterName];
   if (!filter) {
-    console.warn(`Unknown filter: ${filterName}`);
+    logger.warn(`Unknown filter: ${filterName}`, undefined, { filterName, argsCount: args.length });
     return value;
   }
 
   try {
     return filter(value, ...args);
   } catch (error) {
-    console.warn(`Filter ${filterName} failed:`, error);
+    logger.warn(`Filter ${filterName} failed`, error, { filterName, argsCount: args.length });
     return value;
   }
 }

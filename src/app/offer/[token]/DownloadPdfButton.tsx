@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import ArrowDownTrayIcon from '@heroicons/react/24/outline/ArrowDownTrayIcon';
 import ArrowPathIcon from '@heroicons/react/24/outline/ArrowPathIcon';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface DownloadPdfButtonProps {
   token: string;
@@ -44,7 +45,7 @@ export function DownloadPdfButton({ token, offerId }: DownloadPdfButtonProps) {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('PDF download error', err);
+      clientLogger.error('PDF download error', err, { token, offerId });
     } finally {
       setDownloading(false);
     }

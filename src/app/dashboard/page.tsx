@@ -62,6 +62,7 @@ import QuestionMarkCircleIcon from '@heroicons/react/24/outline/QuestionMarkCirc
 import { NotificationBar } from '@/components/dashboard/NotificationBar';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { EmptyState } from '@/components/dashboard/EmptyState';
+import { createClientLogger } from '@/lib/clientLogger';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -142,6 +143,10 @@ export default function DashboardPage() {
   const { showToast } = useToast();
   const sb = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'DashboardPage' }),
+    [user?.id],
+  );
 
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -313,7 +318,7 @@ export default function DashboardPage() {
                   }
                 });
               } catch (error) {
-                console.error('Failed to load team members', error);
+                logger.error('Failed to load team members', error, { teamId });
               }
             }),
           );
@@ -322,13 +327,14 @@ export default function DashboardPage() {
           setTeamMembers([]);
         }
       } catch (error) {
-        console.error('Failed to load teams', error);
+        logger.error('Failed to load teams', error);
         setTeamIds([]);
         setTeamMembers([]);
       }
     };
 
     loadTeams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user, sb]);
 
   const fetchPage = useCallback(
@@ -354,7 +360,7 @@ export default function DashboardPage() {
           maxDelay: 3000, // Longer max delay for post-OAuth scenarios
         });
       } catch (error) {
-        console.error('Failed to ensure Supabase session', error);
+        logger.error('Failed to ensure Supabase session', error, { userId: user });
         // If session initialization fails, provide user-friendly error
         const errorMessage =
           error instanceof Error ? error.message : 'Session initialization failed';
@@ -378,18 +384,20 @@ export default function DashboardPage() {
       } = await sb.auth.getSession();
       const sessionMatches = session?.user?.id === user;
 
-      console.log('Dashboard auth session check', {
-        userId: user,
-        hasSession: !!session,
-        sessionUserId: session?.user?.id,
-        sessionError,
-        matchesUserId: sessionMatches,
-      });
+      // Only log session check in development
+      if (process.env.NODE_ENV !== 'production') {
+        logger.info('Dashboard auth session check', {
+          hasSession: !!session,
+          sessionUserId: session?.user?.id,
+          sessionError: sessionError?.message,
+          matchesUserId: sessionMatches,
+        });
+      }
 
       // If session doesn't match after ensureSession, this is unexpected
       // ensureSession should have thrown an error already, but check anyway
       if (!sessionMatches) {
-        console.error('Session verification failed after ensureSession', {
+        logger.error('Session verification failed after ensureSession', undefined, {
           expectedUserId: user,
           sessionUserId: session?.user?.id,
         });
@@ -436,9 +444,7 @@ export default function DashboardPage() {
         .range(from, to);
 
       if (error) {
-        console.error('Dashboard fetch error', {
-          error,
-          errorMessage: error.message,
+        logger.error('Dashboard fetch error', error, {
           errorCode: error.code,
           errorDetails: error.details,
           errorHint: error.hint,
@@ -446,23 +452,26 @@ export default function DashboardPage() {
         throw error;
       }
 
-      console.log('Dashboard fetched offers', {
-        userId: user,
-        pageNumber,
-        count,
-        itemsCount: Array.isArray(data) ? data.length : 0,
-        offersWithPdf: Array.isArray(data)
-          ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length
-          : 0,
-        offerIds: Array.isArray(data)
-          ? data.map((item: { id?: string }) => item.id).slice(0, 5)
-          : [],
-        offersWithPdfIds: Array.isArray(data)
-          ? data
-              .filter((item: { pdf_url?: string | null }) => item.pdf_url)
-              .map((item: { id?: string }) => item.id)
-          : [],
-      });
+      // Only log in development
+      if (process.env.NODE_ENV !== 'production') {
+        logger.info('Dashboard fetched offers', {
+          userId: user,
+          pageNumber,
+          count,
+          itemsCount: Array.isArray(data) ? data.length : 0,
+          offersWithPdf: Array.isArray(data)
+            ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length
+            : 0,
+          offerIds: Array.isArray(data)
+            ? data.map((item: { id?: string }) => item.id).slice(0, 5)
+            : [],
+          offersWithPdfIds: Array.isArray(data)
+            ? data
+                .filter((item: { pdf_url?: string | null }) => item.pdf_url)
+                .map((item: { id?: string }) => item.id)
+            : [],
+        });
+      }
 
       const rawItems = Array.isArray(data) ? data : [];
       const items: Offer[] = rawItems.map((entry) => {
@@ -514,6 +523,7 @@ export default function DashboardPage() {
         count: typeof count === 'number' ? count : null,
       };
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [sb, showToast],
   );
 
@@ -550,7 +560,7 @@ export default function DashboardPage() {
         setPageIndex(0);
         setTotalCount(count);
       } catch (error) {
-        console.error('Failed to load offers', error);
+        logger.error('Failed to load offers', error);
         const message =
           error instanceof Error ? error.message : t('toasts.offers.loadFailed.description');
         showToastRef.current({
@@ -595,6 +605,10 @@ export default function DashboardPage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
     // Depend on filter state to reload offers when filter changes
+    // Note: loadInitialPage uses fetchPageRef.current (ref) and showToastRef.current (ref),
+    // which are intentionally excluded from dependencies to avoid unnecessary re-subscriptions.
+    // The visibility change handler closure captures loadInitialPage, which is acceptable
+    // since the event listener is cleaned up on unmount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user?.id, offerFilter, teamMemberFilter, teamIds]);
 
@@ -646,11 +660,12 @@ export default function DashboardPage() {
         periodStart: quotaData.periodStart,
       });
     } catch (error) {
-      console.error('Failed to load usage quota.', error);
+      logger.error('Failed to load usage quota', error);
       setQuotaSnapshot(null);
     } finally {
       setIsQuotaLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, sb, user]);
 
   // Use ref to store latest loadQuota callback
@@ -706,10 +721,12 @@ export default function DashboardPage() {
         (payload) => {
           const updated = payload.new as { period_start?: string };
           // Refresh quota on any usage counter update (period check handled by get_quota_snapshot)
-          console.log('Dashboard: Usage counter updated via realtime, refreshing quota', {
-            userId: user.id,
-            period: updated.period_start,
-          });
+          // Only log in development to reduce noise
+          if (process.env.NODE_ENV !== 'production') {
+            logger.info('Dashboard: Usage counter updated via realtime, refreshing quota', {
+              period: updated.period_start,
+            });
+          }
           debouncedLoadQuota();
         },
       )
@@ -723,10 +740,12 @@ export default function DashboardPage() {
         },
         (payload) => {
           const inserted = payload.new as { period_start?: string };
-          console.log('Dashboard: Usage counter inserted via realtime, refreshing quota', {
-            userId: user.id,
-            period: inserted.period_start,
-          });
+          // Only log in development
+          if (process.env.NODE_ENV !== 'production') {
+            logger.info('Dashboard: Usage counter inserted via realtime, refreshing quota', {
+              period: inserted.period_start,
+            });
+          }
           debouncedLoadQuota();
         },
       )
@@ -752,12 +771,14 @@ export default function DashboardPage() {
           if (!job?.created_at) return;
 
           // Debounce rapid changes - refresh quota after job status changes
-          console.log('Dashboard: PDF job changed via realtime, refreshing quota', {
-            userId: user.id,
-            event: payload.eventType,
-            jobId: job.id,
-            status: job.status,
-          });
+          // Only log in development
+          if (process.env.NODE_ENV !== 'production') {
+            logger.info('Dashboard: PDF job changed via realtime, refreshing quota', {
+              event: payload.eventType,
+              jobId: job.id,
+              status: job.status,
+            });
+          }
           debouncedLoadQuota();
         },
       )
@@ -786,7 +807,7 @@ export default function DashboardPage() {
       if (count !== null) setTotalCount(count);
       setPageIndex(nextPage);
     } catch (error) {
-      console.error('Failed to load offers', error);
+      logger.error('Failed to load more offers', error);
       const message =
         error instanceof Error ? error.message : t('toasts.offers.loadMoreFailed.description');
       showToast({
@@ -797,6 +818,7 @@ export default function DashboardPage() {
     } finally {
       setIsLoadingMore(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPage, hasMore, isLoadingMore, pageIndex, showToast, userId]);
 
   // Auto-load more when scroll reaches bottom (progressive loading with intersection observer)
@@ -821,7 +843,7 @@ export default function DashboardPage() {
         prev.map((item) => (item.id === offer.id ? { ...item, ...patch } : item)),
       );
     } catch (error) {
-      console.error('Offer status update failed', error);
+      logger.error('Offer status update failed', error, { offerId: offer.id });
       const message =
         error instanceof Error ? error.message : t('toasts.offers.statusUpdateFailed.description');
       showToast({
@@ -855,7 +877,7 @@ export default function DashboardPage() {
         document.body.removeChild(link);
         URL.revokeObjectURL(blobUrl);
       } catch (error) {
-        console.error('Failed to download offer PDF', error);
+        logger.error('Failed to download offer PDF', error, { offerId: offer.id });
         showToast({
           title: t('toasts.offers.downloadFailed.title'),
           description: t('toasts.offers.downloadFailed.description'),
@@ -865,6 +887,7 @@ export default function DashboardPage() {
         setDownloadingId(null);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [showToast],
   );
 
@@ -888,7 +911,7 @@ export default function DashboardPage() {
           variant: 'success',
         });
       } catch (error) {
-        console.error('Failed to regenerate PDF', error);
+        logger.error('Failed to regenerate PDF', error, { offerId: offer.id });
         showToast({
           title: 'Hiba',
           description:
@@ -899,6 +922,7 @@ export default function DashboardPage() {
         setRegeneratingId(null);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [showToast],
   );
 
@@ -962,7 +986,7 @@ export default function DashboardPage() {
         variant: 'success',
       });
     } catch (error) {
-      console.error('Failed to delete offer', error);
+      logger.error('Failed to delete offer', error, { offerId: offer.id });
       const message =
         error instanceof Error ? error.message : t('toasts.offers.deleteFailed.description');
       showToast({
@@ -974,6 +998,7 @@ export default function DashboardPage() {
       setDeletingId(null);
       setOfferToDelete(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offerToDelete, showToast]);
 
   const handleCancelDelete = useCallback(() => {
@@ -1125,25 +1150,27 @@ export default function DashboardPage() {
           const updated = payload.new as Partial<Offer> & { id?: string };
           if (!updated || typeof updated.id !== 'string') return;
 
-          // Log all updates for debugging
-          console.log('Offer updated via realtime subscription', {
-            offerId: updated.id,
-            updatedFields: Object.keys(updated),
-            pdfUrl: updated.pdf_url,
-            oldPdfUrl: payload.old ? (payload.old as { pdf_url?: string | null }).pdf_url : null,
-          });
-
-          // Log PDF URL updates specifically
-          if (
-            updated.pdf_url &&
-            payload.old &&
-            (payload.old as { pdf_url?: string | null }).pdf_url !== updated.pdf_url
-          ) {
-            console.log('Offer PDF URL updated via realtime', {
+          // Only log in development for debugging
+          if (process.env.NODE_ENV !== 'production') {
+            logger.info('Offer updated via realtime subscription', {
               offerId: updated.id,
-              oldPdfUrl: (payload.old as { pdf_url?: string | null }).pdf_url,
-              newPdfUrl: updated.pdf_url,
+              updatedFields: Object.keys(updated),
+              pdfUrl: updated.pdf_url,
+              oldPdfUrl: payload.old ? (payload.old as { pdf_url?: string | null }).pdf_url : null,
             });
+
+            // Log PDF URL updates specifically
+            if (
+              updated.pdf_url &&
+              payload.old &&
+              (payload.old as { pdf_url?: string | null }).pdf_url !== updated.pdf_url
+            ) {
+              logger.info('Offer PDF URL updated via realtime', {
+                offerId: updated.id,
+                oldPdfUrl: (payload.old as { pdf_url?: string | null }).pdf_url,
+                newPdfUrl: updated.pdf_url,
+              });
+            }
           }
 
           setOffers((prev) => {
@@ -1171,12 +1198,15 @@ export default function DashboardPage() {
           const inserted = payload.new as Partial<Offer> & { id?: string };
           if (!inserted || typeof inserted.id !== 'string') return;
 
-          console.log('New offer inserted via realtime', {
-            offerId: inserted.id,
-            pdfUrl: inserted.pdf_url,
-            title: inserted.title,
-            fullPayload: payload,
-          });
+          // Only log in development
+          if (process.env.NODE_ENV !== 'production') {
+            logger.info('New offer inserted via realtime', {
+              offerId: inserted.id,
+              pdfUrl: inserted.pdf_url,
+              title: inserted.title,
+              fullPayload: payload,
+            });
+          }
 
           // Add new offer to the beginning of the list if it's not already there
           setOffers((prev) => {
@@ -1233,6 +1263,7 @@ export default function DashboardPage() {
     return () => {
       sb.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, sb, user]);
 
   const quotaValue = useMemo(() => {
@@ -1350,7 +1381,7 @@ export default function DashboardPage() {
           }
         }
       } catch (error) {
-        console.error('Failed to load notifications', error);
+        logger.error('Failed to load notifications', error);
       }
     };
 
@@ -1397,6 +1428,7 @@ export default function DashboardPage() {
     return () => {
       sb.removeChannel(notificationChannel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user, sb]);
 
   const handleDismissNotification = (notificationId: string) => {
@@ -1414,7 +1446,7 @@ export default function DashboardPage() {
         setLatestNotification(null);
       }
     } catch (error) {
-      console.error('Failed to mark notification as read', error);
+      logger.error('Failed to mark notification as read', error, { notificationId });
     }
   };
 

@@ -1,10 +1,18 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import { envClient } from '@/env.client';
+import { createClientLogger } from './clientLogger';
 
 let browserClient: SupabaseClient | null = null;
 let sessionInitialized = false;
 let sessionInitPromise: Promise<void> | null = null;
+
+// Module-level logger for session-related operations
+const getSessionLogger = (userId?: string) =>
+  createClientLogger({
+    component: 'supabaseClient',
+    ...(userId ? { userId } : {}),
+  });
 
 /**
  * Returns a singleton Supabase client for browser environments.
@@ -74,7 +82,7 @@ export async function ensureSession(
   // If we have a session and an expected user ID, validate they match
   if (session && session.user && expectedUserId) {
     if (session.user.id !== expectedUserId) {
-      console.warn('Session user ID mismatch, re-initializing session', {
+      getSessionLogger(expectedUserId).warn('Session user ID mismatch, re-initializing session', {
         sessionUserId: session.user.id,
         expectedUserId,
       });
@@ -104,10 +112,14 @@ export async function ensureSession(
         const {
           data: { session: finalCheck },
         } = await client.auth.getSession();
-        console.error('Session still mismatched after re-initialization', {
-          sessionUserId: finalCheck?.user?.id,
-          expectedUserId,
-        });
+        getSessionLogger(expectedUserId).error(
+          'Session still mismatched after re-initialization',
+          undefined,
+          {
+            sessionUserId: finalCheck?.user?.id,
+            expectedUserId,
+          },
+        );
         // This indicates the cookies themselves have a different user ID
         // than expected - this is a serious auth issue
         throw new Error(
@@ -167,12 +179,16 @@ export async function ensureSession(
     }
 
     // Cookies exist but session wasn't set - this indicates a problem
-    console.error('Session initialization failed despite having cookies', {
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
-      expectedUserId,
-      attempts: maxRetries,
-    });
+    getSessionLogger(expectedUserId).error(
+      'Session initialization failed despite having cookies',
+      undefined,
+      {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        expectedUserId,
+        attempts: maxRetries,
+      },
+    );
     throw new Error(
       'Failed to initialize session from cookies after multiple attempts. ' +
         'Please try refreshing the page or log in again.',
@@ -181,19 +197,25 @@ export async function ensureSession(
 
   // Verify session matches expected user ID if provided
   if (expectedUserId && finalSession.user.id !== expectedUserId) {
-    console.error('Session user ID mismatch after initialization', {
-      sessionUserId: finalSession.user.id,
-      expectedUserId,
-    });
+    getSessionLogger(expectedUserId).error(
+      'Session user ID mismatch after initialization',
+      undefined,
+      {
+        sessionUserId: finalSession.user.id,
+        expectedUserId,
+      },
+    );
     throw new Error('Session user ID mismatch: The session does not match the expected user.');
   }
 
   // Mark as initialized
   sessionInitialized = true;
-  console.log('Session ensured successfully', {
-    userId: finalSession.user.id,
-    matchesExpected: expectedUserId ? finalSession.user.id === expectedUserId : true,
-  });
+  // Only log in development to reduce noise in production
+  if (process.env.NODE_ENV !== 'production') {
+    getSessionLogger(finalSession.user.id).info('Session ensured successfully', {
+      matchesExpected: expectedUserId ? finalSession.user.id === expectedUserId : true,
+    });
+  }
 }
 
 /**
@@ -242,7 +264,7 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (signOutError) {
           // Ignore sign out errors, continue with session setting
-          console.warn('Error during sign out before session re-init', signOutError);
+          getSessionLogger().warn('Error during sign out before session re-init', signOutError);
         }
       }
 
@@ -252,7 +274,7 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
       });
 
       if (error) {
-        console.warn('Failed to set Supabase session from custom cookies', error);
+        getSessionLogger().warn('Failed to set Supabase session from custom cookies', error);
         // Don't mark as initialized if there was an error
         sessionInitialized = false;
         return;
@@ -276,7 +298,14 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
           } = await client.auth.getSession();
 
           if (checkError) {
-            console.warn(`Session verification attempt ${attempt + 1} failed:`, checkError.message);
+            getSessionLogger().warn(
+              `Session verification attempt ${attempt + 1} failed`,
+              undefined,
+              {
+                error: checkError.message,
+                attempt: attempt + 1,
+              },
+            );
             continue;
           }
 
@@ -288,22 +317,31 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
 
         if (verifiedSession && verifiedSession.user) {
           sessionInitialized = true;
-          console.log('Supabase session initialized from custom cookies', {
-            userId: verifiedSession.user.id,
-            forced: force,
-            verified: true,
-          });
+          // Only log in development to reduce noise in production
+          if (process.env.NODE_ENV !== 'production') {
+            getSessionLogger(verifiedSession.user.id).info(
+              'Supabase session initialized from custom cookies',
+              {
+                forced: force,
+                verified: true,
+              },
+            );
+          }
         } else {
           sessionInitialized = false;
-          console.warn('Session set but could not verify it was applied after multiple attempts', {
-            expectedUserId: data.session.user.id,
-            attempts: 5,
-          });
+          getSessionLogger().warn(
+            'Session set but could not verify it was applied after multiple attempts',
+            undefined,
+            {
+              expectedUserId: data.session.user.id,
+              attempts: 5,
+            },
+          );
           // Don't throw here - let ensureSession handle the error with its own retry logic
         }
       } else {
         sessionInitialized = false;
-        console.warn('Session set but no user found in response', {
+        getSessionLogger().warn('Session set but no user found in response', undefined, {
           hasSession: !!data.session,
           hasUser: !!data.session?.user,
         });
@@ -320,7 +358,7 @@ async function initializeSession(client: SupabaseClient, force = false): Promise
       }
     }
   } catch (error) {
-    console.warn('Error initializing Supabase session from custom cookies', error);
+    getSessionLogger().warn('Error initializing Supabase session from custom cookies', error);
     sessionInitialized = false;
   }
 }

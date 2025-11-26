@@ -15,6 +15,7 @@ import { getBrandLogoUrl } from '@/lib/branding';
 import { LogoPreview } from './LogoPreview';
 import { ColorPicker } from './ColorPicker';
 import type { Profile } from './types';
+import { clientLogger } from '@/lib/clientLogger';
 
 type SettingsBrandingSectionProps = {
   profile: Profile;
@@ -165,7 +166,9 @@ export function SettingsBrandingSection({
                           );
                           if (url) window.open(url, '_blank', 'noopener,noreferrer');
                         } catch (error) {
-                          console.error('Failed to open logo:', error);
+                          clientLogger.error('Failed to open logo', error, {
+                            logoPath: profile.brand_logo_path,
+                          });
                         }
                       }}
                       variant="ghost"

@@ -4,6 +4,7 @@ import { Mail, Linkedin, Facebook, Instagram, MapPin, Phone, Send } from 'lucide
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { trackEmailCapture } from '@/lib/analytics';
+import { clientLogger } from '@/lib/clientLogger';
 
 export function Footer() {
   const [email, setEmail] = useState('');
@@ -36,7 +37,7 @@ export function Footer() {
       setNewsletterStatus('success');
       setEmail('');
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
+      clientLogger.error('Newsletter subscription error', error, { source: 'footer' });
       setNewsletterStatus('idle');
     }
   };

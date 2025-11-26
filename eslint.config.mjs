@@ -419,10 +419,30 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      // Disallow console statements except in logger and test files
+      'no-console': [
+        'error',
+        {
+          allow: ['warn', 'error'],
+        },
+      ],
     },
   },
   {
     ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'scripts/**'],
+  },
+  // Allow console in logger.ts (it's the structured logger itself) and test files
+  {
+    files: [
+      '**/logger.ts',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/__tests__/**',
+      '**/vitest.setup.ts',
+    ],
+    rules: {
+      'no-console': 'off',
+    },
   },
 ];
 

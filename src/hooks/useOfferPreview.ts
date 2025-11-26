@@ -6,6 +6,7 @@ import { t } from '@/copy';
 import type { ProjectDetails } from '@/lib/projectDetails';
 import type { PreviewIssue } from '@/types/preview';
 import { useToast } from '@/components/ToastProvider';
+import { clientLogger } from '@/lib/clientLogger';
 
 export type OfferPreviewStatus = 'idle' | 'loading' | 'streaming' | 'success' | 'error' | 'aborted';
 
@@ -206,7 +207,9 @@ export function useOfferPreview({
               break;
             }
           } catch (err) {
-            console.error('Nem sikerĂĽlt feldolgozni az AI elĹ‘nĂ©zet adatĂˇt', err, jsonPart);
+            clientLogger.error('Failed to process AI preview data', err, {
+              jsonPart: jsonPart?.substring(0, 200),
+            });
           }
         }
 

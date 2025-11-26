@@ -1,4 +1,5 @@
 import { envServer } from '@/env.server';
+import { logger } from '@/lib/logger';
 
 interface ProviderStatus {
   enabled: boolean;
@@ -63,7 +64,7 @@ async function fetchWithServiceRole(baseUrl: string): Promise<ProviderStatus | n
       message: PROVIDER_DISABLED_MESSAGE,
     };
   } catch (error) {
-    console.error('Supabase /auth/v1/settings fetch failed:', error);
+    logger.error('Supabase /auth/v1/settings fetch failed', error);
     return {
       enabled: false,
       message: buildFailureMessage(),
@@ -99,7 +100,7 @@ async function fetchWithAnonKey(baseUrl: string): Promise<ProviderStatus | null>
 
     return { enabled: true };
   } catch (error) {
-    console.error('Supabase /auth/v1/providers fetch failed:', error);
+    logger.error('Supabase /auth/v1/providers fetch failed', error);
     return {
       enabled: false,
       message: buildFailureMessage(),

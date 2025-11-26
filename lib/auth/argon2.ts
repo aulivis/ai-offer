@@ -177,7 +177,7 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
       } catch (error) {
         // Log detailed error in development for debugging
         if (process.env.NODE_ENV === 'development') {
-          console.debug('[Argon2] Failed to load @noble/hashes/argon2.js:', {
+          console.warn('[Argon2] Failed to load @noble/hashes/argon2.js:', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
           });
@@ -201,7 +201,7 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
           }
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
-            console.debug('[Argon2] Failed to load @noble/hashes/argon2:', {
+            console.warn('[Argon2] Failed to load @noble/hashes/argon2:', {
               error: error instanceof Error ? error.message : String(error),
             });
           }

@@ -15,6 +15,7 @@
  */
 
 import type { Metric } from 'web-vitals';
+import { logger } from '@/lib/logger';
 
 declare global {
   interface Window {
@@ -167,7 +168,9 @@ function sendToGoogleAnalytics(metric: Metric) {
   } catch (error) {
     // Fail silently - analytics shouldn't break the app
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Performance monitoring failed to send to GA:', error);
+      logger.warn('Performance monitoring failed to send to GA', error, {
+        metricName: metric.name,
+      });
     }
   }
 }
@@ -183,6 +186,8 @@ function logMetric(metric: Metric) {
   const rating = getPerformanceRating(metric.name, metric.value);
   const delta = 'delta' in metric ? metric.delta : undefined;
 
+  // Development-only logging for Web Vitals debugging
+  // eslint-disable-next-line no-console
   console.log(`[Web Vitals] ${metric.name}:`, {
     value: metric.value,
     rating,

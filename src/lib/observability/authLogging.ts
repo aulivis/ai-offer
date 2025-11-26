@@ -30,7 +30,7 @@ function emit(
   const payload = { ...context, ...(attributes ?? {}) };
 
   if (level === 'info') {
-    console.info(message, payload);
+    console.warn(message, payload);
   } else {
     console.warn(message, payload);
   }

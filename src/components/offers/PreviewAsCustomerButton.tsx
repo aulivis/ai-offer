@@ -10,6 +10,7 @@ import type { TemplateId } from '@/app/pdf/templates/types';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { ProjectDetails } from '@/lib/projectDetails';
 import { t } from '@/copy';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface PreviewAsCustomerButtonProps {
   title: string;
@@ -104,7 +105,7 @@ export function PreviewAsCustomerButton({
         variant: 'success',
       });
     } catch (error) {
-      console.error('Preview as customer error', error);
+      clientLogger.error('Preview as customer error', error, { templateId: selectedTemplateId });
       showToast({
         title: t('offers.wizard.previewAsCustomer.error') || 'Hiba',
         description:

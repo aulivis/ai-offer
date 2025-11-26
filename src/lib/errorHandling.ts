@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
+import { randomUUID } from 'node:crypto';
 
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
@@ -133,7 +134,9 @@ export function handleUnexpectedError(
   if (log) {
     log.error('Unexpected error occurred', error, context);
   } else {
-    console.error('Unexpected error:', error);
+    // Fallback logging when logger is not available - use server logger
+    const fallbackLog = createLogger(requestId || randomUUID());
+    fallbackLog.error('Unexpected error occurred (no logger provided)', error, context);
   }
 
   // Report to Sentry with context (if Sentry is configured)

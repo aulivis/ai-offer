@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import { clientLogger } from '@/lib/clientLogger';
 
 const DRAFT_KEY_PREFIX = 'offer-wizard-draft';
 
@@ -17,7 +18,7 @@ export function useDraftPersistence<T>(key: string, data: T, enabled = true) {
       try {
         localStorage.setItem(storageKey, JSON.stringify(data));
       } catch (err) {
-        console.warn('Failed to save draft:', err);
+        clientLogger.warn('Failed to save draft', err, { storageKey });
       }
     }, 2000); // Save 2 seconds after last change
 

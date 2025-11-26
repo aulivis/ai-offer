@@ -4,6 +4,7 @@ import type { LocaleKey } from '@/copy';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 import { LANGUAGE_COOKIE_NAME, setLanguage as setLanguageState } from './lang';
+import { clientLogger } from '@/lib/clientLogger';
 
 type LanguageContextValue = {
   language: LocaleKey;
@@ -21,7 +22,7 @@ function persistLanguage(language: LocaleKey) {
   try {
     document.cookie = `${LANGUAGE_COOKIE_NAME}=${language}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
   } catch (error) {
-    console.warn('Failed to persist language preference', error);
+    clientLogger.warn('Failed to persist language preference', error, { language });
   }
 }
 

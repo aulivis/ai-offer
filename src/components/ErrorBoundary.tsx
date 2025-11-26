@@ -4,6 +4,7 @@ import { Component, type ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { t } from '@/copy';
+import { clientLogger } from '@/lib/clientLogger';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -44,7 +45,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   async componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    clientLogger.error('ErrorBoundary caught an error', error, {
+      componentStack: errorInfo.componentStack?.substring(0, 500),
+      retryCount: this.state.retryCount,
+    });
     this.setState({ errorInfo });
 
     // Report to Sentry (if Sentry is configured)
@@ -64,7 +68,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         });
       } catch (sentryError) {
         // Sentry not available, skip reporting
-        console.warn('Sentry not available:', sentryError);
+        clientLogger.warn('Sentry not available', sentryError);
       }
     }
 
@@ -98,7 +102,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         });
       }, delay);
     } catch (error) {
-      console.error('Retry failed:', error);
+      clientLogger.error('ErrorBoundary retry failed', error, {
+        retryCount: this.state.retryCount,
+      });
       this.setState({ isRetrying: false });
     }
   };

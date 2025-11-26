@@ -1,6 +1,7 @@
 import { buildVariableRegistry, VariableResolver, TemplateParser } from '@/lib/template-variables';
 import { blocksToVariableData } from '@/lib/ai/blocks';
 import type { AIResponseBlocks as TemplateAIResponseBlocks } from '@/lib/template-variables';
+import { logger } from '@/lib/logger';
 
 import type { RenderCtx } from './types';
 
@@ -34,7 +35,7 @@ export function attachTemplateVariables(ctx: RenderCtx): RenderCtx {
     };
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('[templateVariables] Failed to initialize template variables', error);
+      logger.warn('Failed to initialize template variables', error, { offerId: ctx.offer.id });
     }
     return ctx;
   }

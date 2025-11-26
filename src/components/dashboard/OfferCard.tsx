@@ -23,6 +23,7 @@ import ArrowTopRightOnSquareIcon from '@heroicons/react/24/outline/ArrowTopRight
 import { ShareModal } from './ShareModal';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { useToast } from '@/components/ToastProvider';
+import { createClientLogger } from '@/lib/clientLogger';
 
 export interface OfferCardProps {
   offer: Offer;
@@ -67,6 +68,10 @@ export function OfferCard({
   const [shareUrlCopied, setShareUrlCopied] = useState(false);
   const [isLoadingShareUrl, setIsLoadingShareUrl] = useState(false);
   const { showToast } = useToast();
+  const logger = useMemo(
+    () => createClientLogger({ component: 'OfferCard', offerId: offer.id }),
+    [offer.id],
+  );
 
   const timelineStates: Record<TimelineKey, TimelineStatus> = {
     draft: getTimelineStatus('draft', offer.status),
@@ -102,10 +107,11 @@ export function OfferCard({
       }
     } catch (error) {
       // Silently fail - share link is optional
-      console.warn('Failed to load default share URL', error);
+      logger.warn('Failed to load default share URL', error);
     } finally {
       setIsLoadingShareUrl(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offer.id]);
 
   useEffect(() => {

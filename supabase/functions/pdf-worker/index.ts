@@ -122,7 +122,7 @@ async function setContentWithNetworkIdleLogging(
     detachPageListener(page, 'response', onResponse);
 
     const elapsed = Date.now() - startedAt;
-    console.info(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
+    console.warn(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
 
     if (requestFailures.length > 0) {
       console.warn(
@@ -454,7 +454,7 @@ serve(async (request) => {
         throw new Error(`PDF has incorrect content type: ${contentType}`);
       }
 
-      console.log('Verified: PDF is accessible and downloadable (edge worker)', {
+      console.warn('Verified: PDF is accessible and downloadable (edge worker)', {
         offerId: job.offer_id,
         pdfUrl,
         contentType,
@@ -477,7 +477,7 @@ serve(async (request) => {
 
     // Increment quota ONLY after PDF is verified as accessible and downloadable
     // If this fails, we can rollback the offer update if needed
-    console.log('Attempting to increment user quota (edge worker)', {
+    console.warn('Attempting to increment user quota (edge worker)', {
       userId: job.user_id,
       limit: userLimit,
       periodStart: usagePeriodStart,
@@ -493,7 +493,7 @@ serve(async (request) => {
       jobId, // Exclude this job from pending count
     );
 
-    console.log('User quota increment result (edge worker)', {
+    console.warn('User quota increment result (edge worker)', {
       userId: job.user_id,
       allowed: usageResult.allowed,
       offersGenerated: usageResult.offersGenerated,
@@ -517,14 +517,14 @@ serve(async (request) => {
       throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
     }
     userUsageIncremented = true;
-    console.log('User quota incremented successfully (edge worker)', {
+    console.warn('User quota incremented successfully (edge worker)', {
       userId: job.user_id,
       newUsage: usageResult.offersGenerated,
       offerId: job.offer_id,
     });
 
     if (deviceId && deviceLimit !== null) {
-      console.log('Attempting to increment device quota (edge worker)', {
+      console.warn('Attempting to increment device quota (edge worker)', {
         userId: job.user_id,
         deviceId,
         limit: deviceLimit,
@@ -541,7 +541,7 @@ serve(async (request) => {
         jobId, // Exclude this job from pending count
       );
 
-      console.log('Device quota increment result (edge worker)', {
+      console.warn('Device quota increment result (edge worker)', {
         userId: job.user_id,
         deviceId,
         allowed: deviceResult.allowed,
@@ -568,7 +568,7 @@ serve(async (request) => {
         throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
       }
       deviceUsageIncremented = true;
-      console.log('Device quota incremented successfully (edge worker)', {
+      console.warn('Device quota incremented successfully (edge worker)', {
         userId: job.user_id,
         deviceId,
         newUsage: deviceResult.offersGenerated,
@@ -859,7 +859,7 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
     try {
       await rollbackUsageIncrementForKind(supabase, kind, target, expectedPeriod);
       if (attempt > 0) {
-        console.log(`Rollback succeeded on attempt ${attempt + 1}`, {
+        console.warn(`Rollback succeeded on attempt ${attempt + 1}`, {
           kind,
           target,
           expectedPeriod,
@@ -1056,7 +1056,7 @@ export async function incrementUsage<K extends CounterKind>(
           p_exclude_job_id: excludeJobId || null,
         };
 
-  console.log('Calling quota increment RPC (edge worker)', {
+  console.warn('Calling quota increment RPC (edge worker)', {
     rpc: config.rpc,
     kind,
     target,
@@ -1108,7 +1108,7 @@ export async function incrementUsage<K extends CounterKind>(
     periodStart: String(result?.period_start ?? periodStart),
   };
 
-  console.log('Quota increment RPC result (edge worker)', {
+  console.warn('Quota increment RPC result (edge worker)', {
     rpc: config.rpc,
     kind,
     target,

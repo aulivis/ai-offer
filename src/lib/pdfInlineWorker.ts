@@ -535,16 +535,77 @@ export async function processPdfJobInline(
       .eq('id', job.jobId);
     if (jobCompleteError) {
       // Job completion failed, but quota was already incremented
-      // This is a critical error - log it but don't rollback quota since PDF is accessible
-      logger.error('CRITICAL: Failed to mark job as completed after quota increment', {
-        jobId: job.jobId,
-        offerId: job.offerId,
-        error: jobCompleteError.message,
-        pdfUrl,
-      });
+      // This is a critical data consistency issue - report to Sentry with high severity
+      const criticalError = new Error(
+        `CRITICAL: Failed to mark job as completed after quota increment: ${jobCompleteError.message}`,
+      );
+      logger.error(
+        'CRITICAL: Failed to mark job as completed after quota increment',
+        criticalError,
+        {
+          jobId: job.jobId,
+          offerId: job.offerId,
+          userId: job.userId,
+          error: jobCompleteError.message,
+          errorCode: jobCompleteError.code,
+          pdfUrl,
+          // Flag this for reconciliation - job status remains 'processing' while quota was incremented
+          requiresReconciliation: true,
+        },
+      );
+
+      // Report to Sentry with high severity for alerting
+      // This allows monitoring and alerting on this critical error path
+      if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+        import('@sentry/nextjs')
+          .then((Sentry) => {
+            Sentry.captureException(criticalError, {
+              level: 'error',
+              tags: {
+                errorType: 'pdf_job_completion_failure_after_quota_increment',
+                requiresReconciliation: true,
+                component: 'pdfInlineWorker',
+              },
+              contexts: {
+                pdfJob: {
+                  jobId: job.jobId,
+                  offerId: job.offerId,
+                  userId: job.userId,
+                  pdfUrl,
+                },
+                quota: {
+                  userLimit: job.userLimit,
+                  usagePeriodStart: job.usagePeriodStart,
+                  deviceId: job.deviceId || null,
+                },
+                error: {
+                  message: jobCompleteError.message,
+                  code: jobCompleteError.code || null,
+                },
+              },
+              extra: {
+                // Include information needed for reconciliation
+                reconciliationData: {
+                  jobId: job.jobId,
+                  offerId: job.offerId,
+                  userId: job.userId,
+                  expectedStatus: 'completed',
+                  currentStatus: 'processing',
+                  quotaIncremented: true,
+                  pdfUrl,
+                },
+              },
+            });
+          })
+          .catch(() => {
+            // Sentry not available, skip reporting
+          });
+      }
+
       // Don't throw - quota is incremented and PDF is accessible, so this is a data consistency issue
-      // but the user should still have access to their PDF
-      // The job status will remain 'processing', which is acceptable
+      // but the user should still have access to their PDF.
+      // The job status will remain 'processing', which requires manual reconciliation.
+      // See: web/src/lib/reconciliation/pdfJobReconciliation.ts for reconciliation utility
     }
 
     if (job.callbackUrl && pdfUrl) {

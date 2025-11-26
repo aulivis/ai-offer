@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { t } from '@/copy';
 import { useToast } from '@/components/ToastProvider';
 import { getCsrfToken } from '@/lib/api';
+import { clientLogger } from '@/lib/clientLogger';
 
 export function useLogout() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export function useLogout() {
       router.replace('/login');
       router.refresh();
     } catch (err) {
-      console.error('Logout failed', err);
+      clientLogger.error('Logout failed', err);
       const message = err instanceof Error ? err.message : t('errors.auth.logoutUnknown');
       showToast({
         title: t('toasts.logout.failed.title'),

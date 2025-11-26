@@ -7,6 +7,7 @@
 
 import { VariableResolver } from './resolver';
 import { applyFilter } from './filters';
+import { logger } from '@/lib/logger';
 
 export class TemplateParser {
   private resolver: VariableResolver;
@@ -26,7 +27,7 @@ export class TemplateParser {
       try {
         return this.evaluateExpression(expression);
       } catch (error) {
-        console.warn(`Failed to evaluate expression "${expression}":`, error);
+        logger.warn(`Failed to evaluate expression "${expression}"`, error);
         return match; // Return original if evaluation fails
       }
     });
@@ -68,7 +69,7 @@ export class TemplateParser {
     // Parse filter name and arguments
     const match = filterExpr.match(/^(\w+)(?::\s*(.+))?$/);
     if (!match) {
-      console.warn(`Invalid filter expression: ${filterExpr}`);
+      logger.warn(`Invalid filter expression: ${filterExpr}`, undefined, { filterExpr });
       return value;
     }
 

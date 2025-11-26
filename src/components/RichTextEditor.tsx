@@ -11,6 +11,7 @@ import {
   useState,
 } from 'react';
 import { Button } from '@/components/ui/Button';
+import { clientLogger } from '@/lib/clientLogger';
 
 type RichTextEditorProps = {
   value: string;
@@ -264,7 +265,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
               break;
           }
         } catch (error) {
-          console.error('Nem sikerült végrehajtani a parancsot', command, error);
+          clientLogger.error('Nem sikerült végrehajtani a parancsot', error, { command });
         }
         if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
           window.requestAnimationFrame(() => {
@@ -319,7 +320,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
           try {
             document.execCommand('insertHTML', false, html);
           } catch (error) {
-            console.error('Nem sikerült beszúrni a képet', error);
+            clientLogger.error('Nem sikerült beszúrni a képet', error, { src, alt, dataKey });
             return;
           }
 

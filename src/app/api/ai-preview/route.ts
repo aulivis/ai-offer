@@ -121,28 +121,54 @@ const REQUEST_CACHE_TTL_MS = 5000; // 5 seconds
 const REQUEST_CACHE_MAX_SIZE = 1000; // Maximum cache entries
 const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 30000; // Cleanup every 30 seconds
 
+// Store cleanup interval ID for potential cleanup on server shutdown
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+
+// Cleanup function to remove expired entries and enforce size limit
+function cleanupRequestCache(): void {
+  const now = Date.now();
+
+  // Remove expired entries
+  for (const [key, value] of requestCache.entries()) {
+    if (now - value.timestamp > REQUEST_CACHE_TTL_MS) {
+      requestCache.delete(key);
+    }
+  }
+
+  // If still over limit, remove oldest entries (LRU eviction)
+  if (requestCache.size > REQUEST_CACHE_MAX_SIZE) {
+    const entries = Array.from(requestCache.entries());
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const toRemove = entries.slice(0, requestCache.size - REQUEST_CACHE_MAX_SIZE);
+    for (const [key] of toRemove) {
+      requestCache.delete(key);
+    }
+  }
+}
+
 // Cleanup old cache entries periodically and enforce size limit
+// Store interval ID so it can be cleaned up if needed
 if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
+  cleanupIntervalId = setInterval(cleanupRequestCache, REQUEST_CACHE_CLEANUP_INTERVAL_MS);
 
-    // Remove expired entries
-    for (const [key, value] of requestCache.entries()) {
-      if (now - value.timestamp > REQUEST_CACHE_TTL_MS) {
-        requestCache.delete(key);
+  // Cleanup on process termination (Next.js serverless handles this automatically,
+  // but this provides safety for long-running processes)
+  if (typeof process !== 'undefined' && process.on) {
+    const cleanup = () => {
+      if (cleanupIntervalId) {
+        clearInterval(cleanupIntervalId);
+        cleanupIntervalId = null;
       }
-    }
+      // Final cleanup pass
+      requestCache.clear();
+    };
 
-    // If still over limit, remove oldest entries (LRU eviction)
-    if (requestCache.size > REQUEST_CACHE_MAX_SIZE) {
-      const entries = Array.from(requestCache.entries());
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-      const toRemove = entries.slice(0, requestCache.size - REQUEST_CACHE_MAX_SIZE);
-      for (const [key] of toRemove) {
-        requestCache.delete(key);
-      }
-    }
-  }, REQUEST_CACHE_CLEANUP_INTERVAL_MS);
+    // Handle graceful shutdown signals
+    process.once('SIGTERM', cleanup);
+    process.once('SIGINT', cleanup);
+    // Note: In Next.js serverless/edge environments, these may not fire,
+    // but the cleanup interval and TTL-based eviction prevent memory leaks
+  }
 }
 
 function hashRequest(data: unknown): string {
@@ -636,17 +662,14 @@ Különös figyelmet fordít a következőkre:
       );
 
       // Cache the request for deduplication (only cache for short time)
+      // Note: Cleanup is handled by the periodic cleanup interval, so we don't need
+      // individual setTimeout calls that could leak memory
       if (requestHash) {
         requestCache.set(requestHash, {
           promise: responsePromise,
           timestamp: Date.now(),
         });
-
-        // Clean up cache entry after TTL
-        const hashToDelete = requestHash;
-        setTimeout(() => {
-          requestCache.delete(hashToDelete);
-        }, REQUEST_CACHE_TTL_MS);
+        // No need for individual setTimeout - the cleanup interval will remove expired entries
       }
 
       return responsePromise;

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { createClientLogger } from '@/lib/clientLogger';
 
 interface Notification {
   id: string;
@@ -22,6 +23,10 @@ export function NotificationBell() {
   const router = useRouter();
   const sb = useSupabase();
   const { user } = useRequireAuth();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'NotificationBell' }),
+    [user?.id],
+  );
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -47,10 +52,11 @@ export function NotificationBell() {
       setNotifications(data.notifications || []);
       setUnreadCount(data.unreadCount || 0);
     } catch (error) {
-      console.error('Failed to load notifications', error);
+      logger.error('Failed to load notifications', error);
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Load on mount
@@ -130,7 +136,7 @@ export function NotificationBell() {
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Failed to mark notification as read', error);
+      logger.error('Failed to mark notification as read', error, { notificationId });
     }
   };
 
@@ -142,7 +148,7 @@ export function NotificationBell() {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (error) {
-      console.error('Failed to mark all as read', error);
+      logger.error('Failed to mark all as read', error);
     }
   };
 

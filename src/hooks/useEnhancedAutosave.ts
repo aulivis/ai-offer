@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useRef, useState } from 'react';
+import { clientLogger } from '@/lib/clientLogger';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -213,7 +214,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
         const saveFunction = saveFn || defaultSaveFn;
         saveFunction(key, data);
       } catch (err) {
-        console.warn('Failed to save on beforeunload:', err);
+        clientLogger.warn('Failed to save on beforeunload', err, { key });
       }
     };
 
@@ -235,7 +236,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
       }
       return resolvedResult;
     } catch (err) {
-      console.warn('Failed to load:', err);
+      clientLogger.warn('Failed to load autosave data', err, { key });
       return null;
     }
   }, [key, loadFn, defaultLoadFn]);
@@ -249,7 +250,7 @@ export function useEnhancedAutosave<T>(options: UseEnhancedAutosaveOptions<T>) {
       setStatus('idle');
       setError(null);
     } catch (err) {
-      console.warn('Failed to clear:', err);
+      clientLogger.warn('Failed to clear autosave data', err, { key });
     }
   }, [key]);
 

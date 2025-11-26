@@ -12,6 +12,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/components/ToastProvider';
 import { PhotoIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { createClientLogger } from '@/lib/clientLogger';
 
 type Activity = {
   id: string;
@@ -104,6 +105,10 @@ export function WizardStep2Pricing({
   const supabase = useSupabase();
   const { user } = useRequireAuth();
   const { showToast } = useToast();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'WizardStep2Pricing' }),
+    [user?.id],
+  );
   const [savingActivityId, setSavingActivityId] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [pendingActivity, setPendingActivity] = useState<Activity | null>(null);
@@ -248,7 +253,7 @@ export function WizardStep2Pricing({
               urls[path] = data.signedUrl;
             }
           } catch (error) {
-            console.error('Failed to load image URL:', error);
+            logger.error('Failed to load image URL', error, { path });
           }
         }
         if (!active) return;
@@ -262,6 +267,7 @@ export function WizardStep2Pricing({
         active = false;
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showImageModal, pendingActivity, enableReferencePhotos, supabase, imageUrlCache]);
 
   // Preload reference image URLs for currently selected activities and chosen images
@@ -285,7 +291,7 @@ export function WizardStep2Pricing({
             urls[path] = data.signedUrl;
           }
         } catch (error) {
-          console.error('Failed to preload reference image URL:', error);
+          logger.error('Failed to preload reference image URL', error, { path });
         }
       }
       if (!active) return;
@@ -297,6 +303,7 @@ export function WizardStep2Pricing({
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allReferenceImagePaths, enableReferencePhotos, imageUrlCache, supabase]);
 
   const handleActivityClick = async (activity: Activity) => {
@@ -366,7 +373,7 @@ export function WizardStep2Pricing({
       // Notify parent to reload activities
       onActivitySaved?.();
     } catch (error) {
-      console.error('Failed to save activity:', error);
+      logger.error('Failed to save activity', error, { activityId: activity.id });
       showToast({
         title: t('errors.settings.saveFailed') || 'Hiba',
         description:

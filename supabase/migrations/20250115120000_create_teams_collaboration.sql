@@ -339,3 +339,5 @@ grant usage on schema public to authenticated;
 grant select, insert, delete on table public.team_members to authenticated;
 grant select, insert, update on table public.team_invitations to authenticated;
 
+
+

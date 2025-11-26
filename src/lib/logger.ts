@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { sanitizeLogObject, sanitizeError, sanitizeLogString } from './sanitizeLogs';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -17,12 +18,17 @@ class Logger {
 
   private formatMessage(level: LogLevel, message: string, extra?: Record<string, unknown>): void {
     const timestamp = new Date().toISOString();
+    // Sanitize all log data to prevent sensitive data leakage
+    const sanitizedContext = sanitizeLogObject(this.context);
+    const sanitizedExtra = extra ? sanitizeLogObject(extra) : {};
+    const sanitizedMessage = sanitizeLogString(message);
+
     const logEntry = {
       timestamp,
       level,
-      message,
-      ...this.context,
-      ...extra,
+      message: sanitizedMessage,
+      ...sanitizedContext,
+      ...sanitizedExtra,
     };
 
     // In production, use structured logging
@@ -75,18 +81,17 @@ class Logger {
   }
 
   error(message: string, error?: unknown, extra?: Record<string, unknown>): void {
-    const errorData =
-      error instanceof Error
-        ? {
-            error: {
-              name: error.name,
-              message: error.message,
-              stack: process.env.NODE_ENV === 'production' ? undefined : error.stack,
-            },
-          }
-        : error !== undefined
-          ? { error: String(error) }
-          : {};
+    // Sanitize error information to prevent sensitive data leakage
+    const sanitizedError = error !== undefined ? sanitizeError(error) : undefined;
+    const errorData = sanitizedError
+      ? {
+          error: {
+            name: sanitizedError.name,
+            message: sanitizedError.message,
+            stack: process.env.NODE_ENV === 'production' ? undefined : sanitizedError.stack,
+          },
+        }
+      : {};
 
     this.formatMessage('error', message, { ...errorData, ...extra });
   }

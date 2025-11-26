@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { resetSessionState } from '@/lib/supabaseClient';
 import { t } from '@/copy';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface InitSessionClientProps {
   hasCookiesAvailable: boolean;
@@ -183,7 +184,11 @@ export default function InitSessionClient({
         if (!mounted) return;
 
         const errorMessage = err instanceof Error ? err.message : t('errors.initSession.error');
-        console.error('Session initialization failed:', err);
+        clientLogger.error('Session initialization failed', err, {
+          expectedUserId,
+          hasCookiesAvailable,
+          redirectTo,
+        });
         setError(errorMessage);
         setStatus('error');
 

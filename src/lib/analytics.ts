@@ -38,8 +38,11 @@ export function trackConversion(event: ConversionEvent, properties?: Record<stri
     },
   };
 
-  // Log to console in development
+  // Log to console in development (analytics tracking is intentional console usage)
+  // This is a legitimate use case for development debugging
+  // Note: Could be replaced with logger if needed, but analytics console output is useful for devs
   if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
     console.log('[Analytics]', eventData);
   }
 

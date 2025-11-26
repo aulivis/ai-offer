@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Share2, Facebook, Twitter, Linkedin, Link as LinkIcon, X } from 'lucide-react';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface ShareDropdownProps {
   url: string;
@@ -49,7 +50,7 @@ export function ShareDropdown({ url, title }: ShareDropdownProps) {
       setShowShare(false);
       // You could add a toast notification here
     } catch (err) {
-      console.error('Failed to copy link:', err);
+      clientLogger.error('Failed to copy link', err, { url });
     }
   };
 

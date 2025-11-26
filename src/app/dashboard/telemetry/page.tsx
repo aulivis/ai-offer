@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { t } from '@/copy';
 import { useToast } from '@/components/ToastProvider';
+import { clientLogger } from '@/lib/clientLogger';
 
 interface TelemetryRow {
   templateId: string;
@@ -112,7 +113,7 @@ export default function TemplateTelemetryPage() {
         );
         setGeneratedAt(payload.generatedAt ?? new Date().toISOString());
       } catch (error) {
-        console.error('Failed to load template telemetry.', error);
+        clientLogger.error('Failed to load template telemetry', error);
         showToast({
           title: t('adminTelemetry.toast.loadError.title'),
           description: t('adminTelemetry.toast.loadError.description'),

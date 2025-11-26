@@ -6,6 +6,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { t } from '@/copy';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { getQuotaData } from '@/lib/services/quota';
+import { createClientLogger } from '@/lib/clientLogger';
 
 export type QuotaSnapshot = {
   limit: number | null;
@@ -20,6 +21,10 @@ export type QuotaSnapshot = {
 export function useQuotaManagement() {
   const sb = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'useQuotaManagement' }),
+    [user?.id],
+  );
   const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaSnapshot | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(false);
   const [quotaError, setQuotaError] = useState<string | null>(null);
@@ -96,7 +101,7 @@ export function useQuotaManagement() {
       });
       setQuotaError(null);
     } catch (quotaLoadError) {
-      console.error('Failed to load usage quota for new offer wizard.', quotaLoadError);
+      logger.error('Failed to load usage quota for new offer wizard', quotaLoadError);
       // Try to get plan from profile as fallback
       try {
         const { data: prof } = await sb
@@ -122,6 +127,7 @@ export function useQuotaManagement() {
     } finally {
       setQuotaLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, sb, user]);
 
   // Use ref to store latest loadQuota callback

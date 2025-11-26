@@ -43,6 +43,7 @@ import { SettingsEmailSubscriptionSection } from '@/components/settings/Settings
 import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
 import type { Profile, ActivityRow, GuaranteeRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
+import { createClientLogger } from '@/lib/clientLogger';
 
 const ACTIVITIES_COLLAPSE_STORAGE_KEY = 'settings.activities.collapsed';
 const GUARANTEES_COLLAPSE_STORAGE_KEY = 'settings.guarantees.collapsed';
@@ -72,6 +73,10 @@ export default function SettingsPage() {
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'SettingsPage' }),
+    [user?.id],
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -174,12 +179,13 @@ export default function SettingsPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: true });
     if (error) {
-      console.error('Failed to load guarantees', error);
+      logger.error('Failed to load guarantees', error);
       return;
     }
     setGuarantees(
       (data || []).map((row) => mapGuaranteeRow(row as Parameters<typeof mapGuaranteeRow>[0])),
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapGuaranteeRow, supabase, user]);
 
   useEffect(() => {
@@ -931,14 +937,14 @@ export default function SettingsPage() {
           variant: 'success',
         });
       } catch (saveError) {
-        console.error('Failed to auto-save logo path', saveError);
+        logger.error('Failed to auto-save logo path', saveError);
         try {
           await fetchWithSupabaseAuth('/api/storage/delete-brand-logo', {
             method: 'DELETE',
             defaultErrorMessage: 'Failed to cleanup uploaded logo',
           });
         } catch (cleanupError) {
-          console.error('Failed to cleanup uploaded logo after save failure', cleanupError);
+          logger.error('Failed to cleanup uploaded logo after save failure', cleanupError);
         }
 
         showToast({
@@ -955,7 +961,7 @@ export default function SettingsPage() {
         return;
       }
 
-      console.error('Logo upload error', error);
+      logger.error('Logo upload error', error);
       const message =
         error instanceof Error ? error.message : t('errors.settings.logoUploadFailed');
       showToast({
@@ -1039,7 +1045,7 @@ export default function SettingsPage() {
         variant: 'success',
       });
     } catch (error) {
-      console.error('Failed to add guarantee', error);
+      logger.error('Failed to add guarantee', error, { guaranteeText: trimmed });
       showToast({
         title: t('errors.settings.saveFailed', { message: trimmed }),
         description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
@@ -1082,7 +1088,7 @@ export default function SettingsPage() {
         variant: 'success',
       });
     } catch (error) {
-      console.error('Failed to update guarantee', error);
+      logger.error('Failed to update guarantee', error, { guaranteeId: id, guaranteeText: text });
       showToast({
         title: t('errors.settings.saveFailed', { message: text }),
         description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
@@ -1112,7 +1118,7 @@ export default function SettingsPage() {
         variant: 'success',
       });
     } catch (error) {
-      console.error('Failed to delete guarantee', error);
+      logger.error('Failed to delete guarantee', error, { guaranteeId: id });
       showToast({
         title: t('errors.settings.saveFailed', { message: id }),
         description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
@@ -1162,7 +1168,11 @@ export default function SettingsPage() {
         ),
       );
     } catch (error) {
-      console.error('Failed to toggle guarantee attachment', error);
+      logger.error('Failed to toggle guarantee attachment', error, {
+        guaranteeId,
+        activityId,
+        shouldAttach,
+      });
       showToast({
         title: t('errors.settings.saveFailed', { message: guaranteeId }),
         description: error instanceof Error ? error.message : t('errors.settings.saveUnknown'),
@@ -1412,7 +1422,7 @@ export default function SettingsPage() {
                             ),
                           );
                         } catch (error) {
-                          console.error('Failed to save reference images:', error);
+                          logger.error('Failed to save reference images', error, { activityId });
                           showToast({
                             title: t('errors.settings.saveFailed', {
                               message: 'Nem sikerült menteni a referenciafotókat',
@@ -1439,7 +1449,7 @@ export default function SettingsPage() {
                             variant: 'success',
                           });
                         } catch (error) {
-                          console.error('Failed to save default activity:', error);
+                          logger.error('Failed to save default activity', error, { activityId });
                           showToast({
                             title: t('errors.settings.saveFailed', {
                               message: 'Nem sikerült menteni az alapértelmezett tevékenységet',

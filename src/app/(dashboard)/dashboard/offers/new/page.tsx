@@ -3,6 +3,7 @@
 import { t } from '@/copy';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClientLogger } from '@/lib/clientLogger';
 import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
@@ -49,6 +50,7 @@ export default function NewOfferPage() {
   } = useOfferWizard();
   const { showToast } = useToast();
   const router = useRouter();
+  const logger = useMemo(() => createClientLogger({ component: 'NewOfferPage' }), []);
 
   // Draft persistence
   const wizardData = useMemo(
@@ -182,7 +184,10 @@ export default function NewOfferPage() {
         if (isAbortError(error)) {
           return;
         }
-        console.error('Failed to render preview document', error);
+        logger.error('Failed to render preview document', error, {
+          templateId: resolvedTemplateId,
+          title: title || undefined,
+        });
         if (!controller.signal.aborted) {
           const fallbackMessage = t('errors.preview.fetchUnknown');
           setPreviewDocumentHtml(
@@ -195,6 +200,7 @@ export default function NewOfferPage() {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     previewHtml,
     pricingRows,

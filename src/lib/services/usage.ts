@@ -5,6 +5,7 @@ import { getMonthlyOfferLimit, resolveEffectivePlan } from '../subscription';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { normalizeDate, rollbackUsageIncrement, type RollbackOptions } from '../usageHelpers';
 import { currentMonthStart } from '../utils/dateHelpers';
+import { logger } from '@/lib/logger';
 
 // Re-export for backward compatibility
 export { currentMonthStart };
@@ -303,7 +304,7 @@ export async function syncUsageCounter(
     return;
   }
 
-  console.info('Skipping usage counter sync due to observed usage drift', {
+  logger.info('Skipping usage counter sync due to observed usage drift', {
     userId,
     expected: normalizedExpected,
     stored: state.offersGenerated,

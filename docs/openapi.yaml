@@ -1,0 +1,416 @@
+openapi: 3.0.3
+info:
+  title: Vyndi API
+  description: |
+    API documentation for Vyndi - AI-powered business offer generation platform.
+
+    This API provides endpoints for:
+    - Authentication and session management
+    - Offer generation and management
+    - PDF generation and export
+    - Team collaboration
+    - User profile and settings
+
+    All authenticated endpoints require a valid session token in cookies.
+  version: 1.0.0
+  contact:
+    name: Vyndi Support
+    email: support@vyndi.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://vyndi.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Offers
+    description: Offer creation and management
+  - name: PDF
+    description: PDF generation and export
+  - name: Teams
+    description: Team collaboration features
+  - name: Profile
+    description: User profile and settings
+  - name: Storage
+    description: File upload and storage
+
+paths:
+  /api/auth/magic-link:
+    post:
+      tags:
+        - Authentication
+      summary: Request magic link for login
+      description: Sends a magic link email to the provided email address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User email address
+                redirect_to:
+                  type: string
+                  format: uri
+                  description: Optional redirect URL after authentication
+                remember_me:
+                  type: boolean
+                  description: Whether to extend session duration
+      responses:
+        '202':
+          description: Magic link sent successfully
+        '400':
+          description: Invalid request
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                description: Seconds to wait before retry
+
+  /api/auth/session:
+    get:
+      tags:
+        - Authentication
+      summary: Get current session
+      description: Returns the current user session information
+      responses:
+        '200':
+          description: Session information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  session:
+                    $ref: '#/components/schemas/Session'
+        '401':
+          description: Not authenticated
+
+  /api/ai-generate:
+    post:
+      tags:
+        - Offers
+      summary: Generate AI-powered offer
+      description: |
+        Generates a professional business offer using AI assistance.
+        Requires authentication and quota checks.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIGenerateRequest'
+      responses:
+        '200':
+          description: Offer generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '400':
+          description: Invalid request or validation error
+        '401':
+          description: Not authenticated
+        '403':
+          description: Quota exceeded
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+
+  /api/ai-preview:
+    post:
+      tags:
+        - Offers
+      summary: Generate AI preview for offer content
+      description: Streams AI-generated preview content for offer wizard
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - industry
+                - title
+                - projectDetails
+              properties:
+                industry:
+                  type: string
+                title:
+                  type: string
+                projectDetails:
+                  type: object
+                language:
+                  type: string
+                  enum: [hu, en]
+                  default: hu
+      responses:
+        '200':
+          description: Preview stream started
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '429':
+          description: Rate limit exceeded
+
+  /api/offers/{offerId}:
+    get:
+      tags:
+        - Offers
+      summary: Get offer by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Offer retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '404':
+          description: Offer not found
+        '401':
+          description: Not authenticated
+
+  /api/pdf/export:
+    post:
+      tags:
+        - PDF
+      summary: Export PDF from template
+      description: Generates a PDF using a template with provided slots
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - templateId
+                - slots
+              properties:
+                templateId:
+                  type: string
+                slots:
+                  type: object
+                callbackUrl:
+                  type: string
+                  format: uri
+                locale:
+                  type: string
+      responses:
+        '200':
+          description: PDF export job created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    format: uuid
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+
+  /api/teams:
+    get:
+      tags:
+        - Teams
+      summary: List user's teams
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Teams retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Team'
+        '401':
+          description: Not authenticated
+
+  /api/teams/{teamId}/invitations:
+    post:
+      tags:
+        - Teams
+      summary: Create team invitation
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                expires_in_days:
+                  type: integer
+                  minimum: 1
+                  maximum: 30
+                  default: 7
+      responses:
+        '200':
+          description: Invitation created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invitation:
+                    $ref: '#/components/schemas/TeamInvitation'
+        '400':
+          description: Invalid request
+        '401':
+          description: Not authenticated
+        '403':
+          description: Forbidden - not a Pro user or not a team member
+        '404':
+          description: Team not found
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: propono_at
+      description: Session access token stored in HTTP-only cookie
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+
+    Session:
+      type: object
+      properties:
+        access_token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+
+    Offer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        industry:
+          type: string
+        status:
+          type: string
+          enum: [draft, sent, accepted, rejected]
+        created_at:
+          type: string
+          format: date-time
+        pdf_url:
+          type: string
+          format: uri
+          nullable: true
+
+    AIGenerateRequest:
+      type: object
+      required:
+        - title
+        - industry
+        - projectDetails
+      properties:
+        title:
+          type: string
+        industry:
+          type: string
+        projectDetails:
+          type: object
+        language:
+          type: string
+          enum: [hu, en]
+        templateId:
+          type: string
+
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    TeamInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [pending, accepted, rejected, expired]
+        expires_at:
+          type: string
+          format: date-time

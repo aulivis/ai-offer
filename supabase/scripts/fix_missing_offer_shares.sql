@@ -84,3 +84,5 @@ LEFT JOIN public.offer_shares os ON os.offer_id = o.id
 
 
 
+
+

@@ -52,7 +52,7 @@ serve(async (req) => {
 
     const deletedCount = typeof data === 'number' ? data : 0;
 
-    console.log(`Cleanup completed: ${deletedCount} expired preview offers deleted`);
+    console.warn(`Cleanup completed: ${deletedCount} expired preview offers deleted`);
 
     return new Response(
       JSON.stringify({

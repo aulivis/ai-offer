@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export function extractOfferStoragePath(pdfUrl: string): string | null {
   const normalized = pdfUrl.trim();
   if (!normalized) return null;
@@ -9,7 +11,9 @@ export function extractOfferStoragePath(pdfUrl: string): string | null {
     try {
       return removeLeadingSlash(decodeURIComponent(value));
     } catch (error) {
-      console.warn('Failed to decode offer PDF storage path', error);
+      logger.warn('Failed to decode offer PDF storage path', error, {
+        pdfUrl: pdfUrl.substring(0, 100),
+      });
       return removeLeadingSlash(value);
     }
   };
@@ -33,7 +37,11 @@ export function extractOfferStoragePath(pdfUrl: string): string | null {
         return decodeAndNormalize(segments.slice(offersIndex + 1).join('/'));
       }
     } catch (error) {
-      if (normalized.includes('://')) console.warn('Failed to parse offer PDF storage path', error);
+      if (normalized.includes('://')) {
+        logger.warn('Failed to parse offer PDF storage path', error, {
+          pdfUrl: pdfUrl.substring(0, 100),
+        });
+      }
     }
     return null;
   };

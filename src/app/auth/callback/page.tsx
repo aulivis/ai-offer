@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { clientLogger } from '@/lib/clientLogger';
 
 /**
  * A Supabase magic link gyakran hash fragmentben (#access_token=...) küldi a tokeneket.
@@ -20,15 +21,17 @@ export default function AuthCallbackPage() {
     const hashLength = window.location.hash.length;
     const searchLength = window.location.search.length;
 
-    console.log('[AuthCallback] URL analysis', {
-      urlLength,
-      hashLength,
-      searchLength,
-      hasHash: !!window.location.hash,
-      hasSearch: !!window.location.search,
-      // Log first 200 chars of URL for debugging (without exposing full tokens)
-      urlPreview: fullUrl.substring(0, 200) + (fullUrl.length > 200 ? '...' : ''),
-    });
+    // Development-only logging for auth callback debugging
+    if (process.env.NODE_ENV !== 'production') {
+      clientLogger.debug('AuthCallback URL analysis', undefined, {
+        urlLength,
+        hashLength,
+        searchLength,
+        hasHash: !!window.location.hash,
+        hasSearch: !!window.location.search,
+        urlPreview: fullUrl.substring(0, 200) + (fullUrl.length > 200 ? '...' : ''),
+      });
+    }
 
     const hashParams = parseHashParams(window.location.hash);
     const searchParams = new URLSearchParams(window.location.search);
@@ -52,22 +55,25 @@ export default function AuthCallbackPage() {
       return `${token} (length: ${token.length})`;
     };
 
-    console.log('[AuthCallback] Parameters received', {
-      hashParams: {
-        access_token: redactToken(hashParams.get('access_token')),
-        refresh_token: redactToken(hashParams.get('refresh_token')),
-        expires_in: hashParams.get('expires_in'),
-        token_hash: hashParams.get('token_hash'),
-        type: hashParams.get('type'),
-      },
-      searchParams: {
-        access_token: redactToken(searchParams.get('access_token')),
-        refresh_token: redactToken(searchParams.get('refresh_token')),
-        expires_in: searchParams.get('expires_in'),
-        token_hash: searchParams.get('token_hash'),
-        type: searchParams.get('type'),
-      },
-    });
+    // Development-only logging for auth callback debugging
+    if (process.env.NODE_ENV !== 'production') {
+      clientLogger.debug('AuthCallback parameters received', undefined, {
+        hashParams: {
+          access_token: redactToken(hashParams.get('access_token')),
+          refresh_token: redactToken(hashParams.get('refresh_token')),
+          expires_in: hashParams.get('expires_in'),
+          token_hash: hashParams.get('token_hash'),
+          type: hashParams.get('type'),
+        },
+        searchParams: {
+          access_token: redactToken(searchParams.get('access_token')),
+          refresh_token: redactToken(searchParams.get('refresh_token')),
+          expires_in: searchParams.get('expires_in'),
+          token_hash: hashParams.get('token_hash'),
+          type: searchParams.get('type'),
+        },
+      });
+    }
 
     for (const key of expected) {
       const fromHash = hashParams.get(key);
@@ -88,19 +94,21 @@ export default function AuthCallbackPage() {
       const refreshToken = searchParams.get('refresh_token') || '';
       const expiresIn = searchParams.get('expires_in') || '';
 
-      console.log('[AuthCallback] Implicit flow detected', {
-        accessTokenLength: accessToken.length,
-        refreshTokenLength: refreshToken.length,
-        expiresIn,
-        refreshTokenPreview:
-          refreshToken.substring(0, 20) + (refreshToken.length > 20 ? '...' : ''),
-      });
+      // Development-only logging for auth callback debugging
+      if (process.env.NODE_ENV !== 'production') {
+        clientLogger.debug('AuthCallback implicit flow detected', undefined, {
+          accessTokenLength: accessToken.length,
+          refreshTokenLength: refreshToken.length,
+          expiresIn,
+          refreshTokenPreview:
+            refreshToken.substring(0, 20) + (refreshToken.length > 20 ? '...' : ''),
+        });
+      }
 
       // Warn if refresh token seems truncated (Supabase refresh tokens are typically 100+ chars)
       if (refreshToken.length < 50) {
-        console.warn('[AuthCallback] WARNING: Refresh token appears to be truncated!', {
+        clientLogger.warn('AuthCallback: Refresh token appears to be truncated', undefined, {
           refreshTokenLength: refreshToken.length,
-          refreshTokenValue: refreshToken,
           fullUrlLength: urlLength,
           hashLength,
           searchLength,
@@ -111,10 +119,10 @@ export default function AuthCallbackPage() {
     }
 
     if (!hasImplicit && !hasTokenHash) {
-      console.error('[AuthCallback] Missing required parameters', {
+      clientLogger.error('AuthCallback: Missing required parameters', undefined, {
         hasImplicit,
         hasTokenHash,
-        fullUrl: fullUrl.substring(0, 500), // Log first 500 chars
+        fullUrl: fullUrl.substring(0, 500), // Log first 500 chars for debugging
       });
       // Nem érkezett szükséges paraméter
       window.location.replace('/login?message=Missing%20auth%20code');
@@ -125,11 +133,14 @@ export default function AuthCallbackPage() {
     const qs = searchParams.toString();
     const callbackUrl = `/api/auth/callback${qs ? `?${qs}` : ''}`;
 
-    console.log('[AuthCallback] Redirecting to API callback', {
-      callbackUrlLength: callbackUrl.length,
-      usingTokenHash: hasTokenHash,
-      usingImplicit: hasImplicit,
-    });
+    // Development-only logging for auth callback debugging
+    if (process.env.NODE_ENV !== 'production') {
+      clientLogger.debug('AuthCallback redirecting to API callback', undefined, {
+        callbackUrlLength: callbackUrl.length,
+        usingTokenHash: hasTokenHash,
+        usingImplicit: hasImplicit,
+      });
+    }
 
     window.location.replace(callbackUrl);
   }, []);

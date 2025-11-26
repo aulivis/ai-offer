@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createClientLogger } from '@/lib/clientLogger';
 import {
   Check,
   X,
@@ -46,6 +47,13 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ToastProvider';
 import { getAuthorImage } from '@/lib/testimonial-images';
+import {
+  calculateAnnualPrice,
+  calculateEffectiveMonthlyPrice,
+  calculateAnnualSavings,
+  formatPrice,
+  type BillingInterval,
+} from '@/lib/billing';
 
 type CardBrand = {
   name: string;
@@ -117,9 +125,20 @@ const CARD_BRANDS: CardBrand[] = [
   },
 ];
 
-const STANDARD_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
-const PRO_PRICE = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
+const STANDARD_PRICE_MONTHLY = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
+const PRO_PRICE_MONTHLY = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
+const STANDARD_PRICE_ANNUAL = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL;
+const PRO_PRICE_ANNUAL = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL;
 const CHECKOUT_API_PATH = '/api/stripe/checkout';
+
+// Monthly prices for calculation (HUF)
+const MONTHLY_PRICES = {
+  standard: 1490,
+  pro: 6990,
+} as const;
+
+// Discount percentage for annual billing (17% = ~2 months free)
+const ANNUAL_DISCOUNT_PERCENT = 17;
 
 const TESTIMONIALS = [
   {
@@ -237,6 +256,7 @@ function PlanCard({
   cta,
   plan,
   isLoading,
+  billingInterval,
 }: {
   planType: 'standard' | 'pro';
   isCurrent: boolean;
@@ -245,13 +265,32 @@ function PlanCard({
   cta: PlanCta;
   plan: 'free' | 'standard' | 'pro' | null;
   isLoading: boolean;
+  billingInterval: BillingInterval;
 }) {
+  const monthlyPrice = MONTHLY_PRICES[planType];
+
+  // Calculate pricing based on interval
+  const displayPrice =
+    billingInterval === 'annual'
+      ? calculateAnnualPrice(monthlyPrice, ANNUAL_DISCOUNT_PERCENT)
+      : monthlyPrice;
+
+  const effectiveMonthlyPrice =
+    billingInterval === 'annual'
+      ? calculateEffectiveMonthlyPrice(monthlyPrice, ANNUAL_DISCOUNT_PERCENT)
+      : monthlyPrice;
+
+  const savings =
+    billingInterval === 'annual'
+      ? calculateAnnualSavings(monthlyPrice, ANNUAL_DISCOUNT_PERCENT)
+      : null;
+
   const planData = {
     standard: {
       badge: t('billing.plans.standard.badge'),
       name: t('billing.plans.standard.name'),
       description: t('billing.plans.standard.description'),
-      price: '1 490',
+      price: formatPrice(displayPrice),
       features: [
         t('billing.plans.standard.features.0' as CopyKey),
         t('billing.plans.standard.features.1' as CopyKey),
@@ -262,7 +301,7 @@ function PlanCard({
       badge: t('billing.plans.pro.name'),
       name: t('billing.plans.pro.name'),
       description: t('billing.plans.pro.description'),
-      price: '6 990',
+      price: formatPrice(displayPrice),
       features: [
         t('billing.plans.pro.features.0' as CopyKey),
         t('billing.plans.pro.features.1' as CopyKey),
@@ -370,11 +409,30 @@ function PlanCard({
         )}
 
         {/* Price */}
-        <div className="mt-6 flex items-baseline gap-2">
-          <span className="text-4xl font-bold text-slate-900">{data.price}</span>
-          <span className="text-sm font-medium text-slate-500">
-            {t('billing.plans.priceMonthly')}
-          </span>
+        <div className="mt-6">
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-bold text-slate-900">{data.price}</span>
+            <span className="text-sm font-medium text-slate-500">
+              {billingInterval === 'annual' ? 'Ft/év' : 'Ft/hó'}
+            </span>
+          </div>
+
+          {/* Annual billing: show effective monthly price and savings */}
+          {billingInterval === 'annual' && savings && (
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-gray-600">
+                Effektíve {formatPrice(effectiveMonthlyPrice)} Ft/hó
+              </p>
+              <p className="text-xs font-semibold text-teal-600">
+                {formatPrice(savings.totalSavings)} Ft megtakarítás/év ({savings.percentageSaved}%)
+              </p>
+            </div>
+          )}
+
+          {/* Monthly billing: show per month */}
+          {billingInterval === 'monthly' && (
+            <p className="mt-1 text-xs text-gray-500">havonta számlázva</p>
+          )}
         </div>
 
         {/* Savings message for downgrade */}
@@ -437,6 +495,10 @@ export default function BillingPage() {
   const searchParams = useSearchParams();
   const { status: authStatus, user } = useOptionalAuth();
   const { showToast } = useToast();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'BillingPage' }),
+    [user?.id],
+  );
   const [email, setEmail] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
@@ -489,7 +551,7 @@ export default function BillingPage() {
         if (!active) {
           return;
         }
-        console.error('Failed to load billing information.', error);
+        logger.error('Failed to load billing information', error);
         setIsLoadingData(false);
       }
     })();
@@ -497,6 +559,7 @@ export default function BillingPage() {
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, supabase, user]);
 
   async function startCheckout(priceId: string) {
@@ -513,7 +576,7 @@ export default function BillingPage() {
       if (url) router.push(url);
       else setLoading(null);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to start checkout', e, { priceId, email });
       const message =
         e instanceof ApiError && typeof e.message === 'string' && e.message.trim()
           ? e.message
@@ -536,7 +599,16 @@ export default function BillingPage() {
   type PlanCtaVariant = Extract<ButtonProps['variant'], 'primary' | 'secondary'>;
 
   const getPlanCta = (target: PaidPlan) => {
-    const priceId = target === 'standard' ? STANDARD_PRICE : PRO_PRICE;
+    // Get price ID based on billing interval
+    const priceId =
+      billingInterval === 'annual'
+        ? target === 'standard'
+          ? STANDARD_PRICE_ANNUAL || STANDARD_PRICE_MONTHLY
+          : PRO_PRICE_ANNUAL || PRO_PRICE_MONTHLY
+        : target === 'standard'
+          ? STANDARD_PRICE_MONTHLY
+          : PRO_PRICE_MONTHLY;
+
     const isCurrentPlan = plan === target;
     const isDowngrade = typeof plan === 'string' ? PLAN_ORDER[plan] > PLAN_ORDER[target] : false;
     const isLoading = loading === priceId;
@@ -1061,6 +1133,39 @@ export default function BillingPage() {
               <p className="mt-1 text-sm text-slate-600">
                 Válaszd ki a számodra megfelelő előfizetést
               </p>
+
+              {/* Billing Interval Toggle */}
+              {STANDARD_PRICE_ANNUAL || PRO_PRICE_ANNUAL ? (
+                <div className="mt-4 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBillingInterval('monthly')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                      billingInterval === 'monthly'
+                        ? 'bg-primary text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Havi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingInterval('annual')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all relative ${
+                      billingInterval === 'annual'
+                        ? 'bg-primary text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Éves
+                    {billingInterval === 'annual' && (
+                      <span className="absolute -top-2 -right-2 bg-teal-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        -{ANNUAL_DISCOUNT_PERCENT}%
+                      </span>
+                    )}
+                  </button>
+                </div>
+              ) : null}
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <PlanCard
@@ -1070,7 +1175,11 @@ export default function BillingPage() {
                 isDowngrade={isDowngradeToStandard}
                 cta={standardCta}
                 plan={plan}
-                isLoading={loading === STANDARD_PRICE}
+                isLoading={
+                  loading ===
+                  (billingInterval === 'annual' ? STANDARD_PRICE_ANNUAL : STANDARD_PRICE_MONTHLY)
+                }
+                billingInterval={billingInterval}
               />
               <PlanCard
                 planType="pro"
@@ -1079,7 +1188,10 @@ export default function BillingPage() {
                 isDowngrade={false}
                 cta={proCta}
                 plan={plan}
-                isLoading={loading === PRO_PRICE}
+                isLoading={
+                  loading === (billingInterval === 'annual' ? PRO_PRICE_ANNUAL : PRO_PRICE_MONTHLY)
+                }
+                billingInterval={billingInterval}
               />
             </div>
           </section>

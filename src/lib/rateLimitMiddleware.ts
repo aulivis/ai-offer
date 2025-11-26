@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { consumeRateLimit, getClientIdentifier, type RateLimitResult } from '@/lib/rateLimiting';
+import { logger } from '@/lib/logger';
 
 export type RateLimitConfig = {
   maxRequests: number;
@@ -19,7 +20,11 @@ export async function checkRateLimitMiddleware(
 
     return await consumeRateLimit(supabase, rateLimitKey, config.maxRequests, config.windowMs);
   } catch (error) {
-    console.error('Rate limit check failed', { error });
+    logger.error('Rate limit check failed', error, {
+      keyPrefix: config.keyPrefix,
+      maxRequests: config.maxRequests,
+      windowMs: config.windowMs,
+    });
     // Return null to allow request to proceed if rate limiting fails
     return null;
   }

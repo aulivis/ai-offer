@@ -21,6 +21,7 @@ import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { renderRuntimePdfHtml, type RuntimePdfPayload } from '@/lib/pdfRuntime';
 import { envServer } from '@/env.server';
 import { processPdfJobVercelNative } from '@/lib/pdfVercelWorker';
+import { logger } from '@/lib/logger';
 
 /**
  * System user ID for external API calls
@@ -142,7 +143,11 @@ export async function createExternalPdfJob(
     // Process asynchronously so we can return the job ID immediately
     // The job will be processed in the background within the same function execution
     processPdfJobVercelNative(sb, pdfJobInput).catch((error) => {
-      console.error('Vercel-native PDF generation failed:', error);
+      logger.error('Vercel-native PDF generation failed', error, {
+        jobId: pdfJobInput.jobId,
+        offerId: pdfJobInput.offerId,
+        userId: pdfJobInput.userId,
+      });
       // Job status will be updated to 'failed' in the worker
       // If processing fails, we could fall back to Supabase Edge Function here
       // For now, we let it fail and the client can check the job status

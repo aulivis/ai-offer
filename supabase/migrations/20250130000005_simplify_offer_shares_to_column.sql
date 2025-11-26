@@ -77,3 +77,5 @@ COMMENT ON COLUMN public.offers.share_token IS 'Secure token for sharing this of
 
 
 
+
+

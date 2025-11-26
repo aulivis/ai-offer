@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { fetchWithSupabaseAuth } from '@/lib/api';
+import { createClientLogger } from '@/lib/clientLogger';
 import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
@@ -27,6 +28,10 @@ interface Notification {
 export default function ActivityLogPage() {
   const sb = useSupabase();
   const { user } = useRequireAuth();
+  const logger = useMemo(
+    () => createClientLogger({ userId: user?.id, component: 'ActivityLogPage' }),
+    [user?.id],
+  );
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
@@ -62,11 +67,12 @@ export default function ActivityLogPage() {
 
         setHasMore(newNotifications.length === limit);
       } catch (error) {
-        console.error('Failed to load notifications', error);
+        logger.error('Failed to load notifications', error, { offset: currentOffset, limit });
       } finally {
         setLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, offset, limit],
   );
 
@@ -134,7 +140,7 @@ export default function ActivityLogPage() {
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
       );
     } catch (error) {
-      console.error('Failed to mark notification as read', error);
+      logger.error('Failed to mark notification as read', error, { notificationId });
     }
   };
 
@@ -145,7 +151,7 @@ export default function ActivityLogPage() {
       });
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (error) {
-      console.error('Failed to mark all as read', error);
+      logger.error('Failed to mark all notifications as read', error);
     }
   };
 

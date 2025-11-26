@@ -6,6 +6,8 @@ import {
   getUsageSnapshot,
   currentMonthStart,
 } from '../services/usage';
+import { createTypedMockSupabaseClient } from './testUtils';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 describe('currentMonthStart', () => {
   afterEach(() => {
@@ -27,8 +29,7 @@ describe('currentMonthStart', () => {
 describe('checkAndIncrementUsage', () => {
   const rpc = vi.fn();
   const from = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockClient = { rpc, from } as any;
+  const mockClient = createTypedMockSupabaseClient({ rpc, from }) as SupabaseClient;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -177,8 +178,7 @@ describe('checkAndIncrementUsage', () => {
 describe('checkAndIncrementDeviceUsage', () => {
   const rpc = vi.fn();
   const from = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockClient = { rpc, from } as any;
+  const mockClient = createTypedMockSupabaseClient({ rpc, from }) as SupabaseClient;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -257,8 +257,11 @@ describe('checkAndIncrementDeviceUsage', () => {
 
 describe('getUsageSnapshot', () => {
   const from = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockClient = { from } as any;
+  // getUsageSnapshot only needs 'from' method, so we create a minimal typed mock
+  const mockClient = createTypedMockSupabaseClient({
+    from: vi.fn(),
+    rpc: vi.fn(),
+  }) as SupabaseClient;
 
   beforeEach(() => {
     vi.useFakeTimers();

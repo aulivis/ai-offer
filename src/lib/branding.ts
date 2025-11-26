@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 const HEX_COLOR_PATTERN = /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/;
 const BRAND_ASSETS_BUCKET = 'brand-assets';
@@ -124,7 +125,13 @@ export async function getBrandLogoSignedUrl(
         // Silent handling for missing files - this is normal
         return null;
       }
-      console.debug('Failed to generate signed URL for logo:', error?.message || error);
+      // Only log in development for debugging
+      if (process.env.NODE_ENV !== 'production') {
+        logger.debug('Failed to generate signed URL for logo', undefined, {
+          logoPath: sanitizedPath,
+          error: error?.message,
+        });
+      }
       return null;
     }
 
@@ -140,7 +147,13 @@ export async function getBrandLogoSignedUrl(
       // Silent handling for expected cases
       return null;
     }
-    console.debug('Error generating signed URL for logo:', errorMessage);
+    // Only log in development for debugging
+    if (process.env.NODE_ENV !== 'production') {
+      logger.debug('Error generating signed URL for logo', undefined, {
+        logoPath: sanitizedPath,
+        error: errorMessage,
+      });
+    }
     return null;
   }
 }

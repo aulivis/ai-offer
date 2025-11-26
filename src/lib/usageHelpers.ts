@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 type CounterKind = 'user' | 'device';
 
@@ -206,15 +207,17 @@ export async function incrementUsage<K extends CounterKind>(
           p_exclude_job_id: excludeJobId || null,
         };
 
-  console.log('Calling quota increment RPC', {
-    rpc: config.rpc,
-    kind,
-    target,
-    limit: normalizedLimit,
-    periodStart,
-    excludeJobId,
-    payload: rpcPayload,
-  });
+  // Debug logging for quota increment (only in development)
+  if (process.env.NODE_ENV !== 'production') {
+    logger.debug('Calling quota increment RPC', undefined, {
+      rpc: config.rpc,
+      kind,
+      target,
+      limit: normalizedLimit,
+      periodStart,
+      excludeJobId,
+    });
+  }
 
   const { data, error } = await supabase.rpc(config.rpc, rpcPayload as Record<string, unknown>);
   if (error) {
@@ -222,18 +225,12 @@ export async function incrementUsage<K extends CounterKind>(
     const details = (error as { details?: string }).details ?? '';
     const combined = `${message} ${details}`.toLowerCase();
 
-    console.error('Quota increment RPC error', {
+    logger.error('Quota increment RPC error', error, {
       rpc: config.rpc,
       kind,
       target,
       limit: normalizedLimit,
       periodStart,
-      error: {
-        message,
-        details,
-        code: (error as { code?: string }).code,
-        hint: (error as { hint?: string }).hint,
-      },
     });
 
     if (
@@ -241,7 +238,7 @@ export async function incrementUsage<K extends CounterKind>(
       combined.includes('multiple function variants') ||
       combined.includes('could not find function')
     ) {
-      console.warn('Falling back to non-RPC increment due to RPC function error', {
+      logger.warn('Falling back to non-RPC increment due to RPC function error', undefined, {
         rpc: config.rpc,
         kind,
         target,
@@ -258,15 +255,18 @@ export async function incrementUsage<K extends CounterKind>(
     periodStart: String(result?.period_start ?? periodStart),
   };
 
-  console.log('Quota increment RPC result', {
-    rpc: config.rpc,
-    kind,
-    target,
-    result: incrementResult,
-  });
+  // Debug logging for quota increment result (only in development)
+  if (process.env.NODE_ENV !== 'production') {
+    logger.debug('Quota increment RPC result', undefined, {
+      rpc: config.rpc,
+      kind,
+      target,
+      result: incrementResult,
+    });
+  }
 
   if (!incrementResult.allowed) {
-    console.warn('Quota increment not allowed', {
+    logger.warn('Quota increment not allowed', undefined, {
       rpc: config.rpc,
       kind,
       target,
@@ -300,12 +300,12 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const { data: existing, error } = await buildQuery().maybeSingle();
   if (error) {
-    console.warn('Failed to load usage counter for rollback', { kind, target, error });
+    logger.warn('Failed to load usage counter for rollback', error, { kind, target });
     return;
   }
 
   if (!existing) {
-    console.warn('Usage rollback skipped: counter not found', {
+    logger.warn('Usage rollback skipped: counter not found', undefined, {
       kind,
       target,
       expectedPeriod: normalizedExpected,
@@ -325,17 +325,16 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     const { data: normalizedRow, error: normalizedError } = await normalizedQuery.maybeSingle();
 
     if (normalizedError) {
-      console.warn('Failed to load normalized usage counter for rollback', {
+      logger.warn('Failed to load normalized usage counter for rollback', normalizedError, {
         kind,
         target,
         expectedPeriod: normalizedExpected,
-        error: normalizedError,
       });
       return;
     }
 
     if (!normalizedRow) {
-      console.warn('Usage rollback skipped: period mismatch', {
+      logger.warn('Usage rollback skipped: period mismatch', undefined, {
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -351,7 +350,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     );
 
     if (periodStart !== normalizedExpected) {
-      console.warn('Usage rollback skipped: period mismatch', {
+      logger.warn('Usage rollback skipped: period mismatch', undefined, {
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -363,7 +362,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const currentCount = Number((record as { offers_generated?: unknown }).offers_generated ?? 0);
   if (!Number.isFinite(currentCount) || currentCount <= 0) {
-    console.warn('Usage rollback skipped: non-positive counter', {
+    logger.warn('Usage rollback skipped: non-positive counter', undefined, {
       kind,
       target,
       expectedPeriod: normalizedExpected,
@@ -385,11 +384,10 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const { error: updateError } = await updateBuilder;
   if (updateError) {
-    console.warn('Failed to rollback usage counter increment', {
+    logger.warn('Failed to rollback usage counter increment', updateError, {
       kind,
       target,
       expectedPeriod: normalizedExpected,
-      error: updateError,
     });
     throw updateError; // Re-throw to allow retry logic
   }
@@ -424,11 +422,11 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
   }
 
   // All retries failed - log but don't throw to prevent cascading failures
-  console.error(`Failed to rollback usage increment after ${maxRetries} attempts`, {
+  logger.error(`Failed to rollback usage increment after ${maxRetries} attempts`, lastError, {
     kind,
     target,
     expectedPeriod,
-    error: lastError,
+    maxRetries,
   });
 }
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { clientLogger } from '@/lib/clientLogger';
+
 /**
  * Analytics tracking utilities for wizard events
  * Respects user consent preferences
@@ -40,7 +42,7 @@ export function trackWizardEvent(event: WizardEvent) {
   } catch (error) {
     // Fail silently - analytics shouldn't break the app
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Analytics tracking failed:', error);
+      clientLogger.warn('Analytics tracking failed', error, { eventType: event.type });
     }
   }
 }
