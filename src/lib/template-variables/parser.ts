@@ -27,7 +27,7 @@ export class TemplateParser {
       try {
         return this.evaluateExpression(expression);
       } catch (error) {
-        logger.warn(`Failed to evaluate expression "${expression}"`, error);
+        logger.warn(`Failed to evaluate expression "${expression}"`, { error });
         return match; // Return original if evaluation fails
       }
     });
