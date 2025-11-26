@@ -37,7 +37,7 @@ export default function AppFrame({
     skip: !shouldCheckAuth,
   });
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'AppFrame' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'AppFrame' }),
     [user?.id],
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

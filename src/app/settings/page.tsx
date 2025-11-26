@@ -74,7 +74,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'SettingsPage' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'SettingsPage' }),
     [user?.id],
   );
   const [loading, setLoading] = useState(true);

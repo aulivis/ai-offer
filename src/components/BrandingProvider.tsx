@@ -70,7 +70,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
   const { status, user } = useAuthSession();
   const userId = user?.id ?? null;
   const logger = useMemo(
-    () => createClientLogger({ userId, component: 'BrandingProvider' }),
+    () => createClientLogger({ ...(userId && { userId }), component: 'BrandingProvider' }),
     [userId],
   );
   const [state, setState] = useState<BrandingFetchState>(DEFAULT_FETCH_STATE);

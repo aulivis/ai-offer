@@ -373,7 +373,7 @@ export default function NewOfferWizard() {
   const { showToast } = useToast();
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'NewOfferWizard' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'NewOfferWizard' }),
     [user?.id],
   );
   useWizardValidation();

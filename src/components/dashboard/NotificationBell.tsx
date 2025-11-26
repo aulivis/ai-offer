@@ -24,7 +24,7 @@ export function NotificationBell() {
   const sb = useSupabase();
   const { user } = useRequireAuth();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'NotificationBell' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'NotificationBell' }),
     [user?.id],
   );
   const [notifications, setNotifications] = useState<Notification[]>([]);

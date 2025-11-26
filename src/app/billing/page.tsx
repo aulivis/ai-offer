@@ -496,7 +496,7 @@ export default function BillingPage() {
   const { status: authStatus, user } = useOptionalAuth();
   const { showToast } = useToast();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'BillingPage' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'BillingPage' }),
     [user?.id],
   );
   const [email, setEmail] = useState<string | null>(null);

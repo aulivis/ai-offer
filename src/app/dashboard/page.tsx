@@ -144,7 +144,7 @@ export default function DashboardPage() {
   const sb = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'DashboardPage' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'DashboardPage' }),
     [user?.id],
   );
 

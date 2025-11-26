@@ -106,7 +106,7 @@ export function WizardStep2Pricing({
   const { user } = useRequireAuth();
   const { showToast } = useToast();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'WizardStep2Pricing' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'WizardStep2Pricing' }),
     [user?.id],
   );
   const [savingActivityId, setSavingActivityId] = useState<string | null>(null);

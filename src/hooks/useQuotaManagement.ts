@@ -22,7 +22,7 @@ export function useQuotaManagement() {
   const sb = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
   const logger = useMemo(
-    () => createClientLogger({ userId: user?.id, component: 'useQuotaManagement' }),
+    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'useQuotaManagement' }),
     [user?.id],
   );
   const [quotaSnapshot, setQuotaSnapshot] = useState<QuotaSnapshot | null>(null);
