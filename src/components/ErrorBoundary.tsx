@@ -68,7 +68,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         });
       } catch (sentryError) {
         // Sentry not available, skip reporting
-        clientLogger.warn('Sentry not available', sentryError);
+        const errorData =
+          sentryError instanceof Error
+            ? {
+                error: {
+                  name: sentryError.name,
+                  message: sentryError.message,
+                  stack: process.env.NODE_ENV === 'production' ? undefined : sentryError.stack,
+                },
+              }
+            : sentryError !== undefined
+              ? { error: String(sentryError) }
+              : undefined;
+        clientLogger.warn('Sentry not available', errorData);
       }
     }
 
