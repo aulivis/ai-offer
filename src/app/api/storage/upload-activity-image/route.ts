@@ -1,8 +1,6 @@
-import { Buffer } from 'node:buffer';
-
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';

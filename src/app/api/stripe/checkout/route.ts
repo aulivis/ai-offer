@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';

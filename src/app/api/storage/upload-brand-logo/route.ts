@@ -1,5 +1,3 @@
-import { Buffer } from 'node:buffer';
-
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 

@@ -20,7 +20,7 @@ function getAsyncLocalStorage(): AsyncLocalStorage<LocaleKey> | null {
     try {
       // Dynamically require async_hooks only on server side
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const asyncHooks = require('node:async_hooks') as typeof import('node:async_hooks');
+      const asyncHooks = require('async_hooks') as typeof import('async_hooks');
       languageStorage = new asyncHooks.AsyncLocalStorage<LocaleKey>();
     } catch {
       // If async_hooks is not available (shouldn't happen in Node.js), return null

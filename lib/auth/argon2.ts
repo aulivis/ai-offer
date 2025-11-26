@@ -1,4 +1,4 @@
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'crypto';
 
 // Static import reference to ensure Next.js includes @noble/hashes in the bundle
 // This import is conditionally used and helps Next.js statically analyze and bundle the module

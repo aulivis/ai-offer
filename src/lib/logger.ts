@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 import { sanitizeLogObject, sanitizeError, sanitizeLogString } from './sanitizeLogs';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';

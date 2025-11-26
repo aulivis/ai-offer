@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
