@@ -108,7 +108,8 @@ export function OfferCard({
     } catch (error) {
       // Silently fail - share link is optional
       logger.warn('Failed to load default share URL', {
-        error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
+        error:
+          error instanceof Error ? { name: error.name, message: error.message } : String(error),
       });
     } finally {
       setIsLoadingShareUrl(false);
