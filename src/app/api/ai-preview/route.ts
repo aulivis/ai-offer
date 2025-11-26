@@ -153,7 +153,7 @@ if (typeof setInterval !== 'undefined') {
 
   // Cleanup on process termination (Next.js serverless handles this automatically,
   // but this provides safety for long-running processes)
-  if (typeof process !== 'undefined' && process.on) {
+  if (typeof process !== 'undefined' && typeof process.on === 'function') {
     const cleanup = () => {
       if (cleanupIntervalId) {
         clearInterval(cleanupIntervalId);
