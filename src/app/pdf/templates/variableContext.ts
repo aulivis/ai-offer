@@ -36,7 +36,10 @@ export function attachTemplateVariables(ctx: RenderCtx): RenderCtx {
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       logger.warn('Failed to initialize template variables', {
-        error: error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : error,
+        error:
+          error instanceof Error
+            ? { name: error.name, message: error.message, stack: error.stack }
+            : error,
       });
     }
     return ctx;
