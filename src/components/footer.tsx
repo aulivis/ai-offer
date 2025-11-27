@@ -146,6 +146,7 @@ export function Footer() {
                   Árazás
                 </Link>
               </li>
+              {/* Hidden for now
               <li>
                 <Link
                   href="/resources"
@@ -154,6 +155,7 @@ export function Footer() {
                   Sablonok
                 </Link>
               </li>
+              */}
             </ul>
           </div>
 
@@ -161,6 +163,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <h4 className="font-bold text-lg mb-6 text-turquoise-400">Erőforrások</h4>
             <ul className="space-y-3">
+              {/* Hidden for now
               <li>
                 <Link
                   href="/resources"
@@ -169,6 +172,7 @@ export function Footer() {
                   Blog
                 </Link>
               </li>
+              */}
               <li>
                 <Link
                   href="/#faq"
@@ -177,6 +181,7 @@ export function Footer() {
                   Súgó központ
                 </Link>
               </li>
+              {/* Hidden for now
               <li>
                 <Link
                   href="/resources"
@@ -193,6 +198,7 @@ export function Footer() {
                   Esettanulmányok
                 </Link>
               </li>
+              */}
             </ul>
           </div>
 

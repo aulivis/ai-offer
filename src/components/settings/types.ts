@@ -4,7 +4,6 @@ export type Profile = {
   company_tax_id?: string;
   company_phone?: string;
   company_email?: string;
-  industries?: string[];
   brand_logo_url?: string | null;
   brand_logo_path?: string | null;
   brand_color_primary?: string | null;
@@ -21,7 +20,6 @@ export type ActivityRow = {
   unit: string;
   default_unit_price: number;
   default_vat: number;
-  industries: string[];
   reference_images?: string[] | null;
 };
 
@@ -43,20 +41,6 @@ export type Testimonial = {
   created_at: string;
   updated_at: string;
 };
-
-export const ALL_INDUSTRIES_HU = [
-  'Marketing',
-  'Informatika',
-  'Építőipar',
-  'Tanácsadás',
-  'Szolgáltatás',
-  'Gyártás',
-  'Oktatás',
-  'Egészségügy',
-  'Pénzügy',
-  'E-kereskedelem',
-  'Ingatlan',
-] as const;
 
 export function validatePhoneHU(v: string): boolean {
   const cleaned = v.replace(/[()\s.-]/g, '');

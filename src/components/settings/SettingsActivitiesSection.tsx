@@ -4,15 +4,8 @@ import { t } from '@/copy';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader } from '@/components/ui/Card';
-import {
-  CubeIcon,
-  CheckCircleIcon,
-  PlusIcon,
-  TrashIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/outline';
+import { CubeIcon, PlusIcon, TrashIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import type { ActivityRow } from './types';
-import { ALL_INDUSTRIES_HU } from './types';
 import { ActivityImageManager } from './ActivityImageManager';
 
 type NewActivity = {
@@ -20,7 +13,6 @@ type NewActivity = {
   unit: string;
   price: number;
   vat: number;
-  industries: string[];
 };
 
 type SettingsActivitiesSectionProps = {
@@ -33,7 +25,6 @@ type SettingsActivitiesSectionProps = {
   collapseDisabled?: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
   onNewActivityChange: (updater: (prev: NewActivity) => NewActivity) => void;
-  onToggleNewActivityIndustry: (industry: string) => void;
   onAddActivity: () => void;
   onDeleteActivity: (id: string) => void;
   onActivityImagesChange: (activityId: string, imagePaths: string[]) => Promise<void>;
@@ -51,7 +42,6 @@ export function SettingsActivitiesSection({
   collapseDisabled = false,
   onCollapsedChange,
   onNewActivityChange,
-  onToggleNewActivityIndustry,
   onAddActivity,
   onDeleteActivity,
   onActivityImagesChange,
@@ -193,31 +183,6 @@ export function SettingsActivitiesSection({
                   }
                 />
               </div>
-              <div className="mt-4 space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('settings.activities.industries.heading')}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {ALL_INDUSTRIES_HU.map((ind) => {
-                    const active = newActivity.industries.includes(ind);
-                    return (
-                      <button
-                        key={ind}
-                        type="button"
-                        onClick={() => onToggleNewActivityIndustry(ind)}
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                          active
-                            ? 'border-primary bg-primary text-white shadow-sm'
-                            : 'border-border bg-white text-slate-700 hover:border-primary/50 hover:bg-slate-50'
-                        }`}
-                      >
-                        {active && <CheckCircleIcon className="h-3 w-3" />}
-                        {ind}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
               <div className="mt-6">
                 <Button
                   onClick={onAddActivity}
@@ -248,23 +213,6 @@ export function SettingsActivitiesSection({
                             vat: a.default_vat,
                           })}
                         </p>
-                        {(a.industries || []).length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {(a.industries || []).slice(0, 3).map((ind) => (
-                              <span
-                                key={ind}
-                                className="inline-flex items-center rounded-full border border-border bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600"
-                              >
-                                {ind}
-                              </span>
-                            ))}
-                            {(a.industries || []).length > 3 && (
-                              <span className="inline-flex items-center rounded-full border border-border bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">
-                                +{(a.industries || []).length - 3}
-                              </span>
-                            )}
-                          </div>
-                        )}
                       </div>
                       <button
                         type="button"

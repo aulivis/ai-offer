@@ -7,7 +7,6 @@ import ArrowDownTrayIcon from '@heroicons/react/24/outline/ArrowDownTrayIcon';
 import ArrowPathIcon from '@heroicons/react/24/outline/ArrowPathIcon';
 import BuildingOffice2Icon from '@heroicons/react/24/outline/BuildingOffice2Icon';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
-import Squares2X2Icon from '@heroicons/react/24/outline/Squares2X2Icon';
 import UserCircleIcon from '@heroicons/react/24/outline/UserCircleIcon';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
@@ -177,7 +176,7 @@ export function OfferCard({
               <BuildingOffice2Icon
                 aria-hidden="true"
                 className="h-4 w-4 text-primary"
-                title={companyName || t('dashboard.offerCard.industryUnknown')}
+                title={companyName || ''}
               />
             )}
           </div>
@@ -205,15 +204,6 @@ export function OfferCard({
                   <span className="text-fg-muted/50 shrink-0">•</span>
                   <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
                   <span className="whitespace-nowrap shrink-0">{formatDate(offer.created_at)}</span>
-                </>
-              )}
-              {offer.industry && (
-                <>
-                  <span className="text-fg-muted/50 shrink-0">•</span>
-                  <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                  <span className="truncate max-w-[120px]" title={offer.industry}>
-                    {offer.industry}
-                  </span>
                 </>
               )}
             </div>
@@ -517,17 +507,6 @@ export function OfferCard({
                   </p>
                 </div>
               </div>
-              {offer.industry && (
-                <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-2 py-1.5">
-                  <Squares2X2Icon className="h-3.5 w-3.5 text-fg-muted flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
-                      {t('dashboard.offerCard.industry')}
-                    </p>
-                    <p className="text-xs font-semibold text-fg truncate">{offer.industry}</p>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Action Buttons - Compact */}

@@ -91,26 +91,6 @@ begin
     end if;
   end if;
 
-  -- Index for offers table by client lookups (offers.recipient_id -> clients.id)
-  -- Note: recipients table has been removed, all code uses clients table
-  -- This index optimizes queries that join offers with clients
-  if exists (
-    select 1 from information_schema.tables 
-    where table_schema = 'public' and table_name = 'offers'
-  ) then
-    -- Index for industry filtering (common in dashboard)
-    if not exists (
-      select 1 from pg_indexes 
-      where schemaname = 'public' 
-        and tablename = 'offers' 
-        and indexname = 'idx_offers_user_industry'
-    ) then
-      create index idx_offers_user_industry 
-        on public.offers(user_id, industry) 
-        where industry is not null;
-    end if;
-  end if;
-
   -- Index for profiles table plan lookups (frequently queried)
   if exists (
     select 1 from information_schema.tables 

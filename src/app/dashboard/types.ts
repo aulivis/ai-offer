@@ -6,7 +6,6 @@ export type OfferDecision = 'accepted' | 'lost';
 export type Offer = {
   id: string;
   title: string;
-  industry: string;
   status: OfferStatus;
   created_at: string | null;
   sent_at: string | null;

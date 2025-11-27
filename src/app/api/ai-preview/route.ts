@@ -90,7 +90,6 @@ const optionalTrimmedString = z.preprocess(
 
 const previewRequestSchema = z
   .object({
-    industry: z.string().trim().min(1, t('validation.required')),
     title: z.string().trim().min(1, t('validation.required')),
     projectDetails: projectDetailsSchema,
     deadline: optionalTrimmedString,
@@ -226,7 +225,7 @@ export const POST = withAuth(
         return handleValidationError(parsed.error, requestId);
       }
 
-      const { industry, title, projectDetails, deadline, language, brandVoice, style, formality } =
+      const { title, projectDetails, deadline, language, brandVoice, style, formality } =
         parsed.data;
 
       if (!envServer.OPENAI_API_KEY) {
@@ -248,7 +247,6 @@ export const POST = withAuth(
           : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat (4-6 pont), amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket.';
 
       const safeLanguage = sanitizeInput(language);
-      const safeIndustry = sanitizeInput(industry);
       const safeTitle = sanitizeInput(title);
       const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
         (acc, key) => {
@@ -276,7 +274,6 @@ Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi inf
 Nyelv: ${safeLanguage}
 ${toneGuidance}
 ${formalityGuidance}
-Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
 
 Projekt leírás: ${safeDescription}

@@ -588,7 +588,6 @@ const imageAssetSchema = z
 const aiGenerateRequestSchema = z
   .object({
     title: z.string().trim().min(1, t('validation.required')),
-    industry: z.string().trim().min(1, t('validation.required')),
     projectDetails: projectDetailsSchema,
     deadline: optionalTrimmedString,
     language: z.preprocess(
@@ -724,7 +723,6 @@ export const POST = withAuth(
 
       const {
         title,
-        industry,
         projectDetails,
         deadline,
         language,
@@ -933,7 +931,6 @@ export const POST = withAuth(
             : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
 
         // Sanitize user inputs before passing to OpenAI
-        const safeIndustry = sanitizeInput(industry);
         const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
         const safeDeadline = sanitizeInput(deadline || '—');
 
@@ -957,7 +954,6 @@ Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi inf
 Nyelv: ${normalizedLanguage}
 ${toneGuidance}
 ${formalityGuidance}
-Iparág: ${safeIndustry}
 Ajánlat címe: ${safeTitle}
 ${clientInfo}Projekt részletek:
 ${safeProjectDetails || '—'}
@@ -1133,7 +1129,6 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         offerId,
         userId: user.id,
         title: safeTitle,
-        industry: sanitizeInput(industry),
       });
 
       // Security: Ensure user_id matches authenticated user
@@ -1158,7 +1153,6 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           id: offerId,
           user_id: user.id,
           title: safeTitle,
-          industry: sanitizeInput(industry),
           recipient_id: clientId || null,
           inputs: {
             projectDetails: sanitizedDetails,

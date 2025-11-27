@@ -21,14 +21,14 @@ type NavItem = {
 };
 
 const PUBLIC_NAV_ITEMS: ReadonlyArray<NavItem> = [
-  { href: '/sikertortenetek-ajanlatkeszites-automatizalas', labelKey: 'nav.successStories' },
-  { href: '/resources', labelKey: 'nav.resources' },
+  // { href: '/sikertortenetek-ajanlatkeszites-automatizalas', labelKey: 'nav.successStories' }, // Hidden for now
+  // { href: '/resources', labelKey: 'nav.resources' }, // Hidden for now
   { href: '/billing', labelKey: 'nav.billing' },
 ];
 
 const AUTH_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: '/dashboard', labelKey: 'nav.dashboard' },
-  { href: '/resources', labelKey: 'nav.resources' },
+  // { href: '/resources', labelKey: 'nav.resources' }, // Hidden for now
   { href: '/settings', labelKey: 'nav.settings' },
   { href: '/billing', labelKey: 'nav.billing' },
 ];
@@ -102,15 +102,12 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   };
 
   // Pages that should have white navbar text by default
-  const whiteNavbarPages = [
-    '/',
-    '/resources',
-    '/sikertortenetek-ajanlatkeszites-automatizalas',
-    '/billing',
-  ];
-  const shouldUseWhiteNavbar = whiteNavbarPages.some(
-    (page) => pathname === page || pathname.startsWith(`${page}/`),
-  );
+  // const whiteNavbarPages = [
+  //   '/',
+  //   // '/resources', // Hidden for now
+  //   // '/sikertortenetek-ajanlatkeszites-automatizalas', // Hidden for now
+  //   '/billing',
+  // ];
 
   // Enhanced header classes with scroll-based styling and mobile visibility
   const headerClass = useMemo(
@@ -119,7 +116,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
         'fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300',
         scrolled
           ? 'bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50'
-          : 'bg-transparent backdrop-blur-none border-b border-transparent',
+          : 'bg-white border-b border-gray-200/50',
         // Mobile: hide/show based on scroll direction
         isVisible ? 'translate-y-0' : '-translate-y-full',
         className,
@@ -138,37 +135,32 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
   return (
     <>
       <header className={headerClass}>
-        <div className="mx-auto flex h-14 md:h-20 w-full max-w-7xl items-center gap-6 px-4 md:px-6">
+        <div className="mx-auto flex h-11 md:h-16 w-full max-w-7xl items-center gap-6 px-4 md:px-6">
           {/* Enhanced Logo Section */}
-          <Link href="/" className="flex items-center gap-3" onClick={closeMenu}>
+          <Link href="/" className="flex items-center h-full" onClick={closeMenu}>
             {logoUrl ? (
-              <div className="relative">
-                <div className="relative">
-                  <Image
-                    src={logoUrl}
-                    alt={companyName ? `${companyName} logo` : t('nav.brand')}
-                    width={176}
-                    height={85}
-                    priority
-                    unoptimized
-                    placeholder="blur"
-                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYigyNDAsIDI0MCwgMjQwKSIvPjwvc3ZnPg=="
-                    sizes="(max-width: 768px) 96px, 120px"
-                    className="h-auto w-auto object-contain"
-                    style={{ maxHeight: '48px', maxWidth: '120px' }}
-                  />
-                </div>
+              <div className="relative h-full w-auto">
+                <Image
+                  src={logoUrl}
+                  alt={companyName ? `${companyName} logo` : t('nav.brand')}
+                  width={176}
+                  height={85}
+                  priority
+                  unoptimized
+                  placeholder="blur"
+                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYigyNDAsIDI0MCwgMjQwKSIvPjwvc3ZnPg=="
+                  sizes="(max-width: 768px) 96px, 120px"
+                  className="h-full w-auto object-contain"
+                />
               </div>
             ) : (
-              <div className="relative">
-                <div className="relative w-12 h-12 bg-gradient-to-br from-turquoise-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-                  <span
-                    aria-hidden="true"
-                    className="text-lg font-bold text-white uppercase tracking-wide"
-                  >
-                    {monogram}
-                  </span>
-                </div>
+              <div className="relative h-full aspect-square bg-gradient-to-br from-turquoise-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                <span
+                  aria-hidden="true"
+                  className="text-lg font-bold text-white uppercase tracking-wide"
+                >
+                  {monogram}
+                </span>
               </div>
             )}
           </Link>
@@ -176,21 +168,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           {/* Enhanced Desktop Navigation Links */}
           <nav className="hidden flex-1 items-center justify-center gap-4 text-base font-medium md:flex">
             {navItems.map((item) => {
-              // Determine if we should use white text (transparent navbar on dark background)
-              const useWhiteText = !scrolled && shouldUseWhiteNavbar;
-
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`relative px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-turquoise-500 group ${
                     isNavItemActive(item.href)
-                      ? useWhiteText
-                        ? 'text-white font-semibold bg-white/20'
-                        : 'text-navy-900 font-semibold bg-gray-100/80'
-                      : useWhiteText
-                        ? 'text-white hover:bg-white/20 hover:text-white'
-                        : 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
+                      ? 'text-navy-900 font-semibold bg-gray-100/80'
+                      : 'text-gray-700 hover:bg-gray-100/80 hover:text-navy-900'
                   }`}
                   {...(isNavItemActive(item.href) && { 'aria-current': 'page' })}
                   onClick={closeMenu}
@@ -198,18 +183,14 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                   {t(item.labelKey)}
                   {/* Subtle underline animation on hover */}
                   {!isNavItemActive(item.href) && (
-                    <span
-                      className={`absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left ${
-                        useWhiteText ? 'bg-white' : 'bg-turquoise-500'
-                      }`}
-                    ></span>
+                    <span className="absolute bottom-1 left-4 right-4 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left bg-turquoise-500"></span>
                   )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Enhanced CTA Section - Hidden on mobile */}
+          {/* Enhanced CTA Section - Desktop only */}
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated ? (
               <>
@@ -230,11 +211,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                     e.preventDefault();
                     logout();
                   }}
-                  className={`px-5 py-2.5 text-base font-semibold rounded-lg border transition-all duration-200 ${
-                    scrolled || !shouldUseWhiteNavbar
-                      ? 'border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50'
-                      : 'border-white text-white hover:bg-white/20'
-                  }`}
+                  className="px-5 py-2.5 text-base font-semibold rounded-lg border border-[#1E3A5F] text-[#1E3A5F] bg-white hover:bg-gray-50 transition-all duration-200"
                 >
                   {isLoggingOut ? t('nav.logoutInProgress') : t('nav.logout')}
                 </Link>
@@ -244,11 +221,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 {/* Enhanced "Bejelentkezés" button with hero secondary CTA style */}
                 <Link
                   href="/login"
-                  className={`border-2 font-semibold rounded-xl px-5 py-2.5 text-base bg-transparent transition-colors ${
-                    scrolled || !shouldUseWhiteNavbar
-                      ? 'border-navy-900 text-navy-900 hover:border-orange-500 hover:text-orange-500'
-                      : 'border-white text-white hover:border-orange-500 hover:text-orange-500'
-                  }`}
+                  className="border-2 font-semibold rounded-xl px-5 py-2.5 text-base bg-transparent transition-colors border-navy-900 text-navy-900 hover:border-orange-500 hover:text-orange-500"
                 >
                   {t('nav.login')}
                 </Link>
@@ -268,21 +241,44 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
             )}
           </div>
 
-          {/* Enhanced Mobile menu button - moved to right */}
-          <button
-            type="button"
-            className={`ml-auto inline-flex h-10 w-10 items-center justify-center rounded-lg transition duration-200 md:hidden min-h-[44px] min-w-[44px] ${
-              scrolled || !shouldUseWhiteNavbar
-                ? 'text-navy-900 hover:bg-gray-100/80'
-                : 'text-white hover:bg-white/20'
-            }`}
-            aria-label={t('nav.menuToggle')}
-            aria-expanded={isMenuOpen}
-            aria-controls="landing-navigation"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          {/* Mobile: CTA + Hamburger menu container */}
+          <div className="flex items-center gap-2 ml-auto md:hidden">
+            {/* Primary CTA on mobile */}
+            {isAuthenticated ? (
+              <Link
+                href="/new"
+                className="relative px-3 py-2 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                <span className="relative flex items-center gap-1 text-white">
+                  {t('dashboard.actions.newOffer')}
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform text-white" />
+                </span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="relative px-3 py-2 bg-[#FF6B35] hover:bg-[#E55A2B] text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200 group overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                <span className="relative flex items-center gap-1 text-white">
+                  {t('nav.freeTrial')}
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform text-white" />
+                </span>
+              </Link>
+            )}
+            {/* Enhanced Mobile menu button */}
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg transition duration-200 min-h-[44px] min-w-[44px] text-navy-900 hover:bg-gray-100/80"
+              aria-label={t('nav.menuToggle')}
+              aria-expanded={isMenuOpen}
+              aria-controls="landing-navigation"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -297,7 +293,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
           ></div>
 
           {/* Mobile Menu Panel */}
-          <div className="fixed top-14 md:top-20 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-2xl z-40 md:hidden">
+          <div className="fixed top-11 md:top-16 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-2xl z-40 md:hidden">
             <div className="container mx-auto px-4 py-6">
               <nav id="landing-navigation" className="flex flex-col gap-2">
                 {navItems.map((item) => (
@@ -366,7 +362,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
       )}
 
       {/* Spacer to prevent content jump when navbar is fixed */}
-      <div className="h-14 md:h-20"></div>
+      <div className="h-11 md:h-16"></div>
     </>
   );
 }

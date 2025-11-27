@@ -84,7 +84,6 @@ import { SkeletonLoader, PreviewSkeletonLoader } from '@/components/offers/Skele
 import { FullscreenPreviewModal } from '@/components/offers/FullscreenPreviewModal';
 
 type Step1Form = {
-  industry: string;
   title: string;
   projectDetails: ProjectDetails;
   deadline: string;
@@ -109,7 +108,6 @@ type Activity = {
   unit: string;
   default_unit_price: number;
   default_vat: number;
-  industries: string[];
   reference_images?: string[] | null;
 };
 
@@ -268,7 +266,6 @@ const DEFAULT_PREVIEW_PLACEHOLDER_HTML =
 const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
 
 type OfferTextTemplatePayload = {
-  industry: string;
   title: string;
   projectDetails: ProjectDetails;
   deadline: string;
@@ -316,7 +313,6 @@ function parseTemplatePayload(value: unknown): OfferTextTemplatePayload | null {
   const style = obj.style === 'compact' || obj.style === 'detailed' ? obj.style : 'detailed';
 
   return {
-    industry: typeof obj.industry === 'string' ? obj.industry : '',
     title: typeof obj.title === 'string' ? obj.title : '',
     projectDetails,
     deadline: typeof obj.deadline === 'string' ? obj.deadline : '',
@@ -423,17 +419,8 @@ export default function NewOfferWizard() {
     [lockedPdfTemplates],
   );
 
-  const [availableIndustries, setAvailableIndustries] = useState<string[]>([
-    'Marketing',
-    'Informatika',
-    'Építőipar',
-    'Tanácsadás',
-    'Szolgáltatás',
-  ]);
-
   // 1) alapok
   const [form, setForm] = useState<Step1Form>({
-    industry: 'Marketing',
     title: '',
     projectDetails: { ...emptyProjectDetails },
     deadline: '',
@@ -989,10 +976,6 @@ export default function NewOfferWizard() {
       if (!active) {
         return;
       }
-      if (prof?.industries?.length) {
-        setAvailableIndustries(prof.industries);
-        setForm((f) => ({ ...f, industry: prof.industries?.[0] ?? f.industry }));
-      }
       const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setPlan(normalizedPlan);
       setProfileCompanyName(typeof prof?.company_name === 'string' ? prof.company_name : '');
@@ -1319,7 +1302,6 @@ export default function NewOfferWizard() {
 
       setForm((prev) => ({
         ...prev,
-        industry: template.industry,
         title: template.title,
         projectDetails: { ...template.projectDetails },
         deadline: template.deadline,
@@ -1423,7 +1405,6 @@ export default function NewOfferWizard() {
       }
 
       const payload: OfferTextTemplatePayload = {
-        industry: form.industry,
         title: trimmedTitle,
         projectDetails: normalizedDetails,
         deadline: form.deadline.trim(),
@@ -1491,7 +1472,6 @@ export default function NewOfferWizard() {
     [
       form.brandVoice,
       form.deadline,
-      form.industry,
       form.language,
       form.projectDetails,
       form.style,
@@ -1547,7 +1527,6 @@ export default function NewOfferWizard() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            industry: form.industry,
             title: form.title,
             projectDetails: normalizedDetails,
             deadline: form.deadline,
@@ -1720,7 +1699,6 @@ export default function NewOfferWizard() {
     form.deadline,
     form.formality,
     form.projectDetails,
-    form.industry,
     form.language,
     form.style,
     form.title,
@@ -2103,7 +2081,6 @@ export default function NewOfferWizard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: form.title,
-            industry: form.industry,
             projectDetails: normalizedDetails,
             deadline: form.deadline,
             language: form.language,
@@ -2526,20 +2503,6 @@ export default function NewOfferWizard() {
                       </p>
                     </div>
                     <div className="grid gap-6">
-                      {form.style === 'detailed' ? (
-                        <Select
-                          label={t('offers.wizard.forms.details.industryLabel')}
-                          value={form.industry}
-                          onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-                        >
-                          {availableIndustries.map((ind) => (
-                            <option key={ind} value={ind}>
-                              {ind}
-                            </option>
-                          ))}
-                        </Select>
-                      ) : null}
-
                       <Input
                         label={t('offers.wizard.forms.details.titleLabel')}
                         placeholder={t('offers.wizard.forms.details.titlePlaceholder')}
@@ -2769,7 +2732,6 @@ export default function NewOfferWizard() {
                 rows={rows}
                 onRowsChange={setRows}
                 activities={activities}
-                industry={form.industry}
                 {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
                 client={client}
                 onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
@@ -3129,10 +3091,6 @@ export default function NewOfferWizard() {
                       <div className="flex items-center justify-between gap-4">
                         <dt className="text-slate-500">Cím</dt>
                         <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-slate-500">Iparág</dt>
-                        <dd className="font-medium text-slate-800">{form.industry}</dd>
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <dt className="text-slate-500">Címzett</dt>

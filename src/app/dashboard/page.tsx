@@ -66,7 +66,7 @@ import { createClientLogger } from '@/lib/clientLogger';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
-const SORT_BY_OPTIONS = ['created', 'status', 'title', 'recipient', 'industry'] as const;
+const SORT_BY_OPTIONS = ['created', 'status', 'title', 'recipient'] as const;
 type SortByOption = (typeof SORT_BY_OPTIONS)[number];
 const SORT_DIRECTION_OPTIONS = ['desc', 'asc'] as const;
 type SortDirectionOption = (typeof SORT_DIRECTION_OPTIONS)[number];
@@ -202,7 +202,6 @@ export default function DashboardPage() {
   const [teamMembers, setTeamMembers] = useState<Array<{ user_id: string; email: string | null }>>(
     [],
   );
-  const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -416,7 +415,7 @@ export default function DashboardPage() {
       let query = sb
         .from('offers')
         .select(
-          'id,title,industry,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name ),created_by_user:created_by ( id, email ),updated_by_user:updated_by ( id, email )',
+          'id,title,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name ),created_by_user:created_by ( id, email ),updated_by_user:updated_by ( id, email )',
           { count: 'exact' },
         );
 
@@ -490,7 +489,6 @@ export default function DashboardPage() {
         return {
           id: String(entry.id),
           title: typeof entry.title === 'string' ? entry.title : '',
-          industry: typeof entry.industry === 'string' ? entry.industry : '',
           status: (entry.status ?? 'draft') as Offer['status'],
           created_at: entry.created_at ?? null,
           sent_at: entry.sent_at ?? null,
@@ -826,14 +824,6 @@ export default function DashboardPage() {
     rootMargin: '200px', // Start loading 200px before reaching bottom
   });
 
-  const industries = useMemo(() => {
-    const s = new Set<string>();
-    offers.forEach((o) => {
-      if (o.industry) s.add(o.industry);
-    });
-    return Array.from(s).sort();
-  }, [offers]);
-
   async function applyPatch(offer: Offer, patch: Partial<Offer>) {
     setUpdatingId(offer.id);
     try {
@@ -1040,7 +1030,6 @@ export default function DashboardPage() {
     }
 
     if (statusFilter !== 'all') list = list.filter((o) => o.status === statusFilter);
-    if (industryFilter !== 'all') list = list.filter((o) => o.industry === industryFilter);
 
     list.sort((a, b) => {
       const dir = sortDir === 'asc' ? 1 : -1;
@@ -1053,8 +1042,6 @@ export default function DashboardPage() {
           return (
             dir * (a.recipient?.company_name || '').localeCompare(b.recipient?.company_name || '')
           );
-        case 'industry':
-          return dir * (a.industry || '').localeCompare(b.industry || '');
         case 'created':
         default:
           return (
@@ -1064,7 +1051,7 @@ export default function DashboardPage() {
     });
 
     return list;
-  }, [offers, q, statusFilter, industryFilter, sortBy, sortDir]);
+  }, [offers, q, statusFilter, sortBy, sortDir]);
 
   /** Metrikák (enhanced with previous period comparison) - filtered by KPI scope */
   const metricsOffers = useMemo(() => {
@@ -1223,7 +1210,6 @@ export default function DashboardPage() {
             const newOffer: Offer = {
               id: String(inserted.id),
               title: typeof inserted.title === 'string' ? inserted.title : '',
-              industry: typeof inserted.industry === 'string' ? inserted.industry : '',
               status: (inserted.status ?? 'draft') as Offer['status'],
               created_at: inserted.created_at ?? null,
               sent_at: inserted.sent_at ?? null,
@@ -1869,9 +1855,7 @@ export default function DashboardPage() {
                         !q.trim() ||
                         o.title?.toLowerCase().includes(q.toLowerCase()) ||
                         (o.recipient?.company_name || '').toLowerCase().includes(q.toLowerCase());
-                      const matchesIndustry =
-                        industryFilter === 'all' || o.industry === industryFilter;
-                      return matchesSearch && matchesIndustry;
+                      return matchesSearch;
                     });
                     const count =
                       status === 'all'
@@ -2016,22 +2000,6 @@ export default function DashboardPage() {
                         </Select>
                       </div>
                     )}
-                    {industries.length > 0 && (
-                      <Select
-                        label={t('dashboard.filters.industry.label')}
-                        value={industryFilter}
-                        onChange={(e) => setIndustryFilter(e.target.value)}
-                        className="min-w-[180px]"
-                        wrapperClassName="flex-1 sm:flex-none"
-                      >
-                        <option value="all">{t('dashboard.filters.industry.options.all')}</option>
-                        {industries.map((ind) => (
-                          <option key={ind} value={ind}>
-                            {ind}
-                          </option>
-                        ))}
-                      </Select>
-                    )}
                     <Select
                       label={t('dashboard.filters.sortBy.label')}
                       value={sortBy}
@@ -2049,9 +2017,6 @@ export default function DashboardPage() {
                       <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
                       <option value="recipient">
                         {t('dashboard.filters.sortBy.options.recipient')}
-                      </option>
-                      <option value="industry">
-                        {t('dashboard.filters.sortBy.options.industry')}
                       </option>
                     </Select>
                     <Select
@@ -2083,7 +2048,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Active Filters Summary */}
-                {(q.trim() || statusFilter !== 'all' || industryFilter !== 'all') && (
+                {(q.trim() || statusFilter !== 'all') && (
                   <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
                       {t('dashboard.filters.active')}:
@@ -2114,19 +2079,6 @@ export default function DashboardPage() {
                         </button>
                       </span>
                     )}
-                    {industryFilter !== 'all' && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
-                        {t('dashboard.filters.industry.label')}: {industryFilter}
-                        <button
-                          type="button"
-                          onClick={() => setIndustryFilter('all')}
-                          className="rounded-full hover:bg-border/60 p-0.5 transition"
-                          aria-label={t('dashboard.filters.remove')}
-                        >
-                          <XMarkIcon className="h-3 w-3" />
-                        </button>
-                      </span>
-                    )}
                     <Button
                       type="button"
                       variant="ghost"
@@ -2134,7 +2086,6 @@ export default function DashboardPage() {
                       onClick={() => {
                         setQ('');
                         setStatusFilter('all');
-                        setIndustryFilter('all');
                       }}
                       className="text-xs"
                     >
@@ -2219,7 +2170,6 @@ export default function DashboardPage() {
                       onClick={() => {
                         setQ('');
                         setStatusFilter('all');
-                        setIndustryFilter('all');
                       }}
                       className="min-w-[140px]"
                     >

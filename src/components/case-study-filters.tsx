@@ -64,7 +64,6 @@ function FilterDropdown({ label, options, selected, onSelect }: FilterDropdownPr
 }
 
 export interface CaseStudyFilters {
-  industry: string;
   companySize: string;
   resultsType: string;
   useCase: string;
@@ -75,15 +74,6 @@ interface CaseStudyFiltersProps {
   onFiltersChange: (filters: CaseStudyFilters) => void;
   resultCount: number;
 }
-
-const industryOptions: FilterOption[] = [
-  { id: 'all', label: 'Összes' },
-  { id: 'marketing', label: 'Marketing' },
-  { id: 'it', label: 'IT & Szoftverfejlesztés' },
-  { id: 'creative', label: 'Kreatív' },
-  { id: 'consulting', label: 'Tanácsadás' },
-  { id: 'construction', label: 'Építőipar' },
-];
 
 const companySizeOptions: FilterOption[] = [
   { id: 'all', label: 'Összes méret' },
@@ -116,7 +106,6 @@ export function CaseStudyFiltersComponent({
   resultCount,
 }: CaseStudyFiltersProps) {
   const activeFilters = [
-    filters.industry !== 'all' && filters.industry,
     filters.companySize !== 'all' && filters.companySize,
     filters.resultsType !== 'all' && filters.resultsType,
     filters.useCase !== 'all' && filters.useCase,
@@ -124,7 +113,6 @@ export function CaseStudyFiltersComponent({
 
   const clearFilters = () => {
     onFiltersChange({
-      industry: 'all',
       companySize: 'all',
       resultsType: 'all',
       useCase: 'all',
@@ -133,13 +121,7 @@ export function CaseStudyFiltersComponent({
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-      <div className="grid md:grid-cols-4 gap-4 mb-4">
-        <FilterDropdown
-          label="Iparág"
-          options={industryOptions}
-          selected={filters.industry}
-          onSelect={(id) => onFiltersChange({ ...filters, industry: id })}
-        />
+      <div className="grid md:grid-cols-3 gap-4 mb-4">
         <FilterDropdown
           label="Cégméret"
           options={companySizeOptions}
@@ -165,12 +147,7 @@ export function CaseStudyFiltersComponent({
         <div className="mt-4 flex flex-wrap gap-2 items-center">
           <span className="text-sm text-gray-600">Aktív szűrők:</span>
           {activeFilters.map((filter) => {
-            const allOptions = [
-              ...industryOptions,
-              ...companySizeOptions,
-              ...resultsTypeOptions,
-              ...useCaseOptions,
-            ];
+            const allOptions = [...companySizeOptions, ...resultsTypeOptions, ...useCaseOptions];
             const option = allOptions.find((opt) => opt.id === filter);
             return (
               <div
@@ -181,9 +158,7 @@ export function CaseStudyFiltersComponent({
                 <button
                   onClick={() => {
                     const newFilters = { ...filters };
-                    if (industryOptions.find((opt) => opt.id === filter)) {
-                      newFilters.industry = 'all';
-                    } else if (companySizeOptions.find((opt) => opt.id === filter)) {
+                    if (companySizeOptions.find((opt) => opt.id === filter)) {
                       newFilters.companySize = 'all';
                     } else if (resultsTypeOptions.find((opt) => opt.id === filter)) {
                       newFilters.resultsType = 'all';

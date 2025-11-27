@@ -23,12 +23,10 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
-  PaintBrushIcon,
   CubeIcon,
   DocumentTextIcon,
   LockClosedIcon,
   ChatBubbleLeftRightIcon,
-  EnvelopeIcon,
   ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
@@ -81,7 +79,6 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile>({
-    industries: [],
     offer_template: DEFAULT_OFFER_TEMPLATE_ID,
   });
   const [plan, setPlan] = useState<SubscriptionPlan>('free');
@@ -89,12 +86,16 @@ export default function SettingsPage() {
   const [profileLoadError, setProfileLoadError] = useState<Error | null>(null);
 
   const [acts, setActs] = useState<ActivityRow[]>([]);
-  const [newAct, setNewAct] = useState({
+  const [newAct, setNewAct] = useState<{
+    name: string;
+    unit: string;
+    price: number;
+    vat: number;
+  }>({
     name: '',
     unit: 'db',
     price: 0,
     vat: 27,
-    industries: [] as string[],
   });
   const [actSaving, setActSaving] = useState(false);
   const [guarantees, setGuarantees] = useState<GuaranteeRow[]>([]);
@@ -112,7 +113,6 @@ export default function SettingsPage() {
       updated_at: string;
     }>
   >([]);
-  const [newIndustry, setNewIndustry] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoUploadProgress, setLogoUploadProgress] = useState<number | null>(null);
   const [linkingGoogle, setLinkingGoogle] = useState(false);
@@ -219,16 +219,9 @@ export default function SettingsPage() {
     const hash = window.location.hash.replace('#', '');
     if (
       hash &&
-      [
-        'profile',
-        'security',
-        'branding',
-        'templates',
-        'activities',
-        'guarantees',
-        'testimonials',
-        'notifications',
-      ].includes(hash)
+      ['profile', 'security', 'templates', 'activities', 'guarantees', 'testimonials'].includes(
+        hash,
+      )
     ) {
       setActiveTab(hash);
     }
@@ -244,11 +237,6 @@ export default function SettingsPage() {
       id: 'security',
       label: 'Biztonság',
       icon: <LockClosedIcon className="h-5 w-5" />,
-    },
-    {
-      id: 'branding',
-      label: 'Branding',
-      icon: <PaintBrushIcon className="h-5 w-5" />,
     },
     {
       id: 'templates',
@@ -269,11 +257,6 @@ export default function SettingsPage() {
       id: 'testimonials',
       label: 'Ajánlások',
       icon: <ChatBubbleLeftRightIcon className="h-5 w-5" />,
-    },
-    {
-      id: 'notifications',
-      label: 'Értesítések',
-      icon: <EnvelopeIcon className="h-5 w-5" />,
     },
   ];
 
@@ -412,11 +395,6 @@ export default function SettingsPage() {
                 company_tax_id: profile.company_tax_id ?? '',
                 company_phone: profile.company_phone ?? '',
                 company_email: profile.company_email?.trim() || email || '',
-                industries: Array.isArray(profile.industries)
-                  ? profile.industries
-                      .map((industry) => industry.trim())
-                      .filter((industry) => industry.length > 0)
-                  : [],
                 plan,
                 brand_logo_path: profile.brand_logo_path ?? null,
                 brand_logo_url: profile.brand_logo_url ?? null,
@@ -506,11 +484,6 @@ export default function SettingsPage() {
         return;
       }
       setProfileLoadError(null);
-      const industries = Array.isArray(prof?.industries)
-        ? (prof.industries as string[])
-            .map((industry) => (typeof industry === 'string' ? industry.trim() : ''))
-            .filter((industry) => industry.length > 0)
-        : [];
       const normalizedPlan = resolveEffectivePlan(prof?.plan ?? null);
       setHasProfile(Boolean(prof));
       setPlan(normalizedPlan);
@@ -524,7 +497,6 @@ export default function SettingsPage() {
         company_tax_id: prof?.company_tax_id ?? '',
         company_phone: prof?.company_phone ?? '',
         company_email: prof?.company_email ?? user.email ?? '',
-        industries,
         brand_logo_url: prof?.brand_logo_url ?? null,
         brand_logo_path: prof?.brand_logo_path ?? null,
         brand_color_primary: prof?.brand_color_primary ?? '#1c274c',
@@ -534,11 +506,10 @@ export default function SettingsPage() {
         enable_testimonials: prof?.enable_testimonials ?? false,
         default_activity_id: prof?.default_activity_id ?? null,
       });
-      setNewAct((prev) => ({ ...prev, industries }));
 
       const { data: list } = await supabase
         .from('activities')
-        .select('id,name,unit,default_unit_price,default_vat,industries,reference_images')
+        .select('id,name,unit,default_unit_price,default_vat,reference_images')
         .eq('user_id', user.id)
         .order('name');
       if (!active) {
@@ -597,11 +568,6 @@ export default function SettingsPage() {
       const primary = normalizeBrandHex(profile.brand_color_primary);
       const secondary = normalizeBrandHex(profile.brand_color_secondary);
       const templateId = enforceTemplateForPlan(profile.offer_template ?? null, plan);
-      const sanitizedIndustries = Array.isArray(profile.industries)
-        ? profile.industries
-            .map((industry) => industry.trim())
-            .filter((industry) => industry.length > 0)
-        : [];
       if (scope === 'branding') {
         const mutationAction = resolveProfileMutationAction({
           hasProfile,
@@ -647,7 +613,6 @@ export default function SettingsPage() {
                 company_tax_id: profile.company_tax_id ?? '',
                 company_phone: profile.company_phone ?? '',
                 company_email: profile.company_email?.trim() || email || '',
-                industries: sanitizedIndustries,
                 plan,
                 brand_logo_path: profile.brand_logo_path ?? null,
                 brand_logo_url: profile.brand_logo_url ?? null,
@@ -708,7 +673,6 @@ export default function SettingsPage() {
             company_tax_id: profile.company_tax_id ?? '',
             company_phone: profile.company_phone ?? '',
             company_email: profile.company_email ?? '',
-            industries: sanitizedIndustries,
             brand_logo_path: profile.brand_logo_path ?? null,
             brand_logo_url: profile.brand_logo_url ?? null,
             brand_color_primary: primary,
@@ -738,7 +702,6 @@ export default function SettingsPage() {
               company_tax_id: profile.company_tax_id ?? '',
               company_phone: profile.company_phone ?? '',
               company_email: profile.company_email ?? '',
-              industries: sanitizedIndustries,
               plan,
               brand_logo_path: profile.brand_logo_path ?? null,
               brand_logo_url: profile.brand_logo_url ?? null,
@@ -765,7 +728,6 @@ export default function SettingsPage() {
         brand_logo_url: profileData?.brand_logo_url ?? prev.brand_logo_url ?? null,
         brand_color_primary: profileData?.brand_color_primary ?? primary ?? null,
         brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
-        industries: sanitizedIndustries,
         offer_template: profileData?.offer_template ?? templateId,
         enable_reference_photos: profile.enable_reference_photos ?? false,
         enable_testimonials: profile.enable_testimonials ?? false,
@@ -1005,7 +967,6 @@ export default function SettingsPage() {
           unit: newAct.unit || 'db',
           default_unit_price: Number(newAct.price) || 0,
           default_vat: Number(newAct.vat) || 27,
-          industries: newAct.industries || [],
         })
         .select();
       setActs((prev) =>
@@ -1013,7 +974,7 @@ export default function SettingsPage() {
           a.name.localeCompare(b.name),
         ),
       );
-      setNewAct({ name: '', unit: 'db', price: 0, vat: 27, industries: profile.industries || [] });
+      setNewAct({ name: '', unit: 'db', price: 0, vat: 27 });
     } finally {
       setActSaving(false);
     }
@@ -1183,46 +1144,6 @@ export default function SettingsPage() {
     }
   }
 
-  function toggleIndustry(rawTarget: string) {
-    const target = rawTarget.trim();
-    if (!target) return;
-
-    setProfile((p) => {
-      const sanitized = (p.industries || []).map((industry) => industry.trim()).filter(Boolean);
-      const set = new Set(sanitized);
-      if (set.has(target)) {
-        set.delete(target);
-      } else {
-        set.add(target);
-      }
-      return { ...p, industries: Array.from(set) };
-    });
-  }
-
-  function toggleNewActIndustry(target: string) {
-    setNewAct((a) => {
-      const set = new Set(a.industries);
-      if (set.has(target)) {
-        set.delete(target);
-      } else {
-        set.add(target);
-      }
-      return { ...a, industries: Array.from(set) };
-    });
-  }
-
-  function handleManualIndustry(value: string) {
-    const val = value.trim();
-    if (!val) return;
-    setProfile((p) => {
-      const sanitized = (p.industries || []).map((industry) => industry.trim()).filter(Boolean);
-      const set = new Set(sanitized);
-      set.add(val);
-      return { ...p, industries: Array.from(set) };
-    });
-    setNewIndustry('');
-  }
-
   if (loading) {
     return (
       <AppFrame title={t('settings.title')} description={t('settings.loadingDescription')}>
@@ -1265,25 +1186,26 @@ export default function SettingsPage() {
             ) : null
           }
         >
-          <div className="mx-auto max-w-7xl px-6 py-8 md:py-10">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-10">
             {/* Tab navigation */}
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-sm shadow-xl w-full">
               {/* Subtle inner glow */}
               <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-turquoise-50/20 pointer-events-none"></div>
 
               {/* Tab header */}
               <div className="relative z-10 border-b border-slate-200/60 bg-gradient-to-b from-slate-50/50 to-white/50">
-                <div className="flex items-center gap-2 overflow-x-auto px-6 scrollbar-hide">
+                <div className="flex items-center gap-2 overflow-x-auto px-4 sm:px-6 scrollbar-hide">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
                       type="button"
                       onClick={() => handleTabChange(tab.id)}
-                      className={`group relative flex items-center gap-2 whitespace-nowrap px-6 py-4 font-semibold transition-all duration-300 flex-shrink-0 ${
+                      className={`group relative flex items-center gap-2 whitespace-nowrap px-4 sm:px-6 py-4 font-semibold transition-all duration-300 flex-shrink-0 ${
                         activeTab === tab.id
                           ? 'text-primary'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
+                      aria-label={tab.label}
                     >
                       {/* Active indicator with gradient */}
                       {activeTab === tab.id && (
@@ -1296,8 +1218,14 @@ export default function SettingsPage() {
                         }`}
                       ></span>
                       <span className="relative z-10 flex items-center gap-2">
-                        {tab.icon}
-                        <span>{tab.label}</span>
+                        <span className="flex-shrink-0">{tab.icon}</span>
+                        <span className="whitespace-nowrap">{tab.label}</span>
+                        {activeTab === tab.id && (
+                          <span
+                            className="ml-1 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"
+                            aria-hidden
+                          />
+                        )}
                       </span>
                     </button>
                   ))}
@@ -1305,29 +1233,52 @@ export default function SettingsPage() {
               </div>
 
               {/* Tab content */}
-              <div className="relative z-10 p-8 md:p-10 lg:p-12">
+              <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10 w-full">
                 <div
                   className={`transition-all duration-300 ${
                     activeTab === 'profile' ? 'opacity-100 translate-y-0' : 'hidden'
                   }`}
                 >
                   {activeTab === 'profile' && (
-                    <SettingsCompanySection
-                      profile={profile}
-                      errors={errors.general}
-                      newIndustry={newIndustry}
-                      onProfileChange={setProfile}
-                      onNewIndustryChange={setNewIndustry}
-                      onToggleIndustry={toggleIndustry}
-                      onAddManualIndustry={handleManualIndustry}
-                      onSave={() => saveProfile('all')}
-                      saving={saving}
-                    />
+                    <div className="space-y-8 w-full">
+                      <SettingsCompanySection
+                        profile={profile}
+                        errors={errors.general}
+                        onProfileChange={setProfile}
+                        onSave={() => saveProfile('all')}
+                        saving={saving}
+                      />
+                      <div className="border-t border-slate-200 pt-8">
+                        <SettingsBrandingSection
+                          profile={profile}
+                          plan={plan}
+                          errors={errors.branding}
+                          logoUploading={logoUploading}
+                          logoUploadProgress={logoUploadProgress}
+                          onProfileChange={setProfile}
+                          onTriggerLogoUpload={triggerLogoUpload}
+                          onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
+                          onSave={() => saveProfile('branding')}
+                          onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                          saving={saving}
+                        />
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/svg+xml"
+                          className="hidden"
+                          onChange={handleLogoChange}
+                        />
+                      </div>
+                      <div className="border-t border-slate-200 pt-8">
+                        <SettingsEmailSubscriptionSection />
+                      </div>
+                    </div>
                   )}
                 </div>
 
                 <div
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 w-full ${
                     activeTab === 'security' ? 'opacity-100 translate-y-0' : 'hidden'
                   }`}
                 >
@@ -1342,38 +1293,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div
-                  className={`transition-all duration-300 ${
-                    activeTab === 'branding' ? 'opacity-100 translate-y-0' : 'hidden'
-                  }`}
-                >
-                  {activeTab === 'branding' && (
-                    <div className="space-y-6">
-                      <SettingsBrandingSection
-                        profile={profile}
-                        plan={plan}
-                        errors={errors.branding}
-                        logoUploading={logoUploading}
-                        logoUploadProgress={logoUploadProgress}
-                        onProfileChange={setProfile}
-                        onTriggerLogoUpload={triggerLogoUpload}
-                        onCancelLogoUpload={() => logoUploadAbortControllerRef.current?.abort()}
-                        onSave={() => saveProfile('branding')}
-                        onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-                        saving={saving}
-                      />
-                      <input
-                        ref={logoInputRef}
-                        type="file"
-                        accept="image/png,image/jpeg,image/svg+xml"
-                        className="hidden"
-                        onChange={handleLogoChange}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 w-full ${
                     activeTab === 'templates' ? 'opacity-100 translate-y-0' : 'hidden'
                   }`}
                 >
@@ -1387,7 +1307,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 w-full ${
                     activeTab === 'activities' ? 'opacity-100 translate-y-0' : 'hidden'
                   }`}
                 >
@@ -1402,7 +1322,6 @@ export default function SettingsPage() {
                       collapseDisabled={hasActivityContent}
                       onCollapsedChange={(value) => setActivitiesCollapsed(value)}
                       onNewActivityChange={setNewAct}
-                      onToggleNewActivityIndustry={toggleNewActIndustry}
                       onAddActivity={addActivity}
                       onDeleteActivity={deleteActivity}
                       onActivityImagesChange={async (activityId, imagePaths) => {
@@ -1465,7 +1384,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 w-full ${
                     activeTab === 'guarantees' ? 'opacity-100 translate-y-0' : 'hidden'
                   }`}
                 >
@@ -1487,7 +1406,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 w-full ${
                     activeTab === 'testimonials' ? 'opacity-100 translate-y-0' : 'hidden'
                   }`}
                 >
@@ -1583,18 +1502,6 @@ export default function SettingsPage() {
                           </div>
                         )}
                       </Card>
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  className={`transition-all duration-300 ${
-                    activeTab === 'notifications' ? 'opacity-100 translate-y-0' : 'hidden'
-                  }`}
-                >
-                  {activeTab === 'notifications' && (
-                    <div className="space-y-6">
-                      <SettingsEmailSubscriptionSection />
                     </div>
                   )}
                 </div>

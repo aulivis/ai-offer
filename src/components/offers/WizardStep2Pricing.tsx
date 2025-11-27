@@ -20,7 +20,6 @@ type Activity = {
   unit: string;
   default_unit_price: number;
   default_vat: number;
-  industries: string[];
   reference_images?: string[] | null;
 };
 
@@ -47,7 +46,6 @@ type WizardStep2PricingProps = {
   rows: PriceRow[];
   onRowsChange: (rows: PriceRow[]) => void;
   activities: Activity[];
-  industry: string;
   validationError?: string;
   client: ClientForm;
   onClientChange: (client: Partial<ClientForm>) => void;
@@ -79,7 +77,6 @@ export function WizardStep2Pricing({
   rows,
   onRowsChange,
   activities,
-  industry,
   validationError,
   client,
   onClientChange,
@@ -186,10 +183,8 @@ export function WizardStep2Pricing({
   );
 
   const filteredActivities = useMemo(() => {
-    return activities.filter(
-      (a) => (a.industries || []).length === 0 || a.industries.includes(industry),
-    );
-  }, [activities, industry]);
+    return activities;
+  }, [activities]);
 
   // Check if first row matches a default activity with reference images
   useEffect(() => {
@@ -355,7 +350,6 @@ export function WizardStep2Pricing({
           unit: row.unit || 'db',
           default_unit_price: Number(row.unitPrice) || 0,
           default_vat: Number(row.vat) || 27,
-          industries: [industry],
         })
         .select();
 
@@ -435,10 +429,6 @@ export function WizardStep2Pricing({
               <h3 className="text-base font-semibold text-slate-900">
                 {t('offers.wizard.forms.details.quickInsertTitle')}
               </h3>
-              <p className="text-xs text-slate-600 mt-1">
-                {t('offers.wizard.forms.details.quickInsertIndustryLabel')}:{' '}
-                <span className="font-semibold">{industry}</span>
-              </p>
             </div>
             <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               {t('wizard.quota.itemCount', { count: filteredActivities.length })}

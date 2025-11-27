@@ -54,7 +54,7 @@ export function SettingsBrandingSection({
   const hasBrandingErrors = Object.keys(errors).length > 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full">
       <div className="mb-8">
         <div className="flex items-center gap-4">
           <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
@@ -69,7 +69,7 @@ export function SettingsBrandingSection({
           </div>
         </div>
       </div>
-      <div className="space-y-8">
+      <div className="space-y-8 w-full">
         <div className="grid gap-6 md:grid-cols-2">
           <ColorPicker
             label={t('settings.branding.primaryLabel')}
