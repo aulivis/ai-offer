@@ -332,7 +332,6 @@ describe('POST /api/ai-generate', () => {
     const response = await POST(
       createRequest({
         title: 'Ajánlat címe',
-        industry: 'Marketing',
         projectDetails: {
           overview: 'Részletes leírás',
           deliverables: '',
@@ -364,7 +363,6 @@ describe('POST /api/ai-generate', () => {
 
     const request = createRequest({
       title: 'Ajánlat címe',
-      industry: 'Marketing',
       projectDetails: {
         overview: 'Részletes leírás',
         deliverables: '',
@@ -395,7 +393,6 @@ describe('POST /api/ai-generate', () => {
       id: 'offer-uuid',
       user_id: 'user-123',
       title: 'Ajánlat címe',
-      industry: 'Marketing',
       recipient_id: null,
       inputs: {
         projectDetails: {
@@ -438,7 +435,6 @@ describe('POST /api/ai-generate', () => {
 
     const request = createRequest({
       title: 'Ajánlat címe',
-      industry: 'Marketing',
       projectDetails: {
         overview: 'Részletes leírás',
         deliverables: '',
@@ -489,7 +485,6 @@ describe('POST /api/ai-generate', () => {
 
     const request = createRequest({
       title: 'Ajánlat címe',
-      industry: 'Marketing',
       projectDetails: {
         overview: 'Részletes leírás',
         deliverables: '',
@@ -529,7 +524,6 @@ describe('POST /api/ai-generate', () => {
 
     const request = createRequest({
       title: 'Ajánlat címe',
-      industry: 'Marketing',
       projectDetails: {
         overview: 'Részletes leírás',
         deliverables: '',
@@ -571,7 +565,6 @@ describe('POST /api/ai-generate', () => {
 
     const request = createRequest({
       title: 'Ajánlat címe',
-      industry: 'Marketing',
       projectDetails: {
         overview: 'Részletes leírás',
         deliverables: '',
@@ -627,7 +620,6 @@ describe('POST /api/ai-generate', () => {
     const response = await POST(
       createRequest({
         title: 'Ajánlat címe',
-        industry: 'Marketing',
         projectDetails: {
           overview: 'Részletes leírás',
           deliverables: '',
@@ -670,7 +662,6 @@ describe('POST /api/ai-generate', () => {
     const request = createRequest(
       {
         title: 'Ajánlat címe',
-        industry: 'Marketing',
         projectDetails: {
           overview: 'Részletes leírás',
           deliverables: '',
@@ -711,7 +702,6 @@ describe('POST /api/ai-generate', () => {
     const request = createRequest(
       {
         title: 'Ajánlat címe',
-        industry: 'Marketing',
         projectDetails: {
           overview: 'Részletes leírás',
           deliverables: '',

@@ -23,7 +23,6 @@ const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
 };
 
 type Step1Form = {
-  industry: string;
   title: string;
   projectDetails: ProjectDetails;
   deadline: string;
@@ -64,7 +63,6 @@ type WizardStep1DetailsProps = {
   onClientChange: (client: Partial<ClientForm>) => void;
   clientList: Client[];
   onClientSelect: (client: Client) => void;
-  availableIndustries: string[];
   validationErrors?: ValidationErrors;
   showClientDropdown: boolean;
   onClientDropdownToggle: (show: boolean) => void;
@@ -88,7 +86,6 @@ export function WizardStep1Details({
   onClientChange: _onClientChange,
   clientList: _clientList,
   onClientSelect: _onClientSelect,
-  availableIndustries,
   validationErrors,
   showClientDropdown: _showClientDropdown,
   onClientDropdownToggle: _onClientDropdownToggle,
@@ -315,20 +312,6 @@ export function WizardStep1Details({
           />
         </div>
         <div className="grid gap-4">
-          {form.style === 'detailed' && (
-            <Select
-              label={t('offers.wizard.forms.details.industryLabel')}
-              value={form.industry}
-              onChange={(e) => handleFieldChange('industry', e.target.value)}
-            >
-              {availableIndustries.map((ind) => (
-                <option key={ind} value={ind}>
-                  {ind}
-                </option>
-              ))}
-            </Select>
-          )}
-
           <Input
             label={t('offers.wizard.forms.details.titleLabel')}
             placeholder={t('offers.wizard.forms.details.titlePlaceholder')}

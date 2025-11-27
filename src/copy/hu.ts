@@ -348,12 +348,6 @@ export const hu = {
           all: 'Mind',
         },
       },
-      industry: {
-        label: 'Iparág',
-        options: {
-          all: 'Mind',
-        },
-      },
       sortBy: {
         label: 'Rendezés',
         options: {
@@ -361,7 +355,6 @@ export const hu = {
           status: 'Állapot',
           title: 'Ajánlat neve',
           recipient: 'Címzett',
-          industry: 'Iparág',
         },
       },
       sortDir: {
@@ -400,8 +393,6 @@ export const hu = {
     },
     offerCard: {
       created: 'Létrehozva',
-      industry: 'Iparág',
-      industryUnknown: 'Ismeretlen',
       export: 'Export',
       openPdf: 'PDF megnyitása',
       savePdf: 'PDF mentése',
@@ -1524,7 +1515,6 @@ export const hu = {
           sectionHeading: 'Projekt brief',
           sectionDescription:
             'Fogalmazd meg a legfontosabb hátteret, hogy az AI pontos ajánlatot készíthessen.',
-          industryLabel: 'Iparág',
           titleLabel: 'Ajánlat címe',
           titlePlaceholder: 'Pl. Weboldal fejlesztés',
           descriptionLabel: 'Projekt rövid leírása',
@@ -1624,7 +1614,6 @@ export const hu = {
           clientFieldPhone: 'Telefon',
           clientFieldEmail: 'E-mail',
           quickInsertTitle: 'Gyors tétel beszúrása',
-          quickInsertIndustryLabel: 'Iparág',
           previewBadge: 'PDF nézet',
           previewGenerate: 'AI előnézet generálása',
           previewCountdownLabel: 'Kb. {seconds} mp van hátra…',
@@ -1661,7 +1650,6 @@ export const hu = {
           helper: 'A PDF generálása után az ajánlat megjelenik a listádban.',
           fields: {
             title: 'Cím',
-            industry: 'Iparág',
             recipient: 'Címzett',
             style: 'Stílus',
             styleCompact: 'Kompakt',

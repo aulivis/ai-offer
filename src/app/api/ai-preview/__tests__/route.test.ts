@@ -81,7 +81,6 @@ function createRequest(overrides: Record<string, unknown> = {}): AuthenticatedNe
   } satisfies Record<string, string>;
 
   const payload = {
-    industry: 'Tech',
     title: 'Sample',
     projectDetails: {
       overview: 'Desc',
@@ -152,7 +151,6 @@ describe('ai-preview route streaming', () => {
     const response = await POST(
       createRequest({
         title: '   ',
-        industry: '',
         projectDetails: {
           overview: '',
           deliverables: '',

@@ -10,7 +10,6 @@ import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 import UserCircleIcon from '@heroicons/react/24/outline/UserCircleIcon';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
-import Squares2X2Icon from '@heroicons/react/24/outline/Squares2X2Icon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
@@ -106,7 +105,7 @@ export function OfferListItem({
               <BuildingOffice2Icon
                 aria-hidden="true"
                 className="h-4 w-4 text-primary"
-                title={companyName || t('dashboard.offerCard.industryUnknown')}
+                title={companyName || ''}
               />
             )}
           </div>
@@ -128,13 +127,6 @@ export function OfferListItem({
                     <span className="text-fg-muted/50">•</span>
                     <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
                     <span>{formatDate(offer.created_at)}</span>
-                  </>
-                )}
-                {offer.industry && (
-                  <>
-                    <span className="text-fg-muted/50">•</span>
-                    <Squares2X2Icon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-                    <span>{offer.industry}</span>
                   </>
                 )}
               </div>

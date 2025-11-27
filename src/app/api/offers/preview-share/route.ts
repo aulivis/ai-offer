@@ -90,7 +90,6 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       id: offerId,
       user_id: request.user.id,
       title: safeTitle,
-      industry: 'Preview',
       recipient_id: null,
       inputs: {
         projectDetails: normalizedDetails,

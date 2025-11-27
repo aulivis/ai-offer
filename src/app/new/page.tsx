@@ -877,7 +877,7 @@ export default function NewOfferWizard() {
     if (!user) return;
     const { data: acts } = await sb
       .from('activities')
-      .select('id,name,unit,default_unit_price,default_vat,industries,reference_images')
+      .select('id,name,unit,default_unit_price,default_vat,reference_images')
       .eq('user_id', user.id)
       .order('name');
     setActivities(acts || []);
@@ -969,7 +969,7 @@ export default function NewOfferWizard() {
       const { data: prof } = await sb
         .from('profiles')
         .select(
-          'industries, company_name, brand_color_primary, brand_color_secondary, brand_logo_path, brand_logo_url, plan, offer_template, default_activity_id',
+          'company_name, brand_color_primary, brand_color_secondary, brand_logo_path, brand_logo_url, plan, offer_template, default_activity_id',
         )
         .eq('id', user.id)
         .maybeSingle();
@@ -2362,7 +2362,6 @@ export default function NewOfferWizard() {
                   onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
                   clientList={clientList}
                   onClientSelect={pickClient}
-                  availableIndustries={availableIndustries}
                   validationErrors={validationErrors}
                   showClientDropdown={showClientDrop}
                   onClientDropdownToggle={setShowClientDrop}
