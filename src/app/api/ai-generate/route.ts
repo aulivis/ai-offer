@@ -643,18 +643,31 @@ const aiGenerateRequestSchema = z
 
 const IMG_TAG_REGEX = /<img\b[^>]*>/gi;
 
-function applyImageAssetsToHtml(
+async function applyImageAssetsToHtml(
   html: string,
   images: SanitizedImageAsset[],
-): {
+): Promise<{
   pdfHtml: string;
   storedHtml: string;
-} {
+}> {
   if (!images.length) {
     return { pdfHtml: html, storedHtml: html.replace(IMG_TAG_REGEX, '') };
   }
 
-  const imageMap = new Map(images.map((image) => [image.key, image]));
+  // Optimize images before embedding
+  const { optimizeImageDataUrlForPdf } = await import('@/lib/pdf/compression');
+  const optimizedImages = await Promise.all(
+    images.map(async (image) => {
+      const optimizedDataUrl = await optimizeImageDataUrlForPdf(image.dataUrl, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 85,
+      });
+      return { ...image, dataUrl: optimizedDataUrl };
+    }),
+  );
+
+  const imageMap = new Map(optimizedImages.map((image) => [image.key, image]));
   let pdfHtml = '';
   let storedHtml = '';
   let lastIndex = 0;
@@ -913,42 +926,94 @@ export const POST = withAuth(
             { status: 500 },
           );
         }
-        const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
 
-        const styleAddon =
-          style === 'compact'
-            ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
-            : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
+        // Check cache for identical requests
+        const { hashAiRequest, getCachedAiResponse, storeAiResponse, hashPrompt } = await import(
+          '@/lib/ai/cache'
+        );
+        const requestPayload = {
+          title: safeTitle,
+          projectDetails: sanitizedDetails,
+          deadline,
+          language,
+          brandVoice,
+          style,
+          formality,
+          testimonials,
+          schedule,
+          guarantees,
+        };
+        const requestHash = hashAiRequest(requestPayload);
 
-        const toneGuidance =
-          brandVoice === 'formal'
-            ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
-            : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+        // Try to get cached response
+        const cachedResponse = await getCachedAiResponse(sb, user.id, requestHash, log);
+        if (cachedResponse) {
+          const cacheStartTime = Date.now();
 
-        const formalityGuidance =
-          formality === 'magázódás'
-            ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
-            : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+          log.info('Using cached AI response', {
+            requestHash,
+            cachedAt: cachedResponse.cachedAt,
+          });
+          aiHtml = cachedResponse.responseHtml;
+          if (cachedResponse.responseBlocks) {
+            // Restore structured sections from cache if available
+            structuredSections = cachedResponse.responseBlocks as OfferSections;
+          }
 
-        // Sanitize user inputs before passing to OpenAI
-        const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
-        const safeDeadline = sanitizeInput(deadline || '—');
+          // Record cache hit metrics
+          const { recordAiGeneration } = await import('@/lib/ai/metrics');
+          recordAiGeneration(
+            {
+              duration: Date.now() - cacheStartTime,
+              tokens: cachedResponse.tokenCount
+                ? { prompt: 0, completion: 0, total: cachedResponse.tokenCount }
+                : undefined,
+              model: 'gpt-4o-mini',
+              cacheHit: true,
+              retries: 0,
+            },
+            log,
+          );
+        }
 
-        const clientInfo = clientCompanyName
-          ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
-          : '';
-        const deadlineGuidance =
-          safeDeadline && safeDeadline !== '—'
-            ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
+        // If no cached response, generate new one
+        if (!cachedResponse) {
+          const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
+
+          const styleAddon =
+            style === 'compact'
+              ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
+              : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
+
+          const toneGuidance =
+            brandVoice === 'formal'
+              ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
+              : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+
+          const formalityGuidance =
+            formality === 'magázódás'
+              ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
+              : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+
+          // Sanitize user inputs before passing to OpenAI
+          const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
+          const safeDeadline = sanitizeInput(deadline || '—');
+
+          const clientInfo = clientCompanyName
+            ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
             : '';
+          const deadlineGuidance =
+            safeDeadline && safeDeadline !== '—'
+              ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
+              : '';
 
-        // Include testimonials in prompt if provided
-        const testimonialsSection =
-          testimonials && testimonials.length > 0
-            ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
-            : '';
+          // Include testimonials in prompt if provided
+          const testimonialsSection =
+            testimonials && testimonials.length > 0
+              ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
+              : '';
 
-        const userPrompt = `
+          const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
 Nyelv: ${normalizedLanguage}
@@ -974,76 +1039,140 @@ Különös figyelmet fordít a következőkre:
 ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelzések, használd fel őket a testimonials szakaszban' : ''}
 `;
 
-        try {
-          const response = await openai.responses.parse({
-            model: 'gpt-4o-mini',
-            temperature: 0.7, // Increased for more natural, creative but still professional output
-            input: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: userPrompt },
-            ],
-            text: { format: OFFER_SECTIONS_FORMAT },
-          });
+          try {
+            // Import retry utility and metrics
+            const { retryWithBackoff, DEFAULT_API_RETRY_CONFIG } = await import('@/lib/api/retry');
+            const { recordAiGeneration, extractTokenUsage } = await import('@/lib/ai/metrics');
 
-          structuredSections = response.output_parsed as OfferSections | null;
-          if (!structuredSections) {
-            throw new Error('Structured output missing');
-          }
+            // Track generation start time for metrics
+            const generationStartTime = Date.now();
+            let retryCount = 0;
 
-          aiHtml = sectionsToHtml(
-            structuredSections,
-            style === 'compact' ? 'compact' : 'detailed',
-            translator,
-          );
-        } catch (error) {
-          log.error('OpenAI structured output error', error);
+            // Wrap OpenAI API call with retry logic
+            const response = await retryWithBackoff(
+              () =>
+                openai.responses.parse({
+                  model: 'gpt-4o-mini',
+                  temperature: 0.7, // Increased for more natural, creative but still professional output
+                  input: [
+                    { role: 'system', content: SYSTEM_PROMPT },
+                    { role: 'user', content: userPrompt },
+                  ],
+                  text: { format: OFFER_SECTIONS_FORMAT },
+                }),
+              DEFAULT_API_RETRY_CONFIG,
+              (attempt, retryError, delayMs) => {
+                retryCount = attempt;
+                log.warn('OpenAI API call failed, retrying', {
+                  attempt,
+                  delayMs,
+                  error: retryError instanceof Error ? retryError.message : String(retryError),
+                });
+              },
+            );
 
-          // Handle specific API errors
-          if (error instanceof APIError) {
-            const status = typeof error.status === 'number' ? error.status : 500;
-            const errorMessage =
-              typeof error.message === 'string' && error.message.trim().length > 0
-                ? error.message
-                : error.error && typeof error.error === 'object'
-                  ? String((error.error as { message?: unknown }).message ?? 'OpenAI API hiba')
-                  : 'OpenAI API hiba';
+            structuredSections = response.output_parsed as OfferSections | null;
+            if (!structuredSections) {
+              throw new Error('Structured output missing');
+            }
 
-            // Handle 403 Forbidden errors specifically
-            if (status === 403) {
-              log.error('OpenAI API 403 Forbidden error', {
-                status: error.status,
-                code: error.code,
-                message: error.message,
-                type: error.type,
+            aiHtml = sectionsToHtml(
+              structuredSections,
+              style === 'compact' ? 'compact' : 'detailed',
+              translator,
+            );
+
+            // Record metrics
+            const generationDuration = Date.now() - generationStartTime;
+            const tokenUsage = extractTokenUsage(response as { usage?: unknown });
+
+            recordAiGeneration(
+              {
+                duration: generationDuration,
+                tokens: tokenUsage,
+                model: 'gpt-4o-mini',
+                cacheHit: false,
+                retries: retryCount,
+              },
+              log,
+            );
+
+            // Store response in cache for future requests
+            const fullPrompt = `${SYSTEM_PROMPT}\n\n${userPrompt}`;
+            const promptHash = hashPrompt(fullPrompt);
+
+            // Store asynchronously to not block response
+            storeAiResponse(
+              sb,
+              user.id,
+              requestHash,
+              promptHash,
+              aiHtml,
+              { ttlSeconds: 3600 }, // Cache for 1 hour
+              {
+                responseBlocks: structuredSections,
+                model: 'gpt-4o-mini',
+              },
+              log,
+            ).catch((cacheError) => {
+              log.warn('Failed to cache AI response (non-blocking)', {
+                error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+                requestHash,
               });
+            });
+          } catch (error) {
+            log.error('OpenAI structured output error', error);
+
+            // Handle specific API errors
+            if (error instanceof APIError) {
+              const status = typeof error.status === 'number' ? error.status : 500;
+              const errorMessage =
+                typeof error.message === 'string' && error.message.trim().length > 0
+                  ? error.message
+                  : error.error && typeof error.error === 'object'
+                    ? String((error.error as { message?: unknown }).message ?? 'OpenAI API hiba')
+                    : 'OpenAI API hiba';
+
+              // Handle 403 Forbidden errors specifically
+              if (status === 403) {
+                log.error('OpenAI API 403 Forbidden error', {
+                  status: error.status,
+                  code: error.code,
+                  message: error.message,
+                  type: error.type,
+                });
+                return NextResponse.json(
+                  {
+                    error:
+                      'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
+                  },
+                  { status: 403 },
+                );
+              }
+
+              // Handle other API errors
               return NextResponse.json(
-                {
-                  error:
-                    'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
-                },
-                { status: 403 },
+                { error: errorMessage || 'OpenAI API hiba történt. Próbáld újra később.' },
+                { status },
               );
             }
 
-            // Handle other API errors
+            // Handle non-API errors
             return NextResponse.json(
-              { error: errorMessage || 'OpenAI API hiba történt. Próbáld újra később.' },
-              { status },
+              { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
+              { status: 502 },
             );
           }
-
-          // Handle non-API errors
-          return NextResponse.json(
-            { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
-            { status: 502 },
-          );
         }
       }
 
       // ---- Ár tábla adatok ----
       const rows: PriceRow[] = prices;
 
-      const { storedHtml: aiHtmlForStorage } = applyImageAssetsToHtml(aiHtml, sanitizedImageAssets);
+      const { storedHtml: aiHtmlForStorage } = await applyImageAssetsToHtml(
+        aiHtml,
+        sanitizedImageAssets,
+      );
 
       // Prepare AI blocks for storage (if we have structured sections)
       let aiBlocksForStorage: unknown = {};

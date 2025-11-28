@@ -259,13 +259,16 @@ function resolveTemplateForPlan(
 
 type PreparedPdfJob = PdfJobInput & { templateId: TemplateId; metadata?: PdfJobMetadata };
 
-async function insertPdfJob(sb: SupabaseClient, job: PreparedPdfJob) {
+async function insertPdfJob(sb: SupabaseClient, job: PreparedPdfJob, priority: number = 0) {
   return sb.from('pdf_jobs').insert({
     id: job.jobId,
     offer_id: job.offerId,
     user_id: job.userId,
     storage_path: job.storagePath,
     status: 'pending',
+    priority, // Higher priority = processed first (Pro users typically have priority > 0)
+    max_retries: 3, // Default max retries
+    retry_count: 0, // Initialize retry count
     payload: {
       html: job.html,
       runtimeTemplate: job.runtimeTemplate ?? null,
@@ -294,8 +297,36 @@ export async function enqueuePdfJob(sb: SupabaseClient, job: PdfJobInput): Promi
       ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     };
 
+    // Set priority based on plan tier: Premium = 10, Free = 0
+    // Higher priority jobs are processed first
+    const priority = planTier === 'premium' ? 10 : 0;
+
+    // Check concurrent job limit before enqueueing
+    // Premium users can have more concurrent jobs (5) vs free users (3)
+    const maxConcurrent = planTier === 'premium' ? 5 : 3;
+    const { data: concurrentCheck, error: concurrentError } = await sb.rpc(
+      'check_concurrent_job_limit',
+      {
+        user_id_param: job.userId,
+        max_concurrent: maxConcurrent,
+      },
+    );
+
+    if (concurrentError) {
+      logger.warn('Failed to check concurrent job limit (non-blocking)', {
+        error: concurrentError.message,
+        userId: job.userId,
+      });
+      // Continue anyway - this is a non-critical check
+    } else if (concurrentCheck === false) {
+      // User has reached concurrent job limit
+      throw new Error(
+        `Maximum concurrent PDF generation jobs (${maxConcurrent}) reached. Please wait for current jobs to complete.`,
+      );
+    }
+
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const { error } = await insertPdfJob(sb, preparedJob);
+      const { error } = await insertPdfJob(sb, preparedJob, priority);
 
       if (!error) {
         return;

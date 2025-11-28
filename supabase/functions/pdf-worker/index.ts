@@ -185,8 +185,15 @@ serve(async (request) => {
     });
   }
 
-  if (job.status !== 'pending') {
-    return new Response(JSON.stringify({ error: 'Job already processed' }), {
+  // Allow processing of pending jobs OR failed jobs that are ready for retry
+  const isPending = job.status === 'pending';
+  const isRetryReady =
+    job.status === 'failed' &&
+    typeof job.next_retry_at === 'string' &&
+    new Date(job.next_retry_at) <= new Date();
+
+  if (!isPending && !isRetryReady) {
+    return new Response(JSON.stringify({ error: 'Job already processed or not ready for retry' }), {
       headers: JSON_HEADERS,
       status: 409,
     });
@@ -194,8 +201,19 @@ serve(async (request) => {
 
   const payload = (job.payload ?? {}) as PdfJobPayload;
   const html = typeof payload.html === 'string' && payload.html ? payload.html : '';
+
+  // Extract retry information (with defaults for backward compatibility)
+  const currentRetryCount = typeof job.retry_count === 'number' ? job.retry_count : 0;
+  const maxRetries = typeof job.max_retries === 'number' ? job.max_retries : 3;
+
   if (!html) {
-    await finalizeJobFailure(supabase, jobId, 'Job payload missing HTML');
+    await finalizeJobFailure(
+      supabase,
+      jobId,
+      'Job payload missing HTML',
+      currentRetryCount,
+      maxRetries,
+    );
     return new Response(JSON.stringify({ error: 'Job payload missing HTML' }), {
       headers: JSON_HEADERS,
       status: 400,
@@ -206,16 +224,16 @@ serve(async (request) => {
     assertPdfEngineHtml(html, 'PDF job payload HTML');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'PDF job payload failed validation.';
-    await finalizeJobFailure(supabase, jobId, message);
+    await finalizeJobFailure(supabase, jobId, message, currentRetryCount, maxRetries);
     return new Response(JSON.stringify({ error: message }), {
       headers: JSON_HEADERS,
       status: 400,
     });
   }
 
-  let claimedProcessing = false;
+  let claimResult: { claimed: boolean; reason?: string };
   try {
-    claimedProcessing = await claimJobForProcessing(supabase, jobId);
+    claimResult = await claimJobForProcessing(supabase, jobId);
   } catch (statusError) {
     console.error('Failed to update PDF job status to processing:', statusError);
     return new Response(JSON.stringify({ error: 'Failed to update job status' }), {
@@ -224,33 +242,36 @@ serve(async (request) => {
     });
   }
 
-  if (!claimedProcessing) {
-    return new Response(JSON.stringify({ error: 'Job already processed' }), {
-      headers: JSON_HEADERS,
-      status: 409,
-    });
+  if (!claimResult.claimed) {
+    return new Response(
+      JSON.stringify({
+        error: claimResult.reason || 'Job already processed or not ready for processing',
+      }),
+      {
+        headers: JSON_HEADERS,
+        status: 409,
+      },
+    );
   }
 
   const payloadPeriodStart =
     typeof payload.usagePeriodStart === 'string' && payload.usagePeriodStart
       ? payload.usagePeriodStart
       : null;
-  const usagePeriodStart = normalizeDate(
+  const _usagePeriodStart = normalizeDate(
     payloadPeriodStart,
     new Date(job.created_at ?? new Date()).toISOString().slice(0, 10),
   );
   // The billing window must be deterministic: prefer the payload-provided period
   // start and only fall back to the job timestamp when the payload omits it.
-  const userLimit = Number.isFinite(payload.userLimit ?? NaN) ? Number(payload.userLimit) : null;
-  const deviceId =
+  const _userLimit = Number.isFinite(payload.userLimit ?? NaN) ? Number(payload.userLimit) : null;
+  const _deviceId =
     typeof payload.deviceId === 'string' && payload.deviceId ? payload.deviceId : null;
-  const deviceLimit = Number.isFinite(payload.deviceLimit ?? NaN)
+  const _deviceLimit = Number.isFinite(payload.deviceLimit ?? NaN)
     ? Number(payload.deviceLimit)
     : null;
 
   let uploadedToStorage = false;
-  let userUsageIncremented = false;
-  let deviceUsageIncremented = false;
 
   try {
     const pdfBinary = await withTimeout(
@@ -404,20 +425,12 @@ serve(async (request) => {
     const { data: publicUrlData } = supabase.storage.from('offers').getPublicUrl(job.storage_path);
     const pdfUrl = publicUrlData?.publicUrl ?? null;
 
-    // Update offer FIRST, then increment quota
-    // This ensures quota is only incremented if offer update succeeds
-    // Reduces window for quota leaks if offer update fails
-    const { error: offerUpdateError } = await supabase
-      .from('offers')
-      .update({ pdf_url: pdfUrl })
-      .eq('id', job.offer_id)
-      .eq('user_id', job.user_id);
-    if (offerUpdateError) {
-      throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
+    if (!pdfUrl) {
+      throw new Error('Failed to get public URL for generated PDF');
     }
 
-    // Verify PDF is actually downloadable before incrementing quota
-    // This ensures quota is only incremented when PDF is accessible to users
+    // Verify PDF is actually downloadable before using transactional completion
+    // This ensures we don't proceed if PDF is not accessible
     try {
       const abortController = new AbortController();
       const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
@@ -466,143 +479,67 @@ serve(async (request) => {
         pdfUrl,
         error: errorMessage,
       });
-      // Rollback offer update since PDF is not accessible
-      await supabase
-        .from('offers')
-        .update({ pdf_url: null })
-        .eq('id', job.offer_id)
-        .eq('user_id', job.user_id);
       throw new Error(`PDF is not accessible: ${errorMessage}`);
     }
 
-    // Increment quota ONLY after PDF is verified as accessible and downloadable
-    // If this fails, we can rollback the offer update if needed
-    console.warn('Attempting to increment user quota (edge worker)', {
-      userId: job.user_id,
-      limit: userLimit,
-      periodStart: usagePeriodStart,
+    // Calculate processing duration
+    const { data: jobWithStartTime } = await supabase
+      .from('pdf_jobs')
+      .select('started_at')
+      .eq('id', jobId)
+      .single();
+
+    let processingDurationMs: number | null = null;
+    if (jobWithStartTime?.started_at) {
+      const startedAt = new Date(jobWithStartTime.started_at);
+      const completedAt = new Date();
+      processingDurationMs = completedAt.getTime() - startedAt.getTime();
+    }
+
+    // Use transactional function to atomically:
+    // 1. Increment quota (checks limits for both user and device)
+    // 2. Update offer with PDF URL
+    // 3. Mark job as completed
+    // All operations succeed or fail together
+    console.warn('Completing PDF job transactionally (edge worker)', {
+      jobId,
       offerId: job.offer_id,
+      pdfUrl,
+      processingDurationMs,
     });
 
-    const usageResult = await incrementUsage(
-      supabase,
-      'user',
-      { userId: job.user_id },
-      userLimit,
-      usagePeriodStart,
-      jobId, // Exclude this job from pending count
+    const { data: completionData, error: completionError } = await supabase.rpc(
+      'complete_pdf_job_transactional',
+      {
+        p_job_id: jobId,
+        p_pdf_url: pdfUrl,
+        p_processing_duration_ms: processingDurationMs ?? null,
+      },
     );
 
-    console.warn('User quota increment result (edge worker)', {
-      userId: job.user_id,
-      allowed: usageResult.allowed,
-      offersGenerated: usageResult.offersGenerated,
-      periodStart: usageResult.periodStart,
-      limit: userLimit,
-    });
-
-    if (!usageResult.allowed) {
-      console.error('User quota increment not allowed (edge worker), rolling back offer update', {
-        userId: job.user_id,
-        offersGenerated: usageResult.offersGenerated,
-        limit: userLimit,
-        offerId: job.offer_id,
+    if (completionError) {
+      console.error('Transactional job completion failed (edge worker)', {
+        jobId,
+        error: completionError.message,
       });
-      // Rollback offer update if quota check fails
-      await supabase
-        .from('offers')
-        .update({ pdf_url: null })
-        .eq('id', job.offer_id)
-        .eq('user_id', job.user_id);
-      throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
+      throw new Error(completionError.message || 'Failed to complete PDF job');
     }
-    userUsageIncremented = true;
-    console.warn('User quota incremented successfully (edge worker)', {
-      userId: job.user_id,
-      newUsage: usageResult.offersGenerated,
+
+    const completionResult = Array.isArray(completionData) ? completionData[0] : completionData;
+    if (!completionResult || !completionResult.success) {
+      const errorMessage = completionResult?.error_message || 'Job completion failed';
+      console.error('PDF job completion failed transactionally (edge worker)', {
+        jobId,
+        error: errorMessage,
+      });
+      throw new Error(errorMessage);
+    }
+
+    console.warn('PDF job completed successfully via transactional function (edge worker)', {
+      jobId,
       offerId: job.offer_id,
+      pdfUrl,
     });
-
-    if (deviceId && deviceLimit !== null) {
-      console.warn('Attempting to increment device quota (edge worker)', {
-        userId: job.user_id,
-        deviceId,
-        limit: deviceLimit,
-        periodStart: usagePeriodStart,
-        offerId: job.offer_id,
-      });
-
-      const deviceResult = await incrementUsage(
-        supabase,
-        'device',
-        { userId: job.user_id, deviceId },
-        deviceLimit,
-        usagePeriodStart,
-        jobId, // Exclude this job from pending count
-      );
-
-      console.warn('Device quota increment result (edge worker)', {
-        userId: job.user_id,
-        deviceId,
-        allowed: deviceResult.allowed,
-        offersGenerated: deviceResult.offersGenerated,
-        periodStart: deviceResult.periodStart,
-        limit: deviceLimit,
-      });
-
-      if (!deviceResult.allowed) {
-        console.error('Device quota increment not allowed (edge worker), rolling back', {
-          userId: job.user_id,
-          deviceId,
-          offersGenerated: deviceResult.offersGenerated,
-          limit: deviceLimit,
-          offerId: job.offer_id,
-        });
-        // Rollback user quota and offer update if device quota check fails
-        await rollbackUsageIncrement(supabase, 'user', { userId: job.user_id }, usagePeriodStart);
-        await supabase
-          .from('offers')
-          .update({ pdf_url: null })
-          .eq('id', job.offer_id)
-          .eq('user_id', job.user_id);
-        throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
-      }
-      deviceUsageIncremented = true;
-      console.warn('Device quota incremented successfully (edge worker)', {
-        userId: job.user_id,
-        deviceId,
-        newUsage: deviceResult.offersGenerated,
-        offerId: job.offer_id,
-      });
-    }
-
-    // Mark job as completed BEFORE returning
-    // If this fails, quota is already incremented, so we need to handle this carefully
-    const { error: jobCompleteError } = await supabase
-      .from('pdf_jobs')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        pdf_url: pdfUrl,
-        error_message: null,
-      })
-      .eq('id', jobId);
-    if (jobCompleteError) {
-      // Job completion failed, but quota was already incremented
-      // This is a critical error - log it but don't rollback quota since PDF is accessible
-      console.error(
-        'CRITICAL: Failed to mark job as completed after quota increment (edge worker)',
-        {
-          jobId,
-          offerId: job.offer_id,
-          error: jobCompleteError.message,
-          pdfUrl,
-        },
-      );
-      // Don't throw - quota is incremented and PDF is accessible, so this is a data consistency issue
-      // but the user should still have access to their PDF
-      // The job status will remain 'processing', which is acceptable
-    }
 
     if (job.callback_url && pdfUrl) {
       if (isPdfWebhookUrlAllowed(job.callback_url, pdfWebhookAllowlist)) {
@@ -642,46 +579,61 @@ serve(async (request) => {
       try {
         await supabase.storage.from('offers').remove([job.storage_path]);
       } catch (cleanupError) {
-        console.error('Failed to remove uploaded PDF after error:', cleanupError);
+        console.error('Failed to remove uploaded PDF after error (edge worker):', cleanupError);
       }
     }
 
-    // Rollback quota increments if error occurred after quota was incremented
-    if (userUsageIncremented || deviceUsageIncremented) {
-      // Also rollback offer update since quota was incremented but job failed
-      try {
-        await supabase
-          .from('offers')
-          .update({ pdf_url: null })
-          .eq('id', job.offer_id)
-          .eq('user_id', job.user_id);
-      } catch (offerRollbackError) {
-        console.error('Failed to rollback offer update:', offerRollbackError);
+    // Get current retry information from database
+    const { data: jobForRetry } = await supabase
+      .from('pdf_jobs')
+      .select('retry_count, max_retries')
+      .eq('id', jobId)
+      .single();
+
+    const currentRetryCount =
+      typeof jobForRetry?.retry_count === 'number' ? jobForRetry.retry_count : 0;
+    const maxRetries = typeof jobForRetry?.max_retries === 'number' ? jobForRetry.max_retries : 3;
+
+    // Use transactional failure function to handle job failure with automatic quota rollback
+    // This atomically: rolls back quota if incremented, clears offer PDF URL, and updates job status
+    console.warn('Failing PDF job transactionally (edge worker)', {
+      jobId,
+      errorMessage: message,
+      retryCount: currentRetryCount,
+      maxRetries,
+    });
+
+    const { data: failureData, error: failureError } = await supabase.rpc(
+      'fail_pdf_job_with_rollback',
+      {
+        p_job_id: jobId,
+        p_error_message: message,
+        p_retry_count: currentRetryCount,
+        p_max_retries: maxRetries,
+      },
+    );
+
+    if (failureError) {
+      console.error('Failed to process job failure transactionally (edge worker)', {
+        jobId,
+        error: failureError.message,
+      });
+      // Fallback to basic error handling if transactional failure processing fails
+    } else {
+      const failureResult = Array.isArray(failureData) ? failureData[0] : failureData;
+      if (!failureResult || !failureResult.success) {
+        console.error('Transactional job failure processing failed (edge worker)', {
+          jobId,
+          error: failureResult?.error_message || 'Unknown error',
+        });
+      } else {
+        console.warn('Job failure processed transactionally (edge worker)', {
+          jobId,
+          shouldRetry: failureResult.should_retry,
+          nextRetryAt: failureResult.next_retry_at,
+        });
       }
     }
-
-    if (userUsageIncremented) {
-      try {
-        await rollbackUsageIncrement(supabase, 'user', { userId: job.user_id }, usagePeriodStart);
-      } catch (rollbackError) {
-        console.error('Failed to rollback user usage increment:', rollbackError);
-      }
-    }
-
-    if (deviceUsageIncremented && deviceId) {
-      try {
-        await rollbackUsageIncrement(
-          supabase,
-          'device',
-          { userId: job.user_id, deviceId },
-          usagePeriodStart,
-        );
-      } catch (rollbackError) {
-        console.error('Failed to rollback device usage increment:', rollbackError);
-      }
-    }
-
-    await finalizeJobFailure(supabase, jobId, message);
 
     return new Response(JSON.stringify({ error: message }), {
       headers: JSON_HEADERS,
@@ -690,10 +642,41 @@ serve(async (request) => {
   }
 });
 
-async function claimJobForProcessing(supabase: SupabaseClient, jobId: string): Promise<boolean> {
-  const { data, error } = await supabase
+async function claimJobForProcessing(
+  supabase: SupabaseClient,
+  jobId: string,
+): Promise<{ claimed: boolean; reason?: string }> {
+  // First check concurrent job limit for the user
+  const { data: jobInfo } = await supabase
     .from('pdf_jobs')
-    .update({ status: 'processing', started_at: new Date().toISOString(), error_message: null })
+    .select('user_id')
+    .eq('id', jobId)
+    .single();
+
+  if (jobInfo?.user_id) {
+    // Check concurrent limit (default: 3, but could be configured per user)
+    const { data: concurrentCheck } = await supabase.rpc('check_concurrent_job_limit', {
+      user_id_param: jobInfo.user_id,
+      max_concurrent: 3, // Default limit, could be made configurable per plan
+    });
+
+    if (concurrentCheck === false) {
+      return {
+        claimed: false,
+        reason: 'User has reached maximum concurrent job limit',
+      };
+    }
+  }
+
+  // Try to claim as pending job first
+  let { data, error } = await supabase
+    .from('pdf_jobs')
+    .update({
+      status: 'processing',
+      started_at: new Date().toISOString(),
+      error_message: null,
+      first_attempted_at: new Date().toISOString(), // Track when first attempt started
+    })
     .eq('id', jobId)
     .eq('status', 'pending')
     .select('id')
@@ -703,21 +686,158 @@ async function claimJobForProcessing(supabase: SupabaseClient, jobId: string): P
     throw new Error(`Failed to update job status: ${error.message}`);
   }
 
-  return Boolean(data);
-}
+  if (data) {
+    return { claimed: true };
+  }
 
-async function finalizeJobFailure(supabase: SupabaseClient, jobId: string, message: string) {
-  const { error } = await supabase
+  // If not pending, try to claim as retry job (failed status, ready for retry)
+  const now = new Date().toISOString();
+  ({ data, error } = await supabase
     .from('pdf_jobs')
     .update({
-      status: 'failed',
-      completed_at: new Date().toISOString(),
-      error_message: message,
+      status: 'processing',
+      started_at: new Date().toISOString(),
+      error_message: null,
+      next_retry_at: null, // Clear retry schedule
     })
-    .eq('id', jobId);
+    .eq('id', jobId)
+    .eq('status', 'failed')
+    .lte('next_retry_at', now) // Only claim if retry time has passed
+    .select('id')
+    .maybeSingle());
 
   if (error) {
-    console.error('Failed to record PDF job failure', { jobId, error });
+    throw new Error(`Failed to claim retry job: ${error.message}`);
+  }
+
+  return { claimed: Boolean(data) };
+}
+
+async function finalizeJobFailure(
+  supabase: SupabaseClient,
+  jobId: string,
+  message: string,
+  currentRetryCount: number = 0,
+  maxRetries: number = 3,
+) {
+  const errorMessage = message || 'Unknown error occurred';
+
+  // Check if error is retryable
+  const isRetryable =
+    !errorMessage.toLowerCase().includes('invalid') &&
+    !errorMessage.toLowerCase().includes('validation') &&
+    !errorMessage.toLowerCase().includes('permission denied') &&
+    !errorMessage.toLowerCase().includes('quota exceeded') &&
+    !errorMessage.toLowerCase().includes('unauthorized') &&
+    !errorMessage.toLowerCase().includes('forbidden') &&
+    !errorMessage.toLowerCase().includes('not found') &&
+    !errorMessage.toLowerCase().includes('malformed') &&
+    !errorMessage.toLowerCase().includes('bad request');
+
+  const newRetryCount = currentRetryCount + 1;
+
+  if (isRetryable && newRetryCount < maxRetries) {
+    // Schedule retry using exponential backoff
+    const baseDelaySeconds = 60; // 1 minute
+    const maxDelaySeconds = 3600; // 1 hour
+    const exponentialDelay = Math.min(
+      baseDelaySeconds * Math.pow(2, newRetryCount),
+      maxDelaySeconds,
+    );
+    const jitter = Math.floor(Math.random() * exponentialDelay * 0.2);
+    const delaySeconds = exponentialDelay + jitter;
+
+    const nextRetryAt = new Date();
+    nextRetryAt.setSeconds(nextRetryAt.getSeconds() + delaySeconds);
+
+    console.warn('PDF job failed, scheduling retry', {
+      jobId,
+      retryCount: newRetryCount,
+      maxRetries,
+      nextRetryAt: nextRetryAt.toISOString(),
+      delaySeconds,
+    });
+
+    const { error } = await supabase
+      .from('pdf_jobs')
+      .update({
+        status: 'failed',
+        retry_count: newRetryCount,
+        next_retry_at: nextRetryAt.toISOString(),
+        last_retry_error: errorMessage,
+        started_at: null, // Reset so job can be picked up again
+        error_message: errorMessage,
+      })
+      .eq('id', jobId);
+
+    if (error) {
+      console.error('Failed to schedule job retry', { jobId, error });
+    }
+  } else {
+    // Move to Dead Letter Queue or mark as permanently failed
+    if (newRetryCount >= maxRetries) {
+      console.error('PDF job exceeded max retries, moving to Dead Letter Queue', {
+        jobId,
+        retryCount: newRetryCount,
+        maxRetries,
+      });
+
+      // Try to use the database function first
+      const { error: dlqError } = await supabase.rpc('move_job_to_dead_letter_queue', {
+        job_id: jobId,
+        reason: `Exceeded max retries (${newRetryCount}/${maxRetries}). Last error: ${errorMessage}`,
+      });
+
+      if (dlqError) {
+        // Fallback: Update directly
+        console.warn('DLQ function failed, updating directly', { jobId, dlqError });
+        const { error: updateError } = await supabase
+          .from('pdf_jobs')
+          .update({
+            status: 'dead_letter',
+            error_message: `Exceeded max retries. Last error: ${errorMessage}`,
+            completed_at: new Date().toISOString(),
+            next_retry_at: null,
+            retry_count: newRetryCount,
+          })
+          .eq('id', jobId);
+
+        if (updateError) {
+          console.error('Failed to move job to Dead Letter Queue', { jobId, updateError });
+        }
+      }
+    } else {
+      // Non-retryable error - mark as permanently failed (move to DLQ)
+      console.error('PDF job failed with non-retryable error, moving to Dead Letter Queue', {
+        jobId,
+        error: errorMessage,
+      });
+
+      const { error: dlqError } = await supabase.rpc('move_job_to_dead_letter_queue', {
+        job_id: jobId,
+        reason: `Non-retryable error: ${errorMessage}`,
+      });
+
+      if (dlqError) {
+        // Fallback: Update directly
+        const { error: updateError } = await supabase
+          .from('pdf_jobs')
+          .update({
+            status: 'dead_letter',
+            error_message: `Non-retryable error: ${errorMessage}`,
+            completed_at: new Date().toISOString(),
+            next_retry_at: null,
+          })
+          .eq('id', jobId);
+
+        if (updateError) {
+          console.error('Failed to move non-retryable job to Dead Letter Queue', {
+            jobId,
+            updateError,
+          });
+        }
+      }
+    }
   }
 }
 

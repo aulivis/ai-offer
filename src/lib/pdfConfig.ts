@@ -30,6 +30,8 @@ export interface PdfGenerationOptions {
   metadata?: PdfMetadata;
   quality?: number;
   scale?: number;
+  compress?: boolean; // Enable PDF compression
+  imageQuality?: number; // Quality for embedded images (1-100)
 }
 
 /**
@@ -54,6 +56,8 @@ export const DEFAULT_PDF_OPTIONS: PdfGenerationOptions = {
   displayHeaderFooter: false,
   quality: 100,
   scale: 1.0,
+  compress: true, // Enable compression by default
+  imageQuality: 85, // Optimize images at 85% quality
   metadata: {
     creator: 'AI Offer Platform',
     producer: 'AI Offer Platform',

@@ -5,7 +5,7 @@ import type { PdfJobInput } from '@/lib/queue/pdf';
 import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
-import { incrementUsage, rollbackUsageIncrement } from '@/lib/usageHelpers';
+import { completePdfJobTransactional, failPdfJobWithRollback } from '@/lib/pdf/transactional';
 import {
   createPdfOptions,
   toPuppeteerOptions,
@@ -158,8 +158,6 @@ export async function processPdfJobInline(
   }
 
   let uploadedToStorage = false;
-  let userUsageIncremented = false;
-  let deviceUsageIncremented = false;
 
   try {
     const { default: puppeteer } = await import('puppeteer');
@@ -198,7 +196,20 @@ export async function processPdfJobInline(
               deviceScaleFactor: 2,
             });
 
-            await setContentWithNetworkIdleLogging(page, html, 'inline-pdf');
+            // Optimize images in HTML before rendering
+            const { optimizeImagesInHtml, enablePdfCompressionViaCdp } = await import(
+              '@/lib/pdf/compression'
+            );
+            const optimizedHtml = await optimizeImagesInHtml(html, {
+              maxWidth: 1920,
+              maxHeight: 1920,
+              quality: 85,
+            });
+
+            await setContentWithNetworkIdleLogging(page, optimizedHtml, 'inline-pdf');
+
+            // Enable PDF compression via CDP
+            await enablePdfCompressionViaCdp(page);
 
             // Extract document title for metadata
             const documentTitle = await page.title().catch(() => 'Offer Document');
@@ -277,7 +288,17 @@ export async function processPdfJobInline(
             });
 
             const puppeteerOptions = toPuppeteerOptions(pdfOptions);
-            return await page.pdf(puppeteerOptions as Parameters<Page['pdf']>[0]);
+            const pdfBuffer = await page.pdf(puppeteerOptions as Parameters<Page['pdf']>[0]);
+
+            // Apply additional compression if enabled
+            if (pdfOptions.compress !== false) {
+              const { compressPdfBuffer } = await import('@/lib/pdf/compression');
+              return await compressPdfBuffer(Buffer.from(pdfBuffer), {
+                quality: 'medium',
+              });
+            }
+
+            return pdfBuffer;
           } finally {
             if (page) {
               try {
@@ -321,61 +342,8 @@ export async function processPdfJobInline(
       throw new Error('Failed to get public URL for generated PDF');
     }
 
-    // Update offer FIRST, then increment quota
-    // This ensures quota is only incremented if offer update succeeds
-    // Reduces window for quota leaks if offer update fails
-    const { data: updatedOffer, error: offerUpdateError } = await supabase
-      .from('offers')
-      .update({ pdf_url: pdfUrl })
-      .eq('id', job.offerId)
-      .eq('user_id', job.userId)
-      .select('id, pdf_url')
-      .single();
-
-    if (offerUpdateError) {
-      throw new Error(`Failed to update offer with PDF URL: ${offerUpdateError.message}`);
-    }
-
-    if (!updatedOffer || updatedOffer.pdf_url !== pdfUrl) {
-      logger.error('Offer update verification failed', {
-        offerId: job.offerId,
-        expectedPdfUrl: pdfUrl,
-        actualPdfUrl: updatedOffer?.pdf_url,
-      });
-      throw new Error('Offer update verification failed - PDF URL was not set correctly');
-    }
-
-    logger.info('Offer updated successfully with PDF URL', {
-      offerId: job.offerId,
-      pdfUrl,
-    });
-
-    // Double-check the update persisted by querying again
-    const { data: doubleCheck, error: doubleCheckError } = await supabase
-      .from('offers')
-      .select('id, pdf_url')
-      .eq('id', job.offerId)
-      .eq('user_id', job.userId)
-      .maybeSingle();
-
-    if (doubleCheckError) {
-      logger.error('Double-check query failed', { error: doubleCheckError });
-    } else if (!doubleCheck || doubleCheck.pdf_url !== pdfUrl) {
-      logger.error('CRITICAL: Offer update did not persist!', {
-        offerId: job.offerId,
-        expectedPdfUrl: pdfUrl,
-        actualPdfUrl: doubleCheck?.pdf_url,
-      });
-      throw new Error('Offer update did not persist in database');
-    } else {
-      logger.info('Verified: Offer update persisted correctly', {
-        offerId: job.offerId,
-        pdfUrl: doubleCheck.pdf_url,
-      });
-    }
-
-    // Verify PDF is actually downloadable before incrementing quota
-    // This ensures quota is only incremented when PDF is accessible to users
+    // Verify PDF is actually downloadable before using transactional completion
+    // This ensures we don't proceed if PDF is not accessible
     try {
       const abortController = new AbortController();
       const timeoutId = setTimeout(() => abortController.abort(), 10000); // 10 second timeout
@@ -424,190 +392,57 @@ export async function processPdfJobInline(
         pdfUrl,
         error: errorMessage,
       });
-      // Rollback offer update since PDF is not accessible
-      await supabase
-        .from('offers')
-        .update({ pdf_url: null })
-        .eq('id', job.offerId)
-        .eq('user_id', job.userId);
       throw new Error(`PDF is not accessible: ${errorMessage}`);
     }
 
-    // Increment quota ONLY after PDF is verified as accessible and downloadable
-    // If this fails, we can rollback the offer update if needed
-    logger.info('Attempting to increment user quota', {
-      userId: job.userId,
-      limit: job.userLimit,
-      periodStart: job.usagePeriodStart,
+    // Calculate processing duration
+    const { data: jobWithStartTime } = await supabase
+      .from('pdf_jobs')
+      .select('started_at')
+      .eq('id', job.jobId)
+      .single();
+
+    let processingDurationMs: number | null = null;
+    if (jobWithStartTime?.started_at) {
+      const startedAt = new Date(jobWithStartTime.started_at);
+      const completedAt = new Date();
+      processingDurationMs = completedAt.getTime() - startedAt.getTime();
+    }
+
+    // Use transactional function to atomically:
+    // 1. Increment quota (checks limits)
+    // 2. Update offer with PDF URL
+    // 3. Mark job as completed
+    // All operations succeed or fail together
+    logger.info('Completing PDF job transactionally', {
+      jobId: job.jobId,
+      offerId: job.offerId,
+      pdfUrl,
+      processingDurationMs,
     });
 
-    const usageResult = await incrementUsage(
+    const completionResult = await completePdfJobTransactional(
       supabase,
-      'user',
-      { userId: job.userId },
-      job.userLimit,
-      job.usagePeriodStart,
-      job.jobId, // Exclude this job from pending count
+      job.jobId,
+      pdfUrl,
+      processingDurationMs,
     );
 
-    logger.info('User quota increment result', {
-      allowed: usageResult.allowed,
-      offersGenerated: usageResult.offersGenerated,
-      periodStart: usageResult.periodStart,
+    if (!completionResult.success) {
+      logger.error('Transactional job completion failed', {
+        jobId: job.jobId,
+        error: completionResult.error,
+      });
+      throw new Error(completionResult.error || 'Failed to complete PDF job');
+    }
+
+    logger.info('PDF job completed successfully via transactional function', {
+      jobId: job.jobId,
+      offerId: job.offerId,
+      pdfUrl,
     });
 
-    if (!usageResult.allowed) {
-      logger.error('User quota increment not allowed, rolling back offer update', {
-        userId: job.userId,
-        offersGenerated: usageResult.offersGenerated,
-        limit: job.userLimit,
-      });
-      // Rollback offer update if quota check fails
-      await supabase
-        .from('offers')
-        .update({ pdf_url: null })
-        .eq('id', job.offerId)
-        .eq('user_id', job.userId);
-      throw new Error('A havi ajánlatlimitálás túllépése miatt nem készíthető új PDF.');
-    }
-    userUsageIncremented = true;
-    logger.info('User quota incremented successfully', {
-      userId: job.userId,
-      newUsage: usageResult.offersGenerated,
-    });
-
-    if (job.deviceId && job.deviceLimit != null) {
-      logger.info('Attempting to increment device quota', {
-        userId: job.userId,
-        deviceId: job.deviceId,
-        limit: job.deviceLimit,
-        periodStart: job.usagePeriodStart,
-      });
-
-      const deviceResult = await incrementUsage(
-        supabase,
-        'device',
-        { userId: job.userId, deviceId: job.deviceId },
-        job.deviceLimit ?? null,
-        job.usagePeriodStart,
-        job.jobId, // Exclude this job from pending count
-      );
-
-      logger.info('Device quota increment result', {
-        allowed: deviceResult.allowed,
-        offersGenerated: deviceResult.offersGenerated,
-        periodStart: deviceResult.periodStart,
-      });
-
-      if (!deviceResult.allowed) {
-        logger.error('Device quota increment not allowed, rolling back', {
-          userId: job.userId,
-          deviceId: job.deviceId,
-          offersGenerated: deviceResult.offersGenerated,
-          limit: job.deviceLimit,
-        });
-        // Rollback user quota and offer update if device quota check fails
-        await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart);
-        await supabase
-          .from('offers')
-          .update({ pdf_url: null })
-          .eq('id', job.offerId)
-          .eq('user_id', job.userId);
-        throw new Error('Az eszközön elérted a havi ajánlatlimitálást.');
-      }
-      deviceUsageIncremented = true;
-      logger.info('Device quota incremented successfully', {
-        userId: job.userId,
-        deviceId: job.deviceId,
-        newUsage: deviceResult.offersGenerated,
-      });
-    }
-
-    // Mark job as completed BEFORE returning
-    // If this fails, quota is already incremented, so we need to handle this carefully
-    const { error: jobCompleteError } = await supabase
-      .from('pdf_jobs')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        pdf_url: pdfUrl,
-      })
-      .eq('id', job.jobId);
-    if (jobCompleteError) {
-      // Job completion failed, but quota was already incremented
-      // This is a critical data consistency issue - report to Sentry with high severity
-      const criticalError = new Error(
-        `CRITICAL: Failed to mark job as completed after quota increment: ${jobCompleteError.message}`,
-      );
-      logger.error(
-        'CRITICAL: Failed to mark job as completed after quota increment',
-        criticalError,
-        {
-          jobId: job.jobId,
-          offerId: job.offerId,
-          userId: job.userId,
-          error: jobCompleteError.message,
-          errorCode: jobCompleteError.code,
-          pdfUrl,
-          // Flag this for reconciliation - job status remains 'processing' while quota was incremented
-          requiresReconciliation: true,
-        },
-      );
-
-      // Report to Sentry with high severity for alerting
-      // This allows monitoring and alerting on this critical error path
-      if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-        import('@sentry/nextjs')
-          .then((Sentry) => {
-            Sentry.captureException(criticalError, {
-              level: 'error',
-              tags: {
-                errorType: 'pdf_job_completion_failure_after_quota_increment',
-                requiresReconciliation: true,
-                component: 'pdfInlineWorker',
-              },
-              contexts: {
-                pdfJob: {
-                  jobId: job.jobId,
-                  offerId: job.offerId,
-                  userId: job.userId,
-                  pdfUrl,
-                },
-                quota: {
-                  userLimit: job.userLimit,
-                  usagePeriodStart: job.usagePeriodStart,
-                  deviceId: job.deviceId || null,
-                },
-                error: {
-                  message: jobCompleteError.message,
-                  code: jobCompleteError.code || null,
-                },
-              },
-              extra: {
-                // Include information needed for reconciliation
-                reconciliationData: {
-                  jobId: job.jobId,
-                  offerId: job.offerId,
-                  userId: job.userId,
-                  expectedStatus: 'completed',
-                  currentStatus: 'processing',
-                  quotaIncremented: true,
-                  pdfUrl,
-                },
-              },
-            });
-          })
-          .catch(() => {
-            // Sentry not available, skip reporting
-          });
-      }
-
-      // Don't throw - quota is incremented and PDF is accessible, so this is a data consistency issue
-      // but the user should still have access to their PDF.
-      // The job status will remain 'processing', which requires manual reconciliation.
-      // See: web/src/lib/reconciliation/pdfJobReconciliation.ts for reconciliation utility
-    }
-
+    // Dispatch webhook callback if provided
     if (job.callbackUrl && pdfUrl) {
       if (isPdfWebhookUrlAllowed(job.callbackUrl)) {
         try {
@@ -631,14 +466,6 @@ export async function processPdfJobInline(
       }
     }
 
-    logger.info('PDF job completed successfully', {
-      jobId: job.jobId,
-      offerId: job.offerId,
-      pdfUrl,
-      userUsageIncremented,
-      deviceUsageIncremented,
-    });
-
     return pdfUrl;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -651,46 +478,34 @@ export async function processPdfJobInline(
       }
     }
 
-    // Rollback quota increments if error occurred after quota was incremented
-    if (userUsageIncremented || deviceUsageIncremented) {
-      // Also rollback offer update since quota was incremented but job failed
-      try {
-        await supabase
-          .from('offers')
-          .update({ pdf_url: null })
-          .eq('id', job.offerId)
-          .eq('user_id', job.userId);
-      } catch (offerRollbackError) {
-        logger.error('Failed to rollback offer update (inline worker)', offerRollbackError);
-      }
-    }
-
-    if (userUsageIncremented) {
-      try {
-        await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart);
-      } catch (rollbackError) {
-        logger.error('Failed to rollback user usage increment (inline worker)', rollbackError);
-      }
-    }
-
-    if (deviceUsageIncremented && job.deviceId) {
-      try {
-        await rollbackUsageIncrement(supabase, job.userId, job.usagePeriodStart, {
-          deviceId: job.deviceId,
-        });
-      } catch (rollbackError) {
-        logger.error('Failed to rollback device usage increment (inline worker)', rollbackError);
-      }
-    }
-
-    await supabase
+    // Get current retry information from database
+    const { data: jobForRetry } = await supabase
       .from('pdf_jobs')
-      .update({
-        status: 'failed',
-        completed_at: new Date().toISOString(),
-        error_message: message,
-      })
-      .eq('id', job.jobId);
+      .select('retry_count, max_retries')
+      .eq('id', job.jobId)
+      .single();
+
+    const currentRetryCount =
+      typeof jobForRetry?.retry_count === 'number' ? jobForRetry.retry_count : 0;
+    const maxRetries = typeof jobForRetry?.max_retries === 'number' ? jobForRetry.max_retries : 3;
+
+    // Use transactional failure function to handle job failure with automatic quota rollback
+    // This atomically: rolls back quota if incremented, clears offer PDF URL, and updates job status
+    const failureResult = await failPdfJobWithRollback(
+      supabase,
+      job.jobId,
+      message,
+      currentRetryCount,
+      maxRetries,
+    );
+
+    if (!failureResult.success) {
+      logger.error('Failed to process job failure transactionally', {
+        jobId: job.jobId,
+        error: failureResult.error,
+      });
+      // Fallback to basic error handling if transactional failure processing fails
+    }
 
     throw error instanceof Error ? error : new Error(message);
   }

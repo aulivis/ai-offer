@@ -12,16 +12,20 @@ interface AppProvidersProps {
   children: ReactNode;
 }
 
+import { QueryProvider } from '@/providers/QueryProvider';
+
 export function AppProviders({ children }: AppProvidersProps) {
   const supabase = useMemo(() => getSupabaseClient(), []);
 
   return (
-    <SupabaseProvider client={supabase}>
-      <ToastProvider>
-        <PlanUpgradeDialogProvider>
-          <BrandingProvider>{children}</BrandingProvider>
-        </PlanUpgradeDialogProvider>
-      </ToastProvider>
-    </SupabaseProvider>
+    <QueryProvider>
+      <SupabaseProvider client={supabase}>
+        <ToastProvider>
+          <PlanUpgradeDialogProvider>
+            <BrandingProvider>{children}</BrandingProvider>
+          </PlanUpgradeDialogProvider>
+        </ToastProvider>
+      </SupabaseProvider>
+    </QueryProvider>
   );
 }

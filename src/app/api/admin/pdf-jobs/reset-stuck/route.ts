@@ -1,0 +1,87 @@
+/**
+ * POST /api/admin/pdf-jobs/reset-stuck
+ *
+ * Resets PDF jobs that are stuck in processing state (likely crashed).
+ * This endpoint should be called periodically to clean up stuck jobs.
+ *
+ * Query params:
+ * - timeoutMinutes: Minutes a job must be processing to be considered stuck (default: 10)
+ */
+
+import { NextResponse } from 'next/server';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
+import { getStuckJobs, resetStuckJob } from '@/lib/pdf/retry';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
+import { withAuth } from '@/middleware/auth';
+import type { AuthenticatedNextRequest } from '@/middleware/auth';
+
+export const runtime = 'nodejs';
+
+export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
+
+  // TODO: Add admin role check here
+  // For now, allow all authenticated users (add proper admin check later)
+
+  try {
+    const timeoutParam = req.nextUrl.searchParams.get('timeoutMinutes');
+    const timeoutMinutes = timeoutParam ? parseInt(timeoutParam, 10) : 10;
+
+    if (isNaN(timeoutMinutes) || timeoutMinutes < 1 || timeoutMinutes > 1440) {
+      return NextResponse.json(
+        {
+          error: 'Invalid timeoutMinutes parameter. Must be between 1 and 1440.',
+        },
+        { status: 400 },
+      );
+    }
+
+    const supabase = supabaseServiceRole();
+    const stuckJobs = await getStuckJobs(supabase, timeoutMinutes);
+
+    log.warn('Found stuck PDF jobs', {
+      count: stuckJobs.length,
+      timeoutMinutes,
+    });
+
+    const resetJobs: Array<{ jobId: string; success: boolean; error?: string }> = [];
+
+    for (const job of stuckJobs) {
+      try {
+        await resetStuckJob(supabase, job.id, log);
+        resetJobs.push({ jobId: job.id, success: true });
+        log.warn('Reset stuck job', {
+          jobId: job.id,
+          stuckMinutes: job.stuck_minutes,
+          userId: job.user_id,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        resetJobs.push({ jobId: job.id, success: false, error: errorMessage });
+        log.error('Failed to reset stuck job', error, { jobId: job.id });
+      }
+    }
+
+    const successCount = resetJobs.filter((j) => j.success).length;
+    const failureCount = resetJobs.filter((j) => !j.success).length;
+
+    return NextResponse.json({
+      found: stuckJobs.length,
+      reset: successCount,
+      failed: failureCount,
+      jobs: resetJobs,
+    });
+  } catch (error) {
+    log.error('Failed to reset stuck jobs', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to reset stuck jobs';
+    return NextResponse.json(
+      {
+        error: errorMessage,
+      },
+      { status: 500 },
+    );
+  }
+});
