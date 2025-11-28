@@ -13,7 +13,7 @@ import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { z } from 'zod';
-import { uuidSchema } from '@/lib/validation';
+import { uuidSchema } from '@/lib/validation/schemas';
 
 type RouteParams = {
   params: Promise<{
