@@ -1,22 +1,19 @@
 import { notFound } from 'next/navigation';
 import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
-import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
 import { normalizeBranding } from '@/app/pdf/templates/theme';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { getUserProfile } from '@/lib/services/user';
 import { resolveEffectivePlan } from '@/lib/subscription';
-import {
-  normalizeTemplateId,
-  DEFAULT_OFFER_TEMPLATE_ID,
-  type SubscriptionPlan,
-} from '@/app/lib/offerTemplates';
-import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
+import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getRequestIp } from '@/lib/auditLogging';
 import { headers } from 'next/headers';
+import { logger } from '@/lib/logger';
+import { resolveOfferTemplate } from '@/lib/offers/templateResolution';
+import { buildOfferHtmlWithFallback } from '@/lib/offers/offerRendering';
+import { extractAndScopeStyles, extractBodyFromHtml } from '@/lib/offers/styleExtraction';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
@@ -37,7 +34,12 @@ type PageProps = {
  *
  * This page allows customers to view offers without authentication
  * and respond to them (accept/reject).
+ *
+ * Note: We use dynamic rendering to check share expiration, but add cache headers
+ * for CDN caching of the rendered HTML.
  */
+export const dynamic = 'force-dynamic'; // Ensure we check share expiration
+
 export default async function PublicOfferPage({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
@@ -75,10 +77,10 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     .maybeSingle();
 
   // Extract offer from share (Supabase returns it as an array or object)
-  const offerData = share.offers;
-  const offer = Array.isArray(offerData)
-    ? offerData[0]
-    : (offerData as {
+  const shareOfferData = share.offers;
+  const offer = Array.isArray(shareOfferData)
+    ? shareOfferData[0]
+    : (shareOfferData as {
         id: string;
         user_id: string;
         title: string;
@@ -111,58 +113,32 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   );
   const isProUser = plan === 'pro';
 
-  // Resolve template ID with fallback:
-  // 1. From offer inputs (templateId during creation)
-  // 2. From user profile (offer_template in settings)
-  // 3. Default template for plan
-  function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
-    return plan === 'pro' ? 'premium' : 'free';
+  // Resolve template using centralized utility
+  const rawTemplateId = inputs.templateId
+    ? typeof inputs.templateId === 'string'
+      ? inputs.templateId
+      : null
+    : null;
+
+  const templateResolution = resolveOfferTemplate({
+    requestedTemplateId: rawTemplateId,
+    profileTemplateId: typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+    plan,
+    offerId: offer.id,
+    userId: offer.user_id,
+  });
+
+  const templateId = templateResolution.templateId;
+
+  // Log if fallback was used
+  if (templateResolution.wasFallback) {
+    logger.warn('Template fallback used for offer', {
+      offerId: offer.id,
+      requestedTemplateId: rawTemplateId,
+      resolvedTemplateId: templateId,
+      resolutionReason: templateResolution.resolutionReason,
+    });
   }
-
-  const planTier = planToTemplateTier(plan);
-  const allTemplates = listTemplates() as Array<OfferTemplate>;
-  const fallbackTemplate =
-    allTemplates.find((tpl) => tpl.id === DEFAULT_OFFER_TEMPLATE_ID) ||
-    loadTemplate(DEFAULT_OFFER_TEMPLATE_ID);
-
-  const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
-  const defaultTemplateForPlan =
-    planTier === 'premium'
-      ? allTemplates[0] || fallbackTemplate
-      : freeTemplates[0] || fallbackTemplate;
-
-  const requestedTemplateId = inputs.templateId
-    ? normalizeTemplateId(typeof inputs.templateId === 'string' ? inputs.templateId : null)
-    : null;
-
-  const requestedTemplate = requestedTemplateId
-    ? allTemplates.find((tpl) => tpl.id === requestedTemplateId) || null
-    : null;
-
-  const profileTemplateId = normalizeTemplateId(
-    typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-  );
-  const profileTemplate = profileTemplateId
-    ? allTemplates.find((tpl) => tpl.id === profileTemplateId) || null
-    : null;
-
-  const isTemplateAllowed = (tpl: OfferTemplate) => planTier === 'premium' || tpl.tier === 'free';
-
-  let template = defaultTemplateForPlan;
-  let resolvedTemplateId: TemplateId;
-
-  if (requestedTemplate) {
-    resolvedTemplateId = requestedTemplate.id;
-    template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
-  } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
-    template = profileTemplate;
-    resolvedTemplateId = template.id;
-  } else {
-    template = defaultTemplateForPlan;
-    resolvedTemplateId = template.id;
-  }
-
-  const templateId = resolvedTemplateId;
 
   // Build branding:
   // - Brand colors: available for all users
@@ -218,71 +194,84 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       ? (offer.ai_blocks as AIResponseBlocks)
       : null;
 
-  const fullHtml = buildOfferHtml({
-    offer: {
-      title: safeTitle || defaultTitle,
-      companyName: sanitizeInput(profile?.company_name || ''),
-      bodyHtml: aiHtml,
-      templateId,
-      legacyTemplateId: templateId.includes('@') ? templateId.split('@')[0] : templateId,
-      locale: resolvedLocale,
-      issueDate: sanitizeInput(formatOfferIssueDate(new Date(offer.created_at), resolvedLocale)),
-      contactName: sanitizeInput(
-        (typeof profile?.company_contact_name === 'string'
-          ? profile.company_contact_name
-          : typeof profile?.representative === 'string'
-            ? profile.representative
-            : profile?.company_name) || '',
-      ),
-      contactEmail: sanitizeInput(
-        (typeof profile?.company_email === 'string' ? profile.company_email : '') || '',
-      ),
-      contactPhone: sanitizeInput(
-        (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
-      ),
-      companyWebsite: sanitizeInput(
-        (typeof profile?.company_website === 'string'
-          ? profile.company_website
-          : typeof profile?.website === 'string'
-            ? profile.website
-            : '') || '',
-      ),
-      companyAddress: sanitizeInput(
-        (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
-      ),
-      companyTaxId: sanitizeInput(
-        (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
-      ),
-      schedule: scheduleItems,
-      testimonials: testimonialsList.length ? testimonialsList : null,
-      guarantees: guaranteesList.length ? guaranteesList : null,
-      aiBlocks,
-    },
+  // Build offer HTML with centralized fallback handling
+  const offerRenderData = {
+    title: safeTitle || defaultTitle,
+    companyName: sanitizeInput(profile?.company_name || ''),
+    bodyHtml: aiHtml,
+    templateId,
+    legacyTemplateId: templateId.includes('@') ? templateId.split('@')[0] : templateId,
+    locale: resolvedLocale,
+    issueDate: sanitizeInput(formatOfferIssueDate(new Date(offer.created_at), resolvedLocale)),
+    contactName: sanitizeInput(
+      (typeof profile?.company_contact_name === 'string'
+        ? profile.company_contact_name
+        : typeof profile?.representative === 'string'
+          ? profile.representative
+          : profile?.company_name) || '',
+    ),
+    contactEmail: sanitizeInput(
+      (typeof profile?.company_email === 'string' ? profile.company_email : '') || '',
+    ),
+    contactPhone: sanitizeInput(
+      (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
+    ),
+    companyWebsite: sanitizeInput(
+      (typeof profile?.company_website === 'string'
+        ? profile.company_website
+        : typeof profile?.website === 'string'
+          ? profile.website
+          : '') || '',
+    ),
+    companyAddress: sanitizeInput(
+      (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
+    ),
+    companyTaxId: sanitizeInput(
+      (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
+    ),
+    schedule: scheduleItems,
+    testimonials: testimonialsList.length ? testimonialsList : null,
+    guarantees: guaranteesList.length ? guaranteesList : null,
+    aiBlocks,
+  };
+
+  const fullHtml = buildOfferHtmlWithFallback({
+    offer: offerRenderData,
     rows: normalizedRows,
-    branding: brandingOptions,
+    ...(brandingOptions && { branding: brandingOptions }),
     i18n: translator,
     templateId,
   });
 
-  // Log access
+  // Extract and scope styles server-side for better performance
+  const scopedStyles = extractAndScopeStyles(fullHtml);
+  const bodyHtml = extractBodyFromHtml(fullHtml);
+
+  // Log access (non-blocking for better performance)
   const headersList = await headers();
   const ipAddress = getRequestIp(headersList);
   const userAgent = headersList.get('user-agent') || '';
 
-  await sb.from('offer_share_access_logs').insert({
-    share_id: share.id,
-    ip_address: ipAddress,
-    user_agent: userAgent,
+  // Log access asynchronously to not block response
+  Promise.all([
+    sb.from('offer_share_access_logs').insert({
+      share_id: share.id,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+    }),
+    sb
+      .from('offer_shares')
+      .update({
+        access_count: (share.access_count || 0) + 1,
+        last_accessed_at: new Date().toISOString(),
+      })
+      .eq('id', share.id),
+  ]).catch((error) => {
+    logger.warn('Failed to log offer access', {
+      shareId: share.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
   });
-
-  // Update access count
-  await sb
-    .from('offer_shares')
-    .update({
-      access_count: (share.access_count || 0) + 1,
-      last_accessed_at: new Date().toISOString(),
-    })
-    .eq('id', share.id);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -291,7 +280,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
         {!isPdfMode && <DownloadPdfButton token={token} offerId={offer.id} />}
 
         {/* Offer HTML Content with Template and Branding */}
-        <OfferDisplay html={fullHtml} />
+        <OfferDisplay html={bodyHtml} scopedStyles={scopedStyles} />
 
         {/* Response Form - hidden in PDF mode */}
         {!isPdfMode && (

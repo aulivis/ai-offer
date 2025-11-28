@@ -1,5 +1,6 @@
 import type { OfferTemplate, RenderCtx } from '../../types';
 import { renderHtmlTemplate } from '../engine';
+import { logger } from '@/lib/logger';
 
 let cachedTemplatePath: string | null = null;
 
@@ -12,12 +13,17 @@ function getTemplatePath(): string {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { existsSync } = require('fs');
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { join } = require('path');
+    const { join, dirname } = require('path');
+
+    // __dirname points to the free.classic directory, so we need to go up one level
+    const templateDir = dirname(__dirname);
 
     const possiblePaths = [
+      join(templateDir, 'free.classic.html'), // Most reliable: same directory as index.ts parent
       join(process.cwd(), 'src/app/pdf/templates/html/free.classic.html'),
       join(process.cwd(), 'web/src/app/pdf/templates/html/free.classic.html'),
-      join(__dirname, 'free.classic.html'),
+      join(__dirname, 'free.classic.html'), // Fallback: same directory as index.ts
+      join(__dirname, '..', 'free.classic.html'), // Alternative: explicit parent
     ];
 
     for (const path of possiblePaths) {
@@ -27,23 +33,45 @@ function getTemplatePath(): string {
       }
     }
 
-    cachedTemplatePath = possiblePaths[0]!;
-    return possiblePaths[0]!;
+    // If none found, return the most likely path and let the error happen at load time
+    const fallbackPath = join(templateDir, 'free.classic.html');
+    cachedTemplatePath = fallbackPath;
+    return fallbackPath as string;
   }
 
   throw new Error('Template path resolution is only available on the server');
 }
 
 function extractHead(ctx: RenderCtx): string {
-  const fullHtml = renderHtmlTemplate(ctx, getTemplatePath());
-  const headMatch = fullHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
-  return headMatch?.[1]?.trim() ?? '';
+  try {
+    const templatePath = getTemplatePath();
+    const fullHtml = renderHtmlTemplate(ctx, templatePath);
+    const headMatch = fullHtml.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+    return headMatch?.[1]?.trim() ?? '';
+  } catch (error) {
+    // Log error for debugging but return empty head to prevent complete failure
+    logger.warn('Error rendering template head for Viola Classic', {
+      templatePath: getTemplatePath(),
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return '';
+  }
 }
 
 function extractBody(ctx: RenderCtx): string {
-  const fullHtml = renderHtmlTemplate(ctx, getTemplatePath());
-  const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  return bodyMatch?.[1]?.trim() ?? '';
+  try {
+    const templatePath = getTemplatePath();
+    const fullHtml = renderHtmlTemplate(ctx, templatePath);
+    const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    return bodyMatch?.[1]?.trim() ?? '';
+  } catch (error) {
+    // Log error for debugging
+    logger.error('Error rendering template body for Viola Classic', error, {
+      templatePath: getTemplatePath(),
+    });
+    // Re-throw to let the engine handle it properly
+    throw error;
+  }
 }
 
 export const freeClassicHtmlTemplate: OfferTemplate = {

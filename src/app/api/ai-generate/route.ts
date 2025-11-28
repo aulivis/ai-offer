@@ -7,9 +7,8 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 // Pricing calculations remain in `app/lib/pricing.ts`, while templates
 // live under `app/pdf/templates`.
 import { PriceRow } from '@/app/lib/pricing';
-import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
-import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
-import { normalizeTemplateId, type SubscriptionPlan } from '@/app/lib/offerTemplates';
+import type { TemplateId } from '@/app/pdf/templates/types';
+import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI, { APIError } from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
 import { envServer } from '@/env.server';
@@ -47,11 +46,7 @@ export const runtime = 'nodejs';
 
 // These messages are now in translation files - use createTranslator() at call site
 
-const DEFAULT_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
-
-function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
-  return plan === 'pro' ? 'premium' : 'free';
-}
+// Template resolution is now handled by shared utility
 
 function _normalizeUsageLimitError(
   message: string | undefined,
@@ -1247,28 +1242,24 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
       const offerId = randomUUID();
 
       // Resolve template ID for saving (used for PDF generation later from dashboard)
-      const planTier = planToTemplateTier(plan);
-      const allTemplates = listTemplates() as Array<OfferTemplate>;
-      const fallbackTemplate =
-        allTemplates.find((tpl) => tpl.id === DEFAULT_TEMPLATE_ID) ||
-        loadTemplate(DEFAULT_TEMPLATE_ID);
-
-      const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
-      const defaultTemplateForPlan =
-        planTier === 'premium'
-          ? allTemplates[0] || fallbackTemplate
-          : freeTemplates[0] || fallbackTemplate;
-
       const normalizedRequestedTemplateId =
         typeof templateId === 'string' && templateId.trim().length > 0
           ? (templateId.trim() as TemplateId)
           : null;
 
-      const requestedTemplate = normalizedRequestedTemplateId
-        ? allTemplates.find((tpl) => tpl.id === normalizedRequestedTemplateId) || null
-        : null;
+      // Use centralized template resolution
+      const { resolveOfferTemplate } = await import('@/lib/offers/templateResolution');
+      const templateResolution = resolveOfferTemplate({
+        requestedTemplateId: normalizedRequestedTemplateId,
+        profileTemplateId:
+          typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+        plan,
+        offerId,
+        userId: user.id,
+      });
 
-      if (normalizedRequestedTemplateId && !requestedTemplate) {
+      // Validate requested template exists (if one was requested)
+      if (normalizedRequestedTemplateId && templateResolution.wasFallback) {
         return NextResponse.json(
           {
             error: 'A kért sablon nem található. Kérlek válassz egy elérhető sablont.',
@@ -1277,27 +1268,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         );
       }
 
-      const profileTemplateId = normalizeTemplateId(
-        typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-      );
-      const profileTemplate = profileTemplateId
-        ? allTemplates.find((tpl) => tpl.id === profileTemplateId) || null
-        : null;
-
-      const isTemplateAllowed = (tpl: OfferTemplate) =>
-        planTier === 'premium' || tpl.tier === 'free';
-
-      let template = defaultTemplateForPlan;
-
-      if (requestedTemplate) {
-        template = isTemplateAllowed(requestedTemplate) ? requestedTemplate : fallbackTemplate;
-      } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
-        template = profileTemplate;
-      } else {
-        template = defaultTemplateForPlan;
-      }
-
-      const resolvedTemplateId = template.id;
+      const resolvedTemplateId = templateResolution.templateId;
 
       // ---- Ajánlat mentése ----
       // Use authenticated client to respect RLS policies (security best practice)

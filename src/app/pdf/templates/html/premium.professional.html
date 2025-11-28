@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="{{title}} - {{companyName}} ajánlat" />
     <title>{{title}}</title>
     <style>
       * {
@@ -31,6 +32,77 @@
         --muted-foreground: 0 0% 40%;
         --border: 0 0% 90%;
         --radius: 0.75rem;
+        --bg: 0 0% 98%;
+      }
+
+      /* Dark mode support */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --foreground: 0 0% 95%;
+          --muted-foreground: 0 0% 70%;
+          --border: 0 0% 30%;
+          --background: 0 0% 10%;
+          --bg: 0 0% 10%;
+          --card: 0 0% 12%;
+        }
+
+        body {
+          background: hsl(var(--bg));
+        }
+
+        .card {
+          background: hsl(var(--card));
+        }
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      /* Screen reader only content */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      /* Skip link for accessibility */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: var(--primary);
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        z-index: 100;
+      }
+
+      .skip-link:focus {
+        top: 0;
+      }
+
+      /* Focus states for keyboard navigation */
+      a:focus-visible,
+      button:focus-visible,
+      [tabindex]:focus-visible {
+        outline: 3px solid var(--primary);
+        outline-offset: 2px;
+        border-radius: 2px;
       }
 
       @keyframes float {
@@ -495,6 +567,14 @@
         background: linear-gradient(135deg, var(--primary), var(--secondary));
       }
 
+      .pricing-table caption {
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-align: left;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+      }
+
       .pricing-table th {
         padding: 20px 24px;
         text-align: left;
@@ -689,6 +769,15 @@
         font-weight: 500;
       }
 
+      .footer-value a {
+        color: white;
+        text-decoration: none;
+      }
+
+      .footer-value a:hover {
+        text-decoration: underline;
+      }
+
       .copyright {
         text-align: center;
         padding-top: 32px;
@@ -723,45 +812,100 @@
         }
       }
 
+      /* Enhanced print styles */
+      @page {
+        size: A4;
+        margin: 2cm;
+      }
+
       @media print {
         .bg-effects,
-        .grid-overlay {
+        .grid-overlay,
+        .skip-link {
           display: none;
         }
 
         body {
           background: white;
           color: black;
+          font-size: 10pt;
+          line-height: 1.4;
+        }
+
+        .container {
+          max-width: 100%;
         }
 
         .card {
           border: 1px solid #ddd;
           box-shadow: none;
           page-break-inside: avoid;
+          break-inside: avoid;
         }
 
         .tier-badge {
           box-shadow: none;
         }
+
+        section {
+          page-break-after: auto;
+          break-after: auto;
+        }
+
+        .pricing-table {
+          page-break-inside: auto;
+        }
+
+        .pricing-table thead {
+          display: table-header-group;
+        }
+
+        .pricing-table tbody tr {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        .body-content h1,
+        .body-content h2,
+        .body-content h3 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+
+        .body-content ul,
+        .body-content ol {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        a[href^="http"]:after {
+          content: " (" attr(href) ")";
+          font-size: 0.8em;
+          color: hsl(var(--muted-foreground));
+        }
       }
     </style>
   </head>
   <body>
-    <div class="bg-effects">
+    <a href="#main-content" class="skip-link">Ugrás a fő tartalomhoz</a>
+
+    <div class="bg-effects" aria-hidden="true">
       <div class="gradient-orb orb-1"></div>
       <div class="gradient-orb orb-2"></div>
       <div class="gradient-orb orb-3"></div>
     </div>
-    <div class="grid-overlay"></div>
+    <div class="grid-overlay" aria-hidden="true"></div>
 
     <div class="container">
-      <header class="header">
+      <header class="header" role="banner">
         <div class="logo-section">
-          <div class="logo-container">
+          <div class="logo-container" role="img" aria-label="{{logoAlt}}">
             {{#if logoUrl}}
-            <img src="{{logoUrl}}" alt="{{logoAlt}}" />
+            <img src="{{logoUrl}}" alt="{{logoAlt}}" loading="lazy" />
             {{/if}} {{#if showMonogramFallback}}
-            <span class="monogram">{{monogram}}</span>
+            <span class="monogram" aria-label="{{companyName}} monogram" aria-hidden="true"
+              >{{monogram}}</span
+            >
             {{/if}}
           </div>
         </div>
@@ -773,170 +917,220 @@
         <div class="tier-badge">{{tierLabel}}</div>
         {{/if}}
 
-        <div class="separator"></div>
+        <div class="separator" aria-hidden="true"></div>
 
-        <div class="info-grid">
+        <dl class="info-grid" role="list">
           {{#if contactName}}
-          <div class="info-card">
-            <div class="info-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="info-card" role="listitem">
+            <dt class="info-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               Címzett:
-            </div>
-            <div class="info-value">{{contactName}}</div>
+            </dt>
+            <dd class="info-value">{{contactName}}</dd>
           </div>
           {{/if}} {{#if issueDate}}
-          <div class="info-card">
-            <div class="info-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="info-card" role="listitem">
+            <dt class="info-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
               Dátum
-            </div>
-            <div class="info-value">{{issueDate}}</div>
+            </dt>
+            <dd class="info-value">{{issueDate}}</dd>
           </div>
           {{/if}} {{#if offerNumber}}
-          <div class="info-card">
-            <div class="info-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="info-card" role="listitem">
+            <dt class="info-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
               </svg>
               Ajánlat
-            </div>
-            <div class="info-value">{{offerNumber}}</div>
+            </dt>
+            <dd class="info-value">{{offerNumber}}</dd>
           </div>
           {{/if}} {{#if contactEmail}}
-          <div class="info-card">
-            <div class="info-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <div class="info-card" role="listitem">
+            <dt class="info-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
                 <path
                   d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
                 ></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
               </svg>
               Email
-            </div>
-            <div class="info-value">{{contactEmail}}</div>
+            </dt>
+            <dd class="info-value">{{contactEmail}}</dd>
           </div>
           {{/if}}
-        </div>
+        </dl>
       </header>
 
-      {{#if bodyHtml}}
-      <article class="card">
-        <div class="body-content">{{{bodyHtml}}}</div>
-      </article>
-      {{/if}} {{#if hasPricing}}
-      <section class="card">
-        <div class="pricing-section">
-          <div class="pricing-table-wrapper">
-            <table class="pricing-table">
-              <thead>
-                <tr>
-                  <th>Tétel megnevezése</th>
-                  <th>Mennyiség</th>
-                  <th>Egységár</th>
-                  <th>ÁFA</th>
-                  <th>Összesen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {{#each pricingRows}}
-                <tr>
-                  <td>{{name}}</td>
-                  <td>{{qty}}</td>
-                  <td>{{unitPrice}}</td>
-                  <td>{{vat}}</td>
-                  <td>{{total}}</td>
-                </tr>
-                {{/each}}
-              </tbody>
-            </table>
-          </div>
-          <div class="total-section">
-            <span class="total-label">Végösszeg</span>
-            <span class="total-amount">{{grossTotal}}</span>
-          </div>
-        </div>
-      </section>
-      {{/if}} {{#if hasSchedule}}
-      <section class="card">
-        <h2 class="section-title">Projekt mérföldkövek</h2>
-        <div class="terms-list">
-          {{#each schedule}}
-          <div class="term-item">
-            <p>{{this}}</p>
-          </div>
-          {{/each}}
-        </div>
-      </section>
-      {{/if}} {{#if hasImages}}
-      <section class="card">
-        <h2 class="section-title">Képek és referenciák</h2>
-        <div class="images-grid">
-          {{#each images}}
-          <div class="image-item">
-            <img src="{{src}}" alt="{{alt}}" />
-          </div>
-          {{/each}}
-        </div>
-      </section>
-      {{/if}} {{#if hasGuarantees}}
-      <section class="card">
-        <h2 class="section-title">Garanciák</h2>
-        <div class="terms-list">
-          {{#each guarantees}}
-          <div class="term-item">
-            <p>{{this}}</p>
-          </div>
-          {{/each}}
-        </div>
-      </section>
-      {{/if}} {{#if hasTerms}}
-      <section class="card">
-        <div class="terms-list">
-          {{#if termsItems}} {{#each termsItems}}
-          <div class="term-item">
-            <div class="term-number">{{number}}</div>
-            <div class="term-content">
-              <h3>{{title}}</h3>
-              <p>{{description}}</p>
+      <main id="main-content" role="main">
+        {{#if bodyHtml}}
+        <article class="card" aria-labelledby="services-heading">
+          <h2 id="services-heading" class="sr-only">Szolgáltatások részletesen</h2>
+          <div class="body-content">{{{bodyHtml}}}</div>
+        </article>
+        {{/if}} {{#if hasPricing}}
+        <section class="card" aria-labelledby="pricing-heading">
+          <h2 id="pricing-heading" class="section-title">Árazás</h2>
+          <div class="pricing-section">
+            <div class="pricing-table-wrapper">
+              <table class="pricing-table" role="table" aria-label="Árazás részletezése">
+                <caption class="sr-only">
+                  Részletes árazási táblázat
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Tétel megnevezése</th>
+                    <th scope="col">Mennyiség</th>
+                    <th scope="col">Egységár</th>
+                    <th scope="col">ÁFA</th>
+                    <th scope="col">Összesen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each pricingRows}}
+                  <tr>
+                    <td>{{name}}</td>
+                    <td>{{qty}}</td>
+                    <td>{{unitPrice}}</td>
+                    <td>{{vat}}%</td>
+                    <td><strong>{{total}}</strong></td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
+            <div class="total-section" role="region" aria-label="Végösszeg">
+              <span class="total-label">Végösszeg</span>
+              <span class="total-amount" aria-label="Végösszeg: {{grossTotal}}"
+                >{{grossTotal}}</span
+              >
             </div>
           </div>
-          {{/each}} {{/if}} {{#if termsText}}
-          <div class="term-item">
-            <div class="term-number">i</div>
-            <div class="term-content">
-              <p>{{termsText}}</p>
+        </section>
+        {{/if}} {{#if hasSchedule}}
+        <section class="card" aria-labelledby="schedule-heading">
+          <h2 id="schedule-heading" class="section-title">Projekt mérföldkövek</h2>
+          <ul class="terms-list" role="list" style="list-style: none; margin: 0; padding: 0">
+            {{#each schedule}}
+            <li class="term-item" role="listitem">
+              <p>{{this}}</p>
+            </li>
+            {{/each}}
+          </ul>
+        </section>
+        {{/if}} {{#if hasImages}}
+        <section class="card" aria-labelledby="images-heading">
+          <h2 id="images-heading" class="section-title">Képek és referenciák</h2>
+          <div class="images-grid" role="list">
+            {{#each images}}
+            <div class="image-item" role="listitem">
+              <img src="{{src}}" alt="{{alt}}" loading="lazy" decoding="async" />
             </div>
+            {{/each}}
           </div>
-          {{/if}}
-        </div>
-      </section>
-      {{/if}}
+        </section>
+        {{/if}} {{#if hasGuarantees}}
+        <section class="card" aria-labelledby="guarantees-heading">
+          <h2 id="guarantees-heading" class="section-title">Garanciák</h2>
+          <ul class="terms-list" role="list" style="list-style: none; margin: 0; padding: 0">
+            {{#each guarantees}}
+            <li class="term-item" role="listitem">
+              <p>{{this}}</p>
+            </li>
+            {{/each}}
+          </ul>
+        </section>
+        {{/if}} {{#if hasTerms}}
+        <section class="card" aria-labelledby="terms-heading">
+          <h2 id="terms-heading" class="section-title">Feltételek</h2>
+          <ul class="terms-list" role="list" style="list-style: none; margin: 0; padding: 0">
+            {{#if termsItems}} {{#each termsItems}}
+            <li class="term-item" role="listitem">
+              <div class="term-number">{{number}}</div>
+              <div class="term-content">
+                <h3>{{title}}</h3>
+                <p>{{description}}</p>
+              </div>
+            </li>
+            {{/each}} {{/if}} {{#if termsText}}
+            <li class="term-item" role="listitem">
+              <div class="term-number">i</div>
+              <div class="term-content">
+                <p>{{termsText}}</p>
+              </div>
+            </li>
+            {{/if}}
+          </ul>
+        </section>
+        {{/if}}
+      </main>
 
-      <footer class="footer">
+      <footer class="footer" role="contentinfo">
         <div class="footer-grid">
           {{#if contactEmail}}
           <div class="footer-item">
             <p class="footer-label">Email</p>
-            <p class="footer-value">{{contactEmail}}</p>
+            <p class="footer-value">
+              <a href="mailto:{{contactEmail}}" aria-label="E-mail küldése: {{contactEmail}}"
+                >{{contactEmail}}</a
+              >
+            </p>
           </div>
           {{/if}} {{#if contactPhone}}
           <div class="footer-item">
             <p class="footer-label">Telefon</p>
-            <p class="footer-value">{{contactPhone}}</p>
+            <p class="footer-value">
+              <a href="tel:{{contactPhone}}" aria-label="Telefon: {{contactPhone}}"
+                >{{contactPhone}}</a
+              >
+            </p>
           </div>
           {{/if}} {{#if companyWebsite}}
           <div class="footer-item">
             <p class="footer-label">Weboldal</p>
-            <p class="footer-value">{{companyWebsite}}</p>
+            <p class="footer-value">
+              <a
+                href="{{companyWebsite}}"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Weboldal megnyitása: {{companyWebsite}}"
+                >{{companyWebsite}}</a
+              >
+            </p>
           </div>
           {{/if}} {{#if companyTaxId}}
           <div class="footer-item">
@@ -951,7 +1145,9 @@
           {{/if}}
         </div>
 
-        <div class="copyright">© {{currentYear}} {{companyName}}. Minden jog fenntartva.</div>
+        <div class="copyright">
+          <small>© {{currentYear}} {{companyName}}. Minden jog fenntartva.</small>
+        </div>
       </footer>
     </div>
   </body>

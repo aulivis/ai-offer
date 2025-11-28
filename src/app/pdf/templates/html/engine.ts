@@ -3,6 +3,7 @@ import { summarize } from '@/app/lib/pricing';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { RenderCtx } from '../types';
 import { buildHeaderFooterCtx } from '../shared/headerFooter';
+import { getPreloadedTemplateHtml } from '../templatePreloader';
 
 /**
  * Simple template engine for HTML templates
@@ -255,6 +256,7 @@ function preparePricingRows(rows: PriceRow[]): Array<{
 /**
  * Load HTML template from file
  * Only works on server-side (uses fs module)
+ * Uses pre-loaded cache if available for better performance
  */
 export function loadHtmlTemplate(templatePath: string): string {
   // Only load on server-side (Node.js environment)
@@ -263,8 +265,22 @@ export function loadHtmlTemplate(templatePath: string): string {
     throw new Error('loadHtmlTemplate can only be called on the server');
   }
 
+  // Try to get from pre-loaded cache first
   try {
-    // Dynamic require to avoid bundling fs in client
+    const filename = templatePath.split('/').pop() || templatePath.split('\\').pop();
+    if (filename) {
+      const cached = getPreloadedTemplateHtml(filename);
+      if (cached) {
+        return cached;
+      }
+    }
+  } catch {
+    // Pre-loader not available or template not cached, fall back to file system
+  }
+
+  try {
+    // Use dynamic require to avoid bundling fs in client builds
+    // This is safe because the function already checks for Node.js environment
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { readFileSync } = require('fs');
     return readFileSync(templatePath, 'utf-8');

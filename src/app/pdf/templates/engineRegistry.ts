@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+// Pre-load templates for better performance
+import './templatePreloader';
+
 import { freeClassicHtmlTemplate } from './html/free.classic';
 import { freeMinimalHtmlTemplate } from './html/free.minimal';
 import { freeMinimalistHtmlTemplate } from './html/free.minimalist';

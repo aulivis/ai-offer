@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="{{title}} - {{companyName}} ajánlat" />
     <title>{{title}}</title>
     <style>
       * {
@@ -17,11 +18,47 @@
         --foreground: 0 0% 15%;
         --muted-foreground: 0 0% 45%;
         --border: 0 0% 88%;
+        --bg: #ffffff;
+      }
+
+      /* Dark mode support */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --foreground: 0 0% 95%;
+          --muted-foreground: 0 0% 70%;
+          --border: 0 0% 30%;
+          --bg: 0 0% 10%;
+        }
+
+        body {
+          background: var(--bg);
+        }
+
+        .container {
+          background: hsl(0 0% 12%);
+          border-color: hsl(var(--primary) / 0.4);
+        }
+
+        .total-row {
+          background: hsl(0 0% 12%);
+        }
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
       }
 
       body {
         font-family: Georgia, 'Times New Roman', Times, serif;
-        background: #ffffff;
+        background: var(--bg);
         color: hsl(var(--foreground));
         line-height: 1.8;
         padding: 2rem 1rem;
@@ -34,12 +71,50 @@
         border: 2px solid hsl(var(--primary) / 0.2);
       }
 
+      /* Screen reader only content */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      /* Skip link for accessibility */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: hsl(var(--primary));
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        z-index: 100;
+      }
+
+      .skip-link:focus {
+        top: 0;
+      }
+
+      /* Focus states for keyboard navigation */
+      a:focus-visible,
+      button:focus-visible,
+      [tabindex]:focus-visible {
+        outline: 3px solid hsl(var(--primary));
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
       .header-stripe {
         height: 8px;
         background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
       }
 
-      .header {
+      header {
         padding: 3rem 3rem 2rem;
         border-bottom: 2px solid hsl(var(--primary) / 0.2);
       }
@@ -65,6 +140,11 @@
         align-items: center;
         justify-content: center;
         background: white;
+        flex-shrink: 0;
+      }
+
+      .logo-box[role="img"] {
+        border-radius: 2px;
       }
 
       .monogram {
@@ -120,12 +200,16 @@
         color: hsl(var(--muted-foreground));
       }
 
-      .section {
+      main {
+        display: block;
+      }
+
+      section {
         padding: 2.5rem 3rem;
         border-bottom: 1px solid hsl(var(--primary) / 0.2);
       }
 
-      .section:last-of-type {
+      section:last-of-type {
         border-bottom: none;
       }
 
@@ -278,6 +362,7 @@
         margin-top: 2rem;
       }
 
+      /* Accessible pricing table */
       .pricing-table {
         width: 100%;
         border-collapse: collapse;
@@ -285,6 +370,14 @@
         font-size: 0.875rem;
         margin-top: 1.5rem;
         border: 2px solid hsl(var(--primary));
+      }
+
+      .pricing-table caption {
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-align: left;
+        margin-bottom: 0.5rem;
+        color: hsl(var(--primary));
       }
 
       .pricing-table thead {
@@ -364,10 +457,16 @@
         height: 160px;
         object-fit: cover;
         border: 2px solid hsl(var(--primary) / 0.3);
+        border-radius: 2px;
+      }
+
+      .images-grid img[alt=""] {
+        border: 2px dashed hsl(var(--primary) / 0.3);
       }
 
       .terms-list {
         margin-top: 1rem;
+        list-style: none;
       }
 
       .term-item {
@@ -401,7 +500,7 @@
         line-height: 1.6;
       }
 
-      .footer {
+      footer {
         padding: 2rem 3rem;
         background: hsl(var(--primary) / 0.03);
         border-top: 2px solid hsl(var(--primary) / 0.3);
@@ -433,6 +532,15 @@
         color: hsl(var(--foreground));
       }
 
+      .footer-value a {
+        color: hsl(var(--primary));
+        text-decoration: none;
+      }
+
+      .footer-value a:hover {
+        text-decoration: underline;
+      }
+
       .footer-divider {
         height: 1px;
         background: hsl(var(--primary) / 0.2);
@@ -446,20 +554,96 @@
         font-family: system-ui, sans-serif;
       }
 
+      /* Enhanced print styles */
+      @page {
+        size: A4;
+        margin: 2cm;
+      }
+
       @media print {
         body {
           padding: 0;
+          font-size: 10pt;
+          line-height: 1.4;
         }
 
         .container {
           border: none;
+          max-width: 100%;
+        }
+
+        .header-stripe {
+          height: 4px;
+        }
+
+        header,
+        section,
+        footer {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        section {
+          page-break-after: auto;
+          break-after: auto;
+        }
+
+        .section-title {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+
+        .pricing-table {
+          page-break-inside: auto;
+        }
+
+        .pricing-table thead {
+          display: table-header-group;
+        }
+
+        .pricing-table tbody tr {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        .pricing-table tbody tr:last-child {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+
+        .body-content h1,
+        .body-content h2,
+        .body-content h3 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+
+        .body-content ul,
+        .body-content ol {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        .images-grid {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        .skip-link {
+          display: none;
+        }
+
+        a[href^="http"]:after {
+          content: " (" attr(href) ")";
+          font-size: 0.8em;
+          color: hsl(var(--muted-foreground));
         }
       }
 
       @media (max-width: 640px) {
-        .header,
-        .section,
-        .footer {
+        header,
+        section,
+        footer {
           padding-left: 1.5rem;
           padding-right: 1.5rem;
         }
@@ -478,27 +662,39 @@
           grid-template-columns: 1fr;
           gap: 1.5rem;
         }
+
+        .pricing-table {
+          font-size: 0.75rem;
+        }
+
+        .pricing-table th,
+        .pricing-table td {
+          padding: 0.5rem;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="header-stripe"></div>
+    <a href="#main-content" class="skip-link">Ugrás a fő tartalomhoz</a>
 
-      <div class="header">
+    <div class="container">
+      <div class="header-stripe" aria-hidden="true"></div>
+
+      <header role="banner">
         <div class="header-top">
           <div class="logo-section">
             {{#if logoUrl}}
-            <div class="logo-box">
+            <div class="logo-box" role="img" aria-label="{{logoAlt}}">
               <img
                 src="{{logoUrl}}"
                 alt="{{logoAlt}}"
                 style="width: 100%; height: 100%; object-fit: contain"
+                loading="lazy"
               />
             </div>
             {{/if}} {{#if showMonogramFallback}}
-            <div class="logo-box">
-              <span class="monogram">{{monogram}}</span>
+            <div class="logo-box" role="img" aria-label="{{companyName}} monogram">
+              <span class="monogram" aria-hidden="true">{{monogram}}</span>
             </div>
             {{/if}}
             <div class="company-info">
@@ -508,122 +704,149 @@
           </div>
         </div>
 
-        <div class="info-table">
+        <dl class="info-table" role="list">
           {{#if contactName}}
-          <div class="info-label">Címzett:</div>
-          <div class="info-value">{{contactName}}</div>
+          <div role="listitem">
+            <dt class="info-label">Címzett:</dt>
+            <dd class="info-value">{{contactName}}</dd>
+          </div>
           {{/if}} {{#if issueDate}}
-          <div class="info-label">Kiállítás dátuma:</div>
-          <div class="info-value">{{issueDate}}</div>
+          <div role="listitem">
+            <dt class="info-label">Kiállítás dátuma:</dt>
+            <dd class="info-value">{{issueDate}}</dd>
+          </div>
           {{/if}} {{#if offerNumber}}
-          <div class="info-label">Ajánlat száma:</div>
-          <div class="info-value">{{offerNumber}}</div>
+          <div role="listitem">
+            <dt class="info-label">Ajánlat száma:</dt>
+            <dd class="info-value">{{offerNumber}}</dd>
+          </div>
           {{/if}}
-        </div>
-      </div>
+        </dl>
+      </header>
 
-      {{#if bodyHtml}}
-      <div class="section">
-        <h2 class="section-title">Szolgáltatások részletesen</h2>
-        <div class="body-content">{{{bodyHtml}}}</div>
-      </div>
-      {{/if}} {{#if hasPricing}}
-      <div class="section">
-        <h2 class="section-title">Árazás</h2>
-        <table class="pricing-table">
-          <thead>
-            <tr>
-              <th>Megnevezés</th>
-              <th>Mennyiség</th>
-              <th>Egységár</th>
-              <th>ÁFA</th>
-              <th>Összesen</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each pricingRows}}
-            <tr>
-              <td>{{name}}</td>
-              <td>{{qty}}</td>
-              <td>{{unitPrice}}</td>
-              <td>{{vat}}</td>
-              <td>{{total}}</td>
-            </tr>
+      <main id="main-content" role="main">
+        {{#if bodyHtml}}
+        <section aria-labelledby="services-heading">
+          <h2 id="services-heading" class="section-title">Szolgáltatások részletesen</h2>
+          <div class="body-content">{{{bodyHtml}}}</div>
+        </section>
+        {{/if}} {{#if hasPricing}}
+        <section aria-labelledby="pricing-heading">
+          <h2 id="pricing-heading" class="section-title">Árazás</h2>
+          <table class="pricing-table" role="table" aria-label="Árazás részletezése">
+            <caption class="sr-only">
+              Részletes árazási táblázat
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Megnevezés</th>
+                <th scope="col">Mennyiség</th>
+                <th scope="col">Egységár</th>
+                <th scope="col">ÁFA</th>
+                <th scope="col">Összesen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each pricingRows}}
+              <tr>
+                <td>{{name}}</td>
+                <td>{{qty}}</td>
+                <td>{{unitPrice}}</td>
+                <td>{{vat}}%</td>
+                <td><strong>{{total}}</strong></td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+          <div class="total-row" role="region" aria-label="Végösszeg">
+            <span class="total-label">Végösszeg</span>
+            <span class="total-amount" aria-label="Végösszeg: {{grossTotal}}">{{grossTotal}}</span>
+          </div>
+        </section>
+        {{/if}} {{#if hasSchedule}}
+        <section aria-labelledby="schedule-heading">
+          <h2 id="schedule-heading" class="section-title">Projekt mérföldkövek</h2>
+          <ul class="terms-list" role="list">
+            {{#each schedule}}
+            <li class="term-item" role="listitem">
+              <div class="term-description">{{this}}</div>
+            </li>
             {{/each}}
-          </tbody>
-        </table>
-        <div class="total-row">
-          <span class="total-label">Végösszeg</span>
-          <span class="total-amount">{{grossTotal}}</span>
-        </div>
-      </div>
-      {{/if}} {{#if hasSchedule}}
-      <div class="section">
-        <h2 class="section-title">Projekt mérföldkövek</h2>
-        <div class="terms-list">
-          {{#each schedule}}
-          <div class="term-item">
-            <div class="term-description">{{this}}</div>
+          </ul>
+        </section>
+        {{/if}} {{#if hasImages}}
+        <section aria-labelledby="images-heading">
+          <h2 id="images-heading" class="section-title">Képek és referenciák</h2>
+          <div class="images-grid" role="list">
+            {{#each images}}
+            <img src="{{src}}" alt="{{alt}}" role="listitem" loading="lazy" decoding="async" />
+            {{/each}}
           </div>
-          {{/each}}
-        </div>
-      </div>
-      {{/if}} {{#if hasImages}}
-      <div class="section">
-        <h2 class="section-title">Képek és referenciák</h2>
-        <div class="images-grid">
-          {{#each images}}
-          <img src="{{src}}" alt="{{alt}}" />
-          {{/each}}
-        </div>
-      </div>
-      {{/if}} {{#if hasGuarantees}}
-      <div class="section">
-        <h2 class="section-title">Garanciák</h2>
-        <div class="terms-list">
-          {{#each guarantees}}
-          <div class="term-item">
-            <div class="term-description">{{this}}</div>
+        </section>
+        {{/if}} {{#if hasGuarantees}}
+        <section aria-labelledby="guarantees-heading">
+          <h2 id="guarantees-heading" class="section-title">Garanciák</h2>
+          <ul class="terms-list" role="list">
+            {{#each guarantees}}
+            <li class="term-item" role="listitem">
+              <div class="term-description">{{this}}</div>
+            </li>
+            {{/each}}
+          </ul>
+        </section>
+        {{/if}} {{#if hasTerms}}
+        <section aria-labelledby="terms-heading">
+          <h2 id="terms-heading" class="section-title">Feltételek</h2>
+          {{#if termsItems}}
+          <ul class="terms-list" role="list">
+            {{#each termsItems}}
+            <li class="term-item" role="listitem">
+              <div class="term-title">{{number}}. {{title}}</div>
+              <div class="term-description">{{description}}</div>
+            </li>
+            {{/each}}
+          </ul>
+          {{/if}} {{#if termsText}}
+          <div class="body-content" style="margin-top: 1rem">
+            <p>{{termsText}}</p>
           </div>
-          {{/each}}
-        </div>
-      </div>
-      {{/if}} {{#if hasTerms}}
-      <div class="section">
-        <h2 class="section-title">Feltételek</h2>
-        {{#if termsItems}}
-        <div class="terms-list">
-          {{#each termsItems}}
-          <div class="term-item">
-            <div class="term-title">{{number}}. {{title}}</div>
-            <div class="term-description">{{description}}</div>
-          </div>
-          {{/each}}
-        </div>
-        {{/if}} {{#if termsText}}
-        <div class="body-content" style="margin-top: 1rem">
-          <p>{{termsText}}</p>
-        </div>
+          {{/if}}
+        </section>
         {{/if}}
-      </div>
-      {{/if}}
+      </main>
 
-      <div class="footer">
+      <footer role="contentinfo">
         <div class="footer-grid">
           {{#if contactEmail}}
           <div class="footer-item">
             <span class="footer-label">E-mail</span>
-            <span class="footer-value">{{contactEmail}}</span>
+            <span class="footer-value">
+              <a href="mailto:{{contactEmail}}" aria-label="E-mail küldése: {{contactEmail}}"
+                >{{contactEmail}}</a
+              >
+            </span>
           </div>
           {{/if}} {{#if contactPhone}}
           <div class="footer-item">
             <span class="footer-label">Telefon</span>
-            <span class="footer-value">{{contactPhone}}</span>
+            <span class="footer-value">
+              <a href="tel:{{contactPhone}}" aria-label="Telefon: {{contactPhone}}"
+                >{{contactPhone}}</a
+              >
+            </span>
           </div>
           {{/if}} {{#if companyWebsite}}
           <div class="footer-item">
             <span class="footer-label">Weboldal</span>
-            <span class="footer-value">{{companyWebsite}}</span>
+            <span class="footer-value">
+              <a
+                href="{{companyWebsite}}"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Weboldal megnyitása: {{companyWebsite}}"
+                >{{companyWebsite}}</a
+              >
+            </span>
           </div>
           {{/if}} {{#if companyTaxId}}
           <div class="footer-item">
@@ -637,9 +860,11 @@
           </div>
           {{/if}}
         </div>
-        <div class="footer-divider"></div>
-        <div class="copyright">© {{currentYear}} {{companyName}}. Minden jog fenntartva.</div>
-      </div>
+        <div class="footer-divider" aria-hidden="true"></div>
+        <div class="copyright">
+          <small>© {{currentYear}} {{companyName}}. Minden jog fenntartva.</small>
+        </div>
+      </footer>
     </div>
   </body>
 </html>

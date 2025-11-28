@@ -131,7 +131,17 @@ type BuildOfferHtmlOptions = {
 };
 
 export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
-  const template = loadTemplate(options.templateId);
+  let template: OfferTemplate;
+  try {
+    template = loadTemplate(options.templateId);
+  } catch (error) {
+    // Log error for debugging
+    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      console.error(`Failed to load template ${options.templateId}:`, error);
+    }
+    // Re-throw to let caller handle it (they should have fallback logic)
+    throw error;
+  }
 
   const tokens = createThemeTokens(template.tokens, options.branding);
   const normalizedImages = Array.isArray(options.images)
