@@ -50,7 +50,6 @@ async function handleReconciliation(req: NextRequest) {
     const { data: usersWithPdfs } = await supabase
       .from('offers')
       .select('user_id')
-      .distinct()
       .not('pdf_url', 'is', null)
       .gte('created_at', `${normalizedPeriod}T00:00:00Z`)
       .lt('created_at', `${normalizedPeriod}T23:59:59Z`);
