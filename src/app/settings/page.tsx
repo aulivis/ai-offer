@@ -350,6 +350,7 @@ export default function SettingsPage() {
                 brand_color_primary: primary,
                 brand_color_secondary: secondary,
                 offer_template: templateIdToSave,
+                enable_testimonials: true, // Always enabled
               },
               { onConflict: 'id' },
             )
@@ -452,7 +453,7 @@ export default function SettingsPage() {
         brand_color_secondary: prof?.brand_color_secondary ?? '#e2e8f0',
         offer_template: templateId,
         enable_reference_photos: prof?.enable_reference_photos ?? false,
-        enable_testimonials: prof?.enable_testimonials ?? false,
+        enable_testimonials: true, // Always enabled
         default_activity_id: prof?.default_activity_id ?? null,
       });
 
@@ -628,7 +629,7 @@ export default function SettingsPage() {
             brand_color_secondary: secondary,
             offer_template: templateId,
             enable_reference_photos: profile.enable_reference_photos ?? false,
-            enable_testimonials: profile.enable_testimonials ?? false,
+            enable_testimonials: true, // Always enabled
             default_activity_id: profile.default_activity_id ?? null,
           })
           .eq('id', user.id)
@@ -657,6 +658,7 @@ export default function SettingsPage() {
               brand_color_primary: primary,
               brand_color_secondary: secondary,
               offer_template: templateId,
+              enable_testimonials: true, // Always enabled
             },
             { onConflict: 'id' },
           )
@@ -679,7 +681,7 @@ export default function SettingsPage() {
         brand_color_secondary: profileData?.brand_color_secondary ?? secondary ?? null,
         offer_template: profileData?.offer_template ?? templateId,
         enable_reference_photos: profile.enable_reference_photos ?? false,
-        enable_testimonials: profile.enable_testimonials ?? false,
+        enable_testimonials: true, // Always enabled
         default_activity_id: profile.default_activity_id ?? null,
       }));
 
@@ -1371,47 +1373,25 @@ export default function SettingsPage() {
                               </p>
                             </div>
                           </div>
-                          {plan === 'pro' && (
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                const newValue = !(profile.enable_testimonials ?? false);
-                                setProfile((p) => ({ ...p, enable_testimonials: newValue }));
-                                await saveProfile('all');
-                              }}
-                              disabled={saving}
-                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                                profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
-                              }`}
-                            >
-                              <span
-                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                  profile.enable_testimonials ? 'translate-x-5' : 'translate-x-0'
-                                }`}
-                              />
-                            </button>
-                          )}
                         </div>
                       </div>
                       <div className="space-y-6">
                         {plan === 'pro' ? (
-                          profile.enable_testimonials ? (
-                            <TestimonialsManager
-                              testimonials={testimonials}
-                              activities={acts}
-                              enabled={true}
-                              plan={plan}
-                              onTestimonialsChange={async () => {
-                                if (!user) return;
-                                const { data: testimonialsList } = await supabase
-                                  .from('testimonials')
-                                  .select('*')
-                                  .eq('user_id', user.id)
-                                  .order('created_at', { ascending: false });
-                                setTestimonials((testimonialsList as typeof testimonials) || []);
-                              }}
-                            />
-                          ) : null
+                          <TestimonialsManager
+                            testimonials={testimonials}
+                            activities={acts}
+                            enabled={true}
+                            plan={plan}
+                            onTestimonialsChange={async () => {
+                              if (!user) return;
+                              const { data: testimonialsList } = await supabase
+                                .from('testimonials')
+                                .select('*')
+                                .eq('user_id', user.id)
+                                .order('created_at', { ascending: false });
+                              setTestimonials((testimonialsList as typeof testimonials) || []);
+                            }}
+                          />
                         ) : (
                           <div className="rounded-xl border-2 border-border bg-slate-50/50 p-8 text-center">
                             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
