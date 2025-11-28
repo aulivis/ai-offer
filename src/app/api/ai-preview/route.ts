@@ -4,6 +4,7 @@ import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { t } from '@/copy';
 import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
+import { moderateUserInput } from '@/lib/security/contentModeration';
 import { detectPreviewIssues, extractPreviewSummaryHighlights } from '@/lib/previewInsights';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
 import {
@@ -255,6 +256,35 @@ export const POST = withAuth(
         },
         { ...emptyProjectDetails },
       );
+
+      // Content moderation: Check for malicious content before sending to OpenAI
+      const moderationResult = moderateUserInput({
+        title,
+        projectDetails: sanitizedDetails,
+        deadline: deadline || undefined,
+      });
+
+      if (!moderationResult.allowed) {
+        log.warn('Content moderation blocked preview request', {
+          userId: req.user.id,
+          category: moderationResult.category,
+          reason: moderationResult.reason,
+        });
+        const errorResponse = NextResponse.json(
+          {
+            error:
+              moderationResult.reason ||
+              'A tartalom nem megfelelő formátumú. Kérjük, módosítsd a szöveget.',
+          },
+          { status: 400 },
+        );
+        errorResponse.headers.set('x-request-id', requestId);
+        if (rateLimitResult) {
+          addRateLimitHeaders(errorResponse, rateLimitResult);
+        }
+        return errorResponse;
+      }
+
       const safeDescription = formatProjectDetailsForPrompt(sanitizedDetails);
       const safeDeadline = sanitizeInput(deadline || '—');
 

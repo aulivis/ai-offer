@@ -12,6 +12,7 @@ import {
 } from 'react';
 import { Button } from '@/components/ui/Button';
 import { clientLogger } from '@/lib/clientLogger';
+import { sanitizeHTML } from '@/lib/sanitize';
 
 type RichTextEditorProps = {
   value: string;
@@ -231,7 +232,11 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(
     const emitChange = useCallback(() => {
       const editorEl = editorRef.current;
       if (!editorEl) return;
-      onChange(editorEl.innerHTML);
+      // Sanitize HTML from innerHTML before passing to onChange
+      // This prevents XSS attacks if malicious content is pasted or injected
+      const rawHtml = editorEl.innerHTML;
+      const sanitizedHtml = sanitizeHTML(rawHtml);
+      onChange(sanitizedHtml);
       updateCommandStates();
     }, [onChange, updateCommandStates]);
 

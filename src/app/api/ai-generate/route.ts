@@ -16,6 +16,7 @@ import { envServer } from '@/env.server';
 import { ensureSafeHtml, sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { convertSectionsToBlocks } from '@/lib/ai/blocks';
 import { getUserProfile } from '@/lib/services/user';
+import { moderateUserInput } from '@/lib/security/contentModeration';
 import {
   currentMonthStart,
   getUsageSnapshot,
@@ -826,9 +827,12 @@ export const POST = withAuth(
       const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
 
       if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+        // Use authenticated client for usage counter sync
+        // RLS policies should allow users to update their own usage counters
+        // If this fails, we log a warning but continue (non-blocking)
         try {
           await syncUsageCounter(
-            supabaseServiceRole(),
+            sb, // Use authenticated client instead of service role
             user.id,
             usageSnapshot.offersGenerated,
             usagePeriodStart,
@@ -837,6 +841,8 @@ export const POST = withAuth(
           log.warn('Failed to sync usage counter before offer generation', {
             error: syncError,
             message: syncError instanceof Error ? syncError.message : String(syncError),
+            // Note: If this fails due to RLS, we may need to review RLS policies
+            // or use service role as fallback (with proper logging)
           });
         }
       }
@@ -907,6 +913,38 @@ export const POST = withAuth(
         { ...emptyProjectDetails },
       );
 
+      // Content moderation: Check for malicious content before sending to OpenAI
+      const moderationInput: Parameters<typeof moderateUserInput>[0] = {
+        title,
+        projectDetails: {
+          overview: sanitizedDetails.overview || undefined,
+          deliverables: sanitizedDetails.deliverables || undefined,
+          timeline: sanitizedDetails.timeline || undefined,
+          constraints: sanitizedDetails.constraints || undefined,
+        },
+        deadline: deadline || undefined,
+        testimonials: testimonials && testimonials.length > 0 ? testimonials : undefined,
+        schedule: schedule && schedule.length > 0 ? schedule : undefined,
+        guarantees: guarantees && guarantees.length > 0 ? guarantees : undefined,
+      };
+      const moderationResult = moderateUserInput(moderationInput);
+
+      if (!moderationResult.allowed) {
+        log.warn('Content moderation blocked request', {
+          userId: user.id,
+          category: moderationResult.category,
+          reason: moderationResult.reason,
+        });
+        return NextResponse.json(
+          {
+            error:
+              moderationResult.reason ||
+              'A tartalom nem megfelelő formátumú. Kérjük, módosítsd a szöveget.',
+          },
+          { status: 400 },
+        );
+      }
+
       const normalizedLanguage = sanitizeInput(language);
       const resolvedLocale = resolveLocale(normalizedLanguage);
       const translator = createTranslator(resolvedLocale);
@@ -962,18 +1000,20 @@ export const POST = withAuth(
 
           // Record cache hit metrics
           const { recordAiGeneration } = await import('@/lib/ai/metrics');
-          recordAiGeneration(
-            {
-              duration: Date.now() - cacheStartTime,
-              tokens: cachedResponse.tokenCount
-                ? { prompt: 0, completion: 0, total: cachedResponse.tokenCount }
-                : undefined,
-              model: 'gpt-4o-mini',
-              cacheHit: true,
-              retries: 0,
-            },
-            log,
-          );
+          const cacheMetrics: Parameters<typeof recordAiGeneration>[0] = {
+            duration: Date.now() - cacheStartTime,
+            model: 'gpt-4o-mini',
+            cacheHit: true,
+            retries: 0,
+          };
+          if (cachedResponse.tokenCount) {
+            cacheMetrics.tokens = {
+              prompt: 0,
+              completion: 0,
+              total: cachedResponse.tokenCount,
+            };
+          }
+          recordAiGeneration(cacheMetrics, log);
         }
 
         // If no cached response, generate new one
@@ -1084,18 +1124,22 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
 
             // Record metrics
             const generationDuration = Date.now() - generationStartTime;
-            const tokenUsage = extractTokenUsage(response as { usage?: unknown });
-
-            recordAiGeneration(
-              {
-                duration: generationDuration,
-                tokens: tokenUsage,
-                model: 'gpt-4o-mini',
-                cacheHit: false,
-                retries: retryCount,
+            const tokenUsage = extractTokenUsage(
+              response as {
+                usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
               },
-              log,
             );
+
+            const generationMetrics: Parameters<typeof recordAiGeneration>[0] = {
+              duration: generationDuration,
+              model: 'gpt-4o-mini',
+              cacheHit: false,
+              retries: retryCount,
+            };
+            if (tokenUsage) {
+              generationMetrics.tokens = tokenUsage;
+            }
+            recordAiGeneration(generationMetrics, log);
 
             // Store response in cache for future requests
             const fullPrompt = `${SYSTEM_PROMPT}\n\n${userPrompt}`;

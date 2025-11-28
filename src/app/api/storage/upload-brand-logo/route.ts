@@ -231,6 +231,13 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       );
     }
 
+    // Validate userId doesn't contain path traversal characters
+    // This is a defense-in-depth measure (userId should already be validated by auth)
+    if (userId.includes('..') || userId.includes('/') || userId.includes('\\')) {
+      log.error('Invalid user ID format detected', { userId });
+      return NextResponse.json({ error: 'Érvénytelen felhasználói azonosító.' }, { status: 400 });
+    }
+
     const path = `${userId}/brand-logo.${normalizedImage.extension}`;
 
     // Verify the Supabase client has user context
