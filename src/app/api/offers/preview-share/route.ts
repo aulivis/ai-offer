@@ -89,6 +89,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const { error: offerInsertError } = await sb.from('offers').insert({
       id: offerId,
       user_id: request.user.id,
+      created_by: request.user.id,
       title: safeTitle,
       recipient_id: null,
       inputs: {

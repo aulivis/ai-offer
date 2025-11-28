@@ -1,73 +1,42 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { createClientLogger } from '@/lib/clientLogger';
-
-interface Notification {
-  id: string;
-  offerId: string;
-  type: 'response' | 'view' | 'share_created';
-  title: string;
-  message: string;
-  metadata: Record<string, unknown>;
-  isRead: boolean;
-  createdAt: string;
-}
+import { useNotifications, useInvalidateNotifications } from '@/hooks/queries/useNotifications';
 
 export function NotificationBell() {
   const router = useRouter();
   const sb = useSupabase();
+  const queryClient = useQueryClient();
   const { user } = useRequireAuth();
   const logger = useMemo(
     () =>
       createClientLogger({ ...(user?.id && { userId: user.id }), component: 'NotificationBell' }),
     [user?.id],
   );
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Use React Query hook for notifications (automatic caching and deduplication)
+  const {
+    notifications,
+    unreadCount,
+    isLoading: loading,
+  } = useNotifications({
+    limit: 10,
+    unreadOnly: false,
+    enabled: !!user,
+  });
+
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsQueryKey = useInvalidateNotifications();
 
-  // Load notifications
-  const loadNotifications = useCallback(async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const response = await fetchWithSupabaseAuth(
-        '/api/notifications?limit=10&unreadOnly=false',
-        {},
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to load notifications');
-      }
-
-      const data = await response.json();
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      logger.error('Failed to load notifications', error);
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  // Load on mount
-  useEffect(() => {
-    if (user) {
-      loadNotifications();
-    }
-  }, [user, loadNotifications]);
-
-  // Set up realtime subscription
+  // Set up realtime subscription to invalidate React Query cache
   useEffect(() => {
     if (!user) return;
 
@@ -81,10 +50,9 @@ export function NotificationBell() {
           table: 'offer_notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications((prev) => [newNotification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
+        () => {
+          // Invalidate notifications query to trigger refetch
+          queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
         },
       )
       .on(
@@ -95,12 +63,9 @@ export function NotificationBell() {
           table: 'offer_notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          const updated = payload.new as Notification;
-          setNotifications((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
-          if (updated.isRead) {
-            setUnreadCount((prev) => Math.max(0, prev - 1));
-          }
+        () => {
+          // Invalidate notifications query to trigger refetch
+          queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
         },
       )
       .subscribe();
@@ -108,7 +73,7 @@ export function NotificationBell() {
     return () => {
       sb.removeChannel(channel);
     };
-  }, [sb, user]);
+  }, [sb, user, queryClient, notificationsQueryKey]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -132,10 +97,8 @@ export function NotificationBell() {
       await fetchWithSupabaseAuth(`/api/notifications/${notificationId}/read`, {
         method: 'PATCH',
       });
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      // Invalidate notifications query to trigger refetch with updated data
+      queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
     } catch (error) {
       logger.error('Failed to mark notification as read', error, { notificationId });
     }
@@ -146,8 +109,8 @@ export function NotificationBell() {
       await fetchWithSupabaseAuth('/api/notifications/read-all', {
         method: 'POST',
       });
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+      // Invalidate notifications query to trigger refetch with updated data
+      queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
     } catch (error) {
       logger.error('Failed to mark all as read', error);
     }

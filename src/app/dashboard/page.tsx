@@ -415,7 +415,7 @@ export default function DashboardPage() {
       let query = sb
         .from('offers')
         .select(
-          'id,title,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name ),created_by_user:created_by ( id, email ),updated_by_user:updated_by ( id, email )',
+          'id,title,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name )',
           { count: 'exact' },
         );
 
@@ -536,14 +536,6 @@ export default function DashboardPage() {
           ? (entry.recipient[0] ?? null)
           : (entry.recipient ?? null);
 
-        const createdByUserValue = Array.isArray(entry.created_by_user)
-          ? (entry.created_by_user[0] ?? null)
-          : (entry.created_by_user ?? null);
-
-        const updatedByUserValue = Array.isArray(entry.updated_by_user)
-          ? (entry.updated_by_user[0] ?? null)
-          : (entry.updated_by_user ?? null);
-
         return {
           id: String(entry.id),
           title: typeof entry.title === 'string' ? entry.title : '',
@@ -559,18 +551,10 @@ export default function DashboardPage() {
           ...(typeof entry.created_by === 'string' ? { created_by: entry.created_by } : {}),
           updated_by: typeof entry.updated_by === 'string' ? entry.updated_by : null,
           team_id: typeof entry.team_id === 'string' ? entry.team_id : null,
-          created_by_user: createdByUserValue
-            ? {
-                id: createdByUserValue.id || '',
-                email: createdByUserValue.email || '',
-              }
-            : null,
-          updated_by_user: updatedByUserValue
-            ? {
-                id: updatedByUserValue.id || '',
-                email: updatedByUserValue.email || '',
-              }
-            : null,
+          // Note: created_by_user and updated_by_user set to null
+          // because the foreign key relationships are not configured in the schema
+          created_by_user: null,
+          updated_by_user: null,
         };
       });
 

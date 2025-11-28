@@ -58,6 +58,7 @@ async function createExternalApiOffer(
   const { error } = await sb.from('offers').insert({
     id: offerId,
     user_id: EXTERNAL_API_SYSTEM_USER_ID,
+    created_by: EXTERNAL_API_SYSTEM_USER_ID,
     title,
     status: 'draft',
     // Minimal fields for external API - service_role bypasses RLS

@@ -8,7 +8,6 @@ import { useToast } from '@/components/ToastProvider';
 import { getCsrfToken } from '@/lib/api';
 import { clientLogger } from '@/lib/clientLogger';
 import { getSupabaseClient, resetSessionState } from '@/lib/supabaseClient';
-import { clearUnauthenticatedCache } from '@/hooks/useOptionalAuth';
 import { useInvalidateSession } from '@/hooks/queries/useSession';
 
 export function useLogout() {
@@ -61,10 +60,7 @@ export function useLogout() {
       // 3. Reset session state
       resetSessionState();
 
-      // 4. Clear unauthenticated cache
-      clearUnauthenticatedCache();
-
-      // 5. Use hard navigation to ensure all state is cleared
+      // 4. Use hard navigation to ensure all state is cleared
       // This is the industry best practice for logout to ensure complete state reset
       window.location.href = '/login';
     } catch (err) {

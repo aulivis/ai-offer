@@ -1329,6 +1329,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         .insert({
           id: offerId,
           user_id: user.id,
+          created_by: user.id,
           title: safeTitle,
           recipient_id: clientId || null,
           inputs: {
