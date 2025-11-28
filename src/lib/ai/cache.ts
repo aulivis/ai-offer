@@ -76,9 +76,16 @@ export async function getCachedAiResponse(
     }
 
     // Increment access count asynchronously (don't wait)
-    supabase.rpc('increment_cache_access', { cache_id: data.id }).catch((err) => {
-      log?.warn('Failed to increment cache access count', { error: err, cacheId: data.id });
-    });
+    void (async () => {
+      try {
+        await supabase.rpc('increment_cache_access', { cache_id: data.id });
+      } catch (err) {
+        log?.warn('Failed to increment cache access count', {
+          error: err instanceof Error ? err : String(err),
+          cacheId: data.id,
+        });
+      }
+    })();
 
     log?.info('Cache hit for AI response', {
       requestHash,
@@ -92,7 +99,7 @@ export async function getCachedAiResponse(
       responseBlocks: data.response_blocks || undefined,
       cachedAt: data.cached_at,
       expiresAt: data.expires_at,
-      tokenCount: typeof data.token_count === 'number' ? data.token_count : undefined,
+      ...(typeof data.token_count === 'number' && { tokenCount: data.token_count }),
     };
   } catch (error) {
     log?.warn('Error getting cached AI response', {
