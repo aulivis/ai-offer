@@ -45,7 +45,7 @@ async function fetchOffers(params: OffersQueryParams): Promise<OffersQueryRespon
     ...(params.cursor && { cursor: params.cursor }),
   });
 
-  const response = await fetchWithSupabaseAuth(`/api/offers/list?${searchParams.toString()}`);
+  const response = await fetchWithSupabaseAuth(`/api/offers/list?${searchParams.toString()}`, {});
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Failed to fetch offers' }));
