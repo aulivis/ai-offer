@@ -59,19 +59,23 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
   const scopedLines: string[] = [];
   let inAtRule = false;
   let atRuleDepth = 0;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-    
+
     // Track @ rules
-    if (trimmed.startsWith('@media') || trimmed.startsWith('@keyframes') || trimmed.startsWith('@')) {
+    if (
+      trimmed.startsWith('@media') ||
+      trimmed.startsWith('@keyframes') ||
+      trimmed.startsWith('@')
+    ) {
       inAtRule = true;
       atRuleDepth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
       scopedLines.push(line);
       continue;
     }
-    
+
     // Track depth within @ rules
     if (inAtRule) {
       atRuleDepth += (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
@@ -79,7 +83,7 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
         inAtRule = false;
         atRuleDepth = 0;
       }
-      
+
       // Inside @media, scope selectors
       if (inAtRule && trimmed && !trimmed.startsWith('@') && trimmed.includes('{')) {
         const selectorMatch = trimmed.match(/^([^{]+)\{/);
@@ -92,11 +96,11 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
           }
         }
       }
-      
+
       scopedLines.push(line);
       continue;
     }
-    
+
     // Regular rule - check if it's a selector line
     if (trimmed && trimmed.includes('{') && !trimmed.startsWith('@') && trimmed !== ':root {') {
       const selectorMatch = trimmed.match(/^([^{]+)\{/);
@@ -110,7 +114,7 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
         }
       }
     }
-    
+
     scopedLines.push(line);
   }
 
