@@ -98,7 +98,8 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
           const selector = selectorMatch[1].trim();
           if (selector && !selector.includes(containerSelector)) {
             // Convert :root to container selector, otherwise scope normally
-            const scopedSelector = selector === ':root' ? containerSelector : `${containerSelector} ${selector}`;
+            const scopedSelector =
+              selector === ':root' ? containerSelector : `${containerSelector} ${selector}`;
             const scopedLine = line.replace(/^(\s*)([^{]+)\{/, `$1${scopedSelector}{`);
             scopedLines.push(scopedLine);
             continue;
@@ -118,7 +119,8 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
         // Skip if already scoped, otherwise scope it
         if (selector && !selector.includes(containerSelector)) {
           // Convert :root to container selector, otherwise scope normally
-          const scopedSelector = selector === ':root' ? containerSelector : `${containerSelector} ${selector}`;
+          const scopedSelector =
+            selector === ':root' ? containerSelector : `${containerSelector} ${selector}`;
           const scopedLine = line.replace(/^(\s*)([^{]+)\{/, `$1${scopedSelector}{`);
           scopedLines.push(scopedLine);
           continue;
