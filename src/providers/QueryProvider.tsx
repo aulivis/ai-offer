@@ -31,7 +31,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
             gcTime: 1000 * 60 * 5, // 5 minutes (renamed from cacheTime in v5)
             // Retry failed requests 3 times with exponential backoff
             retry: 3,
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+            retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
             // Refetch on window focus (good for keeping data fresh)
             refetchOnWindowFocus: true,
             // Don't refetch on reconnect by default (can be overridden per query)
@@ -42,8 +42,6 @@ export function QueryProvider({ children }: QueryProviderProps) {
           mutations: {
             // Retry failed mutations once
             retry: 1,
-            // Don't retry on network errors (they'll likely fail again)
-            retryOnMount: false,
           },
         },
       }),
