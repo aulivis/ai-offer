@@ -20,7 +20,7 @@ import { resolveEffectivePlan } from '@/lib/subscription';
 import { resolveProfileMutationAction } from './profilePersistence';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Card, CardHeader } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import {
   CubeIcon,
@@ -1354,52 +1354,46 @@ export default function SettingsPage() {
                   }`}
                 >
                   {activeTab === 'testimonials' && (
-                    <div className="space-y-6">
-                      <Card
-                        as="section"
-                        header={
-                          <CardHeader>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
-                                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
-                                  <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
-                                    {t('settings.testimonials.title')}
-                                  </h2>
-                                  <p className="text-sm md:text-base text-slate-500">
-                                    {t('settings.testimonials.subtitle')}
-                                  </p>
-                                </div>
-                              </div>
-                              {plan === 'pro' && (
-                                <button
-                                  type="button"
-                                  onClick={async () => {
-                                    const newValue = !(profile.enable_testimonials ?? false);
-                                    setProfile((p) => ({ ...p, enable_testimonials: newValue }));
-                                    await saveProfile('all');
-                                  }}
-                                  disabled={saving}
-                                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                                    profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
-                                  }`}
-                                >
-                                  <span
-                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                      profile.enable_testimonials
-                                        ? 'translate-x-5'
-                                        : 'translate-x-0'
-                                    }`}
-                                  />
-                                </button>
-                              )}
+                    <div className="space-y-8 w-full">
+                      <div className="mb-8">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
+                              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
+                              <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
                             </div>
-                          </CardHeader>
-                        }
-                      >
+                            <div>
+                              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+                                {t('settings.testimonials.title')}
+                              </h2>
+                              <p className="text-sm md:text-base text-slate-600">
+                                {t('settings.testimonials.subtitle')}
+                              </p>
+                            </div>
+                          </div>
+                          {plan === 'pro' && (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const newValue = !(profile.enable_testimonials ?? false);
+                                setProfile((p) => ({ ...p, enable_testimonials: newValue }));
+                                await saveProfile('all');
+                              }}
+                              disabled={saving}
+                              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                                profile.enable_testimonials ? 'bg-primary' : 'bg-slate-300'
+                              }`}
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                  profile.enable_testimonials ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-6">
                         {plan === 'pro' ? (
                           profile.enable_testimonials ? (
                             <TestimonialsManager
@@ -1444,7 +1438,7 @@ export default function SettingsPage() {
                             </Button>
                           </div>
                         )}
-                      </Card>
+                      </div>
                     </div>
                   )}
                 </div>

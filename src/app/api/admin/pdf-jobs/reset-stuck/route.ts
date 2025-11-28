@@ -8,7 +8,7 @@
  * - timeoutMinutes: Minutes a job must be processing to be considered stuck (default: 10)
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { getStuckJobs, resetStuckJob } from '@/lib/pdf/retry';
 import { createLogger } from '@/lib/logger';
@@ -18,13 +18,12 @@ import type { AuthenticatedNextRequest } from '@/middleware/auth';
 
 export const runtime = 'nodejs';
 
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+async function resetStuckJobs(req: NextRequest, isCron: boolean = false) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
-  log.setContext({ userId: req.user.id });
-
-  // TODO: Add admin role check here
-  // For now, allow all authenticated users (add proper admin check later)
+  if (!isCron) {
+    log.setContext({ userId: (req as AuthenticatedNextRequest).user.id });
+  }
 
   try {
     const timeoutParam = req.nextUrl.searchParams.get('timeoutMinutes');
@@ -45,6 +44,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     log.warn('Found stuck PDF jobs', {
       count: stuckJobs.length,
       timeoutMinutes,
+      isCron,
     });
 
     const resetJobs: Array<{ jobId: string; success: boolean; error?: string }> = [];
@@ -84,4 +84,33 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       { status: 500 },
     );
   }
+}
+
+// Handle GET requests from Vercel cron jobs
+// Vercel cron jobs always use GET and can include a secret in the Authorization header
+export const GET = async (req: NextRequest) => {
+  // Check if this is a Vercel cron request by checking for the cron secret header
+  const authHeader = req.headers.get('authorization');
+
+  // If there's an auth header, it's likely a Vercel cron job
+  if (authHeader) {
+    return resetStuckJobs(req, true);
+  }
+
+  // If no auth header, return 405 to indicate POST is required for manual calls
+  return NextResponse.json(
+    {
+      error:
+        'This endpoint requires POST method for manual calls. GET is reserved for Vercel cron jobs.',
+      method: req.method,
+    },
+    { status: 405 },
+  );
+};
+
+// Handle POST requests from authenticated users
+export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
+  // TODO: Add admin role check here
+  // For now, allow all authenticated users (add proper admin check later)
+  return resetStuckJobs(req, false);
 });

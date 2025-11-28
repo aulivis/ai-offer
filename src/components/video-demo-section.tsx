@@ -2,7 +2,6 @@
 
 import { Play, Users, Eye, Star, ThumbsUp } from 'lucide-react';
 import { useState } from 'react';
-import Image from 'next/image';
 import { FeatureIndicators } from './FeatureIndicators';
 import { LandingCTA } from './ui/LandingCTA';
 
@@ -34,19 +33,8 @@ export function VideoDemoSection() {
             {/* Poster image - loads fast */}
             {!isPlaying ? (
               <>
-                {/* Background gradient fallback */}
+                {/* Background gradient - removed Image component to prevent 404 errors */}
                 <div className="absolute inset-0 bg-gradient-to-br from-navy-800 via-navy-700 to-turquoise-800"></div>
-                <div className="relative w-full h-full">
-                  <Image
-                    src="/video-poster.jpg"
-                    alt="Product demo"
-                    fill
-                    className="object-cover"
-                    onError={() => {
-                      // Image will fallback to gradient background if it fails to load
-                    }}
-                  />
-                </div>
 
                 {/* Large, tappable play button */}
                 <button

@@ -419,23 +419,41 @@ export default function DashboardPage() {
           { count: 'exact' },
         );
 
-      if (filter === 'my') {
-        query = query.eq('user_id', user);
-      } else if (filter === 'team') {
-        if (teamIdsParam.length === 0) {
-          return { items: [], count: 0 };
-        }
-        query = query.not('team_id', 'is', null).in('team_id', teamIdsParam);
-      } else if (filter === 'all') {
-        if (teamIdsParam.length > 0) {
-          query = query.or(`user_id.eq.${user},team_id.in.(${teamIdsParam.join(',')})`);
+      try {
+        if (filter === 'my') {
+          query = query.eq('user_id', user);
+        } else if (filter === 'team') {
+          if (teamIdsParam.length === 0) {
+            return { items: [], count: 0 };
+          }
+          query = query.not('team_id', 'is', null).in('team_id', teamIdsParam);
+        } else if (filter === 'all') {
+          if (teamIdsParam.length > 0) {
+            query = query.or(`user_id.eq.${user},team_id.in.(${teamIdsParam.join(',')})`);
+          } else {
+            query = query.eq('user_id', user);
+          }
+        } else if (filter === 'member' && memberIds.length > 0) {
+          query = query.in('created_by', memberIds);
         } else {
           query = query.eq('user_id', user);
         }
-      } else if (filter === 'member' && memberIds.length > 0) {
-        query = query.in('created_by', memberIds);
-      } else {
-        query = query.eq('user_id', user);
+      } catch (queryBuildError) {
+        logger.error('Failed to build query', queryBuildError, {
+          userId: user,
+          filter,
+          teamIdsParam,
+          memberIds,
+        });
+        console.error('[Dashboard] Query build error:', queryBuildError, {
+          userId: user,
+          filter,
+          teamIdsParam,
+          memberIds,
+        });
+        throw new Error(
+          `Failed to build query: ${queryBuildError instanceof Error ? queryBuildError.message : String(queryBuildError)}`,
+        );
       }
 
       const { data, error, count } = await query
@@ -443,12 +461,52 @@ export default function DashboardPage() {
         .range(from, to);
 
       if (error) {
-        logger.error('Dashboard fetch error', error, {
+        // Extract detailed error information for logging
+        const errorInfo: Record<string, unknown> = {
           errorCode: error.code,
           errorDetails: error.details,
           errorHint: error.hint,
+          errorMessage: error.message,
+          userId: user,
+          filter,
+          pageNumber,
+          teamIdsParam,
+          memberIds,
+        };
+
+        logger.error('Dashboard fetch error', error, errorInfo);
+        // Also log to console as fallback
+        console.error('[Dashboard] Fetch error:', error, errorInfo);
+
+        // Create a more descriptive error message
+        const errorMessage =
+          error.message ||
+          error.details ||
+          error.hint ||
+          `Database error: ${error.code || 'unknown'}`;
+
+        const enhancedError = new Error(errorMessage);
+        // Preserve original error details
+        (enhancedError as { originalError?: unknown }).originalError = error;
+        throw enhancedError;
+      }
+
+      // Check if data is null/undefined (shouldn't happen, but handle gracefully)
+      if (data === null || data === undefined) {
+        const nullDataError = new Error('Query returned null data');
+        logger.error('Dashboard query returned null data', nullDataError, {
+          userId: user,
+          filter,
+          pageNumber,
+          teamIdsParam,
+          memberIds,
         });
-        throw error;
+        console.error('[Dashboard] Query returned null data:', {
+          userId: user,
+          filter,
+          pageNumber,
+        });
+        throw nullDataError;
       }
 
       // Only log in development
@@ -558,12 +616,59 @@ export default function DashboardPage() {
         setPageIndex(0);
         setTotalCount(count);
       } catch (error) {
-        logger.error('Failed to load offers', error);
-        const message =
-          error instanceof Error ? error.message : t('toasts.offers.loadFailed.description');
+        // Extract detailed error information
+        let errorMessage = t('toasts.offers.loadFailed.description');
+        let errorDetails: Record<string, unknown> = {};
+
+        if (error && typeof error === 'object') {
+          // Handle Supabase PostgrestError
+          if ('code' in error || 'message' in error || 'details' in error || 'hint' in error) {
+            const supabaseError = error as {
+              code?: string;
+              message?: string;
+              details?: string;
+              hint?: string;
+            };
+            errorMessage = supabaseError.message || errorMessage;
+            errorDetails = {
+              code: supabaseError.code,
+              details: supabaseError.details,
+              hint: supabaseError.hint,
+            };
+          }
+          // Handle standard Error
+          else if (error instanceof Error) {
+            errorMessage = error.message || errorMessage;
+            errorDetails = {
+              name: error.name,
+              stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined,
+            };
+          }
+          // Handle other error types
+          else {
+            errorMessage = String(error);
+          }
+        }
+
+        const logContext = {
+          userId: user?.id,
+          offerFilter,
+          teamIds,
+          teamMemberFilter,
+          ...errorDetails,
+        };
+
+        // Log error with both logger and console as fallback
+        logger.error('Failed to load offers', error, logContext);
+        // Also log to console as fallback (especially important if logger fails)
+        console.error('[Dashboard] Failed to load offers:', {
+          error,
+          ...logContext,
+        });
+
         showToastRef.current({
           title: t('toasts.offers.loadFailed.title'),
-          description: message || t('toasts.offers.loadFailed.description'),
+          description: errorMessage,
           variant: 'error',
         });
       } finally {

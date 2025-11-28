@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { t } from '@/copy';
 import { useToast } from '@/components/ToastProvider';
@@ -8,10 +9,13 @@ import { getCsrfToken } from '@/lib/api';
 import { clientLogger } from '@/lib/clientLogger';
 import { getSupabaseClient, resetSessionState } from '@/lib/supabaseClient';
 import { clearUnauthenticatedCache } from '@/hooks/useOptionalAuth';
+import { useInvalidateSession } from '@/hooks/queries/useSession';
 
 export function useLogout() {
   const { showToast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const queryClient = useQueryClient();
+  const sessionQueryKey = useInvalidateSession();
 
   const logout = useCallback(async () => {
     setIsLoggingOut(true);
@@ -40,7 +44,10 @@ export function useLogout() {
       }
 
       // Clear all client-side state before navigation
-      // 1. Clear Supabase client session
+      // 1. Invalidate React Query session cache
+      queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+
+      // 2. Clear Supabase client session
       const supabaseClient = getSupabaseClient();
       try {
         await supabaseClient.auth.signOut();
@@ -51,13 +58,13 @@ export function useLogout() {
         });
       }
 
-      // 2. Reset session state
+      // 3. Reset session state
       resetSessionState();
 
-      // 3. Clear unauthenticated cache
+      // 4. Clear unauthenticated cache
       clearUnauthenticatedCache();
 
-      // 4. Use hard navigation to ensure all state is cleared
+      // 5. Use hard navigation to ensure all state is cleared
       // This is the industry best practice for logout to ensure complete state reset
       window.location.href = '/login';
     } catch (err) {
@@ -72,7 +79,7 @@ export function useLogout() {
     }
     // Note: setIsLoggingOut(false) is not called in the success path
     // because window.location.href causes a full page reload
-  }, [showToast]);
+  }, [showToast, queryClient, sessionQueryKey]);
 
   return { logout, isLoggingOut } as const;
 }

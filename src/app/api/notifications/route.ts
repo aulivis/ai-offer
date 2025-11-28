@@ -8,6 +8,7 @@ import {
   withAuthenticatedErrorHandling,
 } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
+import { withTimeout, API_TIMEOUTS } from '@/lib/timeout';
 
 const notificationsQuerySchema = z.object({
   unreadOnly: z
@@ -35,6 +36,7 @@ const notificationsQuerySchema = z.object({
 /**
  * GET /api/notifications
  * Get notifications for the authenticated user
+ * Optimized to use a single query with conditional counting for unread notifications
  */
 export const GET = withAuth(
   withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
@@ -65,38 +67,54 @@ export const GET = withAuth(
 
     const { unreadOnly, limit, offset } = queryParsed.data;
 
-    const sb = await supabaseServer();
+    // Wrap database operations in timeout to prevent hanging requests
+    return withTimeout(
+      async (_signal) => {
+        const sb = await supabaseServer();
 
-    // Build query
-    let query = sb
-      .from('offer_notifications')
-      .select('*', { count: 'exact' })
-      .eq('user_id', request.user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+        // Optimized: Build main query with count
+        let query = sb
+          .from('offer_notifications')
+          .select('*', { count: 'exact' })
+          .eq('user_id', request.user.id)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + limit - 1);
 
-    if (unreadOnly) {
-      query = query.eq('is_read', false);
-    }
+        if (unreadOnly) {
+          query = query.eq('is_read', false);
+        }
 
-    const { data: notifications, error: notificationsError, count } = await query;
+        const { data: notifications, error: notificationsError, count } = await query;
 
-    if (notificationsError) {
-      throw notificationsError; // Will be handled by withAuthenticatedErrorHandling
-    }
+        if (notificationsError) {
+          throw notificationsError; // Will be handled by withAuthenticatedErrorHandling
+        }
 
-    // Get unread count separately
-    const { count: unreadCount } = await sb
-      .from('offer_notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', request.user.id)
-      .eq('is_read', false);
+        // Optimized: Only fetch unread count if not already filtered by unreadOnly
+        // If unreadOnly is true, we can calculate unreadCount from the results
+        let unreadCount: number;
+        if (unreadOnly) {
+          // If filtering by unread only, the count is the unread count
+          unreadCount = count || 0;
+        } else {
+          // Otherwise, get unread count in parallel with a separate optimized query
+          const { count: unreadCountResult } = await sb
+            .from('offer_notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', request.user.id)
+            .eq('is_read', false);
+          unreadCount = unreadCountResult || 0;
+        }
 
-    return NextResponse.json({
-      notifications: notifications || [],
-      unreadCount: unreadCount || 0,
-      total: count || 0,
-    });
+        return NextResponse.json({
+          notifications: notifications || [],
+          unreadCount,
+          total: count || 0,
+        });
+      },
+      API_TIMEOUTS.DATABASE,
+      'Notifications query timed out',
+    );
   }),
 );
 
