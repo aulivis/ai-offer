@@ -54,7 +54,7 @@ export function useCursorPagination<T>({
         });
 
         const url = `${endpoint}?${searchParams.toString()}`;
-        const response = await fetchWithSupabaseAuth(url);
+        const response = await fetchWithSupabaseAuth(url, {});
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Failed to fetch' }));

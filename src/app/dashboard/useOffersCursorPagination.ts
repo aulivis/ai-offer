@@ -78,7 +78,7 @@ export function useOffersCursorPagination({
           ...(cursor && { cursor }),
         });
 
-        const response = await fetchWithSupabaseAuth(`/api/offers/list?${searchParams.toString()}`);
+        const response = await fetchWithSupabaseAuth(`/api/offers/list?${searchParams.toString()}`, {});
 
         if (!response.ok) {
           const errorData = await response
