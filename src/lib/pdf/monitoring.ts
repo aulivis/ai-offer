@@ -301,7 +301,7 @@ export async function exportMetrics(
     recordMetric('pdf.job.processing_time.p95', metrics.processingTimes.p95);
     recordMetric('pdf.job.processing_time.p99', metrics.processingTimes.p99);
 
-    log.info('PDF job metrics exported', metrics);
+    log.info('PDF job metrics exported', metrics as unknown as Record<string, unknown>);
   } catch (error) {
     log.error('Failed to export PDF job metrics', error);
   }
