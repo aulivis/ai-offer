@@ -51,7 +51,7 @@ export const GET = withAuth(
       const requestId = request.headers.get('x-request-id') || 'unknown';
       const log = createLogger(requestId);
       log.warn('Notifications query validation failed', {
-        errors: queryParsed.error.errors,
+        errors: queryParsed.error.issues,
         queryParams: {
           unreadOnly: url.searchParams.get('unreadOnly'),
           limit: url.searchParams.get('limit'),
