@@ -55,7 +55,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         offset: String(offset),
       });
 
-      const response = await fetchWithSupabaseAuth(`/api/notifications?${params.toString()}`);
+      const response = await fetchWithSupabaseAuth(`/api/notifications?${params.toString()}`, {});
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
@@ -67,7 +67,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     staleTime: 1000 * 30, // 30 seconds - notifications are considered fresh for 30s
     gcTime: 1000 * 60 * 5, // 5 minutes - keep in cache for 5 minutes
     retry: 2, // Retry up to 2 times on failure
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 5000),
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchOnMount: false, // Don't refetch on every mount if data is fresh
     refetchOnReconnect: true, // Refetch when network reconnects
