@@ -37,6 +37,7 @@ type TeamInvitation = {
   status: string;
   expires_at: string;
   created_at: string;
+  token: string;
 };
 
 type SettingsTeamSectionProps = {
