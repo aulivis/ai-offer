@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useSupabase } from '@/hooks/useSupabase';
+import { useSupabase } from '@/components/SupabaseProvider';
 import { logger } from '@/lib/logger';
 
 export interface PdfJobStatus {
