@@ -40,10 +40,11 @@ export const GET = withAuth(
   withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
     // Parse query parameters
     const url = new URL(request.url);
+    // Convert null to undefined for optional parameters (searchParams.get returns null when missing)
     const queryParsed = notificationsQuerySchema.safeParse({
-      unreadOnly: url.searchParams.get('unreadOnly'),
-      limit: url.searchParams.get('limit'),
-      offset: url.searchParams.get('offset'),
+      unreadOnly: url.searchParams.get('unreadOnly') ?? undefined,
+      limit: url.searchParams.get('limit') ?? undefined,
+      offset: url.searchParams.get('offset') ?? undefined,
     });
 
     if (!queryParsed.success) {

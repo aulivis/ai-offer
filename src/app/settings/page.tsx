@@ -29,6 +29,7 @@ import {
   ChatBubbleLeftRightIcon,
   ShieldCheckIcon,
   UserIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import type { TemplateId } from '@/app/pdf/templates/types';
 import { SettingsSecurityTab } from '@/components/settings/SettingsSecurityTab';
@@ -39,12 +40,10 @@ import { SettingsActivitiesSection } from '@/components/settings/SettingsActivit
 import { SettingsGuaranteesSection } from '@/components/settings/SettingsGuaranteesSection';
 import { SettingsEmailSubscriptionSection } from '@/components/settings/SettingsEmailSubscriptionSection';
 import { TestimonialsManager } from '@/components/settings/TestimonialsManager';
+import { SettingsTeamSection } from '@/components/settings/SettingsTeamSection';
 import type { Profile, ActivityRow, GuaranteeRow } from '@/components/settings/types';
 import { validatePhoneHU, validateTaxHU, validateAddress } from '@/components/settings/types';
 import { createClientLogger } from '@/lib/clientLogger';
-
-const ACTIVITIES_COLLAPSE_STORAGE_KEY = 'settings.activities.collapsed';
-const GUARANTEES_COLLAPSE_STORAGE_KEY = 'settings.guarantees.collapsed';
 
 type SupabaseErrorLike = {
   message?: string | null;
@@ -101,8 +100,6 @@ export default function SettingsPage() {
   const [guarantees, setGuarantees] = useState<GuaranteeRow[]>([]);
   const [guaranteeAddLoading, setGuaranteeAddLoading] = useState(false);
   const [guaranteeBusyId, setGuaranteeBusyId] = useState<string | null>(null);
-  const [activitiesCollapsed, setActivitiesCollapsed] = useState(false);
-  const [guaranteesCollapsed, setGuaranteesCollapsed] = useState(false);
   const [testimonials, setTestimonials] = useState<
     Array<{
       id: string;
@@ -219,9 +216,15 @@ export default function SettingsPage() {
     const hash = window.location.hash.replace('#', '');
     if (
       hash &&
-      ['profile', 'security', 'templates', 'activities', 'guarantees', 'testimonials'].includes(
-        hash,
-      )
+      [
+        'profile',
+        'security',
+        'templates',
+        'activities',
+        'guarantees',
+        'testimonials',
+        'team',
+      ].includes(hash)
     ) {
       setActiveTab(hash);
     }
@@ -258,6 +261,11 @@ export default function SettingsPage() {
       label: 'Ajánlások',
       icon: <ChatBubbleLeftRightIcon className="h-5 w-5" />,
     },
+    {
+      id: 'team',
+      label: 'Csapat',
+      icon: <UserGroupIcon className="h-5 w-5" />,
+    },
   ];
 
   const handleTabChange = (tabId: string) => {
@@ -266,65 +274,6 @@ export default function SettingsPage() {
       window.history.replaceState(null, '', `#${tabId}`);
     }
   };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const storedActivities = window.localStorage.getItem(ACTIVITIES_COLLAPSE_STORAGE_KEY);
-    const storedGuarantees = window.localStorage.getItem(GUARANTEES_COLLAPSE_STORAGE_KEY);
-    if (storedActivities === '1') {
-      setActivitiesCollapsed(true);
-    }
-    if (storedGuarantees === '1') {
-      setGuaranteesCollapsed(true);
-    }
-  }, []);
-
-  const hasActivityContent = useMemo(
-    () =>
-      acts.length > 0 ||
-      acts.some(
-        (activity) =>
-          Array.isArray(activity.reference_images) && activity.reference_images.length > 0,
-      ),
-    [acts],
-  );
-  const hasGuaranteeContent = guarantees.length > 0;
-
-  useEffect(() => {
-    if (hasActivityContent && activitiesCollapsed) {
-      setActivitiesCollapsed(false);
-    }
-  }, [activitiesCollapsed, hasActivityContent]);
-
-  useEffect(() => {
-    if (hasGuaranteeContent && guaranteesCollapsed) {
-      setGuaranteesCollapsed(false);
-    }
-  }, [guaranteesCollapsed, hasGuaranteeContent]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    if (hasActivityContent) {
-      window.localStorage.removeItem(ACTIVITIES_COLLAPSE_STORAGE_KEY);
-      return;
-    }
-    window.localStorage.setItem(ACTIVITIES_COLLAPSE_STORAGE_KEY, activitiesCollapsed ? '1' : '0');
-  }, [activitiesCollapsed, hasActivityContent]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    if (hasGuaranteeContent) {
-      window.localStorage.removeItem(GUARANTEES_COLLAPSE_STORAGE_KEY);
-      return;
-    }
-    window.localStorage.setItem(GUARANTEES_COLLAPSE_STORAGE_KEY, guaranteesCollapsed ? '1' : '0');
-  }, [guaranteesCollapsed, hasGuaranteeContent]);
 
   const hasGeneralErrors = Object.keys(errors.general).length > 0;
   const hasBrandingErrors = Object.keys(errors.branding).length > 0;
@@ -1318,9 +1267,6 @@ export default function SettingsPage() {
                       saving={actSaving}
                       plan={plan}
                       defaultActivityId={profile.default_activity_id}
-                      collapsed={activitiesCollapsed}
-                      collapseDisabled={hasActivityContent}
-                      onCollapsedChange={(value) => setActivitiesCollapsed(value)}
                       onNewActivityChange={setNewAct}
                       onAddActivity={addActivity}
                       onDeleteActivity={deleteActivity}
@@ -1394,9 +1340,6 @@ export default function SettingsPage() {
                       guarantees={guarantees}
                       addLoading={guaranteeAddLoading}
                       busyGuaranteeId={guaranteeBusyId}
-                      collapsed={guaranteesCollapsed}
-                      collapseDisabled={hasGuaranteeContent}
-                      onCollapsedChange={(value) => setGuaranteesCollapsed(value)}
                       onAddGuarantee={addGuaranteeEntry}
                       onUpdateGuarantee={updateGuaranteeEntry}
                       onDeleteGuarantee={deleteGuaranteeEntry}
@@ -1504,6 +1447,14 @@ export default function SettingsPage() {
                       </Card>
                     </div>
                   )}
+                </div>
+
+                <div
+                  className={`transition-all duration-300 w-full ${
+                    activeTab === 'team' ? 'opacity-100 translate-y-0' : 'hidden'
+                  }`}
+                >
+                  {activeTab === 'team' && <SettingsTeamSection plan={plan} />}
                 </div>
               </div>
             </div>

@@ -221,7 +221,7 @@ export function TestimonialsManager({
     <div className="space-y-6">
       {/* Add New Testimonial */}
       {testimonials.length < MAX_TESTIMONIALS && (
-        <div className="rounded-xl border border-border/60 bg-slate-50/50 p-6">
+        <div>
           <h3 className="mb-4 text-sm font-semibold text-slate-900">
             {t('settings.testimonials.addNew')}
           </h3>
