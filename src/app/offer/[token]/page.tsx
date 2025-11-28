@@ -13,7 +13,7 @@ import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { resolveOfferTemplate } from '@/lib/offers/templateResolution';
 import { buildOfferHtmlWithFallback } from '@/lib/offers/offerRendering';
-import { extractAndScopeStyles, extractBodyFromHtml } from '@/lib/offers/styleExtraction';
+import { extractAndScopeStyles, extractBodyFromHtml, scopeCssToContainer } from '@/lib/offers/styleExtraction';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
@@ -244,7 +244,15 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   });
 
   // Extract and scope styles server-side for better performance
-  const scopedStyles = extractAndScopeStyles(fullHtml);
+  let scopedStyles = extractAndScopeStyles(fullHtml);
+  
+  // Fallback: if no styles were extracted, include base document styles
+  // This ensures offers always have formatting even if style extraction fails
+  if (!scopedStyles || scopedStyles.trim().length === 0) {
+    const { OFFER_DOCUMENT_STYLES } = await import('@/app/lib/offerDocument');
+    scopedStyles = scopeCssToContainer(OFFER_DOCUMENT_STYLES, '#offer-content-container');
+  }
+  
   const bodyHtml = extractBodyFromHtml(fullHtml);
 
   // Log access (non-blocking for better performance)

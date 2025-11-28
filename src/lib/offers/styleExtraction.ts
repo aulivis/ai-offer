@@ -7,22 +7,26 @@
  * Extract styles from full HTML document
  */
 export function extractStylesFromHtml(html: string): string {
-  const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
-
-  if (!styleMatch || styleMatch.length === 0) {
+  if (!html || typeof html !== 'string') {
     return '';
   }
 
-  // Extract CSS content from style tags
-  const cssContent = styleMatch
-    .map((style) => {
-      const contentMatch = style.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-      return contentMatch ? contentMatch[1] : '';
-    })
-    .filter(Boolean)
-    .join('\n');
+  // Match all style tags (including those with attributes)
+  const stylePattern = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+  const styleMatches = html.matchAll(stylePattern);
 
-  return cssContent;
+  const cssParts: string[] = [];
+  for (const match of styleMatches) {
+    if (match[1]) {
+      cssParts.push(match[1].trim());
+    }
+  }
+
+  if (cssParts.length === 0) {
+    return '';
+  }
+
+  return cssParts.join('\n');
 }
 
 /**
@@ -35,62 +39,82 @@ export function extractBodyFromHtml(html: string): string {
 
 /**
  * Scope CSS rules to a specific container by prefixing selectors.
- * Uses a more robust approach that handles nested rules, media queries, and complex selectors.
+ * Uses a simple line-by-line approach that works for most CSS.
  */
 export function scopeCssToContainer(css: string, containerSelector: string): string {
+  if (!css || !css.trim()) {
+    return '';
+  }
+
   // Remove any existing scoping to avoid double scoping
   const cleanCss = css.replace(
     new RegExp(`^${containerSelector.replace('#', '\\#')}\\s+`, 'gm'),
     '',
   );
 
-  // Use a regex-based approach to scope CSS rules
-  // This handles most common CSS patterns including media queries
-  let scopedCss = cleanCss;
-
-  // Scope regular CSS rules (not inside @ rules initially)
-  // Match: selector { declarations }
-  scopedCss = scopedCss.replace(/([^{}@]+)\{([^{}]+)\}/g, (match, selector, declarations) => {
-    const trimmedSelector = selector.trim();
-    // Skip if already scoped, is an @ rule, or is empty
-    if (
-      !trimmedSelector ||
-      trimmedSelector.includes(containerSelector) ||
-      trimmedSelector.startsWith('@')
-    ) {
-      return match;
+  // Simple approach: for each line that starts with a selector (not @ rule, not :root),
+  // prefix it with the container selector
+  // This works because CSS is typically formatted with selectors on their own lines
+  const lines = cleanCss.split('\n');
+  const scopedLines: string[] = [];
+  let inAtRule = false;
+  let atRuleDepth = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    
+    // Track @ rules
+    if (trimmed.startsWith('@media') || trimmed.startsWith('@keyframes') || trimmed.startsWith('@')) {
+      inAtRule = true;
+      atRuleDepth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+      scopedLines.push(line);
+      continue;
     }
-    // Scope the selector
-    return `${containerSelector} ${trimmedSelector} {${declarations}}`;
-  });
-
-  // Handle @media queries - scope rules inside them
-  scopedCss = scopedCss.replace(/@media[^{]+\{([^}]+)\}/g, (match, mediaContent) => {
-    // Extract the media query part
-    const mediaMatch = match.match(/^(@media[^{]+)\{/);
-    if (!mediaMatch) return match;
-
-    const mediaQuery = mediaMatch[1];
-    // Scope each rule inside the media query
-    const scopedMediaContent = mediaContent.replace(
-      /([^{}]+)\{([^{}]+)\}/g,
-      (ruleMatch: string, ruleSelector: string, ruleDeclarations: string) => {
-        const trimmedRuleSelector = ruleSelector.trim();
-        if (
-          !trimmedRuleSelector ||
-          trimmedRuleSelector.includes(containerSelector) ||
-          trimmedRuleSelector.startsWith('@')
-        ) {
-          return ruleMatch;
+    
+    // Track depth within @ rules
+    if (inAtRule) {
+      atRuleDepth += (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
+      if (atRuleDepth <= 0) {
+        inAtRule = false;
+        atRuleDepth = 0;
+      }
+      
+      // Inside @media, scope selectors
+      if (inAtRule && trimmed && !trimmed.startsWith('@') && trimmed.includes('{')) {
+        const selectorMatch = trimmed.match(/^([^{]+)\{/);
+        if (selectorMatch) {
+          const selector = selectorMatch[1].trim();
+          if (selector && !selector.includes(containerSelector) && selector !== ':root') {
+            const scopedLine = line.replace(/^(\s*)([^{]+)\{/, `$1${containerSelector} $2{`);
+            scopedLines.push(scopedLine);
+            continue;
+          }
         }
-        return `${containerSelector} ${trimmedRuleSelector} {${ruleDeclarations}}`;
-      },
-    );
+      }
+      
+      scopedLines.push(line);
+      continue;
+    }
+    
+    // Regular rule - check if it's a selector line
+    if (trimmed && trimmed.includes('{') && !trimmed.startsWith('@') && trimmed !== ':root {') {
+      const selectorMatch = trimmed.match(/^([^{]+)\{/);
+      if (selectorMatch) {
+        const selector = selectorMatch[1].trim();
+        // Skip if already scoped, empty, or special
+        if (selector && !selector.includes(containerSelector) && selector !== ':root') {
+          const scopedLine = line.replace(/^(\s*)([^{]+)\{/, `$1${containerSelector} $2{`);
+          scopedLines.push(scopedLine);
+          continue;
+        }
+      }
+    }
+    
+    scopedLines.push(line);
+  }
 
-    return `${mediaQuery}{${scopedMediaContent}}`;
-  });
-
-  return scopedCss;
+  return scopedLines.join('\n');
 }
 
 /**

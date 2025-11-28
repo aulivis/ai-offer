@@ -48,6 +48,21 @@ const nextConfig: NextConfig = {
   // These packages are large and should not be bundled with the Next.js app
   // Note: @noble/hashes is NOT externalized - it must be bundled for Argon2 fallback to work
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
+  // Redirects for Hungarian routes
+  async redirects() {
+    return [
+      {
+        source: '/adatvedelem',
+        destination: '/privacy-policy',
+        permanent: true,
+      },
+      {
+        source: '/felhasznalasi-feltetelek',
+        destination: '/privacy-policy',
+        permanent: true,
+      },
+    ];
+  },
   // Webpack configuration to ensure @noble/hashes is properly bundled
   webpack: (config, { isServer }) => {
     if (isServer) {
