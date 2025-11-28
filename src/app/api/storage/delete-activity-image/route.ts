@@ -56,7 +56,7 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
       .eq('user_id', userId);
 
     if (updateError) {
-      log.error('Failed to update activity after image deletion', { error: updateError });
+      log.error('Failed to update activity after image deletion', updateError);
       return NextResponse.json(
         { error: 'Nem sikerĂĽlt frissĂ­teni a tevĂ©kenysĂ©get.' },
         { status: 500 },

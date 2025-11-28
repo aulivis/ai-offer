@@ -202,7 +202,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     try {
       await ensureBucketExists();
     } catch (bucketError) {
-      log.error('Failed to ensure bucket exists', { error: bucketError });
+      log.error('Failed to ensure bucket exists', bucketError);
       return NextResponse.json(
         { error: 'Nem sikerült inicializálni a tárhelyet. Próbáld újra később.' },
         { status: 500 },
@@ -285,7 +285,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     if (updateError) {
       // Rollback: delete uploaded image
       await sb.storage.from(BUCKET_ID).remove([path]);
-      log.error('Failed to update activity with image path', { error: updateError });
+      log.error('Failed to update activity with image path', updateError);
       return NextResponse.json(
         { error: 'Nem sikerült menteni a kép hivatkozását.' },
         { status: 500 },

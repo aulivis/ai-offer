@@ -1352,8 +1352,7 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         .single();
 
       if (offerInsertError) {
-        log.error('Offer insert error', {
-          error: offerInsertError,
+        log.error('Offer insert error', offerInsertError, {
           offerId,
           userId: user.id,
           errorMessage: offerInsertError.message,

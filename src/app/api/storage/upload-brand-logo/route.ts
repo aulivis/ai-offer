@@ -214,7 +214,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     try {
       await ensureBucketExists();
     } catch (bucketError) {
-      log.error('Failed to ensure bucket exists', { error: bucketError });
+      log.error('Failed to ensure bucket exists', bucketError);
       return NextResponse.json(
         { error: 'Nem sikerült inicializálni a tárhelyet. Próbáld újra később.' },
         { status: 500 },

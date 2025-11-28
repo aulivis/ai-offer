@@ -109,7 +109,7 @@ export async function POST(request: Request, context: RouteParams) {
       } catch {
         // Ignore close errors
       }
-      log.error('PDF generation failed', { error: pdfError, offerId: share.offer_id, token });
+      log.error('PDF generation failed', pdfError, { offerId: share.offer_id, token });
       return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
     }
   } catch (error) {

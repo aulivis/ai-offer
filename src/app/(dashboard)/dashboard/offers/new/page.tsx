@@ -110,6 +110,7 @@ export default function NewOfferPage() {
   const { totals } = usePricingRows(pricingRows);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
   const previewDocumentAbortRef = useRef<AbortController | null>(null);
+  const previewDocumentDebounceRef = useRef<number | null>(null);
   const isStreaming = previewStatus === 'loading' || previewStatus === 'streaming';
   const hasPricingRows = useMemo(
     () => pricingRows.some((row) => row.name.trim().length > 0),
@@ -124,81 +125,100 @@ export default function NewOfferPage() {
     projectDetailsText.trim().length === 0;
 
   useEffect(() => {
-    const controller = new AbortController();
+    // Clear any existing debounce timeout
+    if (previewDocumentDebounceRef.current) {
+      window.clearTimeout(previewDocumentDebounceRef.current);
+      previewDocumentDebounceRef.current = null;
+    }
+
+    // Abort any in-flight request
     if (previewDocumentAbortRef.current) {
       previewDocumentAbortRef.current.abort();
+      previewDocumentAbortRef.current = null;
     }
-    previewDocumentAbortRef.current = controller;
 
-    const resolvedTemplateId = templateOptions.some(
-      (template) => template.id === selectedTemplateId,
-    )
-      ? selectedTemplateId
-      : defaultTemplateId;
-    const trimmedPrimary = brandingPrimary.trim();
-    const trimmedSecondary = brandingSecondary.trim();
-    const trimmedLogo = brandingLogoUrl.trim();
-    const brandingPayload =
-      trimmedPrimary || trimmedSecondary || trimmedLogo
-        ? {
-            primaryColor: trimmedPrimary || undefined,
-            secondaryColor: trimmedSecondary || undefined,
-            logoUrl: trimmedLogo || undefined,
+    // Debounce the API call
+    previewDocumentDebounceRef.current = window.setTimeout(() => {
+      const controller = new AbortController();
+      previewDocumentAbortRef.current = controller;
+
+      const resolvedTemplateId = templateOptions.some(
+        (template) => template.id === selectedTemplateId,
+      )
+        ? selectedTemplateId
+        : defaultTemplateId;
+      const trimmedPrimary = brandingPrimary.trim();
+      const trimmedSecondary = brandingSecondary.trim();
+      const trimmedLogo = brandingLogoUrl.trim();
+      const brandingPayload =
+        trimmedPrimary || trimmedSecondary || trimmedLogo
+          ? {
+              primaryColor: trimmedPrimary || undefined,
+              secondaryColor: trimmedSecondary || undefined,
+              logoUrl: trimmedLogo || undefined,
+            }
+          : undefined;
+
+      const payload = {
+        title: title || t('offers.wizard.defaults.fallbackTitle'),
+        companyName: t('offers.wizard.defaults.fallbackCompany'),
+        bodyHtml: previewHtml || `<p>${t('offers.wizard.preview.idle')}</p>`,
+        rows: pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
+          name,
+          qty,
+          unit,
+          unitPrice,
+          vat,
+        })),
+        templateId: resolvedTemplateId,
+        branding: brandingPayload,
+        locale: 'hu',
+        schedule: [],
+        testimonials: [],
+        guarantees: [],
+      };
+
+      (async () => {
+        try {
+          const response = await fetchWithSupabaseAuth('/api/offer-preview/render', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+            defaultErrorMessage: t('errors.preview.fetchUnknown'),
+            errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+          });
+          const html = await response.text();
+          if (!controller.signal.aborted) {
+            setPreviewDocumentHtml(html);
           }
-        : undefined;
-
-    const payload = {
-      title: title || t('offers.wizard.defaults.fallbackTitle'),
-      companyName: t('offers.wizard.defaults.fallbackCompany'),
-      bodyHtml: previewHtml || `<p>${t('offers.wizard.preview.idle')}</p>`,
-      rows: pricingRows.map(({ name, qty, unit, unitPrice, vat }) => ({
-        name,
-        qty,
-        unit,
-        unitPrice,
-        vat,
-      })),
-      templateId: resolvedTemplateId,
-      branding: brandingPayload,
-      locale: 'hu',
-      schedule: [],
-      testimonials: [],
-      guarantees: [],
-    };
-
-    (async () => {
-      try {
-        const response = await fetchWithSupabaseAuth('/api/offer-preview/render', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-          defaultErrorMessage: t('errors.preview.fetchUnknown'),
-          errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
-        });
-        const html = await response.text();
-        if (!controller.signal.aborted) {
-          setPreviewDocumentHtml(html);
+        } catch (error) {
+          if (isAbortError(error)) {
+            return;
+          }
+          logger.error('Failed to render preview document', error, {
+            templateId: resolvedTemplateId,
+            title: title || undefined,
+          });
+          if (!controller.signal.aborted) {
+            const fallbackMessage = t('errors.preview.fetchUnknown');
+            setPreviewDocumentHtml(
+              `<!DOCTYPE html>\n<html><head><meta charset="UTF-8" /></head><body><main><p>${fallbackMessage}</p></main></body></html>`,
+            );
+          }
         }
-      } catch (error) {
-        if (isAbortError(error)) {
-          return;
-        }
-        logger.error('Failed to render preview document', error, {
-          templateId: resolvedTemplateId,
-          title: title || undefined,
-        });
-        if (!controller.signal.aborted) {
-          const fallbackMessage = t('errors.preview.fetchUnknown');
-          setPreviewDocumentHtml(
-            `<!DOCTYPE html>\n<html><head><meta charset="UTF-8" /></head><body><main><p>${fallbackMessage}</p></main></body></html>`,
-          );
-        }
-      }
-    })();
+      })();
+    }, PREVIEW_DEBOUNCE_MS); // Use the existing constant
 
     return () => {
-      controller.abort();
+      if (previewDocumentDebounceRef.current) {
+        window.clearTimeout(previewDocumentDebounceRef.current);
+        previewDocumentDebounceRef.current = null;
+      }
+      if (previewDocumentAbortRef.current) {
+        previewDocumentAbortRef.current.abort();
+        previewDocumentAbortRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

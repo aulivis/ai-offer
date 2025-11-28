@@ -7,6 +7,7 @@ import {
   HttpStatus,
   withAuthenticatedErrorHandling,
 } from '@/lib/errorHandling';
+import { createLogger } from '@/lib/logger';
 
 const notificationsQuerySchema = z.object({
   unreadOnly: z
@@ -46,6 +47,18 @@ export const GET = withAuth(
     });
 
     if (!queryParsed.success) {
+      // Log validation errors for debugging
+      const requestId = request.headers.get('x-request-id') || 'unknown';
+      const log = createLogger(requestId);
+      log.warn('Notifications query validation failed', {
+        errors: queryParsed.error.errors,
+        queryParams: {
+          unreadOnly: url.searchParams.get('unreadOnly'),
+          limit: url.searchParams.get('limit'),
+          offset: url.searchParams.get('offset'),
+        },
+        userId: request.user.id,
+      });
       throw queryParsed.error; // Will be handled by withAuthenticatedErrorHandling
     }
 

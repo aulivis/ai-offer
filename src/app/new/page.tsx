@@ -759,6 +759,7 @@ export default function NewOfferWizard() {
   const previewRequestIdRef = useRef(0);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
   const previewDocumentAbortRef = useRef<AbortController | null>(null);
+  const previewDocumentDebounceRef = useRef<number | null>(null);
   const { updateHeight: updatePreviewFrameHeight } = useIframeAutoHeight({ minHeight: 720 });
   const {
     frameRef: modalPreviewFrameRef,
@@ -1135,67 +1136,86 @@ export default function NewOfferWizard() {
   }, [selectedPdfTemplate]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    // Clear any existing debounce timeout
+    if (previewDocumentDebounceRef.current) {
+      window.clearTimeout(previewDocumentDebounceRef.current);
+      previewDocumentDebounceRef.current = null;
+    }
+
+    // Abort any in-flight request
     if (previewDocumentAbortRef.current) {
       previewDocumentAbortRef.current.abort();
+      previewDocumentAbortRef.current = null;
     }
-    previewDocumentAbortRef.current = controller;
 
-    const templateId = selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID;
-    const payload = {
-      title: form.title,
-      companyName: profileCompanyName,
-      bodyHtml: previewBodyHtml,
-      rows: rows.map(({ name, qty, unit, unitPrice, vat }) => ({
-        name,
-        qty,
-        unit,
-        unitPrice,
-        vat,
-      })),
-      templateId,
-      legacyTemplateId: selectedLegacyTemplateId,
-      locale: form.language,
-      branding: {
-        primaryColor: pdfBranding.primaryColor,
-        secondaryColor: pdfBranding.secondaryColor,
-        logoUrl: pdfBranding.logoUrl,
-      },
-      schedule: scheduleItems,
-      testimonials: testimonialTexts,
-      guarantees: guaranteeItems,
-    };
+    // Debounce the API call
+    previewDocumentDebounceRef.current = window.setTimeout(() => {
+      const controller = new AbortController();
+      previewDocumentAbortRef.current = controller;
 
-    (async () => {
-      try {
-        const response = await fetchWithSupabaseAuth('/api/offer-preview/render', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-          defaultErrorMessage: t('errors.preview.fetchUnknown'),
-          errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
-        });
-        const html = await response.text();
-        if (!controller.signal.aborted) {
-          setPreviewDocumentHtml(html);
+      const templateId = selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID;
+      const payload = {
+        title: form.title,
+        companyName: profileCompanyName,
+        bodyHtml: previewBodyHtml,
+        rows: rows.map(({ name, qty, unit, unitPrice, vat }) => ({
+          name,
+          qty,
+          unit,
+          unitPrice,
+          vat,
+        })),
+        templateId,
+        legacyTemplateId: selectedLegacyTemplateId,
+        locale: form.language,
+        branding: {
+          primaryColor: pdfBranding.primaryColor,
+          secondaryColor: pdfBranding.secondaryColor,
+          logoUrl: pdfBranding.logoUrl,
+        },
+        schedule: scheduleItems,
+        testimonials: testimonialTexts,
+        guarantees: guaranteeItems,
+      };
+
+      (async () => {
+        try {
+          const response = await fetchWithSupabaseAuth('/api/offer-preview/render', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+            defaultErrorMessage: t('errors.preview.fetchUnknown'),
+            errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+          });
+          const html = await response.text();
+          if (!controller.signal.aborted) {
+            setPreviewDocumentHtml(html);
+          }
+        } catch (error) {
+          if (isAbortError(error)) {
+            return;
+          }
+          logger.error('Failed to render preview document', error);
+          if (!controller.signal.aborted) {
+            const fallbackMessage = t('errors.preview.fetchUnknown');
+            setPreviewDocumentHtml(
+              `<!DOCTYPE html>\n<html><head><meta charset="UTF-8" /></head><body><main><p>${fallbackMessage}</p></main></body></html>`,
+            );
+          }
         }
-      } catch (error) {
-        if (isAbortError(error)) {
-          return;
-        }
-        logger.error('Failed to render preview document', error);
-        if (!controller.signal.aborted) {
-          const fallbackMessage = t('errors.preview.fetchUnknown');
-          setPreviewDocumentHtml(
-            `<!DOCTYPE html>\n<html><head><meta charset="UTF-8" /></head><body><main><p>${fallbackMessage}</p></main></body></html>`,
-          );
-        }
-      }
-    })();
+      })();
+    }, 600); // 600ms debounce to match useOfferPreview
 
     return () => {
-      controller.abort();
+      if (previewDocumentDebounceRef.current) {
+        window.clearTimeout(previewDocumentDebounceRef.current);
+        previewDocumentDebounceRef.current = null;
+      }
+      if (previewDocumentAbortRef.current) {
+        previewDocumentAbortRef.current.abort();
+        previewDocumentAbortRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

@@ -40,6 +40,9 @@ function clearUnauthenticatedCache(): void {
   unauthenticatedCache = null;
 }
 
+// Export for use in logout to clear cache immediately
+export { clearUnauthenticatedCache };
+
 export function useOptionalAuth(): OptionalAuthState {
   const supabase = useSupabase();
   const [state, setState] = useState<OptionalAuthState>({
