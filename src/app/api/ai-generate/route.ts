@@ -1126,7 +1126,11 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             const generationDuration = Date.now() - generationStartTime;
             const tokenUsage = extractTokenUsage(
               response as {
-                usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+                usage?: {
+                  prompt_tokens?: number;
+                  completion_tokens?: number;
+                  total_tokens?: number;
+                };
               },
             );
 
