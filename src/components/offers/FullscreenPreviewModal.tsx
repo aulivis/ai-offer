@@ -148,7 +148,7 @@ export function FullscreenPreviewModal({
                     <option
                       key={template.id}
                       value={template.id}
-                      disabled={lockedTemplateIds.includes(template.id)}
+                      disabled={lockedTemplateIds.includes(template.id as TemplateId)}
                     >
                       {template.name}
                     </option>
