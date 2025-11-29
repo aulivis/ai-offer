@@ -141,11 +141,15 @@ const envWithDefaults: RawServerEnv = {
 };
 
 const parsedEnv = ServerEnvSchema.parse(envWithDefaults);
-const { EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId, ...parsedEnvRest } = parsedEnv;
+const {
+  EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId,
+  VERCEL_CRON_SECRET: vercelCronSecret,
+  ...parsedEnvRest
+} = parsedEnv;
 
 // Construct ServerEnv with proper handling of optional property
 // With exactOptionalPropertyTypes, we must omit the property entirely if undefined
-const envServerBase: Omit<ServerEnv, 'EXTERNAL_API_SYSTEM_USER_ID'> = {
+const envServerBase: Omit<ServerEnv, 'EXTERNAL_API_SYSTEM_USER_ID' | 'VERCEL_CRON_SECRET'> = {
   ...parsedEnvRest,
   STRIPE_PRICE_ALLOWLIST: parsedEnv.STRIPE_PRICE_ALLOWLIST,
   OAUTH_REDIRECT_ALLOWLIST: parsedEnv.OAUTH_REDIRECT_ALLOWLIST,
@@ -161,7 +165,5 @@ const envServerBase: Omit<ServerEnv, 'EXTERNAL_API_SYSTEM_USER_ID'> = {
 export const envServer: ServerEnv = {
   ...envServerBase,
   ...(externalApiUserId !== undefined ? { EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId } : {}),
-  ...(parsedEnv.VERCEL_CRON_SECRET !== undefined
-    ? { VERCEL_CRON_SECRET: parsedEnv.VERCEL_CRON_SECRET }
-    : {}),
+  ...(vercelCronSecret !== undefined ? { VERCEL_CRON_SECRET: vercelCronSecret } : {}),
 };
