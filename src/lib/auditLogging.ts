@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 
 export type AuditLogEvent = {
-  eventType: 'offer_deleted' | 'payment_initiated' | 'auth_logout' | 'auth_session_revoked';
+  eventType: 'offer_deleted' | 'payment_initiated' | 'auth_logout' | 'auth_session_revoked' | 'subscription_updated';
   userId: string;
   metadata?: Record<string, unknown>;
   requestId?: string;
