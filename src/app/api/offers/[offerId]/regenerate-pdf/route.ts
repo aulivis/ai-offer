@@ -241,7 +241,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
         guarantees: guaranteesList.length ? guaranteesList : null,
         pricingRows: normalizedRows,
         images: [],
-        branding: normalizedBranding,
+        ...(normalizedBranding && { branding: normalizedBranding }),
       },
       translator,
     );
