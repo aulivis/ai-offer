@@ -278,11 +278,29 @@ function scopeSelectorString(selector: string, containerSelector: string): strin
   return selectors
     .map((sel) => {
       const trimmed = sel.trim();
+      
       // Skip if already scoped
       if (trimmed.includes(containerSelector)) {
         return trimmed;
       }
-      // Prepend container
+      
+      // Handle universal selector - scope it properly
+      if (trimmed === '*' || trimmed.startsWith('* ')) {
+        return `${containerSelector} ${trimmed}`;
+      }
+      
+      // Handle :root pseudo-class - should already be converted, but handle just in case
+      if (trimmed.startsWith(':root')) {
+        return trimmed.replace(':root', containerSelector);
+      }
+      
+      // Handle html and body selectors
+      if (trimmed === 'html' || trimmed === 'body' || trimmed.startsWith('html ') || trimmed.startsWith('body ')) {
+        return trimmed.replace(/^(html|body)(\s|$)/, `${containerSelector}$2`);
+      }
+      
+      // For all other selectors, prepend container
+      // This ensures proper scoping: .class becomes #offer-content-container .class
       return `${containerSelector} ${trimmed}`;
     })
     .join(', ');

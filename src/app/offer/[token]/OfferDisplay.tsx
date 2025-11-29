@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { sanitizeHTML } from '@/lib/sanitize';
 
 interface OfferDisplayProps {
@@ -11,27 +11,43 @@ interface OfferDisplayProps {
 /**
  * Client component that displays offer HTML with styles.
  * Styles are now extracted server-side for better performance.
+ * Uses useLayoutEffect to inject styles synchronously before paint to prevent FOUC.
  */
 export function OfferDisplay({ html, scopedStyles }: OfferDisplayProps) {
-  useEffect(() => {
-    // If styles were provided server-side, use them directly
-    if (scopedStyles) {
-      let styleElement = document.getElementById('offer-template-styles');
+  const containerRef = useRef<HTMLDivElement>(null);
 
-      if (!styleElement) {
-        styleElement = document.createElement('style');
-        styleElement.id = 'offer-template-styles';
-        document.head.appendChild(styleElement);
-      }
-
-      styleElement.textContent = scopedStyles;
+  // Use useLayoutEffect to inject styles synchronously before paint
+  // This ensures styles are applied immediately and prevents FOUC
+  useLayoutEffect(() => {
+    if (!scopedStyles) {
+      return;
     }
+
+    // Find or create style element
+    let styleElement = document.getElementById('offer-template-styles') as HTMLStyleElement;
+
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = 'offer-template-styles';
+      styleElement.setAttribute('data-offer-styles', 'true');
+      // Insert at the beginning of head to ensure it loads early
+      const head = document.head;
+      const firstChild = head.firstChild;
+      if (firstChild) {
+        head.insertBefore(styleElement, firstChild);
+      } else {
+        head.appendChild(styleElement);
+      }
+    }
+
+    // Set styles
+    styleElement.textContent = scopedStyles;
 
     // Cleanup: remove style element when component unmounts
     return () => {
-      const styleElement = document.getElementById('offer-template-styles');
-      if (styleElement) {
-        styleElement.remove();
+      const element = document.getElementById('offer-template-styles');
+      if (element) {
+        element.remove();
       }
     };
   }, [scopedStyles]);
@@ -47,6 +63,7 @@ export function OfferDisplay({ html, scopedStyles }: OfferDisplayProps) {
 
   return (
     <div
+      ref={containerRef}
       id="offer-content-container"
       className="mb-8"
       dangerouslySetInnerHTML={{ __html: sanitizedBodyContent }}
