@@ -194,6 +194,32 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       ? (offer.ai_blocks as AIResponseBlocks)
       : null;
 
+  // Extract images from HTML body if they exist (for template's images section)
+  const extractImagesFromHtml = (html: string): Array<{ src: string; alt: string; key: string }> => {
+    const images: Array<{ src: string; alt: string; key: string }> = [];
+    const imgRegex = /<img\b[^>]*>/gi;
+    let match: RegExpExecArray | null;
+    let index = 0;
+
+    while ((match = imgRegex.exec(html)) !== null) {
+      const imgTag = match[0]!;
+      const srcMatch = imgTag.match(/\ssrc=["']([^"']+)["']/i);
+      const altMatch = imgTag.match(/\salt=["']([^"']*)["']/i);
+      
+      if (srcMatch && srcMatch[1]) {
+        images.push({
+          src: srcMatch[1]!,
+          alt: altMatch && altMatch[1] ? altMatch[1]! : `Image ${index + 1}`,
+          key: `img-${index++}`,
+        });
+      }
+    }
+
+    return images;
+  };
+
+  const extractedImages = extractImagesFromHtml(aiHtml);
+
   // Build offer HTML with centralized fallback handling
   const offerRenderData = {
     title: safeTitle || defaultTitle,
@@ -241,6 +267,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     ...(brandingOptions && { branding: brandingOptions }),
     i18n: translator,
     templateId,
+    images: extractedImages.length > 0 ? extractedImages : undefined,
   });
 
   // Extract and scope styles server-side for better performance
