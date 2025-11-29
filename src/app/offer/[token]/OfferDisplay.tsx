@@ -19,7 +19,12 @@ export function OfferDisplay({ html, scopedStyles }: OfferDisplayProps) {
   // Use useLayoutEffect to inject styles synchronously before paint
   // This ensures styles are applied immediately and prevents FOUC
   useLayoutEffect(() => {
-    if (!scopedStyles) {
+    if (!scopedStyles || scopedStyles.trim().length === 0) {
+      // If no styles provided, remove any existing style element
+      const existing = document.getElementById('offer-template-styles');
+      if (existing) {
+        existing.remove();
+      }
       return;
     }
 
@@ -40,8 +45,16 @@ export function OfferDisplay({ html, scopedStyles }: OfferDisplayProps) {
       }
     }
 
-    // Set styles
+    // Set styles - ensure we're setting the content correctly
     styleElement.textContent = scopedStyles;
+
+    // Verify styles were applied (for debugging)
+    if (process.env.NODE_ENV === 'development') {
+      // Just a check to ensure the element exists
+      if (!containerRef.current) {
+        console.warn('[OfferDisplay] Container ref not set, styles may not apply correctly');
+      }
+    }
 
     // Cleanup: remove style element when component unmounts
     return () => {

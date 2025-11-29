@@ -76,16 +76,25 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
   const cleanSelector = containerSelector.trim();
 
   // Convert :root to container selector so CSS variables work
+  // This allows CSS variables to be defined on the container element
   let scoped = css.replace(/:root\s*\{/gi, `${cleanSelector} {`);
 
   // Convert html and body selectors to container
+  // When body/html styles are scoped, they should apply to the container itself
+  // since the container is the root element for the offer content
   scoped = scoped.replace(/(?:^|\n|\s|,)\s*(html|body)\s*\{/gm, (match) => {
     // Only replace if not already scoped
     if (!match.includes(cleanSelector)) {
+      // Replace body/html with the container selector directly
+      // This makes body styles apply to the container element
       return match.replace(/\b(html|body)\b/, cleanSelector);
     }
     return match;
   });
+
+  // Also handle body selectors that might be part of compound selectors
+  // e.g., "body.container" should become "#offer-content-container.container"
+  scoped = scoped.replace(/\bbody\b(?=\s*[.#\[])/g, cleanSelector);
 
   // Process CSS by finding all rule blocks (selector { ... })
   // Handle @media queries separately

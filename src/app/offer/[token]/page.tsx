@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { resolveOfferTemplate } from '@/lib/offers/templateResolution';
 import { buildOfferHtmlWithFallback } from '@/lib/offers/offerRendering';
 import { extractAndScopeStyles, extractBodyFromHtml } from '@/lib/offers/styleExtraction';
+import { refreshSignedUrlsInHtml } from '@/lib/offers/urlRefresh';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
@@ -161,7 +162,10 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   const resolvedLocale = resolveLocale(locale);
 
   // Build offer HTML
-  const aiHtml = sanitizeHTML(offer.ai_text || '');
+  // Refresh expired signed URLs in the stored HTML to ensure images load
+  let aiHtml = sanitizeHTML(offer.ai_text || '');
+  aiHtml = await refreshSignedUrlsInHtml(aiHtml, sb);
+
   const safeTitle = sanitizeInput(offer.title || '');
   const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 
@@ -263,7 +267,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     aiBlocks,
   };
 
-  const fullHtml = buildOfferHtmlWithFallback({
+  let fullHtml = buildOfferHtmlWithFallback({
     offer: offerRenderData,
     rows: normalizedRows,
     ...(brandingOptions && { branding: brandingOptions }),
@@ -272,6 +276,9 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     ...(extractedImages.length > 0 && { images: extractedImages }),
   });
 
+  // Refresh any expired signed URLs in the final HTML (e.g., logo URLs in template)
+  fullHtml = await refreshSignedUrlsInHtml(fullHtml, sb);
+
   // Extract and scope styles server-side for better performance
   let scopedStyles = extractAndScopeStyles(fullHtml);
 
@@ -279,8 +286,19 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   // This ensures offers always have basic formatting even if style extraction fails
   // Templates should always include their own styles, so this is a safety net
   if (!scopedStyles || scopedStyles.trim().length === 0) {
+    logger.warn('No styles extracted from offer HTML, using fallback', {
+      offerId: offer.id,
+      templateId,
+    });
     const { OFFER_DOCUMENT_STYLES_FALLBACK } = await import('@/app/lib/offerDocument');
     scopedStyles = OFFER_DOCUMENT_STYLES_FALLBACK;
+  } else {
+    // Log style extraction success for debugging
+    logger.debug('Styles extracted and scoped successfully', {
+      offerId: offer.id,
+      templateId,
+      styleLength: scopedStyles.length,
+    });
   }
 
   const bodyHtml = extractBodyFromHtml(fullHtml);
