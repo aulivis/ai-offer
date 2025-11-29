@@ -1129,7 +1129,10 @@ export default function NewOfferWizard() {
   }, [editedHtml, previewHtml]);
   const selectedLegacyTemplateId = useMemo<TemplateId>(() => {
     // Use the template ID directly (no longer need legacy ID)
-    return selectedPdfTemplate?.id ?? DEFAULT_OFFER_TEMPLATE_ID;
+    if (selectedPdfTemplate?.id) {
+      return selectedPdfTemplate.id;
+    }
+    return normalizeTemplateId(DEFAULT_OFFER_TEMPLATE_ID);
   }, [selectedPdfTemplate]);
 
   useEffect(() => {
