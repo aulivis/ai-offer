@@ -868,7 +868,7 @@ export default function NewOfferWizard() {
       null
     );
   }, [allPdfTemplates, availablePdfTemplates, selectedPdfTemplateId]);
-  const selectedPdfTemplateLabel = selectedPdfTemplate?.label ?? null;
+  const selectedPdfTemplateLabel = selectedPdfTemplate?.name ?? null;
 
   // Reload activities function
   const reloadActivities = useCallback(async () => {
@@ -3042,7 +3042,7 @@ export default function NewOfferWizard() {
                       </h2>
                       {selectedPdfTemplate && (
                         <p className="mt-0.5 text-xs text-slate-600">
-                          Sablon: <span className="font-semibold">{selectedPdfTemplate.label}</span>
+                          Sablon: <span className="font-semibold">{selectedPdfTemplate.name}</span>
                         </p>
                       )}
                     </div>
@@ -3254,7 +3254,7 @@ export default function NewOfferWizard() {
                           template.tier === 'premium' && userTemplateTier !== 'premium';
                         return (
                           <option key={template.id} value={template.id} disabled={locked}>
-                            {template.label}
+                            {template.name}
                           </option>
                         );
                       })}
