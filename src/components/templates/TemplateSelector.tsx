@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { t } from '@/copy';
 import { listTemplates } from '@/lib/offers/templates/index';
-import type { TemplateId } from '@/lib/offers/templates/types';
+import type { TemplateId, Template } from '@/lib/offers/templates/types';
 import { CheckCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
@@ -45,7 +45,7 @@ export function TemplateSelector({
     4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
   }[gridCols];
 
-  const handleSelect = (template: { id: string; tier: 'free' | 'premium'; name: string }) => {
+  const handleSelect = (template: Template) => {
     const requiresPro = template.tier === 'premium';
     const requiresUpgrade = requiresPro && !canUseProTemplates;
 
