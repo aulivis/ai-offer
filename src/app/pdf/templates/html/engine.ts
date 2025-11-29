@@ -4,6 +4,7 @@ import type { PriceRow } from '@/app/lib/pricing';
 import type { RenderCtx } from '../types';
 import { buildHeaderFooterCtx } from '../shared/headerFooter';
 import { getPreloadedTemplateHtml } from '../templatePreloader';
+import { logger } from '@/lib/logger';
 
 /**
  * Simple template engine for HTML templates
@@ -23,45 +24,145 @@ export class HtmlTemplateEngine {
   render(data: Record<string, unknown>): string {
     let result = this.template;
 
-    // Handle conditionals {{#if var}}...{{/if}}
-    result = this.processConditionals(result, data);
+    // Validate template has content
+    if (!result || result.trim().length === 0) {
+      logger.warn('Empty template provided to HtmlTemplateEngine');
+      return '';
+    }
 
-    // Handle loops {{#each array}}...{{/each}}
-    result = this.processLoops(result, data);
+    // Process recursively until no more changes occur (handles nested conditionals/loops)
+    let previousResult: string;
+    let iterations = 0;
+    const maxIterations = 10; // Prevent infinite loops
 
-    // Handle unescaped HTML {{{var}}}
-    result = this.processUnescapedVariables(result, data);
+    do {
+      previousResult = result;
 
-    // Handle regular variables {{var}}
-    result = this.processVariables(result, data);
+      // Handle loops first (they may contain conditionals)
+      result = this.processLoops(result, data);
+
+      // Handle conditionals (may be nested)
+      result = this.processConditionals(result, data);
+
+      // Handle unescaped HTML {{{var}}}
+      result = this.processUnescapedVariables(result, data);
+
+      // Handle regular variables {{var}}
+      result = this.processVariables(result, data);
+
+      iterations++;
+    } while (result !== previousResult && iterations < maxIterations);
+
+    // Warn if we hit max iterations (potential infinite loop or complex nesting)
+    if (iterations >= maxIterations && result !== previousResult) {
+      logger.warn(
+        'Template processing hit max iterations - may have unresolved template variables',
+        {
+          remainingVariables: this.detectRemainingVariables(result),
+        },
+      );
+    }
+
+    // Remove HTML comments (including multi-line comments)
+    // Match <!-- ... --> with any content including newlines
+    result = result.replace(/<!--[\s\S]*?-->/gm, '');
+
+    // Remove any remaining standalone comment markers that might have been left
+    result = result.replace(/<!--/g, '').replace(/-->/g, '');
 
     return result;
   }
 
+  /**
+   * Detect remaining unresolved template variables for debugging
+   * @internal - Used for error reporting and debugging
+   */
+  detectRemainingVariables(template: string): string[] {
+    const varRegex = /\{\{(\w+(?:\.\w+)*)\}\}/g;
+    const unescapedRegex = /\{\{\{(\w+(?:\.\w+)*)\}\}\}/g;
+    const ifRegex = /\{\{#if\s+(\w+(?:\.\w+)*)\}\}/g;
+    const eachRegex = /\{\{#each\s+(\w+(?:\.\w+)*)\}\}/g;
+
+    const variables = new Set<string>();
+    let match: RegExpExecArray | null;
+
+    while ((match = varRegex.exec(template)) !== null) {
+      variables.add(match[1]!);
+    }
+    while ((match = unescapedRegex.exec(template)) !== null) {
+      variables.add(match[1]!);
+    }
+    while ((match = ifRegex.exec(template)) !== null) {
+      variables.add(match[1]!);
+    }
+    while ((match = eachRegex.exec(template)) !== null) {
+      variables.add(match[1]!);
+    }
+
+    return Array.from(variables);
+  }
+
   private processConditionals(template: string, data: Record<string, unknown>): string {
-    const ifRegex = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
-    return template.replace(ifRegex, (match, varName, content) => {
-      const value = this.getNestedValue(data, varName);
-      if (this.isTruthy(value)) {
-        return content;
-      }
-      return '';
-    });
+    // Match {{#if variable}}...{{/if}} with support for nested conditionals
+    // Use non-greedy matching and handle nested braces
+    const ifRegex = /\{\{#if\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+    let result = template;
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 20; // Prevent infinite loops
+
+    // Process conditionals iteratively to handle nested ones
+    while (changed && iterations < maxIterations) {
+      const before = result;
+      result = result.replace(ifRegex, (match, varName, content) => {
+        const value = this.getNestedValue(data, varName);
+        if (this.isTruthy(value)) {
+          return content;
+        }
+        return '';
+      });
+      changed = result !== before;
+      iterations++;
+    }
+
+    return result;
   }
 
   private processLoops(template: string, data: Record<string, unknown>): string {
-    const eachRegex = /\{\{#each\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g;
+    const eachRegex = /\{\{#each\s+(\w+(?:\.\w+)*)\}\}([\s\S]*?)\{\{\/each\}\}/g;
     return template.replace(eachRegex, (match, varName, content) => {
       const array = this.getNestedValue(data, varName);
       if (!Array.isArray(array)) {
         return '';
       }
       return array
-        .map((item) => {
+        .map((item, index) => {
           // Create a new data context with the item's properties
-          const itemData = { ...data, ...item };
+          // For array items, use 'this' to refer to the current item
+          // If item is a string, make it available as 'this'
+          // If item is an object, spread its properties and also make it available as 'this'
+          const itemData: Record<string, unknown> = {
+            ...data,
+            '@index': index,
+            '@first': index === 0,
+            '@last': index === array.length - 1,
+          };
+
+          if (typeof item === 'string') {
+            itemData.this = item;
+          } else if (typeof item === 'object' && item !== null) {
+            // Spread object properties
+            Object.assign(itemData, item);
+            // Also make the whole object available as 'this'
+            itemData.this = item;
+          } else {
+            itemData.this = item;
+          }
+
           // Process nested conditionals and variables in the loop content
-          let itemContent = this.processConditionals(content, itemData);
+          let itemContent = content;
+          // Recursively process nested structures
+          itemContent = this.processConditionals(itemContent, itemData);
           itemContent = this.processUnescapedVariables(itemContent, itemData);
           itemContent = this.processVariables(itemContent, itemData);
           return itemContent;
@@ -71,7 +172,8 @@ export class HtmlTemplateEngine {
   }
 
   private processUnescapedVariables(template: string, data: Record<string, unknown>): string {
-    const unescapedRegex = /\{\{\{(\w+)\}\}\}/g;
+    // Support nested property access like {{{user.name}}}
+    const unescapedRegex = /\{\{\{(\w+(?:\.\w+)*)\}\}\}/g;
     return template.replace(unescapedRegex, (match, varName) => {
       const value = this.getNestedValue(data, varName);
       return value != null ? String(value) : '';
@@ -79,7 +181,8 @@ export class HtmlTemplateEngine {
   }
 
   private processVariables(template: string, data: Record<string, unknown>): string {
-    const varRegex = /\{\{(\w+)\}\}/g;
+    // Support nested property access like {{user.name}}
+    const varRegex = /\{\{(\w+(?:\.\w+)*)\}\}/g;
     return template.replace(varRegex, (match, varName) => {
       const value = this.getNestedValue(data, varName);
       // Sanitize all regular variable outputs for security
@@ -124,16 +227,25 @@ export class HtmlTemplateEngine {
 }
 
 /**
+ * Color utility functions for template rendering
+ */
+
+/**
  * Convert hex color to HSL format for CSS variables
  */
 function hexToHsl(hex: string): string {
   // Remove # if present
-  hex = hex.replace('#', '');
+  const cleanHex = hex.replace('#', '');
+
+  // Validate hex format
+  if (!/^[0-9A-Fa-f]{6}$/.test(cleanHex)) {
+    return '0 0% 50%'; // Default gray
+  }
 
   // Parse RGB
-  const r = parseInt(hex.substring(0, 2), 16) / 255;
-  const g = parseInt(hex.substring(2, 4), 16) / 255;
-  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
+  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
+  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
@@ -165,32 +277,52 @@ function hexToHsl(hex: string): string {
   return `${h} ${s}% ${lPercent}%`;
 }
 
+/**
+ * Split HSL string into components
+ */
 function splitHslComponents(hsl: string): { h: string; s: string; l: string } {
-  const [h, s, l] = hsl
+  const parts = hsl
     .split(' ')
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
   return {
-    h: h ?? '0',
-    s: s ?? '0%',
-    l: l ?? '0%',
+    h: parts[0] ?? '0',
+    s: parts[1] ?? '0%',
+    l: parts[2] ?? '0%',
   };
 }
 
 /**
- * Normalize hex color (ensure it has # prefix)
+ * Normalize hex color (ensure it has # prefix and valid format)
  */
-function normalizeHexColor(hex: string): string {
-  if (!hex) {
+function normalizeHexColor(hex: string | null | undefined): string {
+  if (!hex || typeof hex !== 'string') {
     return '#1a1a1a'; // Default fallback
   }
-  return hex.startsWith('#') ? hex : `#${hex}`;
+  const trimmed = hex.trim();
+  if (!trimmed) {
+    return '#1a1a1a';
+  }
+  return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
 }
+
+const ColorUtils = {
+  hexToHsl,
+  splitHslComponents,
+  normalizeHexColor,
+};
+
+/**
+ * Formatting utilities for template rendering
+ */
 
 /**
  * Format currency for Hungarian locale
  */
 function formatCurrency(value: number): string {
+  if (!Number.isFinite(value)) {
+    return '0 Ft';
+  }
   return `${value.toLocaleString('hu-HU')} Ft`;
 }
 
@@ -198,6 +330,9 @@ function formatCurrency(value: number): string {
  * Format number for Hungarian locale
  */
 function formatNumber(value: number): string {
+  if (!Number.isFinite(value)) {
+    return '0';
+  }
   return value.toLocaleString('hu-HU');
 }
 
@@ -205,11 +340,15 @@ function formatNumber(value: number): string {
  * Format date for Hungarian locale
  */
 function formatDate(dateString: string | null | undefined): string {
-  if (!dateString) {
+  if (!dateString || typeof dateString !== 'string') {
     return '';
   }
   try {
     const date = new Date(dateString);
+    // Check if date is valid
+    if (Number.isNaN(date.getTime())) {
+      return dateString;
+    }
     return date.toLocaleDateString('hu-HU', {
       year: 'numeric',
       month: 'long',
@@ -219,6 +358,69 @@ function formatDate(dateString: string | null | undefined): string {
     return dateString;
   }
 }
+
+const FormatUtils = {
+  formatCurrency,
+  formatNumber,
+  formatDate,
+};
+
+/**
+ * Terms parsing utilities
+ */
+
+/**
+ * Parse terms text into structured items if it contains numbered list format
+ * Example: "1. Title\nDescription text\n2. Another title\nMore text"
+ */
+function parseTermsText(
+  termsText: string | null | undefined,
+): Array<{ number: number; title: string; description: string }> {
+  if (!termsText || typeof termsText !== 'string') {
+    return [];
+  }
+
+  const items: Array<{ number: number; title: string; description: string }> = [];
+  const lines = termsText.split('\n').filter((line) => line.trim().length > 0);
+  let currentItem: { number: number; title: string; description: string } | null = null;
+
+  for (const line of lines) {
+    const numberedMatch = line.match(/^(\d+)\.\s*(.+)$/);
+    if (numberedMatch) {
+      // Save previous item if exists
+      if (currentItem) {
+        items.push(currentItem);
+      }
+      // Start new item
+      const number = parseInt(numberedMatch[1]!, 10);
+      if (Number.isFinite(number)) {
+        currentItem = {
+          number,
+          title: numberedMatch[2]!.trim(),
+          description: '',
+        };
+      }
+    } else if (currentItem) {
+      // Append to current item's description
+      currentItem.description += (currentItem.description ? ' ' : '') + line.trim();
+    }
+  }
+
+  // Don't forget the last item
+  if (currentItem) {
+    items.push(currentItem);
+  }
+
+  return items;
+}
+
+const TermsUtils = {
+  parseTermsText,
+};
+
+/**
+ * Pricing utilities for template rendering
+ */
 
 /**
  * Prepare pricing rows data for template
@@ -233,25 +435,29 @@ function preparePricingRows(rows: PriceRow[]): Array<{
   total: string;
 }> {
   return rows.map((row) => {
-    const qty = row.qty ?? 0;
-    const unitPrice = row.unitPrice ?? 0;
-    const vatPct = row.vat ?? 0;
+    const qty = Number.isFinite(row.qty) ? (row.qty ?? 0) : 0;
+    const unitPrice = Number.isFinite(row.unitPrice) ? (row.unitPrice ?? 0) : 0;
+    const vatPct = Number.isFinite(row.vat) ? (row.vat ?? 0) : 0;
     const lineNet = qty * unitPrice;
     const lineVat = lineNet * (vatPct / 100);
     const lineGross = lineNet + lineVat;
-    const name = row.name || '';
+    const name = typeof row.name === 'string' ? row.name : '';
 
     return {
       name,
-      qty: formatNumber(qty),
+      qty: FormatUtils.formatNumber(qty),
       // Format as "150.000 Ft"
-      unitPrice: formatCurrency(unitPrice),
-      vat: formatNumber(vatPct),
+      unitPrice: FormatUtils.formatCurrency(unitPrice),
+      vat: FormatUtils.formatNumber(vatPct),
       // Total is the gross total (net + VAT) to match the example
-      total: formatCurrency(lineGross),
+      total: FormatUtils.formatCurrency(lineGross),
     };
   });
 }
+
+const PricingUtils = {
+  preparePricingRows,
+};
 
 /**
  * Load HTML template from file
@@ -291,32 +497,54 @@ export function loadHtmlTemplate(templatePath: string): string {
 
 /**
  * Render HTML template with offer data
+ *
+ * This is the unified template rendering function used throughout the application.
+ * All offer HTML should be generated through this function or buildOfferHtml.
+ *
+ * @param ctx - Render context with offer data, pricing rows, branding, etc.
+ * @param templatePath - Path to the HTML template file
+ * @returns Complete HTML document as string
+ * @throws Error if template cannot be loaded or rendered
  */
 export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string {
-  const templateContent = loadHtmlTemplate(templatePath);
+  let templateContent: string;
+  try {
+    templateContent = loadHtmlTemplate(templatePath);
+  } catch (error) {
+    logger.error('Failed to load HTML template', error, { templatePath });
+    throw new Error(
+      `Failed to load template from ${templatePath}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+
+  if (!templateContent || templateContent.trim().length === 0) {
+    logger.error('Template file is empty', undefined, { templatePath });
+    throw new Error(`Template file is empty: ${templatePath}`);
+  }
+
   const engine = new HtmlTemplateEngine(templateContent);
   const safeCtx = buildHeaderFooterCtx(ctx);
 
   // Prepare brand colors
   const primaryColor = ctx.branding?.primaryColor || ctx.tokens.color.primary;
   const secondaryColor = ctx.branding?.secondaryColor || ctx.tokens.color.secondary;
-  const primaryColorHex = normalizeHexColor(primaryColor);
-  const secondaryColorHex = normalizeHexColor(secondaryColor);
-  const primaryColorHsl = hexToHsl(primaryColorHex);
-  const secondaryColorHsl = hexToHsl(secondaryColorHex);
+  const primaryColorHex = ColorUtils.normalizeHexColor(primaryColor);
+  const secondaryColorHex = ColorUtils.normalizeHexColor(secondaryColor);
+  const primaryColorHsl = ColorUtils.hexToHsl(primaryColorHex);
+  const secondaryColorHsl = ColorUtils.hexToHsl(secondaryColorHex);
   const {
     h: primaryColorH,
     s: primaryColorS,
     l: primaryColorL,
-  } = splitHslComponents(primaryColorHsl);
+  } = ColorUtils.splitHslComponents(primaryColorHsl);
   const {
     h: secondaryColorH,
     s: secondaryColorS,
     l: secondaryColorL,
-  } = splitHslComponents(secondaryColorHsl);
+  } = ColorUtils.splitHslComponents(secondaryColorHsl);
 
   // Prepare pricing data
-  const pricingRows = preparePricingRows(ctx.rows);
+  const pricingRows = PricingUtils.preparePricingRows(ctx.rows);
   const totals = summarize(ctx.rows);
   const hasPricing = ctx.rows.length > 0;
 
@@ -324,13 +552,23 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
   const images = ctx.offer.images || ctx.images || [];
   const hasImages = images.length > 0;
 
-  // Prepare guarantees
-  const guarantees = ctx.offer.guarantees || [];
-  const hasGuarantees = Array.isArray(guarantees) && guarantees.length > 0;
+  // Prepare guarantees - ensure it's always an array
+  const guaranteesRaw = ctx.offer.guarantees;
+  const guarantees = Array.isArray(guaranteesRaw)
+    ? guaranteesRaw.filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0,
+      )
+    : [];
+  const hasGuarantees = guarantees.length > 0;
 
-  // Prepare schedule (milestones)
-  const schedule = ctx.offer.schedule || [];
-  const hasSchedule = Array.isArray(schedule) && schedule.length > 0;
+  // Prepare schedule (milestones) - ensure it's always an array
+  const scheduleRaw = ctx.offer.schedule;
+  const schedule = Array.isArray(scheduleRaw)
+    ? scheduleRaw.filter(
+        (item): item is string => typeof item === 'string' && item.trim().length > 0,
+      )
+    : [];
+  const hasSchedule = schedule.length > 0;
 
   // Prepare body HTML - it's already HTML content from AI generation
   // The template will render it within the service-list container
@@ -342,47 +580,28 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
     : 'Ingyenes csomag';
 
   // Parse terms text into items if it contains structured content
-  // For now, we'll use the termsText as-is, but could parse it into items
   const termsText = ctx.offer.pricingFootnote || null;
-  const termsItems: Array<{ number: number; title: string; description: string }> = [];
-
-  // If termsText contains numbered items, parse them
-  if (termsText) {
-    // Simple parsing: look for patterns like "1. Title\nDescription"
-    const lines = termsText.split('\n').filter((line) => line.trim().length > 0);
-    let currentItem: { number: number; title: string; description: string } | null = null;
-
-    for (const line of lines) {
-      const numberedMatch = line.match(/^(\d+)\.\s*(.+)$/);
-      if (numberedMatch) {
-        if (currentItem) {
-          termsItems.push(currentItem);
-        }
-        currentItem = {
-          number: parseInt(numberedMatch[1]!, 10),
-          title: numberedMatch[2]!.trim(),
-          description: '',
-        };
-      } else if (currentItem) {
-        currentItem.description += (currentItem.description ? ' ' : '') + line.trim();
-      }
-    }
-    if (currentItem) {
-      termsItems.push(currentItem);
-    }
-  }
+  const termsItems = TermsUtils.parseTermsText(termsText);
 
   // Get current year
   const currentYear = new Date().getFullYear();
   const hasTerms = termsItems.length > 0 || Boolean(termsText);
   const showMonogramFallback = !safeCtx.logoUrl;
 
+  // Validate required data
+  if (!safeCtx.title || safeCtx.title.trim().length === 0) {
+    logger.warn('Rendering template with empty title', {
+      templatePath,
+      offerId: ctx.offer.templateId,
+    });
+  }
+
   // Prepare template data
   const templateData: Record<string, unknown> = {
     locale: ctx.offer.locale || 'hu',
     title: safeCtx.title,
     companyName: safeCtx.company.value,
-    issueDate: formatDate(ctx.offer.issueDate),
+    issueDate: FormatUtils.formatDate(ctx.offer.issueDate),
     logoUrl: safeCtx.logoUrl,
     logoAlt: safeCtx.logoAlt,
     monogram: safeCtx.monogram,
@@ -400,7 +619,7 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
     bodyHtml,
     hasPricing,
     pricingRows,
-    grossTotal: formatCurrency(totals.gross),
+    grossTotal: FormatUtils.formatCurrency(totals.gross),
     hasImages,
     images: images.map((img) => ({
       src: img.src,
@@ -418,11 +637,44 @@ export function renderHtmlTemplate(ctx: RenderCtx, templatePath: string): string
     currentYear,
     showMonogramFallback,
     offerNumber: null, // Could be derived from offer ID if needed
-    guarantees: hasGuarantees ? guarantees : null,
+    guarantees, // Always an array (empty if no guarantees)
     hasGuarantees,
-    schedule: hasSchedule ? schedule : null,
+    schedule, // Always an array (empty if no schedule)
     hasSchedule,
   };
 
-  return engine.render(templateData);
+  try {
+    const rendered = engine.render(templateData);
+
+    // Validate rendered output
+    if (!rendered || rendered.trim().length === 0) {
+      logger.error('Template rendered to empty string', undefined, {
+        templatePath,
+        offerId: ctx.offer.templateId,
+        title: safeCtx.title,
+      });
+      throw new Error('Template rendered to empty string');
+    }
+
+    // Check for common rendering issues
+    if (rendered.includes('{{') || rendered.includes('}}')) {
+      const remainingVars = engine.detectRemainingVariables(rendered);
+      if (remainingVars.length > 0) {
+        logger.warn('Template has unresolved variables', {
+          templatePath,
+          unresolvedVariables: remainingVars,
+          offerId: ctx.offer.templateId,
+        });
+      }
+    }
+
+    return rendered;
+  } catch (error) {
+    logger.error('Failed to render HTML template', error, {
+      templatePath,
+      offerId: ctx.offer.templateId,
+      title: safeCtx.title,
+    });
+    throw error;
+  }
 }

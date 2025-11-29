@@ -7,7 +7,7 @@
 import type { VariableRegistry } from './types';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { OfferData } from '@/app/pdf/templates/types';
-import type { OfferBrandingOptions } from '@/app/lib/offerDocument';
+import type { OfferBrandingOptions } from '@/app/pdf/templates/types';
 import { sanitizeInput } from '@/lib/sanitize';
 
 /**

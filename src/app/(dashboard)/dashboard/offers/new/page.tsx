@@ -387,6 +387,13 @@ export default function NewOfferPage() {
         vat,
       }));
 
+      // Resolve template ID - use selected template or fall back to default
+      const resolvedTemplateId = templateOptions.some(
+        (template) => template.id === selectedTemplateId,
+      )
+        ? selectedTemplateId
+        : defaultTemplateId;
+
       const response = await fetchWithSupabaseAuth('/api/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -400,6 +407,7 @@ export default function NewOfferPage() {
           style: 'detailed',
           prices: serializedPrices,
           aiOverrideHtml: trimmedPreview,
+          templateId: resolvedTemplateId, // Explicitly pass template ID
           clientId: null,
           imageAssets: [],
           schedule: [],
@@ -460,6 +468,9 @@ export default function NewOfferPage() {
     showToast,
     title,
     clearDraft,
+    defaultTemplateId,
+    selectedTemplateId,
+    templateOptions,
   ]);
 
   useWizardKeyboardShortcuts({

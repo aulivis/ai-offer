@@ -13,11 +13,7 @@ import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
 import { resolveOfferTemplate } from '@/lib/offers/templateResolution';
 import { buildOfferHtmlWithFallback } from '@/lib/offers/offerRendering';
-import {
-  extractAndScopeStyles,
-  extractBodyFromHtml,
-  scopeCssToContainer,
-} from '@/lib/offers/styleExtraction';
+import { extractAndScopeStyles, extractBodyFromHtml } from '@/lib/offers/styleExtraction';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
@@ -250,11 +246,12 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   // Extract and scope styles server-side for better performance
   let scopedStyles = extractAndScopeStyles(fullHtml);
 
-  // Fallback: if no styles were extracted, include base document styles
-  // This ensures offers always have formatting even if style extraction fails
+  // Fallback: if no styles were extracted, include minimal fallback styles
+  // This ensures offers always have basic formatting even if style extraction fails
+  // Templates should always include their own styles, so this is a safety net
   if (!scopedStyles || scopedStyles.trim().length === 0) {
-    const { OFFER_DOCUMENT_STYLES } = await import('@/app/lib/offerDocument');
-    scopedStyles = scopeCssToContainer(OFFER_DOCUMENT_STYLES, '#offer-content-container');
+    const { OFFER_DOCUMENT_STYLES_FALLBACK } = await import('@/app/lib/offerDocument');
+    scopedStyles = OFFER_DOCUMENT_STYLES_FALLBACK;
   }
 
   const bodyHtml = extractBodyFromHtml(fullHtml);

@@ -1,8 +1,16 @@
-import type { OfferBrandingOptions } from '@/app/lib/offerDocument';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { Translator } from '@/copy';
 import type { AIResponseBlocks } from '@/lib/ai/blocks';
 import type { VariableRegistry, VariableResolver, TemplateParser } from '@/lib/template-variables';
+
+/**
+ * Branding options for offer templates
+ */
+export interface OfferBrandingOptions {
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+}
 
 export type Branding = OfferBrandingOptions;
 export interface ThemeTokens {

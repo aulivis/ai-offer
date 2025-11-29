@@ -131,6 +131,33 @@ type BuildOfferHtmlOptions = {
   images?: RenderCtx['images'];
 };
 
+/**
+ * Build complete offer HTML using the unified template system.
+ *
+ * This is the primary function for rendering offers. All offer HTML should be
+ * generated through this function to ensure consistency and proper template handling.
+ *
+ * @param options - Rendering options including offer data, pricing, branding, and template ID
+ * @returns Complete HTML document as string
+ * @throws Error if template cannot be loaded or rendered
+ *
+ * @example
+ * ```typescript
+ * const html = buildOfferHtml({
+ *   offer: {
+ *     title: 'My Offer',
+ *     companyName: 'My Company',
+ *     bodyHtml: '<p>Offer content</p>',
+ *     templateId: 'free.minimal.html@1.0.0',
+ *     locale: 'hu',
+ *   },
+ *   rows: pricingRows,
+ *   branding: { primaryColor: '#1c274c', secondaryColor: '#e2e8f0' },
+ *   i18n: translator,
+ *   templateId: 'free.minimal.html@1.0.0',
+ * });
+ * ```
+ */
 export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
   let template: OfferTemplate;
   try {
@@ -138,8 +165,9 @@ export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
   } catch (error) {
     // Log error for debugging
     logger.error(`Failed to load template ${options.templateId}`, {
-      error,
+      error: error instanceof Error ? { name: error.name, message: error.message } : error,
       templateId: options.templateId,
+      offerId: options.offer.templateId,
     });
     // Re-throw to let caller handle it (they should have fallback logic)
     throw error;
