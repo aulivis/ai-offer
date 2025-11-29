@@ -8,9 +8,9 @@ import {
   PhotoIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
+import { listTemplates } from '@/lib/offers/templates/index';
 import { useMemo, useState } from 'react';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import Image from 'next/image';
 
@@ -25,7 +25,7 @@ export function SettingsTemplatesSection({
   plan: _plan,
   onTemplateSelect,
 }: SettingsTemplatesSectionProps) {
-  const allTemplates = useMemo(() => listTemplateMetadata(), []);
+  const allTemplates = useMemo(() => listTemplates(), []);
   const [expandedPreview, setExpandedPreview] = useState<TemplateId | null>(null);
 
   return (

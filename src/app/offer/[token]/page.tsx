@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
-import { normalizeBranding } from '@/app/pdf/templates/theme';
+import { normalizeBranding } from '@/lib/branding';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { getUserProfile } from '@/lib/services/user';
 import { resolveEffectivePlan } from '@/lib/subscription';
@@ -11,14 +11,10 @@ import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { getRequestIp } from '@/lib/auditLogging';
 import { headers } from 'next/headers';
 import { logger } from '@/lib/logger';
-import { resolveOfferTemplate } from '@/lib/offers/templateResolution';
-import { buildOfferHtmlWithFallback } from '@/lib/offers/offerRendering';
-import { extractAndScopeStyles, extractBodyFromHtml } from '@/lib/offers/styleExtraction';
-import { refreshSignedUrlsInHtml } from '@/lib/offers/urlRefresh';
+import { renderOfferHtml } from '@/lib/offers/renderer';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
-import type { AIResponseBlocks } from '@/lib/ai/blocks';
 
 type PageProps = {
   params: Promise<{
@@ -121,6 +117,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       : null
     : null;
 
+  const { resolveOfferTemplate } = await import('@/lib/offers/templateResolution');
   const templateResolution = resolveOfferTemplate({
     requestedTemplateId: rawTemplateId,
     profileTemplateId: typeof profile?.offer_template === 'string' ? profile.offer_template : null,
@@ -161,44 +158,14 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   const translator = createTranslator(locale);
   const resolvedLocale = resolveLocale(locale);
 
-  // Build offer HTML
-  // Refresh expired signed URLs in the stored HTML to ensure images load
-  let aiHtml = sanitizeHTML(offer.ai_text || '');
-  aiHtml = await refreshSignedUrlsInHtml(aiHtml, sb);
-
+  // Build offer HTML using the new unified renderer
   const safeTitle = sanitizeInput(offer.title || '');
   const defaultTitle = sanitizeInput(translator.t('pdf.templates.common.defaultTitle'));
 
-  // Normalize price rows
-  const normalizedRows = priceRows
-    .filter((row): row is Record<string, unknown> => typeof row === 'object' && row !== null)
-    .map((row) => ({
-      name: typeof row.name === 'string' ? row.name : undefined,
-      qty: typeof row.qty === 'number' && Number.isFinite(row.qty) ? row.qty : undefined,
-      unit: typeof row.unit === 'string' ? row.unit : undefined,
-      unitPrice:
-        typeof row.unitPrice === 'number' && Number.isFinite(row.unitPrice)
-          ? row.unitPrice
-          : undefined,
-      vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
-    }));
+  // Get the stored HTML body (images should already be embedded as data URLs)
+  const aiHtml = sanitizeHTML(offer.ai_text || '');
 
-  const sanitizeList = (value: unknown): string[] =>
-    Array.isArray(value)
-      ? value
-          .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-          .map((item) => sanitizeInput(item))
-      : [];
-
-  const scheduleItems = sanitizeList(offer.schedule);
-  const testimonialsList = sanitizeList(offer.testimonials);
-  const guaranteesList = sanitizeList(offer.guarantees);
-  const aiBlocks =
-    offer.ai_blocks && typeof offer.ai_blocks === 'object'
-      ? (offer.ai_blocks as AIResponseBlocks)
-      : null;
-
-  // Extract images from HTML body if they exist (for template's images section)
+  // Extract images from HTML body if they exist
   const extractImagesFromHtml = (
     html: string,
   ): Array<{ src: string; alt: string; key: string }> => {
@@ -226,82 +193,90 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
 
   const extractedImages = extractImagesFromHtml(aiHtml);
 
-  // Build offer HTML with centralized fallback handling
-  const offerRenderData = {
-    title: safeTitle || defaultTitle,
-    companyName: sanitizeInput(profile?.company_name || ''),
-    bodyHtml: aiHtml,
-    templateId,
-    legacyTemplateId: templateId.includes('@') ? templateId.split('@')[0] : templateId,
-    locale: resolvedLocale,
-    issueDate: sanitizeInput(formatOfferIssueDate(new Date(offer.created_at), resolvedLocale)),
-    contactName: sanitizeInput(
-      (typeof profile?.company_contact_name === 'string'
-        ? profile.company_contact_name
-        : typeof profile?.representative === 'string'
-          ? profile.representative
-          : profile?.company_name) || '',
-    ),
-    contactEmail: sanitizeInput(
-      (typeof profile?.company_email === 'string' ? profile.company_email : '') || '',
-    ),
-    contactPhone: sanitizeInput(
-      (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
-    ),
-    companyWebsite: sanitizeInput(
-      (typeof profile?.company_website === 'string'
-        ? profile.company_website
-        : typeof profile?.website === 'string'
-          ? profile.website
-          : '') || '',
-    ),
-    companyAddress: sanitizeInput(
-      (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
-    ),
-    companyTaxId: sanitizeInput(
-      (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
-    ),
-    schedule: scheduleItems,
-    testimonials: testimonialsList.length ? testimonialsList : null,
-    guarantees: guaranteesList.length ? guaranteesList : null,
-    aiBlocks,
-  };
+  // Normalize price rows
+  const normalizedRows = priceRows
+    .filter((row): row is Record<string, unknown> => typeof row === 'object' && row !== null)
+    .map((row) => ({
+      name: typeof row.name === 'string' ? row.name : undefined,
+      qty: typeof row.qty === 'number' && Number.isFinite(row.qty) ? row.qty : undefined,
+      unit: typeof row.unit === 'string' ? row.unit : undefined,
+      unitPrice:
+        typeof row.unitPrice === 'number' && Number.isFinite(row.unitPrice)
+          ? row.unitPrice
+          : undefined,
+      vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
+    }));
 
-  let fullHtml = buildOfferHtmlWithFallback({
-    offer: offerRenderData,
-    rows: normalizedRows,
-    ...(brandingOptions && { branding: brandingOptions }),
-    i18n: translator,
-    templateId,
-    ...(extractedImages.length > 0 && { images: extractedImages }),
-  });
+  const sanitizeList = (value: unknown): string[] =>
+    Array.isArray(value)
+      ? value
+          .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          .map((item) => sanitizeInput(item))
+      : [];
 
-  // Refresh any expired signed URLs in the final HTML (e.g., logo URLs in template)
-  fullHtml = await refreshSignedUrlsInHtml(fullHtml, sb);
+  const scheduleItems = sanitizeList(offer.schedule);
+  const testimonialsList = sanitizeList(offer.testimonials);
+  const guaranteesList = sanitizeList(offer.guarantees);
 
-  // Extract and scope styles server-side for better performance
-  let scopedStyles = extractAndScopeStyles(fullHtml);
+  // Render complete HTML document with new modern template system
+  const fullHtml = renderOfferHtml(
+    {
+      title: safeTitle || defaultTitle,
+      companyName: sanitizeInput(profile?.company_name || ''),
+      bodyHtml: aiHtml,
+      locale: resolvedLocale,
+      issueDate: sanitizeInput(formatOfferIssueDate(new Date(offer.created_at), resolvedLocale)),
+      contactName: sanitizeInput(
+        (typeof profile?.company_contact_name === 'string'
+          ? profile.company_contact_name
+          : typeof profile?.representative === 'string'
+            ? profile.representative
+            : profile?.company_name) || '',
+      ),
+      contactEmail: sanitizeInput(
+        (typeof profile?.company_email === 'string' ? profile.company_email : '') || '',
+      ),
+      contactPhone: sanitizeInput(
+        (typeof profile?.company_phone === 'string' ? profile.company_phone : '') || '',
+      ),
+      companyWebsite: sanitizeInput(
+        (typeof profile?.company_website === 'string'
+          ? profile.company_website
+          : typeof profile?.website === 'string'
+            ? profile.website
+            : '') || '',
+      ),
+      companyAddress: sanitizeInput(
+        (typeof profile?.company_address === 'string' ? profile.company_address : '') || '',
+      ),
+      companyTaxId: sanitizeInput(
+        (typeof profile?.company_tax_id === 'string' ? profile.company_tax_id : '') || '',
+      ),
+      schedule: scheduleItems,
+      testimonials: testimonialsList.length ? testimonialsList : null,
+      guarantees: guaranteesList.length ? guaranteesList : null,
+      pricingRows: normalizedRows,
+      images: extractedImages,
+      ...(brandingOptions && { branding: brandingOptions }),
+      templateId, // Pass template ID to use the selected template
+    },
+    translator,
+  );
 
-  // Fallback: if no styles were extracted, include minimal fallback styles
-  // This ensures offers always have basic formatting even if style extraction fails
-  // Templates should always include their own styles, so this is a safety net
-  if (!scopedStyles || scopedStyles.trim().length === 0) {
-    logger.warn('No styles extracted from offer HTML, using fallback', {
-      offerId: offer.id,
-      templateId,
-    });
-    const { OFFER_DOCUMENT_STYLES_FALLBACK } = await import('@/app/lib/offerDocument');
-    scopedStyles = OFFER_DOCUMENT_STYLES_FALLBACK;
-  } else {
-    // Log style extraction success for debugging
-    logger.debug('Styles extracted and scoped successfully', {
-      offerId: offer.id,
-      templateId,
-      styleLength: scopedStyles.length,
-    });
+  // The new template system returns complete, self-contained HTML documents with inline styles
+  // Extract body content and styles for proper display in Next.js page
+  const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const bodyHtml = bodyMatch ? bodyMatch[1]! : fullHtml;
+
+  // Extract all styles from the HTML document (templates have inline styles)
+  const styleMatches = fullHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+  const allStyles: string[] = [];
+  for (const match of styleMatches) {
+    if (match[1]) {
+      allStyles.push(match[1]);
+    }
   }
-
-  const bodyHtml = extractBodyFromHtml(fullHtml);
+  const inlineStyles = allStyles.join('\n\n');
 
   // Log access (non-blocking for better performance)
   const headersList = await headers();
@@ -335,8 +310,10 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
         {/* Download PDF Button - hidden in PDF mode */}
         {!isPdfMode && <DownloadPdfButton token={token} offerId={offer.id} />}
 
-        {/* Offer HTML Content with Template and Branding */}
-        <OfferDisplay html={bodyHtml} scopedStyles={scopedStyles} />
+        {/* Offer HTML Content - fully self-contained with inline styles */}
+        {/* The new template system generates complete HTML documents with inline styles */}
+        {inlineStyles && <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />}
+        <OfferDisplay html={bodyHtml} />
 
         {/* Response Form - hidden in PDF mode */}
         {!isPdfMode && (

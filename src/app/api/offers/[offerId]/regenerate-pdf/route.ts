@@ -7,10 +7,9 @@ import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandlin
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { uuidSchema } from '@/lib/validation/schemas';
-import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { loadTemplate } from '@/app/pdf/templates/engineRegistry';
-import { normalizeBranding } from '@/app/pdf/templates/theme';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import { renderOfferHtml } from '@/lib/offers/renderer';
+import { normalizeBranding } from '@/lib/branding';
+import { mapTemplateId } from '@/lib/offers/templates/index';
 import { createTranslator, resolveLocale } from '@/copy';
 import type { PriceRow } from '@/app/lib/pricing';
 import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
@@ -22,7 +21,6 @@ import { currentMonthStart } from '@/lib/utils/dateHelpers';
 import { getUsageSnapshot } from '@/lib/services/usage';
 import { v4 as uuid } from 'uuid';
 import type { PdfJobInput } from '@/lib/queue/pdf';
-import type { AIResponseBlocks } from '@/lib/ai/blocks';
 
 const offerIdParamsSchema = z.object({
   offerId: uuidSchema,
@@ -138,13 +136,13 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
 
     // Get offer inputs
     const inputs = (offer.inputs as Record<string, unknown>) || {};
-    const templateId =
-      (typeof inputs.templateId === 'string' ? inputs.templateId : null) || 'modern';
+    const rawTemplateId =
+      (typeof inputs.templateId === 'string' ? inputs.templateId : null) || 'free.minimal';
     const locale = (typeof inputs.language === 'string' ? inputs.language : 'hu') || 'hu';
     const resolvedLocale = resolveLocale(locale);
 
-    // Load template
-    const template = loadTemplate(templateId as TemplateId);
+    // Map template ID to HTML template format
+    const templateId = mapTemplateId(rawTemplateId);
     const translator = createTranslator(resolvedLocale);
 
     // Get recipient info for storage path
@@ -210,10 +208,6 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
     const scheduleItems = sanitizeList(offerRecord.schedule);
     const testimonialsList = sanitizeList(offerRecord.testimonials);
     const guaranteesList = sanitizeList(offerRecord.guarantees);
-    const aiBlocks =
-      offerRecord.ai_blocks && typeof offerRecord.ai_blocks === 'object'
-        ? (offerRecord.ai_blocks as AIResponseBlocks)
-        : null;
 
     // Get company info from profile
     const { data: profileData } = await sb
@@ -227,13 +221,13 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
     const companyName = profileData?.company_name || '';
     const issueDate = formatOfferIssueDate(new Date(), resolvedLocale);
 
-    // Build HTML
-    const html = buildOfferHtml({
-      offer: {
+    // Build HTML using unified HTML template system
+    const html = renderOfferHtml(
+      {
         title: offer.title || '',
         companyName,
         bodyHtml: safeBody,
-        templateId: template.id,
+        templateId,
         locale: resolvedLocale,
         issueDate,
         contactName: sanitizeInput(profileData?.contact_name ?? ''),
@@ -245,13 +239,12 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
         schedule: scheduleItems,
         testimonials: testimonialsList.length ? testimonialsList : null,
         guarantees: guaranteesList.length ? guaranteesList : null,
-        aiBlocks,
+        pricingRows: normalizedRows,
+        images: [],
+        branding: normalizedBranding,
       },
-      rows: normalizedRows,
-      branding: normalizedBranding,
-      i18n: translator,
-      templateId: template.id,
-    });
+      translator,
+    );
 
     // Check quota
     const { iso: usagePeriodStart } = currentMonthStart();
@@ -281,8 +274,8 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest, context: 
       userLimit: typeof planLimit === 'number' && Number.isFinite(planLimit) ? planLimit : null,
       deviceId: null,
       deviceLimit: null,
-      templateId: template.id,
-      requestedTemplateId: template.id,
+      templateId: rawTemplateId,
+      requestedTemplateId: rawTemplateId,
     };
 
     try {

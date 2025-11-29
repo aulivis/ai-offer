@@ -6,13 +6,7 @@ import { renderRuntimePdfHtml } from '@/lib/pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { isPdfWebhookUrlAllowed } from '@/lib/pdfWebhook';
 import { completePdfJobTransactional, failPdfJobWithRollback } from '@/lib/pdf/transactional';
-import {
-  createPdfOptions,
-  toPuppeteerOptions,
-  setPdfMetadata,
-  type PdfMetadata,
-  type PuppeteerPage,
-} from '@/lib/pdfConfig';
+import { setPdfMetadata, type PdfMetadata, type PuppeteerPage } from '@/lib/pdfConfig';
 import { logger } from '@/lib/logger';
 
 const JOB_TIMEOUT_MS = 90_000;
@@ -196,20 +190,9 @@ export async function processPdfJobInline(
               deviceScaleFactor: 2,
             });
 
-            // Optimize images in HTML before rendering
-            const { optimizeImagesInHtml, enablePdfCompressionViaCdp } = await import(
-              '@/lib/pdf/compression'
-            );
-            const optimizedHtml = await optimizeImagesInHtml(html, {
-              maxWidth: 1920,
-              maxHeight: 1920,
-              quality: 85,
-            });
-
-            await setContentWithNetworkIdleLogging(page, optimizedHtml, 'inline-pdf');
-
-            // Enable PDF compression via CDP
-            await enablePdfCompressionViaCdp(page);
+            // Use HTML as-is for 1-to-1 matching (no transformations)
+            // Images are already embedded as data URLs in HTML templates
+            await setContentWithNetworkIdleLogging(page, html, 'inline-pdf');
 
             // Extract document title for metadata
             const documentTitle = await page.title().catch(() => 'Offer Document');
@@ -227,76 +210,19 @@ export async function processPdfJobInline(
             // Set PDF metadata
             await setPdfMetadata(page as unknown as PuppeteerPage, pdfMetadata);
 
-            // Extract header/footer data for Puppeteer templates
-            const headerFooterData = await page.evaluate(() => {
-              const footer = document.querySelector('.slim-footer');
-
-              if (!footer) return null;
-
-              const companyEl = footer.querySelector('.slim-footer > div > span:first-child');
-              const companyName = companyEl?.textContent?.trim() || 'Company';
-
-              const addressEl = footer.querySelector('.slim-footer > div > span:nth-child(2)');
-              const companyAddress = addressEl?.textContent?.trim() || '';
-
-              const taxIdEl = footer.querySelector('.slim-footer > div > span:nth-child(3)');
-              const companyTaxId = taxIdEl?.textContent?.trim() || '';
-
-              const pageNumberEl = footer.querySelector('.slim-footer__page-number');
-              const pageLabel = pageNumberEl?.getAttribute('data-page-label') || 'Page';
-
-              return { companyName, companyAddress, companyTaxId, pageLabel };
-            });
-
-            // Create footer template with page numbers (server-side)
-            // Puppeteer templates support .pageNumber and .totalPages classes
-            function escapeHtml(text: string): string {
-              return text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-            }
-
-            const footerTemplate = headerFooterData
-              ? `
-              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8pt; font-family: 'Work Sans', Arial, sans-serif; color: #334155; padding: 4mm 0; width: 100%; box-sizing: border-box;">
-                <div style="display: flex; flex-direction: column; gap: 2px; font-size: 7pt; min-width: 0; flex: 1; max-width: 70%; word-wrap: break-word;">
-                  <span style="font-weight: 600;">${escapeHtml(headerFooterData.companyName)}</span>
-                  ${headerFooterData.companyAddress ? `<span>${escapeHtml(headerFooterData.companyAddress)}</span>` : ''}
-                  ${headerFooterData.companyTaxId ? `<span>${escapeHtml(headerFooterData.companyTaxId)}</span>` : ''}
-                </div>
-                <span style="flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; text-transform: uppercase;">
-                  ${escapeHtml(headerFooterData.pageLabel)} <span class="pageNumber"></span> / <span class="totalPages"></span>
-                </span>
-              </div>
-            `
-              : '<div></div>';
-
-            // Generate PDF with margins and Puppeteer templates for page numbers
-            const pdfOptions = createPdfOptions(pdfMetadata, {
+            // Generate PDF with simplest 1-to-1 matching approach
+            // No header/footer templates, no compression, just convert HTML to PDF
+            const pdfBuffer = await page.pdf({
+              format: 'A4',
+              printBackground: true, // Preserve colors and backgrounds
               margin: {
-                top: '20mm',
-                right: '15mm',
-                bottom: '25mm',
-                left: '15mm',
+                top: '0mm',
+                right: '0mm',
+                bottom: '0mm',
+                left: '0mm',
               },
-              displayHeaderFooter: true,
-              headerTemplate: '<div></div>', // Empty header for now
-              footerTemplate: footerTemplate,
+              preferCSSPageSize: false, // Use A4 format, not CSS page size
             });
-
-            const puppeteerOptions = toPuppeteerOptions(pdfOptions);
-            const pdfBuffer = await page.pdf(puppeteerOptions as Parameters<Page['pdf']>[0]);
-
-            // Apply additional compression if enabled
-            if (pdfOptions.compress !== false) {
-              const { compressPdfBuffer } = await import('@/lib/pdf/compression');
-              return await compressPdfBuffer(Buffer.from(pdfBuffer), {
-                quality: 'medium',
-              });
-            }
 
             return pdfBuffer;
           } finally {

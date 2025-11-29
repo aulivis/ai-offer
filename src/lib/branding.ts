@@ -32,6 +32,35 @@ export function normalizeBrandHex(value: string | null | undefined): string | nu
 }
 
 /**
+ * Normalize branding options (colors and logo)
+ */
+export function normalizeBranding(branding?: {
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  logoUrl?: string | null;
+}):
+  | {
+      primaryColor: string | null;
+      secondaryColor: string | null;
+      logoUrl: string | null;
+    }
+  | undefined {
+  if (!branding) {
+    return undefined;
+  }
+
+  const primaryColor = normalizeBrandHex(branding.primaryColor ?? undefined);
+  const secondaryColor = normalizeBrandHex(branding.secondaryColor ?? undefined);
+  const logoUrl = sanitizeBrandLogoUrl(branding.logoUrl ?? null);
+
+  return {
+    primaryColor: primaryColor ?? null,
+    secondaryColor: secondaryColor ?? null,
+    logoUrl,
+  };
+}
+
+/**
  * Validates and sanitizes a brand logo storage path.
  * Path format: "{userId}/brand-logo.{extension}"
  */

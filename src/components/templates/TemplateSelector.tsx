@@ -1,11 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import Image from 'next/image';
 import { t } from '@/copy';
-import { listTemplateMetadata } from '@/app/pdf/templates/engineRegistry';
-import type { TemplateMetadata } from '@/app/pdf/templates/engineRegistry';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import { listTemplates } from '@/lib/offers/templates/index';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import { CheckCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
@@ -24,20 +22,19 @@ export function TemplateSelector({
   plan,
   onTemplateSelect,
   className = '',
-  showDescription = true,
   gridCols = 3,
 }: TemplateSelectorProps) {
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const canUseProTemplates = plan === 'pro';
 
   const availableTemplates = useMemo(() => {
-    const allTemplates = listTemplateMetadata();
+    const allTemplates = listTemplates();
     return allTemplates.sort((a, b) => {
       // Premium templates last
       if (a.tier === 'premium' && b.tier !== 'premium') return 1;
       if (a.tier !== 'premium' && b.tier === 'premium') return -1;
-      // Sort by label
-      return a.label.localeCompare(b.label, 'hu');
+      // Sort by name
+      return a.name.localeCompare(b.name, 'hu');
     });
   }, []);
 
@@ -48,7 +45,7 @@ export function TemplateSelector({
     4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
   }[gridCols];
 
-  const handleSelect = (template: TemplateMetadata) => {
+  const handleSelect = (template: { id: string; tier: 'free' | 'premium'; name: string }) => {
     const requiresPro = template.tier === 'premium';
     const requiresUpgrade = requiresPro && !canUseProTemplates;
 
@@ -79,7 +76,7 @@ export function TemplateSelector({
               disabled={requiresUpgrade}
               onClick={() => handleSelect(template)}
               aria-pressed={isSelected}
-              aria-label={`Válassza ki a ${template.label} sablont`}
+              aria-label={`Válassza ki a ${template.name} sablont`}
               className={`group relative flex h-full flex-col gap-3 rounded-xl border-2 p-4 text-left transition-all ${
                 isSelected
                   ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/30'
@@ -88,24 +85,12 @@ export function TemplateSelector({
             >
               {/* Preview Image */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-slate-50 to-slate-100 shadow-sm">
-                {template.preview ? (
-                  <Image
-                    src={template.preview}
-                    alt={`${template.label} előnézet`}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                    loading="lazy"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <div className="text-center">
-                      <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
-                      <span className="text-xs font-medium text-slate-400">{template.label}</span>
-                    </div>
+                <div className="flex h-full w-full items-center justify-center">
+                  <div className="text-center">
+                    <div className="mx-auto mb-2 h-12 w-12 rounded-lg border-2 border-dashed border-slate-300 bg-white" />
+                    <span className="text-xs font-medium text-slate-400">{template.name}</span>
                   </div>
-                )}
+                </div>
 
                 {/* Selected Indicator */}
                 {isSelected && (
@@ -129,13 +114,8 @@ export function TemplateSelector({
               {/* Template Info */}
               <div className="flex-1 space-y-1.5">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <h3 className="text-sm font-semibold text-slate-900">{template.label}</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">{template.name}</h3>
                 </div>
-                {showDescription && (template.description || template.marketingHighlight) && (
-                  <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
-                    {template.description || template.marketingHighlight}
-                  </p>
-                )}
 
                 {requiresUpgrade && (
                   <div className="flex items-center gap-1.5 pt-1 text-xs font-medium text-amber-600">

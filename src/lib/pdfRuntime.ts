@@ -1,11 +1,8 @@
-import { BASE_STYLES } from '../app/pdf/sdk/baseStyles';
-import { tokensToCssVars } from '../app/pdf/sdk/cssVars';
-import type { BrandInput, DocSlots, RenderContext } from '../app/pdf/sdk/types';
-import { buildTokens } from '../app/pdf/sdk/tokens';
-import { getTemplateMeta } from '../app/pdf/templates/registry';
+import type { BrandInput, DocSlots } from '../app/pdf/sdk/types';
 import { createTranslator } from '../copy';
-import { PDF_ENGINE_META_TAG } from './pdfHtmlSignature';
-import { sanitizeInput } from './sanitize';
+import { renderOfferHtml, type OfferRenderData } from './offers/renderer';
+import { mapTemplateId } from './offers/templates/index';
+import type { PriceRow } from '@/app/lib/pricing';
 
 export type RuntimePdfPayload = {
   templateId: string;
@@ -14,47 +11,69 @@ export type RuntimePdfPayload = {
   slots: DocSlots;
 };
 
-export function renderRuntimePdfHtml(payload: RuntimePdfPayload): string {
-  const templateMeta = getTemplateMeta(payload.templateId);
+/**
+ * Convert PDF payload (slots structure) to HTML template data (offer structure)
+ */
+function convertPdfPayloadToOfferData(payload: RuntimePdfPayload): OfferRenderData {
+  const { slots, brand, templateId, locale } = payload;
 
-  if (!templateMeta) {
-    throw new Error(`Unknown PDF template: ${payload.templateId}`);
-  }
+  // Convert items to pricing rows
+  // PDF slots items already have calculated totals, so we need to derive VAT rate
+  const pricingRows: PriceRow[] = slots.items.map((item) => {
+    const rowTotal = item.unitPrice * item.qty;
+    // Calculate VAT rate from the difference between item.total and rowTotal
+    // If item.total includes VAT: VAT = item.total - rowTotal, rate = (VAT / rowTotal) * 100
+    const vatAmount = item.total - rowTotal;
+    const vatRate = rowTotal > 0 ? (vatAmount / rowTotal) * 100 : 0;
 
-  const template = templateMeta.factory();
-  const tokens = buildTokens(payload.brand);
-  const cssVars = tokensToCssVars(tokens);
-  const translator = createTranslator(payload.locale);
+    return {
+      name: item.name,
+      qty: item.qty,
+      unit: '', // PDF slots don't have unit, use empty string
+      unitPrice: item.unitPrice,
+      vat: Math.max(0, Math.min(100, vatRate)), // Clamp between 0-100%
+    };
+  });
 
-  const ctx: RenderContext = {
-    slots: payload.slots,
-    tokens,
-    i18n: translator,
+  // Map template ID from PDF format to HTML format
+  const htmlTemplateId = mapTemplateId(templateId);
+
+  return {
+    title: slots.doc.title || 'Offer Document',
+    companyName: slots.brand.name || brand.name || 'Company',
+    bodyHtml: slots.notes || '<p>Offer content</p>',
+    locale: locale || 'hu',
+    issueDate: slots.doc.date,
+    contactName: slots.customer.name || null,
+    contactEmail: null,
+    contactPhone: null,
+    companyWebsite: null,
+    companyAddress: slots.customer.address || null,
+    companyTaxId: slots.customer.taxId || null,
+    schedule: [],
+    testimonials: null,
+    guarantees: null,
+    pricingRows,
+    images: [],
+    branding: {
+      primaryColor: brand.primaryHex || '#1c274c',
+      secondaryColor: brand.secondaryHex || '#e2e8f0',
+      logoUrl: brand.logoUrl || slots.brand.logoUrl || null,
+    },
+    templateId: htmlTemplateId,
   };
+}
 
-  const headHtml = template.renderHead(ctx);
-  const bodyHtml = template.renderBody(ctx);
-  const styles = `${BASE_STYLES}${cssVars}`;
+/**
+ * Render HTML for PDF generation using the unified HTML template system
+ *
+ * This replaces the old PDF template system. HTML is generated first,
+ * then converted to PDF via Puppeteer.
+ */
+export function renderRuntimePdfHtml(payload: RuntimePdfPayload): string {
+  const translator = createTranslator(payload.locale);
+  const offerData = convertPdfPayloadToOfferData(payload);
 
-  // Extract document title for metadata
-  const documentTitle = payload.slots.doc.title || 'Offer Document';
-  const brandName = payload.brand.name || 'Unknown Brand';
-  const documentDate = payload.slots.doc.date || '';
-
-  // Build comprehensive head with metadata (sanitized for safety)
-  const safeTitle = sanitizeInput(documentTitle);
-  const safeBrand = sanitizeInput(brandName);
-  const safeDate = sanitizeInput(documentDate);
-  const safeKeywords = `offer,${safeBrand},${safeDate}`.replace(/[^a-z0-9\s,]/gi, '');
-
-  const metaTags = `
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="author" content="${safeBrand}" />
-    <meta name="description" content="${safeTitle}" />
-    <meta name="keywords" content="${safeKeywords}" />
-    <title>${safeTitle}</title>
-  `;
-
-  return `<!DOCTYPE html><html lang="${translator.locale}"><head>${PDF_ENGINE_META_TAG}${metaTags}<style>${styles}</style>${headHtml}</head><body>${bodyHtml}</body></html>`;
+  // Use the unified HTML template system
+  return renderOfferHtml(offerData, translator);
 }

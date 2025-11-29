@@ -28,7 +28,7 @@ import {
   normalizeTemplateId,
   type SubscriptionPlan,
 } from '@/app/lib/offerTemplates';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import type { WizardStep } from '@/types/wizard';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -64,8 +64,8 @@ import { Card } from '@/components/ui/Card';
 import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
-import { listTemplates } from '@/app/pdf/templates/engineRegistry';
-import type { OfferTemplate, TemplateTier } from '@/app/pdf/templates/types';
+import { listTemplates } from '@/lib/offers/templates/index';
+import type { Template } from '@/lib/offers/templates/types';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -322,7 +322,7 @@ function parseTemplatePayload(value: unknown): OfferTextTemplatePayload | null {
   };
 }
 
-function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+function planToTemplateTier(plan: SubscriptionPlan): 'free' | 'premium' {
   return plan === 'pro' ? 'premium' : 'free';
 }
 
@@ -388,10 +388,7 @@ export default function NewOfferWizard() {
   });
   const [selectedPdfTemplateId, setSelectedPdfTemplateId] = useState<TemplateId | null>(null);
 
-  const allPdfTemplates = useMemo(
-    () => listTemplates() as Array<OfferTemplate & { legacyId?: string }>,
-    [],
-  );
+  const allPdfTemplates = useMemo(() => listTemplates(), []);
   const userTemplateTier = planToTemplateTier(plan);
   const availablePdfTemplates = useMemo(() => {
     if (userTemplateTier === 'premium') {
@@ -401,7 +398,7 @@ export default function NewOfferWizard() {
   }, [allPdfTemplates, userTemplateTier]);
   const lockedPdfTemplates = useMemo(() => {
     if (userTemplateTier === 'premium') {
-      return [] as Array<OfferTemplate>;
+      return [] as Array<Template>;
     }
     return allPdfTemplates.filter((template) => template.tier === 'premium');
   }, [allPdfTemplates, userTemplateTier]);
@@ -409,8 +406,8 @@ export default function NewOfferWizard() {
   const lockedTemplateSummaries = useMemo(
     () =>
       lockedPdfTemplates.map((template) => ({
-        label: template.label,
-        highlight: template.marketingHighlight ?? lockedTemplateDefaultHighlight,
+        label: template.name,
+        highlight: lockedTemplateDefaultHighlight,
       })),
     [lockedPdfTemplates, lockedTemplateDefaultHighlight],
   );
@@ -3126,7 +3123,7 @@ export default function NewOfferWizard() {
                           {t('offers.wizard.previewTemplates.summaryLabel')}
                         </dt>
                         <dd className="font-medium text-slate-800">
-                          {selectedPdfTemplateLabel || availablePdfTemplates[0]?.label || '—'}
+                          {selectedPdfTemplateLabel || availablePdfTemplates[0]?.name || '—'}
                         </dd>
                       </div>
                     </dl>
@@ -3233,7 +3230,7 @@ export default function NewOfferWizard() {
                 </h2>
                 {selectedPdfTemplate && (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-                    {selectedPdfTemplate.label}
+                    {selectedPdfTemplate.name}
                   </span>
                 )}
               </div>

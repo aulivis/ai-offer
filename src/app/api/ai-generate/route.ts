@@ -3,11 +3,11 @@ import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-// Use shared pricing utilities and the pluggable PDF template engine.
+// Use shared pricing utilities and the unified HTML template system.
 // Pricing calculations remain in `app/lib/pricing.ts`, while templates
-// live under `app/pdf/templates`.
+// live under `lib/offers/templates`.
 import { PriceRow } from '@/app/lib/pricing';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import OpenAI, { APIError } from 'openai';
 import type { ResponseFormatTextJSONSchemaConfig } from 'openai/resources/responses/responses';
@@ -647,10 +647,11 @@ async function applyImageAssetsToHtml(
   storedHtml: string;
 }> {
   if (!images.length) {
-    return { pdfHtml: html, storedHtml: html.replace(IMG_TAG_REGEX, '') };
+    // No images - return HTML as-is for both PDF and storage
+    return { pdfHtml: html, storedHtml: html };
   }
 
-  // Optimize images before embedding
+  // Optimize images before embedding (for PDF generation)
   const { optimizeImageDataUrlForPdf } = await import('@/lib/pdf/compression');
   const optimizedImages = await Promise.all(
     images.map(async (image) => {
@@ -669,10 +670,14 @@ async function applyImageAssetsToHtml(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
+  // Reset regex for new execution
+  IMG_TAG_REGEX.lastIndex = 0;
+
   while ((match = IMG_TAG_REGEX.exec(html)) !== null) {
     const [tag] = match;
-    pdfHtml += html.slice(lastIndex, match.index);
-    storedHtml += html.slice(lastIndex, match.index);
+    const beforeTag = html.slice(lastIndex, match.index);
+    pdfHtml += beforeTag;
+    storedHtml += beforeTag;
 
     const keyMatch =
       tag.match(/data-offer-image-key\s*=\s*"([^"]+)"/i) ||
@@ -681,20 +686,33 @@ async function applyImageAssetsToHtml(
       const key = keyMatch[1] ?? keyMatch[2];
       const asset = key ? imageMap.get(key) : undefined;
       if (asset) {
-        const safeAlt = typeof asset.alt === 'string' ? asset.alt : '';
+        const safeAlt = typeof asset.alt === 'string' ? sanitizeInput(asset.alt) : '';
         const altAttr = safeAlt ? ` alt="${safeAlt}"` : '';
-        pdfHtml += `<img src="${asset.dataUrl}"${altAttr} />`;
+        // Embed image as data URL in both PDF and stored HTML
+        // This ensures images are always available when displaying offers
+        const imgTag = `<img src="${asset.dataUrl}"${altAttr} />`;
+        pdfHtml += imgTag;
+        storedHtml += imgTag;
+      } else {
+        // Image key not found - remove the placeholder tag
+        // Don't add anything to either HTML
       }
+    } else {
+      // No key attribute - keep original tag as-is
+      pdfHtml += tag;
+      storedHtml += tag;
     }
 
     lastIndex = match.index + match[0].length;
   }
 
-  pdfHtml += html.slice(lastIndex);
-  storedHtml += html.slice(lastIndex);
+  // Add remaining HTML
+  const remaining = html.slice(lastIndex);
+  pdfHtml += remaining;
+  storedHtml += remaining;
 
   ensureSafeHtml(pdfHtml, 'pdf html with embedded assets');
-  ensureSafeHtml(storedHtml, 'pdf html for storage');
+  ensureSafeHtml(storedHtml, 'stored html with embedded assets');
 
   return { pdfHtml, storedHtml };
 }

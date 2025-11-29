@@ -24,7 +24,7 @@ const {
   cookiesSetMock,
   processPdfJobInlineMock,
   supabaseServerMock,
-  buildOfferHtmlMock,
+  renderOfferHtmlMock,
   listTemplatesMock,
   loadTemplateMock,
   recordTemplateRenderTelemetryMock,
@@ -50,7 +50,7 @@ const {
   cookiesSetMock: vi.fn(),
   processPdfJobInlineMock: vi.fn(),
   supabaseServerMock: vi.fn(),
-  buildOfferHtmlMock: vi.fn(() => createMinimalEngineHtml('<section>Mock</section>')),
+  renderOfferHtmlMock: vi.fn(() => createMinimalEngineHtml('<section>Mock</section>')),
   listTemplatesMock: vi.fn(),
   loadTemplateMock: vi.fn(),
   recordTemplateRenderTelemetryMock: vi.fn(),
@@ -152,13 +152,14 @@ vi.mock('@/lib/subscription', () => ({
   getMonthlyOfferLimit: getMonthlyOfferLimitMock,
 }));
 
-vi.mock('@/app/pdf/templates/engine', () => ({
-  buildOfferHtml: buildOfferHtmlMock,
+vi.mock('@/lib/offers/renderer', () => ({
+  renderOfferHtml: renderOfferHtmlMock,
 }));
 
-vi.mock('@/app/pdf/templates/engineRegistry', () => ({
+vi.mock('@/lib/offers/templates/index', () => ({
   listTemplates: listTemplatesMock,
-  loadTemplate: loadTemplateMock,
+  getTemplate: loadTemplateMock,
+  mapTemplateId: (id: string) => id,
 }));
 listTemplatesMock.mockReturnValue([templateStub]);
 loadTemplateMock.mockReturnValue(templateStub);
@@ -264,7 +265,7 @@ describe('POST /api/ai-generate', () => {
     supabaseServerMock.mockReset();
     listTemplatesMock.mockReset();
     loadTemplateMock.mockReset();
-    buildOfferHtmlMock.mockReset();
+    renderOfferHtmlMock.mockReset();
     recordTemplateRenderTelemetryMock.mockReset();
     resolveTemplateRenderErrorCodeMock.mockReset();
     resolveTemplateRenderErrorCodeMock.mockReturnValue('render_error');
@@ -301,7 +302,9 @@ describe('POST /api/ai-generate', () => {
     });
     listTemplatesMock.mockReturnValue([templateStub]);
     loadTemplateMock.mockImplementation(() => templateStub);
-    buildOfferHtmlMock.mockImplementation(() => createMinimalEngineHtml('<section>Mock</section>'));
+    renderOfferHtmlMock.mockImplementation(() =>
+      createMinimalEngineHtml('<section>Mock</section>'),
+    );
   });
 
   afterEach(() => {
@@ -477,7 +480,7 @@ describe('POST /api/ai-generate', () => {
   });
 
   it('records telemetry failure when template rendering throws', async () => {
-    buildOfferHtmlMock.mockImplementationOnce(() => {
+    renderOfferHtmlMock.mockImplementationOnce(() => {
       throw new Error('render failed');
     });
 
@@ -640,7 +643,7 @@ describe('POST /api/ai-generate', () => {
     );
 
     expect(response.status).toBe(200);
-    expect(buildOfferHtmlMock).toHaveBeenCalledWith(
+    expect(renderOfferHtmlMock).toHaveBeenCalledWith(
       expect.objectContaining({
         offer: expect.objectContaining({ templateId: templateStub.id }),
         images: [],

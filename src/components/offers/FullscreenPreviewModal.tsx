@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select';
 import { PreviewMarginGuides } from './PreviewMarginGuides';
 import { useIframeAutoHeight } from '@/hooks/useIframeAutoHeight';
 import { t } from '@/copy';
-import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
 
 type FullscreenPreviewModalProps = {
   open: boolean;
@@ -18,7 +18,7 @@ type FullscreenPreviewModalProps = {
   showMarginGuides?: boolean;
   onToggleMarginGuides?: (enabled: boolean) => void;
   title?: string;
-  templateOptions?: Array<OfferTemplate>;
+  templateOptions?: Array<{ id: string; name: string; tier: 'free' | 'premium' }>;
   selectedTemplateId?: TemplateId;
   defaultTemplateId?: TemplateId;
   onTemplateChange?: (templateId: TemplateId) => void;
@@ -150,7 +150,7 @@ export function FullscreenPreviewModal({
                       value={template.id}
                       disabled={lockedTemplateIds.includes(template.id)}
                     >
-                      {template.label}
+                      {template.name}
                     </option>
                   ))}
                 </Select>

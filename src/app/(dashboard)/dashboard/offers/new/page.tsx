@@ -24,8 +24,8 @@ import { trackWizardEvent } from '@/lib/analytics/wizard';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import type { OfferPreviewTab } from '@/types/preview';
-import { listTemplates } from '@/app/pdf/templates/engineRegistry';
-import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
+import { listTemplates } from '@/lib/offers/templates/index';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import type { WizardStep } from '@/types/wizard';
 
 const PREVIEW_DEBOUNCE_MS = 600;
@@ -94,7 +94,7 @@ export default function NewOfferPage() {
 
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const templateOptions = useMemo(() => listTemplates() as Array<OfferTemplate>, []);
+  const templateOptions = useMemo(() => listTemplates(), []);
   const defaultTemplateId = useMemo<TemplateId>(() => {
     // Find template matching default ID, or use first available
     const defaultMatch = templateOptions.find(

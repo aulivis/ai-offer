@@ -6,8 +6,31 @@
 
 import type { VariableRegistry } from './types';
 import type { PriceRow } from '@/app/lib/pricing';
-import type { OfferData } from '@/app/pdf/templates/types';
-import type { OfferBrandingOptions } from '@/app/pdf/templates/types';
+// Types moved to HTML template system - using inline types here
+type OfferData = {
+  title: string;
+  companyName: string;
+  bodyHtml: string;
+  templateId: string;
+  locale: string;
+  issueDate?: string;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  companyWebsite?: string | null;
+  companyAddress?: string | null;
+  companyTaxId?: string | null;
+  schedule?: string[];
+  testimonials?: string[] | null;
+  guarantees?: string[] | null;
+  aiBlocks?: unknown;
+};
+
+type OfferBrandingOptions = {
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  logoUrl?: string | null;
+};
 import { sanitizeInput } from '@/lib/sanitize';
 
 /**

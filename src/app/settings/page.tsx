@@ -31,7 +31,8 @@ import {
   UserIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
+import { mapTemplateId } from '@/lib/offers/templates/index';
 import { SettingsSecurityTab } from '@/components/settings/SettingsSecurityTab';
 import { SettingsCompanySection } from '@/components/settings/SettingsCompanySection';
 import { SettingsBrandingSection } from '@/components/settings/SettingsBrandingSection';
@@ -280,8 +281,9 @@ export default function SettingsPage() {
   const hasErrors = hasGeneralErrors || hasBrandingErrors;
 
   // Use the template ID directly from profile for display (enforcement happens on save)
-  const selectedTemplateId =
-    (profile.offer_template as TemplateId | null) ?? DEFAULT_OFFER_TEMPLATE_ID;
+  const selectedTemplateId: TemplateId = profile.offer_template
+    ? mapTemplateId(profile.offer_template)
+    : mapTemplateId(DEFAULT_OFFER_TEMPLATE_ID);
 
   const handleTemplateSelect = useCallback(
     async (templateId: TemplateId) => {

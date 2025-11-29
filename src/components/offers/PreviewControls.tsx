@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
-import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import { t } from '@/copy';
 
 type PreviewControlsProps = {
-  templateOptions: Array<OfferTemplate>;
+  templateOptions: Array<{ id: string; name: string; tier: 'free' | 'premium' }>;
   selectedTemplateId: TemplateId;
   defaultTemplateId: TemplateId;
   brandingPrimary: string;
@@ -69,7 +69,7 @@ export function PreviewControls({
       >
         {templateOptions.map((template) => (
           <option key={template.id} value={template.id}>
-            {template.label}
+            {template.name}
           </option>
         ))}
       </Select>

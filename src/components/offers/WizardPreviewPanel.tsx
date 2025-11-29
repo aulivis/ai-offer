@@ -5,7 +5,7 @@ import { OfferPreviewCard } from '@/components/offers/OfferPreviewCard';
 import type { OfferPreviewTab, PreviewIssue } from '@/types/preview';
 import type { OfferPreviewStatus } from '@/hooks/useOfferPreview';
 import { PreviewControls } from './PreviewControls';
-import type { OfferTemplate, TemplateId } from '@/app/pdf/templates/types';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import { t } from '@/copy';
 import { trackWizardEvent } from '@/lib/analytics/wizard';
 
@@ -25,7 +25,7 @@ type WizardPreviewPanelProps = {
   onAbort: () => void;
   onOpenFullscreen?: () => void;
   isStreaming: boolean;
-  templateOptions: Array<OfferTemplate>;
+  templateOptions: Array<{ id: string; name: string; tier: 'free' | 'premium' }>;
   selectedTemplateId: TemplateId;
   defaultTemplateId: TemplateId;
   brandingPrimary: string;

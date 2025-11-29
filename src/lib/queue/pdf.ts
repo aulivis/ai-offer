@@ -8,8 +8,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { envServer } from '@/env.server';
-import { getOfferTemplateByLegacyId } from '@/app/pdf/templates/engineRegistry';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import { getTemplate, mapTemplateId } from '@/lib/offers/templates/index';
 import type { RuntimePdfPayload } from '../pdfRuntime';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { logger } from '@/lib/logger';
@@ -41,7 +40,7 @@ export interface PdfJobInput {
   metadata?: PdfJobMetadata;
 }
 
-const FALLBACK_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
+const FALLBACK_TEMPLATE_ID = 'free.minimal'; // HTML template ID
 
 type PlanTier = 'free' | 'premium';
 
@@ -207,39 +206,41 @@ function mergeMetadata(
 function resolveTemplateForPlan(
   plan: PlanTier,
   job: PdfJobInput,
-): { templateId: TemplateId; metadata: PdfJobMetadata } {
-  const fallbackTemplate = getOfferTemplateByLegacyId(FALLBACK_TEMPLATE_ID);
+): { templateId: string; metadata: PdfJobMetadata } {
   const requestedRaw = normalizeTemplateIdentifier(
     job.requestedTemplateId ?? job.templateId ?? null,
   );
 
-  let requestedTemplate = fallbackTemplate;
+  let resolvedTemplateId: string = FALLBACK_TEMPLATE_ID;
   let requestedCanonicalId: string | null = null;
   const metadataNotes: string[] = [];
 
   if (requestedRaw) {
     try {
-      requestedTemplate = getOfferTemplateByLegacyId(requestedRaw);
-      requestedCanonicalId = requestedTemplate.id;
+      // Map old PDF template ID to new HTML template ID
+      const htmlTemplateId = mapTemplateId(requestedRaw);
+      const template = getTemplate(htmlTemplateId);
+
+      // Check if template is allowed for plan
+      if (plan === 'free' && template.tier === 'premium') {
+        metadataNotes.push(
+          `Requested template "${htmlTemplateId}" requires a premium plan. Using "${FALLBACK_TEMPLATE_ID}" instead.`,
+        );
+        resolvedTemplateId = FALLBACK_TEMPLATE_ID;
+      } else {
+        resolvedTemplateId = htmlTemplateId;
+        requestedCanonicalId = htmlTemplateId;
+      }
     } catch (error) {
       logger.warn('Requested template is not registered; falling back to default', {
         error,
         requestedTemplateId: requestedRaw,
       });
       metadataNotes.push(
-        `Requested template "${requestedRaw}" is not registered. Using "${fallbackTemplate.id}" instead.`,
+        `Requested template "${requestedRaw}" is not registered. Using "${FALLBACK_TEMPLATE_ID}" instead.`,
       );
-      requestedTemplate = fallbackTemplate;
+      resolvedTemplateId = FALLBACK_TEMPLATE_ID;
     }
-  }
-
-  let resolvedTemplateId: TemplateId = requestedTemplate.id;
-
-  if (plan === 'free' && requestedTemplate.tier === 'premium') {
-    metadataNotes.push(
-      `Requested template "${requestedTemplate.id}" requires a premium plan. Using "${fallbackTemplate.id}" instead.`,
-    );
-    resolvedTemplateId = fallbackTemplate.id;
   }
 
   const metadata: PdfJobMetadata = {
@@ -257,7 +258,7 @@ function resolveTemplateForPlan(
   return { templateId: resolvedTemplateId, metadata };
 }
 
-type PreparedPdfJob = PdfJobInput & { templateId: TemplateId; metadata?: PdfJobMetadata };
+type PreparedPdfJob = PdfJobInput & { templateId: string; metadata?: PdfJobMetadata };
 
 async function insertPdfJob(sb: SupabaseClient, job: PreparedPdfJob, priority: number = 0) {
   return sb.from('pdf_jobs').insert({

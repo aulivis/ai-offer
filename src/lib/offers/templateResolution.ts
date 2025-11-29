@@ -1,5 +1,4 @@
-import type { OfferTemplate, TemplateId, TemplateTier } from '@/app/pdf/templates/types';
-import { listTemplates, loadTemplate } from '@/app/pdf/templates/engineRegistry';
+import { getTemplate, mapTemplateId, listTemplates } from '@/lib/offers/templates/index';
 import {
   normalizeTemplateId,
   DEFAULT_OFFER_TEMPLATE_ID,
@@ -16,18 +15,17 @@ export interface TemplateResolutionContext {
 }
 
 export interface ResolvedTemplate {
-  template: OfferTemplate;
-  templateId: TemplateId;
+  templateId: string; // HTML template ID
   resolutionReason: 'requested' | 'profile' | 'default' | 'fallback';
   wasFallback: boolean;
 }
 
-function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+function planToTemplateTier(plan: SubscriptionPlan): 'free' | 'premium' {
   return plan === 'pro' ? 'premium' : 'free';
 }
 
 /**
- * Resolves the appropriate template for an offer based on:
+ * Resolves the appropriate HTML template for an offer based on:
  * 1. Requested template ID (from offer inputs)
  * 2. Profile template ID (from user settings)
  * 3. Default template for plan tier
@@ -43,29 +41,16 @@ export function resolveOfferTemplate(context: TemplateResolutionContext): Resolv
   if (userId) logContext.userId = userId;
 
   const planTier = planToTemplateTier(plan);
-  const allTemplates = listTemplates() as Array<OfferTemplate>;
+  const allTemplates = listTemplates();
 
-  // Get fallback template - ensure it exists
-  let fallbackTemplate: OfferTemplate;
-  try {
-    fallbackTemplate = loadTemplate(DEFAULT_OFFER_TEMPLATE_ID);
-  } catch (error) {
-    logger.error('Failed to load default template', error, {
-      ...logContext,
-      defaultTemplateId: DEFAULT_OFFER_TEMPLATE_ID,
-    });
-    // If default template fails, use first available template
-    fallbackTemplate =
-      allTemplates[0] ||
-      (() => {
-        throw new Error('No templates available');
-      })();
-  }
+  // Get fallback template ID (map old ID to new HTML template ID)
+  const fallbackTemplateId = mapTemplateId(DEFAULT_OFFER_TEMPLATE_ID);
+  const fallbackTemplate = getTemplate(fallbackTemplateId);
 
   const freeTemplates = allTemplates.filter((tpl) => tpl.tier === 'free');
   const defaultTemplateForPlan =
     planTier === 'premium'
-      ? allTemplates[0] || fallbackTemplate
+      ? allTemplates.find((t) => t.tier === 'premium') || fallbackTemplate
       : freeTemplates[0] || fallbackTemplate;
 
   // Normalize and resolve requested template ID
@@ -74,98 +59,73 @@ export function resolveOfferTemplate(context: TemplateResolutionContext): Resolv
     : null;
 
   // Try to find the requested template
-  let requestedTemplate: OfferTemplate | null = null;
+  let requestedTemplateIdResolved: string | null = null;
   if (normalizedRequestedId) {
     try {
-      // First try direct lookup
-      requestedTemplate = allTemplates.find((tpl) => tpl.id === normalizedRequestedId) || null;
+      // Map old PDF template ID to new HTML template ID
+      const htmlTemplateId = mapTemplateId(normalizedRequestedId);
+      const template = getTemplate(htmlTemplateId);
 
-      // If not found, try loading it (handles edge cases)
-      if (!requestedTemplate) {
-        try {
-          requestedTemplate = loadTemplate(normalizedRequestedId);
-        } catch (error) {
-          logger.warn('Requested template not found, will fall back', {
-            ...logContext,
-            requestedTemplateId: normalizedRequestedId,
-            error: error instanceof Error ? error.message : String(error),
-          });
-          requestedTemplate = null;
-        }
+      // Check if template is allowed for plan
+      if (planTier === 'premium' || template.tier === 'free') {
+        requestedTemplateIdResolved = htmlTemplateId;
       }
     } catch (error) {
-      logger.warn('Error loading requested template', {
+      logger.warn('Requested template not found, will fall back', {
         ...logContext,
         requestedTemplateId: normalizedRequestedId,
         error: error instanceof Error ? error.message : String(error),
       });
-      requestedTemplate = null;
     }
   }
 
   // Get profile template
   const normalizedProfileId = profileTemplateId ? normalizeTemplateId(profileTemplateId) : null;
-
-  let profileTemplate: OfferTemplate | null = null;
+  let profileTemplateIdResolved: string | null = null;
   if (normalizedProfileId) {
     try {
-      profileTemplate = allTemplates.find((tpl) => tpl.id === normalizedProfileId) || null;
-      if (!profileTemplate) {
-        try {
-          profileTemplate = loadTemplate(normalizedProfileId);
-        } catch (error) {
-          logger.warn('Profile template not found, will fall back', {
-            ...logContext,
-            profileTemplateId: normalizedProfileId,
-            error: error instanceof Error ? error.message : String(error),
-          });
-          profileTemplate = null;
-        }
+      const htmlTemplateId = mapTemplateId(normalizedProfileId);
+      const template = getTemplate(htmlTemplateId);
+
+      if (planTier === 'premium' || template.tier === 'free') {
+        profileTemplateIdResolved = htmlTemplateId;
       }
     } catch (error) {
-      logger.warn('Error loading profile template', {
+      logger.warn('Profile template not found, will fall back', {
         ...logContext,
         profileTemplateId: normalizedProfileId,
         error: error instanceof Error ? error.message : String(error),
       });
-      profileTemplate = null;
     }
   }
 
-  const isTemplateAllowed = (tpl: OfferTemplate) => planTier === 'premium' || tpl.tier === 'free';
-
   // Resolve final template with proper fallback chain
-  let template: OfferTemplate;
-  let resolvedTemplateId: TemplateId;
+  let resolvedTemplateId: string;
   let resolutionReason: ResolvedTemplate['resolutionReason'];
   let wasFallback = false;
 
-  if (requestedTemplate && isTemplateAllowed(requestedTemplate)) {
+  if (requestedTemplateIdResolved) {
     // Use requested template if allowed
-    template = requestedTemplate;
-    resolvedTemplateId = template.id;
+    resolvedTemplateId = requestedTemplateIdResolved;
     resolutionReason = 'requested';
     logger.debug('Using requested template', {
       ...logContext,
       templateId: resolvedTemplateId,
     });
-  } else if (requestedTemplate && !isTemplateAllowed(requestedTemplate)) {
+  } else if (requestedTemplateId && normalizedRequestedId) {
     // Requested template not allowed for plan, use fallback
-    template = fallbackTemplate;
-    resolvedTemplateId = template.id;
+    resolvedTemplateId = fallbackTemplateId;
     resolutionReason = 'fallback';
     wasFallback = true;
     logger.warn('Requested template not allowed for plan, using fallback', {
       ...logContext,
-      requestedTemplateId: requestedTemplate.id,
-      requestedTier: requestedTemplate.tier,
+      requestedTemplateId: normalizedRequestedId,
       planTier,
       fallbackTemplateId: resolvedTemplateId,
     });
-  } else if (profileTemplate && isTemplateAllowed(profileTemplate)) {
+  } else if (profileTemplateIdResolved) {
     // Use profile template if allowed
-    template = profileTemplate;
-    resolvedTemplateId = template.id;
+    resolvedTemplateId = profileTemplateIdResolved;
     resolutionReason = 'profile';
     logger.debug('Using profile template', {
       ...logContext,
@@ -173,8 +133,7 @@ export function resolveOfferTemplate(context: TemplateResolutionContext): Resolv
     });
   } else {
     // Use default for plan
-    template = defaultTemplateForPlan;
-    resolvedTemplateId = template.id;
+    resolvedTemplateId = defaultTemplateForPlan.id;
     resolutionReason = 'default';
     logger.debug('Using default template for plan', {
       ...logContext,
@@ -184,7 +143,6 @@ export function resolveOfferTemplate(context: TemplateResolutionContext): Resolv
   }
 
   return {
-    template,
     templateId: resolvedTemplateId,
     resolutionReason,
     wasFallback,

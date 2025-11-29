@@ -1,18 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { buildOfferHtml } from '@/app/pdf/templates/engine';
-import { loadTemplate } from '@/app/pdf/templates/engineRegistry';
-import { normalizeBranding } from '@/app/pdf/templates/theme';
-import type { TemplateId } from '@/app/pdf/templates/types';
+import { renderOfferHtml } from '@/lib/offers/renderer';
 import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
 import type { PriceRow } from '@/app/lib/pricing';
+import type { TemplateId } from '@/lib/offers/templates/types';
 import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
-import {
-  recordTemplateRenderTelemetry,
-  resolveTemplateRenderErrorCode,
-} from '@/lib/observability/templateTelemetry';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { PREVIEW_CSP_DIRECTIVE, injectPreviewCspMeta } from '@/lib/previewSecurity';
 import { createLogger } from '@/lib/logger';
@@ -73,8 +67,6 @@ const previewRequestSchema = z
     companyName: optionalTrimmedString,
     bodyHtml: optionalString,
     rows: z.array(priceRowSchema).max(MAX_ROW_COUNT).optional(),
-    templateId: z.string().trim().min(1, 'templateId is required'),
-    legacyTemplateId: optionalTrimmedString,
     locale: optionalTrimmedString,
     branding: brandingSchema,
     issueDate: optionalTrimmedString,
@@ -87,6 +79,16 @@ const previewRequestSchema = z
     schedule: stringArrayField,
     testimonials: stringArrayField,
     guarantees: stringArrayField,
+    images: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string().optional(),
+          key: z.string().optional(),
+        }),
+      )
+      .optional(),
+    templateId: optionalTrimmedString, // Support template selection
   })
   .strict();
 
@@ -184,8 +186,6 @@ async function handlePost(req: AuthenticatedNextRequest) {
     companyName,
     bodyHtml,
     rows,
-    templateId,
-    legacyTemplateId,
     locale,
     branding,
     issueDate,
@@ -198,28 +198,12 @@ async function handlePost(req: AuthenticatedNextRequest) {
     schedule,
     testimonials,
     guarantees,
+    images,
+    templateId,
   } = parsed.data;
-
-  let template;
-  try {
-    template = loadTemplate(templateId as TemplateId);
-  } catch {
-    return NextResponse.json({ error: 'Ismeretlen sablon az előnézethez.' }, { status: 400 });
-  }
-
-  const normalizedBranding = normalizeBranding({
-    primaryColor: branding?.primaryColor ?? null,
-    secondaryColor: branding?.secondaryColor ?? null,
-    logoUrl: branding?.logoUrl ?? null,
-  });
 
   const safeBody = sanitizeHTML((bodyHtml ?? '').trim() || '<p>(nincs előnézet)</p>');
   const normalizedRows = normalizeRows(rows as PriceRow[] | undefined);
-  const templateLegacyId = (template as { legacyId?: string }).legacyId;
-  const resolvedLegacyId =
-    legacyTemplateId && legacyTemplateId.length > 0
-      ? legacyTemplateId
-      : (templateLegacyId ?? 'modern');
 
   const resolvedLocale = resolveLocale(locale);
   const translator = createTranslator(resolvedLocale);
@@ -236,18 +220,14 @@ async function handlePost(req: AuthenticatedNextRequest) {
   const sanitizedTestimonials = sanitizeList(testimonials);
   const sanitizedGuarantees = sanitizeList(guarantees);
 
-  const renderStartedAt = performance.now();
-  let renderDuration: number | null = null;
   let html: string;
 
   try {
-    html = buildOfferHtml({
-      offer: {
+    html = renderOfferHtml(
+      {
         title: (title ?? defaultTitle) || defaultTitle,
         companyName: companyName ?? '',
         bodyHtml: safeBody,
-        templateId: template.id,
-        legacyTemplateId: resolvedLegacyId,
         locale: resolvedLocale,
         issueDate: sanitizeInput(
           issueDate && issueDate.length > 0
@@ -263,32 +243,23 @@ async function handlePost(req: AuthenticatedNextRequest) {
         schedule: sanitizedSchedule,
         testimonials: sanitizedTestimonials.length ? sanitizedTestimonials : null,
         guarantees: sanitizedGuarantees.length ? sanitizedGuarantees : null,
+        pricingRows: normalizedRows,
+        images: images || [],
+        ...(branding && {
+          branding: {
+            primaryColor: branding.primaryColor ?? null,
+            secondaryColor: branding.secondaryColor ?? null,
+            logoUrl: branding.logoUrl ?? null,
+          },
+        }),
+        ...(templateId && { templateId: templateId as TemplateId }),
       },
-      rows: normalizedRows,
-      branding: normalizedBranding,
-      i18n: translator,
-      templateId: template.id,
-    });
-    renderDuration = performance.now() - renderStartedAt;
+      translator,
+    );
   } catch (error) {
-    renderDuration = performance.now() - renderStartedAt;
-    log.error('Template render failed', error, { templateId: template.id });
-    await recordTemplateRenderTelemetry({
-      templateId: template.id,
-      renderer: 'api.offer_preview.render',
-      outcome: 'failure',
-      renderMs: renderDuration,
-      errorCode: resolveTemplateRenderErrorCode(error),
-    });
+    log.error('Offer render failed', error);
     return handleUnexpectedError(error, requestId, log);
   }
-
-  await recordTemplateRenderTelemetry({
-    templateId: template.id,
-    renderer: 'api.offer_preview.render',
-    outcome: 'success',
-    renderMs: renderDuration,
-  });
 
   const htmlWithCsp = injectPreviewCspMeta(html);
 

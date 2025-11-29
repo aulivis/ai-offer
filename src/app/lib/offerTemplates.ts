@@ -1,47 +1,47 @@
-import type { TemplateId, TemplateTier } from '@/app/pdf/templates/types';
-import { getOfferTemplateByLegacyId, loadTemplate } from '@/app/pdf/templates/engineRegistry';
+import type { TemplateId } from '@/lib/offers/templates/types';
+import { getTemplate, mapTemplateId } from '@/lib/offers/templates/index';
 
 export type SubscriptionPlan = 'free' | 'standard' | 'pro';
 
-// Default template ID using the new template system
-export const DEFAULT_OFFER_TEMPLATE_ID: TemplateId = 'free.minimal.html@1.0.0';
+// Default template ID using the new HTML template system
+export const DEFAULT_OFFER_TEMPLATE_ID: string = 'free.minimal';
 
 // Legacy ID mappings for backward compatibility during migration
-const LEGACY_ID_MAP: Record<string, TemplateId> = {
-  modern: 'free.minimal.html@1.0.0',
-  'free.base': 'free.minimal.html@1.0.0',
-  'premium-banner': 'premium.professional.html@1.0.0',
-  premium: 'premium.professional.html@1.0.0',
-  premium_banner: 'premium.professional.html@1.0.0',
-  'premium.elegant': 'premium.professional.html@1.0.0',
-  'premium.modern': 'premium.professional.html@1.0.0',
+const LEGACY_ID_MAP: Record<string, string> = {
+  modern: 'free.minimal',
+  'free.base': 'free.minimal',
+  'free.minimal.html@1.0.0': 'free.minimal',
+  'free.classic.html@1.0.0': 'free.classic',
+  'free.minimalist.html@1.0.0': 'free.minimalist',
+  'premium.professional.html@1.0.0': 'premium.professional',
+  'premium.luxury.html@1.0.0': 'premium.luxury',
+  'premium.brutalist.html@1.0.0': 'premium.brutalist',
+  'premium-banner': 'premium.professional',
+  premium: 'premium.professional',
+  premium_banner: 'premium.professional',
+  'premium.elegant': 'premium.professional',
+  'premium.modern': 'premium.professional',
 };
 
 /**
- * Convert legacy template ID to new template ID
+ * Convert legacy template ID to new HTML template ID
  */
 export function normalizeTemplateId(id: string | null | undefined): TemplateId {
   if (!id) {
-    return DEFAULT_OFFER_TEMPLATE_ID;
+    return mapTemplateId(DEFAULT_OFFER_TEMPLATE_ID);
   }
 
-  // Check if it's already a new template ID (contains @)
-  if (id.includes('@')) {
-    return id as TemplateId;
-  }
-
-  // Check legacy ID mapping
+  // Check legacy ID mapping first
   if (LEGACY_ID_MAP[id]) {
-    return LEGACY_ID_MAP[id];
+    return mapTemplateId(LEGACY_ID_MAP[id]);
   }
 
-  // Try to load by legacy ID (for templates that still have legacyId property)
+  // Try to map using the template system's mapTemplateId
   try {
-    const template = getOfferTemplateByLegacyId(id);
-    return template.id;
+    return mapTemplateId(id);
   } catch {
     // Fallback to default
-    return DEFAULT_OFFER_TEMPLATE_ID;
+    return mapTemplateId(DEFAULT_OFFER_TEMPLATE_ID);
   }
 }
 
@@ -50,7 +50,7 @@ export function normalizeTemplateId(id: string | null | undefined): TemplateId {
  */
 export function templateRequiresPro(templateId: TemplateId): boolean {
   try {
-    const template = loadTemplate(templateId);
+    const template = getTemplate(templateId);
     return template.tier === 'premium';
   } catch {
     return false;
@@ -68,7 +68,7 @@ export function enforceTemplateForPlan(
 
   // If template requires pro and user doesn't have pro plan, use default
   if (templateRequiresPro(normalizedId) && plan !== 'pro') {
-    return DEFAULT_OFFER_TEMPLATE_ID;
+    return mapTemplateId(DEFAULT_OFFER_TEMPLATE_ID);
   }
 
   return normalizedId;
@@ -77,6 +77,6 @@ export function enforceTemplateForPlan(
 /**
  * Get template tier for a given plan
  */
-export function planToTemplateTier(plan: SubscriptionPlan): TemplateTier {
+export function planToTemplateTier(plan: SubscriptionPlan): 'free' | 'premium' {
   return plan === 'pro' ? 'premium' : 'free';
 }

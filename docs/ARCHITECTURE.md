@@ -76,20 +76,20 @@ This application is a Next.js-based SaaS platform for generating professional bu
 
 ## Data Flow
 
-### PDF Generation Flow
+### Offer Generation Flow
 
 1. **Request:** User submits offer data via `/api/ai-generate`
 2. **Validation:** Input validated and sanitized
 3. **Usage Check:** Quota checked (user + device limits)
-4. **Job Creation:** PDF job created in database
-5. **HTML Generation:** Template engine generates HTML
-6. **Processing:**
-   - Attempt Edge Function (preferred)
-   - Fallback to inline worker if Edge Function unavailable
-7. **PDF Generation:** Puppeteer renders HTML to PDF
-8. **Storage:** PDF uploaded to Supabase Storage
-9. **Completion:** Job marked complete, usage incremented
-10. **Webhook:** Optional webhook notification sent
+4. **HTML Generation:** HTML template system generates complete HTML document
+5. **Storage:** HTML stored in database (for web viewing)
+6. **PDF Generation (on-demand):**
+   - HTML from template system is converted to PDF via Puppeteer
+   - PDF uploaded to Supabase Storage
+   - Job marked complete, usage incremented
+7. **Webhook:** Optional webhook notification sent
+
+**Key Principle**: HTML is the single source of truth. PDF is generated from HTML when needed.
 
 ### Usage Tracking
 

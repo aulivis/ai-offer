@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { getTemplateMeta } from '@/app/pdf/templates/registry';
+import { getTemplate, mapTemplateId } from '@/lib/offers/templates/index';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { createExternalPdfJob } from '@/lib/pdfExternalApi';
@@ -165,13 +165,15 @@ export async function POST(req: NextRequest) {
 
   const { templateId, brand, slots, callbackUrl, locale } = parsed.data;
 
-  // Validate template
-  const templateMeta = getTemplateMeta(templateId);
-  if (!templateMeta) {
+  // Validate template (map old PDF template ID to new HTML template ID)
+  const htmlTemplateId = mapTemplateId(templateId);
+  try {
+    getTemplate(htmlTemplateId);
+  } catch {
     return NextResponse.json(
       {
         error: `Unknown templateId "${templateId}".`,
-        hint: 'Check the available PDF templates and try again.',
+        hint: 'Check the available templates and try again.',
       },
       { status: 404 },
     );
