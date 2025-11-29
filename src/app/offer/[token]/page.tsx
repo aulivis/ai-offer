@@ -195,7 +195,9 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       : null;
 
   // Extract images from HTML body if they exist (for template's images section)
-  const extractImagesFromHtml = (html: string): Array<{ src: string; alt: string; key: string }> => {
+  const extractImagesFromHtml = (
+    html: string,
+  ): Array<{ src: string; alt: string; key: string }> => {
     const images: Array<{ src: string; alt: string; key: string }> = [];
     const imgRegex = /<img\b[^>]*>/gi;
     let match: RegExpExecArray | null;
@@ -205,7 +207,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       const imgTag = match[0]!;
       const srcMatch = imgTag.match(/\ssrc=["']([^"']+)["']/i);
       const altMatch = imgTag.match(/\salt=["']([^"']*)["']/i);
-      
+
       if (srcMatch && srcMatch[1]) {
         images.push({
           src: srcMatch[1]!,

@@ -30,10 +30,10 @@ export function extractAndScopeStyles(html: string): string {
   }
 
   const combinedStyles = styles.join('\n\n');
-  
+
   // Scope styles to #offer-content-container
   const scoped = scopeCssToContainer(combinedStyles, '#offer-content-container');
-  
+
   // Ensure we return valid CSS even if scoping fails
   return scoped || combinedStyles;
 }
@@ -76,22 +76,16 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
   const cleanSelector = containerSelector.trim();
 
   // Convert :root to container selector so CSS variables work
-  let scoped = css.replace(
-    /:root\s*\{/gi,
-    `${cleanSelector} {`,
-  );
+  let scoped = css.replace(/:root\s*\{/gi, `${cleanSelector} {`);
 
   // Convert html and body selectors to container
-  scoped = scoped.replace(
-    /(?:^|\n|\s|,)\s*(html|body)\s*\{/gm,
-    (match) => {
-      // Only replace if not already scoped
-      if (!match.includes(cleanSelector)) {
-        return match.replace(/\b(html|body)\b/, cleanSelector);
-      }
-      return match;
-    },
-  );
+  scoped = scoped.replace(/(?:^|\n|\s|,)\s*(html|body)\s*\{/gm, (match) => {
+    // Only replace if not already scoped
+    if (!match.includes(cleanSelector)) {
+      return match.replace(/\b(html|body)\b/, cleanSelector);
+    }
+    return match;
+  });
 
   // Process CSS by finding all rule blocks (selector { ... })
   // Handle @media queries separately
@@ -112,7 +106,7 @@ export function scopeCssToContainer(css: string, containerSelector: string): str
       const atRuleEnd = findMatchingBrace(scoped, i);
       if (atRuleEnd > i) {
         const atRule = scoped.substring(i, atRuleEnd + 1);
-        
+
         // Handle @media queries - scope selectors inside
         if (/^@media\b/i.test(atRule)) {
           const processed = processMediaQuery(atRule, cleanSelector);
@@ -209,10 +203,10 @@ function processMediaQuery(mediaRule: string, containerSelector: string): string
 
   const mediaQuery = match[1]!.trim();
   const content = match[2]!;
-  
+
   // Recursively scope the content inside @media
   const scopedContent = scopeCssToContainer(content, containerSelector);
-  
+
   return `${mediaQuery} {\n${scopedContent}\n}`;
 }
 
