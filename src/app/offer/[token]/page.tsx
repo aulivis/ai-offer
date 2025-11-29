@@ -269,7 +269,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     ...(brandingOptions && { branding: brandingOptions }),
     i18n: translator,
     templateId,
-    images: extractedImages.length > 0 ? extractedImages : undefined,
+    ...(extractedImages.length > 0 && { images: extractedImages }),
   });
 
   // Extract and scope styles server-side for better performance
