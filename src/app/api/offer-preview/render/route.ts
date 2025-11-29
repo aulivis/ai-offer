@@ -244,7 +244,11 @@ async function handlePost(req: AuthenticatedNextRequest) {
         testimonials: sanitizedTestimonials.length ? sanitizedTestimonials : null,
         guarantees: sanitizedGuarantees.length ? sanitizedGuarantees : null,
         pricingRows: normalizedRows,
-        images: images || [],
+        images: (images || []).map((img) => ({
+          src: img.src,
+          alt: img.alt || 'Image',
+          ...(img.key && { key: img.key }),
+        })),
         ...(branding && {
           branding: {
             primaryColor: branding.primaryColor ?? null,
