@@ -82,7 +82,7 @@ export function SettingsTemplatesSection({
                         {template.preview ? (
                           <Image
                             src={template.preview}
-                            alt={template.label}
+                            alt={template.label || template.name}
                             width={80}
                             height={80}
                             className="h-full w-full object-cover"
@@ -100,7 +100,7 @@ export function SettingsTemplatesSection({
                         <h3
                           className={`font-bold ${isSelected ? 'text-primary' : 'text-slate-900'}`}
                         >
-                          {template.label}
+                          {template.label || template.name}
                         </h3>
                         {isSelected && (
                           <StarIcon className="h-4 w-4 fill-yellow-500 text-yellow-500 flex-shrink-0" />
@@ -158,7 +158,7 @@ export function SettingsTemplatesSection({
                     </button>
                     <Image
                       src={template.preview}
-                      alt={`${template.label} előnézet`}
+                      alt={`${template.label || template.name} előnézet`}
                       width={800}
                       height={600}
                       className="w-full rounded-lg shadow-lg border border-slate-200"

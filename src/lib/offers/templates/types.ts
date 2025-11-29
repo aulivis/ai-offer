@@ -43,4 +43,7 @@ export interface Template {
   name: string;
   tier: 'free' | 'premium';
   render: (ctx: TemplateContext) => string;
+  preview?: string;
+  description?: string;
+  label?: string;
 }
