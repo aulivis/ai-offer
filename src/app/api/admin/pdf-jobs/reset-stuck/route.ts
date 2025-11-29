@@ -15,6 +15,7 @@ import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { withAuth } from '@/middleware/auth';
 import type { AuthenticatedNextRequest } from '@/middleware/auth';
+import { requireAdmin } from '@/lib/admin';
 
 export const runtime = 'nodejs';
 
@@ -110,7 +111,18 @@ export const GET = async (req: NextRequest) => {
 
 // Handle POST requests from authenticated users
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
-  // TODO: Add admin role check here
-  // For now, allow all authenticated users (add proper admin check later)
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
+
+  // Check admin privileges
+  const { isAdmin: userIsAdmin } = await requireAdmin(req.user.id);
+  if (!userIsAdmin) {
+    log.warn('Non-admin user attempted to reset stuck jobs', {
+      userId: req.user.id,
+    });
+    return NextResponse.json({ error: 'Admin privileges required.' }, { status: 403 });
+  }
+
   return resetStuckJobs(req, false);
 });

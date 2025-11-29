@@ -295,3 +295,4 @@ comment on function public.fail_pdf_job_with_rollback is
 
 grant execute on function public.fail_pdf_job_with_rollback(uuid, text, integer, integer) to service_role;
 
+

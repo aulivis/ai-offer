@@ -927,13 +927,45 @@ export default function BillingPage() {
 
                   {plan === 'pro' && (
                     <button
-                      onClick={() => {
-                        // TODO: Implement annual billing switch
-                        showToast({
-                          title: 'Éves fizetésre váltás',
-                          description: 'Ez a funkció hamarosan elérhető lesz.',
-                          variant: 'info',
-                        });
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/stripe/update-subscription', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ billingInterval: 'annual' }),
+                          });
+
+                          const data = await response.json();
+
+                          if (!response.ok) {
+                            showToast({
+                              title: 'Hiba történt',
+                              description: data.error || 'Nem sikerült átállítani az előfizetést.',
+                              variant: 'error',
+                            });
+                            return;
+                          }
+
+                          showToast({
+                            title: 'Sikeres váltás',
+                            description:
+                              'Az előfizetésedet éves számlázásra állítottuk. A változás azonnal érvénybe lép.',
+                            variant: 'success',
+                          });
+
+                          // Reload page to show updated billing info
+                          setTimeout(() => {
+                            window.location.reload();
+                          }, 1500);
+                        } catch (_error) {
+                          showToast({
+                            title: 'Hiba történt',
+                            description: 'Nem sikerült kapcsolódni a szerverhez.',
+                            variant: 'error',
+                          });
+                        }
                       }}
                       className="text-sm text-teal-600 font-semibold hover:underline flex items-center gap-1"
                     >

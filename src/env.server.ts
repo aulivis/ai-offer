@@ -58,6 +58,12 @@ const ServerEnvSchema = z.object({
     .describe(
       'System user ID for external API PDF generation jobs. If not set, a placeholder UUID will be used.',
     ),
+  VERCEL_CRON_SECRET: z
+    .string()
+    .optional()
+    .describe(
+      'Secret token for verifying Vercel cron job requests. If not set, cron verification is disabled.',
+    ),
 });
 
 type ServerEnv = Omit<
@@ -66,11 +72,13 @@ type ServerEnv = Omit<
   | 'OAUTH_REDIRECT_ALLOWLIST'
   | 'PDF_WEBHOOK_ALLOWLIST'
   | 'EXTERNAL_API_SYSTEM_USER_ID'
+  | 'VERCEL_CRON_SECRET'
 > & {
   STRIPE_PRICE_ALLOWLIST: string[];
   OAUTH_REDIRECT_ALLOWLIST: string[];
   PDF_WEBHOOK_ALLOWLIST: string[];
   EXTERNAL_API_SYSTEM_USER_ID?: string;
+  VERCEL_CRON_SECRET?: string;
 };
 
 const serverEnvDefaults = {
@@ -89,6 +97,7 @@ const serverEnvDefaults = {
   PDF_WEBHOOK_ALLOWLIST: undefined,
   SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI: 'http://localhost:3000/api/auth/callback',
   EXTERNAL_API_SYSTEM_USER_ID: undefined,
+  VERCEL_CRON_SECRET: undefined,
 } as const satisfies Record<keyof z.input<typeof ServerEnvSchema>, string | undefined>;
 
 type RawServerEnv = z.input<typeof ServerEnvSchema>;
@@ -126,6 +135,9 @@ const envWithDefaults: RawServerEnv = {
   ...(process.env.EXTERNAL_API_SYSTEM_USER_ID !== undefined
     ? { EXTERNAL_API_SYSTEM_USER_ID: process.env.EXTERNAL_API_SYSTEM_USER_ID }
     : {}),
+  ...(process.env.VERCEL_CRON_SECRET !== undefined
+    ? { VERCEL_CRON_SECRET: process.env.VERCEL_CRON_SECRET }
+    : {}),
 };
 
 const parsedEnv = ServerEnvSchema.parse(envWithDefaults);
@@ -146,7 +158,10 @@ const envServerBase: Omit<ServerEnv, 'EXTERNAL_API_SYSTEM_USER_ID'> = {
 // the application will fail at runtime when it attempts to use them (e.g., connecting to Supabase),
 // which will provide clear error messages in server logs.
 
-export const envServer: ServerEnv =
-  externalApiUserId !== undefined
-    ? { ...envServerBase, EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId }
-    : envServerBase;
+export const envServer: ServerEnv = {
+  ...envServerBase,
+  ...(externalApiUserId !== undefined ? { EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId } : {}),
+  ...(parsedEnv.VERCEL_CRON_SECRET !== undefined
+    ? { VERCEL_CRON_SECRET: parsedEnv.VERCEL_CRON_SECRET }
+    : {}),
+};

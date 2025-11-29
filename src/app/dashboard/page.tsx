@@ -445,12 +445,6 @@ export default function DashboardPage() {
           teamIdsParam,
           memberIds,
         });
-        console.error('[Dashboard] Query build error:', queryBuildError, {
-          userId: user,
-          filter,
-          teamIdsParam,
-          memberIds,
-        });
         throw new Error(
           `Failed to build query: ${queryBuildError instanceof Error ? queryBuildError.message : String(queryBuildError)}`,
         );
@@ -475,8 +469,6 @@ export default function DashboardPage() {
         };
 
         logger.error('Dashboard fetch error', error, errorInfo);
-        // Also log to console as fallback
-        console.error('[Dashboard] Fetch error:', error, errorInfo);
 
         // Create a more descriptive error message
         const errorMessage =
@@ -500,11 +492,6 @@ export default function DashboardPage() {
           pageNumber,
           teamIdsParam,
           memberIds,
-        });
-        console.error('[Dashboard] Query returned null data:', {
-          userId: user,
-          filter,
-          pageNumber,
         });
         throw nullDataError;
       }
@@ -642,13 +629,7 @@ export default function DashboardPage() {
           ...errorDetails,
         };
 
-        // Log error with both logger and console as fallback
         logger.error('Failed to load offers', error, logContext);
-        // Also log to console as fallback (especially important if logger fails)
-        console.error('[Dashboard] Failed to load offers:', {
-          error,
-          ...logContext,
-        });
 
         showToastRef.current({
           title: t('toasts.offers.loadFailed.title'),

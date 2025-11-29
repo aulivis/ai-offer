@@ -7,6 +7,7 @@
 
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
+import { logger } from '@/lib/logger';
 
 // Cache for pre-loaded template HTML files
 const templateHtmlCache = new Map<string, string>();
@@ -78,7 +79,7 @@ export function preloadAllTemplates(): void {
       preloadTemplateHtml(template);
     } catch (error) {
       // Log but don't fail - templates might not all exist
-      console.warn(`Failed to pre-load template ${template}:`, error);
+      logger.warn(`Failed to pre-load template ${template}`, { error, template });
     }
   }
 }
@@ -96,6 +97,6 @@ if (typeof process !== 'undefined' && process.versions?.node) {
     preloadAllTemplates();
   } catch (error) {
     // Don't fail if pre-loading fails - templates will be loaded on-demand
-    console.warn('Template pre-loading failed, will load on-demand:', error);
+    logger.warn('Template pre-loading failed, will load on-demand', { error });
   }
 }

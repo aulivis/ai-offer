@@ -20,3 +20,4 @@ end $$;
 -- Real-time subscriptions are subject to Row Level Security (RLS) policies,
 -- so users will only receive updates for offers they have access to.
 
+

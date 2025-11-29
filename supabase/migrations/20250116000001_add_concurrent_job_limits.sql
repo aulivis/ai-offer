@@ -47,3 +47,4 @@ comment on function public.get_concurrent_job_count is
 grant execute on function public.check_concurrent_job_limit(uuid, integer) to authenticated, service_role;
 grant execute on function public.get_concurrent_job_count(uuid) to authenticated, service_role;
 
+

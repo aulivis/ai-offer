@@ -3,6 +3,7 @@ import { loadTemplate } from './engineRegistry';
 import { createThemeCssVariables, createThemeTokens } from './theme';
 import { PDF_ENGINE_META_TAG } from '@/lib/pdfHtmlSignature';
 import { attachTemplateVariables } from './variableContext';
+import { logger } from '@/lib/logger';
 
 const HTML_ROOT_PATTERN = /^<html[\s\S]*<\/html>$/i;
 const UNSAFE_HTML_PATTERN = /<script\b|onerror\s*=|onload\s*=|javascript:/i;
@@ -136,9 +137,10 @@ export function buildOfferHtml(options: BuildOfferHtmlOptions): string {
     template = loadTemplate(options.templateId);
   } catch (error) {
     // Log error for debugging
-    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-      console.error(`Failed to load template ${options.templateId}:`, error);
-    }
+    logger.error(`Failed to load template ${options.templateId}`, {
+      error,
+      templateId: options.templateId,
+    });
     // Re-throw to let caller handle it (they should have fallback logic)
     throw error;
   }

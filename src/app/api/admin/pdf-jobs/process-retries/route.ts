@@ -18,6 +18,8 @@ import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { withAuth } from '@/middleware/auth';
 import type { AuthenticatedNextRequest } from '@/middleware/auth';
+import { requireAdmin } from '@/lib/admin';
+import { envServer } from '@/env.server';
 
 export const runtime = 'nodejs';
 
@@ -89,18 +91,34 @@ async function processRetries(req: NextRequest, isCron: boolean = false) {
 // Handle GET requests from Vercel cron jobs
 // Vercel cron jobs always use GET and can include a secret in the Authorization header
 // Note: Vercel automatically adds an Authorization header with a secret for cron jobs
-// The secret is available in the environment, but we'll allow GET for now since
-// Vercel cron jobs are configured in vercel.json and are trusted
 export const GET = async (req: NextRequest) => {
-  // Check if this is a Vercel cron request by checking for the cron secret header
-  // Vercel automatically adds this header for cron jobs
-  const authHeader = req.headers.get('authorization');
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
 
-  // For now, allow GET requests (Vercel cron uses GET)
-  // In production, you should verify the Authorization header matches your cron secret
-  // TODO: Add proper cron secret verification when VERCEL_CRON_SECRET is added to env schema
-  if (authHeader) {
-    // If there's an auth header, it's likely a Vercel cron job
+  // Check if this is a Vercel cron request by verifying the cron secret
+  const authHeader = req.headers.get('authorization');
+  const cronSecret = envServer.VERCEL_CRON_SECRET;
+
+  if (authHeader && cronSecret) {
+    // Verify the Authorization header matches the expected cron secret
+    // Vercel sends: Authorization: Bearer <secret>
+    const expectedAuth = `Bearer ${cronSecret}`;
+    if (authHeader === expectedAuth) {
+      log.info('Verified Vercel cron request');
+      return processRetries(req, true);
+    } else {
+      log.warn('Invalid cron secret in Authorization header', {
+        hasAuthHeader: !!authHeader,
+        headerLength: authHeader?.length ?? 0,
+      });
+      return NextResponse.json({ error: 'Invalid cron secret.' }, { status: 403 });
+    }
+  } else if (authHeader && !cronSecret) {
+    // If auth header is present but no secret is configured, allow it (backward compatibility)
+    // This allows existing cron jobs to continue working while secret is being configured
+    log.warn('Cron request received but VERCEL_CRON_SECRET not configured', {
+      hasAuthHeader: !!authHeader,
+    });
     return processRetries(req, true);
   }
 
@@ -117,7 +135,18 @@ export const GET = async (req: NextRequest) => {
 
 // Handle POST requests from authenticated users
 export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
-  // TODO: Add admin role check here
-  // For now, allow all authenticated users (add proper admin check later)
+  const requestId = getRequestId(req);
+  const log = createLogger(requestId);
+  log.setContext({ userId: req.user.id });
+
+  // Check admin privileges
+  const { isAdmin: userIsAdmin } = await requireAdmin(req.user.id);
+  if (!userIsAdmin) {
+    log.warn('Non-admin user attempted to process retry jobs', {
+      userId: req.user.id,
+    });
+    return NextResponse.json({ error: 'Admin privileges required.' }, { status: 403 });
+  }
+
   return processRetries(req, false);
 });

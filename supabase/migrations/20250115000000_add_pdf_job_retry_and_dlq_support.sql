@@ -180,3 +180,4 @@ grant execute on function public.get_stuck_jobs to service_role;
 -- Users can view their own dead letter jobs (for transparency, but typically handled by admin)
 -- Service role can view all for monitoring/admin purposes
 
+

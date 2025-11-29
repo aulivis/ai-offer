@@ -11,8 +11,8 @@ import { logger } from '@/lib/logger';
  * Note: Puppeteer doesn't natively support PDF compression options,
  * so we need to use CDP (Chrome DevTools Protocol) or post-process with a library.
  *
- * For now, we'll rely on Puppeteer's built-in optimization and add
- * CDP-based compression where possible.
+ * Uses pdf-lib for advanced compression when available, falls back to
+ * returning the original buffer if compression fails.
  */
 export async function compressPdfBuffer(
   pdfBuffer: Buffer,
@@ -26,19 +26,56 @@ export async function compressPdfBuffer(
   try {
     // If PDF is already small enough, return as-is
     if (maxSizeBytes && pdfBuffer.length <= maxSizeBytes) {
+      logger.debug('PDF already meets size requirements, skipping compression', {
+        size: pdfBuffer.length,
+        maxSizeBytes,
+      });
       return pdfBuffer;
     }
 
-    // For basic compression, we can use a library like pdf-lib or pdf2pic
-    // For now, return the buffer as-is since Puppeteer already does some optimization
-    // TODO: Integrate pdf-lib for advanced compression if needed
+    // Try to use pdf-lib for advanced compression
+    try {
+      const { PDFDocument } = await import('pdf-lib');
 
-    logger.debug('PDF compression applied', {
-      originalSize: pdfBuffer.length,
-      quality,
-    });
+      // Load the PDF
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
 
-    return pdfBuffer;
+      // Apply compression based on quality setting
+      // pdf-lib doesn't have direct compression options, but we can optimize
+      // by removing unnecessary metadata and flattening forms
+      const compressedBytes = await pdfDoc.save({
+        useObjectStreams: quality !== 'low', // Use object streams for better compression (medium/high)
+        addDefaultPage: false,
+      });
+
+      const compressedBuffer = Buffer.from(compressedBytes);
+      const compressionRatio =
+        ((pdfBuffer.length - compressedBuffer.length) / pdfBuffer.length) * 100;
+
+      logger.debug('PDF compressed using pdf-lib', {
+        originalSize: pdfBuffer.length,
+        compressedSize: compressedBuffer.length,
+        compressionRatio: compressionRatio.toFixed(1) + '%',
+        quality,
+      });
+
+      // Only return compressed version if it's actually smaller
+      if (compressedBuffer.length < pdfBuffer.length) {
+        return compressedBuffer;
+      } else {
+        logger.debug('Compressed PDF is larger than original, returning original', {
+          originalSize: pdfBuffer.length,
+          compressedSize: compressedBuffer.length,
+        });
+        return pdfBuffer;
+      }
+    } catch (pdfLibError) {
+      // pdf-lib not available or failed, log and continue with original
+      logger.debug('pdf-lib compression not available, using original PDF', {
+        error: pdfLibError instanceof Error ? pdfLibError.message : String(pdfLibError),
+      });
+      return pdfBuffer;
+    }
   } catch (error) {
     logger.warn('PDF compression failed, returning original', {
       error: error instanceof Error ? error.message : String(error),

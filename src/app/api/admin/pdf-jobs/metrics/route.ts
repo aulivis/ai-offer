@@ -12,6 +12,7 @@ import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { withAuth } from '@/middleware/auth';
 import type { AuthenticatedNextRequest } from '@/middleware/auth';
+import { requireAdmin } from '@/lib/admin';
 
 export const runtime = 'nodejs';
 
@@ -20,8 +21,14 @@ export const GET = withAuth(async (req: AuthenticatedNextRequest) => {
   const log = createLogger(requestId);
   log.setContext({ userId: req.user.id });
 
-  // TODO: Add admin role check here
-  // For now, allow all authenticated users (add proper admin check later)
+  // Check admin privileges
+  const { isAdmin: userIsAdmin } = await requireAdmin(req.user.id);
+  if (!userIsAdmin) {
+    log.warn('Non-admin user attempted to access admin metrics endpoint', {
+      userId: req.user.id,
+    });
+    return NextResponse.json({ error: 'Admin privileges required.' }, { status: 403 });
+  }
 
   try {
     const hoursParam = req.nextUrl.searchParams.get('hours');
