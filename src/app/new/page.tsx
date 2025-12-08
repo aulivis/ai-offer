@@ -495,69 +495,6 @@ export default function NewOfferWizard() {
   // edit on step 3 (declared early for use in draft persistence)
   const [editedHtml, setEditedHtml] = useState<string>('');
 
-  // Enhanced autosave with error handling and retry logic
-  const wizardDraftData = useMemo(
-    () => ({
-      step,
-      form,
-      client,
-      rows,
-      editedHtml,
-      previewHtml,
-      previewLocked,
-      selectedPdfTemplateId,
-      scheduleInput,
-      guaranteeInput,
-      selectedTestimonials,
-      selectedGuaranteeIds,
-    }),
-    [
-      step,
-      form,
-      client,
-      rows,
-      editedHtml,
-      previewHtml,
-      previewLocked,
-      selectedPdfTemplateId,
-      scheduleInput,
-      guaranteeInput,
-      selectedTestimonials,
-      selectedGuaranteeIds,
-    ],
-  );
-
-  const {
-    status: autosaveStatus,
-    lastSaved,
-    error: autosaveError,
-    retryCount,
-    load: loadDraft,
-    clear: clearDraft,
-    save: manualSave,
-  } = useEnhancedAutosave({
-    data: wizardDraftData,
-    key: 'new-offer',
-    debounceMs: 2000,
-    enabled: step > 0, // Only enable autosave after step 1
-    enablePeriodicSave: true,
-    periodicSaveInterval: 30000, // Save every 30 seconds as backup
-    saveOnVisibilityChange: true,
-    saveOnBeforeUnload: true,
-    onSaveSuccess: () => {
-      // Optional: Track save success
-    },
-    onSaveError: (error) => {
-      logger.warn('Autosave failed', {
-        error: {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        },
-      });
-    },
-  });
-
   // Load draft on mount (only once)
   useEffect(() => {
     const loadSavedDraft = async () => {
@@ -846,6 +783,69 @@ export default function NewOfferWizard() {
     isQuotaExhausted,
     quotaLoading,
     userId: user?.id,
+  });
+
+  // Enhanced autosave with error handling and retry logic
+  const wizardDraftData = useMemo(
+    () => ({
+      step,
+      form,
+      client,
+      rows,
+      editedHtml,
+      previewHtml,
+      previewLocked,
+      selectedPdfTemplateId,
+      scheduleInput,
+      guaranteeInput,
+      selectedTestimonials,
+      selectedGuaranteeIds,
+    }),
+    [
+      step,
+      form,
+      client,
+      rows,
+      editedHtml,
+      previewHtml,
+      previewLocked,
+      selectedPdfTemplateId,
+      scheduleInput,
+      guaranteeInput,
+      selectedTestimonials,
+      selectedGuaranteeIds,
+    ],
+  );
+
+  const {
+    status: autosaveStatus,
+    lastSaved,
+    error: autosaveError,
+    retryCount,
+    load: loadDraft,
+    clear: clearDraft,
+    save: manualSave,
+  } = useEnhancedAutosave({
+    data: wizardDraftData,
+    key: 'new-offer',
+    debounceMs: 2000,
+    enabled: step > 0, // Only enable autosave after step 1
+    enablePeriodicSave: true,
+    periodicSaveInterval: 30000, // Save every 30 seconds as backup
+    saveOnVisibilityChange: true,
+    saveOnBeforeUnload: true,
+    onSaveSuccess: () => {
+      // Optional: Track save success
+    },
+    onSaveError: (error) => {
+      logger.warn('Autosave failed', {
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        },
+      });
+    },
   });
 
   const quotaTitle = isQuotaExhausted
