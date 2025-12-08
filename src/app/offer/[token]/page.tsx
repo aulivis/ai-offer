@@ -15,6 +15,7 @@ import { renderOfferHtml } from '@/lib/offers/renderer';
 import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 
 type PageProps = {
   params: Promise<{
@@ -309,62 +310,66 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        {/* Download PDF Button - hidden in PDF mode */}
-        {!isPdfMode && (
-          <div className="mb-6 flex justify-center">
-            <DownloadPdfButton token={token} offerId={offer.id} />
-          </div>
-        )}
+    <PageErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          {/* Download PDF Button - hidden in PDF mode */}
+          {!isPdfMode && (
+            <div className="mb-6 flex justify-center">
+              <DownloadPdfButton token={token} offerId={offer.id} />
+            </div>
+          )}
 
-        {/* Offer HTML Content - fully self-contained with inline styles */}
-        {/* The new template system generates complete HTML documents with inline styles */}
-        {inlineStyles && <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />}
-        <OfferDisplay html={bodyHtml} />
+          {/* Offer HTML Content - fully self-contained with inline styles */}
+          {/* The new template system generates complete HTML documents with inline styles */}
+          {inlineStyles && <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />}
+          <OfferDisplay html={bodyHtml} />
 
-        {/* Response Form - hidden in PDF mode */}
-        {!isPdfMode && (
-          <div className="mt-8">
-            {existingResponse ? (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center shadow-sm">
-                <h2 className="mb-2 text-xl font-semibold text-green-800">Köszönjük a válaszát!</h2>
-                <p className="text-green-700">
-                  Ön már{' '}
-                  {existingResponse.decision === 'accepted'
-                    ? 'elfogadta'
-                    : existingResponse.decision === 'rejected'
-                      ? 'elutasította'
-                      : 'kérdést tett fel'}{' '}
-                  ezt az ajánlatra.
-                </p>
-                <p className="mt-2 text-sm text-green-600">
-                  Válasz ideje: {new Date(existingResponse.created_at).toLocaleString('hu-HU')}
-                </p>
-              </div>
-            ) : (
-              <OfferResponseForm
-                shareId={share.id}
-                offerId={offer.id}
-                token={token}
-                contactEmail={
-                  typeof profile?.company_email === 'string' ? profile.company_email : undefined
-                }
-                contactPhone={
-                  typeof profile?.company_phone === 'string' ? profile.company_phone : undefined
-                }
-                contactName={sanitizeInput(
-                  (typeof profile?.company_contact_name === 'string'
-                    ? profile.company_contact_name
-                    : typeof profile?.representative === 'string'
-                      ? profile.representative
-                      : profile?.company_name) || '',
-                )}
-              />
-            )}
-          </div>
-        )}
+          {/* Response Form - hidden in PDF mode */}
+          {!isPdfMode && (
+            <div className="mt-8">
+              {existingResponse ? (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center shadow-sm">
+                  <h2 className="mb-2 text-xl font-semibold text-green-800">
+                    Köszönjük a válaszát!
+                  </h2>
+                  <p className="text-green-700">
+                    Ön már{' '}
+                    {existingResponse.decision === 'accepted'
+                      ? 'elfogadta'
+                      : existingResponse.decision === 'rejected'
+                        ? 'elutasította'
+                        : 'kérdést tett fel'}{' '}
+                    ezt az ajánlatra.
+                  </p>
+                  <p className="mt-2 text-sm text-green-600">
+                    Válasz ideje: {new Date(existingResponse.created_at).toLocaleString('hu-HU')}
+                  </p>
+                </div>
+              ) : (
+                <OfferResponseForm
+                  shareId={share.id}
+                  offerId={offer.id}
+                  token={token}
+                  contactEmail={
+                    typeof profile?.company_email === 'string' ? profile.company_email : undefined
+                  }
+                  contactPhone={
+                    typeof profile?.company_phone === 'string' ? profile.company_phone : undefined
+                  }
+                  contactName={sanitizeInput(
+                    (typeof profile?.company_contact_name === 'string'
+                      ? profile.company_contact_name
+                      : typeof profile?.representative === 'string'
+                        ? profile.representative
+                        : profile?.company_name) || '',
+                  )}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </PageErrorBoundary>
   );
 }

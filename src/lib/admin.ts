@@ -54,7 +54,8 @@ export function isAdmin(user: User): boolean {
  * @param userId - User ID to check
  * @returns Promise that resolves to true if user has admin privileges
  */
-export async function isAdminById(userId: string): Promise<boolean> {
+// Removed unused export: isAdminById
+async function _isAdminById(userId: string): Promise<boolean> {
   try {
     const supabase = supabaseServiceRole();
     const { data, error } = await supabase.auth.admin.getUserById(userId);

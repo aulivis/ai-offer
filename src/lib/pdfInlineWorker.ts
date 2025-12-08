@@ -31,20 +31,27 @@ async function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, me
 
 type PageEventHandler = (...args: unknown[]) => void;
 
+/**
+ * Type-safe interface for Page with optional event removal methods.
+ * Different Puppeteer versions may have different method names.
+ */
+interface PageWithEventRemoval {
+  off?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
+  removeListener?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
+}
+
 function detachPageListener(
   page: Page,
   eventName: Parameters<Page['on']>[0],
   handler: PageEventHandler,
 ) {
-  const anyPage = page as unknown as {
-    off?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
-    removeListener?: (event: Parameters<Page['on']>[0], handler: PageEventHandler) => void;
-  };
+  // Check if page has event removal methods (type-safe check)
+  const pageWithEvents = page as Page & PageWithEventRemoval;
 
-  if (typeof anyPage.off === 'function') {
-    anyPage.off(eventName, handler);
-  } else if (typeof anyPage.removeListener === 'function') {
-    anyPage.removeListener(eventName, handler);
+  if (typeof pageWithEvents.off === 'function') {
+    pageWithEvents.off(eventName, handler);
+  } else if (typeof pageWithEvents.removeListener === 'function') {
+    pageWithEvents.removeListener(eventName, handler);
   }
 }
 
@@ -208,7 +215,8 @@ export async function processPdfJobInline(
             };
 
             // Set PDF metadata
-            await setPdfMetadata(page as unknown as PuppeteerPage, pdfMetadata);
+            // Page from puppeteer is compatible with PuppeteerPage interface
+            await setPdfMetadata(page as PuppeteerPage, pdfMetadata);
 
             // Generate PDF with simplest 1-to-1 matching approach
             // No header/footer templates, no compression, just convert HTML to PDF

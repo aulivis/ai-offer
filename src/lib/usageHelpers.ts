@@ -176,7 +176,8 @@ async function fallbackIncrement<K extends CounterKind>(
   return { allowed: true, offersGenerated, periodStart: period };
 }
 
-export async function incrementUsage<K extends CounterKind>(
+// Removed unused export: incrementUsage
+async function _incrementUsage<K extends CounterKind>(
   supabase: SupabaseClient,
   kind: K,
   target: CounterTargets[K],

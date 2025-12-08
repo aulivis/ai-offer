@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { withErrorHandling } from '@/lib/errorHandling';
+import { handleValidationError, HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { getExternalPdfDownloadUrl } from '@/lib/pdfExternalApi';
@@ -23,22 +25,16 @@ const downloadQuerySchema = z.object({
   token: z.string().optional(),
 });
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ jobId: string }> }) {
-  const requestId = getRequestId(req);
-  const log = createLogger(requestId);
+export const GET = withErrorHandling(
+  async (req: NextRequest, { params }: { params: Promise<{ jobId: string }> }) => {
+    const requestId = getRequestId(req);
+    createLogger(requestId);
 
-  try {
     const resolvedParams = await params;
     const parsedParams = jobIdParamsSchema.safeParse(resolvedParams);
 
     if (!parsedParams.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid job ID',
-          details: parsedParams.error.flatten(),
-        },
-        { status: 400 },
-      );
+      return handleValidationError(parsedParams.error, requestId);
     }
 
     const { jobId } = parsedParams.data;
@@ -49,13 +45,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobI
     const parsedQuery = downloadQuerySchema.safeParse(queryParams);
 
     if (!parsedQuery.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid query parameters',
-          details: parsedQuery.error.flatten(),
-        },
-        { status: 400 },
-      );
+      return handleValidationError(parsedQuery.error, requestId);
     }
 
     const { token } = parsedQuery.data;
@@ -64,12 +54,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobI
     const pdfUrl = await getExternalPdfDownloadUrl(jobId, token);
 
     if (!pdfUrl) {
-      return NextResponse.json(
-        {
-          error: 'PDF is not ready yet or job not found',
-          hint: 'Check the status endpoint to see the current job status',
-        },
-        { status: 404 },
+      return createErrorResponse(
+        'PDF is not ready yet or job not found. Check the status endpoint to see the current job status.',
+        HttpStatus.NOT_FOUND,
       );
     }
 
@@ -81,16 +68,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobI
         'X-Content-Type-Options': 'nosniff',
       },
     });
-  } catch (error) {
-    log.error('Failed to get PDF download URL', error);
-
-    const errorMessage = error instanceof Error ? error.message : 'Failed to get PDF download URL';
-
-    return NextResponse.json(
-      {
-        error: errorMessage,
-      },
-      { status: 500 },
-    );
-  }
-}
+  },
+);

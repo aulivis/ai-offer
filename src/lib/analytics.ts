@@ -3,6 +3,8 @@
  * Tracks key conversion events for analytics
  */
 
+import { clientLogger } from '@/lib/clientLogger';
+
 export type ConversionEvent =
   | 'page_view'
   | 'signup_start'
@@ -38,12 +40,9 @@ export function trackConversion(event: ConversionEvent, properties?: Record<stri
     },
   };
 
-  // Log to console in development (analytics tracking is intentional console usage)
-  // This is a legitimate use case for development debugging
-  // Note: Could be replaced with logger if needed, but analytics console output is useful for devs
+  // Log using structured logger in development
   if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
-    console.log('[Analytics]', eventData);
+    clientLogger.debug('Analytics event', eventData);
   }
 
   // Track with Google Analytics if available
@@ -60,12 +59,7 @@ export function trackConversion(event: ConversionEvent, properties?: Record<stri
   // fetch('/api/analytics', { method: 'POST', body: JSON.stringify(eventData) });
 }
 
-/**
- * Track page view
- */
-export function trackPageView(path: string) {
-  trackConversion('page_view', { path });
-}
+// Removed unused exports: trackPageView, trackSignupStart, trackSignupComplete
 
 /**
  * Track CTA click
@@ -79,20 +73,6 @@ export function trackCTAClick(ctaName: string, location: string) {
  */
 export function trackEmailCapture(source: string) {
   trackConversion('email_captured', { source });
-}
-
-/**
- * Track signup start
- */
-export function trackSignupStart(method: string) {
-  trackConversion('signup_start', { method });
-}
-
-/**
- * Track signup complete
- */
-export function trackSignupComplete(method: string) {
-  trackConversion('signup_complete', { method });
 }
 
 declare global {

@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { envServer } from '@/env.server';
 import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
 import { createAuthRequestLogger } from '@/lib/observability/authLogging';
+import { withErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import {
   consumeMagicLinkRateLimit,
   hashMagicLinkEmailKey,
@@ -17,7 +19,7 @@ import {
  * egy HTTPOnly sütiben (post_auth_redirect), majd a Supabase-nek csak
  * a publikus /auth/callback-et adjuk meg emailRedirectTo-ként (query nélkül).
  */
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request: NextRequest) => {
   const logger = createAuthRequestLogger();
   const body = await request.json().catch(() => ({}));
   const email = (body?.email ?? '').toString().trim().toLowerCase();
@@ -25,7 +27,7 @@ export async function POST(request: Request) {
   const rememberMe = Boolean(body?.remember_me);
 
   if (!email) {
-    return NextResponse.json({ error: 'Missing email' }, { status: 400 });
+    return createErrorResponse('Missing email', HttpStatus.BAD_REQUEST);
   }
 
   // Check rate limit before processing
@@ -131,7 +133,7 @@ export async function POST(request: Request) {
 
   if (error) {
     logger.error('Magic link dispatch failed.', error);
-    return NextResponse.json({ error: 'Failed to send magic link' }, { status: 500 });
+    throw error;
   }
 
   logger.info('Magic link sent successfully', {
@@ -147,4 +149,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ ok: true });
-}
+});

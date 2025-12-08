@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -109,6 +110,14 @@ function filterResources(
 }
 
 export default function ResourcesPage() {
+  return (
+    <PageErrorBoundary>
+      <ResourcesPageContent />
+    </PageErrorBoundary>
+  );
+}
+
+function ResourcesPageContent() {
   const { status } = useOptionalAuth();
   const isAuthenticated = status === 'authenticated';
   const [filters, setFilters] = useState<ResourceFilters>({

@@ -1,6 +1,7 @@
 'use client';
 
 import { t } from '@/copy';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
@@ -8,6 +9,8 @@ import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useInfiniteScroll } from '@/hooks/useIntersectionObserver';
+import { useDashboardOffers } from '@/hooks/useDashboardOffers';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -148,16 +151,10 @@ export default function DashboardPage() {
     [user?.id],
   );
 
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [totalCount, setTotalCount] = useState<number | null>(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [offerToDelete, setOfferToDelete] = useState<Offer | null>(null);
   const [quotaSnapshot, setQuotaSnapshot] = useState<UsageQuotaSnapshot | null>(null);
   const [isQuotaLoading, setIsQuotaLoading] = useState(false);
@@ -336,349 +333,22 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user, sb]);
 
-  const fetchPage = useCallback(
-    async (
-      user: string,
-      pageNumber: number,
-      filter: OfferFilter = 'all',
-      memberIds: string[] = [],
-      teamIdsParam: string[] = [],
-    ): Promise<{ items: Offer[]; count: number | null }> => {
-      const from = pageNumber * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-
-      // Ensure session is initialized from cookies before querying
-      // This is critical for custom cookie-based auth (propono_at, propono_rt)
-      // Pass the expected user ID to validate the session matches
-      // Use more aggressive retry settings for dashboard queries (post-OAuth scenarios)
-      try {
-        const { ensureSession } = await import('@/lib/supabaseClient');
-        await ensureSession(user, {
-          maxRetries: 8, // More retries for dashboard (may be loaded right after OAuth)
-          initialDelay: 150, // Slightly longer initial delay
-          maxDelay: 3000, // Longer max delay for post-OAuth scenarios
-        });
-      } catch (error) {
-        logger.error('Failed to ensure Supabase session', error, { userId: user });
-        // If session initialization fails, provide user-friendly error
-        const errorMessage =
-          error instanceof Error ? error.message : 'Session initialization failed';
-
-        // Show user-friendly toast and throw error
-        showToast({
-          title: t('errors.auth.sessionFailed'),
-          description: errorMessage,
-          variant: 'error',
-        });
-
-        throw new Error(errorMessage);
-      }
-
-      // Verify the session one more time before querying
-      // Give it a moment for the session to fully propagate
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      const {
-        data: { session },
-        error: sessionError,
-      } = await sb.auth.getSession();
-      const sessionMatches = session?.user?.id === user;
-
-      // Only log session check in development
-      if (process.env.NODE_ENV !== 'production') {
-        logger.info('Dashboard auth session check', {
-          hasSession: !!session,
-          sessionUserId: session?.user?.id,
-          sessionError: sessionError?.message,
-          matchesUserId: sessionMatches,
-        });
-      }
-
-      // If session doesn't match after ensureSession, this is unexpected
-      // ensureSession should have thrown an error already, but check anyway
-      if (!sessionMatches) {
-        logger.error('Session verification failed after ensureSession', undefined, {
-          expectedUserId: user,
-          sessionUserId: session?.user?.id,
-        });
-
-        // Show user-friendly error
-        showToast({
-          title: t('errors.auth.sessionVerificationFailed'),
-          description: t('errors.auth.sessionVerificationFailedDescription'),
-          variant: 'error',
-        });
-
-        throw new Error('Session verification failed. Please refresh the page.');
-      }
-
-      // Build query based on filter
-      let query = sb
-        .from('offers')
-        .select(
-          'id,title,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name )',
-          { count: 'exact' },
-        );
-
-      try {
-        if (filter === 'my') {
-          query = query.eq('user_id', user);
-        } else if (filter === 'team') {
-          if (teamIdsParam.length === 0) {
-            return { items: [], count: 0 };
-          }
-          query = query.not('team_id', 'is', null).in('team_id', teamIdsParam);
-        } else if (filter === 'all') {
-          if (teamIdsParam.length > 0) {
-            query = query.or(`user_id.eq.${user},team_id.in.(${teamIdsParam.join(',')})`);
-          } else {
-            query = query.eq('user_id', user);
-          }
-        } else if (filter === 'member' && memberIds.length > 0) {
-          query = query.in('created_by', memberIds);
-        } else {
-          query = query.eq('user_id', user);
-        }
-      } catch (queryBuildError) {
-        logger.error('Failed to build query', queryBuildError, {
-          userId: user,
-          filter,
-          teamIdsParam,
-          memberIds,
-        });
-        throw new Error(
-          `Failed to build query: ${queryBuildError instanceof Error ? queryBuildError.message : String(queryBuildError)}`,
-        );
-      }
-
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false })
-        .range(from, to);
-
-      if (error) {
-        // Extract detailed error information for logging
-        const errorInfo: Record<string, unknown> = {
-          errorCode: error.code,
-          errorDetails: error.details,
-          errorHint: error.hint,
-          errorMessage: error.message,
-          userId: user,
-          filter,
-          pageNumber,
-          teamIdsParam,
-          memberIds,
-        };
-
-        logger.error('Dashboard fetch error', error, errorInfo);
-
-        // Create a more descriptive error message
-        const errorMessage =
-          error.message ||
-          error.details ||
-          error.hint ||
-          `Database error: ${error.code || 'unknown'}`;
-
-        const enhancedError = new Error(errorMessage);
-        // Preserve original error details
-        (enhancedError as { originalError?: unknown }).originalError = error;
-        throw enhancedError;
-      }
-
-      // Check if data is null/undefined (shouldn't happen, but handle gracefully)
-      if (data === null || data === undefined) {
-        const nullDataError = new Error('Query returned null data');
-        logger.error('Dashboard query returned null data', nullDataError, {
-          userId: user,
-          filter,
-          pageNumber,
-          teamIdsParam,
-          memberIds,
-        });
-        throw nullDataError;
-      }
-
-      // Only log in development
-      if (process.env.NODE_ENV !== 'production') {
-        logger.info('Dashboard fetched offers', {
-          userId: user,
-          pageNumber,
-          count,
-          itemsCount: Array.isArray(data) ? data.length : 0,
-          offersWithPdf: Array.isArray(data)
-            ? data.filter((item: { pdf_url?: string | null }) => item.pdf_url).length
-            : 0,
-          offerIds: Array.isArray(data)
-            ? data.map((item: { id?: string }) => item.id).slice(0, 5)
-            : [],
-          offersWithPdfIds: Array.isArray(data)
-            ? data
-                .filter((item: { pdf_url?: string | null }) => item.pdf_url)
-                .map((item: { id?: string }) => item.id)
-            : [],
-        });
-      }
-
-      const rawItems = Array.isArray(data) ? data : [];
-      const items: Offer[] = rawItems.map((entry) => {
-        const recipientValue = Array.isArray(entry.recipient)
-          ? (entry.recipient[0] ?? null)
-          : (entry.recipient ?? null);
-
-        return {
-          id: String(entry.id),
-          title: typeof entry.title === 'string' ? entry.title : '',
-          status: (entry.status ?? 'draft') as Offer['status'],
-          created_at: entry.created_at ?? null,
-          sent_at: entry.sent_at ?? null,
-          decided_at: entry.decided_at ?? null,
-          decision: (entry.decision ?? null) as Offer['decision'],
-          pdf_url: entry.pdf_url ?? null,
-          recipient_id: entry.recipient_id ?? null,
-          recipient: recipientValue,
-          ...(typeof entry.user_id === 'string' ? { user_id: entry.user_id } : {}),
-          ...(typeof entry.created_by === 'string' ? { created_by: entry.created_by } : {}),
-          updated_by: typeof entry.updated_by === 'string' ? entry.updated_by : null,
-          team_id: typeof entry.team_id === 'string' ? entry.team_id : null,
-          // Note: created_by_user and updated_by_user set to null
-          // because the foreign key relationships are not configured in the schema
-          created_by_user: null,
-          updated_by_user: null,
-        };
-      });
-
-      return {
-        items,
-        count: typeof count === 'number' ? count : null,
-      };
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sb, showToast],
-  );
-
-  // Use refs to store latest callbacks to avoid unnecessary re-subscriptions
-  const fetchPageRef = useRef(fetchPage);
-  const showToastRef = useRef(showToast);
-  useEffect(() => {
-    fetchPageRef.current = fetchPage;
-    showToastRef.current = showToast;
-  }, [fetchPage, showToast]);
-
-  useEffect(() => {
-    let active = true;
-    if (authStatus !== 'authenticated' || !user) {
-      return () => {
-        active = false;
-      };
-    }
-
-    const loadInitialPage = async () => {
-      setLoading(true);
-      try {
-        setUserId(user.id);
-        const memberIds = offerFilter === 'member' ? teamMemberFilter : [];
-        const { items, count } = await fetchPageRef.current(
-          user.id,
-          0,
-          offerFilter,
-          memberIds,
-          teamIds,
-        );
-        if (!active) return;
-        setOffers(items);
-        setPageIndex(0);
-        setTotalCount(count);
-      } catch (error) {
-        // Extract detailed error information
-        let errorMessage = t('toasts.offers.loadFailed.description');
-        let errorDetails: Record<string, unknown> = {};
-
-        if (error && typeof error === 'object') {
-          // Handle Supabase PostgrestError
-          if ('code' in error || 'message' in error || 'details' in error || 'hint' in error) {
-            const supabaseError = error as {
-              code?: string;
-              message?: string;
-              details?: string;
-              hint?: string;
-            };
-            errorMessage = supabaseError.message || errorMessage;
-            errorDetails = {
-              code: supabaseError.code,
-              details: supabaseError.details,
-              hint: supabaseError.hint,
-            };
-          }
-          // Handle standard Error
-          else if (error instanceof Error) {
-            errorMessage = error.message || errorMessage;
-            errorDetails = {
-              name: error.name,
-              stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined,
-            };
-          }
-          // Handle other error types
-          else {
-            errorMessage = String(error);
-          }
-        }
-
-        const logContext = {
-          userId: user?.id,
-          offerFilter,
-          teamIds,
-          teamMemberFilter,
-          ...errorDetails,
-        };
-
-        logger.error('Failed to load offers', error, logContext);
-
-        showToastRef.current({
-          title: t('toasts.offers.loadFailed.title'),
-          description: errorMessage,
-          variant: 'error',
-        });
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    loadInitialPage();
-
-    // Only refresh on visibility change if we're coming back from a hidden state
-    // and enough time has passed (to avoid refreshing on quick tab switches)
-    let wasHidden = false;
-    let hiddenTimestamp = 0;
-    const VISIBILITY_REFRESH_THRESHOLD_MS = 5000; // Only refresh if hidden for >5 seconds
-
-    const handleVisibilityChange = () => {
-      if (!active) return;
-
-      if (document.visibilityState === 'hidden') {
-        wasHidden = true;
-        hiddenTimestamp = Date.now();
-      } else if (document.visibilityState === 'visible' && wasHidden) {
-        const hiddenDuration = Date.now() - hiddenTimestamp;
-        // Only refresh if page was hidden for a significant amount of time
-        // This prevents unnecessary refreshes on quick tab switches
-        if (hiddenDuration > VISIBILITY_REFRESH_THRESHOLD_MS) {
-          loadInitialPage();
-        }
-        wasHidden = false;
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      active = false;
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-    // Depend on filter state to reload offers when filter changes
-    // Note: loadInitialPage uses fetchPageRef.current (ref) and showToastRef.current (ref),
-    // which are intentionally excluded from dependencies to avoid unnecessary re-subscriptions.
-    // The visibility change handler closure captures loadInitialPage, which is acceptable
-    // since the event listener is cleaned up on unmount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStatus, user?.id, offerFilter, teamMemberFilter, teamIds]);
+  // Use the custom hook for offers fetching
+  const {
+    offers,
+    loading,
+    totalCount,
+    isLoadingMore,
+    hasMore,
+    pageIndex,
+    setOffers,
+    setTotalCount,
+    handleLoadMore,
+  } = useDashboardOffers({
+    offerFilter,
+    teamMemberFilter,
+    teamIds,
+  });
 
   // Track URL search params to detect refresh requests
   const [refreshKey, setRefreshKey] = useState(0);
@@ -1123,76 +793,12 @@ export default function DashboardPage() {
     return list;
   }, [offers, q, statusFilter, sortBy, sortDir]);
 
-  /** Metrikák (enhanced with previous period comparison) - filtered by KPI scope */
-  const metricsOffers = useMemo(() => {
-    if (kpiScope === 'personal' && user) {
-      return offers.filter((o) => o.user_id === user.id);
-    }
-    // Team scope: include all offers user can see
-    return offers;
-  }, [offers, kpiScope, user]);
-
-  const stats = useMemo(() => {
-    const total = metricsOffers.length;
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-
-    // Current period stats
-    const createdThisMonth = metricsOffers.filter((offer) => {
-      if (!offer.created_at) return false;
-      const created = new Date(offer.created_at).getTime();
-      return Number.isFinite(created) && created >= monthStart;
-    }).length;
-
-    // Previous period stats
-    const createdLastMonth = metricsOffers.filter((offer) => {
-      if (!offer.created_at) return false;
-      const created = new Date(offer.created_at).getTime();
-      return Number.isFinite(created) && created >= lastMonthStart && created < monthStart;
-    }).length;
-
-    const sentStatuses: Offer['status'][] = ['sent', 'accepted', 'lost'];
-    const sent = metricsOffers.filter((offer) => sentStatuses.includes(offer.status)).length;
-    const accepted = metricsOffers.filter((offer) => offer.status === 'accepted').length;
-    const lost = metricsOffers.filter((offer) => offer.status === 'lost').length;
-    const inReview = metricsOffers.filter((offer) => offer.status === 'sent').length;
-    const drafts = metricsOffers.filter((offer) => offer.status === 'draft').length;
-
-    const acceptanceRate = sent > 0 ? (accepted / sent) * 100 : null;
-    const winRate = accepted + lost > 0 ? (accepted / (accepted + lost)) * 100 : null;
-
-    const decisionDurations: number[] = [];
-    metricsOffers.forEach((offer) => {
-      if (offer.status !== 'accepted' || !offer.decided_at) return;
-      const decided = new Date(offer.decided_at).getTime();
-      const sentAt = offer.sent_at
-        ? new Date(offer.sent_at).getTime()
-        : offer.created_at
-          ? new Date(offer.created_at).getTime()
-          : NaN;
-      if (!Number.isFinite(decided) || !Number.isFinite(sentAt)) return;
-      const diffDays = (decided - sentAt) / (1000 * 60 * 60 * 24);
-      if (diffDays >= 0) decisionDurations.push(diffDays);
-    });
-    const avgDecisionDays = decisionDurations.length
-      ? decisionDurations.reduce((sum, value) => sum + value, 0) / decisionDurations.length
-      : null;
-
-    return {
-      total,
-      sent,
-      accepted,
-      lost,
-      inReview,
-      drafts,
-      acceptanceRate,
-      winRate,
-      avgDecisionDays,
-      createdThisMonth,
-      createdLastMonth,
-    };
-  }, [metricsOffers]);
+  // Use the custom hook for metrics calculation
+  const stats = useDashboardMetrics({
+    offers,
+    kpiScope,
+    userId: user?.id,
+  });
 
   /** Realtime frissítések (változatlan logika) */
   useEffect(() => {
@@ -1290,9 +896,7 @@ export default function DashboardPage() {
               recipient: recipientValue,
             };
 
-            // Add to beginning and update count
-            setTotalCount((prevCount) => (typeof prevCount === 'number' ? prevCount + 1 : null));
-
+            // Add to beginning
             return [newOffer, ...prev];
           });
         },
@@ -1303,15 +907,7 @@ export default function DashboardPage() {
         (payload) => {
           const removed = payload.old as { id?: string } | null;
           if (!removed || typeof removed.id !== 'string') return;
-          setOffers((prev) => {
-            const next = prev.filter((item) => item.id !== removed.id);
-            if (next.length !== prev.length) {
-              setTotalCount((prevCount) =>
-                typeof prevCount === 'number' ? Math.max(prevCount - 1, 0) : prevCount,
-              );
-            }
-            return next;
-          });
+          setOffers((prev) => prev.filter((item) => item.id !== removed.id));
         },
       )
       .subscribe();
@@ -1509,882 +1105,889 @@ export default function DashboardPage() {
   const hasNoOffers = !loading && totalOffersCount === 0;
 
   return (
-    <div
-      className={`min-h-screen ${
-        hasNoOffers
-          ? 'bg-gradient-to-br from-teal-50 via-white to-blue-50'
-          : 'bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50'
-      } ${latestNotification && !latestNotification.isRead ? 'pt-16' : ''}`}
-    >
-      {latestNotification && !latestNotification.isRead && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <NotificationBar
-            notification={latestNotification}
-            onDismiss={handleDismissNotification}
-            onMarkAsRead={handleMarkNotificationAsRead}
-          />
-        </div>
-      )}
-      <AppFrame
-        title={t('dashboard.title')}
-        description="Kezeld az összes ajánlatodat egy helyen. Keresés, szűrés és státusz követés egyszerűen."
-        actions={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <NotificationBell />
-            <button
-              type="button"
-              onClick={() => setShowKeyboardShortcuts(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-2 text-sm font-semibold text-fg-muted transition hover:border-fg hover:bg-bg/80 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label="Show keyboard shortcuts"
-              title="Keyboard shortcuts (?)"
-            >
-              <QuestionMarkCircleIcon className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden sm:inline">?</span>
-            </button>
-            {isAdmin ? (
-              <Link
-                href="/dashboard/telemetry"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {t('dashboard.actions.templateTelemetry')}
-              </Link>
-            ) : null}
-            <Link
-              href="/new"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {t('dashboard.actions.newOffer')}
-            </Link>
-          </div>
-        }
+    <PageErrorBoundary>
+      <div
+        className={`min-h-screen ${
+          hasNoOffers
+            ? 'bg-gradient-to-br from-teal-50 via-white to-blue-50'
+            : 'bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50'
+        } ${latestNotification && !latestNotification.isRead ? 'pt-16' : ''}`}
       >
-        {/* Progressive Disclosure: Empty State for New Users */}
-        {hasNoOffers ? (
-          <EmptyState />
-        ) : (
-          <>
-            {/* Enhanced KPI Dashboard with Visual Funnel */}
-            <div className="space-y-6 pb-8 border-b border-border/40">
-              {/* Header with View Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
-                  <p className="text-sm text-fg-muted mt-1">
-                    {t('dashboard.metricsView.description')}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {teamIds.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-fg-muted">Personal</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newScope = kpiScope === 'team' ? 'personal' : 'team';
-                          setKpiScope(newScope);
-                        }}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          kpiScope === 'team' ? 'bg-primary' : 'bg-fg-muted'
-                        }`}
-                        role="switch"
-                        aria-checked={kpiScope === 'team'}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            kpiScope === 'team' ? 'translate-x-6' : 'translate-x-1'
+        {latestNotification && !latestNotification.isRead && (
+          <div className="fixed top-0 left-0 right-0 z-50">
+            <NotificationBar
+              notification={latestNotification}
+              onDismiss={handleDismissNotification}
+              onMarkAsRead={handleMarkNotificationAsRead}
+            />
+          </div>
+        )}
+        <AppFrame
+          title={t('dashboard.title')}
+          description="Kezeld az összes ajánlatodat egy helyen. Keresés, szűrés és státusz követés egyszerűen."
+          actions={
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <NotificationBell />
+              <button
+                type="button"
+                onClick={() => setShowKeyboardShortcuts(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-2 text-sm font-semibold text-fg-muted transition hover:border-fg hover:bg-bg/80 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Show keyboard shortcuts"
+                title="Keyboard shortcuts (?)"
+              >
+                <QuestionMarkCircleIcon className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">?</span>
+              </button>
+              {isAdmin ? (
+                <Link
+                  href="/dashboard/telemetry"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  {t('dashboard.actions.templateTelemetry')}
+                </Link>
+              ) : null}
+              <Link
+                href="/new"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {t('dashboard.actions.newOffer')}
+              </Link>
+            </div>
+          }
+        >
+          {/* Progressive Disclosure: Empty State for New Users */}
+          {hasNoOffers ? (
+            <EmptyState />
+          ) : (
+            <>
+              {/* Enhanced KPI Dashboard with Visual Funnel */}
+              <div className="space-y-6 pb-8 border-b border-border/40">
+                {/* Header with View Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-fg">
+                      {t('dashboard.metricsView.title')}
+                    </h2>
+                    <p className="text-sm text-fg-muted mt-1">
+                      {t('dashboard.metricsView.description')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {teamIds.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-fg-muted">Personal</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newScope = kpiScope === 'team' ? 'personal' : 'team';
+                            setKpiScope(newScope);
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            kpiScope === 'team' ? 'bg-primary' : 'bg-fg-muted'
                           }`}
-                        />
-                      </button>
-                      <span className="text-sm text-fg-muted">Team</span>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
-                    }
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
-                    title={
-                      metricsViewMode === 'compact'
-                        ? t('dashboard.metricsView.detailedTitle')
-                        : t('dashboard.metricsView.compactTitle')
-                    }
+                          role="switch"
+                          aria-checked={kpiScope === 'team'}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              kpiScope === 'team' ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                        <span className="text-sm text-fg-muted">Team</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMetricsViewMode(metricsViewMode === 'compact' ? 'detailed' : 'compact')
+                      }
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
+                      title={
+                        metricsViewMode === 'compact'
+                          ? t('dashboard.metricsView.detailedTitle')
+                          : t('dashboard.metricsView.compactTitle')
+                      }
+                    >
+                      {metricsViewMode === 'compact' ? (
+                        <>
+                          <ArrowsPointingOutIcon className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            {t('dashboard.metricsView.detailed')}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <ArrowsPointingInIcon className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            {t('dashboard.metricsView.compact')}
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Conversion Funnel Group - Progressive disclosure based on offer count */}
+                <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
+                  <div
+                    className={`grid gap-3 sm:gap-4 ${
+                      totalOffersCount < 5
+                        ? 'grid-cols-1 sm:grid-cols-3'
+                        : metricsViewMode === 'compact'
+                          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
+                          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
+                    }`}
                   >
-                    {metricsViewMode === 'compact' ? (
+                    {loading ? (
                       <>
-                        <ArrowsPointingOutIcon className="h-4 w-4" />
-                        <span className="hidden sm:inline">
-                          {t('dashboard.metricsView.detailed')}
-                        </span>
+                        {Array.from({
+                          length: totalOffersCount < 5 ? 3 : metricsViewMode === 'compact' ? 7 : 8,
+                        }).map((_, i) => (
+                          <MetricSkeleton key={i} />
+                        ))}
+                      </>
+                    ) : totalOffersCount < 5 ? (
+                      <>
+                        {/* Simplified metrics for users with 1-4 offers */}
+                        <MetricCard
+                          label={t('dashboard.metrics.created.label')}
+                          value={totalOffersCount.toLocaleString('hu-HU')}
+                          icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="primary"
+                          trend={
+                            stats.createdThisMonth > 0
+                              ? 'up'
+                              : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
+                                ? 'down'
+                                : 'neutral'
+                          }
+                          {...(stats.createdThisMonth > 0
+                            ? { trendValue: `+${stats.createdThisMonth}` }
+                            : {})}
+                          onClick={() => handleMetricClick('all')}
+                        />
+                        <MetricCard
+                          label={t('dashboard.metrics.sent.label')}
+                          value={stats.sent.toLocaleString('hu-HU')}
+                          icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="info"
+                          onClick={() => handleMetricClick('sent')}
+                          isEmpty={stats.sent === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
+                        />
+                        <MetricCard
+                          label={t('dashboard.metrics.accepted.label')}
+                          value={stats.accepted.toLocaleString('hu-HU')}
+                          icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="success"
+                          trend={
+                            stats.acceptanceRate !== null && stats.acceptanceRate > 50
+                              ? 'up'
+                              : stats.acceptanceRate !== null && stats.acceptanceRate < 30
+                                ? 'down'
+                                : 'neutral'
+                          }
+                          {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
+                          onClick={() => handleMetricClick('accepted')}
+                          isEmpty={stats.accepted === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
+                        />
                       </>
                     ) : (
                       <>
-                        <ArrowsPointingInIcon className="h-4 w-4" />
-                        <span className="hidden sm:inline">
-                          {t('dashboard.metricsView.compact')}
-                        </span>
+                        {/* Full metrics for power users with 5+ offers */}
+                        {/* Quota Card - Featured */}
+                        <div className="sm:col-span-2">
+                          <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl h-full">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                                <ChartBarIcon className="w-6 h-6" />
+                              </div>
+                              <div className="text-sm font-semibold opacity-90">
+                                {t('dashboard.metrics.quota.label')}
+                              </div>
+                            </div>
+                            <div className="text-4xl font-bold mb-2">{quotaValue}</div>
+                            {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
+                              <div className="text-sm opacity-80 flex items-center gap-2">
+                                <span>Pro csomag előny</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Created Offers - Funnel Start */}
+                        <MetricCard
+                          label={t('dashboard.metrics.created.label')}
+                          value={totalOffersCount.toLocaleString('hu-HU')}
+                          {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
+                          icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="primary"
+                          trend={
+                            stats.createdThisMonth > 0
+                              ? 'up'
+                              : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
+                                ? 'down'
+                                : 'neutral'
+                          }
+                          {...(stats.createdThisMonth > 0
+                            ? { trendValue: `+${stats.createdThisMonth}` }
+                            : {})}
+                          {...(createdComparison ? { comparison: createdComparison } : {})}
+                          onClick={() => handleMetricClick('all')}
+                          isEmpty={totalOffersCount === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
+                        />
+
+                        {/* Active Offers (In Review) */}
+                        <MetricCard
+                          label={t('dashboard.metrics.inReview.label')}
+                          value={stats.inReview.toLocaleString('hu-HU')}
+                          {...(metricsViewMode === 'detailed'
+                            ? {
+                                helper: t('dashboard.metrics.inReview.helper', {
+                                  count: stats.inReview.toLocaleString('hu-HU'),
+                                }),
+                              }
+                            : {})}
+                          icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="info"
+                          onClick={() => handleMetricClick('sent')}
+                          isEmpty={stats.inReview === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
+                        />
+
+                        {/* Sent Offers */}
+                        <MetricCard
+                          label={t('dashboard.metrics.sent.label')}
+                          value={stats.sent.toLocaleString('hu-HU')}
+                          {...(metricsViewMode === 'detailed'
+                            ? {
+                                helper: t('dashboard.metrics.sent.helper', {
+                                  sent: stats.sent.toLocaleString('hu-HU'),
+                                  pending: stats.inReview.toLocaleString('hu-HU'),
+                                }),
+                              }
+                            : {})}
+                          icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="info"
+                          onClick={() => handleMetricClick('sent')}
+                          isEmpty={stats.sent === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
+                        />
+
+                        {/* Accepted Offers */}
+                        <MetricCard
+                          label={t('dashboard.metrics.accepted.label')}
+                          value={stats.accepted.toLocaleString('hu-HU')}
+                          {...(metricsViewMode === 'detailed'
+                            ? {
+                                helper: t('dashboard.metrics.accepted.helper', {
+                                  accepted: stats.accepted.toLocaleString('hu-HU'),
+                                  rate: acceptanceLabel,
+                                }),
+                              }
+                            : {})}
+                          icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="success"
+                          trend={
+                            stats.acceptanceRate !== null && stats.acceptanceRate > 50
+                              ? 'up'
+                              : stats.acceptanceRate !== null && stats.acceptanceRate < 30
+                                ? 'down'
+                                : 'neutral'
+                          }
+                          {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
+                          onClick={() => handleMetricClick('accepted')}
+                          isEmpty={stats.accepted === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
+                        />
+
+                        {/* Lost Offers - NEW */}
+                        <MetricCard
+                          label={t('dashboard.metrics.lost.label')}
+                          value={stats.lost.toLocaleString('hu-HU')}
+                          {...(metricsViewMode === 'detailed'
+                            ? {
+                                helper: t('dashboard.metrics.lost.helper', {
+                                  count: stats.lost.toLocaleString('hu-HU'),
+                                }),
+                              }
+                            : {})}
+                          icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="danger"
+                          onClick={() => handleMetricClick('lost')}
+                          isEmpty={stats.lost === 0}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
+                        />
+
+                        {/* Win Rate - NEW */}
+                        <MetricCard
+                          label={t('dashboard.metrics.winRate.label')}
+                          value={winRateLabel}
+                          {...(metricsViewMode === 'detailed'
+                            ? {
+                                helper: t('dashboard.metrics.winRate.helper', {
+                                  rate: winRateLabel !== '—' ? winRateLabel : '—',
+                                }),
+                              }
+                            : {})}
+                          icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
+                          color={
+                            stats.winRate !== null && stats.winRate > 50
+                              ? 'success'
+                              : stats.winRate !== null && stats.winRate < 30
+                                ? 'danger'
+                                : 'warning'
+                          }
+                          trend={
+                            stats.winRate !== null && stats.winRate > 50
+                              ? 'up'
+                              : stats.winRate !== null && stats.winRate < 30
+                                ? 'down'
+                                : 'neutral'
+                          }
+                          {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
+                          isEmpty={stats.winRate === null}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
+                        />
+
+                        {/* Average Decision Time */}
+                        <MetricCard
+                          label={t('dashboard.metrics.avgDecision.label')}
+                          value={avgDecisionLabel}
+                          {...(metricsViewMode === 'detailed'
+                            ? {
+                                helper: t('dashboard.metrics.avgDecision.helper', {
+                                  days:
+                                    stats.avgDecisionDays !== null
+                                      ? stats.avgDecisionDays.toLocaleString('hu-HU', {
+                                          maximumFractionDigits: 1,
+                                        })
+                                      : '—',
+                                  drafts: stats.drafts.toLocaleString('hu-HU'),
+                                }),
+                              }
+                            : {})}
+                          icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
+                          color="warning"
+                          isEmpty={stats.avgDecisionDays === null}
+                          emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
+                        />
                       </>
                     )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Conversion Funnel Group - Progressive disclosure based on offer count */}
-              <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
-                <div
-                  className={`grid gap-3 sm:gap-4 ${
-                    totalOffersCount < 5
-                      ? 'grid-cols-1 sm:grid-cols-3'
-                      : metricsViewMode === 'compact'
-                        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
-                        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
-                  }`}
-                >
-                  {loading ? (
-                    <>
-                      {Array.from({
-                        length: totalOffersCount < 5 ? 3 : metricsViewMode === 'compact' ? 7 : 8,
-                      }).map((_, i) => (
-                        <MetricSkeleton key={i} />
-                      ))}
-                    </>
-                  ) : totalOffersCount < 5 ? (
-                    <>
-                      {/* Simplified metrics for users with 1-4 offers */}
-                      <MetricCard
-                        label={t('dashboard.metrics.created.label')}
-                        value={totalOffersCount.toLocaleString('hu-HU')}
-                        icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="primary"
-                        trend={
-                          stats.createdThisMonth > 0
-                            ? 'up'
-                            : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
-                              ? 'down'
-                              : 'neutral'
-                        }
-                        {...(stats.createdThisMonth > 0
-                          ? { trendValue: `+${stats.createdThisMonth}` }
-                          : {})}
-                        onClick={() => handleMetricClick('all')}
-                      />
-                      <MetricCard
-                        label={t('dashboard.metrics.sent.label')}
-                        value={stats.sent.toLocaleString('hu-HU')}
-                        icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="info"
-                        onClick={() => handleMetricClick('sent')}
-                        isEmpty={stats.sent === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
-                      />
-                      <MetricCard
-                        label={t('dashboard.metrics.accepted.label')}
-                        value={stats.accepted.toLocaleString('hu-HU')}
-                        icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="success"
-                        trend={
-                          stats.acceptanceRate !== null && stats.acceptanceRate > 50
-                            ? 'up'
-                            : stats.acceptanceRate !== null && stats.acceptanceRate < 30
-                              ? 'down'
-                              : 'neutral'
-                        }
-                        {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
-                        onClick={() => handleMetricClick('accepted')}
-                        isEmpty={stats.accepted === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      {/* Full metrics for power users with 5+ offers */}
-                      {/* Quota Card - Featured */}
-                      <div className="sm:col-span-2">
-                        <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl h-full">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                              <ChartBarIcon className="w-6 h-6" />
-                            </div>
-                            <div className="text-sm font-semibold opacity-90">
-                              {t('dashboard.metrics.quota.label')}
-                            </div>
-                          </div>
-                          <div className="text-4xl font-bold mb-2">{quotaValue}</div>
-                          {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
-                            <div className="text-sm opacity-80 flex items-center gap-2">
-                              <span>Pro csomag előny</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Created Offers - Funnel Start */}
-                      <MetricCard
-                        label={t('dashboard.metrics.created.label')}
-                        value={totalOffersCount.toLocaleString('hu-HU')}
-                        {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
-                        icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="primary"
-                        trend={
-                          stats.createdThisMonth > 0
-                            ? 'up'
-                            : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
-                              ? 'down'
-                              : 'neutral'
-                        }
-                        {...(stats.createdThisMonth > 0
-                          ? { trendValue: `+${stats.createdThisMonth}` }
-                          : {})}
-                        {...(createdComparison ? { comparison: createdComparison } : {})}
-                        onClick={() => handleMetricClick('all')}
-                        isEmpty={totalOffersCount === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
-                      />
-
-                      {/* Active Offers (In Review) */}
-                      <MetricCard
-                        label={t('dashboard.metrics.inReview.label')}
-                        value={stats.inReview.toLocaleString('hu-HU')}
-                        {...(metricsViewMode === 'detailed'
-                          ? {
-                              helper: t('dashboard.metrics.inReview.helper', {
-                                count: stats.inReview.toLocaleString('hu-HU'),
-                              }),
-                            }
-                          : {})}
-                        icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="info"
-                        onClick={() => handleMetricClick('sent')}
-                        isEmpty={stats.inReview === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
-                      />
-
-                      {/* Sent Offers */}
-                      <MetricCard
-                        label={t('dashboard.metrics.sent.label')}
-                        value={stats.sent.toLocaleString('hu-HU')}
-                        {...(metricsViewMode === 'detailed'
-                          ? {
-                              helper: t('dashboard.metrics.sent.helper', {
-                                sent: stats.sent.toLocaleString('hu-HU'),
-                                pending: stats.inReview.toLocaleString('hu-HU'),
-                              }),
-                            }
-                          : {})}
-                        icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="info"
-                        onClick={() => handleMetricClick('sent')}
-                        isEmpty={stats.sent === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
-                      />
-
-                      {/* Accepted Offers */}
-                      <MetricCard
-                        label={t('dashboard.metrics.accepted.label')}
-                        value={stats.accepted.toLocaleString('hu-HU')}
-                        {...(metricsViewMode === 'detailed'
-                          ? {
-                              helper: t('dashboard.metrics.accepted.helper', {
-                                accepted: stats.accepted.toLocaleString('hu-HU'),
-                                rate: acceptanceLabel,
-                              }),
-                            }
-                          : {})}
-                        icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="success"
-                        trend={
-                          stats.acceptanceRate !== null && stats.acceptanceRate > 50
-                            ? 'up'
-                            : stats.acceptanceRate !== null && stats.acceptanceRate < 30
-                              ? 'down'
-                              : 'neutral'
-                        }
-                        {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
-                        onClick={() => handleMetricClick('accepted')}
-                        isEmpty={stats.accepted === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
-                      />
-
-                      {/* Lost Offers - NEW */}
-                      <MetricCard
-                        label={t('dashboard.metrics.lost.label')}
-                        value={stats.lost.toLocaleString('hu-HU')}
-                        {...(metricsViewMode === 'detailed'
-                          ? {
-                              helper: t('dashboard.metrics.lost.helper', {
-                                count: stats.lost.toLocaleString('hu-HU'),
-                              }),
-                            }
-                          : {})}
-                        icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="danger"
-                        onClick={() => handleMetricClick('lost')}
-                        isEmpty={stats.lost === 0}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
-                      />
-
-                      {/* Win Rate - NEW */}
-                      <MetricCard
-                        label={t('dashboard.metrics.winRate.label')}
-                        value={winRateLabel}
-                        {...(metricsViewMode === 'detailed'
-                          ? {
-                              helper: t('dashboard.metrics.winRate.helper', {
-                                rate: winRateLabel !== '—' ? winRateLabel : '—',
-                              }),
-                            }
-                          : {})}
-                        icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
-                        color={
-                          stats.winRate !== null && stats.winRate > 50
-                            ? 'success'
-                            : stats.winRate !== null && stats.winRate < 30
-                              ? 'danger'
-                              : 'warning'
-                        }
-                        trend={
-                          stats.winRate !== null && stats.winRate > 50
-                            ? 'up'
-                            : stats.winRate !== null && stats.winRate < 30
-                              ? 'down'
-                              : 'neutral'
-                        }
-                        {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
-                        isEmpty={stats.winRate === null}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
-                      />
-
-                      {/* Average Decision Time */}
-                      <MetricCard
-                        label={t('dashboard.metrics.avgDecision.label')}
-                        value={avgDecisionLabel}
-                        {...(metricsViewMode === 'detailed'
-                          ? {
-                              helper: t('dashboard.metrics.avgDecision.helper', {
-                                days:
-                                  stats.avgDecisionDays !== null
-                                    ? stats.avgDecisionDays.toLocaleString('hu-HU', {
-                                        maximumFractionDigits: 1,
-                                      })
-                                    : '—',
-                                drafts: stats.drafts.toLocaleString('hu-HU'),
-                              }),
-                            }
-                          : {})}
-                        icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
-                        color="warning"
-                        isEmpty={stats.avgDecisionDays === null}
-                        emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Search & Filters */}
-            <Card as="section" className="mb-8">
-              <div className="space-y-6">
-                {/* Search Bar */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-fg-muted" aria-hidden="true" />
                   </div>
-                  <Input
-                    placeholder="Keresés ajánlat címe vagy cég neve alapján..."
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    className="pl-11 pr-4 py-3 text-base shadow-sm"
-                    wrapperClassName=""
-                  />
-                  {q.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => setQ('')}
-                      className="absolute inset-y-0 right-0 flex items-center pr-4 text-fg-muted hover:text-fg transition-colors"
-                      aria-label={t('dashboard.filters.remove')}
-                    >
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  )}
                 </div>
+              </div>
 
-                {/* Quick Filter Chips - Simplified design */}
-                <div
-                  className="flex flex-wrap items-center gap-3"
-                  role="group"
-                  aria-label={t('dashboard.filters.status.label')}
-                >
-                  <span className="text-sm font-semibold text-gray-700">
-                    {t('dashboard.filters.status.label')}:
-                  </span>
-                  {STATUS_FILTER_OPTIONS.map((status) => {
-                    // Calculate counts from offers matching current search/industry filters (but not status)
-                    const baseFiltered = offers.filter((o) => {
-                      const matchesSearch =
-                        !q.trim() ||
-                        o.title?.toLowerCase().includes(q.toLowerCase()) ||
-                        (o.recipient?.company_name || '').toLowerCase().includes(q.toLowerCase());
-                      return matchesSearch;
-                    });
-                    const count =
-                      status === 'all'
-                        ? baseFiltered.length
-                        : baseFiltered.filter((o) => o.status === status).length;
-                    return (
+              {/* Enhanced Search & Filters */}
+              <Card as="section" className="mb-8">
+                <div className="space-y-6">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                      <MagnifyingGlassIcon className="h-5 w-5 text-fg-muted" aria-hidden="true" />
+                    </div>
+                    <Input
+                      placeholder="Keresés ajánlat címe vagy cég neve alapján..."
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      className="pl-11 pr-4 py-3 text-base shadow-sm"
+                      wrapperClassName=""
+                    />
+                    {q.trim() && (
                       <button
-                        key={status}
                         type="button"
-                        onClick={() => setStatusFilter(status)}
-                        onKeyDown={(e) => {
-                          // Keyboard navigation: Arrow keys to navigate between filter chips
-                          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                            e.preventDefault();
-                            const currentIndex = STATUS_FILTER_OPTIONS.indexOf(status);
-                            const direction = e.key === 'ArrowRight' ? 1 : -1;
-                            const nextIndex =
-                              (currentIndex + direction + STATUS_FILTER_OPTIONS.length) %
-                              STATUS_FILTER_OPTIONS.length;
-                            const nextStatus = STATUS_FILTER_OPTIONS[nextIndex];
-                            setStatusFilter(nextStatus);
-                            // Focus the next button after state update
-                            setTimeout(() => {
-                              const buttons = Array.from(
-                                e.currentTarget.parentElement?.querySelectorAll('button') || [],
-                              );
-                              const nextButton = buttons.find(
-                                (btn) => btn.getAttribute('aria-pressed') === 'true',
-                              );
-                              nextButton?.focus();
-                            }, 0);
-                          }
-                          // Home/End keys to jump to first/last
-                          if (e.key === 'Home') {
-                            e.preventDefault();
-                            setStatusFilter(STATUS_FILTER_OPTIONS[0]);
-                            setTimeout(() => {
-                              const buttons = Array.from(
-                                e.currentTarget.parentElement?.querySelectorAll('button') || [],
-                              );
-                              buttons[0]?.focus();
-                            }, 0);
-                          }
-                          if (e.key === 'End') {
-                            e.preventDefault();
-                            const lastStatus =
-                              STATUS_FILTER_OPTIONS[STATUS_FILTER_OPTIONS.length - 1];
-                            setStatusFilter(lastStatus);
-                            setTimeout(() => {
-                              const buttons = Array.from(
-                                e.currentTarget.parentElement?.querySelectorAll('button') || [],
-                              );
-                              buttons[buttons.length - 1]?.focus();
-                            }, 0);
-                          }
-                        }}
-                        aria-pressed={statusFilter === status}
-                        aria-label={`${t('dashboard.filters.status.label')}: ${
-                          status === 'all'
-                            ? t('dashboard.filters.status.options.all')
-                            : t(STATUS_LABEL_KEYS[status])
-                        }`}
-                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                          statusFilter === status
-                            ? 'bg-teal-500 text-white shadow-sm'
-                            : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300'
-                        }`}
+                        onClick={() => setQ('')}
+                        className="absolute inset-y-0 right-0 flex items-center pr-4 text-fg-muted hover:text-fg transition-colors"
+                        aria-label={t('dashboard.filters.remove')}
                       >
-                        {status === 'all' ? (
-                          <>
-                            {t('dashboard.filters.status.options.all')} ({count})
-                          </>
-                        ) : (
-                          <>
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                status === 'draft'
-                                  ? 'bg-amber-500'
-                                  : status === 'sent'
-                                    ? 'bg-blue-500'
-                                    : status === 'accepted'
-                                      ? 'bg-emerald-500'
-                                      : 'bg-rose-500'
-                              }`}
-                              aria-hidden="true"
-                            />
-                            {t(STATUS_LABEL_KEYS[status])} ({count})
-                          </>
-                        )}
+                        <XMarkIcon className="h-5 w-5" />
                       </button>
-                    );
-                  })}
-                </div>
-
-                {/* Advanced Filters & Controls */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
-                  <div className="flex flex-wrap items-end gap-3 flex-1">
-                    {teamIds.length > 0 && (
-                      <Select
-                        label="Ajánlat szűrő"
-                        value={offerFilter}
-                        onChange={(e) => {
-                          const value = e.target.value as OfferFilter;
-                          setOfferFilter(value);
-                          if (value !== 'member') {
-                            setTeamMemberFilter([]);
-                          }
-                        }}
-                        className="min-w-[180px]"
-                        wrapperClassName="flex-1 sm:flex-none"
-                      >
-                        <option value="all">Összes</option>
-                        <option value="my">Saját ajánlataim</option>
-                        <option value="team">Csapat ajánlatai</option>
-                        <option value="member">Csapat tag szerint</option>
-                      </Select>
                     )}
-                    {offerFilter === 'member' && teamMembers.length > 0 && (
-                      <div className="flex-1 sm:flex-none min-w-[200px]">
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-fg-muted mb-1.5">
-                          Csapat tag
-                        </label>
-                        <Select
-                          value={teamMemberFilter[0] || ''}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value) {
-                              setTeamMemberFilter([value]);
-                            } else {
-                              setTeamMemberFilter([]);
-                              setOfferFilter('all');
+                  </div>
+
+                  {/* Quick Filter Chips - Simplified design */}
+                  <div
+                    className="flex flex-wrap items-center gap-3"
+                    role="group"
+                    aria-label={t('dashboard.filters.status.label')}
+                  >
+                    <span className="text-sm font-semibold text-gray-700">
+                      {t('dashboard.filters.status.label')}:
+                    </span>
+                    {STATUS_FILTER_OPTIONS.map((status) => {
+                      // Calculate counts from offers matching current search/industry filters (but not status)
+                      const baseFiltered = offers.filter((o) => {
+                        const matchesSearch =
+                          !q.trim() ||
+                          o.title?.toLowerCase().includes(q.toLowerCase()) ||
+                          (o.recipient?.company_name || '').toLowerCase().includes(q.toLowerCase());
+                        return matchesSearch;
+                      });
+                      const count =
+                        status === 'all'
+                          ? baseFiltered.length
+                          : baseFiltered.filter((o) => o.status === status).length;
+                      return (
+                        <button
+                          key={status}
+                          type="button"
+                          onClick={() => setStatusFilter(status)}
+                          onKeyDown={(e) => {
+                            // Keyboard navigation: Arrow keys to navigate between filter chips
+                            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              e.preventDefault();
+                              const currentIndex = STATUS_FILTER_OPTIONS.indexOf(status);
+                              const direction = e.key === 'ArrowRight' ? 1 : -1;
+                              const nextIndex =
+                                (currentIndex + direction + STATUS_FILTER_OPTIONS.length) %
+                                STATUS_FILTER_OPTIONS.length;
+                              const nextStatus = STATUS_FILTER_OPTIONS[nextIndex];
+                              setStatusFilter(nextStatus);
+                              // Focus the next button after state update
+                              setTimeout(() => {
+                                const buttons = Array.from(
+                                  e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                                );
+                                const nextButton = buttons.find(
+                                  (btn) => btn.getAttribute('aria-pressed') === 'true',
+                                );
+                                nextButton?.focus();
+                              }, 0);
+                            }
+                            // Home/End keys to jump to first/last
+                            if (e.key === 'Home') {
+                              e.preventDefault();
+                              setStatusFilter(STATUS_FILTER_OPTIONS[0]);
+                              setTimeout(() => {
+                                const buttons = Array.from(
+                                  e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                                );
+                                buttons[0]?.focus();
+                              }, 0);
+                            }
+                            if (e.key === 'End') {
+                              e.preventDefault();
+                              const lastStatus =
+                                STATUS_FILTER_OPTIONS[STATUS_FILTER_OPTIONS.length - 1];
+                              setStatusFilter(lastStatus);
+                              setTimeout(() => {
+                                const buttons = Array.from(
+                                  e.currentTarget.parentElement?.querySelectorAll('button') || [],
+                                );
+                                buttons[buttons.length - 1]?.focus();
+                              }, 0);
                             }
                           }}
-                          className="w-full"
+                          aria-pressed={statusFilter === status}
+                          aria-label={`${t('dashboard.filters.status.label')}: ${
+                            status === 'all'
+                              ? t('dashboard.filters.status.options.all')
+                              : t(STATUS_LABEL_KEYS[status])
+                          }`}
+                          className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                            statusFilter === status
+                              ? 'bg-teal-500 text-white shadow-sm'
+                              : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300'
+                          }`}
                         >
-                          <option value="">Válassz csapat tagot...</option>
-                          {teamMembers.map((member) => (
-                            <option key={member.user_id} value={member.user_id}>
-                              {member.email || member.user_id}
-                            </option>
-                          ))}
+                          {status === 'all' ? (
+                            <>
+                              {t('dashboard.filters.status.options.all')} ({count})
+                            </>
+                          ) : (
+                            <>
+                              <span
+                                className={`h-2 w-2 rounded-full ${
+                                  status === 'draft'
+                                    ? 'bg-amber-500'
+                                    : status === 'sent'
+                                      ? 'bg-blue-500'
+                                      : status === 'accepted'
+                                        ? 'bg-emerald-500'
+                                        : 'bg-rose-500'
+                                }`}
+                                aria-hidden="true"
+                              />
+                              {t(STATUS_LABEL_KEYS[status])} ({count})
+                            </>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Advanced Filters & Controls */}
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pt-4 border-t border-border/60">
+                    <div className="flex flex-wrap items-end gap-3 flex-1">
+                      {teamIds.length > 0 && (
+                        <Select
+                          label="Ajánlat szűrő"
+                          value={offerFilter}
+                          onChange={(e) => {
+                            const value = e.target.value as OfferFilter;
+                            setOfferFilter(value);
+                            if (value !== 'member') {
+                              setTeamMemberFilter([]);
+                            }
+                          }}
+                          className="min-w-[180px]"
+                          wrapperClassName="flex-1 sm:flex-none"
+                        >
+                          <option value="all">Összes</option>
+                          <option value="my">Saját ajánlataim</option>
+                          <option value="team">Csapat ajánlatai</option>
+                          <option value="member">Csapat tag szerint</option>
                         </Select>
-                      </div>
-                    )}
-                    <Select
-                      label={t('dashboard.filters.sortBy.label')}
-                      value={sortBy}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (isSortByValue(value)) setSortBy(value);
-                      }}
-                      className="min-w-[160px]"
-                      wrapperClassName="flex-1 sm:flex-none"
-                    >
-                      <option value="created">
-                        {t('dashboard.filters.sortBy.options.created')}
-                      </option>
-                      <option value="status">{t('dashboard.filters.sortBy.options.status')}</option>
-                      <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
-                      <option value="recipient">
-                        {t('dashboard.filters.sortBy.options.recipient')}
-                      </option>
-                    </Select>
-                    <Select
-                      label={t('dashboard.filters.sortDir.label')}
-                      value={sortDir}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (isSortDirectionValue(value)) setSortDir(value);
-                      }}
-                      className="min-w-[140px]"
-                      wrapperClassName="flex-1 sm:flex-none"
-                    >
-                      <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
-                      <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
-                    </Select>
+                      )}
+                      {offerFilter === 'member' && teamMembers.length > 0 && (
+                        <div className="flex-1 sm:flex-none min-w-[200px]">
+                          <label className="block text-xs font-semibold uppercase tracking-wide text-fg-muted mb-1.5">
+                            Csapat tag
+                          </label>
+                          <Select
+                            value={teamMemberFilter[0] || ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value) {
+                                setTeamMemberFilter([value]);
+                              } else {
+                                setTeamMemberFilter([]);
+                                setOfferFilter('all');
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            <option value="">Válassz csapat tagot...</option>
+                            {teamMembers.map((member) => (
+                              <option key={member.user_id} value={member.user_id}>
+                                {member.email || member.user_id}
+                              </option>
+                            ))}
+                          </Select>
+                        </div>
+                      )}
+                      <Select
+                        label={t('dashboard.filters.sortBy.label')}
+                        value={sortBy}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (isSortByValue(value)) setSortBy(value);
+                        }}
+                        className="min-w-[160px]"
+                        wrapperClassName="flex-1 sm:flex-none"
+                      >
+                        <option value="created">
+                          {t('dashboard.filters.sortBy.options.created')}
+                        </option>
+                        <option value="status">
+                          {t('dashboard.filters.sortBy.options.status')}
+                        </option>
+                        <option value="title">{t('dashboard.filters.sortBy.options.title')}</option>
+                        <option value="recipient">
+                          {t('dashboard.filters.sortBy.options.recipient')}
+                        </option>
+                      </Select>
+                      <Select
+                        label={t('dashboard.filters.sortDir.label')}
+                        value={sortDir}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (isSortDirectionValue(value)) setSortDir(value);
+                        }}
+                        className="min-w-[140px]"
+                        wrapperClassName="flex-1 sm:flex-none"
+                      >
+                        <option value="desc">{t('dashboard.filters.sortDir.options.desc')}</option>
+                        <option value="asc">{t('dashboard.filters.sortDir.options.asc')}</option>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      {filtered.length > 0 && (
+                        <div className="hidden sm:flex items-center gap-2 text-sm">
+                          <span className="font-semibold text-fg">
+                            {filtered.length.toLocaleString('hu-HU')}
+                          </span>
+                          <span className="text-fg-muted">{t('dashboard.filters.results')}</span>
+                        </div>
+                      )}
+                      <ViewSwitcher value={viewMode} onChange={setViewMode} />
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    {filtered.length > 0 && (
-                      <div className="hidden sm:flex items-center gap-2 text-sm">
-                        <span className="font-semibold text-fg">
-                          {filtered.length.toLocaleString('hu-HU')}
+                  {/* Active Filters Summary */}
+                  {(q.trim() || statusFilter !== 'all') && (
+                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
+                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
+                        {t('dashboard.filters.active')}:
+                      </span>
+                      {q.trim() && (
+                        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                          {t('dashboard.filters.search.label')}: &quot;{q}&quot;
+                          <button
+                            type="button"
+                            onClick={() => setQ('')}
+                            className="rounded-full hover:bg-border/60 p-0.5 transition"
+                            aria-label={t('dashboard.filters.remove')}
+                          >
+                            <XMarkIcon className="h-3 w-3" />
+                          </button>
                         </span>
-                        <span className="text-fg-muted">{t('dashboard.filters.results')}</span>
-                      </div>
-                    )}
-                    <ViewSwitcher value={viewMode} onChange={setViewMode} />
-                  </div>
-                </div>
-
-                {/* Active Filters Summary */}
-                {(q.trim() || statusFilter !== 'all') && (
-                  <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-border/60">
-                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-fg-muted">
-                      {t('dashboard.filters.active')}:
-                    </span>
-                    {q.trim() && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
-                        {t('dashboard.filters.search.label')}: &quot;{q}&quot;
-                        <button
-                          type="button"
-                          onClick={() => setQ('')}
-                          className="rounded-full hover:bg-border/60 p-0.5 transition"
-                          aria-label={t('dashboard.filters.remove')}
-                        >
-                          <XMarkIcon className="h-3 w-3" />
-                        </button>
-                      </span>
-                    )}
-                    {statusFilter !== 'all' && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
-                        {t('dashboard.filters.status.label')}: {t(STATUS_LABEL_KEYS[statusFilter])}
-                        <button
-                          type="button"
-                          onClick={() => setStatusFilter('all')}
-                          className="rounded-full hover:bg-border/60 p-0.5 transition"
-                          aria-label={t('dashboard.filters.remove')}
-                        >
-                          <XMarkIcon className="h-3 w-3" />
-                        </button>
-                      </span>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setQ('');
-                        setStatusFilter('all');
-                      }}
-                      className="text-xs"
-                    >
-                      {t('dashboard.filters.clearAll')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {/* Skeleton Loaders - Mobile optimized */}
-            {loading && (
-              <div
-                className="grid grid-cols-1 gap-4 md:grid-cols-2"
-                aria-busy="true"
-                aria-live="polite"
-              >
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <OfferCardSkeleton key={i} />
-                ))}
-              </div>
-            )}
-
-            {/* Enhanced Empty State - Improved accessibility and mobile design */}
-            {!loading && filtered.length === 0 && (
-              <Card
-                className="flex flex-col items-center justify-center gap-6 md:gap-8 p-12 md:p-16 text-center"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                <div className="relative">
-                  <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-                    <DocumentTextIcon
-                      className="h-10 w-10 md:h-12 md:w-12 text-primary"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="absolute -top-2 -right-2 flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
-                    <MagnifyingGlassIcon
-                      className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary"
-                      aria-hidden="true"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-3 max-w-md">
-                  <h3 className="text-lg md:text-xl font-bold text-fg">{emptyMessage}</h3>
-                  {noOffersLoaded ? (
-                    <>
-                      <p className="text-sm md:text-base leading-relaxed text-fg-muted">
-                        {t('dashboard.emptyStates.noOffersMessage')}
-                      </p>
-                      <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
-                        Kezdj el egy új ajánlatot, hogy láthasd azokat itt.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm md:text-base leading-relaxed text-fg-muted">
-                        {t('dashboard.emptyStates.noResultsMessage')}
-                      </p>
-                      <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
-                        Próbálj meg más szűrőket használni vagy töröld a keresést.
-                      </p>
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
-                  {noOffersLoaded && (
-                    <Link
-                      href="/new"
-                      className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
-                    >
-                      <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
-                      {t('dashboard.actions.newOffer')}
-                    </Link>
-                  )}
-                  {!noOffersLoaded && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        setQ('');
-                        setStatusFilter('all');
-                      }}
-                      className="min-w-[140px]"
-                    >
-                      Szűrők törlése
-                    </Button>
+                      )}
+                      {statusFilter !== 'all' && (
+                        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-muted px-3 py-1.5 text-xs font-medium text-fg">
+                          {t('dashboard.filters.status.label')}:{' '}
+                          {t(STATUS_LABEL_KEYS[statusFilter])}
+                          <button
+                            type="button"
+                            onClick={() => setStatusFilter('all')}
+                            className="rounded-full hover:bg-border/60 p-0.5 transition"
+                            aria-label={t('dashboard.filters.remove')}
+                          >
+                            <XMarkIcon className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setQ('');
+                          setStatusFilter('all');
+                        }}
+                        className="text-xs"
+                      >
+                        {t('dashboard.filters.clearAll')}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </Card>
-            )}
 
-            {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
-            {!loading && filtered.length > 0 && (
-              <div>
-                {viewMode === 'card' ? (
-                  <OffersCardGrid
-                    offers={filtered}
-                    updatingId={updatingId}
-                    downloadingId={downloadingId}
-                    deletingId={deletingId}
-                    regeneratingId={regeneratingId}
-                    onMarkSent={markSent}
-                    onMarkDecision={markDecision}
-                    onRevertToSent={revertToSent}
-                    onRevertToDraft={revertToDraft}
-                    onDelete={setOfferToDelete}
-                    onDownload={handleDownloadPdf}
-                    onRegeneratePdf={handleRegeneratePdf}
-                  />
-                ) : (
-                  <div
-                    className="flex flex-col gap-3"
-                    role="region"
-                    aria-label={t('dashboard.offersList.label') || 'Offers list'}
-                    aria-busy={updatingId !== null || deletingId !== null}
-                  >
-                    {filtered.map((o) => (
-                      <OfferListItem
-                        key={o.id}
-                        offer={o}
-                        isUpdating={updatingId === o.id}
-                        isDownloading={downloadingId === o.id}
-                        isDeleting={deletingId === o.id}
-                        onMarkSent={(offer, date) => markSent(offer, date)}
-                        onMarkDecision={(offer, decision, date) =>
-                          markDecision(offer, decision, date)
-                        }
-                        onRevertToSent={(offer) => revertToSent(offer)}
-                        onRevertToDraft={(offer) => revertToDraft(offer)}
-                        onDelete={(offer) => setOfferToDelete(offer)}
-                        onDownload={(offer) => handleDownloadPdf(offer)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}
+              {/* Skeleton Loaders - Mobile optimized */}
+              {loading && (
                 <div
-                  ref={loadMoreRef}
-                  className="mt-6 flex flex-col items-center gap-3 text-center"
+                  className="grid grid-cols-1 gap-4 md:grid-cols-2"
+                  aria-busy="true"
+                  aria-live="polite"
                 >
-                  {paginationSummary ? (
-                    <p
-                      className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted"
-                      role="status"
-                      aria-live="polite"
-                    >
-                      {paginationSummary}
-                    </p>
-                  ) : null}
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <OfferCardSkeleton key={i} />
+                  ))}
+                </div>
+              )}
 
-                  {/* Load More Button - Also serves as intersection observer target for auto-loading */}
-                  {hasMore && (
-                    <div className="w-full">
-                      <LoadMoreButton
-                        currentPage={currentPage}
-                        totalPages={totalPages ?? null}
-                        hasNext={hasMore}
-                        onClick={handleLoadMore}
-                        isLoading={isLoadingMore}
+              {/* Enhanced Empty State - Improved accessibility and mobile design */}
+              {!loading && filtered.length === 0 && (
+                <Card
+                  className="flex flex-col items-center justify-center gap-6 md:gap-8 p-12 md:p-16 text-center"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  <div className="relative">
+                    <div className="flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
+                      <DocumentTextIcon
+                        className="h-10 w-10 md:h-12 md:w-12 text-primary"
+                        aria-hidden="true"
                       />
                     </div>
-                  )}
+                    <div className="absolute -top-2 -right-2 flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
+                      <MagnifyingGlassIcon
+                        className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-3 max-w-md">
+                    <h3 className="text-lg md:text-xl font-bold text-fg">{emptyMessage}</h3>
+                    {noOffersLoaded ? (
+                      <>
+                        <p className="text-sm md:text-base leading-relaxed text-fg-muted">
+                          {t('dashboard.emptyStates.noOffersMessage')}
+                        </p>
+                        <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
+                          Kezdj el egy új ajánlatot, hogy láthasd azokat itt.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm md:text-base leading-relaxed text-fg-muted">
+                          {t('dashboard.emptyStates.noResultsMessage')}
+                        </p>
+                        <p className="text-xs md:text-sm text-fg-muted/80 mt-2">
+                          Próbálj meg más szűrőket használni vagy töröld a keresést.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full sm:w-auto">
+                    {noOffersLoaded && (
+                      <Link
+                        href="/new"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
+                      >
+                        <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
+                        {t('dashboard.actions.newOffer')}
+                      </Link>
+                    )}
+                    {!noOffersLoaded && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          setQ('');
+                          setStatusFilter('all');
+                        }}
+                        className="min-w-[140px]"
+                      >
+                        Szűrők törlése
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              )}
 
-                  {!hasMore && offers.length > 0 && (
-                    <p className="text-xs text-fg-muted" role="status" aria-live="polite">
-                      {t('dashboard.pagination.allLoaded')}
-                    </p>
-                  )}
-
-                  {/* Loading indicator for progressive loading */}
-                  {isLoadingMore && (
+              {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
+              {!loading && filtered.length > 0 && (
+                <div>
+                  {viewMode === 'card' ? (
+                    <OffersCardGrid
+                      offers={filtered}
+                      updatingId={updatingId}
+                      downloadingId={downloadingId}
+                      deletingId={deletingId}
+                      regeneratingId={regeneratingId}
+                      onMarkSent={markSent}
+                      onMarkDecision={markDecision}
+                      onRevertToSent={revertToSent}
+                      onRevertToDraft={revertToDraft}
+                      onDelete={setOfferToDelete}
+                      onDownload={handleDownloadPdf}
+                      onRegeneratePdf={handleRegeneratePdf}
+                    />
+                  ) : (
                     <div
-                      className="flex items-center gap-2 text-sm text-fg-muted"
-                      aria-busy="true"
-                      aria-live="polite"
+                      className="flex flex-col gap-3"
+                      role="region"
+                      aria-label={t('dashboard.offersList.label') || 'Offers list'}
+                      aria-busy={updatingId !== null || deletingId !== null}
                     >
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                      <span>{t('dashboard.pagination.loading') || 'Loading more offers...'}</span>
+                      {filtered.map((o) => (
+                        <OfferListItem
+                          key={o.id}
+                          offer={o}
+                          isUpdating={updatingId === o.id}
+                          isDownloading={downloadingId === o.id}
+                          isDeleting={deletingId === o.id}
+                          onMarkSent={(offer, date) => markSent(offer, date)}
+                          onMarkDecision={(offer, decision, date) =>
+                            markDecision(offer, decision, date)
+                          }
+                          onRevertToSent={(offer) => revertToSent(offer)}
+                          onRevertToDraft={(offer) => revertToDraft(offer)}
+                          onDelete={(offer) => setOfferToDelete(offer)}
+                          onDownload={(offer) => handleDownloadPdf(offer)}
+                        />
+                      ))}
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </AppFrame>
 
-      <DeleteConfirmationDialog
-        offer={offerToDelete}
-        onCancel={handleCancelDelete}
-        onConfirm={confirmDeleteOffer}
-        isDeleting={Boolean(deletingId)}
-        {...(offerToDelete?.title ? { itemName: offerToDelete.title } : {})}
-      />
-      <KeyboardShortcutsModal
-        open={showKeyboardShortcuts}
-        onClose={() => setShowKeyboardShortcuts(false)}
-        shortcuts={[
-          {
-            category: 'Navigation',
-            keys: ['?'],
-            description: 'Show keyboard shortcuts',
-          },
-          {
-            category: 'Dashboard',
-            keys: ['/', 'F'],
-            description: 'Focus search / filter',
-          },
-          {
-            category: 'Dashboard',
-            keys: ['Arrow Keys'],
-            description: 'Navigate between filter chips',
-          },
-          {
-            category: 'Dashboard',
-            keys: ['Home', 'End'],
-            description: 'Jump to first / last filter',
-          },
-          {
-            category: 'General',
-            keys: ['Esc'],
-            description: 'Close modal / Cancel action',
-          },
-        ]}
-      />
-    </div>
+                  {/* Progressive Loading - Enhanced with intersection observer for auto-loading */}
+                  <div
+                    ref={loadMoreRef}
+                    className="mt-6 flex flex-col items-center gap-3 text-center"
+                  >
+                    {paginationSummary ? (
+                      <p
+                        className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {paginationSummary}
+                      </p>
+                    ) : null}
+
+                    {/* Load More Button - Also serves as intersection observer target for auto-loading */}
+                    {hasMore && (
+                      <div className="w-full">
+                        <LoadMoreButton
+                          currentPage={currentPage}
+                          totalPages={totalPages ?? null}
+                          hasNext={hasMore}
+                          onClick={handleLoadMore}
+                          isLoading={isLoadingMore}
+                        />
+                      </div>
+                    )}
+
+                    {!hasMore && offers.length > 0 && (
+                      <p className="text-xs text-fg-muted" role="status" aria-live="polite">
+                        {t('dashboard.pagination.allLoaded')}
+                      </p>
+                    )}
+
+                    {/* Loading indicator for progressive loading */}
+                    {isLoadingMore && (
+                      <div
+                        className="flex items-center gap-2 text-sm text-fg-muted"
+                        aria-busy="true"
+                        aria-live="polite"
+                      >
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <span>{t('dashboard.pagination.loading') || 'Loading more offers...'}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </AppFrame>
+
+        <DeleteConfirmationDialog
+          offer={offerToDelete}
+          onCancel={handleCancelDelete}
+          onConfirm={confirmDeleteOffer}
+          isDeleting={Boolean(deletingId)}
+          {...(offerToDelete?.title ? { itemName: offerToDelete.title } : {})}
+        />
+        <KeyboardShortcutsModal
+          open={showKeyboardShortcuts}
+          onClose={() => setShowKeyboardShortcuts(false)}
+          shortcuts={[
+            {
+              category: 'Navigation',
+              keys: ['?'],
+              description: 'Show keyboard shortcuts',
+            },
+            {
+              category: 'Dashboard',
+              keys: ['/', 'F'],
+              description: 'Focus search / filter',
+            },
+            {
+              category: 'Dashboard',
+              keys: ['Arrow Keys'],
+              description: 'Navigate between filter chips',
+            },
+            {
+              category: 'Dashboard',
+              keys: ['Home', 'End'],
+              description: 'Jump to first / last filter',
+            },
+            {
+              category: 'General',
+              keys: ['Esc'],
+              description: 'Close modal / Cancel action',
+            },
+          ]}
+        />
+      </div>
+    </PageErrorBoundary>
   );
 }

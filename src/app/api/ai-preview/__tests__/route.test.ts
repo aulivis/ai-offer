@@ -114,7 +114,10 @@ function createRequest(overrides: Record<string, unknown> = {}): AuthenticatedNe
       getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value })),
       has: (name: string) => Boolean(cookies[name as keyof typeof cookies]),
     },
-  } as unknown as AuthenticatedNextRequest;
+    // Type assertion is necessary because NextRequest is a complex class
+    // and we're creating a partial mock with only the properties we need for tests.
+    // This is safe because we control which properties are accessed in the tests.
+  } as AuthenticatedNextRequest;
 }
 
 function parseSse(raw: string) {
@@ -178,7 +181,9 @@ describe('ai-preview route streaming', () => {
         if (typeof callback === 'function') {
           (callback as (...args: unknown[]) => void)();
         }
-        return 0 as unknown as ReturnType<typeof setTimeout>;
+        // setTimeout returns a Timer, but we're mocking it to return 0
+        // Type assertion is necessary because our mock doesn't match the exact return type
+        return 0 as ReturnType<typeof setTimeout>;
       });
     const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout').mockImplementation(() => {});
 

@@ -167,3 +167,41 @@ export const envServer: ServerEnv = {
   ...(externalApiUserId !== undefined ? { EXTERNAL_API_SYSTEM_USER_ID: externalApiUserId } : {}),
   ...(vercelCronSecret !== undefined ? { VERCEL_CRON_SECRET: vercelCronSecret } : {}),
 };
+
+/**
+ * Runtime environment detection helpers.
+ * These check infrastructure-provided environment variables that are not part of our configuration.
+ * They are safe to use directly as they're runtime detection, not sensitive configuration.
+ */
+
+/**
+ * Returns true if running in a Vercel environment
+ */
+export function isVercelEnvironment(): boolean {
+  return process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+}
+
+/**
+ * Returns true if running in a serverless environment (Vercel, AWS Lambda, etc.)
+ */
+export function isServerlessEnvironment(): boolean {
+  return (
+    isVercelEnvironment() ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined ||
+    process.env.VERCEL_ENV !== undefined
+  );
+}
+
+/**
+ * Returns true if OpenTelemetry SDK is enabled (not disabled)
+ */
+export function isOpenTelemetryEnabled(): boolean {
+  return typeof process !== 'undefined' && process.env.OTEL_SDK_DISABLED !== 'true';
+}
+
+/**
+ * Returns the Next.js runtime environment (nodejs, edge, etc.)
+ */
+export function getNextRuntime(): string | undefined {
+  return process.env.NEXT_RUNTIME;
+}

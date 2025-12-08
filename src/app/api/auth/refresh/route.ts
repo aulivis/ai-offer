@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
@@ -6,6 +7,8 @@ import { Argon2Algorithm, argon2Hash, argon2Verify, type Argon2Options } from '@
 import { clearAuthCookies, setAuthCookies } from '@/lib/auth/cookies';
 import { CSRF_COOKIE_NAME, verifyCsrfToken } from '@/lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
+import { withErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 
@@ -95,7 +98,7 @@ function isExpiredTimestamp(value: string) {
   return new Date(value).getTime() <= Date.now();
 }
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request: NextRequest) => {
   const cookieStore = await cookies();
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
@@ -108,12 +111,12 @@ export async function POST(request: Request) {
   // (this handles the case where CSRF cookie expired but refresh token is still valid)
   if (csrfCookie && !verifyCsrfToken(csrfHeader, csrfCookie)) {
     log.warn('Invalid CSRF token');
-    return Response.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
+    return createErrorResponse('Érvénytelen vagy hiányzó CSRF token.', HttpStatus.FORBIDDEN);
   }
 
   if (!refreshToken) {
     await clearAuthCookies();
-    return Response.json({ error: 'Missing refresh token' }, { status: 401 });
+    return createErrorResponse('Missing refresh token', HttpStatus.UNAUTHORIZED);
   }
 
   const decoded = decodeRefreshToken(refreshToken);
@@ -123,7 +126,7 @@ export async function POST(request: Request) {
   if (!userId || !refreshExpiresAt) {
     log.warn('Invalid refresh token structure');
     await clearAuthCookies();
-    return Response.json({ error: 'Invalid refresh token' }, { status: 401 });
+    return createErrorResponse('Invalid refresh token', HttpStatus.UNAUTHORIZED);
   }
 
   log.setContext({ userId });
@@ -131,7 +134,7 @@ export async function POST(request: Request) {
   if (refreshExpiresAt.getTime() <= Date.now()) {
     log.warn('Refresh token expired');
     await clearAuthCookies();
-    return Response.json({ error: 'Refresh token expired' }, { status: 401 });
+    return createErrorResponse('Refresh token expired', HttpStatus.UNAUTHORIZED);
   }
 
   const supabase = supabaseServiceRole();
@@ -143,7 +146,7 @@ export async function POST(request: Request) {
   if (sessionsError) {
     log.error('Failed to load sessions for user', sessionsError);
     await clearAuthCookies();
-    return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
+    throw sessionsError;
   }
 
   const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
@@ -151,7 +154,7 @@ export async function POST(request: Request) {
   if (sessionList.length === 0) {
     log.warn('No active sessions found');
     await clearAuthCookies();
-    return Response.json({ error: 'No active sessions found' }, { status: 401 });
+    return createErrorResponse('No active sessions found', HttpStatus.UNAUTHORIZED);
   }
 
   let activeSession: SessionRow | null = null;
@@ -167,13 +170,13 @@ export async function POST(request: Request) {
   if (!activeSession) {
     await revokeAllSessions(userId, supabase, log);
     await clearAuthCookies();
-    return Response.json({ error: 'Refresh token reuse detected' }, { status: 401 });
+    return createErrorResponse('Refresh token reuse detected', HttpStatus.UNAUTHORIZED);
   }
 
   if (activeSession.revoked_at) {
     await revokeAllSessions(userId, supabase, log);
     await clearAuthCookies();
-    return Response.json({ error: 'Refresh token already revoked' }, { status: 401 });
+    return createErrorResponse('Refresh token already revoked', HttpStatus.UNAUTHORIZED);
   }
 
   if (isExpiredTimestamp(activeSession.expires_at)) {
@@ -182,7 +185,7 @@ export async function POST(request: Request) {
       .update({ revoked_at: new Date().toISOString() })
       .eq('id', activeSession.id);
     await clearAuthCookies();
-    return Response.json({ error: 'Refresh token expired' }, { status: 401 });
+    return createErrorResponse('Refresh token expired', HttpStatus.UNAUTHORIZED);
   }
 
   let refreshPayload: RefreshResponse;
@@ -195,7 +198,7 @@ export async function POST(request: Request) {
       .update({ revoked_at: new Date().toISOString() })
       .eq('id', activeSession.id);
     await clearAuthCookies();
-    return Response.json({ error: 'Unable to refresh session' }, { status: 401 });
+    throw error;
   }
 
   const { access_token: accessToken, refresh_token: newRefreshToken } = refreshPayload;
@@ -204,7 +207,7 @@ export async function POST(request: Request) {
   if (!accessToken || !newRefreshToken) {
     log.error('Supabase refresh did not return tokens');
     await clearAuthCookies();
-    return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
+    throw new Error('Supabase refresh did not return tokens');
   }
 
   const newDecoded = decodeRefreshToken(newRefreshToken);
@@ -214,7 +217,7 @@ export async function POST(request: Request) {
   if (!issuedAt || !expiresAt) {
     log.error('New refresh token missing iat or exp claims');
     await clearAuthCookies();
-    return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
+    throw new Error('New refresh token missing iat or exp claims');
   }
 
   // Determine if this is a "remember me" session by checking if the session expiration
@@ -248,7 +251,7 @@ export async function POST(request: Request) {
   if (revokeError || insertError) {
     log.error('Failed to update session rotation', { revokeError, insertError });
     await clearAuthCookies();
-    return Response.json({ error: 'Unable to refresh session' }, { status: 500 });
+    throw revokeError || insertError || new Error('Failed to update session rotation');
   }
 
   log.info('Session refreshed successfully');
@@ -259,4 +262,4 @@ export async function POST(request: Request) {
   });
 
   return Response.json({ success: true });
-}
+});

@@ -121,14 +121,4 @@ export async function clearAuthCookies() {
   });
 }
 
-export async function setCSRFCookie() {
-  const cookieStore = await cookies();
-  const { value } = createCsrfToken();
-
-  cookieStore.set({
-    name: CSRF_COOKIE_NAME,
-    value,
-    ...baseCookieOptions,
-    httpOnly: false,
-  });
-}
+// Removed unused function: setCSRFCookie

@@ -45,6 +45,7 @@ const allowedOrigins = (() => {
 
     return origins;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to parse APP_URL for origin checks.', error);
     return new Set<string>();
   }
@@ -81,6 +82,7 @@ function validateRequestContext(req: NextRequest): NextResponse | null {
   const originToCheck = originHeader ?? extractOrigin(refererHeader);
 
   if (!isAllowedOrigin(originToCheck)) {
+    // eslint-disable-next-line no-console
     console.warn('Request origin validation failed', {
       method: req.method,
       url: req.url,
@@ -94,6 +96,7 @@ function validateRequestContext(req: NextRequest): NextResponse | null {
 
   const fetchSite = req.headers.get('sec-fetch-site');
   if (fetchSite && !allowedFetchSites.has(fetchSite)) {
+    // eslint-disable-next-line no-console
     console.warn('Request sec-fetch-site validation failed', {
       method: req.method,
       url: req.url,
@@ -105,6 +108,7 @@ function validateRequestContext(req: NextRequest): NextResponse | null {
 
   const fetchMode = req.headers.get('sec-fetch-mode');
   if (fetchMode && !allowedFetchModes.has(fetchMode)) {
+    // eslint-disable-next-line no-console
     console.warn('Request sec-fetch-mode validation failed', {
       method: req.method,
       url: req.url,
@@ -116,6 +120,7 @@ function validateRequestContext(req: NextRequest): NextResponse | null {
 
   const fetchDest = req.headers.get('sec-fetch-dest');
   if (fetchDest && !allowedFetchDests.has(fetchDest)) {
+    // eslint-disable-next-line no-console
     console.warn('Request sec-fetch-dest validation failed', {
       method: req.method,
       url: req.url,
@@ -146,6 +151,7 @@ async function authenticateRequest(req: NextRequest): Promise<AuthenticatedUser 
     const csrfHeader = req.headers.get('x-csrf-token');
     const csrfCookie = req.cookies.get(CSRF_COOKIE_NAME)?.value;
     if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
+      // eslint-disable-next-line no-console
       console.warn('CSRF token validation failed', {
         method: req.method,
         url: req.url,
@@ -172,6 +178,7 @@ async function authenticateRequest(req: NextRequest): Promise<AuthenticatedUser 
       email: data.user.email ?? null,
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to verify Supabase access token', error);
     return NextResponse.json(
       { error: 'A bejelentkezés lejárt vagy érvénytelen.' },
@@ -180,11 +187,22 @@ async function authenticateRequest(req: NextRequest): Promise<AuthenticatedUser 
   }
 }
 
+/**
+ * Type guard to check if a value is a NextResponse.
+ * This allows us to properly narrow types without using 'as unknown as'.
+ */
+function isNextResponse(value: unknown): value is NextResponse {
+  return value instanceof NextResponse;
+}
+
 export function withAuth<Args extends unknown[], Result>(handler: Handler<Args, Result>) {
   return async (req: NextRequest, ...args: Args): Promise<Result> => {
     const authResult = await authenticateRequest(req);
-    if (authResult instanceof NextResponse) {
-      return authResult as unknown as Result;
+    if (isNextResponse(authResult)) {
+      // When auth fails, we return a NextResponse, but the handler expects Result.
+      // This is a type system limitation - in practice, Result can be NextResponse.
+      // We use a type assertion here, but with a proper type guard for safety.
+      return authResult as Result;
     }
 
     const authenticatedReq = req as AuthenticatedNextRequest;
@@ -194,11 +212,14 @@ export function withAuth<Args extends unknown[], Result>(handler: Handler<Args, 
 
     // Ensure handler is actually a function before calling
     if (typeof handler !== 'function') {
+      // eslint-disable-next-line no-console
       console.error('withAuth: handler is not a function', { handler, type: typeof handler });
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: 'Belső szerver hiba: érvénytelen kéréskezelő.' },
         { status: 500 },
-      ) as unknown as Result;
+      );
+      // Same type assertion as above - Result can be NextResponse
+      return errorResponse as Result;
     }
 
     return withLanguage(language, () => handler(authenticatedReq, ...args));

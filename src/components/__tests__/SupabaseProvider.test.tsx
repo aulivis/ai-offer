@@ -17,7 +17,9 @@ describe('SupabaseProvider', () => {
   });
 
   it('returns the provided client when one is supplied', () => {
-    const sharedClient = { auth: {} } as unknown as SupabaseClient;
+    // Type assertion is safe because we're creating a minimal mock
+    // that only needs the properties used in the test
+    const sharedClient = { auth: {} } as SupabaseClient;
 
     const { result } = renderHook(() => useSupabase(), {
       wrapper: ({ children }) => (
@@ -30,7 +32,9 @@ describe('SupabaseProvider', () => {
   });
 
   it('creates a client when none is provided', () => {
-    const createdClient = { auth: {} } as unknown as SupabaseClient;
+    // Type assertion is safe because we're creating a minimal mock
+    // that only needs the properties used in the test
+    const createdClient = { auth: {} } as SupabaseClient;
     getSupabaseClientMock.mockReturnValue(createdClient);
 
     const { result } = renderHook(() => useSupabase(), {

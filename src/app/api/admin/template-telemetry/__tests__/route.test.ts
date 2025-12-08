@@ -2,6 +2,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
+import type { AuthenticatedNextRequest } from '../../../../../../middleware/auth';
 
 const { fromMock, selectMock, orderMock, limitMock } = vi.hoisted(() => ({
   fromMock: vi.fn(),
@@ -62,7 +63,8 @@ describe('GET /api/admin/template-telemetry', () => {
     const { GET } = await import('../route');
     const request = new NextRequest('http://localhost/api/admin/template-telemetry');
     // Mock the user property that AuthenticatedNextRequest requires
-    (request as unknown as { user: { id: string; email: string | null } }).user = {
+    // Type assertion is safe because we're adding the required property to the request
+    (request as AuthenticatedNextRequest).user = {
       id: 'test-user-id',
       email: 'test@example.com',
     };
@@ -110,7 +112,8 @@ describe('GET /api/admin/template-telemetry', () => {
     const { GET } = await import('../route');
     const request = new NextRequest('http://localhost/api/admin/template-telemetry');
     // Mock the user property that AuthenticatedNextRequest requires
-    (request as unknown as { user: { id: string; email: string | null } }).user = {
+    // Type assertion is safe because we're adding the required property to the request
+    (request as AuthenticatedNextRequest).user = {
       id: 'test-user-id',
       email: 'test@example.com',
     };

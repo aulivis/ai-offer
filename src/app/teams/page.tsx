@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import AppFrame from '@/components/AppFrame';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/components/ToastProvider';
@@ -106,62 +107,64 @@ export default function TeamsPage() {
   };
 
   return (
-    <AppFrame
-      title="Csapatok"
-      description="Kezeld a csapatokat és hívj meg más Pro felhasználókat."
-      actions={
-        <Button onClick={handleCreateTeam} variant="primary">
-          Új csapat
-        </Button>
-      }
-    >
-      {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="h-32 animate-pulse" />
-          ))}
-        </div>
-      ) : teams.length === 0 ? (
-        <Card className="p-8 text-center">
-          <h3 className="text-lg font-semibold text-fg mb-2">Még nincs csapatod</h3>
-          <p className="text-fg-muted mb-4">
-            Hozz létre egy új csapatot és hívj meg más Pro felhasználókat!
-          </p>
+    <PageErrorBoundary>
+      <AppFrame
+        title="Csapatok"
+        description="Kezeld a csapatokat és hívj meg más Pro felhasználókat."
+        actions={
           <Button onClick={handleCreateTeam} variant="primary">
-            Új csapat létrehozása
+            Új csapat
           </Button>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {teams.map((team) => (
-            <Link key={team.team_id} href={`/teams/${team.team_id}`}>
-              <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer">
-                <h3 className="text-lg font-semibold text-fg mb-3">Csapat</h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-fg-muted">
-                    <span className="font-semibold">{team.members.length}</span> tag
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {team.members.slice(0, 3).map((member) => (
-                      <span
-                        key={member.user_id}
-                        className="text-xs px-2 py-1 rounded bg-bg-muted text-fg"
-                      >
-                        {member.email || member.user_id}
-                      </span>
-                    ))}
-                    {team.members.length > 3 && (
-                      <span className="text-xs px-2 py-1 rounded bg-bg-muted text-fg">
-                        +{team.members.length - 3} további
-                      </span>
-                    )}
+        }
+      >
+        {loading ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="h-32 animate-pulse" />
+            ))}
+          </div>
+        ) : teams.length === 0 ? (
+          <Card className="p-8 text-center">
+            <h3 className="text-lg font-semibold text-fg mb-2">Még nincs csapatod</h3>
+            <p className="text-fg-muted mb-4">
+              Hozz létre egy új csapatot és hívj meg más Pro felhasználókat!
+            </p>
+            <Button onClick={handleCreateTeam} variant="primary">
+              Új csapat létrehozása
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {teams.map((team) => (
+              <Link key={team.team_id} href={`/teams/${team.team_id}`}>
+                <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer">
+                  <h3 className="text-lg font-semibold text-fg mb-3">Csapat</h3>
+                  <div className="space-y-2">
+                    <p className="text-sm text-fg-muted">
+                      <span className="font-semibold">{team.members.length}</span> tag
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {team.members.slice(0, 3).map((member) => (
+                        <span
+                          key={member.user_id}
+                          className="text-xs px-2 py-1 rounded bg-bg-muted text-fg"
+                        >
+                          {member.email || member.user_id}
+                        </span>
+                      ))}
+                      {team.members.length > 3 && (
+                        <span className="text-xs px-2 py-1 rounded bg-bg-muted text-fg">
+                          +{team.members.length - 3} további
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-    </AppFrame>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </AppFrame>
+    </PageErrorBoundary>
   );
 }

@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { handleValidationError } from '@/lib/errorHandling';
 import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { z } from 'zod';
-import { handleValidationError } from '@/lib/errorHandling';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { v4 as uuid } from 'uuid';
@@ -45,12 +46,11 @@ const previewShareRequestSchema = z.object({
  * Create a temporary preview share link for wizard preview
  * This creates a temporary offer and share link that expires in 1 hour
  */
-export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
-
-  try {
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(request);
+    const log = createLogger(requestId);
+    log.setContext({ userId: request.user.id });
     // Parse request body
     const body = await request.json().catch(() => ({}));
     const bodyParsed = previewShareRequestSchema.safeParse(body);
@@ -145,7 +145,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       log.error('Preview share insert error', shareError);
       // Cleanup offer if share creation fails
       await sb.from('offers').delete().eq('id', offerId);
-      return NextResponse.json({ error: 'Failed to create preview share' }, { status: 500 });
+      throw shareError;
     }
 
     // Build share URL
@@ -160,8 +160,5 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       expiresAt: share.expires_at,
       offerId,
     });
-  } catch (error) {
-    log.error('Unexpected error during preview share creation', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-});
+  }),
+);

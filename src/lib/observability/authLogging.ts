@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'crypto';
+import { createLogger } from '@/lib/logger';
 
 export type RequestLogContext = {
   requestId: string;
@@ -7,9 +8,7 @@ export type RequestLogContext = {
 
 type LogAttributes = Record<string, unknown>;
 
-type LogLevel = 'info' | 'warn';
-
-function sanitizeError(error: unknown): unknown {
+function _sanitizeError(error: unknown): unknown {
   if (error instanceof Error) {
     return {
       name: error.name,
@@ -19,21 +18,6 @@ function sanitizeError(error: unknown): unknown {
   }
 
   return error;
-}
-
-function emit(
-  level: LogLevel,
-  message: string,
-  context: RequestLogContext,
-  attributes?: LogAttributes,
-) {
-  const payload = { ...context, ...(attributes ?? {}) };
-
-  if (level === 'info') {
-    console.warn(message, payload);
-  } else {
-    console.warn(message, payload);
-  }
 }
 
 export function normalizeEmail(email: string) {
@@ -63,28 +47,28 @@ export function createAuthRequestLogger(
     context.emailHash = initialContext.emailHash;
   }
 
+  // Create a logger instance with request context
+  const logger = createLogger(context.requestId);
+  logger.setContext({
+    ...(context.emailHash ? { emailHash: context.emailHash } : {}),
+  });
+
   return {
     context: () => ({ ...context }),
     setEmail(email: string) {
       const emailHash = hashEmailIdentifier(email);
       context.emailHash = emailHash;
+      logger.setContext({ emailHash });
       return emailHash;
     },
     info(message: string, attributes?: LogAttributes) {
-      emit('info', message, context, attributes);
+      logger.info(message, attributes);
     },
     warn(message: string, attributes?: LogAttributes) {
-      emit('warn', message, context, attributes);
+      logger.warn(message, attributes);
     },
     error(message: string, error?: unknown, attributes?: LogAttributes) {
-      const payload: RequestLogContext & LogAttributes & { error?: unknown } = {
-        ...context,
-        ...(attributes ?? {}),
-      };
-      if (error !== undefined) {
-        payload.error = sanitizeError(error);
-      }
-      console.error(message, payload);
+      logger.error(message, error, attributes);
     },
   };
 }

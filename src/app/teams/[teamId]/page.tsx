@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { useParams, useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -26,6 +27,14 @@ type TeamInvitation = {
 };
 
 export default function TeamDetailPage() {
+  return (
+    <PageErrorBoundary>
+      <TeamDetailPageContent />
+    </PageErrorBoundary>
+  );
+}
+
+function TeamDetailPageContent() {
   const params = useParams();
   const router = useRouter();
   const teamId = params?.teamId as string;

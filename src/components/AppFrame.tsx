@@ -133,7 +133,7 @@ export default function AppFrame({
               {title}
             </h1>
             {description ? (
-              <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p>
+              <p className="mt-2 max-w-2xl text-sm text-fg-muted">{description}</p>
             ) : null}
           </div>
           {actions ? (

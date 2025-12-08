@@ -177,7 +177,7 @@ function sendToGoogleAnalytics(metric: Metric) {
 }
 
 /**
- * Log metric to console in development
+ * Log metric using structured logger in development
  */
 function logMetric(metric: Metric) {
   if (process.env.NODE_ENV !== 'development') {
@@ -188,8 +188,7 @@ function logMetric(metric: Metric) {
   const delta = 'delta' in metric ? metric.delta : undefined;
 
   // Development-only logging for Web Vitals debugging
-  // eslint-disable-next-line no-console
-  console.log(`[Web Vitals] ${metric.name}:`, {
+  logger.debug(`Web Vitals: ${metric.name}`, {
     value: metric.value,
     rating,
     delta,

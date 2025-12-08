@@ -59,6 +59,7 @@ export function formatProjectDetailsForPrompt(details: ProjectDetails): string {
     .join('\n\n');
 }
 
-export function hasProjectDetailsContent(details: ProjectDetails): boolean {
+// Removed unused export: hasProjectDetailsContent
+function _hasProjectDetailsContent(details: ProjectDetails): boolean {
   return details.overview.trim().length > 0;
 }

@@ -67,10 +67,4 @@ export function useLanguage(): LanguageContextValue {
   return value;
 }
 
-export function useCurrentLanguage(): LocaleKey {
-  return useLanguage().language;
-}
-
-export function useSetLanguage(): (language: LocaleKey) => void {
-  return useLanguage().setLanguage;
-}
+// Removed unused exports: useCurrentLanguage, useSetLanguage

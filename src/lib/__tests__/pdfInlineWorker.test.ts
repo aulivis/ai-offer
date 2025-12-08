@@ -102,10 +102,12 @@ function createSupabaseStub() {
     from: vi.fn(() => storageBucket),
   };
 
+  // Type assertion is safe because we control the mock implementation
+  // and it matches the SupabaseClient interface for the methods we use
   const supabase = {
     from: fromMock,
     storage,
-  } as unknown as SupabaseClient;
+  } as SupabaseClient;
 
   return { supabase, fromMock, updateMock, eqMock, storageBucket };
 }

@@ -48,7 +48,8 @@ export function setLanguage(language: Language): void {
   }
 }
 
-export function subscribeToLanguage(listener: LanguageListener): () => void {
+// Removed unused export: subscribeToLanguage
+function _subscribeToLanguage(listener: LanguageListener): () => void {
   listeners.add(listener);
 
   return () => {

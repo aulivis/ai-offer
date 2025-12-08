@@ -40,7 +40,7 @@ export const PRINT_BASE_CSS = `
     margin: 0;
     background: var(--bg, #f8fafc);
     color: var(--text, #0f172a);
-    font: 400 11pt/1.6 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
+    font: 400 11pt/1.6 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     color-adjust: exact;
@@ -681,7 +681,7 @@ export const PRINT_BASE_CSS = `
   table,
   th,
   td {
-    font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: 9.5pt;
     line-height: 1.5;
     -webkit-print-color-adjust: exact;

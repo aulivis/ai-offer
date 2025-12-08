@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 
 const BUCKET_ID = 'brand-assets';
 
-export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
+export const DELETE = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(request);
+    const log = createLogger(requestId);
+    log.setContext({ userId: request.user.id });
 
-  try {
     const sb = await supabaseServer();
     const userId = request.user.id;
 
@@ -19,14 +21,11 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     const { activityId, imagePath } = body;
 
     if (!activityId || typeof activityId !== 'string') {
-      return NextResponse.json(
-        { error: 'HiĂˇnyzik a tevĂ©kenysĂ©g azonosĂ­tĂł.' },
-        { status: 400 },
-      );
+      return createErrorResponse('Hiányzik a tevékenység azonosító.', HttpStatus.BAD_REQUEST);
     }
 
     if (!imagePath || typeof imagePath !== 'string') {
-      return NextResponse.json({ error: 'HiĂˇnyzik a kĂ©p elĂ©rĂ©si Ăştja.' }, { status: 400 });
+      return createErrorResponse('Hiányzik a kép elérési útja.', HttpStatus.BAD_REQUEST);
     }
 
     // Verify activity belongs to user
@@ -38,9 +37,9 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
       .single();
 
     if (activityError || !activity) {
-      return NextResponse.json(
-        { error: 'A tevĂ©kenysĂ©g nem talĂˇlhatĂł vagy nincs hozzĂˇfĂ©rĂ©sed hozzĂˇ.' },
-        { status: 404 },
+      return createErrorResponse(
+        'A tevékenység nem található vagy nincs hozzáférése hozzá.',
+        HttpStatus.NOT_FOUND,
       );
     }
 
@@ -57,10 +56,7 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
 
     if (updateError) {
       log.error('Failed to update activity after image deletion', updateError);
-      return NextResponse.json(
-        { error: 'Nem sikerĂĽlt frissĂ­teni a tevĂ©kenysĂ©get.' },
-        { status: 500 },
-      );
+      throw updateError;
     }
 
     // Delete image from storage
@@ -72,12 +68,5 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba tĂ¶rtĂ©nt.';
-    log.error(
-      'Activity image deletion failed',
-      error instanceof Error ? error : new Error(String(error)),
-    );
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-});
+  }),
+);

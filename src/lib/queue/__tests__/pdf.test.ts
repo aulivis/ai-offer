@@ -85,7 +85,9 @@ describe('enqueuePdfJob schema cache recovery', () => {
       }
       throw new Error(`Unexpected table: ${table}`);
     });
-    const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
+    // Type assertion is safe because we control the mock implementation
+    // and it matches the SupabaseClient interface for the methods we use
+    const supabase = { from: fromMock, rpc: rpcMock } as SupabaseClient;
 
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
@@ -134,7 +136,9 @@ describe('enqueuePdfJob schema cache recovery', () => {
       }
       throw new Error(`Unexpected table: ${table}`);
     });
-    const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
+    // Type assertion is safe because we control the mock implementation
+    // and it matches the SupabaseClient interface for the methods we use
+    const supabase = { from: fromMock, rpc: rpcMock } as SupabaseClient;
 
     const fetchSpy = vi.fn().mockResolvedValue(new Response(null, { status: 406 }));
     vi.stubGlobal('fetch', fetchSpy);
@@ -181,7 +185,9 @@ describe('enqueuePdfJob schema cache recovery', () => {
       throw new Error(`Unexpected table: ${table}`);
     });
 
-    const supabase = { from: fromMock, rpc: rpcMock } as unknown as SupabaseClient;
+    // Type assertion is safe because we control the mock implementation
+    // and it matches the SupabaseClient interface for the methods we use
+    const supabase = { from: fromMock, rpc: rpcMock } as SupabaseClient;
 
     const { enqueuePdfJob } = await import('../pdf');
 

@@ -244,4 +244,5 @@ export function deriveBrandMonogram(value: string | null | undefined): string {
   return initials || DEFAULT_MONOGRAM;
 }
 
-export const HEX_COLOR_REGEX = HEX_COLOR_PATTERN;
+// Removed unused export: HEX_COLOR_REGEX
+const _HEX_COLOR_REGEX = HEX_COLOR_PATTERN;

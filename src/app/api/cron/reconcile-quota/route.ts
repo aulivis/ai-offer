@@ -15,6 +15,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { recalculateUsageFromPdfs, currentMonthStart } from '@/lib/services/usage';
+import { withErrorHandling } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import type { NextRequest } from 'next/server';
@@ -24,7 +25,6 @@ export const runtime = 'nodejs';
 async function handleReconciliation(req: NextRequest) {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
-
   try {
     const { searchParams } = new URL(req.url);
     const periodStartParam = searchParams.get('periodStart');
@@ -127,22 +127,15 @@ async function handleReconciliation(req: NextRequest) {
     });
   } catch (error) {
     log.error('Quota reconciliation failed', error);
-    const errorMessage = error instanceof Error ? error.message : 'Reconciliation failed';
-    return NextResponse.json(
-      {
-        success: false,
-        error: errorMessage,
-      },
-      { status: 500 },
-    );
+    throw error;
   }
 }
 
-export async function GET(req: NextRequest) {
+export const GET = withErrorHandling(async (req: NextRequest) => {
   // Vercel Cron uses GET requests
   return handleReconciliation(req);
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withErrorHandling(async (req: NextRequest) => {
   return handleReconciliation(req);
-}
+});

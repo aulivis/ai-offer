@@ -426,7 +426,7 @@ export function OfferPreviewCard({
     return (
       <div className="flex h-full flex-col gap-4">
         <div className="flex items-center justify-between">
-          <div className="inline-flex gap-1 rounded-full bg-white/60 p-1 shadow-inner">
+          <div className="inline-flex gap-2 rounded-full bg-white/60 p-1 shadow-inner">
             {TAB_DEFINITIONS.map((tab) => (
               <TabButton
                 key={tab.id}

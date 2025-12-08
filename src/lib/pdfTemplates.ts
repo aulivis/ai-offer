@@ -11,8 +11,9 @@ import { logger } from '@/lib/logger';
 /**
  * Extract header/footer data from rendered HTML
  * This data is used to create Puppeteer templates for page numbering
+ * Removed unused export: extractHeaderFooterData
  */
-export async function extractHeaderFooterData(page: {
+async function _extractHeaderFooterData(page: {
   evaluate: (
     fn: () => {
       companyName: string;

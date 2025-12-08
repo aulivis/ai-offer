@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import AppFrame from '@/components/AppFrame';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -26,6 +27,14 @@ interface Notification {
 }
 
 export default function ActivityLogPage() {
+  return (
+    <PageErrorBoundary>
+      <ActivityLogPageContent />
+    </PageErrorBoundary>
+  );
+}
+
+function ActivityLogPageContent() {
   const sb = useSupabase();
   const { user } = useRequireAuth();
   const logger = useMemo(

@@ -224,7 +224,7 @@ export function WizardStep1Details({
                       {option.label}
                     </span>
                     <span
-                      className={`block text-xs leading-relaxed mt-1 ${active ? 'text-slate-700' : 'text-slate-500'}`}
+                      className={`block text-xs leading-relaxed mt-2 ${active ? 'text-slate-700' : 'text-slate-500'}`}
                     >
                       {option.description}
                     </span>
@@ -244,8 +244,8 @@ export function WizardStep1Details({
             : 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/30 text-slate-800'
         }`}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 space-y-1">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
               <p className="text-sm font-bold">{quotaInfo.title}</p>
               {quotaInfo.isExhausted && (

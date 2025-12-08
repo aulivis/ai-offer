@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createLogger } from '@/lib/logger';
+import { envClient } from '@/env.client';
 
 export interface RetryConfig {
   maxRetries: number;
@@ -108,7 +109,8 @@ export async function handleJobFailure(
     }
 
     // Report to Sentry for monitoring
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    // Use validated env helper - safe to import in server-side code (only contains NEXT_PUBLIC_ vars)
+    if (envClient.NEXT_PUBLIC_SENTRY_DSN) {
       import('@sentry/nextjs').then((Sentry) => {
         Sentry.captureException(new Error(`PDF job moved to DLQ: ${errorMessage}`), {
           level: 'error',

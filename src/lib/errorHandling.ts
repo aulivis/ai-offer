@@ -6,6 +6,7 @@ import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { ApiError } from '@/lib/api';
 import { t } from '@/copy';
+import { envClient } from '@/env.client';
 
 export type StandardErrorResponse = {
   error: string;
@@ -140,7 +141,8 @@ export function handleUnexpectedError(
   }
 
   // Report to Sentry with context (if Sentry is configured)
-  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  // Use validated env helper - safe to import in server-side code (only contains NEXT_PUBLIC_ vars)
+  if (envClient.NEXT_PUBLIC_SENTRY_DSN) {
     // Dynamically import Sentry only when needed
     import('@sentry/nextjs')
       .then((Sentry) => {
@@ -218,6 +220,13 @@ export function handleError(
 /**
  * Wraps an API route handler with standardized error handling and logging.
  * This works with both regular NextRequest and AuthenticatedNextRequest.
+ *
+ * Usage:
+ * ```ts
+ * export const GET = withErrorHandling(async (req: NextRequest) => {
+ *   // Your handler code
+ * });
+ * ```
  */
 export function withErrorHandling<T extends unknown[]>(
   handler: (req: NextRequest, ...args: T) => Promise<NextResponse> | NextResponse,

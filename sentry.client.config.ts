@@ -1,93 +1,103 @@
 // Only initialize Sentry if DSN is provided
 {
-  const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-  if (sentryDsn) {
-    // Dynamically import Sentry to avoid build errors when not installed
-    import('@sentry/nextjs')
-      .then((Sentry) => {
-        Sentry.init({
-          dsn: sentryDsn,
-          environment: process.env.NODE_ENV,
-          enabled: process.env.NODE_ENV === 'production',
+  // Use validated env helper - safe to import in client config
+  import('@/env.client')
+    .then(({ envClient }) => {
+      const sentryDsn = envClient.NEXT_PUBLIC_SENTRY_DSN;
+      if (!sentryDsn) {
+        return;
+      }
 
-          // Performance Monitoring
-          tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      // Dynamically import Sentry to avoid build errors when not installed
+      return import('@sentry/nextjs')
+        .then((Sentry) => {
+          Sentry.init({
+            dsn: sentryDsn,
+            environment: process.env.NODE_ENV,
+            enabled: process.env.NODE_ENV === 'production',
 
-          // Session Replay
-          replaysSessionSampleRate: 0.1,
-          replaysOnErrorSampleRate: 1.0,
+            // Performance Monitoring
+            tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-          // Release tracking
-          ...(process.env.NEXT_PUBLIC_APP_VERSION && {
-            release: process.env.NEXT_PUBLIC_APP_VERSION,
-          }),
+            // Session Replay
+            replaysSessionSampleRate: 0.1,
+            replaysOnErrorSampleRate: 1.0,
 
-          // Filter out noisy errors
-          ignoreErrors: [
-            // Browser extensions
-            'top.GLOBALS',
-            'originalCreateNotification',
-            'canvas.contentDocument',
-            'MyApp_RemoveAllHighlights',
-            'atomicFindClose',
-            'fb_xd_fragment',
-            'bmi_SafeAddOnload',
-            'EBCallBackMessageReceived',
-            // Network errors
-            'NetworkError',
-            'Network request failed',
-            // Third-party scripts
-            'Non-Error promise rejection captured',
-          ],
+            // Release tracking
+            ...(envClient.NEXT_PUBLIC_APP_VERSION && {
+              release: envClient.NEXT_PUBLIC_APP_VERSION,
+            }),
 
-          // Filter out noisy URLs
-          denyUrls: [
-            // Browser extensions
-            /extensions\//i,
-            /^chrome:\/\//i,
-            /^chrome-extension:\/\//i,
-            // Third-party scripts
-            /facebook\.net/i,
-            /doubleclick\.net/i,
-            /googlesyndication\.com/i,
-          ],
+            // Filter out noisy errors
+            ignoreErrors: [
+              // Browser extensions
+              'top.GLOBALS',
+              'originalCreateNotification',
+              'canvas.contentDocument',
+              'MyApp_RemoveAllHighlights',
+              'atomicFindClose',
+              'fb_xd_fragment',
+              'bmi_SafeAddOnload',
+              'EBCallBackMessageReceived',
+              // Network errors
+              'NetworkError',
+              'Network request failed',
+              // Third-party scripts
+              'Non-Error promise rejection captured',
+            ],
 
-          // Additional context
-          beforeSend(event, hint) {
-            // Don't send events in development
-            if (process.env.NODE_ENV !== 'production') {
-              return null;
-            }
+            // Filter out noisy URLs
+            denyUrls: [
+              // Browser extensions
+              /extensions\//i,
+              /^chrome:\/\//i,
+              /^chrome-extension:\/\//i,
+              // Third-party scripts
+              /facebook\.net/i,
+              /doubleclick\.net/i,
+              /googlesyndication\.com/i,
+            ],
 
-            // Filter out known non-critical errors
-            if (event.exception) {
-              const error = hint.originalException;
-              if (error instanceof Error) {
-                // Filter out abort errors (user cancelled requests)
-                if (error.name === 'AbortError' || error.message.includes('aborted')) {
-                  return null;
+            // Additional context
+            beforeSend(event, hint) {
+              // Don't send events in development
+              if (process.env.NODE_ENV !== 'production') {
+                return null;
+              }
+
+              // Filter out known non-critical errors
+              if (event.exception) {
+                const error = hint.originalException;
+                if (error instanceof Error) {
+                  // Filter out abort errors (user cancelled requests)
+                  if (error.name === 'AbortError' || error.message.includes('aborted')) {
+                    return null;
+                  }
                 }
               }
-            }
 
-            return event;
-          },
+              return event;
+            },
 
-          // Integration configuration
-          integrations: [
-            Sentry.replayIntegration({
-              maskAllText: true,
-              blockAllMedia: true,
-            }),
-            Sentry.browserTracingIntegration(),
-          ],
+            // Integration configuration
+            integrations: [
+              Sentry.replayIntegration({
+                maskAllText: true,
+                blockAllMedia: true,
+              }),
+              Sentry.browserTracingIntegration(),
+            ],
+          });
+        })
+        .catch((error) => {
+          // Sentry not available, skip initialization
+          // eslint-disable-next-line no-console
+          console.warn('Sentry initialization failed:', error);
         });
-      })
-      .catch((error) => {
-        // Sentry not available, skip initialization
-        console.warn('Sentry initialization failed:', error);
-      });
-  }
+    })
+    .catch(() => {
+      // envClient not available, skip Sentry initialization
+    });
 }
 
 // Make this file a valid ES module

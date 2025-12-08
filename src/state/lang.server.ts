@@ -48,8 +48,9 @@ export function withLanguage<T>(language: LocaleKey, callback: () => T): T {
 /**
  * Server-side function to get the current language from AsyncLocalStorage.
  * Returns 'hu' as default if no language is set in the current context.
+ * Removed unused export: getLanguage
  */
-export function getLanguage(): LocaleKey {
+function _getLanguage(): LocaleKey {
   if (typeof window !== 'undefined') {
     // This should never happen in server code, but provide a fallback
     return 'hu';

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 
@@ -13,12 +14,12 @@ const BUCKET_ID = 'brand-assets';
  * Deletes a user's brand logo from storage.
  * Used for cleanup when upload succeeds but profile save fails.
  */
-export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
+export const DELETE = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(request);
+    const log = createLogger(requestId);
+    log.setContext({ userId: request.user.id });
 
-  try {
     const sb = await supabaseServer();
     const userId = request.user.id;
 
@@ -35,10 +36,5 @@ export const DELETE = withAuth(async (request: AuthenticatedNextRequest) => {
     await Promise.allSettled(deletePromises);
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Ismeretlen hiba tĂ¶rtĂ©nt a logĂł tĂ¶rlĂ©sekor.';
-    log.error('Brand logo deletion failed', error);
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-});
+  }),
+);

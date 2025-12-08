@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createLogger } from '@/lib/logger';
+import { isOpenTelemetryEnabled } from '@/env.server';
 
 export interface PdfJobMetrics {
   queueDepth: {
@@ -227,7 +228,8 @@ export function recordMetric(
 ): void {
   // Try to record via OpenTelemetry
   try {
-    if (typeof process !== 'undefined' && process.env.OTEL_SDK_DISABLED !== 'true') {
+    // Use validated environment helper for infrastructure detection
+    if (typeof process !== 'undefined' && isOpenTelemetryEnabled()) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { metrics } = require('@opentelemetry/api');
       const meter = metrics.getMeter('pdf-jobs');
@@ -301,7 +303,14 @@ export async function exportMetrics(
     recordMetric('pdf.job.processing_time.p95', metrics.processingTimes.p95);
     recordMetric('pdf.job.processing_time.p99', metrics.processingTimes.p99);
 
-    log.info('PDF job metrics exported', metrics as unknown as Record<string, unknown>);
+    // PdfJobMetrics is already a structured type, no need for type assertion
+    log.info('PDF job metrics exported', {
+      queueDepth: metrics.queueDepth,
+      processingTimes: metrics.processingTimes,
+      failureRate: metrics.failureRate,
+      stuckJobs: metrics.stuckJobs,
+      retryRate: metrics.retryRate,
+    });
   } catch (error) {
     log.error('Failed to export PDF job metrics', error);
   }

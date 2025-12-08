@@ -5,6 +5,8 @@ import { randomUUID } from 'crypto';
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
@@ -132,30 +134,30 @@ async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImag
   return null;
 }
 
-export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(request);
+    const log = createLogger(requestId);
+    log.setContext({ userId: request.user.id });
 
-  // Rate limiting
-  const rateLimitResult = await checkRateLimitMiddleware(request, {
-    maxRequests: 20, // Higher limit for reference photos
-    windowMs: RATE_LIMIT_WINDOW_MS,
-    keyPrefix: 'upload-activity-image',
-  });
-
-  if (rateLimitResult && !rateLimitResult.allowed) {
-    log.warn('Upload rate limit exceeded', {
-      limit: rateLimitResult.limit,
-      remaining: rateLimitResult.remaining,
+    // Rate limiting
+    const rateLimitResult = await checkRateLimitMiddleware(request, {
+      maxRequests: 20, // Higher limit for reference photos
+      windowMs: RATE_LIMIT_WINDOW_MS,
+      keyPrefix: 'upload-activity-image',
     });
-    return createRateLimitResponse(
-      rateLimitResult,
-      'Túl sok fájlfeltöltési kísérlet történt. Próbáld újra később.',
-    );
-  }
 
-  try {
+    if (rateLimitResult && !rateLimitResult.allowed) {
+      log.warn('Upload rate limit exceeded', {
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+      });
+      return createRateLimitResponse(
+        rateLimitResult,
+        'Túl sok fájlfeltöltési kísérlet történt. Próbáld újra később.',
+      );
+    }
+
     const sb = await supabaseServer();
     const userId = request.user.id;
 
@@ -164,11 +166,11 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     const activityId = formData.get('activityId');
 
     if (!(fileEntry instanceof File)) {
-      return NextResponse.json({ error: 'Hiányzik a feltöltendő fájl.' }, { status: 400 });
+      return createErrorResponse('Hiányzik a feltöltendő fájl.', HttpStatus.BAD_REQUEST);
     }
 
     if (!activityId || typeof activityId !== 'string') {
-      return NextResponse.json({ error: 'Hiányzik a tevékenység azonosító.' }, { status: 400 });
+      return createErrorResponse('Hiányzik a tevékenység azonosító.', HttpStatus.BAD_REQUEST);
     }
 
     // Verify activity belongs to user
@@ -180,40 +182,43 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       .single();
 
     if (activityError || !activity) {
-      return NextResponse.json(
-        { error: 'A tevékenység nem található vagy nincs hozzáférésed hozzá.' },
-        { status: 404 },
+      return createErrorResponse(
+        'A tevékenység nem található vagy nincs hozzáférésed hozzá.',
+        HttpStatus.NOT_FOUND,
       );
     }
 
     // Check current image count
     const currentImages = (activity.reference_images as string[] | null) || [];
     if (currentImages.length >= MAX_IMAGES_PER_ACTIVITY) {
-      return NextResponse.json(
-        { error: `Maximum ${MAX_IMAGES_PER_ACTIVITY} kép tölthető fel tevékenységenként.` },
-        { status: 400 },
+      return createErrorResponse(
+        `Maximum ${MAX_IMAGES_PER_ACTIVITY} kép tölthető fel tevékenységenként.`,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
     if (fileEntry.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'A fájl mérete legfeljebb 5 MB lehet.' }, { status: 413 });
+      return createErrorResponse(
+        'A fájl mérete legfeljebb 5 MB lehet.',
+        HttpStatus.PAYLOAD_TOO_LARGE,
+      );
     }
 
     try {
       await ensureBucketExists();
     } catch (bucketError) {
       log.error('Failed to ensure bucket exists', bucketError);
-      return NextResponse.json(
-        { error: 'Nem sikerült inicializálni a tárhelyet. Próbáld újra később.' },
-        { status: 500 },
-      );
+      throw bucketError;
     }
 
     const arrayBuffer = await fileEntry.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const normalizedImage = await validateAndNormalizeImage(buffer);
     if (!normalizedImage) {
-      return NextResponse.json({ error: 'Csak PNG vagy JPEG kép tölthető fel.' }, { status: 415 });
+      return createErrorResponse(
+        'Csak PNG vagy JPEG kép tölthető fel.',
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+      );
     }
 
     const imageId = randomUUID();
@@ -228,9 +233,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         expectedUserId: userId,
         authUserId: authUser?.id || 'none',
       });
-      return NextResponse.json(
-        { error: 'Hitelesítési hiba. Kérjük, jelentkezz be újra.' },
-        { status: 401 },
+      return createErrorResponse(
+        'Hitelesítési hiba. Kérjük, jelentkezz be újra.',
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
@@ -246,23 +251,17 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       const errorMessage = ((uploadError as { message?: string }).message || '').toLowerCase();
 
       if (errorMessage.includes('not found') || errorMessage.includes('bucket')) {
-        return NextResponse.json(
-          { error: 'A tárhely nem elérhető. Kérjük, próbáld újra később.' },
-          { status: 503 },
+        return createErrorResponse(
+          'A tárhely nem elérhető. Kérjük, próbáld újra később.',
+          HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
 
       if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
-        return NextResponse.json(
-          { error: 'Nincs jogosultság a fájl feltöltéséhez.' },
-          { status: 403 },
-        );
+        return createErrorResponse('Nincs jogosultság a fájl feltöltéséhez.', HttpStatus.FORBIDDEN);
       }
 
-      return NextResponse.json(
-        { error: 'Nem sikerült feltölteni a képet. Kérjük, próbáld újra.' },
-        { status: 500 },
-      );
+      throw uploadError;
     }
 
     // Generate signed URL
@@ -286,10 +285,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       // Rollback: delete uploaded image
       await sb.storage.from(BUCKET_ID).remove([path]);
       log.error('Failed to update activity with image path', updateError);
-      return NextResponse.json(
-        { error: 'Nem sikerült menteni a kép hivatkozását.' },
-        { status: 500 },
-      );
+      throw updateError;
     }
 
     return NextResponse.json({
@@ -297,19 +293,5 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       signedUrl: signedData?.signedUrl ?? null,
       imageId,
     });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Ismeretlen hiba történt.';
-    log.error(
-      'Activity image upload failed',
-      error instanceof Error ? error : new Error(String(error)),
-    );
-
-    if (error instanceof Error) {
-      if (error.message.includes('sharp') || error.message.includes('image')) {
-        return NextResponse.json({ error: 'Nem sikerült feldolgozni a képet.' }, { status: 415 });
-      }
-    }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-});
+  }),
+);

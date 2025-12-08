@@ -11,15 +11,13 @@ import Stripe from 'stripe';
 import { envServer } from '@/env.server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
-import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
+import { createLogger } from '@/lib/logger';
 import { envClient } from '@/env.client';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
-
-function buildErrorResponse(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status });
-}
 
 function parseRequestBody(payload: unknown): { billingInterval: 'monthly' | 'annual' } | null {
   if (!payload || typeof payload !== 'object') {
@@ -36,23 +34,23 @@ function parseRequestBody(payload: unknown): { billingInterval: 'monthly' | 'ann
   return { billingInterval };
 }
 
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
-  const requestId = randomUUID();
-  const log = createLogger(requestId);
-  log.setContext({ userId: req.user.id });
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+    const requestId = randomUUID();
+    const log = createLogger(requestId);
+    log.setContext({ userId: req.user.id });
 
-  const parsedBody = parseRequestBody(await req.json().catch(() => null));
-  if (!parsedBody) {
-    return buildErrorResponse(
-      'Érvénytelen kérés. Hiányzó vagy hibás billingInterval paraméter.',
-      400,
-    );
-  }
+    const parsedBody = parseRequestBody(await req.json().catch(() => null));
+    if (!parsedBody) {
+      return createErrorResponse(
+        'Érvénytelen kérés. Hiányzó vagy hibás billingInterval paraméter.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-  const { billingInterval } = parsedBody;
-  const userId = req.user.id;
+    const { billingInterval } = parsedBody;
+    const userId = req.user.id;
 
-  try {
     // Get user's Stripe customer ID from Supabase profile
     const supabase = supabaseServiceRole();
     const { data: profile, error: profileError } = await supabase
@@ -63,11 +61,14 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
 
     if (profileError) {
       log.error('Failed to fetch user profile', profileError);
-      return buildErrorResponse('Nem sikerült betölteni a felhasználói adatokat.', 500);
+      throw profileError;
     }
 
     if (!profile?.stripe_customer_id) {
-      return buildErrorResponse('Nem található Stripe előfizetés a fiókodhoz.', 404);
+      return createErrorResponse(
+        'Nem található Stripe előfizetés a fiókodhoz.',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     // Get current subscription from Stripe
@@ -78,14 +79,14 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     });
 
     if (subscriptions.data.length === 0) {
-      return buildErrorResponse('Nem található aktív előfizetés.', 404);
+      return createErrorResponse('Nem található aktív előfizetés.', HttpStatus.NOT_FOUND);
     }
 
     const subscription = subscriptions.data[0]!;
     const currentPriceId = subscription.items.data[0]?.price.id;
 
     if (!currentPriceId) {
-      return buildErrorResponse('Nem sikerült meghatározni az aktuális előfizetést.', 500);
+      throw new Error('Nem sikerült meghatározni az aktuális előfizetést.');
     }
 
     // Determine target price ID based on current plan and desired billing interval
@@ -101,14 +102,17 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
           : envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER;
 
     if (!targetPriceId) {
-      return buildErrorResponse('A kiválasztott számlázási időszak nem érhető el.', 400);
+      return createErrorResponse(
+        'A kiválasztott számlázási időszak nem érhető el.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // Check if already on the target billing interval
     if (currentPriceId === targetPriceId) {
-      return buildErrorResponse(
+      return createErrorResponse(
         `Már ${billingInterval === 'annual' ? 'éves' : 'havi'} számlázásra vagy átállítva.`,
-        400,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -118,7 +122,10 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       !envServer.STRIPE_PRICE_ALLOWLIST.includes(targetPriceId)
     ) {
       log.warn('Subscription update rejected due to disallowed price', { targetPriceId });
-      return buildErrorResponse('A választott számlázási időszak nem érhető el.', 400);
+      return createErrorResponse(
+        'A választott számlázási időszak nem érhető el.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     log.info('Updating subscription', {
@@ -165,12 +172,5 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       message: `Sikeresen átállítottuk a számlázást ${billingInterval === 'annual' ? 'éves' : 'havi'} időszakra.`,
       subscriptionId: updatedSubscription.id,
     });
-  } catch (error) {
-    log.error('Stripe subscription update failed', error);
-    const errorMessage =
-      error instanceof Stripe.errors.StripeError
-        ? error.message
-        : 'Nem sikerült frissíteni az előfizetést.';
-    return buildErrorResponse(errorMessage, 500);
-  }
-});
+  }),
+);

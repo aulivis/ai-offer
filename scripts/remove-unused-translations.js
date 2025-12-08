@@ -1,10 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path');
 
 // Read the analysis results
 const analysisPath = path.join(__dirname, '../translation-analysis.json');
 const analysis = JSON.parse(fs.readFileSync(analysisPath, 'utf8'));
-const unusedKeys = new Set(analysis.unused);
 
 // Read the original translation file
 const translationPath = path.join(__dirname, '../src/copy/hu.ts');

@@ -6,6 +6,7 @@
  */
 
 import { createLogger } from '@/lib/logger';
+import { isOpenTelemetryEnabled } from '@/env.server';
 
 export interface AiGenerationMetrics {
   duration: number; // milliseconds
@@ -22,13 +23,16 @@ export interface AiGenerationMetrics {
 /**
  * Records metrics to OpenTelemetry (if available)
  */
+import { isOpenTelemetryEnabled } from '@/env.server';
+
 export function recordAiMetric(
   name: string,
   value: number,
   attributes: Record<string, string | number | boolean> = {},
 ): void {
   try {
-    if (typeof process !== 'undefined' && process.env.OTEL_SDK_DISABLED !== 'true') {
+    // Use validated environment helper for infrastructure detection
+    if (typeof process !== 'undefined' && isOpenTelemetryEnabled()) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { metrics } = require('@opentelemetry/api');
       const meter = metrics.getMeter('ai-generation');

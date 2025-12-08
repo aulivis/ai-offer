@@ -72,7 +72,10 @@ function createRequest(rawBody = '{'): AuthenticatedNextRequest {
       getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value })),
       has: (name: string) => Boolean(cookies[name as keyof typeof cookies]),
     },
-  } as unknown as AuthenticatedNextRequest;
+    // Type assertion is necessary because NextRequest is a complex class
+    // and we're creating a partial mock with only the properties we need for tests.
+    // This is safe because we control which properties are accessed in the tests.
+  } as AuthenticatedNextRequest;
 }
 
 describe('offer preview render POST', () => {
@@ -109,7 +112,8 @@ describe('offer preview render POST', () => {
 
   it('returns 499 when the request body is aborted mid-stream', async () => {
     const request = createRequest();
-    (request as unknown as { text: ReturnType<typeof vi.fn> }).text = vi
+    // Type assertion is safe because we're adding a mock method to the request object
+    (request as { text: ReturnType<typeof vi.fn> }).text = vi
       .fn()
       .mockRejectedValueOnce(new DOMException('The user aborted a request.', 'AbortError'));
     Object.assign(request, { signal: { aborted: true } as AbortSignal });

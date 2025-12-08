@@ -1,9 +1,12 @@
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { LRUCache } from 'lru-cache';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { clearAuthCookies } from '@/lib/auth/cookies';
 import { addCacheHeaders, CACHE_CONFIGS } from '@/lib/cacheHeaders';
+import { withErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { withTimeout, API_TIMEOUTS } from '@/lib/timeout';
@@ -12,57 +15,18 @@ const UNAUTHENTICATED_MESSAGE = 'A bejelentkezés lejárt vagy érvénytelen.';
 
 // Request deduplication cache - stores access token hash -> promise mapping
 // Prevents duplicate database queries for the same session check
-// Uses LRU-style eviction to prevent memory leaks
-const requestCache = new Map<
-  string,
-  { promise: Promise<NextResponse>; timestamp: number; userId?: string }
->();
+// Uses LRU cache with automatic TTL and size management to prevent memory leaks
 const REQUEST_CACHE_TTL_MS = 5000; // 5 seconds - matches React Query staleTime
 const REQUEST_CACHE_MAX_SIZE = 1000; // Maximum cache entries
-const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 30000; // Cleanup every 30 seconds
 
-// Store cleanup interval ID for potential cleanup on server shutdown
-let cleanupIntervalId: NodeJS.Timeout | null = null;
-
-// Cleanup function to remove expired entries and enforce size limit
-function cleanupRequestCache(): void {
-  const now = Date.now();
-
-  // Remove expired entries
-  for (const [key, value] of requestCache.entries()) {
-    if (now - value.timestamp > REQUEST_CACHE_TTL_MS) {
-      requestCache.delete(key);
-    }
-  }
-
-  // If still over limit, remove oldest entries (LRU eviction)
-  if (requestCache.size > REQUEST_CACHE_MAX_SIZE) {
-    const entries = Array.from(requestCache.entries());
-    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    const toRemove = entries.slice(0, requestCache.size - REQUEST_CACHE_MAX_SIZE);
-    for (const [key] of toRemove) {
-      requestCache.delete(key);
-    }
-  }
-}
-
-// Cleanup old cache entries periodically and enforce size limit
-if (typeof setInterval !== 'undefined') {
-  cleanupIntervalId = setInterval(cleanupRequestCache, REQUEST_CACHE_CLEANUP_INTERVAL_MS);
-
-  // Cleanup on process termination
-  if (typeof process !== 'undefined' && typeof process.on === 'function') {
-    const cleanup = () => {
-      if (cleanupIntervalId) {
-        clearInterval(cleanupIntervalId);
-        cleanupIntervalId = null;
-      }
-      requestCache.clear();
-    };
-    process.on('SIGTERM', cleanup);
-    process.on('SIGINT', cleanup);
-  }
-}
+const requestCache = new LRUCache<string, Promise<NextResponse>>({
+  max: REQUEST_CACHE_MAX_SIZE,
+  ttl: REQUEST_CACHE_TTL_MS,
+  // LRU cache automatically handles TTL expiration and size limits
+  // No need for manual cleanup intervals or process exit handlers
+  updateAgeOnGet: false,
+  updateAgeOnHas: false,
+});
 
 // Create a simple hash of the access token for cache key
 // Only use first and last 8 chars + length to avoid storing full token
@@ -73,7 +37,7 @@ function createCacheKey(accessToken: string): string {
   return `${accessToken.slice(0, 8)}_${accessToken.length}_${accessToken.slice(-8)}`;
 }
 
-export async function GET(request: Request) {
+export const GET = withErrorHandling(async (request: NextRequest) => {
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
   const cookieStore = await cookies();
@@ -81,7 +45,7 @@ export async function GET(request: Request) {
 
   if (!accessToken) {
     await clearAuthCookies();
-    const response = NextResponse.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
+    const response = createErrorResponse(UNAUTHENTICATED_MESSAGE, HttpStatus.UNAUTHORIZED);
     return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
   }
 
@@ -90,14 +54,8 @@ export async function GET(request: Request) {
   const cached = requestCache.get(cacheKey);
 
   if (cached) {
-    const age = Date.now() - cached.timestamp;
-    // If request is still fresh (< 5 seconds), return cached promise
-    if (age < REQUEST_CACHE_TTL_MS) {
-      log.info('Returning deduplicated session check', { cacheKey, age });
-      return cached.promise;
-    }
-    // Remove stale cache entry
-    requestCache.delete(cacheKey);
+    log.info('Returning deduplicated session check', { cacheKey });
+    return cached;
   }
 
   // Create new request promise
@@ -111,7 +69,7 @@ export async function GET(request: Request) {
           if (error || !data?.user) {
             log.warn('Session validation failed', { error: error?.message });
             await clearAuthCookies();
-            const response = NextResponse.json({ error: UNAUTHENTICATED_MESSAGE }, { status: 401 });
+            const response = createErrorResponse(UNAUTHENTICATED_MESSAGE, HttpStatus.UNAUTHORIZED);
             // Don't cache 401 responses
             return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
           }
@@ -133,19 +91,15 @@ export async function GET(request: Request) {
       // Handle timeout and other errors
       if (error instanceof Error && error.message.includes('timed out')) {
         log.error('Session validation timed out', error);
-        const response = NextResponse.json(
-          { error: 'A bejelentkezés ellenőrzése túl sokáig tartott. Kérjük, próbáld újra.' },
-          { status: 504 },
+        const response = createErrorResponse(
+          'A bejelentkezés ellenőrzése túl sokáig tartott. Kérjük, próbáld újra.',
+          HttpStatus.GATEWAY_TIMEOUT,
         );
         return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
       }
 
       log.error('Failed to load Supabase user', error);
-      const response = NextResponse.json(
-        { error: 'Nem sikerült ellenőrizni a bejelentkezést.' },
-        { status: 500 },
-      );
-      return addCacheHeaders(response, CACHE_CONFIGS.NO_CACHE);
+      throw error;
     } finally {
       // Remove from cache after request completes (success or failure)
       // The cache is primarily for deduplication, not long-term storage
@@ -154,10 +108,8 @@ export async function GET(request: Request) {
   })();
 
   // Store promise in cache for deduplication
-  requestCache.set(cacheKey, {
-    promise: requestPromise,
-    timestamp: Date.now(),
-  });
+  // LRU cache automatically handles TTL expiration, no manual cleanup needed
+  requestCache.set(cacheKey, requestPromise);
 
   return requestPromise;
-}
+});

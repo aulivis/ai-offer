@@ -7,6 +7,7 @@ import {
   currentMonthStart,
 } from '@/lib/services/usage';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 
@@ -23,10 +24,10 @@ import { getRequestId } from '@/lib/requestId';
  * - dryRun: If true, only reports discrepancies without fixing them
  * - includeDevices: If true, also reconciles device usage counters
  */
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(req);
-  const log = createLogger(requestId);
-  try {
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(req);
+    const log = createLogger(requestId);
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId') || undefined;
     const periodStart = searchParams.get('periodStart') || undefined;
@@ -222,10 +223,7 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
         .eq('period_start', normalizedPeriod);
 
       if (countersError) {
-        return NextResponse.json(
-          { error: `Failed to load usage counters: ${countersError.message}` },
-          { status: 500 },
-        );
+        throw countersError;
       }
 
       const userIds = new Set<string>();
@@ -326,8 +324,5 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
       summary,
       results,
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-});
+  }),
+);

@@ -1,7 +1,8 @@
 /**
  * Utility function to get device ID from cookie
+ * Removed unused export: getDeviceIdFromCookie
  */
-export function getDeviceIdFromCookie(name = 'propono_device_id'): string | null {
+function _getDeviceIdFromCookie(name = 'propono_device_id'): string | null {
   if (typeof document === 'undefined') {
     return null;
   }

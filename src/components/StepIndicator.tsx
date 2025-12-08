@@ -130,7 +130,7 @@ export default function StepIndicator({ steps }: Props) {
         </div>
       </div>
 
-      <ol className="grid gap-3 sm:grid-cols-3" role="list">
+      <ol className="grid gap-4 sm:grid-cols-3" role="list">
         {steps.map((step, index) => {
           const tone = step.tone ?? 'default';
           const clickable = step.status === 'completed' && typeof step.onSelect === 'function';
@@ -160,7 +160,7 @@ export default function StepIndicator({ steps }: Props) {
           );
 
           const cardClasses = classNames(
-            'group relative flex h-full w-full flex-col items-start gap-3 rounded-2xl border-2 px-4 py-4 text-left shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex-row sm:items-center sm:gap-4',
+            'group relative flex h-full w-full flex-col items-start gap-4 rounded-2xl border-2 px-4 py-4 text-left shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:flex-row sm:items-center',
             clickable
               ? 'cursor-pointer border-slate-300 bg-white hover:-translate-y-1 hover:border-slate-400 hover:shadow-lg active:translate-y-0 focus-visible:ring-primary'
               : 'cursor-default',

@@ -58,13 +58,21 @@ export type MockSupabaseClientForTests = Pick<SupabaseClient, 'rpc' | 'from'>;
 /**
  * Creates a mock client that can be used where SupabaseClient is expected.
  * Note: This still requires the mock to implement the methods being used.
+ *
+ * Type assertion is necessary here because Mock functions from vitest don't
+ * exactly match Supabase's method signatures, but they're compatible at runtime.
+ * This is safer than 'as any' because we're explicitly casting to the expected types.
  */
 export function createTypedMockSupabaseClient(
   mocks: MockSupabaseClient,
 ): MockSupabaseClientForTests {
+  // Type assertion is safe because:
+  // 1. We control the mock implementation
+  // 2. The mock methods match the expected signatures at runtime
+  // 3. We're casting to the specific SupabaseClient method types, not 'any'
   return {
-    rpc: mocks.rpc as unknown as SupabaseClient['rpc'],
-    from: mocks.from as unknown as SupabaseClient['from'],
+    rpc: mocks.rpc as SupabaseClient['rpc'],
+    from: mocks.from as SupabaseClient['from'],
   };
 }
 
@@ -91,5 +99,22 @@ export function createMockRateLimitClient(overrides?: Partial<RateLimitClient>):
       upsert: () => Promise.resolve({ data: null, error: null }),
     }),
     ...overrides,
+  };
+}
+
+/**
+ * Type for rollbackUsageIncrement client parameter.
+ * This is a subset of SupabaseClient that only needs the 'from' method.
+ */
+export type RollbackUsageClient = {
+  from: SupabaseClient['from'];
+};
+
+/**
+ * Creates a properly typed mock client for rollbackUsageIncrement tests.
+ */
+export function createRollbackUsageClient(fromMock: Mock): RollbackUsageClient {
+  return {
+    from: fromMock as SupabaseClient['from'],
   };
 }

@@ -1,4 +1,5 @@
 import { randomBytes, timingSafeEqual } from 'crypto';
+import { logger } from '@/lib/logger';
 
 // Static import reference to ensure Next.js includes @noble/hashes in the bundle
 // This import is conditionally used and helps Next.js statically analyze and bundle the module
@@ -177,7 +178,7 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
       } catch (error) {
         // Log detailed error in development for debugging
         if (process.env.NODE_ENV === 'development') {
-          console.warn('[Argon2] Failed to load @noble/hashes/argon2.js:', {
+          logger.warn('Failed to load @noble/hashes/argon2.js', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
           });
@@ -201,7 +202,7 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
           }
         } catch (error) {
           if (process.env.NODE_ENV === 'development') {
-            console.warn('[Argon2] Failed to load @noble/hashes/argon2:', {
+            logger.warn('Failed to load @noble/hashes/argon2', {
               error: error instanceof Error ? error.message : String(error),
             });
           }
@@ -217,17 +218,14 @@ async function loadNobleModule(): Promise<NobleArgon2Module | null> {
         platform: typeof process !== 'undefined' ? process.platform : 'unknown',
       };
 
-      console.error(
-        '[Argon2] Failed to load @noble/hashes/argon2 module from all attempted paths.',
-        errorDetails,
-      );
-
-      // Provide helpful error message for debugging
-      console.error(
-        '[Argon2] This module is required as a fallback when @node-rs/argon2 is not available.',
-      );
-      console.error(
-        '[Argon2] Ensure @noble/hashes is installed (npm list @noble/hashes) and not externalized in next.config.ts',
+      logger.error(
+        'Failed to load @noble/hashes/argon2 module from all attempted paths',
+        undefined,
+        {
+          ...errorDetails,
+          message:
+            'This module is required as a fallback when @node-rs/argon2 is not available. Ensure @noble/hashes is installed (npm list @noble/hashes) and not externalized in next.config.ts',
+        },
       );
 
       return null;
@@ -441,7 +439,7 @@ export async function argon2Verify(
   try {
     return await fallbackVerify(hashed, password);
   } catch (error) {
-    console.error('Failed to verify Argon2 hash using fallback implementation.', error);
+    logger.error('Failed to verify Argon2 hash using fallback implementation', error);
     return false;
   }
 }

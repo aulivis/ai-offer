@@ -60,12 +60,11 @@ export function NotificationBar({ notification, onDismiss, onMarkAsRead }: Notif
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-50 border-b ${bgColor} shadow-md transition-transform duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 mt-0 border-b ${bgColor} shadow-md transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
       role="alert"
       aria-live="assertive"
-      style={{ marginTop: 0 }}
     >
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">

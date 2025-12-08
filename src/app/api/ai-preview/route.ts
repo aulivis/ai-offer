@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI, { APIError } from 'openai';
+import { LRUCache } from 'lru-cache';
 import { envServer } from '@/env.server';
 import { sanitizeInput, sanitizeHTML } from '@/lib/sanitize';
 import { t } from '@/copy';
@@ -7,6 +8,8 @@ import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { moderateUserInput } from '@/lib/security/contentModeration';
 import { detectPreviewIssues, extractPreviewSummaryHighlights } from '@/lib/previewInsights';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -22,7 +25,7 @@ import {
 } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
-import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
+import { handleValidationError } from '@/lib/errorHandling';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 import { z } from 'zod';
 import { getRequestId } from '@/lib/requestId';
@@ -115,61 +118,18 @@ const previewRequestSchema = z
 
 // Request deduplication cache - stores request hash -> promise mapping
 // Prevents duplicate requests within short time window
-// Uses LRU-style eviction to prevent memory leaks
-const requestCache = new Map<string, { promise: Promise<NextResponse>; timestamp: number }>();
+// Uses LRU cache with automatic TTL and size management to prevent memory leaks
 const REQUEST_CACHE_TTL_MS = 5000; // 5 seconds
 const REQUEST_CACHE_MAX_SIZE = 1000; // Maximum cache entries
-const REQUEST_CACHE_CLEANUP_INTERVAL_MS = 30000; // Cleanup every 30 seconds
 
-// Store cleanup interval ID for potential cleanup on server shutdown
-let cleanupIntervalId: NodeJS.Timeout | null = null;
-
-// Cleanup function to remove expired entries and enforce size limit
-function cleanupRequestCache(): void {
-  const now = Date.now();
-
-  // Remove expired entries
-  for (const [key, value] of requestCache.entries()) {
-    if (now - value.timestamp > REQUEST_CACHE_TTL_MS) {
-      requestCache.delete(key);
-    }
-  }
-
-  // If still over limit, remove oldest entries (LRU eviction)
-  if (requestCache.size > REQUEST_CACHE_MAX_SIZE) {
-    const entries = Array.from(requestCache.entries());
-    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    const toRemove = entries.slice(0, requestCache.size - REQUEST_CACHE_MAX_SIZE);
-    for (const [key] of toRemove) {
-      requestCache.delete(key);
-    }
-  }
-}
-
-// Cleanup old cache entries periodically and enforce size limit
-// Store interval ID so it can be cleaned up if needed
-if (typeof setInterval !== 'undefined') {
-  cleanupIntervalId = setInterval(cleanupRequestCache, REQUEST_CACHE_CLEANUP_INTERVAL_MS);
-
-  // Cleanup on process termination (Next.js serverless handles this automatically,
-  // but this provides safety for long-running processes)
-  if (typeof process !== 'undefined' && typeof process.on === 'function') {
-    const cleanup = () => {
-      if (cleanupIntervalId) {
-        clearInterval(cleanupIntervalId);
-        cleanupIntervalId = null;
-      }
-      // Final cleanup pass
-      requestCache.clear();
-    };
-
-    // Handle graceful shutdown signals
-    process.once('SIGTERM', cleanup);
-    process.once('SIGINT', cleanup);
-    // Note: In Next.js serverless/edge environments, these may not fire,
-    // but the cleanup interval and TTL-based eviction prevent memory leaks
-  }
-}
+const requestCache = new LRUCache<string, Promise<NextResponse>>({
+  max: REQUEST_CACHE_MAX_SIZE,
+  ttl: REQUEST_CACHE_TTL_MS,
+  // LRU cache automatically handles TTL expiration and size limits
+  // No need for manual cleanup intervals or process exit handlers
+  updateAgeOnGet: false,
+  updateAgeOnHas: false,
+});
 
 function hashRequest(data: unknown): string {
   // Simple hash function for request deduplication
@@ -184,121 +144,122 @@ function hashRequest(data: unknown): string {
 }
 
 export const POST = withAuth(
-  withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
-    const requestId = getRequestId(req);
-    const log = createLogger(requestId);
-    log.setContext({ userId: req.user.id });
+  withRequestSizeLimit(
+    withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+      const requestId = getRequestId(req);
+      const log = createLogger(requestId);
+      log.setContext({ userId: req.user.id });
 
-    // Rate limiting for AI preview endpoint
-    const rateLimitResult = await checkRateLimitMiddleware(req, {
-      maxRequests: 30, // Higher limit for previews as they're less expensive
-      windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
-      keyPrefix: 'ai-preview',
-    });
-
-    if (rateLimitResult && !rateLimitResult.allowed) {
-      log.warn('AI preview rate limit exceeded', {
-        limit: rateLimitResult.limit,
-        remaining: rateLimitResult.remaining,
-      });
-      return createRateLimitResponse(
-        rateLimitResult,
-        'Elérted az AI előnézeti limitet. Próbáld újra később.',
-      );
-    }
-
-    let requestBody: unknown;
-    let requestHash: string | undefined;
-
-    try {
-      requestBody = await req.json();
-      requestHash = hashRequest(requestBody);
-
-      // Request deduplication - check if identical request is already in progress
-      const cachedRequest = requestCache.get(requestHash);
-      if (cachedRequest && Date.now() - cachedRequest.timestamp < REQUEST_CACHE_TTL_MS) {
-        log.info('Deduplicating AI preview request', { requestHash });
-        return cachedRequest.promise;
-      }
-
-      const parsed = previewRequestSchema.safeParse(requestBody);
-      if (!parsed.success) {
-        return handleValidationError(parsed.error, requestId);
-      }
-
-      const { title, projectDetails, deadline, language, brandVoice, style, formality } =
-        parsed.data;
-
-      if (!envServer.OPENAI_API_KEY) {
-        const errorResponse = NextResponse.json(
-          { error: 'OPENAI_API_KEY missing' },
-          { status: 500 },
-        );
-        errorResponse.headers.set('x-request-id', requestId);
-        if (rateLimitResult) {
-          addRateLimitHeaders(errorResponse, rateLimitResult);
-        }
-        return errorResponse;
-      }
-      const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
-
-      const styleAddon =
-        style === 'compact'
-          ? 'Stílus: nagyon tömör és kártyás felépítésű. Használj <div class="offer-doc__compact"> gyökérelemet, benne <section class="offer-doc__compact-intro">, <section class="offer-doc__compact-grid"> és <section class="offer-doc__compact-bottom"> blokkokat. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. Minden felsorolás legfeljebb 3 rövid pontból álljon, amelyek a legfontosabb információkat összegzik.'
-          : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat (4-6 pont), amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket.';
-
-      const safeLanguage = sanitizeInput(language);
-      const safeTitle = sanitizeInput(title);
-      const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
-        (acc, key) => {
-          acc[key] = sanitizeInput(projectDetails[key]);
-          return acc;
-        },
-        { ...emptyProjectDetails },
-      );
-
-      // Content moderation: Check for malicious content before sending to OpenAI
-      const moderationResult = moderateUserInput({
-        title,
-        projectDetails: sanitizedDetails,
-        deadline: deadline || undefined,
+      // Rate limiting for AI preview endpoint
+      const rateLimitResult = await checkRateLimitMiddleware(req, {
+        maxRequests: 30, // Higher limit for previews as they're less expensive
+        windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
+        keyPrefix: 'ai-preview',
       });
 
-      if (!moderationResult.allowed) {
-        log.warn('Content moderation blocked preview request', {
-          userId: req.user.id,
-          category: moderationResult.category,
-          reason: moderationResult.reason,
+      if (rateLimitResult && !rateLimitResult.allowed) {
+        log.warn('AI preview rate limit exceeded', {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
         });
-        const errorResponse = NextResponse.json(
-          {
-            error:
-              moderationResult.reason ||
-              'A tartalom nem megfelelő formátumú. Kérjük, módosítsd a szöveget.',
-          },
-          { status: 400 },
+        return createRateLimitResponse(
+          rateLimitResult,
+          'Elérted az AI előnézeti limitet. Próbáld újra később.',
         );
-        errorResponse.headers.set('x-request-id', requestId);
-        if (rateLimitResult) {
-          addRateLimitHeaders(errorResponse, rateLimitResult);
-        }
-        return errorResponse;
       }
 
-      const safeDescription = formatProjectDetailsForPrompt(sanitizedDetails);
-      const safeDeadline = sanitizeInput(deadline || '—');
+      let requestBody: unknown;
+      let requestHash: string | undefined;
 
-      const toneGuidance =
-        brandVoice === 'formal'
-          ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
-          : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+      try {
+        requestBody = await req.json();
+        requestHash = hashRequest(requestBody);
 
-      const formalityGuidance =
-        formality === 'magázódás'
-          ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
-          : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+        // Request deduplication - check if identical request is already in progress
+        const cachedRequest = requestCache.get(requestHash);
+        if (cachedRequest) {
+          log.info('Deduplicating AI preview request', { requestHash });
+          return cachedRequest;
+        }
 
-      const userPrompt = `
+        const parsed = previewRequestSchema.safeParse(requestBody);
+        if (!parsed.success) {
+          return handleValidationError(parsed.error, requestId);
+        }
+
+        const { title, projectDetails, deadline, language, brandVoice, style, formality } =
+          parsed.data;
+
+        if (!envServer.OPENAI_API_KEY) {
+          const errorResponse = NextResponse.json(
+            { error: 'OPENAI_API_KEY missing' },
+            { status: 500 },
+          );
+          errorResponse.headers.set('x-request-id', requestId);
+          if (rateLimitResult) {
+            addRateLimitHeaders(errorResponse, rateLimitResult);
+          }
+          return errorResponse;
+        }
+        const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
+
+        const styleAddon =
+          style === 'compact'
+            ? 'Stílus: nagyon tömör és kártyás felépítésű. Használj <div class="offer-doc__compact"> gyökérelemet, benne <section class="offer-doc__compact-intro">, <section class="offer-doc__compact-grid"> és <section class="offer-doc__compact-bottom"> blokkokat. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. Minden felsorolás legfeljebb 3 rövid pontból álljon, amelyek a legfontosabb információkat összegzik.'
+            : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A HTML-ben használj <h2>...</h2> szakaszcímeket a megadott szerkezet szerint és tartalmas felsorolásokat (4-6 pont), amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket.';
+
+        const safeLanguage = sanitizeInput(language);
+        const safeTitle = sanitizeInput(title);
+        const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
+          (acc, key) => {
+            acc[key] = sanitizeInput(projectDetails[key]);
+            return acc;
+          },
+          { ...emptyProjectDetails },
+        );
+
+        // Content moderation: Check for malicious content before sending to OpenAI
+        const moderationResult = moderateUserInput({
+          title,
+          projectDetails: sanitizedDetails,
+          deadline: deadline || undefined,
+        });
+
+        if (!moderationResult.allowed) {
+          log.warn('Content moderation blocked preview request', {
+            userId: req.user.id,
+            category: moderationResult.category,
+            reason: moderationResult.reason,
+          });
+          const errorResponse = NextResponse.json(
+            {
+              error:
+                moderationResult.reason ||
+                'A tartalom nem megfelelő formátumú. Kérjük, módosítsd a szöveget.',
+            },
+            { status: 400 },
+          );
+          errorResponse.headers.set('x-request-id', requestId);
+          if (rateLimitResult) {
+            addRateLimitHeaders(errorResponse, rateLimitResult);
+          }
+          return errorResponse;
+        }
+
+        const safeDescription = formatProjectDetailsForPrompt(sanitizedDetails);
+        const safeDeadline = sanitizeInput(deadline || '—');
+
+        const toneGuidance =
+          brandVoice === 'formal'
+            ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
+            : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+
+        const formalityGuidance =
+          formality === 'magázódás'
+            ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
+            : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+
+        const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
 Nyelv: ${safeLanguage}
@@ -320,448 +281,451 @@ Különös figyelmet fordít a következőkre:
 - A szólítást következetesen alkalmazd a teljes szövegben
 `;
 
-      const encoder = new TextEncoder();
-      const previewModels = ['o4-mini', 'gpt-4o-mini'] as const;
-      const MAX_RETRIES = 3; // Increased retries for better error recovery
-      const RETRY_DELAY_BASE_MS = 500; // Base delay for exponential backoff
+        const encoder = new TextEncoder();
+        const previewModels = ['o4-mini', 'gpt-4o-mini'] as const;
+        const MAX_RETRIES = 3; // Increased retries for better error recovery
+        const RETRY_DELAY_BASE_MS = 500; // Base delay for exponential backoff
 
-      // Check if request was aborted before starting
-      if (req.signal?.aborted) {
-        return new NextResponse(null, { status: 499 }); // Client Closed Request
-      }
+        // Check if request was aborted before starting
+        if (req.signal?.aborted) {
+          return new NextResponse(null, { status: 499 }); // Client Closed Request
+        }
 
-      let stream: Awaited<ReturnType<typeof openai.responses.stream>> | null = null;
-      let lastError: unknown = null;
+        let stream: Awaited<ReturnType<typeof openai.responses.stream>> | null = null;
+        let lastError: unknown = null;
 
-      // Improved error recovery with retries and better fallback logic
-      for (const model of previewModels) {
-        for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
-          // Check abort signal before each attempt
-          if (req.signal?.aborted) {
-            return new NextResponse(null, { status: 499 });
-          }
-
-          try {
-            const requestOptions: Parameters<typeof openai.responses.stream>[0] = {
-              model,
-              input: [
-                { role: 'system', content: BASE_SYSTEM_PROMPT },
-                { role: 'user', content: userPrompt },
-              ],
-            };
-
-            if (!model.startsWith('o4')) {
-              requestOptions.temperature = 0.7;
+        // Improved error recovery with retries and better fallback logic
+        for (const model of previewModels) {
+          for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
+            // Check abort signal before each attempt
+            if (req.signal?.aborted) {
+              return new NextResponse(null, { status: 499 });
             }
 
-            stream = await openai.responses.stream(requestOptions);
-            if (model !== previewModels[0] || attempt > 0) {
-              log.warn('Using fallback model for preview', { model, attempt, lastError });
-            }
-            break;
-          } catch (error) {
-            lastError = error;
+            try {
+              const requestOptions: Parameters<typeof openai.responses.stream>[0] = {
+                model,
+                input: [
+                  { role: 'system', content: BASE_SYSTEM_PROMPT },
+                  { role: 'user', content: userPrompt },
+                ],
+              };
 
-            // Check if request was aborted
-            if (req.signal?.aborted || isAbortLikeError(error)) {
-              if (req.signal?.aborted) {
-                return new NextResponse(null, { status: 499 });
+              if (!model.startsWith('o4')) {
+                requestOptions.temperature = 0.7;
               }
-              // Retry abort errors with exponential backoff
+
+              stream = await openai.responses.stream(requestOptions);
+              if (model !== previewModels[0] || attempt > 0) {
+                log.warn('Using fallback model for preview', { model, attempt, lastError });
+              }
+              break;
+            } catch (error) {
+              lastError = error;
+
+              // Check if request was aborted
+              if (req.signal?.aborted || isAbortLikeError(error)) {
+                if (req.signal?.aborted) {
+                  return new NextResponse(null, { status: 499 });
+                }
+                // Retry abort errors with exponential backoff
+                if (attempt < MAX_RETRIES - 1) {
+                  const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
+                  await wait(delay);
+                  continue;
+                }
+                // If last attempt and not last model, try next model
+                if (model !== previewModels[previewModels.length - 1]) {
+                  log.warn('Aborted stream, retrying with fallback model', { model, error });
+                  break;
+                }
+                throw error;
+              }
+
+              // Handle API errors - retry on transient errors, fallback on model errors
+              if (error instanceof APIError) {
+                const isModelMissing =
+                  error.status === 404 ||
+                  error.code === 'model_not_found' ||
+                  error.code === 'model_not_found_error';
+
+                if (isModelMissing) {
+                  // Try next model
+                  break;
+                }
+
+                // Retry on rate limit or server errors (5xx)
+                const isRetryable =
+                  error.status === 429 || // Rate limit
+                  error.status === 500 || // Server error
+                  error.status === 502 || // Bad gateway
+                  error.status === 503 || // Service unavailable
+                  error.status === 504; // Gateway timeout
+
+                if (isRetryable && attempt < MAX_RETRIES - 1) {
+                  const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
+                  log.warn('Retrying AI preview request after error', {
+                    status: error.status,
+                    attempt: attempt + 1,
+                    delay,
+                  });
+                  await wait(delay);
+                  continue;
+                }
+
+                // If last model and last attempt, throw error
+                if (
+                  model === previewModels[previewModels.length - 1] &&
+                  attempt === MAX_RETRIES - 1
+                ) {
+                  throw error;
+                }
+
+                // Try next model on non-retryable errors
+                if (!isRetryable && model !== previewModels[previewModels.length - 1]) {
+                  log.warn('API error, trying fallback model', {
+                    status: error.status,
+                    model,
+                    error,
+                  });
+                  break;
+                }
+              }
+
+              // For other errors, retry with exponential backoff
               if (attempt < MAX_RETRIES - 1) {
                 const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
                 await wait(delay);
                 continue;
               }
-              // If last attempt and not last model, try next model
-              if (model !== previewModels[previewModels.length - 1]) {
-                log.warn('Aborted stream, retrying with fallback model', { model, error });
-                break;
-              }
+
               throw error;
             }
+          }
 
-            // Handle API errors - retry on transient errors, fallback on model errors
-            if (error instanceof APIError) {
-              const isModelMissing =
-                error.status === 404 ||
-                error.code === 'model_not_found' ||
-                error.code === 'model_not_found_error';
-
-              if (isModelMissing) {
-                // Try next model
-                break;
-              }
-
-              // Retry on rate limit or server errors (5xx)
-              const isRetryable =
-                error.status === 429 || // Rate limit
-                error.status === 500 || // Server error
-                error.status === 502 || // Bad gateway
-                error.status === 503 || // Service unavailable
-                error.status === 504; // Gateway timeout
-
-              if (isRetryable && attempt < MAX_RETRIES - 1) {
-                const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
-                log.warn('Retrying AI preview request after error', {
-                  status: error.status,
-                  attempt: attempt + 1,
-                  delay,
-                });
-                await wait(delay);
-                continue;
-              }
-
-              // If last model and last attempt, throw error
-              if (
-                model === previewModels[previewModels.length - 1] &&
-                attempt === MAX_RETRIES - 1
-              ) {
-                throw error;
-              }
-
-              // Try next model on non-retryable errors
-              if (!isRetryable && model !== previewModels[previewModels.length - 1]) {
-                log.warn('API error, trying fallback model', {
-                  status: error.status,
-                  model,
-                  error,
-                });
-                break;
-              }
-            }
-
-            // For other errors, retry with exponential backoff
-            if (attempt < MAX_RETRIES - 1) {
-              const delay = RETRY_DELAY_BASE_MS * Math.pow(2, attempt);
-              await wait(delay);
-              continue;
-            }
-
-            throw error;
+          if (stream) {
+            break;
           }
         }
 
-        if (stream) {
-          break;
+        if (!stream) {
+          throw lastError instanceof Error
+            ? lastError
+            : new Error('Failed to start preview stream');
         }
-      }
 
-      if (!stream) {
-        throw lastError instanceof Error ? lastError : new Error('Failed to start preview stream');
-      }
-
-      // Check abort signal after stream creation
-      if (req.signal?.aborted) {
-        try {
-          stream.abort();
-        } catch {
-          // ignore abort errors
+        // Check abort signal after stream creation
+        if (req.signal?.aborted) {
+          try {
+            stream.abort();
+          } catch {
+            // ignore abort errors
+          }
+          return new NextResponse(null, { status: 499 });
         }
-        return new NextResponse(null, { status: 499 });
-      }
 
-      let removeStreamListeners: (() => void) | null = null;
-      let timeoutId: ReturnType<typeof setTimeout> | null = null;
-      let closeStreamRef: (() => void) | null = null;
-      let isCleanedUp = false;
+        let removeStreamListeners: (() => void) | null = null;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+        const queueTimeoutIds = new Set<ReturnType<typeof setTimeout>>();
+        let closeStreamRef: (() => void) | null = null;
+        let isCleanedUp = false;
 
-      const cleanup = () => {
-        if (isCleanedUp) return; // Prevent double cleanup
-        isCleanedUp = true;
+        const cleanup = () => {
+          if (isCleanedUp) return; // Prevent double cleanup
+          isCleanedUp = true;
 
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        if (removeStreamListeners) {
-          removeStreamListeners();
-          removeStreamListeners = null;
-        }
-      };
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+          // Clear all queue processing timeouts
+          for (const id of queueTimeoutIds) {
+            clearTimeout(id);
+          }
+          queueTimeoutIds.clear();
+          if (removeStreamListeners) {
+            removeStreamListeners();
+            removeStreamListeners = null;
+          }
+        };
 
-      const readable = new ReadableStream<Uint8Array>({
-        start(controller) {
-          let accumulated = '';
-          let closed = false;
-          const MAX_ACCUMULATED_SIZE = 10 * 1024 * 1024; // 10MB limit to prevent memory issues
+        const readable = new ReadableStream<Uint8Array>({
+          start(controller) {
+            let accumulated = '';
+            let closed = false;
+            const MAX_ACCUMULATED_SIZE = 10 * 1024 * 1024; // 10MB limit to prevent memory issues
 
-          // Set up abort signal listener
-          const abortHandler = () => {
-            if (!closed) {
-              try {
-                stream.abort();
-              } catch {
-                // ignore abort errors
+            // Set up abort signal listener
+            const abortHandler = () => {
+              if (!closed) {
+                try {
+                  stream.abort();
+                } catch {
+                  // ignore abort errors
+                }
+                closeStream();
               }
-              closeStream();
-            }
-          };
-          req.signal?.addEventListener('abort', abortHandler);
+            };
+            req.signal?.addEventListener('abort', abortHandler);
 
-          const closeStream = () => {
-            if (closed) return;
-            closed = true;
-            req.signal?.removeEventListener('abort', abortHandler);
+            const closeStream = () => {
+              if (closed) return;
+              closed = true;
+              req.signal?.removeEventListener('abort', abortHandler);
+              try {
+                controller.close();
+              } catch (closeError) {
+                if (!(closeError instanceof TypeError && closeError.message.includes('closed'))) {
+                  throw closeError;
+                }
+              } finally {
+                cleanup();
+                closeStreamRef = null;
+              }
+            };
+
+            closeStreamRef = closeStream;
+
+            // Queue for backpressure handling
+            const payloadQueue: Array<Record<string, unknown>> = [];
+            let isProcessingQueue = false;
+            let isPaused = false;
+
+            const processQueue = () => {
+              if (isProcessingQueue || closed || payloadQueue.length === 0) {
+                return;
+              }
+
+              isProcessingQueue = true;
+              while (payloadQueue.length > 0 && !closed) {
+                const desiredSize = controller.desiredSize;
+                // If buffer is full, stop processing and wait
+                if (desiredSize !== null && desiredSize <= 0) {
+                  isPaused = true;
+                  isProcessingQueue = false;
+                  // Resume processing after a short delay
+                  const timeoutId = setTimeout(() => {
+                    queueTimeoutIds.delete(timeoutId);
+                    if (!closed) {
+                      processQueue();
+                    }
+                  }, 50);
+                  queueTimeoutIds.add(timeoutId);
+                  return;
+                }
+
+                if (isPaused) {
+                  isPaused = false;
+                }
+
+                const payload = payloadQueue.shift();
+                if (!payload) break;
+
+                try {
+                  const data = encoder.encode(`data: ${JSON.stringify(payload)}\n\n`);
+                  controller.enqueue(data);
+                } catch (enqueueError) {
+                  if (
+                    enqueueError instanceof TypeError &&
+                    enqueueError.message.includes('closed')
+                  ) {
+                    closeStream();
+                    return;
+                  }
+                  // If enqueue fails due to backpressure, re-queue and retry
+                  payloadQueue.unshift(payload);
+                  isProcessingQueue = false;
+                  const timeoutId = setTimeout(() => {
+                    queueTimeoutIds.delete(timeoutId);
+                    if (!closed) {
+                      processQueue();
+                    }
+                  }, 50);
+                  queueTimeoutIds.add(timeoutId);
+                  return;
+                }
+              }
+              isProcessingQueue = false;
+            };
+
+            const push = (payload: Record<string, unknown>) => {
+              if (closed) return;
+
+              payloadQueue.push(payload);
+              processQueue();
+            };
+
+            const handleDelta = (event: { delta?: string }) => {
+              if (!event.delta) return;
+
+              // Prevent unbounded memory growth
+              if (accumulated.length + event.delta.length > MAX_ACCUMULATED_SIZE) {
+                log.warn('Accumulated HTML size limit reached, truncating', {
+                  currentSize: accumulated.length,
+                  deltaSize: event.delta.length,
+                  maxSize: MAX_ACCUMULATED_SIZE,
+                });
+                // Truncate accumulated to make room, keeping last portion
+                const keepSize = Math.floor(MAX_ACCUMULATED_SIZE * 0.9); // Keep 90%
+                accumulated = accumulated.slice(-keepSize);
+              }
+
+              accumulated += event.delta;
+              push({ type: 'delta', html: sanitizeHTML(accumulated) });
+            };
+
+            const handleEnd = () => {
+              const finalHtml = sanitizeHTML(accumulated || '<p>(nincs előnézet)</p>');
+              const summary = extractPreviewSummaryHighlights(finalHtml);
+              const issues = detectPreviewIssues(finalHtml);
+              push({ type: 'done', html: finalHtml, summary, issues });
+              closeStream();
+            };
+
+            const handleAbort = (error: unknown) => {
+              log.warn('Preview stream aborted', {
+                error: error instanceof Error ? error.message : String(error),
+              });
+              const message = 'Az előnézet kérése megszakadt. Próbáld újra néhány másodperc múlva.';
+              push({ type: 'error', message });
+              closeStream();
+            };
+
+            const handleError = (error: unknown) => {
+              log.error('Preview stream error', error);
+              const message =
+                'Váratlan hiba történt az előnézet készítése közben. Kérjük, próbáld meg újra.';
+              push({ type: 'error', message });
+              closeStream();
+            };
+
+            const handleTimeout = () => {
+              if (closed) return;
+              try {
+                push({ type: 'error', message: STREAM_TIMEOUT_MESSAGE });
+              } finally {
+                closeStream();
+                try {
+                  stream.abort();
+                } catch (abortError) {
+                  if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
+                    log.error('Failed to abort preview stream after timeout', abortError);
+                  }
+                }
+              }
+            };
+
+            removeStreamListeners = () => {
+              stream.off('response.output_text.delta', handleDelta);
+              stream.off('end', handleEnd);
+              stream.off('abort', handleAbort);
+              stream.off('error', handleError);
+            };
+
+            stream.on('response.output_text.delta', handleDelta);
+            stream.on('end', handleEnd);
+            stream.on('abort', handleAbort);
+            stream.on('error', handleError);
+
+            timeoutId = setTimeout(handleTimeout, STREAM_TIMEOUT_MS);
+          },
+          cancel() {
             try {
-              controller.close();
-            } catch (closeError) {
-              if (!(closeError instanceof TypeError && closeError.message.includes('closed'))) {
-                throw closeError;
+              stream.abort();
+            } catch (abortError) {
+              if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
+                log.error('Failed to abort preview stream on cancel', abortError);
               }
             } finally {
+              closeStreamRef?.();
               cleanup();
               closeStreamRef = null;
             }
-          };
-
-          closeStreamRef = closeStream;
-
-          // Queue for backpressure handling
-          const payloadQueue: Array<Record<string, unknown>> = [];
-          let isProcessingQueue = false;
-          let isPaused = false;
-
-          const processQueue = () => {
-            if (isProcessingQueue || closed || payloadQueue.length === 0) {
-              return;
-            }
-
-            isProcessingQueue = true;
-            while (payloadQueue.length > 0 && !closed) {
-              const desiredSize = controller.desiredSize;
-              // If buffer is full, stop processing and wait
-              if (desiredSize !== null && desiredSize <= 0) {
-                isPaused = true;
-                isProcessingQueue = false;
-                // Resume processing after a short delay
-                setTimeout(() => {
-                  if (!closed) {
-                    processQueue();
-                  }
-                }, 50);
-                return;
-              }
-
-              if (isPaused) {
-                isPaused = false;
-              }
-
-              const payload = payloadQueue.shift();
-              if (!payload) break;
-
-              try {
-                const data = encoder.encode(`data: ${JSON.stringify(payload)}\n\n`);
-                controller.enqueue(data);
-              } catch (enqueueError) {
-                if (enqueueError instanceof TypeError && enqueueError.message.includes('closed')) {
-                  closeStream();
-                  return;
-                }
-                // If enqueue fails due to backpressure, re-queue and retry
-                payloadQueue.unshift(payload);
-                isProcessingQueue = false;
-                setTimeout(() => {
-                  if (!closed) {
-                    processQueue();
-                  }
-                }, 50);
-                return;
-              }
-            }
-            isProcessingQueue = false;
-          };
-
-          const push = (payload: Record<string, unknown>) => {
-            if (closed) return;
-
-            payloadQueue.push(payload);
-            processQueue();
-          };
-
-          const handleDelta = (event: { delta?: string }) => {
-            if (!event.delta) return;
-
-            // Prevent unbounded memory growth
-            if (accumulated.length + event.delta.length > MAX_ACCUMULATED_SIZE) {
-              log.warn('Accumulated HTML size limit reached, truncating', {
-                currentSize: accumulated.length,
-                deltaSize: event.delta.length,
-                maxSize: MAX_ACCUMULATED_SIZE,
-              });
-              // Truncate accumulated to make room, keeping last portion
-              const keepSize = Math.floor(MAX_ACCUMULATED_SIZE * 0.9); // Keep 90%
-              accumulated = accumulated.slice(-keepSize);
-            }
-
-            accumulated += event.delta;
-            push({ type: 'delta', html: sanitizeHTML(accumulated) });
-          };
-
-          const handleEnd = () => {
-            const finalHtml = sanitizeHTML(accumulated || '<p>(nincs előnézet)</p>');
-            const summary = extractPreviewSummaryHighlights(finalHtml);
-            const issues = detectPreviewIssues(finalHtml);
-            push({ type: 'done', html: finalHtml, summary, issues });
-            closeStream();
-          };
-
-          const handleAbort = (error: unknown) => {
-            log.warn('Preview stream aborted', {
-              error: error instanceof Error ? error.message : String(error),
-            });
-            const message = 'Az előnézet kérése megszakadt. Próbáld újra néhány másodperc múlva.';
-            push({ type: 'error', message });
-            closeStream();
-          };
-
-          const handleError = (error: unknown) => {
-            log.error('Preview stream error', error);
-            const message =
-              'Váratlan hiba történt az előnézet készítése közben. Kérjük, próbáld meg újra.';
-            push({ type: 'error', message });
-            closeStream();
-          };
-
-          const handleTimeout = () => {
-            if (closed) return;
-            try {
-              push({ type: 'error', message: STREAM_TIMEOUT_MESSAGE });
-            } finally {
-              closeStream();
-              try {
-                stream.abort();
-              } catch (abortError) {
-                if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
-                  log.error('Failed to abort preview stream after timeout', abortError);
-                }
-              }
-            }
-          };
-
-          removeStreamListeners = () => {
-            stream.off('response.output_text.delta', handleDelta);
-            stream.off('end', handleEnd);
-            stream.off('abort', handleAbort);
-            stream.off('error', handleError);
-          };
-
-          stream.on('response.output_text.delta', handleDelta);
-          stream.on('end', handleEnd);
-          stream.on('abort', handleAbort);
-          stream.on('error', handleError);
-
-          timeoutId = setTimeout(handleTimeout, STREAM_TIMEOUT_MS);
-        },
-        cancel() {
-          try {
-            stream.abort();
-          } catch (abortError) {
-            if (!(abortError instanceof Error && abortError.name === 'AbortError')) {
-              log.error('Failed to abort preview stream on cancel', abortError);
-            }
-          } finally {
-            closeStreamRef?.();
-            cleanup();
-            closeStreamRef = null;
-          }
-        },
-      });
-
-      // Create response promise and cache it for deduplication
-      const responseHeaders: Record<string, string> = {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-        'x-request-id': requestId,
-      };
-
-      // Add rate limit headers if available
-      if (rateLimitResult) {
-        const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
-        Object.assign(responseHeaders, rateLimitHeaders);
-      }
-
-      const responsePromise = Promise.resolve(
-        new NextResponse(readable, {
-          headers: responseHeaders,
-        }),
-      );
-
-      // Cache the request for deduplication (only cache for short time)
-      // Note: Cleanup is handled by the periodic cleanup interval, so we don't need
-      // individual setTimeout calls that could leak memory
-      if (requestHash) {
-        requestCache.set(requestHash, {
-          promise: responsePromise,
-          timestamp: Date.now(),
+          },
         });
-        // No need for individual setTimeout - the cleanup interval will remove expired entries
-      }
 
-      return responsePromise;
-    } catch (error) {
-      // Remove from cache on error
-      if (requestHash) {
-        requestCache.delete(requestHash);
-      }
-      if (isAbortLikeError(error)) {
-        log.error('AI preview aborted before streaming could start', error);
-        const abortResponse = NextResponse.json(
-          { error: 'Az OpenAI kapcsolat megszakadt. Próbáld újra néhány másodperc múlva.' },
-          { status: 503 },
-        );
-        abortResponse.headers.set('x-request-id', requestId);
+        // Create response promise and cache it for deduplication
+        const responseHeaders: Record<string, string> = {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+          'x-request-id': requestId,
+        };
+
+        // Add rate limit headers if available
         if (rateLimitResult) {
-          addRateLimitHeaders(abortResponse, rateLimitResult);
+          const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
+          Object.assign(responseHeaders, rateLimitHeaders);
         }
-        return abortResponse;
-      }
-      if (error instanceof APIError) {
-        log.error('AI preview API error', error);
-        const status = typeof error.status === 'number' ? error.status : 500;
-        const errorMessage =
-          (typeof error.message === 'string' && error.message.trim().length > 0
-            ? error.message
-            : error.error && typeof error.error === 'object'
-              ? String((error.error as { message?: unknown }).message ?? 'Preview failed')
-              : 'Preview failed') || 'Preview failed';
 
-        // Handle 403 Forbidden errors specifically
-        if (status === 403) {
-          log.error('OpenAI API 403 Forbidden error in preview', {
-            status: error.status,
-            code: error.code,
-            message: error.message,
-            type: error.type,
-          });
-          const errorResponse = NextResponse.json(
-            {
-              error:
-                'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
-            },
-            { status: 403 },
+        const responsePromise = Promise.resolve(
+          new NextResponse(readable, {
+            headers: responseHeaders,
+          }),
+        );
+
+        // Cache the request for deduplication (only cache for short time)
+        // LRU cache automatically handles TTL expiration, no manual cleanup needed
+        if (requestHash) {
+          requestCache.set(requestHash, responsePromise);
+        }
+
+        return responsePromise;
+      } catch (error) {
+        // Remove from cache on error
+        if (requestHash) {
+          requestCache.delete(requestHash);
+        }
+        if (isAbortLikeError(error)) {
+          log.error('AI preview aborted before streaming could start', error);
+          const abortResponse = createErrorResponse(
+            'Az OpenAI kapcsolat megszakadt. Próbáld újra néhány másodperc múlva.',
+            HttpStatus.SERVICE_UNAVAILABLE,
           );
-          errorResponse.headers.set('x-request-id', requestId);
+          if (rateLimitResult) {
+            addRateLimitHeaders(abortResponse, rateLimitResult);
+          }
+          return abortResponse;
+        }
+        if (error instanceof APIError) {
+          log.error('AI preview API error', error);
+          const status =
+            typeof error.status === 'number' ? error.status : HttpStatus.INTERNAL_SERVER_ERROR;
+          const errorMessage =
+            (typeof error.message === 'string' && error.message.trim().length > 0
+              ? error.message
+              : error.error && typeof error.error === 'object'
+                ? String((error.error as { message?: unknown }).message ?? 'Preview failed')
+                : 'Preview failed') || 'Preview failed';
+
+          // Handle 403 Forbidden errors specifically
+          if (status === 403) {
+            log.error('OpenAI API 403 Forbidden error in preview', {
+              status: error.status,
+              code: error.code,
+              message: error.message,
+              type: error.type,
+            });
+            const errorResponse = createErrorResponse(
+              'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
+              HttpStatus.FORBIDDEN,
+            );
+            if (rateLimitResult) {
+              addRateLimitHeaders(errorResponse, rateLimitResult);
+            }
+            return errorResponse;
+          }
+
+          const errorResponse = createErrorResponse(errorMessage, status);
           if (rateLimitResult) {
             addRateLimitHeaders(errorResponse, rateLimitResult);
           }
           return errorResponse;
         }
 
-        const errorResponse = NextResponse.json({ error: errorMessage }, { status });
-        errorResponse.headers.set('x-request-id', requestId);
-        if (rateLimitResult) {
-          addRateLimitHeaders(errorResponse, rateLimitResult);
-        }
-        return errorResponse;
+        // Re-throw unexpected errors to be handled by withAuthenticatedErrorHandling
+        throw error;
       }
-
-      const errorResponse = handleUnexpectedError(error, requestId, log);
-      if (rateLimitResult) {
-        addRateLimitHeaders(errorResponse, rateLimitResult);
-      }
-      return errorResponse;
-    }
-  }),
+    }),
+  ),
 );

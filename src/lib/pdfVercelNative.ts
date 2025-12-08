@@ -18,6 +18,7 @@ import type { PdfMetadata, PdfGenerationOptions, PuppeteerPage } from './pdfConf
 import { createPdfOptions, toPuppeteerOptions, setPdfMetadata } from './pdfConfig';
 import { assertPdfEngineHtml } from './pdfHtmlSignature';
 import { logger } from '@/lib/logger';
+import { isServerlessEnvironment as getIsServerlessEnvironment } from '@/env.server';
 
 /**
  * Configuration for Vercel-native PDF generation
@@ -26,13 +27,10 @@ const JOB_TIMEOUT_MS = 90_000;
 
 /**
  * Detects if we're running in a Vercel/serverless environment
+ * Uses validated environment helper
  */
 function isServerlessEnvironment(): boolean {
-  return (
-    process.env.VERCEL === '1' ||
-    process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined ||
-    process.env.VERCEL_ENV !== undefined
-  );
+  return getIsServerlessEnvironment();
 }
 
 /**
@@ -154,7 +152,7 @@ async function setContentWithNetworkIdleLogging(
   const responseErrors: Array<{ url: string; status: number }> = [];
 
   // Set up request/response listeners
-  // Use type assertion to handle puppeteer-core event types
+  // Define proper types for Puppeteer event handlers
   interface PuppeteerRequest {
     url?: string | (() => string);
     failure?: () => { errorText?: string } | null;
@@ -165,10 +163,17 @@ async function setContentWithNetworkIdleLogging(
     status?: number | (() => number);
   }
 
-  const pageWithEvents = page as unknown as {
+  /**
+   * Type-safe interface for Page with event methods.
+   * Puppeteer pages support event listeners with 'on' and optional 'off' methods.
+   */
+  interface PageWithEvents {
     on: (event: string, handler: (arg: unknown) => void) => void;
     off?: (event: string, handler: (arg: unknown) => void) => void;
-  };
+  }
+
+  // Page from puppeteer-core is compatible with our event interface
+  const pageWithEvents = page as PageWithEvents;
 
   const onRequestFailed = (request: unknown) => {
     const req = request as PuppeteerRequest;
@@ -254,7 +259,8 @@ export async function generatePdfVercelNative(
   const browser = await puppeteer.launch(launchOptions);
 
   try {
-    const page = (await browser.newPage()) as unknown as PuppeteerPage;
+    // Page from puppeteer-core is compatible with PuppeteerPage interface
+    const page = (await browser.newPage()) as PuppeteerPage;
 
     // Set timeouts
     page.setDefaultNavigationTimeout(JOB_TIMEOUT_MS);

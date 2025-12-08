@@ -11,14 +11,12 @@ import {
   RATE_LIMIT_WINDOW_MS,
 } from '@/lib/rateLimiting';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
-import { createLogger } from '@/lib/logger';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
+import { createLogger } from '@/lib/logger';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
-
-function buildErrorResponse(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status });
-}
 
 function parseRequestBody(payload: unknown) {
   if (!payload || typeof payload !== 'object') {
@@ -36,89 +34,96 @@ function parseRequestBody(payload: unknown) {
   return { priceId, email };
 }
 
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
-  const requestId = randomUUID();
-  const clientId = getClientIdentifier(req);
-  const log = createLogger(requestId);
-  log.setContext({ userId: req.user.id, clientId });
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+    const requestId = randomUUID();
+    const clientId = getClientIdentifier(req);
+    const log = createLogger(requestId);
+    log.setContext({ userId: req.user.id, clientId });
 
-  try {
-    const supabase = supabaseServiceRole();
-    const rateLimitKey = `checkout:${clientId}`;
-    const rateLimitResult = await consumeRateLimit(
-      supabase,
-      rateLimitKey,
-      RATE_LIMIT_MAX_REQUESTS,
-      RATE_LIMIT_WINDOW_MS,
-    );
+    try {
+      const supabase = supabaseServiceRole();
+      const rateLimitKey = `checkout:${clientId}`;
+      const rateLimitResult = await consumeRateLimit(
+        supabase,
+        rateLimitKey,
+        RATE_LIMIT_MAX_REQUESTS,
+        RATE_LIMIT_WINDOW_MS,
+      );
 
-    if (!rateLimitResult.allowed) {
-      const retrySeconds = Math.max(1, Math.ceil(rateLimitResult.retryAfterMs / 1000));
-      log.warn('Checkout rate limit exceeded', {
-        retrySeconds,
-        limit: rateLimitResult.limit,
-        remaining: rateLimitResult.remaining,
-      });
-      return NextResponse.json(
-        { error: 'Túl sok fizetési próbálkozás történt. Próbáld újra később.' },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': retrySeconds.toString(),
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
+      if (!rateLimitResult.allowed) {
+        const retrySeconds = Math.max(1, Math.ceil(rateLimitResult.retryAfterMs / 1000));
+        log.warn('Checkout rate limit exceeded', {
+          retrySeconds,
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
+        });
+        return NextResponse.json(
+          { error: 'Túl sok fizetési próbálkozás történt. Próbáld újra később.' },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': retrySeconds.toString(),
+              'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+              'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+              'X-RateLimit-Reset': new Date(rateLimitResult.resetAt).toISOString(),
+            },
           },
-        },
+        );
+      }
+    } catch (error) {
+      log.error('Rate limit check failed', error);
+      // Allow request to proceed if rate limiting fails to avoid blocking legitimate users
+    }
+
+    let parsedBody: { priceId: string; email: string } | null = null;
+    try {
+      const body = await req.json();
+      parsedBody = parseRequestBody(body);
+    } catch (error) {
+      log.warn('Checkout request payload parse failed', {
+        error:
+          error instanceof Error ? { name: error.name, message: error.message } : String(error),
+      });
+      return createErrorResponse('Érvénytelen kérés törzs.', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!parsedBody) {
+      log.warn('Checkout request validation failed');
+      return createErrorResponse(
+        'Érvénytelen kérés: hiányzó priceId vagy email.',
+        HttpStatus.BAD_REQUEST,
       );
     }
-  } catch (error) {
-    log.error('Rate limit check failed', error);
-    // Allow request to proceed if rate limiting fails to avoid blocking legitimate users
-  }
 
-  let parsedBody: { priceId: string; email: string } | null = null;
-  try {
-    const body = await req.json();
-    parsedBody = parseRequestBody(body);
-  } catch (error) {
-    log.warn('Checkout request payload parse failed', {
-      error: error instanceof Error ? { name: error.name, message: error.message } : String(error),
-    });
-    return buildErrorResponse('Érvénytelen kérés törzs.', 400);
-  }
+    const { priceId, email } = parsedBody;
 
-  if (!parsedBody) {
-    log.warn('Checkout request validation failed');
-    return buildErrorResponse('Érvénytelen kérés: hiányzó priceId vagy email.', 400);
-  }
+    if (
+      envServer.STRIPE_PRICE_ALLOWLIST.length > 0 &&
+      !envServer.STRIPE_PRICE_ALLOWLIST.includes(priceId)
+    ) {
+      log.warn('Checkout request rejected due to disallowed price', { priceId });
+      return createErrorResponse('A választott előfizetés nem érhető el.', HttpStatus.BAD_REQUEST);
+    }
 
-  const { priceId, email } = parsedBody;
+    const userEmail = req.user.email;
+    const userId = req.user.id;
 
-  if (
-    envServer.STRIPE_PRICE_ALLOWLIST.length > 0 &&
-    !envServer.STRIPE_PRICE_ALLOWLIST.includes(priceId)
-  ) {
-    log.warn('Checkout request rejected due to disallowed price', { priceId });
-    return buildErrorResponse('A választott előfizetés nem érhető el.', 400);
-  }
+    if (!userEmail) {
+      log.warn('Checkout user is missing email');
+      return createErrorResponse('A fiókhoz nem tartozik email-cím.', HttpStatus.FORBIDDEN);
+    }
 
-  const userEmail = req.user.email;
-  const userId = req.user.id;
+    if (userEmail.toLowerCase() !== email.toLowerCase()) {
+      log.warn('Checkout email mismatch');
+      return createErrorResponse(
+        'A megadott email nem egyezik a fiókod email-címével.',
+        HttpStatus.FORBIDDEN,
+      );
+    }
 
-  if (!userEmail) {
-    log.warn('Checkout user is missing email');
-    return buildErrorResponse('A fiókhoz nem tartozik email-cím.', 403);
-  }
+    log.info('Checkout session creation started', { priceId });
 
-  if (userEmail.toLowerCase() !== email.toLowerCase()) {
-    log.warn('Checkout email mismatch');
-    return buildErrorResponse('A megadott email nem egyezik a fiókod email-címével.', 403);
-  }
-
-  log.info('Checkout session creation started', { priceId });
-
-  try {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -146,8 +151,5 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     });
 
     return NextResponse.json({ url: sessionUrl });
-  } catch (error) {
-    log.error('Stripe checkout session creation failed', error);
-    return buildErrorResponse('Nem sikerült elindítani a Stripe fizetést.', 500);
-  }
-});
+  }),
+);

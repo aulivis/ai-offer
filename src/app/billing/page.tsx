@@ -1,11 +1,11 @@
 'use client';
 
 import { t, type CopyKey } from '@/copy';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, type JSX } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { createClientLogger } from '@/lib/clientLogger';
+import { useSearchParams } from 'next/navigation';
 import {
   Check,
   X,
@@ -38,9 +38,7 @@ import {
 
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
-import { useSupabase } from '@/components/SupabaseProvider';
-import { useOptionalAuth } from '@/hooks/useOptionalAuth';
-import { ApiError, fetchWithSupabaseAuth } from '@/lib/api';
+import { useSubscriptionManagement } from '@/hooks/useSubscriptionManagement';
 import { Button } from '@/components/ui/Button';
 import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -129,7 +127,6 @@ const STANDARD_PRICE_MONTHLY = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER!;
 const PRO_PRICE_MONTHLY = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO!;
 const STANDARD_PRICE_ANNUAL = envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL;
 const PRO_PRICE_ANNUAL = envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL;
-const CHECKOUT_API_PATH = '/api/stripe/checkout';
 
 // Monthly prices for calculation (HUF)
 const MONTHLY_PRICES = {
@@ -490,112 +487,26 @@ function PlanCard({
 }
 
 export default function BillingPage() {
-  const supabase = useSupabase();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { status: authStatus, user } = useOptionalAuth();
-  const { showToast } = useToast();
-  const logger = useMemo(
-    () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'BillingPage' }),
-    [user?.id],
+  return (
+    <PageErrorBoundary>
+      <BillingPageContent />
+    </PageErrorBoundary>
   );
-  const [email, setEmail] = useState<string | null>(null);
+}
+
+function BillingPageContent() {
+  const searchParams = useSearchParams();
+  const { showToast } = useToast();
   const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState<string | null>(null);
-  const [plan, setPlan] = useState<'free' | 'standard' | 'pro' | null>(null);
-  const [usage, setUsage] = useState<{
-    offersGenerated: number;
-    periodStart: string | null;
-  } | null>(null);
-  const [isLoadingData, setIsLoadingData] = useState(true);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
+
+  // Use the subscription management hook
+  const { plan, usage, isLoadingData, loading, email, planLimit, startCheckout } =
+    useSubscriptionManagement();
 
   useEffect(() => {
     setStatus(searchParams?.get('status') || null);
   }, [searchParams]);
-
-  useEffect(() => {
-    setEmail(user?.email ?? null);
-  }, [user]);
-
-  const isAuthenticated = authStatus === 'authenticated' && !!user;
-
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      setPlan(null);
-      setUsage(null);
-      setLoading(null);
-      setIsLoadingData(false);
-      return;
-    }
-
-    let active = true;
-    setIsLoadingData(true);
-
-    (async () => {
-      try {
-        // Use unified quota service - single source of truth
-        const { getQuotaData } = await import('@/lib/services/quota');
-        const quotaData = await getQuotaData(supabase, null, null);
-
-        if (!active) {
-          return;
-        }
-
-        setPlan(quotaData.plan);
-        setUsage({
-          offersGenerated: quotaData.confirmed,
-          periodStart: quotaData.periodStart,
-        });
-        setIsLoadingData(false);
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-        logger.error('Failed to load billing information', error);
-        setIsLoadingData(false);
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, supabase, user]);
-
-  async function startCheckout(priceId: string) {
-    try {
-      setLoading(priceId);
-      const resp = await fetchWithSupabaseAuth(CHECKOUT_API_PATH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, email }),
-        authErrorMessage: t('billing.checkout.authRequired'),
-        defaultErrorMessage: t('billing.checkout.error'),
-      });
-      const { url } = (await resp.json()) as { url?: string | null };
-      if (url) router.push(url);
-      else setLoading(null);
-    } catch (e) {
-      logger.error('Failed to start checkout', e, { priceId, email });
-      const message =
-        e instanceof ApiError && typeof e.message === 'string' && e.message.trim()
-          ? e.message
-          : t('billing.checkout.unexpected');
-      showToast({
-        title: t('billing.checkout.error'),
-        description: message,
-        variant: 'error',
-      });
-      setLoading(null);
-    }
-  }
-
-  const planLimit = useMemo<number | null>(() => {
-    if (plan === 'pro') return null;
-    if (plan === 'standard') return 5;
-    return 2;
-  }, [plan]);
 
   type PlanCtaVariant = Extract<ButtonProps['variant'], 'primary' | 'secondary'>;
 

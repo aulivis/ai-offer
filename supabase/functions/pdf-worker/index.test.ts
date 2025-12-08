@@ -33,7 +33,9 @@ vi.mock(
 const denoShim = {
   env: { get: vi.fn() as (key: string) => string | undefined },
 };
-(globalThis as unknown as { Deno?: typeof denoShim }).Deno = denoShim;
+// Type assertion is necessary to add Deno to globalThis in test environment
+// This is safe because we control the shim implementation
+(globalThis as { Deno?: typeof denoShim }).Deno = denoShim;
 
 let incrementUsage: typeof import('./index.ts').incrementUsage;
 
@@ -76,7 +78,9 @@ describe('incrementUsage', () => {
           select: vi.fn().mockReturnValue({ maybeSingle: vi.fn() }),
         }),
       }),
-    } as unknown as SupabaseClient;
+      // Type assertion is safe because we control the mock implementation
+      // and it matches the SupabaseClient interface for the methods we use
+    } as SupabaseClient;
 
     const result = await incrementUsage(supabase, 'user', { userId: 'user-1' }, 5, '2024-07-01');
 

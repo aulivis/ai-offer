@@ -4,6 +4,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createDenoLogger } from '../../shared/logger.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,8 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
+
+  const logger = createDenoLogger({ functionName: 'cleanup-preview-offers' });
 
   try {
     // Create Supabase client with service role key (bypasses RLS)
@@ -36,7 +39,7 @@ serve(async (req) => {
     const { data, error } = await supabaseAdmin.rpc('cleanup_expired_preview_offers');
 
     if (error) {
-      console.error('Cleanup error:', error);
+      logger.error('Cleanup error', error);
       return new Response(
         JSON.stringify({
           success: false,
@@ -52,7 +55,7 @@ serve(async (req) => {
 
     const deletedCount = typeof data === 'number' ? data : 0;
 
-    console.warn(`Cleanup completed: ${deletedCount} expired preview offers deleted`);
+    logger.info(`Cleanup completed: ${deletedCount} expired preview offers deleted`);
 
     return new Response(
       JSON.stringify({
@@ -66,7 +69,7 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logger.error('Unexpected error', error);
     return new Response(
       JSON.stringify({
         success: false,

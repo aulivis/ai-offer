@@ -7,6 +7,7 @@ import {
   splitAllowlist,
 } from '../../shared/pdfWebhook.ts';
 import { assertPdfEngineHtml } from '../../shared/pdfHtmlSignature.ts';
+import { createDenoLogger } from '../../shared/logger.ts';
 import { normalizeDate } from './dateUtils.ts';
 
 function assertEnv(value: string | undefined, name: string): string {
@@ -81,6 +82,7 @@ async function setContentWithNetworkIdleLogging(
   page: PuppeteerPageLike,
   html: string,
   context: string,
+  logger: ReturnType<typeof createDenoLogger>,
 ) {
   const requestFailures: Array<{ url: string; errorText?: string | null }> = [];
   const responseErrors: Array<{ url: string; status: number }> = [];
@@ -115,27 +117,29 @@ async function setContentWithNetworkIdleLogging(
   try {
     await page.setContent(html, { waitUntil: 'networkidle0' });
   } catch (error) {
-    console.error(`[${context}] page.setContent failed while waiting for networkidle0`, error);
+    logger.error('page.setContent failed while waiting for networkidle0', error, { context });
     throw error;
   } finally {
     detachPageListener(page, 'requestfailed', onRequestFailed);
     detachPageListener(page, 'response', onResponse);
 
     const elapsed = Date.now() - startedAt;
-    console.warn(`[${context}] page.setContent(waitUntil=networkidle0) completed in ${elapsed}ms`);
+    logger.info('page.setContent completed', { context, elapsed });
 
     if (requestFailures.length > 0) {
-      console.warn(
-        `[${context}] ${requestFailures.length} request(s) failed while loading PDF content`,
-        requestFailures,
-      );
+      logger.warn('Request failures while loading PDF content', {
+        context,
+        failureCount: requestFailures.length,
+        failures: requestFailures,
+      });
     }
 
     if (responseErrors.length > 0) {
-      console.warn(
-        `[${context}] ${responseErrors.length} response(s) returned error status while loading PDF content`,
-        responseErrors,
-      );
+      logger.warn('Response errors while loading PDF content', {
+        context,
+        errorCount: responseErrors.length,
+        errors: responseErrors,
+      });
     }
   }
 }
@@ -168,6 +172,9 @@ serve(async (request) => {
       status: 400,
     });
   }
+
+  // Create logger with job context
+  const logger = createDenoLogger({ jobId, functionName: 'pdf-worker' });
 
   const supabase = createClient(supabaseUrl, supabaseKey, {
     auth: { persistSession: false },
@@ -213,6 +220,7 @@ serve(async (request) => {
       'Job payload missing HTML',
       currentRetryCount,
       maxRetries,
+      logger,
     );
     return new Response(JSON.stringify({ error: 'Job payload missing HTML' }), {
       headers: JSON_HEADERS,
@@ -224,7 +232,7 @@ serve(async (request) => {
     assertPdfEngineHtml(html, 'PDF job payload HTML');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'PDF job payload failed validation.';
-    await finalizeJobFailure(supabase, jobId, message, currentRetryCount, maxRetries);
+    await finalizeJobFailure(supabase, jobId, message, currentRetryCount, maxRetries, logger);
     return new Response(JSON.stringify({ error: message }), {
       headers: JSON_HEADERS,
       status: 400,
@@ -235,7 +243,7 @@ serve(async (request) => {
   try {
     claimResult = await claimJobForProcessing(supabase, jobId);
   } catch (statusError) {
-    console.error('Failed to update PDF job status to processing:', statusError);
+    logger.error('Failed to update PDF job status to processing', statusError);
     return new Response(JSON.stringify({ error: 'Failed to update job status' }), {
       headers: JSON_HEADERS,
       status: 500,
@@ -304,7 +312,7 @@ serve(async (request) => {
               deviceScaleFactor: 2,
             });
 
-            await setContentWithNetworkIdleLogging(page, html, 'edge-pdf');
+            await setContentWithNetworkIdleLogging(page, html, 'edge-pdf', logger);
 
             // Extract document title from HTML if possible
             const documentTitle = await page.title().catch(() => 'Offer Document');
@@ -393,7 +401,7 @@ serve(async (request) => {
               try {
                 await page.close();
               } catch (closeError) {
-                console.error('Failed to close Puppeteer page (edge worker):', closeError);
+                logger.error('Failed to close Puppeteer page', closeError);
               }
             }
           }
@@ -401,7 +409,7 @@ serve(async (request) => {
           try {
             await browser.close();
           } catch (closeError) {
-            console.error('Failed to close Puppeteer browser (edge worker):', closeError);
+            logger.error('Failed to close Puppeteer browser', closeError);
           }
         }
       },
@@ -445,7 +453,7 @@ serve(async (request) => {
       }
 
       if (!verifyResponse.ok) {
-        console.error('PDF verification failed - file not accessible (edge worker)', {
+        logger.error('PDF verification failed - file not accessible', undefined, {
           offerId: job.offer_id,
           pdfUrl,
           status: verifyResponse.status,
@@ -459,7 +467,7 @@ serve(async (request) => {
       // Verify it's actually a PDF by checking Content-Type
       const contentType = verifyResponse.headers.get('content-type');
       if (contentType && !contentType.includes('application/pdf')) {
-        console.error('PDF verification failed - incorrect content type (edge worker)', {
+        logger.error('PDF verification failed - incorrect content type', undefined, {
           offerId: job.offer_id,
           pdfUrl,
           contentType,
@@ -467,17 +475,16 @@ serve(async (request) => {
         throw new Error(`PDF has incorrect content type: ${contentType}`);
       }
 
-      console.warn('Verified: PDF is accessible and downloadable (edge worker)', {
+      logger.info('Verified: PDF is accessible and downloadable', {
         offerId: job.offer_id,
         pdfUrl,
         contentType,
       });
     } catch (verifyError) {
       const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
-      console.error('Failed to verify PDF accessibility (edge worker)', {
+      logger.error('Failed to verify PDF accessibility', verifyError, {
         offerId: job.offer_id,
         pdfUrl,
-        error: errorMessage,
       });
       throw new Error(`PDF is not accessible: ${errorMessage}`);
     }
@@ -501,7 +508,7 @@ serve(async (request) => {
     // 2. Update offer with PDF URL
     // 3. Mark job as completed
     // All operations succeed or fail together
-    console.warn('Completing PDF job transactionally (edge worker)', {
+    logger.info('Completing PDF job transactionally', {
       jobId,
       offerId: job.offer_id,
       pdfUrl,
@@ -518,9 +525,8 @@ serve(async (request) => {
     );
 
     if (completionError) {
-      console.error('Transactional job completion failed (edge worker)', {
+      logger.error('Transactional job completion failed', completionError, {
         jobId,
-        error: completionError.message,
       });
       throw new Error(completionError.message || 'Failed to complete PDF job');
     }
@@ -528,14 +534,13 @@ serve(async (request) => {
     const completionResult = Array.isArray(completionData) ? completionData[0] : completionData;
     if (!completionResult || !completionResult.success) {
       const errorMessage = completionResult?.error_message || 'Job completion failed';
-      console.error('PDF job completion failed transactionally (edge worker)', {
+      logger.error('PDF job completion failed transactionally', new Error(errorMessage), {
         jobId,
-        error: errorMessage,
       });
       throw new Error(errorMessage);
     }
 
-    console.warn('PDF job completed successfully via transactional function (edge worker)', {
+    logger.info('PDF job completed successfully via transactional function', {
       jobId,
       offerId: job.offer_id,
       pdfUrl,
@@ -555,10 +560,12 @@ serve(async (request) => {
             }),
           });
         } catch (callbackError) {
-          console.error('Webhook error:', callbackError);
+          logger.error('Webhook error', callbackError);
         }
       } else {
-        console.warn('Skipping webhook dispatch for disallowed URL:', job.callback_url);
+        logger.warn('Skipping webhook dispatch for disallowed URL', {
+          callbackUrl: job.callback_url,
+        });
       }
     }
 
@@ -579,7 +586,7 @@ serve(async (request) => {
       try {
         await supabase.storage.from('offers').remove([job.storage_path]);
       } catch (cleanupError) {
-        console.error('Failed to remove uploaded PDF after error (edge worker):', cleanupError);
+        logger.error('Failed to remove uploaded PDF after error', cleanupError);
       }
     }
 
@@ -596,7 +603,8 @@ serve(async (request) => {
 
     // Use transactional failure function to handle job failure with automatic quota rollback
     // This atomically: rolls back quota if incremented, clears offer PDF URL, and updates job status
-    console.warn('Failing PDF job transactionally (edge worker)', {
+    const failureLogger = createDenoLogger({ jobId, functionName: 'pdf-worker' });
+    failureLogger.warn('Failing PDF job transactionally', {
       jobId,
       errorMessage: message,
       retryCount: currentRetryCount,
@@ -614,20 +622,20 @@ serve(async (request) => {
     );
 
     if (failureError) {
-      console.error('Failed to process job failure transactionally (edge worker)', {
+      logger.error('Failed to process job failure transactionally', failureError, {
         jobId,
-        error: failureError.message,
       });
       // Fallback to basic error handling if transactional failure processing fails
     } else {
       const failureResult = Array.isArray(failureData) ? failureData[0] : failureData;
       if (!failureResult || !failureResult.success) {
-        console.error('Transactional job failure processing failed (edge worker)', {
-          jobId,
-          error: failureResult?.error_message || 'Unknown error',
-        });
+        failureLogger.error(
+          'Transactional job failure processing failed',
+          new Error(failureResult?.error_message || 'Unknown error'),
+          { jobId },
+        );
       } else {
-        console.warn('Job failure processed transactionally (edge worker)', {
+        failureLogger.info('Job failure processed transactionally', {
           jobId,
           shouldRetry: failureResult.should_retry,
           nextRetryAt: failureResult.next_retry_at,
@@ -750,7 +758,8 @@ async function finalizeJobFailure(
     const nextRetryAt = new Date();
     nextRetryAt.setSeconds(nextRetryAt.getSeconds() + delaySeconds);
 
-    console.warn('PDF job failed, scheduling retry', {
+    const retryLogger = log ?? createDenoLogger({ jobId, functionName: 'pdf-worker' });
+    retryLogger.warn('PDF job failed, scheduling retry', {
       jobId,
       retryCount: newRetryCount,
       maxRetries,
@@ -771,12 +780,13 @@ async function finalizeJobFailure(
       .eq('id', jobId);
 
     if (error) {
-      console.error('Failed to schedule job retry', { jobId, error });
+      retryLogger.error('Failed to schedule job retry', error, { jobId });
     }
   } else {
     // Move to Dead Letter Queue or mark as permanently failed
+    const dlqLogger = log ?? createDenoLogger({ jobId, functionName: 'pdf-worker' });
     if (newRetryCount >= maxRetries) {
-      console.error('PDF job exceeded max retries, moving to Dead Letter Queue', {
+      dlqLogger.error('PDF job exceeded max retries, moving to Dead Letter Queue', undefined, {
         jobId,
         retryCount: newRetryCount,
         maxRetries,
@@ -790,7 +800,7 @@ async function finalizeJobFailure(
 
       if (dlqError) {
         // Fallback: Update directly
-        console.warn('DLQ function failed, updating directly', { jobId, dlqError });
+        logger.warn('DLQ function failed, updating directly', { jobId, dlqError });
         const { error: updateError } = await supabase
           .from('pdf_jobs')
           .update({
@@ -803,15 +813,19 @@ async function finalizeJobFailure(
           .eq('id', jobId);
 
         if (updateError) {
-          console.error('Failed to move job to Dead Letter Queue', { jobId, updateError });
+          logger.error('Failed to move job to Dead Letter Queue', updateError, { jobId });
         }
       }
     } else {
       // Non-retryable error - mark as permanently failed (move to DLQ)
-      console.error('PDF job failed with non-retryable error, moving to Dead Letter Queue', {
-        jobId,
-        error: errorMessage,
-      });
+      logger.error(
+        'PDF job failed with non-retryable error, moving to Dead Letter Queue',
+        undefined,
+        {
+          jobId,
+          error: errorMessage,
+        },
+      );
 
       const { error: dlqError } = await supabase.rpc('move_job_to_dead_letter_queue', {
         job_id: jobId,
@@ -831,9 +845,8 @@ async function finalizeJobFailure(
           .eq('id', jobId);
 
         if (updateError) {
-          console.error('Failed to move non-retryable job to Dead Letter Queue', {
+          logger.error('Failed to move non-retryable job to Dead Letter Queue', updateError, {
             jobId,
-            updateError,
           });
         }
       }
@@ -891,8 +904,9 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     throw new Error(`Failed to load usage counter for rollback: ${error.message}`);
   }
 
+  const rollbackLogger = createDenoLogger({ functionName: 'pdf-worker-rollback' });
   if (!existing) {
-    console.warn('Usage rollback skipped: counter not found', {
+    rollbackLogger.warn('Usage rollback skipped: counter not found', {
       kind,
       target,
       expectedPeriod: normalizedExpected,
@@ -915,7 +929,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     }
 
     if (!normalizedRow) {
-      console.warn('Usage rollback skipped: period mismatch', {
+      rollbackLogger.warn('Usage rollback skipped: period mismatch', {
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -928,7 +942,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
     periodStart = normalizeDate(record.period_start, normalizedExpected);
 
     if (periodStart !== normalizedExpected) {
-      console.warn('Usage rollback skipped: period mismatch', {
+      rollbackLogger.warn('Usage rollback skipped: period mismatch', {
         kind,
         target,
         expectedPeriod: normalizedExpected,
@@ -940,7 +954,7 @@ async function rollbackUsageIncrementForKind<K extends CounterKind>(
 
   const currentCount = Number(record.offers_generated ?? 0);
   if (currentCount <= 0) {
-    console.warn('Usage rollback skipped: non-positive counter', {
+    rollbackLogger.warn('Usage rollback skipped: non-positive counter', {
       kind,
       target,
       expectedPeriod: normalizedExpected,
@@ -978,8 +992,9 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       await rollbackUsageIncrementForKind(supabase, kind, target, expectedPeriod);
+      const retryLogger = createDenoLogger({ functionName: 'pdf-worker-rollback' });
       if (attempt > 0) {
-        console.warn(`Rollback succeeded on attempt ${attempt + 1}`, {
+        retryLogger.info(`Rollback succeeded on attempt ${attempt + 1}`, {
           kind,
           target,
           expectedPeriod,
@@ -988,11 +1003,12 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
       return; // Success
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      const retryLogger = createDenoLogger({ functionName: 'pdf-worker-rollback' });
 
       if (attempt < maxRetries - 1) {
         // Exponential backoff: 100ms, 200ms, 400ms
         const delayMs = 100 * Math.pow(2, attempt);
-        console.warn(`Rollback attempt ${attempt + 1} failed, retrying in ${delayMs}ms`, {
+        retryLogger.warn(`Rollback attempt ${attempt + 1} failed, retrying in ${delayMs}ms`, {
           kind,
           target,
           expectedPeriod,
@@ -1005,11 +1021,11 @@ async function rollbackUsageIncrementWithRetry<K extends CounterKind>(
   }
 
   // All retries failed - log but don't throw to prevent cascading failures
-  console.error(`Failed to rollback usage increment after ${maxRetries} attempts`, {
+  const finalLogger = createDenoLogger({ functionName: 'pdf-worker-rollback' });
+  finalLogger.error(`Failed to rollback usage increment after ${maxRetries} attempts`, lastError, {
     kind,
     target,
     expectedPeriod,
-    error: lastError?.message,
   });
 }
 
@@ -1176,7 +1192,8 @@ export async function incrementUsage<K extends CounterKind>(
           p_exclude_job_id: excludeJobId || null,
         };
 
-  console.warn('Calling quota increment RPC (edge worker)', {
+  const quotaLogger = createDenoLogger({ functionName: 'pdf-worker-quota' });
+  quotaLogger.info('Calling quota increment RPC', {
     rpc: config.rpc,
     kind,
     target,
@@ -1192,18 +1209,15 @@ export async function incrementUsage<K extends CounterKind>(
     const details = error.details ?? '';
     const combined = `${message} ${details}`.toLowerCase();
 
-    console.error('Quota increment RPC error (edge worker)', {
+    quotaLogger.error('Quota increment RPC error', new Error(message), {
       rpc: config.rpc,
       kind,
       target,
       limit: normalizedLimit,
       periodStart,
-      error: {
-        message,
-        details,
-        code: (error as { code?: string }).code,
-        hint: (error as { hint?: string }).hint,
-      },
+      details,
+      code: (error as { code?: string }).code,
+      hint: (error as { hint?: string }).hint,
     });
 
     if (
@@ -1211,7 +1225,7 @@ export async function incrementUsage<K extends CounterKind>(
       combined.includes('multiple function variants') ||
       combined.includes('could not find function')
     ) {
-      console.warn('Falling back to non-RPC increment due to RPC function error (edge worker)', {
+      quotaLogger.warn('Falling back to non-RPC increment due to RPC function error', {
         rpc: config.rpc,
         kind,
         target,
@@ -1228,7 +1242,7 @@ export async function incrementUsage<K extends CounterKind>(
     periodStart: String(result?.period_start ?? periodStart),
   };
 
-  console.warn('Quota increment RPC result (edge worker)', {
+  quotaLogger.info('Quota increment RPC result', {
     rpc: config.rpc,
     kind,
     target,
@@ -1236,7 +1250,7 @@ export async function incrementUsage<K extends CounterKind>(
   });
 
   if (!incrementResult.allowed) {
-    console.warn('Quota increment not allowed (edge worker)', {
+    quotaLogger.warn('Quota increment not allowed', {
       rpc: config.rpc,
       kind,
       target,

@@ -3,7 +3,6 @@
 import { t } from '@/copy';
 import {
   ChangeEvent,
-  FormEvent,
   SVGProps,
   useCallback,
   useEffect,
@@ -22,6 +21,8 @@ import { WizardActionBar } from '@/components/offers/WizardActionBar';
 import { useWizardValidation } from '@/hooks/useWizardValidation';
 import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
 import { useRealTimeValidation } from '@/hooks/useRealTimeValidation';
+import { useWizardPreview } from '@/hooks/useWizardPreview';
+import { useWizardTextTemplates } from '@/hooks/useWizardTextTemplates';
 import { summarize } from '@/app/lib/pricing';
 import {
   DEFAULT_OFFER_TEMPLATE_ID,
@@ -53,7 +54,6 @@ const RichTextEditor = dynamic(
   },
 );
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { STREAM_TIMEOUT_MESSAGE } from '@/lib/aiPreview';
 import { useToast } from '@/components/ToastProvider';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { getBrandLogoUrl } from '@/lib/branding';
@@ -66,6 +66,7 @@ import { Modal } from '@/components/ui/Modal';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import { listTemplates } from '@/lib/offers/templates/index';
 import type { Template } from '@/lib/offers/templates/types';
+import { TemplateSelector } from '@/components/templates/TemplateSelector';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,
@@ -206,7 +207,6 @@ const PROJECT_DETAIL_LIMITS: Record<ProjectDetailKey, number> = {
   timeline: 400,
   constraints: 400,
 };
-const MAX_PREVIEW_TIMEOUT_RETRIES = WIZARD_CONFIG.MAX_PREVIEW_RETRIES;
 const MAX_IMAGE_COUNT = WIZARD_CONFIG.MAX_IMAGE_COUNT;
 const MAX_IMAGE_SIZE_BYTES = WIZARD_CONFIG.MAX_IMAGE_SIZE_BYTES;
 const MAX_SCHEDULE_ITEMS = 5;
@@ -496,10 +496,6 @@ export default function NewOfferWizard() {
   // edit on step 3 (declared early for use in draft persistence)
   const [editedHtml, setEditedHtml] = useState<string>('');
 
-  // preview (declared early for use in draft persistence)
-  const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
-  const [previewLocked, setPreviewLocked] = useState(false);
-
   // Enhanced autosave with error handling and retry logic
   const wizardDraftData = useMemo(
     () => ({
@@ -750,10 +746,7 @@ export default function NewOfferWizard() {
     },
   });
 
-  // preview (previewHtml and previewLocked moved above for draft persistence)
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const previewAbortRef = useRef<AbortController | null>(null);
-  const previewRequestIdRef = useRef(0);
+  // Preview document rendering (separate from AI preview generation)
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
   const previewDocumentAbortRef = useRef<AbortController | null>(null);
   const previewDocumentDebounceRef = useRef<number | null>(null);
@@ -786,12 +779,38 @@ export default function NewOfferWizard() {
       return () => clearTimeout(timer);
     }
   }, [isPreviewModalOpen, previewDocumentHtml, updateModalPreviewFrameHeight]);
-  const [textTemplates, setTextTemplates] = useState<OfferTextTemplate[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState('');
-  const [isTemplateModalOpen, setTemplateModalOpen] = useState(false);
-  const [templateName, setTemplateName] = useState('');
-  const [templateNameError, setTemplateNameError] = useState<string | null>(null);
-  const [templateSaving, setTemplateSaving] = useState(false);
+  // Use the text templates hook
+  const {
+    textTemplates,
+    selectedTemplateId,
+    isTemplateModalOpen,
+    templateName,
+    templateNameError,
+    templateSaving,
+    setSelectedTemplateId,
+    handleTemplateSelect,
+    handleOpenTemplateModal,
+    handleTemplateModalClose,
+    handleTemplateNameChange,
+    handleTemplateSave,
+  } = useWizardTextTemplates({
+    onTemplateApplied: (template) => {
+      // Reset preview when template is applied
+      resetPreview();
+      setForm((prev) => ({
+        ...prev,
+        title: template.title,
+        projectDetails: { ...template.projectDetails },
+        deadline: template.deadline,
+        language: template.language,
+        brandVoice: template.brandVoice,
+        style: template.style,
+      }));
+      setEditedHtml('');
+      setImageAssets([]);
+    },
+  });
+
   const templateModalTitleId = useId();
   const templateModalDescriptionId = useId();
   const templateNameFieldId = useId();
@@ -811,6 +830,25 @@ export default function NewOfferWizard() {
     return remaining > 0 ? remaining : 0;
   }, [quotaLimit, quotaPending, quotaUsed]);
   const isQuotaExhausted = quotaLimit !== null && remainingQuota <= 0;
+
+  // Use the preview hook (after quota state is defined)
+  const {
+    previewHtml,
+    previewLocked,
+    previewLoading,
+    hasPreviewInputs,
+    setPreviewHtml,
+    setPreviewLocked,
+    callPreview,
+    handleGeneratePreview,
+    resetPreview,
+  } = useWizardPreview({
+    form,
+    isQuotaExhausted,
+    quotaLoading,
+    userId: user?.id,
+  });
+
   const quotaTitle = isQuotaExhausted
     ? t('offers.wizard.quota.exhaustedTitle')
     : t('offers.wizard.quota.availableTitle');
@@ -1118,7 +1156,7 @@ export default function NewOfferWizard() {
     if (selectedTemplateId && !textTemplates.some((tpl) => tpl.id === selectedTemplateId)) {
       setSelectedTemplateId('');
     }
-  }, [selectedTemplateId, textTemplates]);
+  }, [selectedTemplateId, textTemplates, setSelectedTemplateId]);
 
   const previewBodyHtml = useMemo(() => {
     const trimmed = (editedHtml || previewHtml || '').trim();
@@ -1290,7 +1328,7 @@ export default function NewOfferWizard() {
     [allPdfTemplates, openPlanUpgradeDialog, userTemplateTier],
   );
 
-  const handlePdfTemplateChange = useCallback(
+  const _handlePdfTemplateChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
       const templateId = event.target.value as TemplateId;
       if (!templateId) {
@@ -1301,463 +1339,9 @@ export default function NewOfferWizard() {
     [attemptPdfTemplateSelection],
   );
 
-  const handleTemplateSelect = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const templateId = event.target.value;
-      setSelectedTemplateId(templateId);
-      if (!templateId) {
-        return;
-      }
+  // Template handlers are now provided by useWizardTextTemplates hook
 
-      const template = textTemplates.find((item) => item.id === templateId);
-      if (!template) {
-        return;
-      }
-
-      if (previewAbortRef.current) {
-        previewAbortRef.current.abort();
-        previewAbortRef.current = null;
-        previewRequestIdRef.current += 1;
-      }
-
-      setForm((prev) => ({
-        ...prev,
-        title: template.title,
-        projectDetails: { ...template.projectDetails },
-        deadline: template.deadline,
-        language: template.language,
-        brandVoice: template.brandVoice,
-        style: template.style,
-      }));
-      setPreviewLocked(false);
-      setPreviewLoading(false);
-      setPreviewHtml(DEFAULT_PREVIEW_PLACEHOLDER_HTML);
-      setEditedHtml('');
-      setImageAssets([]);
-
-      showToast({
-        title: t('toasts.templates.applied.title', { name: template.name }),
-        description: t('toasts.templates.applied.description', { name: template.name }),
-        variant: 'success',
-      });
-    },
-    [showToast, textTemplates],
-  );
-
-  const handleOpenTemplateModal = useCallback(() => {
-    const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
-      (acc, key) => {
-        acc[key] = form.projectDetails[key].trim();
-        return acc;
-      },
-      { ...emptyProjectDetails },
-    );
-    const trimmedTitle = form.title.trim();
-
-    if (!trimmedTitle || normalizedDetails.overview.trim().length === 0) {
-      showToast({
-        title: t('toasts.templates.missingFields.title'),
-        description: t('toasts.templates.missingFields.description'),
-        variant: 'error',
-      });
-      return;
-    }
-
-    setTemplateName(trimmedTitle);
-    setTemplateNameError(null);
-    setTemplateModalOpen(true);
-  }, [form.projectDetails, form.title, showToast]);
-
-  const handleTemplateModalClose = useCallback(() => {
-    if (templateSaving) {
-      return;
-    }
-    setTemplateModalOpen(false);
-    setTemplateName('');
-    setTemplateNameError(null);
-  }, [templateSaving]);
-
-  const handleTemplateNameChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setTemplateName(event.target.value);
-      if (templateNameError) {
-        setTemplateNameError(null);
-      }
-    },
-    [templateNameError],
-  );
-
-  const handleTemplateSave = useCallback(
-    async (event?: FormEvent<HTMLFormElement>) => {
-      event?.preventDefault();
-
-      if (!user) {
-        showToast({
-          title: t('errors.auth.notLoggedIn'),
-          description: t('errors.auth.notLoggedIn'),
-          variant: 'error',
-        });
-        return;
-      }
-
-      const trimmedName = templateName.trim();
-      if (!trimmedName) {
-        setTemplateNameError(t('offers.wizard.forms.details.templates.modal.nameRequired'));
-        return;
-      }
-
-      const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
-        (acc, key) => {
-          acc[key] = form.projectDetails[key].trim();
-          return acc;
-        },
-        { ...emptyProjectDetails },
-      );
-      const trimmedTitle = form.title.trim();
-
-      if (!trimmedTitle || normalizedDetails.overview.trim().length === 0) {
-        showToast({
-          title: t('toasts.templates.missingFields.title'),
-          description: t('toasts.templates.missingFields.description'),
-          variant: 'error',
-        });
-        return;
-      }
-
-      const payload: OfferTextTemplatePayload = {
-        title: trimmedTitle,
-        projectDetails: normalizedDetails,
-        deadline: form.deadline.trim(),
-        language: form.language,
-        brandVoice: form.brandVoice,
-        style: form.style,
-      };
-
-      setTemplateSaving(true);
-
-      try {
-        const { data, error } = await sb
-          .from('offer_text_templates')
-          .insert({
-            user_id: user.id,
-            name: trimmedName,
-            payload,
-          })
-          .select('id,name,payload,updated_at')
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        const parsed = data
-          ? parseTemplateRow(
-              data as {
-                id?: unknown;
-                name?: unknown;
-                payload?: unknown;
-                updated_at?: unknown;
-              },
-            )
-          : null;
-
-        if (!parsed) {
-          throw new Error('invalid-template-payload');
-        }
-
-        setTextTemplates((prev) =>
-          sortTemplates([...prev.filter((item) => item.id !== parsed.id), parsed]),
-        );
-        setSelectedTemplateId(parsed.id);
-        showToast({
-          title: t('toasts.templates.saved.title'),
-          description: t('toasts.templates.saved.description', { name: parsed.name }),
-          variant: 'success',
-        });
-        setTemplateModalOpen(false);
-        setTemplateName('');
-        setTemplateNameError(null);
-      } catch (error: unknown) {
-        logger.error('Nem sikerült menteni a szövegsablont', error);
-        showToast({
-          title: t('toasts.templates.saveFailed.title'),
-          description: t('toasts.templates.saveFailed.description'),
-          variant: 'error',
-        });
-      } finally {
-        setTemplateSaving(false);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      form.brandVoice,
-      form.deadline,
-      form.language,
-      form.projectDetails,
-      form.style,
-      form.title,
-      sb,
-      showToast,
-      templateName,
-      user,
-    ],
-  );
-
-  // === Preview hívó ===
-  const callPreview = useCallback(async () => {
-    if (previewLocked) {
-      return;
-    }
-
-    const hasTitle = form.title.trim().length > 0;
-    const hasDescription = projectDetailsText.trim().length > 0;
-    if (!hasTitle || !hasDescription) {
-      setPreviewLoading(false);
-      return;
-    }
-
-    type AttemptResult =
-      | { status: 'success' }
-      | { status: 'timeout'; message: string }
-      | { status: 'error'; message: string }
-      | { status: 'aborted' };
-
-    const runAttempt = async (): Promise<AttemptResult> => {
-      if (previewAbortRef.current) {
-        previewAbortRef.current.abort();
-        previewAbortRef.current = null;
-      }
-
-      const nextRequestId = previewRequestIdRef.current + 1;
-      previewRequestIdRef.current = nextRequestId;
-
-      const controller = new AbortController();
-      previewAbortRef.current = controller;
-
-      try {
-        const normalizedDetails = projectDetailFields.reduce<ProjectDetails>(
-          (acc, key) => {
-            acc[key] = form.projectDetails[key].trim();
-            return acc;
-          },
-          { ...emptyProjectDetails },
-        );
-
-        const resp = await fetchWithSupabaseAuth('/api/ai-preview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: form.title,
-            projectDetails: normalizedDetails,
-            deadline: form.deadline,
-            language: form.language,
-            brandVoice: form.brandVoice,
-            style: form.style,
-            formality: form.formality,
-          }),
-          signal: controller.signal,
-          authErrorMessage: t('errors.preview.authError'),
-          errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
-          defaultErrorMessage: t('errors.preview.fetchUnknown'),
-        });
-
-        if (!resp.body) {
-          const message = t('errors.preview.noData');
-          if (previewRequestIdRef.current === nextRequestId) {
-            setPreviewHtml('<p>(nincs előnézet)</p>');
-            setPreviewLocked(false);
-          }
-          return { status: 'error', message };
-        }
-
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let latestHtml = '';
-        let streamErrorMessage: string | null = null;
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let boundary: number;
-          while ((boundary = buffer.indexOf('\n\n')) >= 0) {
-            const rawEvent = buffer.slice(0, boundary).trim();
-            buffer = buffer.slice(boundary + 2);
-            if (!rawEvent || !rawEvent.startsWith('data:')) continue;
-            const jsonPart = rawEvent.replace(/^data:\s*/, '');
-            if (!jsonPart) continue;
-
-            try {
-              const payload = JSON.parse(jsonPart) as {
-                type?: string;
-                html?: string;
-                message?: string;
-              };
-              if (payload.type === 'delta' || payload.type === 'done') {
-                if (typeof payload.html === 'string') {
-                  latestHtml = payload.html;
-                  if (previewRequestIdRef.current === nextRequestId) {
-                    setPreviewHtml(payload.html || '<p>(nincs előnézet)</p>');
-                    if (payload.type === 'done') {
-                      setEditedHtml((prev) => prev || payload.html || '');
-                      setPreviewLocked(true);
-                    }
-                  }
-                }
-              } else if (payload.type === 'error') {
-                streamErrorMessage =
-                  typeof payload.message === 'string' && payload.message.trim().length > 0
-                    ? payload.message
-                    : t('errors.preview.streamUnknown');
-                break;
-              }
-            } catch (err: unknown) {
-              logger.error('Nem sikerült feldolgozni az AI előnézet adatát', err, { jsonPart });
-            }
-          }
-
-          if (streamErrorMessage) {
-            try {
-              await reader.cancel();
-            } catch {
-              /* ignore reader cancel errors */
-            }
-            break;
-          }
-        }
-
-        if (streamErrorMessage) {
-          if (previewRequestIdRef.current === nextRequestId) {
-            setPreviewHtml('<p>(nincs előnézet)</p>');
-            setPreviewLocked(false);
-          }
-          if (streamErrorMessage === STREAM_TIMEOUT_MESSAGE) {
-            return { status: 'timeout', message: streamErrorMessage };
-          }
-          return { status: 'error', message: streamErrorMessage };
-        }
-
-        if (!latestHtml && previewRequestIdRef.current === nextRequestId) {
-          setPreviewHtml('<p>(nincs előnézet)</p>');
-        }
-
-        return { status: 'success' };
-      } catch (error) {
-        if (isAbortError(error)) {
-          return { status: 'aborted' };
-        }
-        const message =
-          error instanceof ApiError
-            ? error.message
-            : error instanceof Error
-              ? error.message
-              : t('errors.preview.fetchUnknown');
-        logger.error(t('api.preview.error'), error, { message });
-        if (previewRequestIdRef.current === nextRequestId) {
-          setPreviewHtml('<p>(nincs előnézet)</p>');
-          setPreviewLocked(false);
-        }
-        return { status: 'error', message };
-      } finally {
-        if (previewAbortRef.current === controller) {
-          previewAbortRef.current = null;
-        }
-      }
-    };
-
-    setPreviewLoading(true);
-
-    try {
-      for (let attempt = 0; attempt <= MAX_PREVIEW_TIMEOUT_RETRIES; attempt += 1) {
-        const result = await runAttempt();
-        if (result.status === 'success') {
-          return;
-        }
-        if (result.status === 'aborted') {
-          return;
-        }
-        if (result.status === 'timeout') {
-          if (attempt < MAX_PREVIEW_TIMEOUT_RETRIES) {
-            const retryIndex = attempt + 1;
-            const totalAttempts = MAX_PREVIEW_TIMEOUT_RETRIES + 1;
-            showToast({
-              title: t('toasts.preview.retrying.title'),
-              description: `${result.message} ${t('toasts.preview.retrying.description', {
-                current: retryIndex,
-                total: totalAttempts,
-              })}`,
-              variant: 'warning',
-            });
-            continue;
-          }
-          const finalMessage = `${result.message} ${t('toasts.preview.finalFailureSuffix')}`;
-          showToast({
-            title: t('toasts.preview.error.title'),
-            description: finalMessage,
-            variant: 'error',
-          });
-          return;
-        }
-        if (result.status === 'error') {
-          if (result.message) {
-            showToast({
-              title: t('toasts.preview.error.title'),
-              description: result.message,
-              variant: 'error',
-            });
-          }
-          return;
-        }
-      }
-    } finally {
-      setPreviewLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    form.brandVoice,
-    form.deadline,
-    form.formality,
-    form.projectDetails,
-    form.language,
-    form.style,
-    form.title,
-    previewLocked,
-    projectDetailsText,
-    showToast,
-  ]);
-
-  const handleGeneratePreview = useCallback(() => {
-    if (previewLocked) {
-      return;
-    }
-    if (quotaLoading) {
-      showToast({
-        title: t('offers.wizard.quota.loading'),
-        description: t('offers.wizard.quota.loading'),
-        variant: 'info',
-      });
-      return;
-    }
-    if (isQuotaExhausted) {
-      showToast({
-        title: t('offers.wizard.quota.exhaustedToastTitle'),
-        description: t('offers.wizard.quota.exhaustedToastDescription'),
-        variant: 'warning',
-      });
-      return;
-    }
-    if (!hasPreviewInputs) {
-      showToast({
-        title: t('toasts.preview.missingData.title'),
-        description: t('toasts.preview.missingData.description'),
-        variant: 'warning',
-      });
-      return;
-    }
-    void callPreview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callPreview, hasPreviewInputs, isQuotaExhausted, previewLocked, quotaLoading]);
+  // Preview generation is now handled by useWizardPreview hook
 
   useEffect(() => {
     if (step !== 3) {
@@ -2388,12 +1972,7 @@ export default function NewOfferWizard() {
                   filteredClients={filteredClients}
                   textTemplates={textTemplates.map((t) => ({ id: t.id, name: t.name }))}
                   selectedTemplateId={selectedTemplateId}
-                  onTemplateSelect={(templateId) => {
-                    const event = {
-                      target: { value: templateId },
-                    } as ChangeEvent<HTMLSelectElement>;
-                    handleTemplateSelect(event);
-                  }}
+                  onTemplateSelect={handleTemplateSelect}
                   quotaInfo={{
                     title: quotaTitle,
                     description: quotaDescription,
@@ -3183,7 +2762,22 @@ export default function NewOfferWizard() {
             labelledBy={templateModalTitleId}
             describedBy={templateModalDescriptionId}
           >
-            <form className="space-y-6" onSubmit={handleTemplateSave}>
+            <form
+              className="space-y-6"
+              onSubmit={(e) =>
+                handleTemplateSave(
+                  {
+                    title: form.title,
+                    projectDetails: form.projectDetails,
+                    deadline: form.deadline,
+                    language: form.language,
+                    brandVoice: form.brandVoice,
+                    style: form.style,
+                  },
+                  e,
+                )
+              }
+            >
               <div className="space-y-2">
                 <h2 id={templateModalTitleId} className="text-lg font-semibold text-slate-900">
                   {t('offers.wizard.forms.details.templates.modal.title')}
@@ -3242,26 +2836,28 @@ export default function NewOfferWizard() {
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-4 lg:gap-6 flex-1 min-h-0 overflow-hidden">
                 {/* Left Column: Settings */}
                 <div className="flex flex-col space-y-4 overflow-y-auto pr-2 lg:max-h-[calc(85vh-120px)]">
-                  {/* Template Selector */}
+                  {/* Template Selector with Previews */}
                   <div className="space-y-2">
-                    <Select
-                      label={t('offers.wizard.previewTemplates.heading')}
-                      help={t('offers.wizard.previewTemplates.helper')}
-                      value={selectedPdfTemplateId ?? DEFAULT_FREE_TEMPLATE_ID}
-                      onChange={handlePdfTemplateChange}
-                      wrapperClassName="flex flex-col gap-2"
-                      aria-label="PDF sablon kiválasztása"
-                    >
-                      {allPdfTemplates.map((template) => {
-                        const locked =
-                          template.tier === 'premium' && userTemplateTier !== 'premium';
-                        return (
-                          <option key={template.id} value={template.id} disabled={locked}>
-                            {template.name}
-                          </option>
-                        );
-                      })}
-                    </Select>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-fg">
+                        {t('offers.wizard.previewTemplates.heading')}
+                      </label>
+                      {t('offers.wizard.previewTemplates.helper') && (
+                        <p className="text-xs text-fg-muted">
+                          {t('offers.wizard.previewTemplates.helper')}
+                        </p>
+                      )}
+                    </div>
+                    <TemplateSelector
+                      selectedTemplateId={selectedPdfTemplateId}
+                      plan={plan}
+                      onTemplateSelect={(templateId) => {
+                        setSelectedPdfTemplateId(templateId);
+                      }}
+                      gridCols={2}
+                      showPreviews={true}
+                      className="mt-2"
+                    />
                   </div>
 
                   {/* Locked Templates Info */}

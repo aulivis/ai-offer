@@ -29,7 +29,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function checkTableExists() {
   console.log('\n1. Checking if offer_shares table exists...');
-  const { data, error } = await supabase.from('offer_shares').select('id').limit(1);
+  const { error } = await supabase.from('offer_shares').select('id').limit(1);
 
   if (error) {
     console.error('  ✗ Table does not exist or is not accessible:', error.message);
@@ -41,7 +41,7 @@ async function checkTableExists() {
 
 async function checkTriggerExists() {
   console.log('\n2. Checking if trigger exists...');
-  const { data, error } = await supabase.rpc('exec_sql', {
+  await supabase.rpc('exec_sql', {
     query: `
       SELECT EXISTS (
         SELECT 1 
@@ -138,8 +138,9 @@ async function fixMissingShares(offers: Array<{ id: string; user_id: string; tit
       console.log(`  ✓ Created share link for offer: ${offer.title} (${offer.id})`);
       console.log(`    Token: ${share.token}`);
       successCount++;
-    } catch (error: any) {
-      console.error(`  ✗ Failed to create share for offer ${offer.id}:`, error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`  ✗ Failed to create share for offer ${offer.id}:`, errorMessage);
       errorCount++;
     }
   }

@@ -30,14 +30,14 @@ export function SettingsTemplatesSection({
 
   return (
     <div className="space-y-8 w-full">
-      <div className="mb-8">
+      <div>
         <div className="flex items-center gap-4">
           <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-turquoise-100 to-primary/10 shadow-sm">
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/50 to-transparent"></div>
             <DocumentTextIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
               {t('settings.templates.title')}
             </h2>
             <p className="text-sm md:text-base text-slate-600">
@@ -48,7 +48,7 @@ export function SettingsTemplatesSection({
       </div>
 
       {/* Template list */}
-      <div className="space-y-3 w-full">
+      <div className="space-y-4 w-full">
         {allTemplates.map((template) => {
           const isSelected = template.id === selectedTemplateId;
           const isPremium = template.tier === 'premium';
@@ -96,7 +96,7 @@ export function SettingsTemplatesSection({
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3
                           className={`font-bold ${isSelected ? 'text-primary' : 'text-slate-900'}`}
                         >

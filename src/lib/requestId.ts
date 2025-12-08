@@ -12,7 +12,8 @@ export function getRequestId(req: NextRequest | Request): string {
   return randomUUID();
 }
 
-export function createRequestLogger(req: NextRequest) {
+// Removed unused export: createRequestLogger
+function _createRequestLogger(req: NextRequest) {
   const requestId = getRequestId(req);
   return createAuthRequestLogger({ requestId });
 }

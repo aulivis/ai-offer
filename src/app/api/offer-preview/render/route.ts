@@ -7,11 +7,12 @@ import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { TemplateId } from '@/lib/offers/templates/types';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { handleValidationError } from '@/lib/errorHandling';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { PREVIEW_CSP_DIRECTIVE, injectPreviewCspMeta } from '@/lib/previewSecurity';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
-import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 
 export const runtime = 'nodejs';
@@ -262,7 +263,7 @@ async function handlePost(req: AuthenticatedNextRequest) {
     );
   } catch (error) {
     log.error('Offer render failed', error);
-    return handleUnexpectedError(error, requestId, log);
+    throw error;
   }
 
   const htmlWithCsp = injectPreviewCspMeta(html);
@@ -280,7 +281,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
 }
 
 export const POST = withAuth(
-  withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
-    return handlePost(req);
-  }),
+  withRequestSizeLimit(
+    withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+      return handlePost(req);
+    }),
+  ),
 );

@@ -52,7 +52,9 @@ export type SpacingScale = keyof typeof SPACING_SCALE;
 /**
  * Get spacing value by key
  */
-export function getSpacing(key: SpacingScale): string {
+// Removed unused export: getSpacing
+// Function was not imported anywhere in the codebase
+function _getSpacing(key: SpacingScale): string {
   return SPACING_SCALE[key];
 }
 

@@ -1,14 +1,21 @@
+import { envClient } from '@/env.client';
+import { getNextRuntime } from '@/env.server';
+
 export async function register() {
   // Only load Sentry if DSN is configured
-  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  // Use validated env helper
+  if (!envClient.NEXT_PUBLIC_SENTRY_DSN) {
     return;
   }
 
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
+  // Use validated env helper for runtime detection
+  const nextRuntime = getNextRuntime();
+
+  if (nextRuntime === 'nodejs') {
     await import('../sentry.server.config');
   }
 
-  if (process.env.NEXT_RUNTIME === 'edge') {
+  if (nextRuntime === 'edge') {
     await import('../sentry.edge.config');
   }
 }

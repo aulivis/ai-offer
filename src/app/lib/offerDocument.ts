@@ -26,17 +26,17 @@ export const OFFER_DOCUMENT_STYLES = `
     --space-md: 1rem;
     --space-lg: 1.5rem;
     --space-xl: 2.75rem;
-    --font-body: 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    --font-h1: 700 1.9rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    --font-h2: 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    --font-h3: 600 1.15rem/1.4 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    --font-table: 600 0.72rem/1.2 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-body: 400 0.95rem/1.65 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-h1: 700 1.9rem/1.2 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-h2: 600 1.15rem/1.4 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-h3: 600 1.15rem/1.4 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-table: 600 0.72rem/1.2 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     --radius-sm: 0.75rem;
     --radius-md: 1.25rem;
     --radius-lg: 2rem;
     background: var(--brand-bg, #ffffff);
     color: var(--brand-text, #0f172a);
-    font: var(--font-body, 400 0.95rem/1.65 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
+    font: var(--font-body, 400 0.95rem/1.65 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif);
     margin: 0 auto;
     max-width: 760px;
   }

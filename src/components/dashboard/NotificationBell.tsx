@@ -191,19 +191,17 @@ export function NotificationBell() {
                     }`}
                   >
                     <div className="flex items-start gap-2">
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 space-y-1">
                         <p className="text-sm font-semibold text-fg truncate">
                           {notification.title}
                         </p>
-                        <p className="text-xs text-fg-muted line-clamp-2 mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-fg-muted mt-1">
+                        <p className="text-xs text-fg-muted line-clamp-2">{notification.message}</p>
+                        <p className="text-xs text-fg-muted">
                           {formatTimeAgo(notification.createdAt)}
                         </p>
                       </div>
                       {!notification.isRead && (
-                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-1" />
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 mt-2" />
                       )}
                     </div>
                   </button>

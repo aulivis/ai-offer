@@ -7,6 +7,8 @@
 
 import { NextResponse } from 'next/server';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { handleValidationError } from '@/lib/errorHandling';
 import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { supabaseServer } from '@/app/lib/supabaseServer';
@@ -28,12 +30,12 @@ const listOffersQuerySchema = z.object({
   memberIds: z.string().optional(),
 });
 
-export const GET = withAuth(async (req: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(req);
-  const log = createLogger(requestId);
-  log.setContext({ userId: req.user.id });
+export const GET = withAuth(
+  withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(req);
+    const log = createLogger(requestId);
+    log.setContext({ userId: req.user.id });
 
-  try {
     const { searchParams } = new URL(req.url);
     const parsed = listOffersQuerySchema.safeParse({
       cursor: searchParams.get('cursor') || undefined,
@@ -44,10 +46,7 @@ export const GET = withAuth(async (req: AuthenticatedNextRequest) => {
     });
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid query parameters', details: parsed.error.issues },
-        { status: 400 },
-      );
+      return handleValidationError(parsed.error, requestId);
     }
 
     const { cursor: cursorString, limit, filter, teamIds, memberIds } = parsed.data;
@@ -110,7 +109,7 @@ export const GET = withAuth(async (req: AuthenticatedNextRequest) => {
 
     if (error) {
       log.error('Failed to fetch offers with cursor pagination', error);
-      return NextResponse.json({ error: 'Failed to fetch offers' }, { status: 500 });
+      throw error;
     }
 
     const items = Array.isArray(data) ? data : [];
@@ -178,11 +177,5 @@ export const GET = withAuth(async (req: AuthenticatedNextRequest) => {
     });
 
     return NextResponse.json(result);
-  } catch (error) {
-    log.error('Error in cursor-based offers list endpoint', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 },
-    );
-  }
-});
+  }),
+);

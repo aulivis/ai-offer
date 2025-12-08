@@ -6,15 +6,26 @@
 
   @bottom-right {
     content: 'Page ' counter(page) ' of ' counter(pages);
-    font-family: 'Work Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      'Helvetica Neue',
+      Arial,
+      sans-serif;
     font-size: 9pt;
     color: #334155;
   }
 }
 
 @theme inline {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Work Sans', system-ui, sans-serif;
+  --font-sans:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-display:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
   --font-mono:
     'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
@@ -133,6 +144,9 @@
   --color-danger-ink: rgb(var(--color-danger-ink-rgb) / 1);
 
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+
+  /* Note: When using accent color (#c3b3ff) as text, ensure sufficient contrast */
+  /* Accent color should primarily be used in gradients or with dark backgrounds */
 }
 
 html {
@@ -182,6 +196,122 @@ body {
 
 a {
   @apply text-inherit no-underline;
+  color: var(--color-primary);
+  transition: color 150ms ease;
+}
+
+a:hover {
+  color: var(--color-turquoise-700);
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Ensure links in gradient headers have sufficient contrast */
+.bg-gradient-to-br a,
+.bg-gradient-to-r a,
+.bg-gradient-to-b a,
+[class*='bg-gradient'] a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Ensure white text on dark gradient backgrounds has sufficient contrast */
+.bg-gradient-to-br.from-navy-900 a,
+.bg-gradient-to-br.from-gray-900 a,
+[class*='from-navy-900'] a,
+[class*='from-gray-900'] a {
+  color: #ffffff;
+}
+
+.bg-gradient-to-br.from-navy-900 a:hover,
+.bg-gradient-to-br.from-gray-900 a:hover,
+[class*='from-navy-900'] a:hover,
+[class*='from-gray-900'] a:hover {
+  color: var(--color-turquoise-300);
+}
+
+/* Ensure gradient text has sufficient contrast - add text shadow for readability */
+.text-transparent.bg-clip-text {
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark background gradient text should be lighter */
+.bg-gradient-to-br.from-navy-900 .text-transparent.bg-clip-text,
+.bg-gradient-to-br.from-gray-900 .text-transparent.bg-clip-text {
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Refined heading hierarchy with Inter */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-fg);
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+h4 {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.35;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+h5 {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+h6 {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 p {
@@ -538,8 +668,14 @@ p {
 
   body {
     font-family:
-      'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', 'Cambria',
-      'Georgia', 'Times New Roman', Times, serif;
+      'Inter',
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      'Helvetica Neue',
+      Arial,
+      sans-serif;
     font-size: var(--fs-body);
     line-height: var(--lh-body);
     font-weight: 400;
@@ -550,8 +686,14 @@ p {
   h2,
   h3 {
     font-family:
-      'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', 'Cambria',
-      'Georgia', 'Times New Roman', Times, serif;
+      'Inter',
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      'Helvetica Neue',
+      Arial,
+      sans-serif;
     margin: 0 0 var(--space-2);
     font-weight: 700;
     color: #000;

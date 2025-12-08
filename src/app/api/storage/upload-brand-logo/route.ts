@@ -5,6 +5,8 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { sanitizeSvgMarkup } from '@/lib/sanitizeSvg';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';
@@ -174,60 +176,60 @@ async function validateAndNormalizeImage(buffer: Buffer): Promise<NormalizedImag
   return null;
 }
 
-export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(request);
-  const log = createLogger(requestId);
-  log.setContext({ userId: request.user.id });
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(request);
+    const log = createLogger(requestId);
+    log.setContext({ userId: request.user.id });
 
-  // Rate limiting for file upload endpoint
-  const rateLimitResult = await checkRateLimitMiddleware(request, {
-    maxRequests: 10, // Limit uploads per user
-    windowMs: RATE_LIMIT_WINDOW_MS, // 1 minute window
-    keyPrefix: 'upload-brand-logo',
-  });
-
-  if (rateLimitResult && !rateLimitResult.allowed) {
-    log.warn('Upload rate limit exceeded', {
-      limit: rateLimitResult.limit,
-      remaining: rateLimitResult.remaining,
+    // Rate limiting for file upload endpoint
+    const rateLimitResult = await checkRateLimitMiddleware(request, {
+      maxRequests: 10, // Limit uploads per user
+      windowMs: RATE_LIMIT_WINDOW_MS, // 1 minute window
+      keyPrefix: 'upload-brand-logo',
     });
-    return createRateLimitResponse(
-      rateLimitResult,
-      'Túl sok fájlfeltöltési kísérlet történt. Próbáld újra később.',
-    );
-  }
 
-  try {
+    if (rateLimitResult && !rateLimitResult.allowed) {
+      log.warn('Upload rate limit exceeded', {
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+      });
+      return createRateLimitResponse(
+        rateLimitResult,
+        'Túl sok fájlfeltöltési kísérlet történt. Próbáld újra később.',
+      );
+    }
+
     const sb = await supabaseServer();
     const userId = request.user.id;
 
     const formData = await request.formData();
     const fileEntry = formData.get('file');
     if (!(fileEntry instanceof File)) {
-      return NextResponse.json({ error: 'Hiányzik a feltöltendő fájl.' }, { status: 400 });
+      return createErrorResponse('Hiányzik a feltöltendő fájl.', HttpStatus.BAD_REQUEST);
     }
 
     if (fileEntry.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'A fájl mérete legfeljebb 4 MB lehet.' }, { status: 413 });
+      return createErrorResponse(
+        'A fájl mérete legfeljebb 4 MB lehet.',
+        HttpStatus.PAYLOAD_TOO_LARGE,
+      );
     }
 
     try {
       await ensureBucketExists();
     } catch (bucketError) {
       log.error('Failed to ensure bucket exists', bucketError);
-      return NextResponse.json(
-        { error: 'Nem sikerült inicializálni a tárhelyet. Próbáld újra később.' },
-        { status: 500 },
-      );
+      throw bucketError;
     }
 
     const arrayBuffer = await fileEntry.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const normalizedImage = await validateAndNormalizeImage(buffer);
     if (!normalizedImage) {
-      return NextResponse.json(
-        { error: 'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.' },
-        { status: 415 },
+      return createErrorResponse(
+        'Csak PNG, JPEG vagy biztonságos SVG logó tölthető fel.',
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
       );
     }
 
@@ -235,7 +237,7 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
     // This is a defense-in-depth measure (userId should already be validated by auth)
     if (userId.includes('..') || userId.includes('/') || userId.includes('\\')) {
       log.error('Invalid user ID format detected', { userId });
-      return NextResponse.json({ error: 'Érvénytelen felhasználói azonosító.' }, { status: 400 });
+      return createErrorResponse('Érvénytelen felhasználói azonosító.', HttpStatus.BAD_REQUEST);
     }
 
     const path = `${userId}/brand-logo.${normalizedImage.extension}`;
@@ -251,9 +253,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         expectedUserId: userId,
         authUserId: authUser?.id || 'none',
       });
-      return NextResponse.json(
-        { error: 'Hitelesítési hiba. Kérjük, jelentkezz be újra.' },
-        { status: 401 },
+      return createErrorResponse(
+        'Hitelesítési hiba. Kérjük, jelentkezz be újra.',
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
@@ -294,9 +296,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         errorMessage.includes('bucket') ||
         errorMessage.includes('does not exist')
       ) {
-        return NextResponse.json(
-          { error: 'A tárhely nem elérhető. Kérjük, próbáld újra később.' },
-          { status: 503 },
+        return createErrorResponse(
+          'A tárhely nem elérhető. Kérjük, próbáld újra később.',
+          HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
 
@@ -307,12 +309,9 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         errorMessage.includes('forbidden') ||
         errorMessage.includes('403')
       ) {
-        return NextResponse.json(
-          {
-            error:
-              'Nincs jogosultság a fájl feltöltéséhez. Kérjük, lépj kapcsolatba az ügyfélszolgálattal.',
-          },
-          { status: 403 },
+        return createErrorResponse(
+          'Nincs jogosultság a fájl feltöltéséhez. Kérjük, lépj kapcsolatba az ügyfélszolgálattal.',
+          HttpStatus.FORBIDDEN,
         );
       }
 
@@ -323,16 +322,13 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
         errorMessage.includes('413') ||
         errorMessage.includes('payload too large')
       ) {
-        return NextResponse.json(
-          { error: 'A fájl mérete túl nagy. Maximum 4 MB.' },
-          { status: 413 },
+        return createErrorResponse(
+          'A fájl mérete túl nagy. Maximum 4 MB.',
+          HttpStatus.PAYLOAD_TOO_LARGE,
         );
       }
 
-      return NextResponse.json(
-        { error: 'Nem sikerült feltölteni a logót. Kérjük, próbáld újra.' },
-        { status: 500 },
-      );
+      throw uploadError;
     }
 
     // Generate signed URL for immediate preview/display
@@ -352,43 +348,5 @@ export const POST = withAuth(async (request: AuthenticatedNextRequest) => {
       path,
       signedUrl: signedData?.signedUrl ?? null,
     });
-  } catch (error) {
-    // Log full error details for debugging
-    const errorMessage =
-      error instanceof Error ? error.message : 'Ismeretlen hiba történt a logó feltöltésekor.';
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    log.error(
-      'Brand logo upload failed',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        errorMessage,
-        errorStack: process.env.NODE_ENV === 'production' ? undefined : errorStack,
-        errorType: error instanceof Error ? error.constructor.name : typeof error,
-      },
-    );
-
-    // Check for specific error types
-    if (error instanceof Error) {
-      // Sharp/image processing errors
-      if (error.message.includes('sharp') || error.message.includes('image')) {
-        return NextResponse.json(
-          {
-            error: 'Nem sikerült feldolgozni a képet. Kérjük, ellenőrizd, hogy érvényes képfájl-e.',
-          },
-          { status: 415 },
-        );
-      }
-
-      // Buffer/array buffer errors
-      if (error.message.includes('buffer') || error.message.includes('ArrayBuffer')) {
-        return NextResponse.json(
-          { error: 'Nem sikerült beolvasni a fájlt. Kérjük, próbáld újra.' },
-          { status: 400 },
-        );
-      }
-    }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-});
+  }),
+);

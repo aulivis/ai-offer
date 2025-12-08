@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
@@ -6,6 +7,8 @@ import { verifyCsrfToken } from '@/lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
 import { argon2Verify } from '@/lib/auth/argon2';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
+import { withErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 
@@ -16,7 +19,7 @@ type SessionRow = {
   revoked_at: string | null;
 };
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request: NextRequest) => {
   const cookieStore = await cookies();
   const requestId = getRequestId(request);
   const log = createLogger(requestId);
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
 
   if (!verifyCsrfToken(csrfHeader, csrfCookie)) {
     log.warn('Invalid CSRF token');
-    return Response.json({ error: 'Érvénytelen vagy hiányzó CSRF token.' }, { status: 403 });
+    return createErrorResponse('Érvénytelen vagy hiányzó CSRF token.', HttpStatus.FORBIDDEN);
   }
 
   const refreshToken = cookieStore.get('propono_rt')?.value ?? null;
@@ -97,4 +100,4 @@ export async function POST(request: Request) {
 
   await clearAuthCookies();
   return Response.json({ success: true });
-}
+});

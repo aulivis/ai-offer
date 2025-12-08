@@ -1,7 +1,7 @@
 import localFont from 'next/font/local';
-import { Space_Mono, Work_Sans } from 'next/font/google';
+import { Inter, Space_Mono } from 'next/font/google';
 
-export const workSans = Work_Sans({
+export const inter = Inter({
   subsets: ['latin', 'latin-ext'],
   display: 'swap',
   preload: true,
@@ -17,6 +17,7 @@ export const spaceMono = Space_Mono({
   variable: '--font-mono',
 });
 
+// Keep display font for special use cases (e.g., hero sections)
 export const gota = localFont({
   src: [
     {

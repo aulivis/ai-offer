@@ -19,7 +19,7 @@ import { LanguageProvider } from '@/state/LanguageProvider';
 import { withLanguage } from '@/state/lang.server';
 import { getRequestLanguage } from './lib/language';
 
-import { gota, spaceMono, workSans } from './fonts';
+import { gota, inter, spaceMono } from './fonts';
 
 export const metadata: Metadata = {
   title: 'Vyndi – AI-alapú ajánlatkészítő platform | Professzionális ajánlat percek alatt',
@@ -46,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const language = await getRequestLanguage();
 
   return withLanguage(language, () => (
-    <html lang={language} className={`${workSans.variable} ${gota.variable} ${spaceMono.variable}`}>
+    <html lang={language} className={`${inter.variable} ${gota.variable} ${spaceMono.variable}`}>
       <body className="bg-bg font-sans text-fg antialiased">
         <LanguageProvider initialLanguage={language}>
           <a href="#main" className="skip-link">

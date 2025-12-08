@@ -262,7 +262,7 @@ export default function InitSessionClient({
           >
             {t('errors.initSession.error')}
           </h1>
-          <p style={{ color: '#ef4444', marginBottom: '1rem' }}>
+          <p className="mb-4" style={{ color: '#ef4444' }}>
             {error || t('errors.initSession.errorDescription')}
           </p>
           <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>

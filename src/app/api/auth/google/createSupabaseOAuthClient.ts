@@ -59,7 +59,15 @@ export function createSupabaseOAuthClient() {
      * végül fallbackként megkeresünk MINDEN 'sb_*code*verifier*' sütit.
      */
     async consumeCodeVerifier(): Promise<string | null> {
-      const authClient = client.auth as unknown as { storageKey?: string };
+      /**
+       * Type-safe interface for Supabase auth client with storageKey.
+       * Supabase types don't expose storageKey, so we define our own interface.
+       */
+      interface SupabaseAuthWithStorageKey {
+        storageKey?: string;
+      }
+
+      const authClient = client.auth as unknown as SupabaseAuthWithStorageKey;
       const configuredStorageKey =
         typeof authClient?.storageKey === 'string' && authClient.storageKey.length > 0
           ? authClient.storageKey

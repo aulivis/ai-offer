@@ -240,16 +240,21 @@ type VerifyEmailTokenHashResponse = Promise<{
   error: { message?: string } | null;
 }>;
 
+/**
+ * Type-safe interface for Supabase auth verifyOtp method.
+ * Supabase types don't expose verifyOtp properly, so we define our own interface.
+ */
+interface SupabaseAuthVerifyOtp {
+  verifyOtp: (params: VerifyEmailTokenHashParams) => VerifyEmailTokenHashResponse;
+}
+
 function verifyEmailTokenHash(
   supabase: ReturnType<typeof supabaseAnonServer>,
   params: VerifyEmailTokenHashParams,
 ): VerifyEmailTokenHashResponse {
-  // Supabase types don't expose verifyOtp properly, so we need to cast
-  // but we can use a more specific type than 'any'
-  const fn = supabase.auth.verifyOtp as unknown as (
-    p: VerifyEmailTokenHashParams,
-  ) => VerifyEmailTokenHashResponse;
-  return fn(params);
+  // Use proper type interface instead of 'as unknown as'
+  const auth = supabase.auth as unknown as SupabaseAuthVerifyOtp;
+  return auth.verifyOtp(params);
 }
 
 /** Session tárolás opaque refresh tokennel (nem dekódoljuk a refresh tokent) */

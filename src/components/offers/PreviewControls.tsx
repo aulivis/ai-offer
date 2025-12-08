@@ -138,9 +138,9 @@ export function PreviewControls({
       </button>
 
       {showAdvanced && (
-        <div className="space-y-3 rounded-lg border border-border/60 bg-slate-50/50 p-3">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">
+        <div className="space-y-4 rounded-lg border border-border/60 bg-slate-50/50 p-4">
+          <div className="flex flex-col gap-2">
+            <label className="block text-xs font-semibold text-slate-700">
               {t('wizard.preview.primaryColor')}
             </label>
             <input
@@ -150,8 +150,8 @@ export function PreviewControls({
               className="h-8 w-full rounded border border-border"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700">
+          <div className="flex flex-col gap-2">
+            <label className="block text-xs font-semibold text-slate-700">
               {t('wizard.preview.secondaryColor')}
             </label>
             <input

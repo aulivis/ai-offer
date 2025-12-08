@@ -236,7 +236,10 @@ function createRequest(
       getAll: () => Object.entries(cookieJar).map(([name, value]) => ({ name, value })),
       has: (name: string) => Boolean(cookieJar[name as keyof typeof cookieJar]),
     },
-  } as unknown as AuthenticatedNextRequest;
+    // Type assertion is necessary because NextRequest is a complex class
+    // and we're creating a partial mock with only the properties we need for tests.
+    // This is safe because we control which properties are accessed in the tests.
+  } as AuthenticatedNextRequest;
 }
 
 describe('POST /api/ai-generate', () => {

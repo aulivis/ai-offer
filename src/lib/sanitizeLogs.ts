@@ -124,7 +124,8 @@ export function sanitizeError(error: unknown): {
  * @param input - String to check
  * @returns true if sensitive data detected
  */
-export function containsSensitiveData(input: string): boolean {
+// Removed unused export: containsSensitiveData
+function _containsSensitiveData(input: string): boolean {
   for (const pattern of SENSITIVE_PATTERNS) {
     if (pattern.test(input)) {
       return true;

@@ -322,7 +322,9 @@ describe('getUsageSnapshot', () => {
 
 describe('rollbackUsageIncrement', () => {
   const from = vi.fn();
-  const mockClient = { from } as unknown as Parameters<typeof rollbackUsageIncrement>[0];
+  // rollbackUsageIncrement only needs the 'from' method from SupabaseClient
+  // Type assertion is safe because we control the mock implementation
+  const mockClient = { from } as Parameters<typeof rollbackUsageIncrement>[0];
   const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
   beforeEach(() => {

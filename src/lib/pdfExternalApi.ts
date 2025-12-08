@@ -19,7 +19,7 @@ import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { enqueuePdfJob, dispatchPdfJob, type PdfJobInput } from '@/lib/queue/pdf';
 import { assertPdfEngineHtml } from '@/lib/pdfHtmlSignature';
 import { renderRuntimePdfHtml, type RuntimePdfPayload } from '@/lib/pdfRuntime';
-import { envServer } from '@/env.server';
+import { envServer, isVercelEnvironment } from '@/env.server';
 import { processPdfJobVercelNative } from '@/lib/pdfVercelWorker';
 import { logger } from '@/lib/logger';
 
@@ -135,7 +135,8 @@ export async function createExternalPdfJob(
   await enqueuePdfJob(sb, pdfJobInput);
 
   // Check if we're in a Vercel environment and should use Vercel-native processing
-  const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+  // Use validated environment helper for infrastructure detection
+  const isVercel = isVercelEnvironment();
   const useVercelNative = isVercel && process.env.USE_VERCEL_NATIVE_PDF !== 'false';
 
   if (useVercelNative) {

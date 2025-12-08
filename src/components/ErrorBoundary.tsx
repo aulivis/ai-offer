@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { t } from '@/copy';
 import { clientLogger } from '@/lib/clientLogger';
+import { envClient } from '@/env.client';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -52,7 +53,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({ errorInfo });
 
     // Report to Sentry (if Sentry is configured)
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    // Use validated env helper
+    if (envClient.NEXT_PUBLIC_SENTRY_DSN) {
       try {
         const Sentry = await import('@sentry/nextjs');
         Sentry.captureException(error, {

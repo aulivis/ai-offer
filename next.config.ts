@@ -181,6 +181,8 @@ export async function headers() {
 }
 
 // Apply Sentry wrapper if SENTRY_DSN is set
+// Note: next.config.ts runs at build time, so we use process.env directly here
+// The validated helpers are used at runtime in application code
 let config = nextConfig;
 
 if (process.env.NEXT_PUBLIC_SENTRY_DSN) {

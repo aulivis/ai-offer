@@ -41,9 +41,11 @@ class ClientLogger {
           // In production, only log errors and warnings to console
           break;
         case 'warn':
+          // eslint-disable-next-line no-console
           console.warn(jsonString);
           break;
         case 'error':
+          // eslint-disable-next-line no-console
           console.error(jsonString);
           // Optionally send to error tracking service (e.g., Sentry)
           if (typeof window !== 'undefined' && (window as { Sentry?: unknown }).Sentry) {
@@ -60,7 +62,7 @@ class ClientLogger {
                     level: 'error',
                     extra: { message, ...this.context, ...extra },
                   });
-                } else {
+                } else if (Sentry.captureMessage) {
                   Sentry.captureMessage(message, {
                     level: 'error',
                     extra: { ...this.context, ...extra },
@@ -77,15 +79,19 @@ class ClientLogger {
       // Development: pretty print
       switch (level) {
         case 'debug':
+          // eslint-disable-next-line no-console
           console.warn(`[${timestamp}] DEBUG:`, message, logEntry);
           break;
         case 'info':
+          // eslint-disable-next-line no-console
           console.warn(`[${timestamp}] INFO:`, message, logEntry);
           break;
         case 'warn':
+          // eslint-disable-next-line no-console
           console.warn(`[${timestamp}] WARN:`, message, logEntry);
           break;
         case 'error':
+          // eslint-disable-next-line no-console
           console.error(`[${timestamp}] ERROR:`, message, logEntry);
           break;
       }

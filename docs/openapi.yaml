@@ -11,7 +11,24 @@ info:
     - Team collaboration
     - User profile and settings
 
-    All authenticated endpoints require a valid session token in cookies.
+    ## Authentication
+
+    All authenticated endpoints require a valid session token in cookies:
+    - `propono_at` - Access token (HTTP-only cookie)
+    - `propono_rt` - Refresh token (HTTP-only cookie)
+    - `XSRF-TOKEN` - CSRF token (sent in header as `x-csrf-token` for state-changing operations)
+
+    ## Rate Limiting
+
+    All API endpoints implement rate limiting. Response headers include:
+    - `X-RateLimit-Limit` - Maximum requests allowed in the time window
+    - `X-RateLimit-Remaining` - Remaining requests in the current window
+    - `X-RateLimit-Reset` - ISO timestamp when the rate limit resets
+    - `Retry-After` - Seconds to wait before retrying (on 429 responses)
+
+    ## Error Responses
+
+    All errors follow a consistent format with an `error` message, optional `requestId` for tracking, and optional `issues` for validation errors.
   version: 1.0.0
   contact:
     name: Vyndi Support
@@ -38,6 +55,8 @@ tags:
     description: User profile and settings
   - name: Storage
     description: File upload and storage
+  - name: Health
+    description: System health and status endpoints
 
 paths:
   /api/auth/magic-link:
@@ -99,6 +118,84 @@ paths:
                     $ref: '#/components/schemas/Session'
         '401':
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: |
+        Refreshes the access token using the refresh token stored in cookies.
+        Requires CSRF token in header for security.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: x-csrf-token
+          in: header
+          required: true
+          schema:
+            type: string
+          description: CSRF token from XSRF-TOKEN cookie
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Log out current user
+      description: |
+        Logs out the current user and revokes the session.
+        Requires CSRF token in header for security.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: x-csrf-token
+          in: header
+          required: true
+          schema:
+            type: string
+          description: CSRF token from XSRF-TOKEN cookie
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '403':
+          description: Invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/ai-generate:
     post:
@@ -119,20 +216,59 @@ paths:
       responses:
         '200':
           description: Offer generated successfully
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests allowed
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Remaining requests in window
+            X-RateLimit-Reset:
+              schema:
+                type: string
+                format: date-time
+              description: ISO timestamp when limit resets
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Offer'
         '400':
           description: Invalid request or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '429':
           description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/ai-preview:
     post:
@@ -178,6 +314,72 @@ paths:
         '429':
           description: Rate limit exceeded
 
+  /api/offers/list:
+    get:
+      tags:
+        - Offers
+      summary: List offers with cursor-based pagination
+      description: |
+        Retrieves a paginated list of offers using cursor-based pagination.
+        Supports filtering by ownership (my, team, all, member).
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Cursor token for pagination
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 12
+          description: Number of items per page
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, my, team, member]
+            default: all
+          description: Filter type for offers
+        - name: teamIds
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of team IDs
+        - name: memberIds
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of member IDs
+      responses:
+        '200':
+          description: Offers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/offers/{offerId}:
     get:
       tags:
@@ -201,8 +403,190 @@ paths:
                 $ref: '#/components/schemas/Offer'
         '404':
           description: Offer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Offers
+      summary: Delete offer
+      description: |
+        Deletes an offer and all associated PDFs.
+        Requires CSRF token in header for security.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: x-csrf-token
+          in: header
+          required: true
+          schema:
+            type: string
+          description: CSRF token from XSRF-TOKEN cookie
+      responses:
+        '200':
+          description: Offer deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '403':
+          description: Forbidden - not the offer owner or invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/offers/{offerId}/share:
+    get:
+      tags:
+        - Offers
+      summary: List share links for an offer
+      description: |
+        Retrieves all share links for a specific offer.
+        Requires a paid plan (standard or pro).
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Share links retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shares:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OfferShare'
+        '402':
+          description: Payment required - feature requires paid plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - not the offer owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Offers
+      summary: Create share link for an offer
+      description: |
+        Creates a new shareable link for an offer.
+        Requires a paid plan (standard or pro).
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expiresAt:
+                  type: string
+                  format: date-time
+                  description: Optional expiration date for the share link
+                customerEmail:
+                  type: string
+                  format: email
+                  description: Optional customer email for tracking
+                customerName:
+                  type: string
+                  maxLength: 200
+                  description: Optional customer name for tracking
+      responses:
+        '200':
+          description: Share link created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shareId:
+                    type: string
+                    format: uuid
+                  shareUrl:
+                    type: string
+                    format: uri
+                  token:
+                    type: string
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  createdAt:
+                    type: string
+                    format: date-time
+        '402':
+          description: Payment required - feature requires paid plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - not the offer owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Offer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /api/pdf/export:
     post:
@@ -224,13 +608,17 @@ paths:
               properties:
                 templateId:
                   type: string
+                  description: Template identifier
                 slots:
                   type: object
+                  description: Template slot values
                 callbackUrl:
                   type: string
                   format: uri
+                  description: Optional callback URL for webhook notification
                 locale:
                   type: string
+                  description: Locale for PDF generation
       responses:
         '200':
           description: PDF export job created
@@ -244,8 +632,132 @@ paths:
                     format: uuid
         '400':
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/templates:
+    get:
+      tags:
+        - Offers
+      summary: List available templates
+      description: Returns a list of all available PDF templates with metadata
+      responses:
+        '200':
+          description: Templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Template'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: Cache control header
+
+  /api/storage/upload-brand-logo:
+    post:
+      tags:
+        - Storage
+      summary: Upload brand logo
+      description: |
+        Uploads a brand logo image (PNG, JPEG, or SVG).
+        Maximum file size is 4MB.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file (PNG, JPEG, or SVG, max 4MB)
+      responses:
+        '200':
+          description: Logo uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signedUrl:
+                    type: string
+                    format: uri
+                    description: Signed URL for accessing the uploaded logo
+        '400':
+          description: Invalid file or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: |
+        Checks the health status of the API and database connectivity.
+        Returns 200 if healthy, 503 if unhealthy.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  error:
+                    type: string
 
   /api/teams:
     get:
@@ -326,6 +838,26 @@ components:
       in: cookie
       name: propono_at
       description: Session access token stored in HTTP-only cookie
+
+  parameters:
+    RateLimitHeaders:
+      X-RateLimit-Limit:
+        schema:
+          type: integer
+        description: Maximum requests allowed in the time window
+      X-RateLimit-Remaining:
+        schema:
+          type: integer
+        description: Remaining requests in the current time window
+      X-RateLimit-Reset:
+        schema:
+          type: string
+          format: date-time
+        description: ISO timestamp when the rate limit resets
+      Retry-After:
+        schema:
+          type: integer
+        description: Seconds to wait before retrying (on 429 responses)
 
   schemas:
     User:
@@ -414,3 +946,116 @@ components:
         expires_at:
           type: string
           format: date-time
+
+    OfferListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+        hasNext:
+          type: boolean
+          description: Whether there are more items available
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor token for the next page
+        estimatedTotal:
+          type: integer
+          nullable: true
+          description: Estimated total number of items
+
+    OfferShare:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        token:
+          type: string
+          description: Share token for the shareable URL
+        shareUrl:
+          type: string
+          format: uri
+          description: Full shareable URL
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiration date of the share link
+        isActive:
+          type: boolean
+          description: Whether the share link is currently active
+        accessCount:
+          type: integer
+          description: Number of times the share link has been accessed
+        lastAccessedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Last access timestamp
+        customerEmail:
+          type: string
+          format: email
+          nullable: true
+          description: Associated customer email
+        customerName:
+          type: string
+          nullable: true
+          description: Associated customer name
+        createdAt:
+          type: string
+          format: date-time
+          description: Share link creation timestamp
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Template identifier
+        name:
+          type: string
+          description: Template display name
+        tier:
+          type: string
+          enum: [free, standard, pro]
+          description: Required subscription tier
+        label:
+          type: string
+          description: Template label
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        requestId:
+          type: string
+          format: uuid
+          description: Request ID for tracking
+        issues:
+          type: object
+          nullable: true
+          description: Validation errors (if applicable)
+          properties:
+            fieldErrors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+            formErrors:
+              type: array
+              items:
+                type: string
+        requiresUpgrade:
+          type: boolean
+          nullable: true
+          description: Whether the error is due to requiring a paid plan
+        feature:
+          type: string
+          nullable: true
+          description: Feature name that requires upgrade

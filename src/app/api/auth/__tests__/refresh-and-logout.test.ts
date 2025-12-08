@@ -128,7 +128,8 @@ describe('POST /api/auth/refresh', () => {
     selectEqMock.mockResolvedValue({ data: [sessionRow], error: null });
 
     const newRefreshToken = createRefreshToken('user-1', 7200);
-    (fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(
+    // Type assertion is safe because we're mocking the global fetch function
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response(JSON.stringify({ access_token: 'new-access', refresh_token: newRefreshToken }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -193,7 +194,8 @@ describe('POST /api/auth/refresh', () => {
     );
     expect(cookieStore.get('propono_rt')).toBe('');
     expect(cookieStore.get('propono_at')).toBe('');
-    expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+    // Type assertion is safe because we're checking the mocked fetch function
+    expect(fetch as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 
   it('returns 403 when CSRF token is missing', async () => {
@@ -211,7 +213,8 @@ describe('POST /api/auth/refresh', () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Érvénytelen vagy hiányzó CSRF token.' });
-    expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+    // Type assertion is safe because we're checking the mocked fetch function
+    expect(fetch as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 
   it('returns 403 when CSRF token is invalid', async () => {
@@ -230,7 +233,8 @@ describe('POST /api/auth/refresh', () => {
 
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: 'Érvénytelen vagy hiányzó CSRF token.' });
-    expect(fetch as unknown as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
+    // Type assertion is safe because we're checking the mocked fetch function
+    expect(fetch as ReturnType<typeof vi.fn>).not.toHaveBeenCalled();
   });
 });
 

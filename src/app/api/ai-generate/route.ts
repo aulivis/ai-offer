@@ -40,7 +40,9 @@ import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
 import { z } from 'zod';
 import { renderSectionHeading } from '@/app/lib/offerSections';
 import { createLogger } from '@/lib/logger';
-import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';
+import { handleValidationError } from '@/lib/errorHandling';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 
 export const runtime = 'nodejs';
 
@@ -718,355 +720,359 @@ async function applyImageAssetsToHtml(
 }
 
 export const POST = withAuth(
-  withRequestSizeLimit(async (req: AuthenticatedNextRequest) => {
-    const requestId = randomUUID();
-    const log = createLogger(requestId);
-    log.setContext({ userId: req.user.id });
+  withRequestSizeLimit(
+    withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+      const requestId = randomUUID();
+      const log = createLogger(requestId);
+      log.setContext({ userId: req.user.id });
 
-    // Rate limiting for AI generation endpoint
-    const rateLimitResult = await checkRateLimitMiddleware(req, {
-      maxRequests: 20, // Higher limit for authenticated users
-      windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
-      keyPrefix: 'ai-generate',
-    });
-
-    if (rateLimitResult && !rateLimitResult.allowed) {
-      log.warn('AI generate rate limit exceeded', {
-        limit: rateLimitResult.limit,
-        remaining: rateLimitResult.remaining,
-      });
-      const translator = createTranslator(req.headers.get('accept-language'));
-      return createRateLimitResponse(rateLimitResult, translator.t('quotaWarningBar.message.user'));
-    }
-
-    try {
-      // Parse and sanitize the incoming JSON body.  Sanitizing early
-      // prevents any malicious scripts or HTML fragments from reaching
-      // our AI prompts or being persisted in the database.
-      const parsed = aiGenerateRequestSchema.safeParse(await req.json());
-      if (!parsed.success) {
-        return handleValidationError(parsed.error, requestId);
-      }
-
-      const {
-        title,
-        projectDetails,
-        deadline,
-        language,
-        brandVoice,
-        style,
-        formality,
-        prices,
-        aiOverrideHtml,
-        clientId,
-        templateId,
-        imageAssets,
-        testimonials,
-        schedule,
-        guarantees,
-      } = parsed.data;
-
-      const sb = await supabaseServer();
-      const user = req.user;
-
-      // ---- Limit (havi) ----
-
-      const profile = await getUserProfile(sb, user.id);
-      const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null);
-
-      let sanitizedImageAssets: SanitizedImageAsset[] = [];
-      try {
-        sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
-      } catch (error) {
-        const translator = createTranslator(req.headers.get('accept-language'));
-        const status = error instanceof ImageAssetError ? error.status : 400;
-        const message =
-          error instanceof ImageAssetError
-            ? error.message
-            : translator.t('api.error.invalidImageUpload');
-        return NextResponse.json({ error: message }, { status });
-      }
-
-      const planLimit = getMonthlyOfferLimit(plan);
-
-      let clientCompanyName: string | null = null;
-      if (clientId) {
-        try {
-          const { data: clientRow, error: clientError } = await sb
-            .from('clients')
-            .select('company_name')
-            .eq('id', clientId)
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-          if (clientError) {
-            log.warn('Failed to load client for offer generation (non-blocking)', {
-              clientId,
-              error: clientError.message,
-            });
-          } else if (clientRow?.company_name && typeof clientRow.company_name === 'string') {
-            clientCompanyName = clientRow.company_name;
-          }
-        } catch (clientLookupError) {
-          log.warn('Unexpected client lookup error during offer generation', {
-            error: clientLookupError,
-            message:
-              clientLookupError instanceof Error
-                ? clientLookupError.message
-                : String(clientLookupError),
-          });
-        }
-      }
-
-      const cookieStore = await cookies();
-      let deviceId = cookieStore.get('propono_device_id')?.value;
-      if (!deviceId) {
-        const analyticsAllowed = allowCategory(req, 'analytics');
-        deviceId = randomUUID();
-        if (analyticsAllowed) {
-          cookieStore.set({
-            name: 'propono_device_id',
-            value: deviceId,
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 365,
-            path: '/',
-          });
-        }
-      }
-
-      const { iso: usagePeriodStart } = currentMonthStart();
-      const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
-
-      if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
-        // Use authenticated client for usage counter sync
-        // RLS policies should allow users to update their own usage counters
-        // If this fails, we log a warning but continue (non-blocking)
-        try {
-          await syncUsageCounter(
-            sb, // Use authenticated client instead of service role
-            user.id,
-            usageSnapshot.offersGenerated,
-            usagePeriodStart,
-          );
-        } catch (syncError) {
-          log.warn('Failed to sync usage counter before offer generation', {
-            error: syncError,
-            message: syncError instanceof Error ? syncError.message : String(syncError),
-            // Note: If this fails due to RLS, we may need to review RLS policies
-            // or use service role as fallback (with proper logging)
-          });
-        }
-      }
-
-      // Check quota for offer generation
-      if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
-        const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
-        if (!quotaCheck.allowed) {
-          log.warn('Quota limit exceeded', {
-            userId: user.id,
-            plan,
-            limit: planLimit,
-            confirmed: quotaCheck.confirmedCount,
-            pending: quotaCheck.pendingCount,
-            total: quotaCheck.totalCount,
-            periodStart: usagePeriodStart,
-          });
-          const translator = createTranslator(req.headers.get('accept-language'));
-          return NextResponse.json(
-            { error: translator.t('quotaWarningBar.message.user') },
-            { status: 402 },
-          );
-        }
-        // Update usageSnapshot with atomic values for logging
-        usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
-      }
-
-      const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
-      if (deviceLimit !== null && deviceId) {
-        const deviceQuotaCheck = await checkDeviceQuotaWithPending(
-          sb,
-          user.id,
-          deviceId,
-          deviceLimit,
-          usagePeriodStart,
-        );
-        if (!deviceQuotaCheck.allowed) {
-          log.warn('Device quota limit exceeded', {
-            userId: user.id,
-            deviceId,
-            plan,
-            limit: deviceLimit,
-            confirmed: deviceQuotaCheck.confirmedCount,
-            pending: deviceQuotaCheck.pendingCount,
-            total: deviceQuotaCheck.totalCount,
-            periodStart: usagePeriodStart,
-          });
-          const deviceTranslator = createTranslator(req.headers.get('accept-language'));
-          return NextResponse.json(
-            { error: deviceTranslator.t('quotaWarningBar.message.device') },
-            { status: 402 },
-          );
-        }
-      }
-
-      log.info('Usage quota snapshot', {
-        plan,
-        limit: planLimit,
-        confirmed: usageSnapshot.offersGenerated,
-        periodStart: usagePeriodStart,
+      // Rate limiting for AI generation endpoint
+      const rateLimitResult = await checkRateLimitMiddleware(req, {
+        maxRequests: 20, // Higher limit for authenticated users
+        windowMs: RATE_LIMIT_WINDOW_MS * 5, // 5 minute window
+        keyPrefix: 'ai-generate',
       });
 
-      const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
-        (acc, key) => {
-          acc[key] = sanitizeInput(projectDetails[key]);
-          return acc;
-        },
-        { ...emptyProjectDetails },
-      );
-
-      // Content moderation: Check for malicious content before sending to OpenAI
-      const moderationInput: Parameters<typeof moderateUserInput>[0] = {
-        title,
-        projectDetails: {
-          overview: sanitizedDetails.overview || undefined,
-          deliverables: sanitizedDetails.deliverables || undefined,
-          timeline: sanitizedDetails.timeline || undefined,
-          constraints: sanitizedDetails.constraints || undefined,
-        },
-        deadline: deadline || undefined,
-        testimonials: testimonials && testimonials.length > 0 ? testimonials : undefined,
-        schedule: schedule && schedule.length > 0 ? schedule : undefined,
-        guarantees: guarantees && guarantees.length > 0 ? guarantees : undefined,
-      };
-      const moderationResult = moderateUserInput(moderationInput);
-
-      if (!moderationResult.allowed) {
-        log.warn('Content moderation blocked request', {
-          userId: user.id,
-          category: moderationResult.category,
-          reason: moderationResult.reason,
+      if (rateLimitResult && !rateLimitResult.allowed) {
+        log.warn('AI generate rate limit exceeded', {
+          limit: rateLimitResult.limit,
+          remaining: rateLimitResult.remaining,
         });
-        return NextResponse.json(
-          {
-            error:
-              moderationResult.reason ||
-              'A tartalom nem megfelelő formátumú. Kérjük, módosítsd a szöveget.',
-          },
-          { status: 400 },
+        const translator = createTranslator(req.headers.get('accept-language'));
+        return createRateLimitResponse(
+          rateLimitResult,
+          translator.t('quotaWarningBar.message.user'),
         );
       }
 
-      const normalizedLanguage = sanitizeInput(language);
-      const resolvedLocale = resolveLocale(normalizedLanguage);
-      const translator = createTranslator(resolvedLocale);
-
-      // ---- AI szöveg (override elsőbbség) ----
-      const safeTitle = sanitizeInput(title);
-      let aiHtml = '';
-      let structuredSections: OfferSections | null = null;
-      if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
-        // Sanitize override HTML to strip scripts
-        aiHtml = sanitizeHTML(aiOverrideHtml.trim());
-      } else {
-        // Check for OpenAI API key via typed env helper
-        if (!envServer.OPENAI_API_KEY) {
-          return NextResponse.json(
-            { error: 'OPENAI_API_KEY hiányzik az .env.local fájlból.' },
-            { status: 500 },
-          );
+      try {
+        // Parse and sanitize the incoming JSON body.  Sanitizing early
+        // prevents any malicious scripts or HTML fragments from reaching
+        // our AI prompts or being persisted in the database.
+        const parsed = aiGenerateRequestSchema.safeParse(await req.json());
+        if (!parsed.success) {
+          return handleValidationError(parsed.error, requestId);
         }
 
-        // Check cache for identical requests
-        const { hashAiRequest, getCachedAiResponse, storeAiResponse, hashPrompt } = await import(
-          '@/lib/ai/cache'
-        );
-        const requestPayload = {
-          title: safeTitle,
-          projectDetails: sanitizedDetails,
+        const {
+          title,
+          projectDetails,
           deadline,
           language,
           brandVoice,
           style,
           formality,
+          prices,
+          aiOverrideHtml,
+          clientId,
+          templateId,
+          imageAssets,
           testimonials,
           schedule,
           guarantees,
-        };
-        const requestHash = hashAiRequest(requestPayload);
+        } = parsed.data;
 
-        // Try to get cached response
-        const cachedResponse = await getCachedAiResponse(sb, user.id, requestHash, log);
-        if (cachedResponse) {
-          const cacheStartTime = Date.now();
+        const sb = await supabaseServer();
+        const user = req.user;
 
-          log.info('Using cached AI response', {
-            requestHash,
-            cachedAt: cachedResponse.cachedAt,
-          });
-          aiHtml = cachedResponse.responseHtml;
-          if (cachedResponse.responseBlocks) {
-            // Restore structured sections from cache if available
-            structuredSections = cachedResponse.responseBlocks as OfferSections;
-          }
+        // ---- Limit (havi) ----
 
-          // Record cache hit metrics
-          const { recordAiGeneration } = await import('@/lib/ai/metrics');
-          const cacheMetrics: Parameters<typeof recordAiGeneration>[0] = {
-            duration: Date.now() - cacheStartTime,
-            model: 'gpt-4o-mini',
-            cacheHit: true,
-            retries: 0,
-          };
-          if (cachedResponse.tokenCount) {
-            cacheMetrics.tokens = {
-              prompt: 0,
-              completion: 0,
-              total: cachedResponse.tokenCount,
-            };
-          }
-          recordAiGeneration(cacheMetrics, log);
+        const profile = await getUserProfile(sb, user.id);
+        const plan: SubscriptionPlan = resolveEffectivePlan(profile?.plan ?? null);
+
+        let sanitizedImageAssets: SanitizedImageAsset[] = [];
+        try {
+          sanitizedImageAssets = normalizeImageAssets(imageAssets, plan);
+        } catch (error) {
+          const translator = createTranslator(req.headers.get('accept-language'));
+          const status = error instanceof ImageAssetError ? error.status : HttpStatus.BAD_REQUEST;
+          const message =
+            error instanceof ImageAssetError
+              ? error.message
+              : translator.t('api.error.invalidImageUpload');
+          return createErrorResponse(message, status);
         }
 
-        // If no cached response, generate new one
-        if (!cachedResponse) {
-          const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
+        const planLimit = getMonthlyOfferLimit(plan);
 
-          const styleAddon =
-            style === 'compact'
-              ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
-              : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
+        let clientCompanyName: string | null = null;
+        if (clientId) {
+          try {
+            const { data: clientRow, error: clientError } = await sb
+              .from('clients')
+              .select('company_name')
+              .eq('id', clientId)
+              .eq('user_id', user.id)
+              .maybeSingle();
 
-          const toneGuidance =
-            brandVoice === 'formal'
-              ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
-              : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+            if (clientError) {
+              log.warn('Failed to load client for offer generation (non-blocking)', {
+                clientId,
+                error: clientError.message,
+              });
+            } else if (clientRow?.company_name && typeof clientRow.company_name === 'string') {
+              clientCompanyName = clientRow.company_name;
+            }
+          } catch (clientLookupError) {
+            log.warn('Unexpected client lookup error during offer generation', {
+              error: clientLookupError,
+              message:
+                clientLookupError instanceof Error
+                  ? clientLookupError.message
+                  : String(clientLookupError),
+            });
+          }
+        }
 
-          const formalityGuidance =
-            formality === 'magázódás'
-              ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
-              : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+        const cookieStore = await cookies();
+        let deviceId = cookieStore.get('propono_device_id')?.value;
+        if (!deviceId) {
+          const analyticsAllowed = allowCategory(req, 'analytics');
+          deviceId = randomUUID();
+          if (analyticsAllowed) {
+            cookieStore.set({
+              name: 'propono_device_id',
+              value: deviceId,
+              httpOnly: true,
+              sameSite: 'lax',
+              secure: process.env.NODE_ENV === 'production',
+              maxAge: 60 * 60 * 24 * 365,
+              path: '/',
+            });
+          }
+        }
 
-          // Sanitize user inputs before passing to OpenAI
-          const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
-          const safeDeadline = sanitizeInput(deadline || '—');
+        const { iso: usagePeriodStart } = currentMonthStart();
+        const usageSnapshot = await getUsageSnapshot(sb, user.id, usagePeriodStart);
 
-          const clientInfo = clientCompanyName
-            ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
-            : '';
-          const deadlineGuidance =
-            safeDeadline && safeDeadline !== '—'
-              ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
+        if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+          // Use authenticated client for usage counter sync
+          // RLS policies should allow users to update their own usage counters
+          // If this fails, we log a warning but continue (non-blocking)
+          try {
+            await syncUsageCounter(
+              sb, // Use authenticated client instead of service role
+              user.id,
+              usageSnapshot.offersGenerated,
+              usagePeriodStart,
+            );
+          } catch (syncError) {
+            log.warn('Failed to sync usage counter before offer generation', {
+              error: syncError,
+              message: syncError instanceof Error ? syncError.message : String(syncError),
+              // Note: If this fails due to RLS, we may need to review RLS policies
+              // or use service role as fallback (with proper logging)
+            });
+          }
+        }
+
+        // Check quota for offer generation
+        if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+          const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
+          if (!quotaCheck.allowed) {
+            log.warn('Quota limit exceeded', {
+              userId: user.id,
+              plan,
+              limit: planLimit,
+              confirmed: quotaCheck.confirmedCount,
+              pending: quotaCheck.pendingCount,
+              total: quotaCheck.totalCount,
+              periodStart: usagePeriodStart,
+            });
+            const translator = createTranslator(req.headers.get('accept-language'));
+            return NextResponse.json(
+              { error: translator.t('quotaWarningBar.message.user') },
+              { status: 402 },
+            );
+          }
+          // Update usageSnapshot with atomic values for logging
+          usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
+        }
+
+        const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
+        if (deviceLimit !== null && deviceId) {
+          const deviceQuotaCheck = await checkDeviceQuotaWithPending(
+            sb,
+            user.id,
+            deviceId,
+            deviceLimit,
+            usagePeriodStart,
+          );
+          if (!deviceQuotaCheck.allowed) {
+            log.warn('Device quota limit exceeded', {
+              userId: user.id,
+              deviceId,
+              plan,
+              limit: deviceLimit,
+              confirmed: deviceQuotaCheck.confirmedCount,
+              pending: deviceQuotaCheck.pendingCount,
+              total: deviceQuotaCheck.totalCount,
+              periodStart: usagePeriodStart,
+            });
+            const deviceTranslator = createTranslator(req.headers.get('accept-language'));
+            return NextResponse.json(
+              { error: deviceTranslator.t('quotaWarningBar.message.device') },
+              { status: 402 },
+            );
+          }
+        }
+
+        log.info('Usage quota snapshot', {
+          plan,
+          limit: planLimit,
+          confirmed: usageSnapshot.offersGenerated,
+          periodStart: usagePeriodStart,
+        });
+
+        const sanitizedDetails = projectDetailFields.reduce<ProjectDetails>(
+          (acc, key) => {
+            acc[key] = sanitizeInput(projectDetails[key]);
+            return acc;
+          },
+          { ...emptyProjectDetails },
+        );
+
+        // Content moderation: Check for malicious content before sending to OpenAI
+        const moderationInput: Parameters<typeof moderateUserInput>[0] = {
+          title,
+          projectDetails: {
+            overview: sanitizedDetails.overview || undefined,
+            deliverables: sanitizedDetails.deliverables || undefined,
+            timeline: sanitizedDetails.timeline || undefined,
+            constraints: sanitizedDetails.constraints || undefined,
+          },
+          deadline: deadline || undefined,
+          testimonials: testimonials && testimonials.length > 0 ? testimonials : undefined,
+          schedule: schedule && schedule.length > 0 ? schedule : undefined,
+          guarantees: guarantees && guarantees.length > 0 ? guarantees : undefined,
+        };
+        const moderationResult = moderateUserInput(moderationInput);
+
+        if (!moderationResult.allowed) {
+          log.warn('Content moderation blocked request', {
+            userId: user.id,
+            category: moderationResult.category,
+            reason: moderationResult.reason,
+          });
+          return NextResponse.json(
+            {
+              error:
+                moderationResult.reason ||
+                'A tartalom nem megfelelő formátumú. Kérjük, módosítsd a szöveget.',
+            },
+            { status: 400 },
+          );
+        }
+
+        const normalizedLanguage = sanitizeInput(language);
+        const resolvedLocale = resolveLocale(normalizedLanguage);
+        const translator = createTranslator(resolvedLocale);
+
+        // ---- AI szöveg (override elsőbbség) ----
+        const safeTitle = sanitizeInput(title);
+        let aiHtml = '';
+        let structuredSections: OfferSections | null = null;
+        if (aiOverrideHtml && aiOverrideHtml.trim().length > 0) {
+          // Sanitize override HTML to strip scripts
+          aiHtml = sanitizeHTML(aiOverrideHtml.trim());
+        } else {
+          // Check for OpenAI API key via typed env helper
+          if (!envServer.OPENAI_API_KEY) {
+            return NextResponse.json(
+              { error: 'OPENAI_API_KEY hiányzik az .env.local fájlból.' },
+              { status: 500 },
+            );
+          }
+
+          // Check cache for identical requests
+          const { hashAiRequest, getCachedAiResponse, storeAiResponse, hashPrompt } = await import(
+            '@/lib/ai/cache'
+          );
+          const requestPayload = {
+            title: safeTitle,
+            projectDetails: sanitizedDetails,
+            deadline,
+            language,
+            brandVoice,
+            style,
+            formality,
+            testimonials,
+            schedule,
+            guarantees,
+          };
+          const requestHash = hashAiRequest(requestPayload);
+
+          // Try to get cached response
+          const cachedResponse = await getCachedAiResponse(sb, user.id, requestHash, log);
+          if (cachedResponse) {
+            const cacheStartTime = Date.now();
+
+            log.info('Using cached AI response', {
+              requestHash,
+              cachedAt: cachedResponse.cachedAt,
+            });
+            aiHtml = cachedResponse.responseHtml;
+            if (cachedResponse.responseBlocks) {
+              // Restore structured sections from cache if available
+              structuredSections = cachedResponse.responseBlocks as OfferSections;
+            }
+
+            // Record cache hit metrics
+            const { recordAiGeneration } = await import('@/lib/ai/metrics');
+            const cacheMetrics: Parameters<typeof recordAiGeneration>[0] = {
+              duration: Date.now() - cacheStartTime,
+              model: 'gpt-4o-mini',
+              cacheHit: true,
+              retries: 0,
+            };
+            if (cachedResponse.tokenCount) {
+              cacheMetrics.tokens = {
+                prompt: 0,
+                completion: 0,
+                total: cachedResponse.tokenCount,
+              };
+            }
+            recordAiGeneration(cacheMetrics, log);
+          }
+
+          // If no cached response, generate new one
+          if (!cachedResponse) {
+            const openai = new OpenAI({ apiKey: envServer.OPENAI_API_KEY });
+
+            const styleAddon =
+              style === 'compact'
+                ? 'Stílus: nagyon tömör és lényegre törő. A bevezető és projekt összefoglaló legyen 1-2 rövid bekezdés. A felsorolások legfeljebb 3-4 pontot tartalmazzanak, amelyek a legfontosabb információkat összegzik. A hangsúly a lényegi feladatokon és eredményeken legyen, kerülve a töltelékszöveget.'
+                : 'Stílus: részletes és indokolt. A bevezető és projekt összefoglaló legyen 2-4 mondatos, informatív bekezdés. A felsorolások 4-6 tartalmas pontot tartalmaznak, amelyek részletesen megmagyarázzák a javasolt lépéseket, szolgáltatásokat és eredményeket. A szöveg legyen átgondolt és meggyőző.';
+
+            const toneGuidance =
+              brandVoice === 'formal'
+                ? 'Hangnem: formális és professzionális. Használj udvarias, tiszteletteljes kifejezéseket és üzleti terminológiát.'
+                : 'Hangnem: barátságos és együttműködő. Használj meleg, de mégis professzionális hangvételt, amely bizalmat kelt.';
+
+            const formalityGuidance =
+              formality === 'magázódás'
+                ? 'Szólítás: magázódás használata (Ön, Önök, Önöké, stb.). A teljes szövegben következetesen magázódj a címzettel.'
+                : 'Szólítás: tegeződés használata (te, ti, tiétek, stb.). A teljes szövegben következetesen tegezd a címzettet.';
+
+            // Sanitize user inputs before passing to OpenAI
+            const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
+            const safeDeadline = sanitizeInput(deadline || '—');
+
+            const clientInfo = clientCompanyName
+              ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
               : '';
+            const deadlineGuidance =
+              safeDeadline && safeDeadline !== '—'
+                ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
+                : '';
 
-          // Include testimonials in prompt if provided
-          const testimonialsSection =
-            testimonials && testimonials.length > 0
-              ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
-              : '';
+            // Include testimonials in prompt if provided
+            const testimonialsSection =
+              testimonials && testimonials.length > 0
+                ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
+                : '';
 
-          const userPrompt = `
+            const userPrompt = `
 Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
 
 Nyelv: ${normalizedLanguage}
@@ -1092,343 +1098,369 @@ Különös figyelmet fordít a következőkre:
 ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelzések, használd fel őket a testimonials szakaszban' : ''}
 `;
 
-          try {
-            // Import retry utility and metrics
-            const { retryWithBackoff, DEFAULT_API_RETRY_CONFIG } = await import('@/lib/api/retry');
-            const { recordAiGeneration, extractTokenUsage } = await import('@/lib/ai/metrics');
+            try {
+              // Import retry utility and metrics
+              const { retryWithBackoff, DEFAULT_API_RETRY_CONFIG } = await import(
+                '@/lib/api/retry'
+              );
+              const { recordAiGeneration, extractTokenUsage } = await import('@/lib/ai/metrics');
 
-            // Track generation start time for metrics
-            const generationStartTime = Date.now();
-            let retryCount = 0;
+              // Track generation start time for metrics
+              const generationStartTime = Date.now();
+              let retryCount = 0;
 
-            // Wrap OpenAI API call with retry logic
-            const response = await retryWithBackoff(
-              () =>
-                openai.responses.parse({
-                  model: 'gpt-4o-mini',
-                  temperature: 0.7, // Increased for more natural, creative but still professional output
-                  input: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    { role: 'user', content: userPrompt },
-                  ],
-                  text: { format: OFFER_SECTIONS_FORMAT },
-                }),
-              DEFAULT_API_RETRY_CONFIG,
-              (attempt, retryError, delayMs) => {
-                retryCount = attempt;
-                log.warn('OpenAI API call failed, retrying', {
-                  attempt,
-                  delayMs,
-                  error: retryError instanceof Error ? retryError.message : String(retryError),
-                });
-              },
-            );
+              // Wrap OpenAI API call with retry logic
+              const response = await retryWithBackoff(
+                () =>
+                  openai.responses.parse({
+                    model: 'gpt-4o-mini',
+                    temperature: 0.7, // Increased for more natural, creative but still professional output
+                    input: [
+                      { role: 'system', content: SYSTEM_PROMPT },
+                      { role: 'user', content: userPrompt },
+                    ],
+                    text: { format: OFFER_SECTIONS_FORMAT },
+                  }),
+                DEFAULT_API_RETRY_CONFIG,
+                (attempt, retryError, delayMs) => {
+                  retryCount = attempt;
+                  log.warn('OpenAI API call failed, retrying', {
+                    attempt,
+                    delayMs,
+                    error: retryError instanceof Error ? retryError.message : String(retryError),
+                  });
+                },
+              );
 
-            structuredSections = response.output_parsed as OfferSections | null;
-            if (!structuredSections) {
-              throw new Error('Structured output missing');
-            }
+              structuredSections = response.output_parsed as OfferSections | null;
+              if (!structuredSections) {
+                throw new Error('Structured output missing');
+              }
 
-            aiHtml = sectionsToHtml(
-              structuredSections,
-              style === 'compact' ? 'compact' : 'detailed',
-              translator,
-            );
+              aiHtml = sectionsToHtml(
+                structuredSections,
+                style === 'compact' ? 'compact' : 'detailed',
+                translator,
+              );
 
-            // Record metrics
-            const generationDuration = Date.now() - generationStartTime;
-            const tokenUsage = extractTokenUsage(
-              response as {
-                usage?: {
-                  prompt_tokens?: number;
-                  completion_tokens?: number;
-                  total_tokens?: number;
-                };
-              },
-            );
+              // Record metrics
+              const generationDuration = Date.now() - generationStartTime;
+              const tokenUsage = extractTokenUsage(
+                response as {
+                  usage?: {
+                    prompt_tokens?: number;
+                    completion_tokens?: number;
+                    total_tokens?: number;
+                  };
+                },
+              );
 
-            const generationMetrics: Parameters<typeof recordAiGeneration>[0] = {
-              duration: generationDuration,
-              model: 'gpt-4o-mini',
-              cacheHit: false,
-              retries: retryCount,
-            };
-            if (tokenUsage) {
-              generationMetrics.tokens = tokenUsage;
-            }
-            recordAiGeneration(generationMetrics, log);
-
-            // Store response in cache for future requests
-            const fullPrompt = `${SYSTEM_PROMPT}\n\n${userPrompt}`;
-            const promptHash = hashPrompt(fullPrompt);
-
-            // Store asynchronously to not block response
-            storeAiResponse(
-              sb,
-              user.id,
-              requestHash,
-              promptHash,
-              aiHtml,
-              { ttlSeconds: 3600 }, // Cache for 1 hour
-              {
-                responseBlocks: structuredSections,
+              const generationMetrics: Parameters<typeof recordAiGeneration>[0] = {
+                duration: generationDuration,
                 model: 'gpt-4o-mini',
-              },
-              log,
-            ).catch((cacheError) => {
-              log.warn('Failed to cache AI response (non-blocking)', {
-                error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+                cacheHit: false,
+                retries: retryCount,
+              };
+              if (tokenUsage) {
+                generationMetrics.tokens = tokenUsage;
+              }
+              recordAiGeneration(generationMetrics, log);
+
+              // Store response in cache for future requests
+              const fullPrompt = `${SYSTEM_PROMPT}\n\n${userPrompt}`;
+              const promptHash = hashPrompt(fullPrompt);
+
+              // Store asynchronously to not block response
+              storeAiResponse(
+                sb,
+                user.id,
                 requestHash,
-              });
-            });
-          } catch (error) {
-            log.error('OpenAI structured output error', error);
-
-            // Handle specific API errors
-            if (error instanceof APIError) {
-              const status = typeof error.status === 'number' ? error.status : 500;
-              const errorMessage =
-                typeof error.message === 'string' && error.message.trim().length > 0
-                  ? error.message
-                  : error.error && typeof error.error === 'object'
-                    ? String((error.error as { message?: unknown }).message ?? 'OpenAI API hiba')
-                    : 'OpenAI API hiba';
-
-              // Handle 403 Forbidden errors specifically
-              if (status === 403) {
-                log.error('OpenAI API 403 Forbidden error', {
-                  status: error.status,
-                  code: error.code,
-                  message: error.message,
-                  type: error.type,
+                promptHash,
+                aiHtml,
+                { ttlSeconds: 3600 }, // Cache for 1 hour
+                {
+                  responseBlocks: structuredSections,
+                  model: 'gpt-4o-mini',
+                },
+                log,
+              ).catch((cacheError) => {
+                log.warn('Failed to cache AI response (non-blocking)', {
+                  error: cacheError instanceof Error ? cacheError.message : String(cacheError),
+                  requestHash,
                 });
-                return NextResponse.json(
-                  {
-                    error:
-                      'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
-                  },
-                  { status: 403 },
+              });
+            } catch (error) {
+              log.error('OpenAI structured output error', error);
+
+              // Handle specific API errors
+              if (error instanceof APIError) {
+                const status = typeof error.status === 'number' ? error.status : 500;
+                const errorMessage =
+                  typeof error.message === 'string' && error.message.trim().length > 0
+                    ? error.message
+                    : error.error && typeof error.error === 'object'
+                      ? String((error.error as { message?: unknown }).message ?? 'OpenAI API hiba')
+                      : 'OpenAI API hiba';
+
+                // Handle 403 Forbidden errors specifically
+                if (status === 403) {
+                  log.error('OpenAI API 403 Forbidden error', {
+                    status: error.status,
+                    code: error.code,
+                    message: error.message,
+                    type: error.type,
+                  });
+                  return createErrorResponse(
+                    'Az OpenAI API kulcs érvénytelen vagy nincs engedélyezve. Kérjük, ellenőrizd az API kulcsot és a fiók beállításait.',
+                    HttpStatus.FORBIDDEN,
+                  );
+                }
+
+                // Handle other API errors
+                return createErrorResponse(
+                  errorMessage || 'OpenAI API hiba történt. Próbáld újra később.',
+                  status,
                 );
               }
 
-              // Handle other API errors
-              return NextResponse.json(
-                { error: errorMessage || 'OpenAI API hiba történt. Próbáld újra később.' },
-                { status },
+              // Handle non-API errors
+              return createErrorResponse(
+                'OpenAI struktúrált válasz sikertelen. Próbáld újra később.',
+                HttpStatus.BAD_GATEWAY,
               );
             }
-
-            // Handle non-API errors
-            return NextResponse.json(
-              { error: 'OpenAI struktúrált válasz sikertelen. Próbáld újra később.' },
-              { status: 502 },
-            );
           }
         }
-      }
 
-      // ---- Ár tábla adatok ----
-      const rows: PriceRow[] = prices;
+        // ---- Ár tábla adatok ----
+        const rows: PriceRow[] = prices;
 
-      const { storedHtml: aiHtmlForStorage } = await applyImageAssetsToHtml(
-        aiHtml,
-        sanitizedImageAssets,
-      );
-
-      // Prepare AI blocks for storage (if we have structured sections)
-      let aiBlocksForStorage: unknown = {};
-      if (structuredSections) {
-        const blocks = convertSectionsToBlocks(structuredSections);
-        // Convert to JSON-serializable format
-        aiBlocksForStorage = JSON.parse(JSON.stringify(blocks));
-      }
-
-      // Sanitize user-provided content
-      const sanitizedSchedule = Array.isArray(schedule)
-        ? schedule.map((item) => sanitizeInput(item)).filter(Boolean)
-        : [];
-      const sanitizedTestimonials =
-        Array.isArray(testimonials) && testimonials.length > 0
-          ? testimonials.map((item) => sanitizeInput(item)).filter(Boolean)
-          : null;
-      const sanitizedGuarantees =
-        Array.isArray(guarantees) && guarantees.length > 0
-          ? guarantees.map((item) => sanitizeInput(item)).filter(Boolean)
-          : null;
-
-      // ---- Offer creation ----
-      const offerId = randomUUID();
-
-      // Resolve template ID for saving (used for PDF generation later from dashboard)
-      const normalizedRequestedTemplateId =
-        typeof templateId === 'string' && templateId.trim().length > 0
-          ? (templateId.trim() as TemplateId)
-          : null;
-
-      // Use centralized template resolution
-      const { resolveOfferTemplate } = await import('@/lib/offers/templateResolution');
-      const templateResolution = resolveOfferTemplate({
-        requestedTemplateId: normalizedRequestedTemplateId,
-        profileTemplateId:
-          typeof profile?.offer_template === 'string' ? profile.offer_template : null,
-        plan,
-        offerId,
-        userId: user.id,
-      });
-
-      // Validate requested template exists (if one was requested)
-      if (normalizedRequestedTemplateId && templateResolution.wasFallback) {
-        return NextResponse.json(
-          {
-            error: 'A kért sablon nem található. Kérlek válassz egy elérhető sablont.',
-          },
-          { status: 400 },
+        const { storedHtml: aiHtmlForStorage } = await applyImageAssetsToHtml(
+          aiHtml,
+          sanitizedImageAssets,
         );
-      }
 
-      const resolvedTemplateId = templateResolution.templateId;
+        // Prepare AI blocks for storage (if we have structured sections)
+        let aiBlocksForStorage: unknown = {};
+        if (structuredSections) {
+          const blocks = convertSectionsToBlocks(structuredSections);
+          // Convert to JSON-serializable format
+          aiBlocksForStorage = JSON.parse(JSON.stringify(blocks));
+        }
 
-      // ---- Ajánlat mentése ----
-      // Use authenticated client to respect RLS policies (security best practice)
-      // Manually validate user_id matches authenticated user (defense in depth)
-      log.info('Attempting to insert offer', {
-        offerId,
-        userId: user.id,
-        title: safeTitle,
-      });
+        // Sanitize user-provided content
+        const sanitizedSchedule = Array.isArray(schedule)
+          ? schedule.map((item) => sanitizeInput(item)).filter(Boolean)
+          : [];
+        const sanitizedTestimonials =
+          Array.isArray(testimonials) && testimonials.length > 0
+            ? testimonials.map((item) => sanitizeInput(item)).filter(Boolean)
+            : null;
+        const sanitizedGuarantees =
+          Array.isArray(guarantees) && guarantees.length > 0
+            ? guarantees.map((item) => sanitizeInput(item)).filter(Boolean)
+            : null;
 
-      // Security: Ensure user_id matches authenticated user
-      if (user.id !== req.user.id) {
-        log.error('User ID mismatch - potential security issue', {
-          authenticatedUserId: req.user.id,
-          providedUserId: user.id,
+        // ---- Offer creation ----
+        const offerId = randomUUID();
+
+        // Resolve template ID for saving (used for PDF generation later from dashboard)
+        const normalizedRequestedTemplateId =
+          typeof templateId === 'string' && templateId.trim().length > 0
+            ? (templateId.trim() as TemplateId)
+            : null;
+
+        // Use centralized template resolution
+        const { resolveOfferTemplate } = await import('@/lib/offers/templateResolution');
+        const templateResolution = resolveOfferTemplate({
+          requestedTemplateId: normalizedRequestedTemplateId,
+          profileTemplateId:
+            typeof profile?.offer_template === 'string' ? profile.offer_template : null,
+          plan,
           offerId,
+          userId: user.id,
         });
-        return NextResponse.json(
-          {
-            error: t('errors.offer.saveFailed'),
-            details: 'Authentication mismatch',
-          },
-          { status: 403 },
-        );
-      }
 
-      const { data: insertedOffer, error: offerInsertError } = await sb
-        .from('offers')
-        .insert({
-          id: offerId,
-          user_id: user.id,
-          created_by: user.id,
+        // Validate requested template exists (if one was requested)
+        if (normalizedRequestedTemplateId && templateResolution.wasFallback) {
+          return NextResponse.json(
+            {
+              error: 'A kért sablon nem található. Kérlek válassz egy elérhető sablont.',
+            },
+            { status: 400 },
+          );
+        }
+
+        const resolvedTemplateId = templateResolution.templateId;
+
+        // ---- Ajánlat mentése ----
+        // Use authenticated client to respect RLS policies (security best practice)
+        // Manually validate user_id matches authenticated user (defense in depth)
+        log.info('Attempting to insert offer', {
+          offerId,
+          userId: user.id,
           title: safeTitle,
-          recipient_id: clientId || null,
-          inputs: {
-            projectDetails: sanitizedDetails,
-            deadline,
-            language,
-            brandVoice,
-            style,
-            templateId: resolvedTemplateId,
-          },
-          ai_text: aiHtmlForStorage,
-          ai_blocks: aiBlocksForStorage,
-          schedule: sanitizedSchedule,
-          testimonials: sanitizedTestimonials,
-          guarantees: sanitizedGuarantees,
-          price_json: rows,
-          pdf_url: null,
-          status: 'draft',
-        })
-        .select('id, user_id, title, created_at')
-        .single();
-
-      if (offerInsertError) {
-        log.error('Offer insert error', offerInsertError, {
-          offerId,
-          userId: user.id,
-          errorMessage: offerInsertError.message,
-          errorCode: offerInsertError.code,
-          errorDetails: offerInsertError.details,
-          errorHint: offerInsertError.hint,
-        });
-        return NextResponse.json(
-          {
-            error: t('errors.offer.saveFailed'),
-            details: offerInsertError.message,
-          },
-          { status: 500 },
-        );
-      }
-
-      if (!insertedOffer) {
-        log.error('Offer insert returned no data and no error - possible RLS issue', {
-          offerId,
-          userId: user.id,
-        });
-        return NextResponse.json(
-          {
-            error: t('errors.offer.saveFailed'),
-            details: 'Offer insert returned no data',
-          },
-          { status: 500 },
-        );
-      }
-
-      // Security: Verify the inserted offer belongs to the authenticated user
-      if (insertedOffer.user_id !== user.id) {
-        log.error('CRITICAL: Inserted offer user_id does not match authenticated user', {
-          offerId: insertedOffer.id,
-          insertedUserId: insertedOffer.user_id,
-          authenticatedUserId: user.id,
-        });
-        return NextResponse.json(
-          {
-            error: t('errors.offer.saveFailed'),
-            details: 'Security validation failed',
-          },
-          { status: 500 },
-        );
-      }
-
-      // Verify the offer was actually saved by querying it back
-      // Use authenticated client first (respects RLS)
-      // Use a small delay to ensure trigger has completed
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const { data: verifyOffer, error: verifyError } = await sb
-        .from('offers')
-        .select('id, user_id, title, created_at')
-        .eq('id', offerId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (verifyError) {
-        log.error('Failed to verify offer after insert (authenticated client)', {
-          error: verifyError,
-          offerId,
-          userId: user.id,
-          errorMessage: verifyError.message,
-          errorCode: verifyError.code,
-          errorDetails: verifyError.details,
-          errorHint: verifyError.hint,
         });
 
-        // Fallback: Try with service role client to diagnose RLS issues
-        const sbService = supabaseServiceRole();
-        const { data: serviceVerifyOffer, error: serviceVerifyError } = await sbService
+        // Security: Ensure user_id matches authenticated user
+        if (user.id !== req.user.id) {
+          log.error('User ID mismatch - potential security issue', {
+            authenticatedUserId: req.user.id,
+            providedUserId: user.id,
+            offerId,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: 'Authentication mismatch',
+            },
+            { status: 403 },
+          );
+        }
+
+        const { data: insertedOffer, error: offerInsertError } = await sb
+          .from('offers')
+          .insert({
+            id: offerId,
+            user_id: user.id,
+            created_by: user.id,
+            title: safeTitle,
+            recipient_id: clientId || null,
+            inputs: {
+              projectDetails: sanitizedDetails,
+              deadline,
+              language,
+              brandVoice,
+              style,
+              templateId: resolvedTemplateId,
+            },
+            ai_text: aiHtmlForStorage,
+            ai_blocks: aiBlocksForStorage,
+            schedule: sanitizedSchedule,
+            testimonials: sanitizedTestimonials,
+            guarantees: sanitizedGuarantees,
+            price_json: rows,
+            pdf_url: null,
+            status: 'draft',
+          })
+          .select('id, user_id, title, created_at')
+          .single();
+
+        if (offerInsertError) {
+          log.error('Offer insert error', offerInsertError, {
+            offerId,
+            userId: user.id,
+            errorMessage: offerInsertError.message,
+            errorCode: offerInsertError.code,
+            errorDetails: offerInsertError.details,
+            errorHint: offerInsertError.hint,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: offerInsertError.message,
+            },
+            { status: 500 },
+          );
+        }
+
+        if (!insertedOffer) {
+          log.error('Offer insert returned no data and no error - possible RLS issue', {
+            offerId,
+            userId: user.id,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: 'Offer insert returned no data',
+            },
+            { status: 500 },
+          );
+        }
+
+        // Security: Verify the inserted offer belongs to the authenticated user
+        if (insertedOffer.user_id !== user.id) {
+          log.error('CRITICAL: Inserted offer user_id does not match authenticated user', {
+            offerId: insertedOffer.id,
+            insertedUserId: insertedOffer.user_id,
+            authenticatedUserId: user.id,
+          });
+          return NextResponse.json(
+            {
+              error: t('errors.offer.saveFailed'),
+              details: 'Security validation failed',
+            },
+            { status: 500 },
+          );
+        }
+
+        // Verify the offer was actually saved by querying it back
+        // Use authenticated client first (respects RLS)
+        // Use a small delay to ensure trigger has completed
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        const { data: verifyOffer, error: verifyError } = await sb
           .from('offers')
           .select('id, user_id, title, created_at')
           .eq('id', offerId)
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (serviceVerifyError || !serviceVerifyOffer) {
+        if (verifyError) {
+          log.error('Failed to verify offer after insert (authenticated client)', {
+            error: verifyError,
+            offerId,
+            userId: user.id,
+            errorMessage: verifyError.message,
+            errorCode: verifyError.code,
+            errorDetails: verifyError.details,
+            errorHint: verifyError.hint,
+          });
+
+          // Fallback: Try with service role client to diagnose RLS issues
+          const sbService = supabaseServiceRole();
+          const { data: serviceVerifyOffer, error: serviceVerifyError } = await sbService
+            .from('offers')
+            .select('id, user_id, title, created_at')
+            .eq('id', offerId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (serviceVerifyError || !serviceVerifyOffer) {
+            log.error(
+              'CRITICAL: Offer not found even with service role - transaction rollback or trigger failure',
+              {
+                offerId,
+                userId: user.id,
+                authenticatedError: verifyError.message,
+                serviceRoleError: serviceVerifyError?.message,
+              },
+            );
+            return NextResponse.json(
+              {
+                error: t('errors.offer.saveFailed'),
+                details: 'Offer was not saved to database',
+              },
+              { status: 500 },
+            );
+          } else {
+            log.warn(
+              'Offer found with service role but not authenticated client - possible RLS policy issue',
+              {
+                offerId,
+                userId: user.id,
+                authenticatedError: verifyError.message,
+              },
+            );
+            // Offer exists, continue (but log the RLS issue for investigation)
+          }
+        } else if (!verifyOffer) {
           log.error(
-            'CRITICAL: Offer not found even with service role - transaction rollback or trigger failure',
+            'CRITICAL: Offer not found after insert - transaction rollback or trigger failure',
             {
               offerId,
               userId: user.id,
-              authenticatedError: verifyError.message,
-              serviceRoleError: serviceVerifyError?.message,
+              insertedOffer,
             },
           );
           return NextResponse.json(
@@ -1439,244 +1471,219 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
             { status: 500 },
           );
         } else {
-          log.warn(
-            'Offer found with service role but not authenticated client - possible RLS policy issue',
-            {
-              offerId,
-              userId: user.id,
-              authenticatedError: verifyError.message,
-            },
-          );
-          // Offer exists, continue (but log the RLS issue for investigation)
+          log.info('Offer successfully inserted and verified', {
+            offerId: verifyOffer.id,
+            userId: verifyOffer.user_id,
+            title: verifyOffer.title,
+            created_at: verifyOffer.created_at,
+          });
         }
-      } else if (!verifyOffer) {
-        log.error(
-          'CRITICAL: Offer not found after insert - transaction rollback or trigger failure',
-          {
-            offerId,
-            userId: user.id,
-            insertedOffer,
-          },
-        );
-        return NextResponse.json(
-          {
-            error: t('errors.offer.saveFailed'),
-            details: 'Offer was not saved to database',
-          },
-          { status: 500 },
-        );
-      } else {
-        log.info('Offer successfully inserted and verified', {
-          offerId: verifyOffer.id,
-          userId: verifyOffer.user_id,
-          title: verifyOffer.title,
-          created_at: verifyOffer.created_at,
-        });
-      }
 
-      // Ensure default share link exists (fallback if trigger failed)
-      // The trigger should create it automatically, but we verify and create if missing
-      // Try authenticated client first, fall back to service role only if needed
-      try {
-        // First try with authenticated client (respects RLS)
-        const { data: existingShare, error: shareCheckError } = await sb
-          .from('offer_shares')
-          .select('id, token')
-          .eq('offer_id', offerId)
-          .eq('is_active', true)
-          .maybeSingle();
-
-        let shareToUse = existingShare;
-
-        // If authenticated client fails, try service role as fallback (for diagnosis)
-        if (shareCheckError || !existingShare) {
-          if (shareCheckError) {
-            log.warn('Error checking for existing share link with authenticated client', {
-              offerId,
-              userId: user.id,
-              error: shareCheckError.message,
-              errorCode: shareCheckError.code,
-            });
-          }
-
-          // Fallback: Check with service role to see if share exists but RLS is blocking
-          const sbService = supabaseServiceRole();
-          const { data: serviceShare, error: serviceShareError } = await sbService
+        // Ensure default share link exists (fallback if trigger failed)
+        // The trigger should create it automatically, but we verify and create if missing
+        // Try authenticated client first, fall back to service role only if needed
+        try {
+          // First try with authenticated client (respects RLS)
+          const { data: existingShare, error: shareCheckError } = await sb
             .from('offer_shares')
             .select('id, token')
             .eq('offer_id', offerId)
             .eq('is_active', true)
             .maybeSingle();
 
-          if (serviceShareError) {
-            log.warn('Error checking for existing share link with service role', {
-              offerId,
-              userId: user.id,
-              error: serviceShareError.message,
-              errorCode: serviceShareError.code,
-            });
-          } else if (serviceShare && !existingShare) {
-            log.warn(
-              'Share found with service role but not authenticated client - possible RLS issue',
-              {
+          let shareToUse = existingShare;
+
+          // If authenticated client fails, try service role as fallback (for diagnosis)
+          if (shareCheckError || !existingShare) {
+            if (shareCheckError) {
+              log.warn('Error checking for existing share link with authenticated client', {
                 offerId,
                 userId: user.id,
-              },
-            );
-            shareToUse = serviceShare;
-          }
-        }
-
-        if (!shareToUse) {
-          log.warn('Default share not found after offer creation, creating fallback share', {
-            offerId,
-            userId: user.id,
-            requestId,
-          });
-
-          // Use authenticated client first for share creation (respects RLS)
-          const { randomBytes } = await import('crypto');
-          const token = randomBytes(32).toString('base64url');
-
-          const { data: insertedShare, error: shareError } = await sb
-            .from('offer_shares')
-            .insert({
-              offer_id: offerId,
-              user_id: user.id,
-              token,
-              expires_at: null,
-              is_active: true,
-            })
-            .select('id, token')
-            .single();
-
-          if (shareError) {
-            // Check if the error is a foreign key constraint violation
-            // This would indicate the offer doesn't actually exist in the database
-            const isForeignKeyError =
-              shareError.code === '23503' ||
-              (typeof shareError.message === 'string' &&
-                shareError.message.includes('foreign key constraint'));
-
-            if (isForeignKeyError) {
-              log.error(
-                'CRITICAL: Failed to create fallback share - offer does not exist in database',
-                {
-                  offerId,
-                  userId: user.id,
-                  error: shareError,
-                  errorMessage: shareError.message,
-                  errorCode: shareError.code,
-                  errorDetails: shareError.details,
-                  errorHint: shareError.hint,
-                },
-              );
-              // This is a critical error - the offer was not actually saved
-              return NextResponse.json(
-                {
-                  error: t('errors.offer.saveFailed'),
-                  details: 'Offer was not saved to database (foreign key constraint failed)',
-                },
-                { status: 500 },
-              );
-            } else {
-              // Non-foreign-key error (likely RLS or permissions) - try service role as fallback
-              log.warn(
-                'Failed to create fallback share link with authenticated client, trying service role',
-                {
-                  offerId,
-                  userId: user.id,
-                  error: shareError.message,
-                  errorCode: shareError.code,
-                },
-              );
-
-              // Fallback: Try with service role (only for share creation, not offer creation)
-              const sbService = supabaseServiceRole();
-              const { data: fallbackShare, error: fallbackError } = await sbService
-                .from('offer_shares')
-                .insert({
-                  offer_id: offerId,
-                  user_id: user.id,
-                  token,
-                  expires_at: null,
-                  is_active: true,
-                })
-                .select('id, token')
-                .single();
-
-              if (fallbackError) {
-                log.error('Failed to create fallback share link even with service role', {
-                  offerId,
-                  userId: user.id,
-                  error: fallbackError.message,
-                  errorCode: fallbackError.code,
-                });
-                // Don't fail the request - offer is created, share can be created later
-              } else if (fallbackShare) {
-                log.info('Fallback share link created successfully with service role', {
-                  offerId,
-                  shareId: fallbackShare.id,
-                  token: fallbackShare.token.substring(0, 8) + '...',
-                });
-                shareToUse = fallbackShare;
-              }
+                error: shareCheckError.message,
+                errorCode: shareCheckError.code,
+              });
             }
-          } else if (!insertedShare) {
-            log.error('Fallback share insert returned no data and no error', {
+
+            // Fallback: Check with service role to see if share exists but RLS is blocking
+            const sbService = supabaseServiceRole();
+            const { data: serviceShare, error: serviceShareError } = await sbService
+              .from('offer_shares')
+              .select('id, token')
+              .eq('offer_id', offerId)
+              .eq('is_active', true)
+              .maybeSingle();
+
+            if (serviceShareError) {
+              log.warn('Error checking for existing share link with service role', {
+                offerId,
+                userId: user.id,
+                error: serviceShareError.message,
+                errorCode: serviceShareError.code,
+              });
+            } else if (serviceShare && !existingShare) {
+              log.warn(
+                'Share found with service role but not authenticated client - possible RLS issue',
+                {
+                  offerId,
+                  userId: user.id,
+                },
+              );
+              shareToUse = serviceShare;
+            }
+          }
+
+          if (!shareToUse) {
+            log.warn('Default share not found after offer creation, creating fallback share', {
               offerId,
               userId: user.id,
+              requestId,
             });
+
+            // Use authenticated client first for share creation (respects RLS)
+            const { randomBytes } = await import('crypto');
+            const token = randomBytes(32).toString('base64url');
+
+            const { data: insertedShare, error: shareError } = await sb
+              .from('offer_shares')
+              .insert({
+                offer_id: offerId,
+                user_id: user.id,
+                token,
+                expires_at: null,
+                is_active: true,
+              })
+              .select('id, token')
+              .single();
+
+            if (shareError) {
+              // Check if the error is a foreign key constraint violation
+              // This would indicate the offer doesn't actually exist in the database
+              const isForeignKeyError =
+                shareError.code === '23503' ||
+                (typeof shareError.message === 'string' &&
+                  shareError.message.includes('foreign key constraint'));
+
+              if (isForeignKeyError) {
+                log.error(
+                  'CRITICAL: Failed to create fallback share - offer does not exist in database',
+                  {
+                    offerId,
+                    userId: user.id,
+                    error: shareError,
+                    errorMessage: shareError.message,
+                    errorCode: shareError.code,
+                    errorDetails: shareError.details,
+                    errorHint: shareError.hint,
+                  },
+                );
+                // This is a critical error - the offer was not actually saved
+                return NextResponse.json(
+                  {
+                    error: t('errors.offer.saveFailed'),
+                    details: 'Offer was not saved to database (foreign key constraint failed)',
+                  },
+                  { status: 500 },
+                );
+              } else {
+                // Non-foreign-key error (likely RLS or permissions) - try service role as fallback
+                log.warn(
+                  'Failed to create fallback share link with authenticated client, trying service role',
+                  {
+                    offerId,
+                    userId: user.id,
+                    error: shareError.message,
+                    errorCode: shareError.code,
+                  },
+                );
+
+                // Fallback: Try with service role (only for share creation, not offer creation)
+                const sbService = supabaseServiceRole();
+                const { data: fallbackShare, error: fallbackError } = await sbService
+                  .from('offer_shares')
+                  .insert({
+                    offer_id: offerId,
+                    user_id: user.id,
+                    token,
+                    expires_at: null,
+                    is_active: true,
+                  })
+                  .select('id, token')
+                  .single();
+
+                if (fallbackError) {
+                  log.error('Failed to create fallback share link even with service role', {
+                    offerId,
+                    userId: user.id,
+                    error: fallbackError.message,
+                    errorCode: fallbackError.code,
+                  });
+                  // Don't fail the request - offer is created, share can be created later
+                } else if (fallbackShare) {
+                  log.info('Fallback share link created successfully with service role', {
+                    offerId,
+                    shareId: fallbackShare.id,
+                    token: fallbackShare.token.substring(0, 8) + '...',
+                  });
+                  shareToUse = fallbackShare;
+                }
+              }
+            } else if (!insertedShare) {
+              log.error('Fallback share insert returned no data and no error', {
+                offerId,
+                userId: user.id,
+              });
+            } else {
+              log.info('Fallback share link created successfully', {
+                offerId,
+                shareId: insertedShare.id,
+                token: insertedShare.token.substring(0, 8) + '...',
+              });
+              shareToUse = insertedShare;
+            }
           } else {
-            log.info('Fallback share link created successfully', {
+            log.info('Default share link found after offer creation', {
               offerId,
-              shareId: insertedShare.id,
-              token: insertedShare.token.substring(0, 8) + '...',
+              shareId: shareToUse.id,
+              token: shareToUse.token.substring(0, 8) + '...',
             });
-            shareToUse = insertedShare;
           }
-        } else {
-          log.info('Default share link found after offer creation', {
+        } catch (shareCheckError) {
+          log.error('Error checking/creating default share link', {
             offerId,
-            shareId: shareToUse.id,
-            token: shareToUse.token.substring(0, 8) + '...',
+            userId: user.id,
+            error:
+              shareCheckError instanceof Error ? shareCheckError.message : String(shareCheckError),
+            stack: shareCheckError instanceof Error ? shareCheckError.stack : undefined,
           });
+          // Don't fail the request - offer is created, share can be created later
         }
-      } catch (shareCheckError) {
-        log.error('Error checking/creating default share link', {
+
+        // Offer saved successfully - return success response
+        log.info('Offer created successfully', {
           offerId,
           userId: user.id,
-          error:
-            shareCheckError instanceof Error ? shareCheckError.message : String(shareCheckError),
-          stack: shareCheckError instanceof Error ? shareCheckError.stack : undefined,
+          title: safeTitle,
         });
-        // Don't fail the request - offer is created, share can be created later
+
+        const response = NextResponse.json({
+          ok: true,
+          id: offerId,
+        });
+
+        // Add rate limit headers to response
+        if (rateLimitResult) {
+          const { addRateLimitHeaders } = await import('@/lib/rateLimitMiddleware');
+          addRateLimitHeaders(response, rateLimitResult);
+        }
+
+        // Add request ID to response headers
+        response.headers.set('x-request-id', requestId);
+
+        return response;
+      } catch (error) {
+        // Re-throw to be handled by withAuthenticatedErrorHandling
+        throw error;
       }
-
-      // Offer saved successfully - return success response
-      log.info('Offer created successfully', {
-        offerId,
-        userId: user.id,
-        title: safeTitle,
-      });
-
-      const response = NextResponse.json({
-        ok: true,
-        id: offerId,
-      });
-
-      // Add rate limit headers to response
-      if (rateLimitResult) {
-        const { addRateLimitHeaders } = await import('@/lib/rateLimitMiddleware');
-        addRateLimitHeaders(response, rateLimitResult);
-      }
-
-      // Add request ID to response headers
-      response.headers.set('x-request-id', requestId);
-
-      return response;
-    } catch (error) {
-      return handleUnexpectedError(error, requestId, log);
-    }
-  }),
+    }),
+  ),
 );

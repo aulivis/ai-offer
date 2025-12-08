@@ -14,10 +14,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { getJobsReadyForRetry } from '@/lib/pdf/retry';
 import { dispatchPdfJob } from '@/lib/queue/pdf';
-import { createLogger } from '@/lib/logger';
-import { getRequestId } from '@/lib/requestId';
 import { withAuth } from '@/middleware/auth';
 import type { AuthenticatedNextRequest } from '@/middleware/auth';
+import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
+import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
+import { createLogger } from '@/lib/logger';
+import { getRequestId } from '@/lib/requestId';
 import { requireAdmin } from '@/lib/admin';
 import { envServer } from '@/env.server';
 
@@ -35,11 +37,9 @@ async function processRetries(req: NextRequest, isCron: boolean = false) {
     const limit = limitParam ? parseInt(limitParam, 10) : 10;
 
     if (isNaN(limit) || limit < 1 || limit > 100) {
-      return NextResponse.json(
-        {
-          error: 'Invalid limit parameter. Must be between 1 and 100.',
-        },
-        { status: 400 },
+      return createErrorResponse(
+        'Invalid limit parameter. Must be between 1 and 100.',
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -78,13 +78,7 @@ async function processRetries(req: NextRequest, isCron: boolean = false) {
     });
   } catch (error) {
     log.error('Failed to process retry jobs', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to process retries';
-    return NextResponse.json(
-      {
-        error: errorMessage,
-      },
-      { status: 500 },
-    );
+    throw error;
   }
 }
 
@@ -111,7 +105,7 @@ export const GET = async (req: NextRequest) => {
         hasAuthHeader: !!authHeader,
         headerLength: authHeader?.length ?? 0,
       });
-      return NextResponse.json({ error: 'Invalid cron secret.' }, { status: 403 });
+      return createErrorResponse('Invalid cron secret.', HttpStatus.FORBIDDEN);
     }
   } else if (authHeader && !cronSecret) {
     // If auth header is present but no secret is configured, allow it (backward compatibility)
@@ -123,30 +117,28 @@ export const GET = async (req: NextRequest) => {
   }
 
   // If no auth header, return 405 to indicate POST is required for manual calls
-  return NextResponse.json(
-    {
-      error:
-        'This endpoint requires POST method for manual calls. GET is reserved for Vercel cron jobs.',
-      method: req.method,
-    },
-    { status: 405 },
+  return createErrorResponse(
+    'This endpoint requires POST method for manual calls. GET is reserved for Vercel cron jobs.',
+    HttpStatus.METHOD_NOT_ALLOWED,
   );
 };
 
 // Handle POST requests from authenticated users
-export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
-  const requestId = getRequestId(req);
-  const log = createLogger(requestId);
-  log.setContext({ userId: req.user.id });
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (req: AuthenticatedNextRequest) => {
+    const requestId = getRequestId(req);
+    const log = createLogger(requestId);
+    log.setContext({ userId: req.user.id });
 
-  // Check admin privileges
-  const { isAdmin: userIsAdmin } = await requireAdmin(req.user.id);
-  if (!userIsAdmin) {
-    log.warn('Non-admin user attempted to process retry jobs', {
-      userId: req.user.id,
-    });
-    return NextResponse.json({ error: 'Admin privileges required.' }, { status: 403 });
-  }
+    // Check admin privileges
+    const { isAdmin: userIsAdmin } = await requireAdmin(req.user.id);
+    if (!userIsAdmin) {
+      log.warn('Non-admin user attempted to process retry jobs', {
+        userId: req.user.id,
+      });
+      return createErrorResponse('Admin privileges required.', HttpStatus.FORBIDDEN);
+    }
 
-  return processRetries(req, false);
-});
+    return processRetries(req, false);
+  }),
+);

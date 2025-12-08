@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { getTemplate, mapTemplateId } from '@/lib/offers/templates/index';
+import { withErrorHandling } from '@/lib/errorHandling';
+import { handleValidationError, HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 import { createExternalPdfJob } from '@/lib/pdfExternalApi';
@@ -139,15 +141,7 @@ const exportRequestSchema = z
   })
   .strict();
 
-function badRequest(message: string, details?: unknown) {
-  return NextResponse.json({ error: message, details }, { status: 400 });
-}
-
-function internalError(message: string) {
-  return NextResponse.json({ error: message }, { status: 500 });
-}
-
-export async function POST(req: NextRequest) {
+export const POST = withErrorHandling(async (req: NextRequest) => {
   const requestId = getRequestId(req);
   const log = createLogger(requestId);
 
@@ -155,12 +149,12 @@ export async function POST(req: NextRequest) {
   try {
     json = await req.json();
   } catch {
-    return badRequest('Request body must be valid JSON.');
+    return createErrorResponse('Request body must be valid JSON.', HttpStatus.BAD_REQUEST);
   }
 
   const parsed = exportRequestSchema.safeParse(json);
   if (!parsed.success) {
-    return badRequest('Invalid request payload.', parsed.error.flatten());
+    return handleValidationError(parsed.error, requestId);
   }
 
   const { templateId, brand, slots, callbackUrl, locale } = parsed.data;
@@ -170,12 +164,9 @@ export async function POST(req: NextRequest) {
   try {
     getTemplate(htmlTemplateId);
   } catch {
-    return NextResponse.json(
-      {
-        error: `Unknown templateId "${templateId}".`,
-        hint: 'Check the available templates and try again.',
-      },
-      { status: 404 },
+    return createErrorResponse(
+      `Unknown templateId "${templateId}". Check the available templates and try again.`,
+      HttpStatus.NOT_FOUND,
     );
   }
 
@@ -273,13 +264,14 @@ export async function POST(req: NextRequest) {
       { status: 202 }, // 202 Accepted - async processing
     );
   } catch (error) {
+    // Handle specific error case for invalid hex colors
     if (error instanceof Error && /invalid hex color/i.test(error.message)) {
-      return badRequest('One or more brand colors are invalid hex values.');
+      return createErrorResponse(
+        'One or more brand colors are invalid hex values.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-
-    log.error('Failed to create external PDF job', error);
-
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create PDF job';
-    return internalError(errorMessage);
+    // Re-throw to be handled by withErrorHandling
+    throw error;
   }
-}
+});

@@ -146,7 +146,9 @@ function createClientWithErrors(options: {
         eq: () => Promise.resolve({ data: null, error: null }),
       }),
     }),
-  } as unknown as RateLimitClient;
+    // Type assertion is safe because we control the mock implementation
+    // and it matches the RateLimitClient interface
+  } as RateLimitClient;
 }
 
 describe('consumeMagicLinkRateLimit', () => {
@@ -155,7 +157,8 @@ describe('consumeMagicLinkRateLimit', () => {
     const client = new FakeSupabaseClient();
 
     const result = await consumeMagicLinkRateLimit(
-      client as unknown as RateLimitClient,
+      // Type assertion is safe because FakeSupabaseClient implements the RateLimitClient interface
+      client as RateLimitClient,
       HASHED_KEY,
       now,
       [LEGACY_KEY],
@@ -179,7 +182,8 @@ describe('consumeMagicLinkRateLimit', () => {
     const client = new FakeSupabaseClient(records);
 
     const result = await consumeMagicLinkRateLimit(
-      client as unknown as RateLimitClient,
+      // Type assertion is safe because FakeSupabaseClient implements the RateLimitClient interface
+      client as RateLimitClient,
       HASHED_KEY,
       now,
     );
@@ -200,7 +204,8 @@ describe('consumeMagicLinkRateLimit', () => {
     const client = new FakeSupabaseClient(records);
 
     const result = await consumeMagicLinkRateLimit(
-      client as unknown as RateLimitClient,
+      // Type assertion is safe because FakeSupabaseClient implements the RateLimitClient interface
+      client as RateLimitClient,
       HASHED_KEY,
       now,
     );
@@ -221,7 +226,8 @@ describe('consumeMagicLinkRateLimit', () => {
     const client = new FakeSupabaseClient(records);
 
     const result = await consumeMagicLinkRateLimit(
-      client as unknown as RateLimitClient,
+      // Type assertion is safe because FakeSupabaseClient implements the RateLimitClient interface
+      client as RateLimitClient,
       HASHED_KEY,
       now,
       [LEGACY_KEY],

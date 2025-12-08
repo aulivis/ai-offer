@@ -89,7 +89,10 @@ function createRequest(
       getAll: () => Object.entries(cookies).map(([name, value]) => ({ name, value })),
       has: (name: string) => Boolean(cookies[name as keyof typeof cookies]),
     },
-  } as unknown as AuthenticatedNextRequest & { ip?: string };
+    // Type assertion is necessary because NextRequest is a complex class
+    // and we're creating a partial mock with only the properties we need for tests.
+    // This is safe because we control which properties are accessed in the tests.
+  } as AuthenticatedNextRequest & { ip?: string };
 
   if (ip) {
     request.ip = ip;
