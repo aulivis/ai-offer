@@ -4,11 +4,13 @@
  */
 
 // Type declaration for Deno (available in Supabase Edge Functions)
-declare const Deno: {
-  env: {
-    get(key: string): string | undefined;
-  };
-} | undefined;
+declare const Deno:
+  | {
+      env: {
+        get(key: string): string | undefined;
+      };
+    }
+  | undefined;
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -75,7 +77,7 @@ class DenoLogger {
 
   error(message: string, error?: unknown, extra?: Record<string, unknown>): void {
     const errorData =
-        error instanceof Error
+      error instanceof Error
         ? {
             error: {
               name: error.name,
