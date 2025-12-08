@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
@@ -261,5 +261,5 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     rememberMe: isRememberMeSession,
   });
 
-  return Response.json({ success: true });
+  return NextResponse.json({ success: true });
 });
