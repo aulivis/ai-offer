@@ -82,7 +82,7 @@ export default function CookieBar() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 left-4 md:left-auto max-w-md bg-white rounded-lg shadow-2xl border-2 border-gray-200 p-6 z-[100] transition-all duration-300"
+      className="fixed bottom-4 right-4 left-4 md:left-auto max-w-sm bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50 transition-all duration-300"
       role="dialog"
       aria-label={t('cookies.bar.message')}
       aria-live="polite"
@@ -94,33 +94,33 @@ export default function CookieBar() {
       <button
         type="button"
         onClick={handleRejectNonEssential}
-        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center rounded hover:bg-gray-100"
         aria-label="Bezárás"
       >
-        <X className="w-5 h-5" />
+        <X className="w-4 h-4" />
       </button>
 
       {/* Content */}
-      <div className="mb-4 pr-8">
-        <h3 className="font-bold text-navy-900 text-lg mb-2">Cookie beállítások</h3>
-        <p className="text-sm text-gray-600 leading-relaxed text-pretty">
+      <div className="mb-3 pr-6">
+        <h3 className="font-semibold text-navy-900 text-base mb-1.5">Cookie beállítások</h3>
+        <p className="text-xs text-gray-600 leading-relaxed text-pretty">
           {t('cookies.bar.message')}
         </p>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
           onClick={handleAcceptAll}
-          className="flex-1 bg-turquoise-600 hover:bg-turquoise-700 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-all min-h-[44px]"
+          className="flex-1 bg-turquoise-600 hover:bg-turquoise-700 text-white font-medium px-3 py-2 rounded-lg text-xs transition-all min-h-[36px]"
         >
           {t('cookies.bar.accept')}
         </button>
         <button
           type="button"
           onClick={handleCustomize}
-          className="flex-1 border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-semibold px-4 py-2.5 rounded-lg text-sm transition-all min-h-[44px]"
+          className="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 font-medium px-3 py-2 rounded-lg text-xs transition-all min-h-[36px]"
         >
           {t('cookies.bar.customise')}
         </button>

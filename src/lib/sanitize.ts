@@ -81,7 +81,7 @@ const DROP_CONTENT_TAGS = new Set(['script', 'style']);
 const URL_ALLOWED_SCHEMES = new Set(['http', 'https', 'mailto']);
 const URL_ALLOWED_SCHEMES_BY_TAG: Record<string, Set<string>> = {
   a: new Set(['http', 'https', 'mailto']),
-  img: new Set(['http', 'https', 'data']),
+  img: new Set(['http', 'https', 'data', 'blob']),
 };
 
 const ALLOWED_TARGETS = new Set(['_blank', '_self', '_parent', '_top']);

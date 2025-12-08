@@ -42,4 +42,16 @@ describe('sanitizeHTML', () => {
     );
     expect(clean).not.toContain('javascript:');
   });
+
+  it('allows blob URLs for images', () => {
+    const html = `
+      <img src="blob:http://localhost:3000/abc-123-def" alt="Blob image">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Data image">
+    `;
+
+    const clean = sanitizeHTML(html);
+
+    expect(clean).toContain('blob:http://localhost:3000/abc-123-def');
+    expect(clean).toContain('data:image/png;base64');
+  });
 });

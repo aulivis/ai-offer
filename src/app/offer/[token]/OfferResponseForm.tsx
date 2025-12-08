@@ -66,78 +66,84 @@ export default function OfferResponseForm({ token }: OfferResponseFormProps) {
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-xl font-semibold">Válasz az ajánlatra</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Decision buttons */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <button
             type="button"
             onClick={() => setDecision('accepted')}
-            className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 font-semibold transition ${
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-4 font-semibold transition-all min-h-[60px] ${
               decision === 'accepted'
-                ? 'border-green-500 bg-green-50 text-green-700'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-green-300'
+                ? 'border-green-600 bg-green-600 text-white shadow-md'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50'
             }`}
           >
-            <span className="text-2xl">✓</span>
-            <span className="text-sm">Elfogadom</span>
+            <span className="text-xl">✓</span>
+            <span className="text-base">Elfogadom</span>
           </button>
           <button
             type="button"
             onClick={() => setDecision('question')}
-            className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 font-semibold transition ${
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-4 font-semibold transition-all min-h-[60px] ${
               decision === 'question'
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300'
+                ? 'border-yellow-500 bg-yellow-500 text-white shadow-md'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50'
             }`}
           >
-            <span className="text-2xl">?</span>
-            <span className="text-sm">Kérdésem van</span>
+            <span className="text-xl">?</span>
+            <span className="text-base">Kérdésem van</span>
           </button>
           <button
             type="button"
             onClick={() => setDecision('rejected')}
-            className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 font-semibold transition ${
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-4 font-semibold transition-all min-h-[60px] ${
               decision === 'rejected'
-                ? 'border-red-500 bg-red-50 text-red-700'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-red-300'
+                ? 'border-red-600 bg-red-600 text-white shadow-md'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50'
             }`}
           >
-            <span className="text-2xl">✗</span>
-            <span className="text-sm">Elutasítom</span>
+            <span className="text-xl">✗</span>
+            <span className="text-base">Elutasítom</span>
           </button>
         </div>
 
-        {/* Optional fields */}
-        <div className="space-y-3">
-          <Input
-            type="text"
-            placeholder="Név (opcionális)"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-          />
-          <Input
-            type="email"
-            placeholder="Email (opcionális)"
-            value={customerEmail}
-            onChange={(e) => setCustomerEmail(e.target.value)}
-          />
-          <textarea
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            rows={4}
-            placeholder={
-              decision === 'question'
-                ? 'Kérjük, írja le kérdését...'
-                : decision === 'accepted'
-                  ? 'Megjegyzés (opcionális)'
-                  : decision === 'rejected'
-                    ? 'Okkal együtt (opcionális)'
-                    : 'Megjegyzés (opcionális)'
-            }
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            required={decision === 'question'}
-          />
-        </div>
+        {/* Optional fields - only show after decision is made */}
+        {decision && (
+          <div className="space-y-4 border-t border-gray-200 pt-6">
+            <div className="space-y-3">
+              <Input
+                type="text"
+                placeholder="Név (opcionális)"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full"
+              />
+              <Input
+                type="email"
+                placeholder="Email (opcionális)"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                className="w-full"
+              />
+              <textarea
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                rows={4}
+                placeholder={
+                  decision === 'question'
+                    ? 'Kérjük, írja le kérdését...'
+                    : decision === 'accepted'
+                      ? 'Megjegyzés (opcionális)'
+                      : decision === 'rejected'
+                        ? 'Okkal együtt (opcionális)'
+                        : 'Megjegyzés (opcionális)'
+                }
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                required={decision === 'question'}
+              />
+            </div>
+          </div>
+        )}
 
         {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
