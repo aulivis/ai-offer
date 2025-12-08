@@ -7,6 +7,7 @@
  * This eliminates the need for polling and provides instant status updates.
  */
 
+import { NextResponse } from 'next/server';
 import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import { handleValidationError, HttpStatus, createErrorResponse } from '@/lib/errorHandling';
@@ -271,7 +272,7 @@ export const GET = withAuth(
     });
 
     // Return streaming response with SSE headers
-    return new Response(stream, {
+    return new NextResponse(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
