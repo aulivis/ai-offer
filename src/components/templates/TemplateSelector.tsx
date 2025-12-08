@@ -58,7 +58,9 @@ export function TemplateSelector({
 }: TemplateSelectorProps) {
   const { openPlanUpgradeDialog } = usePlanUpgradeDialog();
   const canUseProTemplates = plan === 'pro';
-  const [previewCache, setPreviewCache] = useState<Record<TemplateId, string>>({});
+  const [previewCache, setPreviewCache] = useState<Record<TemplateId, string>>(
+    {} as Record<TemplateId, string>,
+  );
   const translator = useMemo(() => createTranslator('hu'), []);
 
   const availableTemplates = useMemo(() => {

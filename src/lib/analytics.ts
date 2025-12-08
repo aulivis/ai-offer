@@ -42,7 +42,7 @@ export function trackConversion(event: ConversionEvent, properties?: Record<stri
 
   // Log using structured logger in development
   if (process.env.NODE_ENV === 'development') {
-    clientLogger.debug('Analytics event', eventData);
+    clientLogger.debug('Analytics event', eventData as unknown as Record<string, unknown>);
   }
 
   // Track with Google Analytics if available

@@ -3,6 +3,13 @@
  * Provides structured logging with context (request ID, job ID, etc.)
  */
 
+// Type declaration for Deno (available in Supabase Edge Functions)
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+} | undefined;
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 type LogContext = {
@@ -36,7 +43,7 @@ class DenoLogger {
 
     switch (level) {
       case 'debug':
-        if (Deno.env.get('ENV') !== 'production') {
+        if (typeof Deno !== 'undefined' && Deno.env.get('ENV') !== 'production') {
           console.log(`[${timestamp}] DEBUG:`, message, logEntry);
         }
         break;
@@ -53,7 +60,7 @@ class DenoLogger {
   }
 
   debug(message: string, extra?: Record<string, unknown>): void {
-    if (Deno.env.get('ENV') !== 'production') {
+    if (typeof Deno !== 'undefined' && Deno.env.get('ENV') !== 'production') {
       this.formatMessage('debug', message, extra);
     }
   }
@@ -68,12 +75,15 @@ class DenoLogger {
 
   error(message: string, error?: unknown, extra?: Record<string, unknown>): void {
     const errorData =
-      error instanceof Error
+        error instanceof Error
         ? {
             error: {
               name: error.name,
               message: error.message,
-              stack: Deno.env.get('ENV') === 'production' ? undefined : error.stack,
+              stack:
+                typeof Deno !== 'undefined' && Deno.env.get('ENV') === 'production'
+                  ? undefined
+                  : error.stack,
             },
           }
         : error !== undefined

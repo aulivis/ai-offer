@@ -264,101 +264,8 @@ const DEFAULT_PREVIEW_PLACEHOLDER_HTML =
 
 const DEFAULT_FREE_TEMPLATE_ID: TemplateId = 'free.minimal';
 
-type OfferTextTemplatePayload = {
-  title: string;
-  projectDetails: ProjectDetails;
-  deadline: string;
-  language: Step1Form['language'];
-  brandVoice: Step1Form['brandVoice'];
-  style: Step1Form['style'];
-};
-
-type OfferTextTemplate = OfferTextTemplatePayload & {
-  id: string;
-  name: string;
-  updatedAt: string | null;
-};
-
-function normalizeTemplateProjectDetails(value: unknown): ProjectDetails | null {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-
-  const input = value as Record<string, unknown>;
-  const normalized = { ...emptyProjectDetails };
-
-  for (const key of projectDetailFields) {
-    const raw = input[key];
-    normalized[key] = typeof raw === 'string' ? raw : '';
-  }
-
-  return normalized;
-}
-
-function parseTemplatePayload(value: unknown): OfferTextTemplatePayload | null {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-
-  const obj = value as Record<string, unknown>;
-  const projectDetails = normalizeTemplateProjectDetails(obj.projectDetails);
-  if (!projectDetails) {
-    return null;
-  }
-
-  const language = obj.language === 'hu' || obj.language === 'en' ? obj.language : 'hu';
-  const brandVoice =
-    obj.brandVoice === 'friendly' || obj.brandVoice === 'formal' ? obj.brandVoice : 'friendly';
-  const style = obj.style === 'compact' || obj.style === 'detailed' ? obj.style : 'detailed';
-
-  return {
-    title: typeof obj.title === 'string' ? obj.title : '',
-    projectDetails,
-    deadline: typeof obj.deadline === 'string' ? obj.deadline : '',
-    language,
-    brandVoice,
-    style,
-  };
-}
-
 function planToTemplateTier(plan: SubscriptionPlan): 'free' | 'premium' {
   return plan === 'pro' ? 'premium' : 'free';
-}
-
-function parseTemplateRow(row: {
-  id?: unknown;
-  name?: unknown;
-  payload?: unknown;
-  updated_at?: unknown;
-}): OfferTextTemplate | null {
-  if (typeof row.id !== 'string' || typeof row.name !== 'string') {
-    return null;
-  }
-
-  const payload = parseTemplatePayload(row.payload);
-  if (!payload) {
-    return null;
-  }
-
-  const updatedAt = typeof row.updated_at === 'string' ? row.updated_at : null;
-
-  return {
-    id: row.id,
-    name: row.name,
-    updatedAt,
-    ...payload,
-  };
-}
-
-function sortTemplates(list: OfferTextTemplate[]): OfferTextTemplate[] {
-  return [...list].sort((a, b) => {
-    const aTime = a.updatedAt ? Date.parse(a.updatedAt) : 0;
-    const bTime = b.updatedAt ? Date.parse(b.updatedAt) : 0;
-    if (aTime !== bTime) {
-      return bTime - aTime;
-    }
-    return a.name.localeCompare(b.name, 'hu');
-  });
 }
 
 export default function NewOfferWizard() {
@@ -1092,28 +999,7 @@ export default function NewOfferWizard() {
       }
       setClientList(cl || []);
 
-      const { data: templateRows } = await sb
-        .from('offer_text_templates')
-        .select('id,name,payload,updated_at')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false, nullsFirst: false });
-      if (!active) {
-        return;
-      }
-      const parsedTemplates =
-        templateRows
-          ?.map((row) =>
-            parseTemplateRow(
-              row as {
-                id?: unknown;
-                name?: unknown;
-                payload?: unknown;
-                updated_at?: unknown;
-              },
-            ),
-          )
-          .filter((item): item is OfferTextTemplate => item !== null) ?? [];
-      setTextTemplates(sortTemplates(parsedTemplates));
+      // Text templates are loaded by useWizardTextTemplates hook
     })();
 
     return () => {
@@ -1142,14 +1028,6 @@ export default function NewOfferWizard() {
       return filtered.length === prev.length ? prev : filtered;
     });
   }, [editedHtml, previewHtml]);
-
-  useEffect(() => {
-    return () => {
-      if (previewAbortRef.current) {
-        previewAbortRef.current.abort();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (selectedTemplateId && !textTemplates.some((tpl) => tpl.id === selectedTemplateId)) {
@@ -2707,7 +2585,16 @@ export default function NewOfferWizard() {
                     <div className="flex flex-col gap-3">
                       <Button
                         type="button"
-                        onClick={handleOpenTemplateModal}
+                        onClick={() =>
+                          handleOpenTemplateModal({
+                            title: form.title,
+                            projectDetails: form.projectDetails,
+                            deadline: form.deadline,
+                            language: form.language,
+                            brandVoice: form.brandVoice,
+                            style: form.style,
+                          })
+                        }
                         disabled={loading}
                         className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
                       >
@@ -2751,19 +2638,17 @@ export default function NewOfferWizard() {
           >
             <form
               className="space-y-6"
-              onSubmit={(e) =>
-                handleTemplateSave(
-                  {
-                    title: form.title,
-                    projectDetails: form.projectDetails,
-                    deadline: form.deadline,
-                    language: form.language,
-                    brandVoice: form.brandVoice,
-                    style: form.style,
-                  },
-                  e,
-                )
-              }
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleTemplateSave({
+                  title: form.title,
+                  projectDetails: form.projectDetails,
+                  deadline: form.deadline,
+                  language: form.language,
+                  brandVoice: form.brandVoice,
+                  style: form.style,
+                });
+              }}
             >
               <div className="space-y-2">
                 <h2 id={templateModalTitleId} className="text-lg font-semibold text-slate-900">

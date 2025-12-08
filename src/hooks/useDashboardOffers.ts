@@ -333,6 +333,8 @@ export function useDashboardOffers({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user?.id, offerFilter, teamMemberFilter, teamIds]);
 
+  const hasMore = totalCount !== null ? offers.length < totalCount : false;
+
   const handleLoadMore = useCallback(async () => {
     if (!user || isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
@@ -367,8 +369,6 @@ export function useDashboardOffers({
     teamIds,
     logger,
   ]);
-
-  const hasMore = totalCount !== null ? offers.length < totalCount : false;
 
   return {
     offers,
