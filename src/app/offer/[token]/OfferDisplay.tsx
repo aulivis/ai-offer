@@ -17,10 +17,10 @@ export function OfferDisplay({ html }: OfferDisplayProps) {
   const bodyContent = bodyMatch ? bodyMatch[1] : html;
 
   return (
-    <div className="mb-8 flex justify-center">
+    <div className="mb-8 flex justify-center px-4 sm:px-6 lg:px-8">
       <div
         id="offer-content-container"
-        className="w-full max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8"
+        className="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 lg:p-10"
         dangerouslySetInnerHTML={{ __html: bodyContent }}
       />
     </div>

@@ -3,13 +3,13 @@ import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
 import { sanitizeOAuthRedirect } from '../google/redirectUtils';
-import { clearAuthCookies } from '../../../../../lib/auth/cookies';
-import { CSRF_COOKIE_NAME, createCsrfToken } from '../../../../../lib/auth/csrf';
-import { supabaseAnonServer } from '../../../lib/supabaseAnonServer';
+import { clearAuthCookies } from '@/lib/auth/cookies';
+import { CSRF_COOKIE_NAME, createCsrfToken } from '@/lib/auth/csrf';
+import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { createAuthRequestLogger, type RequestLogger } from '@/lib/observability/authLogging';
 import { recordMagicLinkCallback, recordAuthRouteUsage } from '@/lib/observability/metrics';
-import { Argon2Algorithm, argon2Hash, type Argon2Options } from '../../../../../lib/auth/argon2';
+import { Argon2Algorithm, argon2Hash, type Argon2Options } from '@/lib/auth/argon2';
 import { exchangeCode } from './exchangeCode';
 
 const MAGIC_LINK_FAILURE_REDIRECT = '/login?message=Unable%20to%20authenticate';

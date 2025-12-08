@@ -49,8 +49,11 @@ class ClientLogger {
           if (typeof window !== 'undefined' && (window as { Sentry?: unknown }).Sentry) {
             try {
               // Sentry will be available in production builds if configured
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const Sentry = (window as { Sentry?: any }).Sentry;
+              interface SentryType {
+                captureException?: (error: Error, context?: Record<string, unknown>) => void;
+                captureMessage?: (message: string, context?: Record<string, unknown>) => void;
+              }
+              const Sentry = (window as { Sentry?: SentryType }).Sentry;
               if (Sentry && Sentry.captureException) {
                 if (extra?.error instanceof Error) {
                   Sentry.captureException(extra.error, {

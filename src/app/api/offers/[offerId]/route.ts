@@ -4,7 +4,7 @@ import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { extractOfferStoragePath } from '@/lib/offers/storage';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { t } from '@/copy';
 import { z } from 'zod';
 import { uuidSchema } from '@/lib/validation/schemas';

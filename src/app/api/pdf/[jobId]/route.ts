@@ -8,7 +8,7 @@ import { getRequestId } from '@/lib/requestId';
 import { uuidSchema } from '@/lib/validation/schemas';
 import { handleValidationError } from '@/lib/errorHandling';
 
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 
 export const runtime = 'nodejs';
 

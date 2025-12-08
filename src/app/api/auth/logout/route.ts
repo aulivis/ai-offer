@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import { clearAuthCookies } from '../../../../../lib/auth/cookies';
-import { verifyCsrfToken } from '../../../../../lib/auth/csrf';
+import { clearAuthCookies } from '@/lib/auth/cookies';
+import { verifyCsrfToken } from '@/lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
-import { argon2Verify } from '../../../../../lib/auth/argon2';
+import { argon2Verify } from '@/lib/auth/argon2';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
 import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';

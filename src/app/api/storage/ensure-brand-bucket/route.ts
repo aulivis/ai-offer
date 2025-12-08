@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 

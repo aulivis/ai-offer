@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { getRequestId } from '@/lib/requestId';
 import { createLogger } from '@/lib/logger';
 import { handleValidationError, handleUnexpectedError } from '@/lib/errorHandling';

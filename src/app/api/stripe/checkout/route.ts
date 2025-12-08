@@ -12,7 +12,7 @@ import {
 } from '@/lib/rateLimiting';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
 import { createLogger } from '@/lib/logger';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
 

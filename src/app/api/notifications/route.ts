@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/app/lib/supabaseServer';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { z } from 'zod';
 import {
   createErrorResponse,

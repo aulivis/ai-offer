@@ -6,7 +6,7 @@ import { t } from '@/copy';
 import { STREAM_TIMEOUT_MESSAGE, STREAM_TIMEOUT_MS } from '@/lib/aiPreview';
 import { moderateUserInput } from '@/lib/security/contentModeration';
 import { detectPreviewIssues, extractPreviewSummaryHighlights } from '@/lib/previewInsights';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import {
   emptyProjectDetails,
   formatProjectDetailsForPrompt,

@@ -12,7 +12,7 @@ import { envServer } from '@/env.server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { logAuditEvent, getRequestIp } from '@/lib/auditLogging';
 import { createLogger } from '@/lib/logger';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { envClient } from '@/env.client';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);

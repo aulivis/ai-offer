@@ -108,8 +108,10 @@ export default function OfferResponseForm({
     const status = getStatusMessage();
 
     return (
-      <div className={`rounded-lg ${status.bgColor} border-2 ${status.borderColor} p-6 md:p-8`}>
-        <div className="text-center mb-6">
+      <div
+        className={`rounded-xl ${status.bgColor} border-2 ${status.borderColor} p-6 shadow-lg md:p-8`}
+      >
+        <div className="mb-6 text-center">
           <h2 className={`mb-2 text-2xl font-bold ${status.textColor}`}>{status.title}</h2>
           <p className={`${status.textColor} opacity-90`}>{status.description}</p>
         </div>
@@ -165,7 +167,7 @@ export default function OfferResponseForm({
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6">
           <DownloadPdfButton token={token} offerId={offerId} />
         </div>
       </div>
@@ -173,46 +175,46 @@ export default function OfferResponseForm({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">Válasz az ajánlatra</h2>
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg md:p-8">
+      <h2 className="mb-6 text-2xl font-semibold text-gray-900">Válasz az ajánlatra</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Decision buttons */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <button
             type="button"
             onClick={() => setDecision('accepted')}
-            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-4 font-semibold transition-all min-h-[60px] ${
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               decision === 'accepted'
-                ? 'border-green-600 bg-green-600 text-white shadow-md'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50'
+                ? 'border-green-600 bg-green-600 text-white shadow-md focus:ring-green-500'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 hover:shadow-sm focus:ring-green-300'
             }`}
           >
-            <span className="text-xl">✓</span>
+            <span className="text-2xl">✓</span>
             <span className="text-base">Elfogadom</span>
           </button>
           <button
             type="button"
             onClick={() => setDecision('question')}
-            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-4 font-semibold transition-all min-h-[60px] ${
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               decision === 'question'
-                ? 'border-yellow-500 bg-yellow-500 text-white shadow-md'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50'
+                ? 'border-yellow-500 bg-yellow-500 text-white shadow-md focus:ring-yellow-400'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-sm focus:ring-yellow-300'
             }`}
           >
-            <span className="text-xl">?</span>
+            <span className="text-2xl">?</span>
             <span className="text-base">Kérdésem van</span>
           </button>
           <button
             type="button"
             onClick={() => setDecision('rejected')}
-            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-4 font-semibold transition-all min-h-[60px] ${
+            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               decision === 'rejected'
-                ? 'border-red-600 bg-red-600 text-white shadow-md'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50'
+                ? 'border-red-600 bg-red-600 text-white shadow-md focus:ring-red-500'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50 hover:shadow-sm focus:ring-red-300'
             }`}
           >
-            <span className="text-xl">✗</span>
+            <span className="text-2xl">✗</span>
             <span className="text-base">Elutasítom</span>
           </button>
         </div>
@@ -220,7 +222,7 @@ export default function OfferResponseForm({
         {/* Optional fields - only show after decision is made */}
         {decision && (
           <div className="space-y-4 border-t border-gray-200 pt-6">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Input
                 type="text"
                 placeholder="Név (opcionális)"
@@ -236,7 +238,7 @@ export default function OfferResponseForm({
                 className="w-full"
               />
               <textarea
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 rows={4}
                 placeholder={
                   decision === 'question'
@@ -255,12 +257,16 @@ export default function OfferResponseForm({
           </div>
         )}
 
-        {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         <Button
           type="submit"
           disabled={!decision || submitting || (decision === 'question' && !comment.trim())}
-          className="w-full"
+          className="w-full sm:w-auto sm:min-w-[200px]"
           variant={
             decision === 'accepted' ? 'primary' : decision === 'question' ? 'primary' : 'secondary'
           }

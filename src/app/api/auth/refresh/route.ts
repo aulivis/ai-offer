@@ -7,9 +7,9 @@ import {
   argon2Hash,
   argon2Verify,
   type Argon2Options,
-} from '../../../../../lib/auth/argon2';
-import { clearAuthCookies, setAuthCookies } from '../../../../../lib/auth/cookies';
-import { CSRF_COOKIE_NAME, verifyCsrfToken } from '../../../../../lib/auth/csrf';
+} from '@/lib/auth/argon2';
+import { clearAuthCookies, setAuthCookies } from '@/lib/auth/cookies';
+import { CSRF_COOKIE_NAME, verifyCsrfToken } from '@/lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';

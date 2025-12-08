@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { createLogger } from '@/lib/logger';

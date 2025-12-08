@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { supabaseServer } from '@/app/lib/supabaseServer';
-import { clearAuthCookies } from '../../../../../lib/auth/cookies';
+import { clearAuthCookies } from '@/lib/auth/cookies';
 import { addCacheHeaders, CACHE_CONFIGS } from '@/lib/cacheHeaders';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';

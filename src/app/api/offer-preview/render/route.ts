@@ -6,7 +6,7 @@ import { createTranslator, resolveLocale } from '@/copy';
 import { sanitizeHTML, sanitizeInput } from '@/lib/sanitize';
 import type { PriceRow } from '@/app/lib/pricing';
 import type { TemplateId } from '@/lib/offers/templates/types';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { formatOfferIssueDate } from '@/lib/datetime';
 import { PREVIEW_CSP_DIRECTIVE, injectPreviewCspMeta } from '@/lib/previewSecurity';
 import { createLogger } from '@/lib/logger';

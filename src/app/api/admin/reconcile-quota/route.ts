@@ -6,7 +6,7 @@ import {
   recalculateDeviceUsageFromPdfs,
   currentMonthStart,
 } from '@/lib/services/usage';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../../middleware/auth';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { createLogger } from '@/lib/logger';
 import { getRequestId } from '@/lib/requestId';
 

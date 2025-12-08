@@ -32,8 +32,8 @@ import {
   projectDetailsSchema,
   type ProjectDetails,
 } from '@/lib/projectDetails';
-import { allowCategory } from '../../../../lib/consent/server';
-import { withAuth, type AuthenticatedNextRequest } from '../../../../middleware/auth';
+import { allowCategory } from '@/lib/consent/server';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { checkRateLimitMiddleware, createRateLimitResponse } from '@/lib/rateLimitMiddleware';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/rateLimiting';
 import { withRequestSizeLimit } from '@/lib/requestSizeLimit';
