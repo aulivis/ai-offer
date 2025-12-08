@@ -32,7 +32,7 @@ type UseWizardPreviewOptions = {
   form: PreviewForm;
   isQuotaExhausted: boolean;
   quotaLoading: boolean;
-  userId?: string;
+  userId: string | undefined;
 };
 
 export function useWizardPreview({
