@@ -2,12 +2,7 @@ import { cookies } from 'next/headers';
 
 import { envServer } from '@/env.server';
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
-import {
-  Argon2Algorithm,
-  argon2Hash,
-  argon2Verify,
-  type Argon2Options,
-} from '@/lib/auth/argon2';
+import { Argon2Algorithm, argon2Hash, argon2Verify, type Argon2Options } from '@/lib/auth/argon2';
 import { clearAuthCookies, setAuthCookies } from '@/lib/auth/cookies';
 import { CSRF_COOKIE_NAME, verifyCsrfToken } from '@/lib/auth/csrf';
 import { decodeRefreshToken } from '../token';
