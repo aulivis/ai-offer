@@ -39,6 +39,7 @@ import {
 import { envClient } from '@/env.client';
 import AppFrame from '@/components/AppFrame';
 import { useSubscriptionManagement } from '@/hooks/useSubscriptionManagement';
+import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { Button } from '@/components/ui/Button';
 import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -499,6 +500,9 @@ function BillingPageContent() {
   const { showToast } = useToast();
   const [status, setStatus] = useState<string | null>(null);
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly');
+
+  // Get authentication status
+  const { status: authStatus, user } = useOptionalAuth();
 
   // Use the subscription management hook
   const { plan, usage, isLoadingData, loading, email, planLimit, startCheckout } =
