@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
@@ -35,7 +35,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   if (!refreshToken) {
     await clearAuthCookies();
-    return Response.json({ success: true });
+    return NextResponse.json({ success: true });
   }
 
   const decoded = decodeRefreshToken(refreshToken);
@@ -43,7 +43,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   if (!userId) {
     await clearAuthCookies();
-    return Response.json({ success: true });
+    return NextResponse.json({ success: true });
   }
 
   log.setContext({ userId });
@@ -57,7 +57,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   if (error) {
     log.error('Failed to load sessions for logout', error);
     await clearAuthCookies();
-    return Response.json({ success: true });
+    return NextResponse.json({ success: true });
   }
 
   const sessionList = Array.isArray(data) ? (data as SessionRow[]) : [];
@@ -99,5 +99,5 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
   }
 
   await clearAuthCookies();
-  return Response.json({ success: true });
+  return NextResponse.json({ success: true });
 });
