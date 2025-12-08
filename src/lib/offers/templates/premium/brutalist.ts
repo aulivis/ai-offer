@@ -260,7 +260,7 @@ export function renderBrutalist(ctx: TemplateContext): string {
   <div class="container">
     <header class="header">
       <div class="header-content">
-        ${logoUrl ? `<img src="${sanitizeInput(logoUrl)}" alt="${sanitizeInput(ctx.companyName)} logo" class="logo">` : ''}
+        ${logoUrl && typeof logoUrl === 'string' && logoUrl.trim() ? `<img src="${sanitizeInput(logoUrl)}" alt="${sanitizeInput(ctx.companyName)} logo" class="logo">` : ''}
         <div class="header-text">
           <h1>${sanitizeInput(ctx.title)}</h1>
           <p>${sanitizeInput(ctx.companyName)}</p>

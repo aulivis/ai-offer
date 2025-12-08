@@ -238,7 +238,11 @@ function formatDate(value: string) {
 function renderBody(ctx: RenderContext): string {
   const { slots } = ctx;
   const brandName = sanitizeInput(slots.brand.name);
-  const logoUrl = slots.brand.logoUrl ? sanitizeInput(slots.brand.logoUrl) : null;
+  const rawLogoUrl = slots.brand.logoUrl;
+  const logoUrl =
+    rawLogoUrl && typeof rawLogoUrl === 'string' && rawLogoUrl.trim()
+      ? sanitizeInput(rawLogoUrl)
+      : null;
   const logo = logoUrl
     ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: 48px; object-fit: contain;" />`
     : '';

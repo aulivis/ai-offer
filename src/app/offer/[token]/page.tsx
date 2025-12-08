@@ -37,6 +37,10 @@ type PageProps = {
  */
 export const dynamic = 'force-dynamic'; // Ensure we check share expiration
 
+// Cache configuration: cache for 5 minutes, allow stale content for 1 hour
+// This balances freshness with performance
+export const revalidate = 300; // 5 minutes
+
 export default async function PublicOfferPage({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
@@ -335,7 +339,24 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
                 </p>
               </div>
             ) : (
-              <OfferResponseForm shareId={share.id} offerId={offer.id} token={token} />
+              <OfferResponseForm
+                shareId={share.id}
+                offerId={offer.id}
+                token={token}
+                contactEmail={
+                  typeof profile?.company_email === 'string' ? profile.company_email : undefined
+                }
+                contactPhone={
+                  typeof profile?.company_phone === 'string' ? profile.company_phone : undefined
+                }
+                contactName={sanitizeInput(
+                  (typeof profile?.company_contact_name === 'string'
+                    ? profile.company_contact_name
+                    : typeof profile?.representative === 'string'
+                      ? profile.representative
+                      : profile?.company_name) || '',
+                )}
+              />
             )}
           </>
         )}

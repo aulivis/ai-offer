@@ -90,7 +90,7 @@ export function createHeaderTemplate(
         flex: 1;
         overflow: hidden;
       ">
-        ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="Logo" style="height: 10px; max-width: 40px; object-fit: contain; flex-shrink: 0;" />` : ''}
+        ${logoUrl && typeof logoUrl === 'string' && logoUrl.trim() ? `<img src="${escapeHtml(logoUrl)}" alt="Logo" style="height: 10px; max-width: 40px; object-fit: contain; flex-shrink: 0;" />` : ''}
         <span style="
           font-weight: 600;
           word-wrap: break-word;

@@ -20,6 +20,7 @@ const ALLOWED_TAGS = new Set([
   'h6',
   'hr',
   'i',
+  'iframe',
   'li',
   'ol',
   'p',
@@ -45,6 +46,7 @@ const ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   td: new Set(['colspan', 'rowspan']),
   th: new Set(['colspan', 'rowspan']),
   img: new Set(['src', 'alt', 'data-offer-image-key']),
+  iframe: new Set(['src', 'title', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder']),
 };
 
 const GLOBAL_ALLOWED_ATTRIBUTES = new Set(['role']);
@@ -82,6 +84,7 @@ const URL_ALLOWED_SCHEMES = new Set(['http', 'https', 'mailto']);
 const URL_ALLOWED_SCHEMES_BY_TAG: Record<string, Set<string>> = {
   a: new Set(['http', 'https', 'mailto']),
   img: new Set(['http', 'https', 'data', 'blob']),
+  iframe: new Set(['http', 'https']),
 };
 
 const ALLOWED_TARGETS = new Set(['_blank', '_self', '_parent', '_top']);
@@ -147,6 +150,22 @@ function isUrlAllowed(url: string, tagName: string): boolean {
   return tagSchemes.has(scheme);
 }
 
+/**
+ * Check if URL is a safe video embed URL (YouTube or Vimeo)
+ */
+function isSafeVideoEmbedUrl(url: string): boolean {
+  const trimmed = url.trim().toLowerCase();
+  // Allow YouTube embed URLs
+  if (trimmed.includes('youtube.com/embed/') || trimmed.includes('youtu.be/')) {
+    return true;
+  }
+  // Allow Vimeo embed URLs
+  if (trimmed.includes('player.vimeo.com/video/')) {
+    return true;
+  }
+  return false;
+}
+
 function sanitiseAttribute(tagName: string, attrName: string, value: string): string | null {
   const lowerAttr = attrName.toLowerCase();
   const trimmed = value.trim();
@@ -157,7 +176,18 @@ function sanitiseAttribute(tagName: string, attrName: string, value: string): st
       return escapeAttribute(trimmed);
     case 'src':
       if (!isUrlAllowed(trimmed, tagName)) return null;
+      // For iframes, validate that it's a safe video embed URL
+      if (tagName === 'iframe') {
+        if (!isSafeVideoEmbedUrl(trimmed)) return null;
+      }
       return escapeAttribute(trimmed);
+    case 'allowfullscreen':
+      // Allow fullscreen attribute for iframes (boolean attribute)
+      return trimmed.toLowerCase() === 'true' || trimmed === '' ? 'allowfullscreen' : null;
+    case 'frameborder':
+      // Validate frameborder is numeric
+      const fbNum = Number.parseInt(trimmed, 10);
+      return Number.isFinite(fbNum) ? String(fbNum) : null;
     case 'title':
       return escapeAttribute(trimmed);
     case 'target': {

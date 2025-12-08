@@ -81,6 +81,33 @@ export function hexToHsl(hex: string): string {
 }
 
 /**
+ * Convert YouTube/Vimeo URLs to embed iframes
+ */
+export function embedVideoLinks(html: string): string {
+  // YouTube URL patterns
+  const youtubeRegex =
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
+  // Vimeo URL patterns
+  const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(\d+)/g;
+
+  let result = html;
+
+  // Replace YouTube links
+  result = result.replace(youtubeRegex, (match, videoId) => {
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    return `<div class="video-container"><iframe src="${embedUrl}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+  });
+
+  // Replace Vimeo links
+  result = result.replace(vimeoRegex, (match, videoId) => {
+    const embedUrl = `https://player.vimeo.com/video/${videoId}`;
+    return `<div class="video-container"><iframe src="${embedUrl}" title="Vimeo video player" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+  });
+
+  return result;
+}
+
+/**
  * Generate pricing table HTML
  */
 export function generatePricingTable(
@@ -110,7 +137,7 @@ export function generatePricingTable(
     .join('');
 
   return `
-    <section class="pricing-section">
+    <div class="pricing-section">
       <h2 class="section-title">Árazás</h2>
       <div class="table-wrapper">
         <table class="pricing-table">
@@ -142,6 +169,6 @@ export function generatePricingTable(
           </div>
         </div>
       </div>
-    </section>
+    </div>
   `;
 }

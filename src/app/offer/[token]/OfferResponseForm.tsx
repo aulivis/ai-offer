@@ -3,14 +3,24 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { DownloadPdfButton } from './DownloadPdfButton';
 
 interface OfferResponseFormProps {
   shareId: string;
   offerId: string;
   token: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactName?: string;
 }
 
-export default function OfferResponseForm({ token }: OfferResponseFormProps) {
+export default function OfferResponseForm({
+  token,
+  offerId,
+  contactEmail,
+  contactPhone,
+  contactName,
+}: OfferResponseFormProps) {
   const [decision, setDecision] = useState<'accepted' | 'rejected' | 'question' | null>(null);
   const [comment, setComment] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -54,10 +64,110 @@ export default function OfferResponseForm({ token }: OfferResponseFormProps) {
   };
 
   if (submitted) {
+    const getStatusMessage = () => {
+      if (decision === 'accepted') {
+        return {
+          title: 'Köszönjük, hogy elfogadta az ajánlatot!',
+          description: 'Válaszát rögzítettük és értesítjük az ajánlat készítőjét.',
+          nextSteps: [
+            'Az ajánlat készítője hamarosan felveszi Önnel a kapcsolatot.',
+            'A következő lépésekről egyeztetünk Önnel.',
+            'Letöltheti az ajánlat PDF verzióját az alábbi gombbal.',
+          ],
+          bgColor: 'bg-green-50',
+          textColor: 'text-green-800',
+          borderColor: 'border-green-200',
+        };
+      } else if (decision === 'rejected') {
+        return {
+          title: 'Köszönjük a válaszát!',
+          description: 'Válaszát rögzítettük és értesítjük az ajánlat készítőjét.',
+          nextSteps: [
+            'Az ajánlat készítője értesítve lett a döntéséről.',
+            'Ha később változna a véleménye, kérjük lépjen kapcsolatba velünk.',
+          ],
+          bgColor: 'bg-red-50',
+          textColor: 'text-red-800',
+          borderColor: 'border-red-200',
+        };
+      } else {
+        return {
+          title: 'Köszönjük a kérdését!',
+          description: 'Kérdését rögzítettük és értesítjük az ajánlat készítőjét.',
+          nextSteps: [
+            'Az ajánlat készítője hamarosan válaszol kérdésére.',
+            'A választ emailben vagy telefonon kapja meg.',
+          ],
+          bgColor: 'bg-yellow-50',
+          textColor: 'text-yellow-800',
+          borderColor: 'border-yellow-200',
+        };
+      }
+    };
+
+    const status = getStatusMessage();
+
     return (
-      <div className="rounded-lg bg-green-50 p-6 text-center">
-        <h2 className="mb-2 text-xl font-semibold text-green-800">Köszönjük a válaszát!</h2>
-        <p className="text-green-700">Válaszát rögzítettük és értesítjük az ajánlat készítőjét.</p>
+      <div className={`rounded-lg ${status.bgColor} border-2 ${status.borderColor} p-6 md:p-8`}>
+        <div className="text-center mb-6">
+          <h2 className={`mb-2 text-2xl font-bold ${status.textColor}`}>{status.title}</h2>
+          <p className={`${status.textColor} opacity-90`}>{status.description}</p>
+        </div>
+
+        {status.nextSteps && status.nextSteps.length > 0 && (
+          <div className={`mb-6 rounded-lg ${status.bgColor} border ${status.borderColor} p-4`}>
+            <h3 className={`mb-3 font-semibold ${status.textColor}`}>Következő lépések:</h3>
+            <ul className="space-y-2 text-left">
+              {status.nextSteps.map((step, idx) => (
+                <li key={idx} className={`flex items-start gap-2 ${status.textColor} opacity-90`}>
+                  <span className="mt-1">•</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {(contactEmail || contactPhone || contactName) && (
+          <div className={`mb-6 rounded-lg ${status.bgColor} border ${status.borderColor} p-4`}>
+            <h3 className={`mb-3 font-semibold ${status.textColor}`}>Kapcsolattartó adatok:</h3>
+            <div className="space-y-2 text-left">
+              {contactName && (
+                <p className={`${status.textColor} opacity-90`}>
+                  <strong>Név:</strong> {contactName}
+                </p>
+              )}
+              {contactEmail && (
+                <p className={`${status.textColor} opacity-90`}>
+                  <strong>Email:</strong>{' '}
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="underline hover:opacity-80"
+                    aria-label={`Email küldése: ${contactEmail}`}
+                  >
+                    {contactEmail}
+                  </a>
+                </p>
+              )}
+              {contactPhone && (
+                <p className={`${status.textColor} opacity-90`}>
+                  <strong>Telefon:</strong>{' '}
+                  <a
+                    href={`tel:${contactPhone}`}
+                    className="underline hover:opacity-80"
+                    aria-label={`Telefon: ${contactPhone}`}
+                  >
+                    {contactPhone}
+                  </a>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <DownloadPdfButton token={token} offerId={offerId} />
+        </div>
       </div>
     );
   }
