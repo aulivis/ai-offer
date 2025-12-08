@@ -290,5 +290,3 @@ export async function resetStuckJob(
     throw new Error(`Failed to reset stuck job: ${error.message}`);
   }
 }
-
-

@@ -159,5 +159,3 @@ useOffers(params, {
   refetchOnWindowFocus: false,
 });
 ```
-
-

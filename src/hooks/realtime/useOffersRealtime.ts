@@ -224,5 +224,3 @@ export function usePdfJobRealtime(
 
   return { isSubscribed };
 }
-
-

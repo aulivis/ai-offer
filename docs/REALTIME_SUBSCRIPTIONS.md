@@ -167,5 +167,3 @@ All realtime subscriptions respect Row Level Security (RLS) policies:
 - Users only receive updates for offers they have access to
 - Team-based filtering is handled at the database level
 - No sensitive data leaks through realtime channels
-
-

@@ -110,5 +110,3 @@ Existing code will continue to work. React Query hooks are available for:
 - New components (recommended)
 - Gradually migrating existing components
 - Both approaches can coexist
-
-

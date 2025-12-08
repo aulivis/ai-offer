@@ -174,5 +174,3 @@ export const POST = withAuth(async (req: AuthenticatedNextRequest) => {
     return buildErrorResponse(errorMessage, 500);
   }
 });
-
-

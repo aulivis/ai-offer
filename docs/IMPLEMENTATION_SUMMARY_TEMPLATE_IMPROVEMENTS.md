@@ -240,5 +240,3 @@ None - all changes are backward compatible.
 - Better validation prevents rendering of invalid templates
 - Error messages sanitized to prevent information leakage
 - Template path validation prevents directory traversal
-
-
