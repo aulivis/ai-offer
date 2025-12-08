@@ -21,3 +21,5 @@ end $$;
 -- so users will only receive updates for offers they have access to.
 
 
+
+

@@ -181,3 +181,5 @@ grant execute on function public.get_stuck_jobs to service_role;
 -- Service role can view all for monitoring/admin purposes
 
 
+
+

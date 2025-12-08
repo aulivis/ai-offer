@@ -48,3 +48,5 @@ grant execute on function public.check_concurrent_job_limit(uuid, integer) to au
 grant execute on function public.get_concurrent_job_count(uuid) to authenticated, service_role;
 
 
+
+

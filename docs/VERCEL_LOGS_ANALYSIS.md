@@ -241,3 +241,5 @@ export const GET = async (req: NextRequest) => {
 - Admin endpoints: `web/src/app/api/admin/pdf-jobs/*/route.ts`
 - Video poster: `web/src/components/video-demo-section.tsx:41`
 - Auth hooks: `web/src/hooks/useAuthSession.ts`, `useOptionalAuth.ts`, `useRequireAuth.ts`
+
+

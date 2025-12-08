@@ -202,3 +202,5 @@ $$;
 comment on function public.is_team_member(uuid, uuid) is 'Helper function to check team membership without triggering RLS recursion. Uses security definer to bypass RLS when checking team_members table.';
 
 
+
+
