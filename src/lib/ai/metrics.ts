@@ -23,7 +23,6 @@ export interface AiGenerationMetrics {
 /**
  * Records metrics to OpenTelemetry (if available)
  */
-import { isOpenTelemetryEnabled } from '@/env.server';
 
 export function recordAiMetric(
   name: string,

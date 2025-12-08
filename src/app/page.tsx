@@ -48,7 +48,7 @@ const FAQSection = dynamic(
 const StickyCTABar = dynamic(
   () => import('@/components/sticky-cta-bar').then((mod) => ({ default: mod.StickyCTABar })),
   {
-    ssr: false, // Sticky bar doesn't need SSR
+    loading: () => null, // Sticky bar doesn't need SSR
   },
 );
 const LandingPageClient = dynamic(
@@ -57,7 +57,7 @@ const LandingPageClient = dynamic(
       default: mod.LandingPageClient,
     })),
   {
-    ssr: false, // Client-only component
+    loading: () => null, // Client-only component
   },
 );
 

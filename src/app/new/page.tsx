@@ -69,7 +69,6 @@ import type { Template } from '@/lib/offers/templates/types';
 import { TemplateSelector } from '@/components/templates/TemplateSelector';
 import {
   emptyProjectDetails,
-  formatProjectDetailsForPrompt,
   projectDetailFields,
   type ProjectDetailKey,
   type ProjectDetails,
@@ -1275,18 +1274,6 @@ export default function NewOfferWizard() {
   useEffect(() => {
     updatePreviewFrameHeight();
   }, [previewDocumentHtml, updatePreviewFrameHeight]);
-  const projectDetailsText = useMemo(() => {
-    const normalized = projectDetailFields.reduce<ProjectDetails>(
-      (acc, key) => {
-        acc[key] = form.projectDetails[key].trim();
-        return acc;
-      },
-      { ...emptyProjectDetails },
-    );
-
-    return formatProjectDetailsForPrompt(normalized);
-  }, [form.projectDetails]);
-  const hasPreviewInputs = form.title.trim().length > 0 && projectDetailsText.trim().length > 0;
   const imageLimitReached = imageAssets.length >= MAX_IMAGE_COUNT;
 
   // === Autocomplete (cég) ===

@@ -5,7 +5,7 @@ import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
-import { LoadMoreButton, PAGE_SIZE, mergeOfferPages } from './offersPagination';
+import { LoadMoreButton, PAGE_SIZE } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useInfiniteScroll } from '@/hooks/useIntersectionObserver';
@@ -533,32 +533,6 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user?.id, sb]);
 
-  const hasMore = totalCount !== null ? offers.length < totalCount : false;
-
-  const handleLoadMore = useCallback(async () => {
-    if (!userId || isLoadingMore || !hasMore) return;
-    setIsLoadingMore(true);
-    try {
-      const nextPage = pageIndex + 1;
-      const { items, count } = await fetchPage(userId, nextPage);
-      setOffers((prev) => mergeOfferPages(prev, items));
-      if (count !== null) setTotalCount(count);
-      setPageIndex(nextPage);
-    } catch (error) {
-      logger.error('Failed to load more offers', error);
-      const message =
-        error instanceof Error ? error.message : t('toasts.offers.loadMoreFailed.description');
-      showToast({
-        title: t('toasts.offers.loadMoreFailed.title'),
-        description: message || t('toasts.offers.loadMoreFailed.description'),
-        variant: 'error',
-      });
-    } finally {
-      setIsLoadingMore(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchPage, hasMore, isLoadingMore, pageIndex, showToast, userId]);
-
   // Auto-load more when scroll reaches bottom (progressive loading with intersection observer)
   const loadMoreRef = useInfiniteScroll(handleLoadMore, hasMore, isLoadingMore, {
     rootMargin: '200px', // Start loading 200px before reaching bottom
@@ -794,11 +768,18 @@ export default function DashboardPage() {
   }, [offers, q, statusFilter, sortBy, sortDir]);
 
   // Use the custom hook for metrics calculation
-  const stats = useDashboardMetrics({
-    offers,
-    kpiScope,
-    userId: user?.id,
-  });
+  const stats = useDashboardMetrics(
+    user?.id
+      ? {
+          offers,
+          kpiScope,
+          userId: user.id,
+        }
+      : {
+          offers,
+          kpiScope,
+        },
+  );
 
   /** Realtime frissítések (változatlan logika) */
   useEffect(() => {
