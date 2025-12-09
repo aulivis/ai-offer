@@ -14,13 +14,19 @@ import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
-import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
 import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import { useMemo, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { ShareModal } from './ShareModal';
+import {
+  formatViewCount,
+  formatAcceptanceTime,
+  getShareExpiryInfo,
+} from '@/lib/utils/offerMetrics';
+import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
+import ExclamationTriangleIcon from '@heroicons/react/24/outline/ExclamationTriangleIcon';
 
 export interface OfferListItemProps {
   offer: Offer;
@@ -70,12 +76,13 @@ export function OfferListItem({
     'inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
   const actionButtonDisabledClass = 'cursor-not-allowed opacity-60';
   const statusTheme = STATUS_CARD_THEMES[offer.status];
+  const expiryInfo = getShareExpiryInfo(offer.share_expiry_status, offer.earliest_expires_at);
 
   return (
-    <Card className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:shadow-md hover:border-primary/20">
+    <Card className="group relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-white shadow-sm backdrop-blur transition-all duration-300 hover:shadow-md hover:border-primary/20">
       {/* Status indicator bar */}
       <div
-        className={`absolute top-0 left-0 right-0 h-0.5 ${
+        className={`absolute top-0 left-0 right-0 h-1 ${
           offer.status === 'draft'
             ? 'bg-amber-400'
             : offer.status === 'sent'
@@ -86,36 +93,36 @@ export function OfferListItem({
         }`}
       />
 
-      <div className="flex items-center gap-3 p-4 pt-5">
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex flex-1 items-center gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-2 -m-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-expanded={isExpanded}
-          aria-label={
-            isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')
-          }
-        >
-          <div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm">
-            {initials ? (
-              <span aria-hidden="true" title={companyName || undefined}>
-                {initials}
-              </span>
-            ) : (
-              <BuildingOffice2Icon
-                aria-hidden="true"
-                className="h-4 w-4 text-primary"
-                title={companyName || ''}
-              />
-            )}
-          </div>
-          <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
+      <div className="p-4">
+        <div className="flex items-start gap-3 mb-3">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex flex-1 items-start gap-3 text-left transition-colors hover:bg-bg-muted/50 rounded-lg p-2 -m-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-expanded={isExpanded}
+            aria-label={
+              isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')
+            }
+          >
+            <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm">
+              {initials ? (
+                <span aria-hidden="true" title={companyName || undefined}>
+                  {initials}
+                </span>
+              ) : (
+                <BuildingOffice2Icon
+                  aria-hidden="true"
+                  className="h-4 w-4 text-primary"
+                  title={companyName || ''}
+                />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1.5">
                 <p className="truncate text-sm font-bold text-fg">{offer.title || '(névtelen)'}</p>
                 <StatusBadge status={offer.status} className="flex-none" />
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-fg-muted mb-2">
                 {companyName && (
                   <>
                     <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
@@ -130,30 +137,45 @@ export function OfferListItem({
                   </>
                 )}
               </div>
-            </div>
-            <div className="hidden sm:flex items-center gap-3 text-xs text-fg-muted">
-              {offer.sent_at && (
-                <div className="flex items-center gap-1.5">
-                  <PaperAirplaneIcon className="h-3.5 w-3.5" />
-                  <span>{formatDate(offer.sent_at)}</span>
+              {/* Metrics Row */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5 text-xs text-fg-muted">
+                  <EyeIcon className="h-3.5 w-3.5 text-blue-600" />
+                  <span className="font-medium">
+                    {formatViewCount(offer.view_count)} megtekintés
+                  </span>
                 </div>
-              )}
-              {offer.decided_at && (
-                <div className="flex items-center gap-1.5">
-                  <ClockIcon className="h-3.5 w-3.5" />
-                  <span>{formatDate(offer.decided_at)}</span>
-                </div>
-              )}
+                {offer.status === 'accepted' && offer.acceptance_time_days !== null && (
+                  <div className="flex items-center gap-1.5 text-xs text-fg-muted">
+                    <ClockIcon className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="font-medium">
+                      {formatAcceptanceTime(offer.acceptance_time_days)} alatt elfogadva
+                    </span>
+                  </div>
+                )}
+                {offer.share_expiry_status !== 'none' && (
+                  <div
+                    className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium border ${expiryInfo.bgColor} ${expiryInfo.color}`}
+                  >
+                    {expiryInfo.icon === 'expired' ? (
+                      <ExclamationTriangleIcon className="h-3 w-3" />
+                    ) : (
+                      <LinkIcon className="h-3 w-3" />
+                    )}
+                    <span>{expiryInfo.label}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <ChevronDownIcon
-            className={`h-4 w-4 text-fg-muted transition-transform duration-200 flex-none ${
-              isExpanded ? 'rotate-180' : ''
-            }`}
-            aria-hidden="true"
-          />
-        </button>
-        <div className="flex items-center gap-1">
+            <ChevronDownIcon
+              className={`h-4 w-4 text-fg-muted transition-transform duration-200 flex-none ${
+                isExpanded ? 'rotate-180' : ''
+              }`}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+        <div className="flex items-center gap-1.5 flex-wrap">
           {offer.pdf_url ? (
             <>
               <a

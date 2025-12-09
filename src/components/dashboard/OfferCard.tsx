@@ -10,6 +10,7 @@ import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
 import UserCircleIcon from '@heroicons/react/24/outline/UserCircleIcon';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
+import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
 import { useEffect, useMemo, useState, useCallback } from 'react';
@@ -18,11 +19,18 @@ import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
 import ClipboardIcon from '@heroicons/react/24/outline/ClipboardIcon';
-import ArrowTopRightOnSquareIcon from '@heroicons/react/24/outline/ArrowTopRightOnSquareIcon';
 import { ShareModal } from './ShareModal';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { useToast } from '@/components/ToastProvider';
 import { createClientLogger } from '@/lib/clientLogger';
+import {
+  formatViewCount,
+  formatAcceptanceTime,
+  getShareExpiryInfo,
+} from '@/lib/utils/offerMetrics';
+import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
+import ExclamationTriangleIcon from '@heroicons/react/24/outline/ExclamationTriangleIcon';
+import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
 
 export interface OfferCardProps {
   offer: Offer;
@@ -145,17 +153,15 @@ export function OfferCard({
     }
   }, [defaultShareUrl, loadDefaultShareUrl, showToast]);
 
-  const actionButtonClass =
-    'inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-white/90 text-fg shadow-sm transition-colors hover:border-primary hover:text-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-  const actionButtonDisabledClass = 'cursor-not-allowed opacity-60';
+  const expiryInfo = getShareExpiryInfo(offer.share_expiry_status, offer.earliest_expires_at);
 
   return (
-    <Card className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:shadow-lg hover:border-primary/30">
+    <Card className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm backdrop-blur transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:bg-white/95">
       {/* Enhanced Header with Status Indicator */}
       <div className="relative">
         {/* Status indicator bar */}
         <div
-          className={`absolute top-0 left-0 right-0 h-1 ${
+          className={`absolute top-0 left-0 right-0 h-1.5 ${
             offer.status === 'draft'
               ? 'bg-amber-400'
               : offer.status === 'sent'
@@ -166,169 +172,224 @@ export function OfferCard({
           }`}
         />
 
-        <div className="flex items-start gap-2 p-4 pt-5">
-          <div className="relative flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-sm font-bold text-primary shadow-sm shrink-0">
-            {initials ? (
-              <span aria-hidden="true" title={companyName || undefined}>
-                {initials}
-              </span>
-            ) : (
-              <BuildingOffice2Icon
-                aria-hidden="true"
-                className="h-4 w-4 text-primary"
-                title={companyName || ''}
-              />
+        <div className="p-5">
+          {/* Main Header */}
+          <div className="flex items-start gap-3 mb-4">
+            <div className="relative flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-sky-100 text-base font-bold text-primary shadow-sm shrink-0">
+              {initials ? (
+                <span aria-hidden="true" title={companyName || undefined}>
+                  {initials}
+                </span>
+              ) : (
+                <BuildingOffice2Icon
+                  aria-hidden="true"
+                  className="h-5 w-5 text-primary"
+                  title={companyName || ''}
+                />
+              )}
+            </div>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <div className="flex items-start gap-2 mb-2">
+                <p
+                  className="truncate text-base font-bold text-fg leading-tight flex-1 min-w-0"
+                  title={offer.title || undefined}
+                >
+                  {offer.title || '(névtelen)'}
+                </p>
+                <StatusBadge status={offer.status} className="flex-none shrink-0" />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
+                {companyName && (
+                  <>
+                    <UserCircleIcon aria-hidden="true" className="h-4 w-4 flex-none shrink-0" />
+                    <span className="truncate font-medium" title={companyName}>
+                      {companyName}
+                    </span>
+                  </>
+                )}
+                {offer.created_at && (
+                  <>
+                    <span className="text-fg-muted/50 shrink-0">•</span>
+                    <CalendarDaysIcon aria-hidden="true" className="h-4 w-4 flex-none shrink-0" />
+                    <span className="whitespace-nowrap shrink-0">
+                      {formatDate(offer.created_at)}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Metrics Bar - Always Visible */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {/* View Count */}
+            <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-3 py-2 flex-1 min-w-[120px]">
+              <EyeIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
+                  Megtekintés
+                </p>
+                <p className="text-sm font-bold text-fg truncate">
+                  {formatViewCount(offer.view_count)}
+                </p>
+              </div>
+            </div>
+
+            {/* Acceptance Time */}
+            {offer.status === 'accepted' && offer.acceptance_time_days !== null && (
+              <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-3 py-2 flex-1 min-w-[120px]">
+                <ClockIcon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
+                    Elfogadás
+                  </p>
+                  <p className="text-sm font-bold text-fg truncate">
+                    {formatAcceptanceTime(offer.acceptance_time_days)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Share Expiry Status */}
+            {offer.share_expiry_status !== 'none' && (
+              <div
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 flex-1 min-w-[120px] ${expiryInfo.bgColor}`}
+              >
+                {expiryInfo.icon === 'expired' ? (
+                  <ExclamationTriangleIcon
+                    className={`h-4 w-4 ${expiryInfo.color} flex-shrink-0`}
+                  />
+                ) : (
+                  <LinkIcon className={`h-4 w-4 ${expiryInfo.color} flex-shrink-0`} />
+                )}
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
+                    Megosztás
+                  </p>
+                  <p className={`text-sm font-bold truncate ${expiryInfo.color}`}>
+                    {expiryInfo.label}
+                  </p>
+                </div>
+              </div>
             )}
           </div>
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <div className="flex items-start gap-2 mb-1.5">
-              <p
-                className="truncate text-sm font-bold text-fg leading-tight flex-1 min-w-0"
-                title={offer.title || undefined}
-              >
-                {offer.title || '(névtelen)'}
-              </p>
-              <StatusBadge status={offer.status} className="flex-none shrink-0 mt-0.5" />
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
-              {companyName && (
-                <>
-                  <UserCircleIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                  <span className="truncate font-medium max-w-[140px]" title={companyName}>
-                    {companyName}
-                  </span>
-                </>
-              )}
-              {offer.created_at && (
-                <>
-                  <span className="text-fg-muted/50 shrink-0">•</span>
-                  <CalendarDaysIcon aria-hidden="true" className="h-3.5 w-3.5 flex-none shrink-0" />
-                  <span className="whitespace-nowrap shrink-0">{formatDate(offer.created_at)}</span>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             {offer.pdf_url ? (
               <>
-                <a
-                  className={`${actionButtonClass} hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600`}
-                  href={offer.pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => window.open(offer.pdf_url!, '_blank')}
+                  className="h-9 px-3 text-xs rounded-lg border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
                   aria-label={openLabel}
                   title={openLabel}
                 >
-                  <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
-                  <span className="sr-only">{openLabel}</span>
-                </a>
-                <button
-                  type="button"
+                  <DocumentTextIcon className="h-4 w-4 mr-1.5" />
+                  Megnyitás
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onDownload(offer)}
                   disabled={isBusy}
-                  className={`${actionButtonClass} hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+                  className="h-9 px-3 text-xs rounded-lg border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                   aria-label={downloadLabel}
                   title={downloadLabel}
                 >
                   {isDownloading ? (
-                    <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                    <ArrowPathIcon className="h-4 w-4 mr-1.5 animate-spin" />
                   ) : (
-                    <ArrowDownTrayIcon aria-hidden="true" className="h-4 w-4" />
+                    <ArrowDownTrayIcon className="h-4 w-4 mr-1.5" />
                   )}
-                  <span className="sr-only">{downloadLabel}</span>
-                </button>
+                  Letöltés
+                </Button>
               </>
             ) : (
               onRegeneratePdf && (
-                <button
-                  type="button"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onRegeneratePdf(offer)}
                   disabled={isBusy}
-                  className={`${actionButtonClass} hover:bg-amber-50 hover:border-amber-300 hover:text-amber-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+                  className="h-9 px-3 text-xs rounded-lg border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
                   aria-label={regenerateLabel}
                   title={regenerateLabel}
                 >
                   {isRegenerating ? (
-                    <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                    <ArrowPathIcon className="h-4 w-4 mr-1.5 animate-spin" />
                   ) : (
-                    <DocumentTextIcon aria-hidden="true" className="h-4 w-4" />
+                    <DocumentTextIcon className="h-4 w-4 mr-1.5" />
                   )}
-                  <span className="sr-only">{regenerateLabel}</span>
-                </button>
+                  Generálás
+                </Button>
               )
             )}
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={copyShareUrl}
               disabled={isBusy || isLoadingShareUrl}
-              className={`${actionButtonClass} hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 ${isBusy || isLoadingShareUrl ? actionButtonDisabledClass : ''}`}
+              className="h-9 px-3 text-xs rounded-lg border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100"
               aria-label={shareLabel}
               title={defaultShareUrl ? 'Megosztási link másolása' : shareLabel}
             >
               {isLoadingShareUrl ? (
-                <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                <ArrowPathIcon className="h-4 w-4 mr-1.5 animate-spin" />
               ) : shareUrlCopied ? (
-                <CheckIcon aria-hidden="true" className="h-4 w-4 text-green-600" />
+                <CheckIcon className="h-4 w-4 mr-1.5 text-green-600" />
               ) : (
-                <LinkIcon aria-hidden="true" className="h-4 w-4" />
+                <LinkIcon className="h-4 w-4 mr-1.5" />
               )}
-              <span className="sr-only">{shareLabel}</span>
-            </button>
-            {defaultShareUrl && (
-              <a
-                href={defaultShareUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${actionButtonClass} hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600`}
-                aria-label="Megosztási link megnyitása új ablakban"
-                title="Megosztási link megnyitása új ablakban"
-              >
-                <ArrowTopRightOnSquareIcon aria-hidden="true" className="h-4 w-4" />
-                <span className="sr-only">Megosztási link megnyitása új ablakban</span>
-              </a>
-            )}
-            <button
-              type="button"
+              Megosztás
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setIsShareModalOpen(true)}
               disabled={isBusy}
-              className={`${actionButtonClass} hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+              className="h-9 px-3 text-xs rounded-lg border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
               aria-label="Megosztási beállítások"
               title="Megosztási beállítások"
             >
-              <ClipboardIcon aria-hidden="true" className="h-4 w-4" />
-              <span className="sr-only">Megosztási beállítások</span>
-            </button>
-            <button
-              type="button"
+              <ClipboardIcon className="h-4 w-4 mr-1.5" />
+              Beállítások
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onDelete(offer)}
               disabled={isBusy}
-              className={`${actionButtonClass} hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+              className="h-9 px-3 text-xs rounded-lg border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
               aria-label={deleteLabel}
               title={deleteLabel}
             >
               {isDeleting ? (
-                <ArrowPathIcon aria-hidden="true" className="h-4 w-4 animate-spin" />
+                <ArrowPathIcon className="h-4 w-4 mr-1.5 animate-spin" />
               ) : (
-                <TrashIcon aria-hidden="true" className="h-4 w-4" />
+                <TrashIcon className="h-4 w-4 mr-1.5" />
               )}
-              <span className="sr-only">{deleteLabel}</span>
-            </button>
-            <button
-              type="button"
+              Törlés
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`${actionButtonClass} hover:bg-bg-muted`}
+              className="h-9 px-3 text-xs rounded-lg border-border/60 bg-white hover:bg-bg-muted ml-auto"
               aria-expanded={isExpanded}
               aria-label={
                 isExpanded ? t('dashboard.offerCard.collapse') : t('dashboard.offerCard.expand')
               }
             >
+              {isExpanded ? 'Összecsukás' : 'Részletek'}
               <ChevronDownIcon
-                className={`h-4 w-4 text-fg-muted transition-transform duration-200 ${
+                className={`h-4 w-4 ml-1.5 text-fg-muted transition-transform duration-200 ${
                   isExpanded ? 'rotate-180' : ''
                 }`}
                 aria-hidden="true"
               />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -494,19 +555,32 @@ export function OfferCard({
               </div>
             </section>
 
-            {/* Additional Info - Compact */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-2 py-1.5">
-                <CalendarDaysIcon className="h-3.5 w-3.5 text-fg-muted flex-shrink-0" />
+            {/* Additional Metrics - Expanded View */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-3 py-2">
+                <CalendarDaysIcon className="h-4 w-4 text-fg-muted flex-shrink-0" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
-                    {t('dashboard.offerCard.created')}
+                    Létrehozva
                   </p>
                   <p className="text-xs font-semibold text-fg truncate">
                     {formatDate(offer.created_at)}
                   </p>
                 </div>
               </div>
+              {offer.sent_at && (
+                <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-3 py-2">
+                  <PaperAirplaneIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
+                      Elküldve
+                    </p>
+                    <p className="text-xs font-semibold text-fg truncate">
+                      {formatDate(offer.sent_at)}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons - Compact */}

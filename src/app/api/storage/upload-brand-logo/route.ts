@@ -240,7 +240,36 @@ export const POST = withAuth(
       return createErrorResponse('Érvénytelen felhasználói azonosító.', HttpStatus.BAD_REQUEST);
     }
 
-    const path = `${userId}/brand-logo.${normalizedImage.extension}`;
+    // Preserve original filename, but sanitize it for security
+    // Extract filename from the uploaded file, or use a default name
+    let filename = fileEntry.name;
+    if (!filename || filename.trim().length === 0) {
+      filename = `logo.${normalizedImage.extension}`;
+    } else {
+      // Sanitize filename: remove path components, keep only the base name
+      filename =
+        filename.split('/').pop()?.split('\\').pop() || `logo.${normalizedImage.extension}`;
+      // Remove any dangerous characters
+      filename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+      // Ensure it has a valid extension matching the normalized image type
+      const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
+      if (nameWithoutExt.length === 0) {
+        filename = `logo.${normalizedImage.extension}`;
+      } else {
+        filename = `${nameWithoutExt}.${normalizedImage.extension}`;
+      }
+    }
+
+    // Validate final filename doesn't contain path traversal
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      log.error('Invalid filename detected after sanitization', {
+        originalName: fileEntry.name,
+        sanitized: filename,
+      });
+      filename = `logo.${normalizedImage.extension}`;
+    }
+
+    const path = `${userId}/${filename}`;
 
     // Verify the Supabase client has user context
     // The supabaseServer() function should include the access token from cookies

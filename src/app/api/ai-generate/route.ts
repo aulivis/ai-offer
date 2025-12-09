@@ -1235,8 +1235,44 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
         // ---- Ár tábla adatok ----
         const rows: PriceRow[] = prices;
 
+        // If we have image assets but the HTML doesn't contain image placeholders,
+        // inject them into the HTML at strategic locations
+        // This handles the case where reference images are uploaded but not yet inserted into the HTML
+        let htmlWithImagePlaceholders = aiHtml;
+        if (sanitizedImageAssets.length > 0) {
+          // Check if HTML already has image placeholders with data-offer-image-key
+          const hasImagePlaceholders = /data-offer-image-key/i.test(aiHtml);
+          if (!hasImagePlaceholders) {
+            // Inject image placeholders into the HTML
+            // Insert after the first section (introduction/project summary area) for better visual placement
+            const firstSectionEnd = aiHtml.indexOf('</section>');
+            if (firstSectionEnd !== -1) {
+              // Insert images after the first section
+              const imagePlaceholders = sanitizedImageAssets
+                .map(
+                  (img, idx) =>
+                    `<img data-offer-image-key="${sanitizeInput(img.key)}" alt="${sanitizeInput(img.alt || `Image ${idx + 1}`)}" />`,
+                )
+                .join('');
+              htmlWithImagePlaceholders =
+                aiHtml.slice(0, firstSectionEnd + '</section>'.length) +
+                imagePlaceholders +
+                aiHtml.slice(firstSectionEnd + '</section>'.length);
+            } else {
+              // If no sections found, insert at the beginning of the content
+              const imagePlaceholders = sanitizedImageAssets
+                .map(
+                  (img, idx) =>
+                    `<img data-offer-image-key="${sanitizeInput(img.key)}" alt="${sanitizeInput(img.alt || `Image ${idx + 1}`)}" />`,
+                )
+                .join('');
+              htmlWithImagePlaceholders = imagePlaceholders + aiHtml;
+            }
+          }
+        }
+
         const { storedHtml: aiHtmlForStorage } = await applyImageAssetsToHtml(
-          aiHtml,
+          htmlWithImagePlaceholders,
           sanitizedImageAssets,
         );
 

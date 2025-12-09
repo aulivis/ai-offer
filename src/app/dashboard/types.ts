@@ -20,6 +20,11 @@ export type Offer = {
   team_id?: string | null;
   created_by_user?: { id: string; email: string } | null;
   updated_by_user?: { id: string; email: string } | null;
+  // Analytics fields
+  view_count?: number; // Total views across all shares
+  acceptance_time_days?: number | null; // Days between sent_at and decided_at (if accepted)
+  share_expiry_status?: 'active' | 'expired' | 'none'; // Status of share links
+  earliest_expires_at?: string | null; // Earliest expiry date among active shares
 };
 
 export type OfferFilter = 'my' | 'team' | 'all' | 'member';

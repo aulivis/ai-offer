@@ -62,7 +62,13 @@ export function normalizeBranding(branding?: {
 
 /**
  * Validates and sanitizes a brand logo storage path.
- * Path format: "{userId}/brand-logo.{extension}"
+ * Path format: "{userId}/{filename}" where filename can be any valid filename
+ *
+ * Security: Only allows paths that:
+ * - Start with a valid UUID (user ID)
+ * - Contain a forward slash
+ * - Don't contain path traversal sequences (.., /../, etc.)
+ * - Have a valid file extension (png, jpg, jpeg, svg)
  */
 export function sanitizeBrandLogoPath(value: string | null | undefined): string | null {
   if (typeof value !== 'string') {
@@ -74,9 +80,15 @@ export function sanitizeBrandLogoPath(value: string | null | undefined): string 
     return null;
   }
 
-  // Validate path format: should match "{uuid}/brand-logo.{ext}"
+  // Security: Reject path traversal attempts
+  if (trimmed.includes('..') || trimmed.includes('/../') || trimmed.startsWith('/')) {
+    return null;
+  }
+
+  // Validate path format: should match "{uuid}/{filename}"
+  // Allow any filename, not just "brand-logo.{ext}"
   const pathPattern =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/brand-logo\.(png|jpg|jpeg|svg)$/i;
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[^\/\0]+\.(png|jpg|jpeg|svg)$/i;
   if (!pathPattern.test(trimmed)) {
     return null;
   }

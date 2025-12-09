@@ -190,13 +190,107 @@ export function useDashboardOffers({
       }
 
       const rawItems = Array.isArray(data) ? data : [];
+      const offerIds = rawItems.map((entry) => String(entry.id));
+
+      // Fetch share analytics for all offers
+      let shareAnalytics: Record<
+        string,
+        {
+          view_count: number;
+          share_expiry_status: 'active' | 'expired' | 'none';
+          earliest_expires_at: string | null;
+        }
+      > = {};
+
+      if (offerIds.length > 0) {
+        try {
+          const { data: sharesData, error: sharesError } = await sb
+            .from('offer_shares')
+            .select('offer_id, access_count, expires_at, is_active')
+            .in('offer_id', offerIds);
+
+          if (!sharesError && sharesData) {
+            const now = new Date();
+            shareAnalytics = offerIds.reduce(
+              (acc, offerId) => {
+                const offerShares = sharesData.filter((s) => String(s.offer_id) === offerId);
+                if (offerShares.length === 0) {
+                  acc[offerId] = {
+                    view_count: 0,
+                    share_expiry_status: 'none',
+                    earliest_expires_at: null,
+                  };
+                } else {
+                  const activeShares = offerShares.filter((s) => s.is_active);
+                  const view_count = activeShares.reduce(
+                    (sum, s) => sum + (s.access_count || 0),
+                    0,
+                  );
+                  const expiresDates = activeShares
+                    .map((s) => (s.expires_at ? new Date(s.expires_at) : null))
+                    .filter((d): d is Date => d !== null);
+                  const earliest_expires_at =
+                    expiresDates.length > 0
+                      ? new Date(Math.min(...expiresDates.map((d) => d.getTime()))).toISOString()
+                      : null;
+
+                  let share_expiry_status: 'active' | 'expired' | 'none' = 'none';
+                  if (activeShares.length > 0) {
+                    const hasExpired = activeShares.some(
+                      (s) => s.expires_at && new Date(s.expires_at) < now,
+                    );
+                    const hasActive = activeShares.some(
+                      (s) => !s.expires_at || new Date(s.expires_at) >= now,
+                    );
+                    if (hasExpired && !hasActive) {
+                      share_expiry_status = 'expired';
+                    } else if (hasActive) {
+                      share_expiry_status = 'active';
+                    }
+                  }
+
+                  acc[offerId] = {
+                    view_count,
+                    share_expiry_status,
+                    earliest_expires_at,
+                  };
+                }
+                return acc;
+              },
+              {} as typeof shareAnalytics,
+            );
+          }
+        } catch (sharesError) {
+          // Silently fail - analytics are optional
+          logger.warn('Failed to fetch share analytics', sharesError);
+        }
+      }
+
       const items: Offer[] = rawItems.map((entry) => {
         const recipientValue = Array.isArray(entry.recipient)
           ? (entry.recipient[0] ?? null)
           : (entry.recipient ?? null);
 
+        const offerId = String(entry.id);
+        const analytics = shareAnalytics[offerId] || {
+          view_count: 0,
+          share_expiry_status: 'none' as const,
+          earliest_expires_at: null,
+        };
+
+        // Calculate acceptance time (days between sent_at and decided_at if accepted)
+        let acceptance_time_days: number | null = null;
+        if (entry.status === 'accepted' && entry.sent_at && entry.decided_at) {
+          const sentDate = new Date(entry.sent_at);
+          const decidedDate = new Date(entry.decided_at);
+          if (!isNaN(sentDate.getTime()) && !isNaN(decidedDate.getTime())) {
+            const diffMs = decidedDate.getTime() - sentDate.getTime();
+            acceptance_time_days = Math.round(diffMs / (1000 * 60 * 60 * 24));
+          }
+        }
+
         return {
-          id: String(entry.id),
+          id: offerId,
           title: typeof entry.title === 'string' ? entry.title : '',
           status: (entry.status ?? 'draft') as Offer['status'],
           created_at: entry.created_at ?? null,
@@ -212,6 +306,10 @@ export function useDashboardOffers({
           team_id: typeof entry.team_id === 'string' ? entry.team_id : null,
           created_by_user: null,
           updated_by_user: null,
+          view_count: analytics.view_count,
+          acceptance_time_days,
+          share_expiry_status: analytics.share_expiry_status,
+          earliest_expires_at: analytics.earliest_expires_at,
         };
       });
 
