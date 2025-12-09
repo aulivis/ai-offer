@@ -630,20 +630,6 @@ export default function DashboardPage() {
     [showToast],
   );
 
-  async function markSent(offer: Offer, date?: string) {
-    const timestamp = date ? new Date(`${date}T00:00:00`) : new Date();
-    if (Number.isNaN(timestamp.getTime())) return;
-    const patch: Partial<Offer> = {
-      sent_at: timestamp.toISOString(),
-      status: offer.status === 'draft' ? 'sent' : offer.status,
-    };
-    if (offer.status === 'draft') {
-      patch.decision = null;
-      patch.decided_at = null;
-    }
-    await applyPatch(offer, patch);
-  }
-
   async function markDecision(offer: Offer, decision: 'accepted' | 'lost', date?: string) {
     const timestamp = date ? new Date(`${date}T00:00:00`) : new Date();
     if (Number.isNaN(timestamp.getTime())) return;
@@ -652,20 +638,17 @@ export default function DashboardPage() {
       decision,
       decided_at: timestamp.toISOString(),
     };
-    if (!offer.sent_at) patch.sent_at = timestamp.toISOString();
     await applyPatch(offer, patch);
   }
 
   async function revertToSent(offer: Offer) {
     const patch: Partial<Offer> = { status: 'sent', decision: null, decided_at: null };
-    if (!offer.sent_at) patch.sent_at = new Date().toISOString();
     await applyPatch(offer, patch);
   }
 
   async function revertToDraft(offer: Offer) {
     const patch: Partial<Offer> = {
       status: 'draft',
-      sent_at: null,
       decided_at: null,
       decision: null,
     };
@@ -869,7 +852,6 @@ export default function DashboardPage() {
               title: typeof inserted.title === 'string' ? inserted.title : '',
               status: (inserted.status ?? 'draft') as Offer['status'],
               created_at: inserted.created_at ?? null,
-              sent_at: inserted.sent_at ?? null,
               decided_at: inserted.decided_at ?? null,
               decision: (inserted.decision ?? null) as Offer['decision'],
               pdf_url: inserted.pdf_url ?? null,
@@ -1843,7 +1825,6 @@ export default function DashboardPage() {
                       downloadingId={downloadingId}
                       deletingId={deletingId}
                       regeneratingId={regeneratingId}
-                      onMarkSent={markSent}
                       onMarkDecision={markDecision}
                       onRevertToSent={revertToSent}
                       onRevertToDraft={revertToDraft}
@@ -1865,7 +1846,6 @@ export default function DashboardPage() {
                           isUpdating={updatingId === o.id}
                           isDownloading={downloadingId === o.id}
                           isDeleting={deletingId === o.id}
-                          onMarkSent={(offer, date) => markSent(offer, date)}
                           onMarkDecision={(offer, decision, date) =>
                             markDecision(offer, decision, date)
                           }

@@ -58,7 +58,7 @@ export const GET = withAuth(
     let query = sb
       .from('offers')
       .select(
-        'id,title,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name ),created_by_user:created_by ( id, email ),updated_by_user:updated_by ( id, email )',
+        'id,title,status,created_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name ),created_by_user:created_by ( id, email ),updated_by_user:updated_by ( id, email )',
         { count: 'exact' },
       );
 
@@ -135,7 +135,6 @@ export const GET = withAuth(
         title: typeof entry.title === 'string' ? entry.title : '',
         status: (entry.status ?? 'draft') as 'draft' | 'sent' | 'accepted' | 'rejected',
         created_at: entry.created_at ?? null,
-        sent_at: entry.sent_at ?? null,
         decided_at: entry.decided_at ?? null,
         decision: (entry.decision ?? null) as 'accepted' | 'rejected' | null,
         pdf_url: entry.pdf_url ?? null,

@@ -20,9 +20,19 @@ export function OfferDisplay({ html }: OfferDisplayProps) {
     <div className="mb-8 flex justify-center px-4 sm:px-6 lg:px-8">
       <div
         id="offer-content-container"
-        className="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 lg:p-10"
-        dangerouslySetInnerHTML={{ __html: bodyContent }}
-      />
+        className="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden"
+        style={{
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        }}
+      >
+        <div
+          className="offer-content-wrapper"
+          style={{
+            padding: 'clamp(1.5rem, 4vw, 3rem)',
+          }}
+          dangerouslySetInnerHTML={{ __html: bodyContent }}
+        />
+      </div>
     </div>
   );
 }

@@ -70,13 +70,9 @@ export function useDashboardMetrics({
     metricsOffers.forEach((offer) => {
       if (offer.status !== 'accepted' || !offer.decided_at) return;
       const decided = new Date(offer.decided_at).getTime();
-      const sentAt = offer.sent_at
-        ? new Date(offer.sent_at).getTime()
-        : offer.created_at
-          ? new Date(offer.created_at).getTime()
-          : NaN;
-      if (!Number.isFinite(decided) || !Number.isFinite(sentAt)) return;
-      const diffDays = (decided - sentAt) / (1000 * 60 * 60 * 24);
+      const created = offer.created_at ? new Date(offer.created_at).getTime() : NaN;
+      if (!Number.isFinite(decided) || !Number.isFinite(created)) return;
+      const diffDays = (decided - created) / (1000 * 60 * 60 * 24);
       if (diffDays >= 0) decisionDurations.push(diffDays);
     });
     const avgDecisionDays = decisionDurations.length

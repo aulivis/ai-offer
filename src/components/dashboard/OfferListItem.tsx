@@ -11,13 +11,11 @@ import UserCircleIcon from '@heroicons/react/24/outline/UserCircleIcon';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import CalendarDaysIcon from '@heroicons/react/24/outline/CalendarDaysIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
-import CheckIcon from '@heroicons/react/24/outline/CheckIcon';
-import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
 import type { Offer } from '@/app/dashboard/types';
 import { DECISION_LABEL_KEYS, STATUS_LABEL_KEYS } from '@/app/dashboard/types';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ShareModal } from './ShareModal';
 import {
@@ -33,7 +31,6 @@ export interface OfferListItemProps {
   isUpdating: boolean;
   isDownloading: boolean;
   isDeleting: boolean;
-  onMarkSent: (offer: Offer, date?: string) => void;
   onMarkDecision: (offer: Offer, decision: 'accepted' | 'lost', date?: string) => void;
   onRevertToSent: (offer: Offer) => void;
   onRevertToDraft: (offer: Offer) => void;
@@ -46,8 +43,7 @@ export function OfferListItem({
   isUpdating,
   isDownloading,
   isDeleting,
-  onMarkSent,
-  onMarkDecision,
+  onMarkDecision: _onMarkDecision,
   onRevertToSent,
   onRevertToDraft,
   onDelete,
@@ -57,13 +53,8 @@ export function OfferListItem({
   const isDecided = offer.status === 'accepted' || offer.status === 'lost';
   const companyName = (offer.recipient?.company_name ?? '').trim();
   const initials = useMemo(() => getInitials(companyName), [companyName]);
-  const [decisionDate, setDecisionDate] = useState<string>(() => isoDateInput(offer.decided_at));
   const [isExpanded, setIsExpanded] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
-  useEffect(() => {
-    setDecisionDate(isoDateInput(offer.decided_at));
-  }, [offer.decided_at]);
 
   const downloadLabel = t('dashboard.offerCard.savePdf');
   const openLabel = t('dashboard.offerCard.openPdf');
@@ -261,104 +252,25 @@ export function OfferListItem({
                 isActive={offer.status === 'draft'}
               />
 
-              <StatusTimelineItem
-                title={t('dashboard.statusSteps.sent.title')}
-                dateLabel={formatDate(offer.sent_at)}
-                isActive={offer.status === 'sent'}
-              >
-                {offer.sent_at ? (
-                  <CompactDatePicker
-                    label={t('dashboard.statusSteps.sent.editDate')}
-                    value={isoDateInput(offer.sent_at)}
-                    onChange={(value) => onMarkSent(offer, value)}
-                    disabled={isBusy}
-                  />
-                ) : (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      onClick={() => onMarkSent(offer)}
-                      disabled={isBusy}
-                      variant="secondary"
-                      size="sm"
-                      className="h-8 rounded-lg text-xs"
-                      title={t('dashboard.statusSteps.sent.markToday')}
-                    >
-                      {t('dashboard.statusSteps.sent.markToday')}
-                    </Button>
-                    <CompactDatePicker
-                      label={t('dashboard.statusSteps.sent.chooseDate')}
-                      value=""
-                      onChange={(value) => onMarkSent(offer, value)}
-                      disabled={isBusy}
-                    />
-                  </div>
-                )}
-              </StatusTimelineItem>
+              {/* Sent Status - Removed: sent_at is no longer used */}
 
               <StatusTimelineItem
                 title={t('dashboard.statusSteps.decision.title')}
                 dateLabel={isDecided ? formatDate(offer.decided_at) : '—'}
                 isActive={isDecided}
               >
-                {isDecided ? (
-                  <>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        offer.status === 'accepted'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-rose-50 text-rose-700'
-                      }`}
-                    >
-                      {offer.status === 'accepted'
-                        ? t(DECISION_LABEL_KEYS.accepted)
-                        : t(DECISION_LABEL_KEYS.lost)}
-                    </span>
-                    <CompactDatePicker
-                      label={t('dashboard.statusSteps.decision.dateLabel')}
-                      value={isoDateInput(offer.decided_at)}
-                      onChange={(value) =>
-                        onMarkDecision(offer, offer.status as 'accepted' | 'lost', value)
-                      }
-                      disabled={isBusy}
-                    />
-                  </>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CompactDatePicker
-                      label={t('dashboard.statusSteps.decision.chooseDate')}
-                      value={decisionDate}
-                      onChange={setDecisionDate}
-                      disabled={isBusy}
-                    />
-                    <Button
-                      onClick={() => onMarkDecision(offer, 'accepted', decisionDate || undefined)}
-                      disabled={isBusy}
-                      variant="secondary"
-                      size="sm"
-                      className="h-8 w-8 rounded-lg border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
-                      aria-label={t('dashboard.statusSteps.decision.markAccepted')}
-                      title={t('dashboard.statusSteps.decision.markAccepted')}
-                    >
-                      <CheckIcon aria-hidden="true" className="h-4 w-4" />
-                      <span className="sr-only">
-                        {t('dashboard.statusSteps.decision.markAccepted')}
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={() => onMarkDecision(offer, 'lost', decisionDate || undefined)}
-                      disabled={isBusy}
-                      variant="secondary"
-                      size="sm"
-                      className="h-8 w-8 rounded-lg border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
-                      aria-label={t('dashboard.statusSteps.decision.markLost')}
-                      title={t('dashboard.statusSteps.decision.markLost')}
-                    >
-                      <XMarkIcon aria-hidden="true" className="h-4 w-4" />
-                      <span className="sr-only">
-                        {t('dashboard.statusSteps.decision.markLost')}
-                      </span>
-                    </Button>
-                  </div>
+                {isDecided && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      offer.status === 'accepted'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'bg-rose-50 text-rose-700'
+                    }`}
+                  >
+                    {offer.status === 'accepted'
+                      ? t(DECISION_LABEL_KEYS.accepted)
+                      : t(DECISION_LABEL_KEYS.lost)}
+                  </span>
                 )}
               </StatusTimelineItem>
             </div>
@@ -438,35 +350,6 @@ function StatusTimelineItem({
   );
 }
 
-function CompactDatePicker({
-  label,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <label className="inline-flex h-8 items-center gap-2 rounded-lg border border-border/60 bg-white/90 px-2 text-xs font-semibold text-fg shadow-sm">
-      <span className="text-xs">{label}</span>
-      <input
-        type="date"
-        value={value}
-        onChange={(event) => {
-          const next = event.target.value;
-          if (!next) return;
-          onChange(next);
-        }}
-        disabled={disabled}
-        className="w-auto border-none bg-transparent p-0 text-xs font-semibold text-fg outline-none focus-visible:outline-none"
-      />
-    </label>
-  );
-}
-
 const STATUS_CARD_THEMES: Record<
   Offer['status'],
   { container: string; accentText: string; accentIcon: string }
@@ -498,13 +381,6 @@ function formatDate(value: string | null) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleDateString('hu-HU', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-function isoDateInput(value: string | null): string {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toISOString().slice(0, 10);
 }
 
 function getInitials(name: string) {

@@ -103,7 +103,7 @@ export function useDashboardOffers({
       let query = sb
         .from('offers')
         .select(
-          'id,title,status,created_at,sent_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name )',
+          'id,title,status,created_at,decided_at,decision,pdf_url,recipient_id,user_id,created_by,updated_by,team_id,recipient:recipient_id ( company_name )',
           { count: 'exact' },
         );
 
@@ -278,7 +278,7 @@ export function useDashboardOffers({
         }
       }
 
-      const items: Offer[] = rawItems.map((entry) => {
+      const items = rawItems.map((entry): Offer => {
         const recipientValue = Array.isArray(entry.recipient)
           ? (entry.recipient[0] ?? null)
           : (entry.recipient ?? null);
@@ -290,13 +290,13 @@ export function useDashboardOffers({
           earliest_expires_at: null,
         };
 
-        // Calculate acceptance time (days between sent_at and decided_at if accepted)
+        // Calculate acceptance time (days between created_at and decided_at if accepted)
         let acceptance_time_days: number | null = null;
-        if (entry.status === 'accepted' && entry.sent_at && entry.decided_at) {
-          const sentDate = new Date(entry.sent_at);
+        if (entry.status === 'accepted' && entry.created_at && entry.decided_at) {
+          const createdDate = new Date(entry.created_at);
           const decidedDate = new Date(entry.decided_at);
-          if (!isNaN(sentDate.getTime()) && !isNaN(decidedDate.getTime())) {
-            const diffMs = decidedDate.getTime() - sentDate.getTime();
+          if (!isNaN(createdDate.getTime()) && !isNaN(decidedDate.getTime())) {
+            const diffMs = decidedDate.getTime() - createdDate.getTime();
             acceptance_time_days = Math.round(diffMs / (1000 * 60 * 60 * 24));
           }
         }
@@ -306,7 +306,6 @@ export function useDashboardOffers({
           title: typeof entry.title === 'string' ? entry.title : '',
           status: (entry.status ?? 'draft') as Offer['status'],
           created_at: entry.created_at ?? null,
-          sent_at: entry.sent_at ?? null,
           decided_at: entry.decided_at ?? null,
           decision: (entry.decision ?? null) as Offer['decision'],
           pdf_url: entry.pdf_url ?? null,

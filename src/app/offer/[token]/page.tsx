@@ -212,6 +212,74 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       vat: typeof row.vat === 'number' && Number.isFinite(row.vat) ? row.vat : undefined,
     }));
 
+  // Load reference images from activities (Pro feature)
+  // Match pricing row names to activities and get their reference images
+  const referenceImages: Array<{ src: string; alt: string; key: string }> = [];
+  if (isProUser && normalizedRows.length > 0) {
+    try {
+      const rowNames = normalizedRows
+        .map((row) => row.name)
+        .filter((name): name is string => typeof name === 'string' && name.trim().length > 0);
+
+      if (rowNames.length > 0) {
+        const { data: activities } = await sb
+          .from('activities')
+          .select('id, name, reference_images')
+          .eq('user_id', offer.user_id)
+          .in('name', rowNames);
+
+        if (activities && Array.isArray(activities)) {
+          for (const activity of activities) {
+            const refImages = activity.reference_images;
+            if (
+              Array.isArray(refImages) &&
+              refImages.length > 0 &&
+              typeof refImages[0] === 'string'
+            ) {
+              // Convert storage paths to signed URLs
+              for (const imagePath of refImages) {
+                if (typeof imagePath === 'string' && imagePath.trim()) {
+                  try {
+                    // Create signed URL for the reference image
+                    // Reference images are stored in: {userId}/activities/{activityId}/reference-{imageId}.{ext}
+                    // They use the 'brand-assets' bucket (same as brand logos)
+                    const { data: signedUrlData } = await sb.storage
+                      .from('brand-assets')
+                      .createSignedUrl(imagePath, 3600); // 1 hour TTL
+
+                    if (signedUrlData?.signedUrl) {
+                      referenceImages.push({
+                        src: signedUrlData.signedUrl,
+                        alt: `Reference image for ${activity.name || 'activity'}`,
+                        key: `ref-${activity.id}-${referenceImages.length}`,
+                      });
+                    }
+                  } catch (error) {
+                    // Silently skip images that can't be loaded
+                    logger.debug('Failed to load reference image', {
+                      imagePath,
+                      activityId: activity.id,
+                      error: error instanceof Error ? error.message : String(error),
+                    });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Log but don't fail the page if reference images can't be loaded
+      logger.warn('Failed to load reference images for offer', {
+        offerId: offer.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  // Combine extracted images from HTML with reference images
+  const allImages = [...extractedImages, ...referenceImages];
+
   const sanitizeList = (value: unknown): string[] =>
     Array.isArray(value)
       ? value
@@ -261,7 +329,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
       testimonials: testimonialsList.length ? testimonialsList : null,
       guarantees: guaranteesList.length ? guaranteesList : null,
       pricingRows: normalizedRows,
-      images: extractedImages,
+      images: allImages,
       ...(brandingOptions && { branding: brandingOptions }),
       templateId, // Pass template ID to use the selected template
     },
@@ -311,11 +379,11 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
 
   return (
     <PageErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
           {/* Download PDF Button - hidden in PDF mode */}
           {!isPdfMode && (
-            <div className="mb-6 flex justify-center">
+            <div className="mb-8 flex justify-center">
               <DownloadPdfButton token={token} offerId={offer.id} />
             </div>
           )}

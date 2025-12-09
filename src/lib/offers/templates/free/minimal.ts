@@ -52,10 +52,13 @@ export function renderMinimal(ctx: TemplateContext): string {
     .logo {
       width: 80px;
       height: 80px;
+      min-width: 80px;
+      min-height: 80px;
       object-fit: contain;
       background: rgba(255,255,255,0.1);
       border-radius: 8px;
       padding: 8px;
+      display: block;
     }
     .header-text h1 {
       font-size: 2rem;
@@ -639,7 +642,7 @@ export function renderMinimal(ctx: TemplateContext): string {
   <div class="container">
     <header class="header" role="banner">
       <div class="header-content">
-        ${logoUrl && typeof logoUrl === 'string' && logoUrl.trim() ? `<img src="${sanitizeInput(logoUrl)}" alt="${sanitizeInput(ctx.companyName)} logó" class="logo" role="img">` : ''}
+        ${logoUrl && typeof logoUrl === 'string' && logoUrl.trim() ? `<img src="${sanitizeInput(logoUrl)}" alt="${sanitizeInput(ctx.companyName)} logó" class="logo" role="img" onerror="this.style.display='none'">` : ''}
         <div class="header-text">
           <h1>${sanitizeInput(ctx.title)}</h1>
           <p>${sanitizeInput(ctx.companyName)}</p>

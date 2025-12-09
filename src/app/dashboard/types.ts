@@ -8,7 +8,6 @@ export type Offer = {
   title: string;
   status: OfferStatus;
   created_at: string | null;
-  sent_at: string | null;
   decided_at: string | null;
   decision: OfferDecision | null;
   pdf_url: string | null;
@@ -22,7 +21,7 @@ export type Offer = {
   updated_by_user?: { id: string; email: string } | null;
   // Analytics fields
   view_count?: number; // Total views across all shares
-  acceptance_time_days?: number | null; // Days between sent_at and decided_at (if accepted)
+  acceptance_time_days?: number | null; // Days between created_at and decided_at (if accepted)
   share_expiry_status?: 'active' | 'expired' | 'none'; // Status of share links
   earliest_expires_at?: string | null; // Earliest expiry date among active shares
 };

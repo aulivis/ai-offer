@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAnonServer } from '@/app/lib/supabaseAnonServer';
+import { supabaseServiceRole } from '@/app/lib/supabaseServiceRole';
 import { withErrorHandling } from '@/lib/errorHandling';
 import { handleValidationError, HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { getRequestId } from '@/lib/requestId';
@@ -112,6 +113,39 @@ export const POST = withErrorHandling(async (request: NextRequest, context: Rout
   if (responseError) {
     log.error('Failed to create response', responseError);
     throw responseError;
+  }
+
+  // Update offer with decision date and status when customer accepts or rejects
+  // Use service role client to bypass RLS since this is a public endpoint
+  if (decision === 'accepted' || decision === 'rejected') {
+    const adminClient = supabaseServiceRole();
+    const now = new Date().toISOString();
+    const offerStatus = decision === 'accepted' ? 'accepted' : 'lost';
+    const offerDecision = decision === 'accepted' ? 'accepted' : 'lost';
+
+    const { error: offerUpdateError } = await adminClient
+      .from('offers')
+      .update({
+        status: offerStatus,
+        decision: offerDecision,
+        decided_at: now,
+      })
+      .eq('id', share.offer_id);
+
+    if (offerUpdateError) {
+      log.error('Failed to update offer with decision', offerUpdateError, {
+        offerId: share.offer_id,
+        decision,
+      });
+      // Don't fail the request - response was already created
+      // The offer update can be retried or done manually
+    } else {
+      log.info('Offer updated with decision', {
+        offerId: share.offer_id,
+        status: offerStatus,
+        decided_at: now,
+      });
+    }
   }
 
   log.info('Response submitted', { responseId: response.id, offerId: share.offer_id, decision });
