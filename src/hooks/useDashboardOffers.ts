@@ -262,7 +262,19 @@ export function useDashboardOffers({
           }
         } catch (sharesError) {
           // Silently fail - analytics are optional
-          logger.warn('Failed to fetch share analytics', sharesError);
+          const errorData =
+            sharesError instanceof Error
+              ? {
+                  error: {
+                    name: sharesError.name,
+                    message: sharesError.message,
+                    stack: process.env.NODE_ENV === 'production' ? undefined : sharesError.stack,
+                  },
+                }
+              : sharesError !== undefined
+                ? { error: String(sharesError) }
+                : undefined;
+          logger.warn('Failed to fetch share analytics', errorData);
         }
       }
 
