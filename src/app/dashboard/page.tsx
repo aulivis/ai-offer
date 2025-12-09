@@ -641,6 +641,11 @@ export default function DashboardPage() {
     await applyPatch(offer, patch);
   }
 
+  async function markSent(offer: Offer, _date?: string) {
+    const patch: Partial<Offer> = { status: 'sent' };
+    await applyPatch(offer, patch);
+  }
+
   async function revertToSent(offer: Offer) {
     const patch: Partial<Offer> = { status: 'sent', decision: null, decided_at: null };
     await applyPatch(offer, patch);
@@ -1825,6 +1830,7 @@ export default function DashboardPage() {
                       downloadingId={downloadingId}
                       deletingId={deletingId}
                       regeneratingId={regeneratingId}
+                      onMarkSent={markSent}
                       onMarkDecision={markDecision}
                       onRevertToSent={revertToSent}
                       onRevertToDraft={revertToDraft}

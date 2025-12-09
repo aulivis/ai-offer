@@ -36,6 +36,7 @@ export interface OfferCardProps {
   isDownloading: boolean;
   isDeleting: boolean;
   isRegenerating?: boolean;
+  onMarkSent: (offer: Offer, date?: string) => void;
   onMarkDecision: (offer: Offer, decision: 'accepted' | 'lost', date?: string) => void;
   onRevertToSent: (offer: Offer) => void;
   onRevertToDraft: (offer: Offer) => void;
@@ -53,6 +54,7 @@ export function OfferCard({
   isDownloading,
   isDeleting,
   isRegenerating = false,
+  onMarkSent: _onMarkSent,
   onMarkDecision: _onMarkDecision,
   onRevertToSent,
   onRevertToDraft,
