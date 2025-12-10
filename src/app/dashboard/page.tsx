@@ -11,7 +11,10 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useInfiniteScroll } from '@/hooks/useIntersectionObserver';
 import { useDashboardOffers } from '@/hooks/useDashboardOffers';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { YouAreHere } from '@/components/ui/YouAreHere';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { currentMonthStart } from '@/lib/utils/dateHelpers';
 import type { SubscriptionPlan } from '@/app/lib/offerTemplates';
 import { fetchWithSupabaseAuth } from '@/lib/api';
@@ -21,6 +24,7 @@ import { DeleteConfirmationDialog } from '@/components/dashboard/DeleteConfirmat
 import { DashboardMetricsSection } from '@/components/dashboard/DashboardMetricsSection';
 import { DashboardFiltersSection } from '@/components/dashboard/DashboardFiltersSection';
 import { DashboardEmptyState } from '@/components/dashboard/DashboardEmptyState';
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
 import { useDashboardOfferActions } from '@/hooks/useDashboardOfferActions';
 
 // Lazy load heavy dashboard components for route-based code splitting
@@ -145,6 +149,8 @@ export default function DashboardPage() {
   const { showToast } = useToast();
   const sb = useSupabase();
   const { status: authStatus, user } = useRequireAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const logger = useMemo(
     () => createClientLogger({ ...(user?.id && { userId: user.id }), component: 'DashboardPage' }),
     [user?.id],
@@ -165,10 +171,24 @@ export default function DashboardPage() {
     createdAt: string;
   } | null>(null);
 
-  // keresés/szűrés/rendezés
-  const [q, setQ] = useState('');
+  // URL state management for filters
+  const urlQ = searchParams?.get('q') || '';
+  const urlStatus = (searchParams?.get('status') || 'all') as StatusFilterOption;
+  const urlSortBy = searchParams?.get('sortBy') || 'created';
+  const urlSortDir = (searchParams?.get('sortDir') || 'desc') as SortDirectionOption;
+  const urlViewMode = (searchParams?.get('view') || 'card') as ViewMode;
+
+  // Initialize state from URL or localStorage
+  const [q, setQ] = useState(urlQ);
   const [sanitizedQ, setSanitizedQ] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilterOption>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilterOption>(urlStatus);
+  const [sortBy, setSortBy] = useState<SortByOption>(
+    isSortByValue(urlSortBy) ? urlSortBy : 'created',
+  );
+  const [sortDir, setSortDir] = useState<SortDirectionOption>(
+    isSortDirectionValue(urlSortDir) ? urlSortDir : 'desc',
+  );
+  const [viewMode, setViewMode] = useState<ViewMode>(urlViewMode);
   const [offerFilter, setOfferFilter] = useState<OfferFilter>(
     (() => {
       if (typeof window !== 'undefined') {
@@ -196,6 +216,23 @@ export default function DashboardPage() {
   const [teamMembers, setTeamMembers] = useState<Array<{ user_id: string; email: string | null }>>(
     [],
   );
+
+  // Sync URL with state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (q.trim()) params.set('q', q.trim());
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (sortBy !== 'created') params.set('sortBy', sortBy);
+    if (sortDir !== 'desc') params.set('sortDir', sortDir);
+    if (viewMode !== 'card') params.set('view', viewMode);
+
+    const newUrl = params.toString() ? `?${params.toString()}` : '';
+    const currentUrl = searchParams?.toString() || '';
+
+    if (newUrl !== `?${currentUrl}` && newUrl !== currentUrl) {
+      router.replace(newUrl || window.location.pathname, { scroll: false });
+    }
+  }, [q, statusFilter, sortBy, sortDir, viewMode, router, searchParams]);
 
   // Use the custom hook for offers fetching (must be before useDashboardOfferActions)
   const {
@@ -230,15 +267,6 @@ export default function DashboardPage() {
     userId: user?.id,
   });
 
-  const [sortBy, setSortBy] = useState<SortByOption>('created');
-  const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('dashboard-view-mode');
-      return (saved === 'list' || saved === 'card' ? saved : 'card') as ViewMode;
-    }
-    return 'card';
-  });
   const [metricsViewMode, setMetricsViewMode] = useState<'detailed' | 'compact'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dashboard-metrics-view-mode');
@@ -1070,9 +1098,7 @@ export default function DashboardPage() {
     <PageErrorBoundary>
       <div
         className={`min-h-screen ${
-          hasNoOffers
-            ? 'bg-gradient-to-br from-teal-50 via-white to-blue-50'
-            : 'bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50'
+          hasNoOffers ? 'bg-gradient-dashboard' : 'bg-bg'
         } ${latestNotification && !latestNotification.isRead ? 'pt-16' : ''}`}
       >
         {latestNotification && !latestNotification.isRead && (
@@ -1087,6 +1113,7 @@ export default function DashboardPage() {
         <AppFrame
           title={t('dashboard.title')}
           description="Kezeld az összes ajánlatodat egy helyen. Keresés, szűrés és státusz követés egyszerűen."
+          sidebar={<DashboardSidebar />}
           actions={
             <div className="flex flex-wrap items-center justify-end gap-2">
               <NotificationBell />
@@ -1117,6 +1144,12 @@ export default function DashboardPage() {
             </div>
           }
         >
+          {/* Breadcrumb Navigation and You Are Here Indicator */}
+          <div className="flex flex-col gap-4">
+            <Breadcrumb items={[{ label: t('dashboard.title') }]} />
+            <YouAreHere label={t('dashboard.title')} />
+          </div>
+
           {/* Progressive Disclosure: Empty State for New Users */}
           {hasNoOffers ? (
             <EmptyState />
@@ -1207,14 +1240,12 @@ export default function DashboardPage() {
                 <DashboardEmptyState
                   isEmpty={noOffersLoaded}
                   message={emptyMessage}
-                  onClearFilters={
-                    !noOffersLoaded
-                      ? () => {
-                          setQ('');
-                          setStatusFilter('all');
-                        }
-                      : undefined
-                  }
+                  {...(!noOffersLoaded && {
+                    onClearFilters: () => {
+                      setQ('');
+                      setStatusFilter('all');
+                    },
+                  })}
                 />
               )}
 

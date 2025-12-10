@@ -31,11 +31,13 @@ type DashboardMetricsSectionProps = {
   winRateLabel: string;
   avgDecisionLabel: string;
   totalHelper: string;
-  createdComparison?: {
-    label: string;
-    value: string;
-    trend: 'up' | 'down' | 'neutral';
-  };
+  createdComparison?:
+    | {
+        label: string;
+        value: string;
+        trend: 'up' | 'down' | 'neutral';
+      }
+    | undefined;
   onMetricsViewModeChange: (mode: 'detailed' | 'compact') => void;
   onKpiScopeChange: (scope: 'personal' | 'team') => void;
   onMetricClick: (filterStatus: StatusFilterOption) => void;

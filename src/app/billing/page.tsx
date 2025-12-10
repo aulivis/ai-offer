@@ -41,6 +41,7 @@ import AppFrame from '@/components/AppFrame';
 import { useSubscriptionManagement } from '@/hooks/useSubscriptionManagement';
 import { useOptionalAuth } from '@/hooks/useOptionalAuth';
 import { Button } from '@/components/ui/Button';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -649,6 +650,8 @@ function BillingPageContent() {
         redirectOnUnauthenticated={false}
       >
         <div className="space-y-10">
+          {/* Breadcrumb Navigation */}
+          <Breadcrumb items={[{ label: t('billing.title') }]} />
           {/* Status Messages */}
           {status === 'success' && (
             <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-100/50 p-5 shadow-sm">

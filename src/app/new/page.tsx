@@ -50,7 +50,7 @@ const RichTextEditor = dynamic(
       <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-bg-muted">
         <div className="text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="mt-2 text-sm text-fg-muted">Loading editor...</p>
+          <p className="mt-2 text-body-small text-fg-muted">Loading editor...</p>
         </div>
       </div>
     ),
@@ -2137,10 +2137,10 @@ export default function NewOfferWizard() {
               <section className="space-y-6">
                 <Card className="space-y-8 border-none bg-white/95 p-6 shadow-pop ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
                   <div className="space-y-3">
-                    <h2 className="text-lg font-semibold text-fg">
+                    <h2 className="text-body-large font-semibold text-fg">
                       {t('offers.wizard.steps.details')}
                     </h2>
-                    <p className="text-sm text-fg-muted">
+                    <p className="text-body-small text-fg-muted">
                       {t('offers.wizard.forms.details.sections.overviewHint')}
                     </p>
                   </div>
@@ -2153,7 +2153,7 @@ export default function NewOfferWizard() {
                     }`}
                   >
                     <div className="space-y-1">
-                      <p className="text-sm font-semibold">{quotaTitle}</p>
+                      <p className="text-body-small font-semibold">{quotaTitle}</p>
                       <p className="text-xs text-current/80">{quotaDescription}</p>
                       {quotaRemainingText ? (
                         <p className="text-xs font-semibold text-current">{quotaRemainingText}</p>

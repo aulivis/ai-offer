@@ -333,15 +333,15 @@ export default function LoginClient() {
           <div className="w-full">
             {/* GDPR Section - Moved to top */}
             <div className="flex flex-wrap items-center justify-center gap-6 mb-6">
-              <div className="flex items-center gap-2 text-sm text-fg-muted">
+              <div className="flex items-center gap-2 text-body-small text-fg-muted">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>GDPR kompatibilis</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-fg-muted">
+              <div className="flex items-center gap-2 text-body-small text-fg-muted">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>Biztonságos infrastruktúra</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-fg-muted">
+              <div className="flex items-center gap-2 text-body-small text-fg-muted">
                 <CheckCircle className="w-5 h-5 text-success" />
                 <span>99.9% elérhetőség</span>
               </div>
@@ -352,9 +352,9 @@ export default function LoginClient() {
               {/* Adaptive hero section */}
               <div className="text-center mb-8">
                 {/* Universal badge */}
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white px-4 py-2 rounded-full mb-6">
+                <div className="inline-flex items-center gap-2 bg-primary text-primary-ink px-4 py-2 rounded-full mb-6">
                   <Zap className="w-4 h-4" />
-                  <span className="text-sm font-semibold">
+                  <span className="text-body-small font-semibold">
                     Kezdd el 30 másodperc alatt — teljesen ingyen
                   </span>
                 </div>
@@ -367,7 +367,7 @@ export default function LoginClient() {
                 </H1>
 
                 {/* Dual-purpose subtitle */}
-                <p className="text-lg text-fg-muted max-w-md mx-auto">
+                <p className="text-body-large text-fg-muted max-w-md mx-auto">
                   {fromSource === 'cta' || fromSource === 'pricing' ? (
                     <>
                       Fiók létrehozása 30 másodperc alatt. Már meglévő fiókkal?{' '}
@@ -396,7 +396,7 @@ export default function LoginClient() {
 
               {/* Primary method - Google (fastest) */}
               <div className="mb-6">
-                <div className="text-sm text-fg-muted mb-3 text-center font-semibold">
+                <div className="text-body-small text-fg-muted mb-3 text-center font-semibold">
                   Leggyorsabb módszer:
                 </div>
                 <button
@@ -460,10 +460,10 @@ export default function LoginClient() {
               {/* Visual divider */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t-2 border-gray-200"></div>
+                  <div className="w-full border-t-2 border-border"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-bg-muted px-4 text-sm text-fg-muted font-medium">
+                  <span className="bg-bg-muted px-4 text-body-small text-fg-muted font-medium">
                     vagy email címmel
                   </span>
                 </div>
@@ -510,10 +510,12 @@ export default function LoginClient() {
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
                       aria-label="Maradok bejelentkezve"
-                      className="w-5 h-5 text-teal-500 border-2 border-gray-300 rounded focus:ring-2 focus:ring-teal-200 cursor-pointer"
+                      className="w-5 h-5 text-primary border-2 border-border rounded focus:ring-2 focus:ring-primary/20 cursor-pointer"
                     />
                   </div>
-                  <span className="text-sm text-fg group-hover:text-fg">Maradok bejelentkezve</span>
+                  <span className="text-body-small text-fg group-hover:text-fg">
+                    Maradok bejelentkezve
+                  </span>
                 </label>
 
                 {/* Error state */}
@@ -521,16 +523,16 @@ export default function LoginClient() {
                   <div
                     role="alert"
                     aria-live="assertive"
-                    className="bg-red-50 border-2 border-red-200 rounded-xl p-4"
+                    className="bg-danger/10 border-2 border-danger/30 rounded-xl p-4"
                   >
                     <div className="flex items-start gap-3">
                       <AlertCircle
-                        className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+                        className="w-5 h-5 text-danger flex-shrink-0 mt-0.5"
                         aria-hidden="true"
                       />
                       <div>
-                        <div className="font-bold text-red-900 mb-1">Hiba történt</div>
-                        <p className="text-sm text-red-700">{sanitizeInput(error)}</p>
+                        <div className="font-bold text-danger mb-1">Hiba történt</div>
+                        <p className="text-body-small text-danger">{sanitizeInput(error)}</p>
                       </div>
                     </div>
                   </div>
@@ -541,15 +543,15 @@ export default function LoginClient() {
                   <div
                     role="alert"
                     aria-live="polite"
-                    className="bg-green-50 border-2 border-green-200 rounded-xl p-4"
+                    className="bg-success/10 border-2 border-success/30 rounded-xl p-4"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center flex-shrink-0">
                         <Check className="w-6 h-6 text-white" aria-hidden="true" />
                       </div>
                       <div>
-                        <div className="font-bold text-green-900 mb-1">Email elküldve!</div>
-                        <p className="text-sm text-green-700">
+                        <div className="font-bold text-success mb-1">Email elküldve!</div>
+                        <p className="text-body-small text-success">
                           Nézd meg az emailjeidet és kattints a belépési linkre.{' '}
                           {isCooldownActive ? (
                             <span className="font-semibold" aria-live="polite">
@@ -629,15 +631,15 @@ export default function LoginClient() {
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-5 h-5 text-teal-600" />
+                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 mb-1">2 aktív ajánlat</h3>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <h3 className="font-bold text-fg mb-1">2 aktív ajánlat</h3>
+                        <p className="text-body-small text-fg-muted mb-2">
                           Kezdj el azonnal professzionális ajánlatokat készíteni — teljesen ingyen
                         </p>
-                        <div className="flex items-center gap-2 text-teal-600 text-xs font-semibold">
+                        <div className="flex items-center gap-2 text-primary text-caption font-semibold">
                           <Check className="w-3 h-3" />
                           <span>Azonnal elérhető</span>
                         </div>
@@ -645,15 +647,15 @@ export default function LoginClient() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Palette className="w-5 h-5 text-purple-600" />
+                      <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Palette className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 mb-1">Kész sablon</h3>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <h3 className="font-bold text-fg mb-1">Kész sablon</h3>
+                        <p className="text-body-small text-fg-muted mb-2">
                           Formázott sablon a vállalkozásod színeivel
                         </p>
-                        <div className="flex items-center gap-2 text-teal-600 text-xs font-semibold">
+                        <div className="flex items-center gap-2 text-primary text-caption font-semibold">
                           <Check className="w-3 h-3" />
                           <span>Azonnal elérhető</span>
                         </div>
@@ -661,15 +663,15 @@ export default function LoginClient() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-orange-600" />
+                      <div className="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-warning" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 mb-1">PDF-export</h3>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <h3 className="font-bold text-fg mb-1">PDF-export</h3>
+                        <p className="text-body-small text-fg-muted mb-2">
                           Egy kattintással letölthető, ügyfélnek küldhető ajánlat
                         </p>
-                        <div className="flex items-center gap-2 text-teal-600 text-xs font-semibold">
+                        <div className="flex items-center gap-2 text-primary text-caption font-semibold">
                           <Check className="w-3 h-3" />
                           <span>Azonnal elérhető</span>
                         </div>
@@ -678,12 +680,12 @@ export default function LoginClient() {
                   </div>
 
                   {/* Upgrade callout */}
-                  <div className="mt-6 bg-gradient-to-r from-teal-500 to-blue-600 rounded-xl p-6 text-center">
-                    <Crown className="w-6 h-6 mx-auto mb-2 text-white" />
-                    <h3 className="text-lg font-bold text-white mb-1">
+                  <div className="mt-6 bg-gradient-cta rounded-xl p-6 text-center">
+                    <Crown className="w-6 h-6 mx-auto mb-2 text-primary-ink" />
+                    <h3 className="text-body-large font-bold text-primary-ink mb-1">
                       Szeretnél több funkciót korlátlanul?
                     </h3>
-                    <p className="text-teal-100 text-sm">
+                    <p className="text-primary-ink/90 text-body-small">
                       Frissíts bármikor Standard vagy Pro csomagra — több ajánlat, több sablon,
                       teljes branding és haladó funkciók várnak rád.
                     </p>
@@ -693,39 +695,43 @@ export default function LoginClient() {
                 {/* Trust indicators */}
                 <div className="grid grid-cols-2 gap-6">
                   <div className="text-center">
-                    <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Shield className="w-7 h-7 text-green-600" />
+                    <div className="w-14 h-14 bg-success/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Shield className="w-7 h-7 text-success" />
                     </div>
-                    <div className="font-bold text-gray-900 mb-1">Nem kell bankkártya</div>
-                    <div className="text-sm text-gray-600">Azonnal használható, ingyenes fiók</div>
+                    <div className="font-bold text-fg mb-1">Nem kell bankkártya</div>
+                    <div className="text-body-small text-fg-muted">
+                      Azonnal használható, ingyenes fiók
+                    </div>
                   </div>
 
                   <div className="text-center">
-                    <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Lock className="w-7 h-7 text-blue-600" />
+                    <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Lock className="w-7 h-7 text-primary" />
                     </div>
-                    <div className="font-bold text-gray-900 mb-1">Biztonságos belépés</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-bold text-fg mb-1">Biztonságos belépés</div>
+                    <div className="text-body-small text-fg-muted">
                       256-bit SSL titkosítás és Magic Link
                     </div>
                   </div>
 
                   <div className="text-center">
-                    <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Zap className="w-7 h-7 text-purple-600" />
+                    <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Zap className="w-7 h-7 text-accent" />
                     </div>
-                    <div className="font-bold text-gray-900 mb-1">Villámgyors</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-bold text-fg mb-1">Villámgyors</div>
+                    <div className="text-body-small text-fg-muted">
                       Belépés 5 másodperc alatt, külön regisztráció nélkül
                     </div>
                   </div>
 
                   <div className="text-center">
-                    <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                      <Users className="w-7 h-7 text-orange-600" />
+                    <div className="w-14 h-14 bg-warning/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Users className="w-7 h-7 text-warning" />
                     </div>
-                    <div className="font-bold text-gray-900 mb-1">Segítünk, ha elakadsz</div>
-                    <div className="text-sm text-gray-600">Barátságos támogatás magyarul</div>
+                    <div className="font-bold text-fg mb-1">Segítünk, ha elakadsz</div>
+                    <div className="text-body-small text-fg-muted">
+                      Barátságos támogatás magyarul
+                    </div>
                   </div>
                 </div>
               </div>

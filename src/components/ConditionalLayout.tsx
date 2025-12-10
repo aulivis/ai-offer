@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import LandingHeader from '@/components/LandingHeader';
 import { Footer } from '@/components/footer';
+import { MobileBottomNav } from '@/components/navigation/MobileBottomNav';
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -15,12 +16,14 @@ interface ConditionalLayoutProps {
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isOfferPage = pathname?.startsWith('/offer/');
+  const isAuthPage = pathname?.startsWith('/auth/') || pathname === '/login';
 
   return (
     <>
       {!isOfferPage && <LandingHeader />}
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 pb-safe-area-inset-bottom md:pb-0">{children}</div>
       {!isOfferPage && <Footer />}
+      {!isOfferPage && !isAuthPage && <MobileBottomNav />}
     </>
   );
 }

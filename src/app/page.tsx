@@ -128,7 +128,7 @@ export default function Home() {
         <section className="relative bg-gradient-hero text-white min-h-screen flex flex-col overflow-hidden -mt-14 md:-mt-20">
           {/* Enhanced decorative gradient blobs for visual depth */}
           <div
-            className="absolute top-0 right-0 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
+            className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
             aria-hidden="true"
           ></div>
           <div
@@ -157,9 +157,9 @@ export default function Home() {
                 </div>
                 <H1 className="mb-6 text-balance" fluid>
                   Professzionális ajánlatkészítés{' '}
-                  <span className="text-turquoise-400">percek alatt</span>
+                  <span className="text-primary/90">percek alatt</span>
                 </H1>
-                <p className="text-body-large md:text-h6 text-white mb-8 leading-typography-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
+                <p className="text-body-large text-white mb-8 leading-typography-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
                   <span className="md:hidden">
                     Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
                   </span>
@@ -199,13 +199,7 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                   <Link
                     href="/login?redirect=/new"
-                    className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-primary)] to-turquoise-600 text-[var(--color-primary-ink)] hover:from-[var(--color-primary)]/90 hover:via-[var(--color-primary)]/90 hover:to-turquoise-700 hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 shadow-md w-full md:w-auto"
-                    style={
-                      {
-                        '--color-primary': 'var(--color-turquoise-600)',
-                        '--color-primary-ink': '#ffffff',
-                      } as React.CSSProperties
-                    }
+                    className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-primary text-primary-ink hover:bg-primary/90 hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 shadow-md w-full md:w-auto"
                   >
                     Próbáld ki most ingyen
                     <ArrowRight className="w-5 h-5" />
@@ -363,7 +357,7 @@ export default function Home() {
                 <H2 className="text-white mb-6 text-balance" fluid>
                   Szeretnéd elsőként kipróbálni az újdonságokat?
                 </H2>
-                <p className="text-body-large md:text-h6 text-white leading-typography-relaxed max-w-3xl mx-auto text-pretty">
+                <p className="text-body-large text-white leading-typography-relaxed max-w-3xl mx-auto text-pretty">
                   Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók
                   indulásáról.
                   <br />

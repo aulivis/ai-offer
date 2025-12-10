@@ -9,6 +9,8 @@ import { useToast } from '@/components/ToastProvider';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { BackButton } from '@/components/ui/BackButton';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { createClientLogger } from '@/lib/clientLogger';
 
@@ -223,6 +225,13 @@ function TeamDetailPageContent() {
       }
     >
       <div className="space-y-6">
+        {/* Back Button and Breadcrumb */}
+        <div className="flex flex-col gap-4">
+          <BackButton href="/teams" label="Vissza a csapatokhoz" variant="link" />
+          <Breadcrumb
+            items={[{ label: 'Csapatok', href: '/teams' }, { label: 'Csapat részletek' }]}
+          />
+        </div>
         {/* Members */}
         <Card className="p-6">
           <h2 className="text-lg font-semibold text-fg mb-4">Tagok ({team.members.length})</h2>

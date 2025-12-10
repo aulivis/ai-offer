@@ -17,6 +17,8 @@ import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { H2 } from '@/components/ui/Heading';
+import { BackButton } from '@/components/ui/BackButton';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 type PageProps = {
   params: Promise<{
@@ -417,6 +419,14 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
     <PageErrorBoundary>
       <div className="min-h-screen bg-gradient-offer">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          {/* Back Button and Breadcrumb */}
+          {!isPdfMode && (
+            <div className="mb-6 flex flex-col gap-4">
+              <BackButton variant="link" label="Vissza" />
+              <Breadcrumb items={[{ label: 'Ajánlat', href: undefined }]} showHome={false} />
+            </div>
+          )}
+
           {/* Download PDF Button - hidden in PDF mode */}
           {!isPdfMode && (
             <div className="mb-12 flex justify-center">

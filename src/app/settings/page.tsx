@@ -34,6 +34,7 @@ import type { Profile as _Profile } from '@/components/settings/types';
 import { ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
 import { H2 } from '@/components/ui/Heading';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 
 export default function SettingsPage() {
   const supabase = useSupabase();
@@ -149,9 +150,9 @@ export default function SettingsPage() {
     <PageErrorBoundary>
       <div className="relative min-h-screen bg-gradient-settings overflow-hidden">
         {/* Decorative gradient blobs - subtle version for settings */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-30 motion-safe:animate-pulse"></div>
         <div
-          className="absolute bottom-0 left-0 w-96 h-96 bg-navy-200 rounded-full blur-3xl opacity-20 animate-pulse"
+          className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
           style={{ animationDelay: '1s' }}
         ></div>
         <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-primary/10 rounded-full blur-2xl opacity-40"></div>
@@ -170,6 +171,9 @@ export default function SettingsPage() {
             }
           >
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 md:py-10">
+              {/* Breadcrumb Navigation */}
+              <Breadcrumb items={[{ label: t('settings.title') }]} />
+
               {/* Tab navigation */}
               <div className="relative overflow-hidden rounded-2xl border border-border bg-bg-muted/95 backdrop-blur-sm shadow-pop w-full">
                 {/* Subtle inner glow */}

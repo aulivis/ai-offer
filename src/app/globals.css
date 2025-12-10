@@ -168,6 +168,38 @@
 
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 
+  /* Semantic gradient tokens - WCAG AA compliant */
+  --gradient-hero: linear-gradient(
+    to bottom right,
+    var(--color-navy-900),
+    var(--color-navy-800),
+    var(--color-turquoise-900)
+  );
+  --gradient-cta: linear-gradient(
+    to bottom right,
+    var(--color-turquoise-500),
+    var(--color-turquoise-600),
+    var(--color-turquoise-700)
+  );
+  --gradient-settings: linear-gradient(
+    to bottom right,
+    var(--color-navy-50),
+    var(--color-bg-muted),
+    var(--color-turquoise-50)
+  );
+  --gradient-dashboard: linear-gradient(
+    to bottom right,
+    var(--color-turquoise-50),
+    var(--color-bg-muted),
+    var(--color-navy-50)
+  );
+  --gradient-offer: linear-gradient(
+    to bottom right,
+    var(--color-bg),
+    var(--color-bg-muted),
+    var(--color-bg)
+  );
+
   /* Note: When using accent color (#c3b3ff) as text, ensure sufficient contrast */
   /* Accent color should primarily be used in gradients or with dark backgrounds */
 }
@@ -620,6 +652,14 @@ p {
     padding-top: max(1rem, env(safe-area-inset-top));
     padding-left: max(1rem, env(safe-area-inset-left));
     padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .pb-safe-area-inset-bottom {
+    padding-bottom: max(5rem, env(safe-area-inset-bottom) + 4rem);
+  }
+
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom);
   }
 
   /* Apply to fixed/sticky elements */

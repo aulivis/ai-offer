@@ -13,27 +13,23 @@ export const metadata: Metadata = {
   },
 };
 
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { BackButton } from '@/components/ui/BackButton';
+
 export default function IntroVideoPage() {
   return (
     <main id="main" className="mx-auto w-full max-w-4xl px-6 pb-24 pt-16">
-      {/* Breadcrumb Navigation */}
-      <nav className="mb-8 text-sm text-fg-muted" aria-label="Breadcrumb">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link href="/resources" className="hover:text-primary transition-colors">
-              ErĹ‘forrĂˇsok
-            </Link>
-          </li>
-          <li className="text-fg-muted">/</li>
-          <li>
-            <Link href="/resources/videos" className="hover:text-primary transition-colors">
-              VideĂłk
-            </Link>
-          </li>
-          <li className="text-fg-muted">/</li>
-          <li className="text-fg">BevezetĹ‘ videĂł</li>
-        </ol>
-      </nav>
+      {/* Back Button and Breadcrumb Navigation */}
+      <div className="mb-8 flex flex-col gap-4">
+        <BackButton href="/resources" label="Vissza az erőforrásokhoz" variant="link" />
+        <Breadcrumb
+          items={[
+            { label: 'Erőforrások', href: '/resources' },
+            { label: 'Videók', href: '/resources/videos' },
+            { label: 'Bevezető videó' },
+          ]}
+        />
+      </div>
 
       {/* Hero Section */}
       <header className="mb-12">
