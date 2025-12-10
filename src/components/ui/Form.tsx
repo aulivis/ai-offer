@@ -1,7 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { useForm, FormProvider, type UseFormReturn, type FieldValues, type DefaultValues } from 'react-hook-form';
+import {
+  useForm,
+  FormProvider,
+  type UseFormReturn,
+  type FieldValues,
+  type DefaultValues,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { AnimatedError } from '@/components/animations';
