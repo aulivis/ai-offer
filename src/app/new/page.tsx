@@ -690,6 +690,13 @@ export default function NewOfferWizard() {
     isQuotaExhausted,
     quotaLoading,
     userId: user?.id,
+    rows,
+    selectedTestimonialsContent,
+    selectedGuaranteeIds,
+    guarantees,
+    scheduleItems,
+    selectedPdfTemplateId,
+    defaultTemplateId: availablePdfTemplates[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID,
   });
 
   // Enhanced autosave with error handling and retry logic

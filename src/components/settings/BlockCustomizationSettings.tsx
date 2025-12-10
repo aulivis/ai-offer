@@ -92,7 +92,7 @@ export function BlockCustomizationSettings({ offerId }: BlockCustomizationSettin
         description: 'A blokk beállítások sikeresen mentve.',
         variant: 'success',
       });
-    } catch (_error) {
+    } catch {
       showToast({
         title: 'Hiba',
         description: 'Nem sikerült menteni a beállításokat.',
@@ -111,7 +111,7 @@ export function BlockCustomizationSettings({ offerId }: BlockCustomizationSettin
         description: 'A beállítások visszaállítva az alapértelmezett értékekre.',
         variant: 'success',
       });
-    } catch (_error) {
+    } catch {
       showToast({
         title: 'Hiba',
         description: 'Nem sikerült visszaállítani a beállításokat.',

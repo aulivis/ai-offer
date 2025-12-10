@@ -121,9 +121,6 @@ export function createTemplateVersion(
   const baseVersion = latestVersion?.version || '1.0.0';
   const nextVersion = getNextVersion(baseVersion, changeType);
 
-  // Deactivate all previous versions (for future use)
-  const _updatedVersions = currentVersions.map((v) => ({ ...v, isActive: false }));
-
   return {
     id: `version-${Date.now()}`,
     templateId,

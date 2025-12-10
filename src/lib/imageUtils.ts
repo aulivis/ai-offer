@@ -56,17 +56,3 @@ export function generateGradientBlurPlaceholder(
   }
 }
 
-/**
- * Common blur placeholder colors
- * Removed unused export: BLUR_PLACEHOLDERS
- */
-const _BLUR_PLACEHOLDERS = {
-  light: generateBlurPlaceholder([240, 240, 240]),
-  gray: generateBlurPlaceholder([220, 220, 220]),
-  dark: generateBlurPlaceholder([50, 50, 50]),
-  primary: generateBlurPlaceholder([59, 130, 246]), // blue-500
-  gradient: generateGradientBlurPlaceholder([
-    [240, 240, 240],
-    [230, 230, 230],
-  ]),
-} as const;

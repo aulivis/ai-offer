@@ -210,9 +210,9 @@ export function WizardStep2Pricing({
     }
   }, [rows, activities, enableReferencePhotos, showImageModal, selectedImages.length]);
 
-  // Load testimonials when testimonials modal is opened
+  // Load testimonials when component mounts or when testimonials are enabled
   useEffect(() => {
-    if (showTestimonialsModal && enableTestimonials && user) {
+    if (enableTestimonials && user) {
       (async () => {
         const { data } = await supabase
           .from('testimonials')
@@ -222,7 +222,7 @@ export function WizardStep2Pricing({
         setAvailableTestimonials((data as typeof availableTestimonials) || []);
       })();
     }
-  }, [showTestimonialsModal, enableTestimonials, user, supabase]);
+  }, [enableTestimonials, user, supabase]);
 
   // Load image URLs when image modal is opened
   useEffect(() => {
@@ -651,6 +651,74 @@ export function WizardStep2Pricing({
                       {isSelected
                         ? t('offers.wizard.guarantees.selected')
                         : t('offers.wizard.guarantees.select')}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {enableTestimonials && availableTestimonials.length > 0 && (
+        <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">
+                {t('offers.wizard.testimonials.sectionTitle') || 'Ajánlások'}
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">
+                {t('offers.wizard.testimonials.sectionDescription') ||
+                  'Válassz ki ajánlásokat, amelyeket az ajánlatban szeretnél megjeleníteni.'}
+              </p>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {selectedTestimonials.length}/3
+            </span>
+          </div>
+          <div className="space-y-3">
+            {availableTestimonials.map((testimonial) => {
+              const isSelected = selectedTestimonials.includes(testimonial.id);
+              const testimonialsSelectionFull = selectedTestimonials.length >= 3;
+              const disableToggle = !isSelected && testimonialsSelectionFull;
+              return (
+                <div
+                  key={testimonial.id}
+                  className={`space-y-3 rounded-2xl border p-4 transition ${
+                    isSelected ? 'border-primary bg-primary/5' : 'border-border bg-white'
+                  }`}
+                >
+                  <p className="text-sm text-slate-900">{testimonial.text}</p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-[11px] text-slate-500">
+                      {testimonial.activity_id
+                        ? t('offers.wizard.testimonials.linkedActivity') || 'Tevékenységhez kapcsolva'
+                        : t('offers.wizard.testimonials.unlinked') || 'Általános ajánlás'}
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isSelected ? 'primary' : 'secondary'}
+                      disabled={disableToggle}
+                      onClick={() => {
+                        if (isSelected) {
+                          onSelectedTestimonialsChange(
+                            selectedTestimonials.filter((id) => id !== testimonial.id),
+                          );
+                        } else if (selectedTestimonials.length < 3) {
+                          onSelectedTestimonialsChange([...selectedTestimonials, testimonial.id]);
+                        } else {
+                          showToast({
+                            title: t('offers.wizard.testimonials.maxReached'),
+                            description: t('offers.wizard.testimonials.maxReachedDescription'),
+                            variant: 'error',
+                          });
+                        }
+                      }}
+                    >
+                      {isSelected
+                        ? t('offers.wizard.testimonials.selected') || 'Kiválasztva'
+                        : t('offers.wizard.testimonials.select') || 'Kiválasztás'}
                     </Button>
                   </div>
                 </div>
