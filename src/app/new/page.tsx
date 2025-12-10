@@ -586,7 +586,7 @@ export default function NewOfferWizard() {
           added = true;
         }
         if (!added && total >= MAX_GUARANTEE_ITEMS) {
-          showToast({
+          showToastRef.current({
             title: t('offers.wizard.guarantees.sectionTitle'),
             description: t('offers.wizard.guarantees.limitReached', {
               count: MAX_GUARANTEE_ITEMS,
@@ -597,8 +597,13 @@ export default function NewOfferWizard() {
         return next;
       });
     },
-    [guaranteeActivityMap, manualGuaranteeCount, showToast],
+    [guaranteeActivityMap, manualGuaranteeCount],
   );
+
+  // Update handleActivityGuaranteeAttach ref whenever it changes
+  useEffect(() => {
+    handleActivityGuaranteeAttachRef.current = handleActivityGuaranteeAttach;
+  }, [handleActivityGuaranteeAttach]);
 
   const testimonialTexts = useMemo(
     () =>
@@ -859,6 +864,12 @@ export default function NewOfferWizard() {
   const updateGuaranteesOptimisticallyRef = useRef<typeof updateGuaranteesOptimistically | null>(
     null,
   );
+  // Refs to store stable functions to avoid dependency issues
+  const showToastRef = useRef(showToast);
+  const handleActivityGuaranteeAttachRef = useRef<((activityId: string) => void) | null>(null);
+  // Loading guards to prevent multiple simultaneous calls
+  const reloadActivitiesLoadingRef = useRef(false);
+  const reloadGuaranteesLoadingRef = useRef(false);
 
   // Update refs whenever update functions change
   useEffect(() => {
@@ -869,9 +880,19 @@ export default function NewOfferWizard() {
     updateGuaranteesOptimisticallyRef.current = updateGuaranteesOptimistically;
   }, [updateGuaranteesOptimistically]);
 
+  // Update showToast ref whenever it changes
+  useEffect(() => {
+    showToastRef.current = showToast;
+  }, [showToast]);
+
   // Reload activities function
   const reloadActivities = useCallback(async () => {
     if (!user) return;
+    // Prevent multiple simultaneous calls
+    if (reloadActivitiesLoadingRef.current) {
+      return;
+    }
+    reloadActivitiesLoadingRef.current = true;
     try {
       const { data: acts, error } = await sb
         .from('activities')
@@ -881,7 +902,7 @@ export default function NewOfferWizard() {
 
       if (error) {
         logger.error('Failed to reload activities', error);
-        showToast({
+        showToastRef.current({
           title: t('errors.settings.activityNameRequired') || 'Hiba',
           description: 'Nem sikerült betölteni a tevékenységeket.',
           variant: 'error',
@@ -895,13 +916,15 @@ export default function NewOfferWizard() {
       }
     } catch (error) {
       logger.error('Error reloading activities', error);
-      showToast({
+      showToastRef.current({
         title: t('errors.settings.activityNameRequired') || 'Hiba',
         description: 'Nem sikerült betölteni a tevékenységeket.',
         variant: 'error',
       });
+    } finally {
+      reloadActivitiesLoadingRef.current = false;
     }
-  }, [sb, user, logger, showToast]);
+  }, [sb, user, logger]);
 
   // Update refs whenever functions change
   useEffect(() => {
@@ -910,6 +933,11 @@ export default function NewOfferWizard() {
 
   const reloadGuarantees = useCallback(async () => {
     if (!user) return;
+    // Prevent multiple simultaneous calls
+    if (reloadGuaranteesLoadingRef.current) {
+      return;
+    }
+    reloadGuaranteesLoadingRef.current = true;
     try {
       const { data, error } = await sb
         .from('guarantees')
@@ -919,7 +947,7 @@ export default function NewOfferWizard() {
 
       if (error) {
         logger.error('Failed to reload guarantees', error);
-        showToast({
+        showToastRef.current({
           title: t('errors.settings.activityNameRequired') || 'Hiba',
           description: 'Nem sikerült betölteni a garantíákat.',
           variant: 'error',
@@ -941,13 +969,15 @@ export default function NewOfferWizard() {
       }
     } catch (error) {
       logger.error('Error reloading guarantees', error);
-      showToast({
+      showToastRef.current({
         title: t('errors.settings.activityNameRequired') || 'Hiba',
         description: 'Nem sikerült betölteni a garantíákat.',
         variant: 'error',
       });
+    } finally {
+      reloadGuaranteesLoadingRef.current = false;
     }
-  }, [sb, user, logger, showToast]);
+  }, [sb, user, logger]);
 
   // Update refs whenever functions change
   useEffect(() => {
@@ -997,7 +1027,10 @@ export default function NewOfferWizard() {
               vat: Number(defaultActivity.default_vat || 27),
             }),
           ]);
-          handleActivityGuaranteeAttach(defaultActivity.id);
+          // Use ref to avoid dependency issues
+          if (handleActivityGuaranteeAttachRef.current) {
+            handleActivityGuaranteeAttachRef.current(defaultActivity.id);
+          }
           // If default activity has reference images, show them
           if (
             prof.enable_reference_photos &&
@@ -1010,9 +1043,9 @@ export default function NewOfferWizard() {
         }
       }
     })();
-    // Only depend on user, sb, and handleActivityGuaranteeAttach
-    // reloadActivities and reloadGuarantees are accessed via refs to prevent infinite loops
-  }, [user, sb, handleActivityGuaranteeAttach]);
+    // Only depend on user and sb
+    // reloadActivities, reloadGuarantees, and handleActivityGuaranteeAttach are accessed via refs to prevent infinite loops
+  }, [user, sb]);
 
   // auth + preload
   useEffect(() => {
