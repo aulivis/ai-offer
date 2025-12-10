@@ -76,3 +76,4 @@ export function validateAndNormalizeEmail(email: string): string | null {
   }
   return normalized;
 }
+

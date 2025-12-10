@@ -174,3 +174,4 @@ For questions or issues during migration:
 - See `web/docs/REACT_QUERY_SETUP.md` for React Query setup
 - See `web/docs/REALTIME_SUBSCRIPTIONS.md` for real-time subscriptions
 - Check `web/src/app/api/offers/list/route.ts` for API documentation
+

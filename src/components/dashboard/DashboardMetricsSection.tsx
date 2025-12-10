@@ -132,9 +132,7 @@ export function DashboardMetricsSection({
           className={`grid gap-3 sm:gap-4 ${
             totalOffersCount < 5
               ? 'grid-cols-1 sm:grid-cols-3'
-              : metricsViewMode === 'compact'
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
-                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8'
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'
           }`}
         >
           {loading ? (
@@ -195,184 +193,200 @@ export function DashboardMetricsSection({
           ) : (
             <>
               {/* Full metrics for power users with 5+ offers */}
-              {/* Quota Card - Featured */}
-              <div className="sm:col-span-2">
-                <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl h-full">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                      <ChartBarIcon className="w-6 h-6" />
+              {/* PRIMARY METRICS - Top Row: Quota (Featured) + Created Offers (Main KPI) */}
+              <div className="col-span-full sm:col-span-2 lg:col-span-4">
+                <div className="bg-gradient-to-br from-teal-500 via-teal-600 to-blue-600 rounded-2xl p-6 text-white shadow-2xl h-full relative overflow-hidden">
+                  {/* Decorative pattern */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl" aria-hidden="true"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
+                        <ChartBarIcon className="w-7 h-7" />
+                      </div>
+                      <div className="text-sm font-bold uppercase tracking-wide opacity-95">
+                        {t('dashboard.metrics.quota.label')}
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold opacity-90">
-                      {t('dashboard.metrics.quota.label')}
-                    </div>
+                    <div className="text-5xl font-bold mb-3 tracking-tight">{quotaValue}</div>
+                    {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
+                      <div className="text-sm font-semibold opacity-90 flex items-center gap-2">
+                        <span>{t('dashboard.metrics.quota.proPlanAdvantage')}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-4xl font-bold mb-2">{quotaValue}</div>
-                  {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
-                    <div className="text-sm opacity-80 flex items-center gap-2">
-                      <span>{t('dashboard.metrics.quota.proPlanAdvantage')}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Created Offers - Funnel Start */}
-              <MetricCard
-                label={t('dashboard.metrics.created.label')}
-                value={totalOffersCount.toLocaleString('hu-HU')}
-                {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
-                icon={<DocumentTextIcon className="h-7 w-7" aria-hidden="true" />}
-                color="primary"
-                trend={
-                  stats.createdThisMonth > 0
-                    ? 'up'
-                    : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
-                      ? 'down'
-                      : 'neutral'
-                }
-                {...(stats.createdThisMonth > 0
-                  ? { trendValue: `+${stats.createdThisMonth}` }
-                  : {})}
-                {...(createdComparison ? { comparison: createdComparison } : {})}
-                onClick={() => onMetricClick('all')}
-                isEmpty={totalOffersCount === 0}
-                emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
-              />
-
-              {/* Active Offers (In Review) */}
-              <MetricCard
-                label={t('dashboard.metrics.inReview.label')}
-                value={stats.inReview.toLocaleString('hu-HU')}
-                {...(metricsViewMode === 'detailed'
-                  ? {
-                      helper: t('dashboard.metrics.inReview.helper', {
-                        count: stats.inReview.toLocaleString('hu-HU'),
-                      }),
+              {/* Created Offers - PRIMARY KPI - Larger, more prominent */}
+              <div className="col-span-full sm:col-span-2 lg:col-span-4">
+                <div className="relative">
+                  {/* Primary metric badge */}
+                  <div className="absolute -top-2 -left-2 z-10 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-lg">
+                    Fő Mutató
+                  </div>
+                  <MetricCard
+                    label={t('dashboard.metrics.created.label')}
+                    value={totalOffersCount.toLocaleString('hu-HU')}
+                    {...(metricsViewMode === 'detailed' ? { helper: totalHelper } : {})}
+                    icon={<DocumentTextIcon className="h-8 w-8" aria-hidden="true" />}
+                    color="primary"
+                    trend={
+                      stats.createdThisMonth > 0
+                        ? 'up'
+                        : stats.createdThisMonth === 0 && stats.createdLastMonth > 0
+                          ? 'down'
+                          : 'neutral'
                     }
-                  : {})}
-                icon={<EyeIcon className="h-7 w-7" aria-hidden="true" />}
-                color="info"
-                onClick={() => onMetricClick('sent')}
-                isEmpty={stats.inReview === 0}
-                emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
-              />
+                    {...(stats.createdThisMonth > 0
+                      ? { trendValue: `+${stats.createdThisMonth}` }
+                      : {})}
+                    {...(createdComparison ? { comparison: createdComparison } : {})}
+                    onClick={() => onMetricClick('all')}
+                    isEmpty={totalOffersCount === 0}
+                    emptyMessage={t('dashboard.metrics.emptyMessages.noOffers')}
+                  />
+                </div>
+              </div>
 
-              {/* Sent Offers */}
-              <MetricCard
-                label={t('dashboard.metrics.sent.label')}
-                value={stats.sent.toLocaleString('hu-HU')}
-                {...(metricsViewMode === 'detailed'
-                  ? {
-                      helper: t('dashboard.metrics.sent.helper', {
-                        sent: stats.sent.toLocaleString('hu-HU'),
-                        pending: stats.inReview.toLocaleString('hu-HU'),
-                      }),
-                    }
-                  : {})}
-                icon={<PaperAirplaneIcon className="h-7 w-7" aria-hidden="true" />}
-                color="info"
-                onClick={() => onMetricClick('sent')}
-                isEmpty={stats.sent === 0}
-                emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
-              />
+              {/* SECONDARY METRICS - Smaller cards in grid */}
+              <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
-              {/* Accepted Offers */}
-              <MetricCard
-                label={t('dashboard.metrics.accepted.label')}
-                value={stats.accepted.toLocaleString('hu-HU')}
-                {...(metricsViewMode === 'detailed'
-                  ? {
-                      helper: t('dashboard.metrics.accepted.helper', {
-                        accepted: stats.accepted.toLocaleString('hu-HU'),
-                        rate: acceptanceLabel,
-                      }),
-                    }
-                  : {})}
-                icon={<DocumentCheckIcon className="h-7 w-7" aria-hidden="true" />}
-                color="success"
-                trend={
-                  stats.acceptanceRate !== null && stats.acceptanceRate > 50
-                    ? 'up'
-                    : stats.acceptanceRate !== null && stats.acceptanceRate < 30
-                      ? 'down'
-                      : 'neutral'
-                }
-                {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
-                onClick={() => onMetricClick('accepted')}
-                isEmpty={stats.accepted === 0}
-                emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
-              />
+                {/* Active Offers (In Review) */}
+                <MetricCard
+                  label={t('dashboard.metrics.inReview.label')}
+                  value={stats.inReview.toLocaleString('hu-HU')}
+                  {...(metricsViewMode === 'detailed'
+                    ? {
+                        helper: t('dashboard.metrics.inReview.helper', {
+                          count: stats.inReview.toLocaleString('hu-HU'),
+                        }),
+                      }
+                    : {})}
+                  icon={<EyeIcon className="h-6 w-6" aria-hidden="true" />}
+                  color="info"
+                  onClick={() => onMetricClick('sent')}
+                  isEmpty={stats.inReview === 0}
+                  emptyMessage={t('dashboard.metrics.emptyMessages.noInReview')}
+                />
 
-              {/* Lost Offers */}
-              <MetricCard
-                label={t('dashboard.metrics.lost.label')}
-                value={stats.lost.toLocaleString('hu-HU')}
-                {...(metricsViewMode === 'detailed'
-                  ? {
-                      helper: t('dashboard.metrics.lost.helper', {
-                        count: stats.lost.toLocaleString('hu-HU'),
-                      }),
-                    }
-                  : {})}
-                icon={<XCircleIcon className="h-7 w-7" aria-hidden="true" />}
-                color="danger"
-                onClick={() => onMetricClick('lost')}
-                isEmpty={stats.lost === 0}
-                emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
-              />
+                {/* Sent Offers */}
+                <MetricCard
+                  label={t('dashboard.metrics.sent.label')}
+                  value={stats.sent.toLocaleString('hu-HU')}
+                  {...(metricsViewMode === 'detailed'
+                    ? {
+                        helper: t('dashboard.metrics.sent.helper', {
+                          sent: stats.sent.toLocaleString('hu-HU'),
+                          pending: stats.inReview.toLocaleString('hu-HU'),
+                        }),
+                      }
+                    : {})}
+                  icon={<PaperAirplaneIcon className="h-6 w-6" aria-hidden="true" />}
+                  color="info"
+                  onClick={() => onMetricClick('sent')}
+                  isEmpty={stats.sent === 0}
+                  emptyMessage={t('dashboard.metrics.emptyMessages.noSent')}
+                />
 
-              {/* Win Rate */}
-              <MetricCard
-                label={t('dashboard.metrics.winRate.label')}
-                value={winRateLabel}
-                {...(metricsViewMode === 'detailed'
-                  ? {
-                      helper: t('dashboard.metrics.winRate.helper', {
-                        rate: winRateLabel !== '—' ? winRateLabel : '—',
-                      }),
-                    }
-                  : {})}
-                icon={<ChartBarIcon className="h-7 w-7" aria-hidden="true" />}
-                color={
-                  stats.winRate !== null && stats.winRate > 50
-                    ? 'success'
-                    : stats.winRate !== null && stats.winRate < 30
-                      ? 'danger'
-                      : 'warning'
-                }
-                trend={
-                  stats.winRate !== null && stats.winRate > 50
-                    ? 'up'
-                    : stats.winRate !== null && stats.winRate < 30
-                      ? 'down'
-                      : 'neutral'
-                }
-                {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
-                isEmpty={stats.winRate === null}
-                emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
-              />
+                {/* Accepted Offers - Secondary priority (larger) */}
+                <MetricCard
+                  label={t('dashboard.metrics.accepted.label')}
+                  value={stats.accepted.toLocaleString('hu-HU')}
+                  {...(metricsViewMode === 'detailed'
+                    ? {
+                        helper: t('dashboard.metrics.accepted.helper', {
+                          accepted: stats.accepted.toLocaleString('hu-HU'),
+                          rate: acceptanceLabel,
+                        }),
+                      }
+                    : {})}
+                  icon={<DocumentCheckIcon className="h-6 w-6" aria-hidden="true" />}
+                  color="success"
+                  trend={
+                    stats.acceptanceRate !== null && stats.acceptanceRate > 50
+                      ? 'up'
+                      : stats.acceptanceRate !== null && stats.acceptanceRate < 30
+                        ? 'down'
+                        : 'neutral'
+                  }
+                  {...(acceptanceLabel !== '—' ? { trendValue: acceptanceLabel } : {})}
+                  onClick={() => onMetricClick('accepted')}
+                  isEmpty={stats.accepted === 0}
+                  emptyMessage={t('dashboard.metrics.emptyMessages.noAccepted')}
+                />
 
-              {/* Average Decision Time */}
-              <MetricCard
-                label={t('dashboard.metrics.avgDecision.label')}
-                value={avgDecisionLabel}
-                {...(metricsViewMode === 'detailed'
-                  ? {
-                      helper: t('dashboard.metrics.avgDecision.helper', {
-                        days:
-                          stats.avgDecisionDays !== null
-                            ? stats.avgDecisionDays.toLocaleString('hu-HU', {
-                                maximumFractionDigits: 1,
-                              })
-                            : '—',
-                        drafts: stats.drafts.toLocaleString('hu-HU'),
-                      }),
-                    }
-                  : {})}
-                icon={<ClockIcon className="h-7 w-7" aria-hidden="true" />}
-                color="warning"
-                isEmpty={stats.avgDecisionDays === null}
-                emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
-              />
+                {/* Lost Offers */}
+                <MetricCard
+                  label={t('dashboard.metrics.lost.label')}
+                  value={stats.lost.toLocaleString('hu-HU')}
+                  {...(metricsViewMode === 'detailed'
+                    ? {
+                        helper: t('dashboard.metrics.lost.helper', {
+                          count: stats.lost.toLocaleString('hu-HU'),
+                        }),
+                      }
+                    : {})}
+                  icon={<XCircleIcon className="h-6 w-6" aria-hidden="true" />}
+                  color="danger"
+                  onClick={() => onMetricClick('lost')}
+                  isEmpty={stats.lost === 0}
+                  emptyMessage={t('dashboard.metrics.emptyMessages.noLost')}
+                />
+
+                {/* Win Rate */}
+                <MetricCard
+                  label={t('dashboard.metrics.winRate.label')}
+                  value={winRateLabel}
+                  {...(metricsViewMode === 'detailed'
+                    ? {
+                        helper: t('dashboard.metrics.winRate.helper', {
+                          rate: winRateLabel !== '—' ? winRateLabel : '—',
+                        }),
+                      }
+                    : {})}
+                  icon={<ChartBarIcon className="h-6 w-6" aria-hidden="true" />}
+                  color={
+                    stats.winRate !== null && stats.winRate > 50
+                      ? 'success'
+                      : stats.winRate !== null && stats.winRate < 30
+                        ? 'danger'
+                        : 'warning'
+                  }
+                  trend={
+                    stats.winRate !== null && stats.winRate > 50
+                      ? 'up'
+                      : stats.winRate !== null && stats.winRate < 30
+                        ? 'down'
+                        : 'neutral'
+                  }
+                  {...(winRateLabel !== '—' ? { trendValue: winRateLabel } : {})}
+                  isEmpty={stats.winRate === null}
+                  emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
+                />
+
+                {/* Average Decision Time */}
+                <MetricCard
+                  label={t('dashboard.metrics.avgDecision.label')}
+                  value={avgDecisionLabel}
+                  {...(metricsViewMode === 'detailed'
+                    ? {
+                        helper: t('dashboard.metrics.avgDecision.helper', {
+                          days:
+                            stats.avgDecisionDays !== null
+                              ? stats.avgDecisionDays.toLocaleString('hu-HU', {
+                                  maximumFractionDigits: 1,
+                                })
+                              : '—',
+                          drafts: stats.drafts.toLocaleString('hu-HU'),
+                        }),
+                      }
+                    : {})}
+                  icon={<ClockIcon className="h-6 w-6" aria-hidden="true" />}
+                  color="warning"
+                  isEmpty={stats.avgDecisionDays === null}
+                  emptyMessage={t('dashboard.metrics.emptyMessages.insufficientData')}
+                />
+              </div>
             </>
           )}
         </div>

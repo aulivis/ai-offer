@@ -184,3 +184,4 @@
 - Defaults are provided for missing formality/tone values
 - Templates gracefully handle missing customer names
 - The block structure follows 2025 industry best practices for conversion rate optimization
+

@@ -138,6 +138,7 @@
   --color-bg-muted-rgb: 255 255 255;
   --color-fg-rgb: 16 42 67;
   --color-fg-muted-rgb: 71 85 105; /* Improved contrast for WCAG AA compliance (was 75 85 99) */
+  --color-fg-muted-strong-rgb: 51 65 85; /* Stronger muted text for better hierarchy */
   --color-border-rgb: 229 231 235;
   --color-primary-ink-rgb: 255 255 255;
   --color-success-rgb: 22 163 74;
@@ -152,6 +153,7 @@
   --color-bg-muted: rgb(var(--color-bg-muted-rgb) / 1);
   --color-fg: rgb(var(--color-fg-rgb) / 1);
   --color-fg-muted: rgb(var(--color-fg-muted-rgb) / 1);
+  --color-fg-muted-strong: rgb(var(--color-fg-muted-strong-rgb) / 1);
   --color-border: rgb(var(--color-border-rgb) / 1);
   --color-primary: rgb(var(--color-primary-rgb) / 1);
   --color-primary-ink: rgb(var(--color-primary-ink-rgb) / 1);

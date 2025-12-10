@@ -146,7 +146,7 @@ export default function Home() {
               <div className="text-center lg:text-left">
                 {/* Badge */}
                 <div className="flex justify-center lg:justify-start mb-6">
-                  <span className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-semibold text-white">
+                  <span className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-body-small font-semibold text-white">
                     <Sparkles className="w-3 h-3 mr-2" />
                     <span className="md:hidden">AI-alapú ajánlatkészítés</span>
                     <span className="hidden md:inline">
@@ -158,7 +158,7 @@ export default function Home() {
                   Professzionális ajánlatkészítés{' '}
                   <span className="text-turquoise-400">percek alatt</span>
                 </H1>
-                <p className="text-lg md:text-lg lg:text-xl text-white/90 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
+                <p className="text-body-large md:text-h6 text-white mb-8 leading-typography-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
                   <span className="md:hidden">
                     Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
                   </span>
@@ -175,22 +175,22 @@ export default function Home() {
                   {/* Mobile: single combined feature */}
                   <div className="flex items-center gap-3 justify-center lg:justify-start md:hidden">
                     <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
-                    <span className="text-sm md:text-base">
+                    <span className="text-body-small md:text-body">
                       Kezdd el ingyen, azonnal, bankkártya nélkül
                     </span>
                   </div>
                   {/* Desktop: three separate features */}
                   <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
                     <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
-                    <span className="text-sm md:text-base">Kezdd el teljesen ingyen</span>
+                    <span className="text-body-small md:text-body">Kezdd el teljesen ingyen</span>
                   </div>
                   <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
                     <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
-                    <span className="text-sm md:text-base">Nem kérünk bankkártyát</span>
+                    <span className="text-body-small md:text-body">Nem kérünk bankkártyát</span>
                   </div>
                   <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
                     <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
-                    <span className="text-sm md:text-base">Kész ajánlat 5 perc alatt</span>
+                    <span className="text-body-small md:text-body">Kész ajánlat 5 perc alatt</span>
                   </div>
                 </div>
 
@@ -200,7 +200,7 @@ export default function Home() {
                     href="/login?redirect=/new"
                     className="group bg-primary hover:bg-primary/90 text-primary-ink font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                   >
-                    <span className="relative z-10 text-base md:text-lg text-primary-ink">
+                    <span className="relative z-10 text-body md:text-body-large text-primary-ink">
                       Próbáld ki most ingyen
                     </span>
                     <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-primary-ink transition-transform duration-300 group-hover:translate-x-1" />
@@ -208,7 +208,7 @@ export default function Home() {
                   </Link>
                   <a
                     href="#product-demo"
-                    className="border-2 border-white text-white font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-primary hover:text-primary bg-transparent transition-colors flex items-center justify-center"
+                    className="border-2 border-white/50 text-white font-medium rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-white/80 hover:bg-white/10 bg-transparent transition-all flex items-center justify-center backdrop-blur-sm"
                   >
                     További információ
                   </a>
@@ -226,8 +226,8 @@ export default function Home() {
                     aria-label="Vyndi dashboard előnézet"
                   >
                     <div className="text-fg-muted text-center">
-                      <p className="text-lg font-semibold">Dashboard Preview</p>
-                      <p className="text-sm mt-2">Placeholder image</p>
+                      <p className="text-body-large font-semibold">Dashboard Preview</p>
+                      <p className="text-body-small mt-2">Placeholder image</p>
                     </div>
                   </div>
                 </div>
@@ -244,8 +244,8 @@ export default function Home() {
                         <Check className="w-5 h-5 text-success" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-fg">Ajánlat generálva</p>
-                        <p className="text-xs text-fg-muted">5 perc alatt</p>
+                        <p className="text-body-small font-semibold text-fg">Ajánlat generálva</p>
+                        <p className="text-body-small text-fg-muted">5 perc alatt</p>
                       </div>
                     </div>
                   </div>
@@ -263,8 +263,8 @@ export default function Home() {
                         <Rocket className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-fg">Ingyenes kezdés</p>
-                        <p className="text-xs text-fg-muted">Bankkártya nélkül</p>
+                        <p className="text-body-small font-semibold text-fg">Ingyenes kezdés</p>
+                        <p className="text-body-small text-fg-muted">Bankkártya nélkül</p>
                       </div>
                     </div>
                   </div>
@@ -282,8 +282,8 @@ export default function Home() {
                         <Award className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-fg">Professzionális megjelenés</p>
-                        <p className="text-xs text-fg-muted">Egységes dizájn</p>
+                        <p className="text-body-small font-semibold text-fg">Professzionális megjelenés</p>
+                        <p className="text-body-small text-fg-muted">Egységes dizájn</p>
                       </div>
                     </div>
                   </div>
@@ -355,7 +355,7 @@ export default function Home() {
                 <H2 className="text-white mb-6 text-balance" fluid>
                   Szeretnéd elsőként kipróbálni az újdonságokat?
                 </H2>
-                <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
+                <p className="text-body-large md:text-h6 text-white leading-typography-relaxed max-w-3xl mx-auto text-pretty">
                   Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók
                   indulásáról.
                   <br />

@@ -97,36 +97,39 @@ export default function StepIndicator({ steps }: Props) {
   const currentStepNumber = Math.min(activeIndex + 1, total);
 
   return (
-    <div className="space-y-6" role="navigation" aria-label="Wizard steps">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">
-          <span className="inline-flex items-center gap-2 rounded-full bg-fg/5 px-3 py-1 text-[11px] font-semibold text-fg">
-            {t('offers.wizard.progressLabel', { current: currentStepNumber, total })}
-          </span>
-          {currentLabel ? (
-            <span className="text-fg-muted normal-case" aria-current="step">
-              {currentLabel}
+    <div className="space-y-6 mb-8" role="navigation" aria-label="Wizard steps">
+      {/* Enhanced progress header */}
+      <div className="bg-gradient-to-br from-primary/10 via-turquoise-50 to-primary/5 rounded-2xl p-6 border-2 border-primary/20 shadow-lg">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary text-white px-4 py-2 text-sm font-bold shadow-md">
+              {t('offers.wizard.progressLabel', { current: currentStepNumber, total })}
             </span>
-          ) : null}
-        </div>
-        <div className="flex w-full items-center gap-3 lg:w-auto">
-          <div
-            className="h-2.5 w-full overflow-hidden rounded-full bg-border lg:w-64"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(progress)}
-            aria-label={`Progress: ${Math.round(progress)}%`}
-          >
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-fg to-fg/80 transition-all duration-500 ease-out"
-              style={{ width: `${Math.round(progress)}%` }}
-              aria-hidden="true"
-            />
+            {currentLabel ? (
+              <span className="text-lg font-bold text-fg normal-case" aria-current="step">
+                {currentLabel}
+              </span>
+            ) : null}
           </div>
-          <span className="text-xs font-medium text-fg-muted" aria-hidden="true">
-            {Math.round(progress)}%
-          </span>
+          <div className="flex w-full items-center gap-4 lg:w-auto">
+            <div
+              className="h-4 w-full overflow-hidden rounded-full bg-border/50 shadow-inner lg:w-72"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progress)}
+              aria-label={`Progress: ${Math.round(progress)}%`}
+            >
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary via-turquoise-500 to-primary transition-all duration-500 ease-out shadow-lg"
+                style={{ width: `${Math.round(progress)}%` }}
+                aria-hidden="true"
+              />
+            </div>
+            <span className="text-lg font-bold text-primary min-w-[3rem] text-right" aria-hidden="true">
+              {Math.round(progress)}%
+            </span>
+          </div>
         </div>
       </div>
 
@@ -138,14 +141,14 @@ export default function StepIndicator({ steps }: Props) {
           const isCompleted = step.status === 'completed';
 
           const circleClasses = classNames(
-            'grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border-2 text-xs font-semibold transition-all duration-200',
+            'grid h-12 w-12 flex-shrink-0 place-items-center rounded-full border-2 text-sm font-bold transition-all duration-200',
             tone === 'error'
-              ? 'border-danger/30 bg-danger/10 text-danger ring-2 ring-danger/20'
+              ? 'border-danger bg-danger text-white shadow-lg ring-4 ring-danger/30'
               : isCompleted
-                ? 'border-success bg-success text-primary-ink shadow-md ring-2 ring-success/20'
+                ? 'border-success bg-success text-white shadow-xl ring-4 ring-success/30'
                 : isCurrent
-                  ? 'border-fg bg-fg text-primary-ink shadow-lg ring-4 ring-fg/20 animate-pulse'
-                  : 'border-border bg-bg-muted text-fg-muted',
+                  ? 'border-primary bg-primary text-white shadow-2xl ring-4 ring-primary/40 scale-110 animate-pulse'
+                  : 'border-border/50 bg-bg-muted text-fg-muted',
           );
 
           const labelClasses = classNames(

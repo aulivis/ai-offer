@@ -9,3 +9,4 @@ declare module 'swagger-ui-react' {
 
   export default class SwaggerUI extends Component<SwaggerUIProps> {}
 }
+

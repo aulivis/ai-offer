@@ -55,6 +55,7 @@ import { EmptyState } from '@/components/dashboard/EmptyState';
 import { createClientLogger } from '@/lib/clientLogger';
 import { sanitizeInput } from '@/lib/sanitize';
 import { DASHBOARD_CONFIG } from '@/constants/dashboard';
+import { H1, H2 } from '@/components/ui/Heading';
 
 const STATUS_FILTER_OPTIONS = ['all', 'draft', 'sent', 'accepted', 'lost'] as const;
 type StatusFilterOption = (typeof STATUS_FILTER_OPTIONS)[number];
@@ -151,22 +152,6 @@ export default function DashboardPage() {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [offerToDelete, setOfferToDelete] = useState<Offer | null>(null);
-
-  // Use custom hook for offer actions
-  const {
-    updatingId,
-    downloadingId,
-    regeneratingId,
-    markDecision,
-    markSent,
-    revertToSent,
-    revertToDraft,
-    handleDownloadPdf,
-    handleRegeneratePdf,
-  } = useDashboardOfferActions({
-    setOffers,
-    userId: user?.id,
-  });
   const [quotaSnapshot, setQuotaSnapshot] = useState<UsageQuotaSnapshot | null>(null);
   const [isQuotaLoading, setIsQuotaLoading] = useState(false);
   const [latestNotification, setLatestNotification] = useState<{
@@ -211,6 +196,40 @@ export default function DashboardPage() {
   const [teamMembers, setTeamMembers] = useState<Array<{ user_id: string; email: string | null }>>(
     [],
   );
+
+  // Use the custom hook for offers fetching (must be before useDashboardOfferActions)
+  const {
+    offers,
+    loading,
+    totalCount,
+    isLoadingMore,
+    hasMore,
+    pageIndex,
+    setOffers,
+    setTotalCount,
+    handleLoadMore,
+  } = useDashboardOffers({
+    offerFilter,
+    teamMemberFilter,
+    teamIds,
+  });
+
+  // Use custom hook for offer actions
+  const {
+    updatingId,
+    downloadingId,
+    regeneratingId,
+    markDecision,
+    markSent,
+    revertToSent,
+    revertToDraft,
+    handleDownloadPdf,
+    handleRegeneratePdf,
+  } = useDashboardOfferActions({
+    setOffers,
+    userId: user?.id,
+  });
+
   const [sortBy, setSortBy] = useState<SortByOption>('created');
   const [sortDir, setSortDir] = useState<SortDirectionOption>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -371,23 +390,6 @@ export default function DashboardPage() {
     loadTeams();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus, user, sb]);
-
-  // Use the custom hook for offers fetching
-  const {
-    offers,
-    loading,
-    totalCount,
-    isLoadingMore,
-    hasMore,
-    pageIndex,
-    setOffers,
-    setTotalCount,
-    handleLoadMore,
-  } = useDashboardOffers({
-    offerFilter,
-    teamMemberFilter,
-    teamIds,
-  });
 
   // Track URL search params to detect refresh requests
   const [refreshKey, setRefreshKey] = useState(0);
@@ -1091,7 +1093,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowKeyboardShortcuts(true)}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-2 text-sm font-semibold text-fg-muted transition hover:border-fg hover:bg-bg/80 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-2 text-body-small font-semibold text-fg-muted transition hover:border-fg hover:bg-bg/80 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Show keyboard shortcuts"
                 title="Keyboard shortcuts (?)"
               >
@@ -1101,14 +1103,14 @@ export default function DashboardPage() {
               {isAdmin ? (
                 <Link
                   href="/dashboard/telemetry"
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-5 py-2 text-body-small font-semibold text-fg transition hover:border-fg hover:bg-bg/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {t('dashboard.actions.templateTelemetry')}
                 </Link>
               ) : null}
               <Link
                 href="/new"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-lg transition hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-body-small font-semibold text-primary-ink shadow-lg transition hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {t('dashboard.actions.newOffer')}
               </Link>
@@ -1120,9 +1122,16 @@ export default function DashboardPage() {
             <EmptyState />
           ) : (
             <Fragment>
+              {/* Main Page Heading */}
+              <H1 className="sr-only">{t('dashboard.title')}</H1>
+              
               {/* Enhanced KPI Dashboard with Visual Funnel */}
               <PageErrorBoundary>
-                <DashboardMetricsSection
+                <section aria-labelledby="dashboard-metrics-heading">
+                  <H2 id="dashboard-metrics-heading" className="sr-only">
+                    Mérőszámok
+                  </H2>
+                  <DashboardMetricsSection
                   loading={loading}
                   isQuotaLoading={isQuotaLoading}
                   totalOffersCount={totalOffersCount}
@@ -1141,10 +1150,14 @@ export default function DashboardPage() {
                   onKpiScopeChange={setKpiScope}
                   onMetricClick={handleMetricClick}
                 />
+                </section>
               </PageErrorBoundary>
 
               {/* Enhanced Search & Filters */}
-              <div className="pt-6">
+              <section className="pt-6" aria-labelledby="dashboard-filters-heading">
+                <H2 id="dashboard-filters-heading" className="sr-only">
+                  Keresés és szűrés
+                </H2>
                 <DashboardFiltersSection
                   searchQuery={q}
                   sanitizedQuery={sanitizedQ}
@@ -1172,7 +1185,7 @@ export default function DashboardPage() {
                   isSortByValue={isSortByValue}
                   isSortDirectionValue={isSortDirectionValue}
                 />
-              </div>
+              </section>
 
               {/* Skeleton Loaders - Mobile optimized */}
               {loading && (
@@ -1207,7 +1220,10 @@ export default function DashboardPage() {
 
               {/* Offers List - Mobile optimized with accessibility and roving tabindex */}
               {!loading && filtered.length > 0 && (
-                <div>
+                <section aria-labelledby="dashboard-offers-heading" data-offers-section>
+                  <H2 id="dashboard-offers-heading" className="sr-only">
+                    Ajánlatok listája
+                  </H2>
                   {viewMode === 'card' ? (
                     <OffersCardGrid
                       offers={filtered}
@@ -1256,7 +1272,7 @@ export default function DashboardPage() {
                   >
                     {paginationSummary ? (
                       <p
-                        className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted"
+                        className="text-body-small font-medium uppercase tracking-[0.3em] text-fg-muted"
                         role="status"
                         aria-live="polite"
                       >
@@ -1278,7 +1294,7 @@ export default function DashboardPage() {
                     )}
 
                     {!hasMore && offers.length > 0 && (
-                      <p className="text-xs text-fg-muted" role="status" aria-live="polite">
+                      <p className="text-body-small text-fg-muted" role="status" aria-live="polite">
                         {t('dashboard.pagination.allLoaded')}
                       </p>
                     )}
@@ -1286,7 +1302,7 @@ export default function DashboardPage() {
                     {/* Loading indicator for progressive loading */}
                     {isLoadingMore && (
                       <div
-                        className="flex items-center gap-2 text-sm text-fg-muted"
+                        className="flex items-center gap-2 text-body-small text-fg-muted"
                         aria-busy="true"
                         aria-live="polite"
                       >
@@ -1295,7 +1311,7 @@ export default function DashboardPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </section>
               )}
             </Fragment>
           )}

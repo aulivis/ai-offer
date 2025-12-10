@@ -86,7 +86,7 @@ const CARD_BRANDS: CardBrand[] = [
     name: 'Discover',
     render: () => (
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-semibold tracking-[0.2em] text-fg">DISCOVER</span>
+        <span className="text-body-small font-semibold tracking-[0.2em] text-fg">DISCOVER</span>
         <span
           aria-hidden
           className="h-5 w-5 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]"
@@ -101,7 +101,7 @@ const CARD_BRANDS: CardBrand[] = [
         <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-bg-muted">
           <span aria-hidden className="h-3 w-3 rounded-full bg-[#0a3a66]" />
         </span>
-        <span className="text-xs font-semibold tracking-[0.2em] text-fg-muted">DINERS</span>
+        <span className="text-body-small font-semibold tracking-[0.2em] text-fg-muted">DINERS</span>
       </div>
     ),
   },
@@ -320,18 +320,19 @@ function PlanCard({
           ? 'border-primary/60 bg-gradient-to-br from-primary/5 via-white to-white shadow-xl ring-2 ring-primary/20'
           : isDowngrade && !isCurrent
             ? 'border-border/70 bg-white shadow-lg opacity-75 hover:opacity-100 hover:shadow-xl hover:-translate-y-1'
-            : 'border-border/70 bg-white shadow-lg hover:shadow-xl hover:-translate-y-1',
-        isPopular && !isCurrent ? 'border-primary/40' : '',
+            : isPopular && !isCurrent
+              ? 'border-2 border-primary/60 bg-gradient-to-br from-primary/5 via-white to-white shadow-2xl ring-4 ring-primary/30 hover:shadow-2xl hover:-translate-y-1 scale-105'
+              : 'border-border/70 bg-white shadow-lg hover:shadow-xl hover:-translate-y-1',
       ]
         .filter(Boolean)
         .join(' ')}
       {...(isCurrent && { 'aria-current': 'true' })}
     >
-      {/* Popular Badge */}
+      {/* Popular Badge - Enhanced */}
       {isPopular && !isCurrent && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-1 text-xs font-semibold text-white shadow-lg">
-            <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 px-5 py-1.5 text-body-small font-bold text-white shadow-2xl animate-pulse border-2 border-white/30">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
             {t('billing.plans.popularBadge')}
@@ -341,7 +342,7 @@ function PlanCard({
 
       {/* Current Plan Badge */}
       {isCurrent && (
-        <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+        <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-body-small font-semibold text-primary">
           <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -356,7 +357,7 @@ function PlanCard({
       {/* Downgrade Badge - Previous Plan */}
       {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
         <div className="absolute top-6 right-6">
-          <span className="px-3 py-1 bg-bg-muted text-fg rounded-full text-sm font-bold">
+          <span className="px-3 py-1 bg-bg-muted text-fg rounded-full text-body-small font-bold">
             Korábbi csomag
           </span>
         </div>
@@ -365,7 +366,7 @@ function PlanCard({
       <div className="flex flex-1 flex-col">
         {/* Plan Badge */}
         {!isCurrent && (
-          <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">
+          <div className="mb-3 text-body-small font-semibold uppercase tracking-wider text-fg-muted">
             {planType === 'standard' ? t('billing.plans.standard.badge') : ''}
           </div>
         )}
@@ -374,16 +375,16 @@ function PlanCard({
         <h3 className="text-2xl font-bold tracking-tight text-fg">{data.name}</h3>
 
         {/* Description */}
-        <p className="mt-3 text-sm leading-relaxed text-fg-muted">{data.description}</p>
+        <p className="mt-3 text-body-small leading-typography-relaxed text-fg-muted">{data.description}</p>
 
         {/* Downgrade Warning - Enhanced for Pro users viewing Standard */}
         {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
           <div className="mt-4 bg-warning/10 border-2 border-warning/30 rounded-xl p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-warning">
+              <div className="text-body-small text-warning">
                 <p className="font-semibold mb-1">Visszalépés esetén elveszíted:</p>
-                <ul className="space-y-1 text-xs">
+                <ul className="space-y-1 text-body-small">
                   <li>• Korlátlan ajánlatok (csak 5/hó)</li>
                   <li>• AI generált szövegek</li>
                   <li>• Prémium sablonok</li>
@@ -397,7 +398,7 @@ function PlanCard({
         {/* Standard downgrade warning for other cases */}
         {isDowngrade && !isCurrent && !(plan === 'pro' && planType === 'standard') && (
           <div className="mt-3 rounded-lg bg-warning/10 border border-warning/30 p-3">
-            <p className="text-xs font-medium text-warning/90">
+            <p className="text-body-small font-medium text-warning/90">
               {t(
                 (planType === 'standard'
                   ? 'billing.plans.standard.downgradeHelper'
@@ -411,7 +412,7 @@ function PlanCard({
         <div className="mt-6">
           <div className="flex items-baseline gap-2">
             <span className="text-4xl font-bold text-fg">{data.price}</span>
-            <span className="text-sm font-medium text-fg-muted">
+            <span className="text-body-small font-medium text-fg-muted">
               {billingInterval === 'annual' ? 'Ft/év' : 'Ft/hó'}
             </span>
           </div>
@@ -419,10 +420,10 @@ function PlanCard({
           {/* Annual billing: show effective monthly price and savings */}
           {billingInterval === 'annual' && savings && (
             <div className="mt-2 space-y-1">
-              <p className="text-sm text-fg-muted">
+              <p className="text-body-small text-fg-muted">
                 Effektíve {formatPrice(effectiveMonthlyPrice)} Ft/hó
               </p>
-              <p className="text-xs font-semibold text-teal-600">
+              <p className="text-body-small font-semibold text-teal-600">
                 {formatPrice(savings.totalSavings)} Ft megtakarítás/év ({savings.percentageSaved}%)
               </p>
             </div>
@@ -430,13 +431,13 @@ function PlanCard({
 
           {/* Monthly billing: show per month */}
           {billingInterval === 'monthly' && (
-            <p className="mt-1 text-xs text-fg-muted">havonta számlázva</p>
+            <p className="mt-1 text-body-small text-fg-muted">havonta számlázva</p>
           )}
         </div>
 
         {/* Savings message for downgrade */}
         {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
-          <p className="text-sm text-gray-600 mt-2">Visszalépés 5 500 Ft/hó megtakarítás</p>
+          <p className="text-body-small text-gray-600 mt-2">Visszalépés 5 500 Ft/hó megtakarítás</p>
         )}
 
         {/* Features List */}
@@ -444,7 +445,7 @@ function PlanCard({
           {data.features.map((feature, idx) => (
             <li key={idx} className="flex items-start gap-3">
               <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-              <span className="text-sm text-fg">{feature}</span>
+              <span className="text-body-small text-fg">{feature}</span>
             </li>
           ))}
 
@@ -453,11 +454,11 @@ function PlanCard({
             <>
               <li className="flex items-start gap-3">
                 <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
-                <span className="text-sm text-fg-muted/60 line-through">Korlátlan ajánlatok</span>
+                <span className="text-body-small text-fg-muted/60 line-through">Korlátlan ajánlatok</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
-                <span className="text-sm text-fg-muted/60 line-through">AI generált szövegek</span>
+                <span className="text-body-small text-fg-muted/60 line-through">AI generált szövegek</span>
               </li>
             </>
           )}
@@ -624,7 +625,7 @@ function BillingPageContent() {
       return (
         <main
           id="main"
-          className="flex min-h-[60vh] items-center justify-center px-6 pb-20 pt-24 text-sm font-medium text-fg-muted"
+          className="flex min-h-[60vh] items-center justify-center px-6 pb-20 pt-24 text-body-small font-medium text-fg-muted"
         >
           {t('billing.loading')}
         </main>
@@ -657,7 +658,7 @@ function BillingPageContent() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-sm font-medium text-emerald-800">
+                <p className="text-body-small font-medium text-emerald-800">
                   {t('billing.status.success')}
                 </p>
               </div>
@@ -677,7 +678,7 @@ function BillingPageContent() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-sm font-medium text-amber-800">{t('billing.status.cancel')}</p>
+                <p className="text-body-small font-medium text-amber-800">{t('billing.status.cancel')}</p>
               </div>
             </div>
           )}
@@ -715,15 +716,15 @@ function BillingPageContent() {
                     <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
                       <FileText className="w-5 h-5" />
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide opacity-90">
+                    <div className="text-body-small font-bold uppercase tracking-wide opacity-90">
                       Havi használat
                     </div>
                   </div>
                   <div className="text-5xl font-bold mb-2">{offersThisMonth}</div>
-                  <div className="text-sm opacity-90 mb-4">ajánlat készítve ebben a hónapban</div>
+                  <div className="text-body-small opacity-90 mb-4">ajánlat készítve ebben a hónapban</div>
 
                   <div className="bg-white/10 backdrop-blur rounded-lg p-3">
-                    <div className="flex items-center justify-between text-sm mb-2">
+                    <div className="flex items-center justify-between text-body-small mb-2">
                       <span className="opacity-90">
                         {planLimit === null ? 'Korlátlan kvóta' : planLimitLabel}
                       </span>
@@ -775,7 +776,7 @@ function BillingPageContent() {
                         </svg>
                       )}
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-fg-muted">
+                    <div className="text-body-small font-bold uppercase tracking-wide text-fg-muted">
                       {planLimit === null
                         ? 'Felhasználási keret'
                         : t('billing.currentPlan.remaining.title')}
@@ -784,14 +785,14 @@ function BillingPageContent() {
                   <div className="text-4xl font-bold text-gray-900 mb-2">
                     {planLimit === null ? 'Korlátlan' : remainingQuotaLabel}
                   </div>
-                  <div className="text-sm text-gray-600 mb-4">
+                  <div className="text-body-small text-gray-600 mb-4">
                     {planLimit === null
                       ? 'Ajánlatok készítése'
                       : t('billing.currentPlan.remaining.helper')}
                   </div>
 
                   {planLimit === null && (
-                    <div className="flex items-center gap-2 text-sm text-teal-700 bg-teal-50 px-3 py-2 rounded-lg">
+                    <div className="flex items-center gap-2 text-body-small text-teal-700 bg-teal-50 px-3 py-2 rounded-lg">
                       <Sparkles className="w-4 h-4" />
                       <span className="font-semibold">Pro előny</span>
                     </div>
@@ -804,14 +805,14 @@ function BillingPageContent() {
                     <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
                       <Calendar className="w-5 h-5 text-purple-600" />
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-fg-muted">
+                    <div className="text-body-small font-bold uppercase tracking-wide text-fg-muted">
                       Következő fizetés
                     </div>
                   </div>
                   <div className="text-4xl font-bold text-gray-900 mb-2">
                     {resetDate.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}
                   </div>
-                  <div className="text-sm text-gray-600 mb-4">{resetLabel}</div>
+                  <div className="text-body-small text-gray-600 mb-4">{resetLabel}</div>
 
                   {(() => {
                     const today = new Date();
@@ -819,7 +820,7 @@ function BillingPageContent() {
                     const diffTime = resetDate.getTime() - today.getTime();
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     return (
-                      <div className="text-xs text-fg-muted bg-bg-muted px-3 py-2 rounded-lg">
+                      <div className="text-body-small text-fg-muted bg-bg-muted px-3 py-2 rounded-lg">
                         {diffDays > 0 ? `${diffDays} nap múlva` : 'Ma'} • Automatikus megújulás
                       </div>
                     );
@@ -832,7 +833,7 @@ function BillingPageContent() {
                     <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                       <CreditCard className="w-5 h-5 text-green-600" />
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-fg-muted">
+                    <div className="text-body-small font-bold uppercase tracking-wide text-fg-muted">
                       Havi díjszabás
                     </div>
                   </div>
@@ -844,7 +845,7 @@ function BillingPageContent() {
                         : '0'}{' '}
                     Ft
                   </div>
-                  <div className="text-sm text-gray-600 mb-4">havonta számlázva</div>
+                  <div className="text-body-small text-gray-600 mb-4">havonta számlázva</div>
 
                   {plan === 'pro' && (
                     <button

@@ -114,6 +114,31 @@ const config = {
         pop: '0 12px 32px rgba(15, 23, 42, 0.16)',
       },
       borderRadius: { lg: '16px', '2xl': '24px', '3xl': '32px' },
+      fontSize: {
+        // Typography scale tokens - use these instead of arbitrary sizes
+        'display': ['4rem', { lineHeight: '1.1', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'h1': ['3.5rem', { lineHeight: '1.15', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'h2': ['2.5rem', { lineHeight: '1.2', fontWeight: '700', letterSpacing: '-0.01em' }],
+        'h3': ['2rem', { lineHeight: '1.25', fontWeight: '600', letterSpacing: '-0.005em' }],
+        'h4': ['1.5rem', { lineHeight: '1.35', fontWeight: '600', letterSpacing: '0' }],
+        'h5': ['1.25rem', { lineHeight: '1.4', fontWeight: '600', letterSpacing: '0' }],
+        'h6': ['1.125rem', { lineHeight: '1.4', fontWeight: '600', letterSpacing: '0' }],
+        'body-large': ['1.125rem', { lineHeight: '1.6', fontWeight: '400', letterSpacing: '0' }],
+        'body': ['1rem', { lineHeight: '1.6', fontWeight: '400', letterSpacing: '0' }],
+        'body-small': ['0.875rem', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '0' }],
+        'caption': ['0.75rem', { lineHeight: '1.4', fontWeight: '400', letterSpacing: '0.01em' }],
+        'ui-large': ['1.125rem', { lineHeight: '1.5', fontWeight: '600', letterSpacing: '0' }],
+        'ui': ['1rem', { lineHeight: '1.5', fontWeight: '600', letterSpacing: '0' }],
+        'ui-small': ['0.875rem', { lineHeight: '1.4', fontWeight: '600', letterSpacing: '0' }],
+      },
+      lineHeight: {
+        // Typography system line heights
+        'typography-tight': '1.2',
+        'typography-snug': '1.3',
+        'typography-normal': '1.5',
+        'typography-relaxed': '1.6',
+        'typography-loose': '1.8',
+      },
       keyframes: {
         'gentle-pulse': {
           '0%, 100%': { opacity: '0.05', transform: 'scale(1)' },

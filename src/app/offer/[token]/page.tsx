@@ -431,13 +431,13 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
           {inlineStyles && <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />}
           <OfferDisplay html={bodyHtml} />
 
-          {/* Response Form - hidden in PDF mode */}
+          {/* Response Form - Enhanced prominence - hidden in PDF mode */}
           {!isPdfMode && (
-            <div className="mt-8">
+            <div className="mt-12 mb-8">
               {existingResponse ? (
-                <div className="rounded-xl border-2 border-success/30 bg-success/10 p-8 text-center shadow-lg">
-                  <H2 className="mb-3 text-success">Köszönjük a válaszát!</H2>
-                  <p className="text-green-700">
+                <div className="rounded-2xl border-4 border-success/40 bg-gradient-to-br from-success/20 to-success/10 p-10 text-center shadow-2xl">
+                  <H2 className="mb-4 text-success">Köszönjük a válaszát!</H2>
+                  <p className="text-green-800 text-body-large font-medium mb-3">
                     Ön már{' '}
                     {existingResponse.decision === 'accepted'
                       ? 'elfogadta'
@@ -446,29 +446,39 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
                         : 'kérdést tett fel'}{' '}
                     ezt az ajánlatra.
                   </p>
-                  <p className="mt-2 text-sm text-green-600">
+                  <p className="text-body text-green-700">
                     Válasz ideje: {new Date(existingResponse.created_at).toLocaleString('hu-HU')}
                   </p>
                 </div>
               ) : (
-                <OfferResponseForm
-                  shareId={share.id}
-                  offerId={offer.id}
-                  token={token}
-                  contactEmail={
-                    typeof profile?.company_email === 'string' ? profile.company_email : undefined
-                  }
-                  contactPhone={
-                    typeof profile?.company_phone === 'string' ? profile.company_phone : undefined
-                  }
-                  contactName={sanitizeInput(
-                    (typeof profile?.company_contact_name === 'string'
-                      ? profile.company_contact_name
-                      : typeof profile?.representative === 'string'
-                        ? profile.representative
-                        : profile?.company_name) || '',
-                  )}
-                />
+                <div className="bg-gradient-to-br from-primary/10 via-turquoise-50 to-primary/5 rounded-2xl border-2 border-primary/20 p-8 shadow-xl">
+                  <div className="mb-6 text-center">
+                    <H2 className="mb-2 text-fg">
+                      Válasz az ajánlatra
+                    </H2>
+                    <p className="text-fg-muted text-body-large">
+                      Fogadja el, utasítsa el, vagy tegyen fel kérdést
+                    </p>
+                  </div>
+                  <OfferResponseForm
+                    shareId={share.id}
+                    offerId={offer.id}
+                    token={token}
+                    contactEmail={
+                      typeof profile?.company_email === 'string' ? profile.company_email : undefined
+                    }
+                    contactPhone={
+                      typeof profile?.company_phone === 'string' ? profile.company_phone : undefined
+                    }
+                    contactName={sanitizeInput(
+                      (typeof profile?.company_contact_name === 'string'
+                        ? profile.company_contact_name
+                        : typeof profile?.representative === 'string'
+                          ? profile.representative
+                          : profile?.company_name) || '',
+                    )}
+                  />
+                </div>
               )}
             </div>
           )}

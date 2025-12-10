@@ -120,3 +120,4 @@ create trigger update_template_versions_updated_at
   execute function public.update_template_versions_updated_at();
 
 
+

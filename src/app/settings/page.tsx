@@ -162,7 +162,7 @@ export default function SettingsPage() {
             description={t('settings.description')}
             actions={
               email ? (
-                <div className="flex items-center gap-2 text-sm text-fg-muted">
+                <div className="flex items-center gap-2 text-body-small text-fg-muted">
                   <span>{t('settings.actions.loggedInAs')}</span>
                   <span className="font-semibold text-fg">{email}</span>
                 </div>
@@ -175,39 +175,41 @@ export default function SettingsPage() {
                 {/* Subtle inner glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-bg-muted via-bg-muted to-primary/10 pointer-events-none"></div>
 
-                {/* Tab header */}
-                <div className="relative z-10 border-b border-border bg-gradient-to-b from-bg-muted/50 to-bg-muted/50">
+                {/* Tab header - Enhanced hierarchy */}
+                <div className="relative z-10 border-b-2 border-border bg-gradient-to-b from-bg-muted/50 to-bg-muted/50 shadow-sm">
                   <div className="flex items-center gap-2 overflow-x-auto px-4 sm:px-6 scrollbar-hide">
                     {tabs.map((tab) => (
                       <button
                         key={tab.id}
                         type="button"
                         onClick={() => handleTabChange(tab.id)}
-                        className={`group relative flex items-center gap-2 whitespace-nowrap px-4 sm:px-6 py-4 font-semibold transition-all duration-300 flex-shrink-0 ${
+                        className={`group relative flex items-center gap-2 whitespace-nowrap px-5 sm:px-7 py-5 transition-all duration-300 flex-shrink-0 ${
                           activeTab === tab.id
-                            ? 'text-primary scale-105'
-                            : 'text-fg-muted hover:text-fg hover:scale-105'
+                            ? 'text-primary font-bold text-body scale-105'
+                            : 'text-fg-muted font-semibold text-body-small hover:text-fg hover:scale-105'
                         }`}
                         aria-label={tab.label}
                       >
-                        {/* Active indicator with gradient */}
+                        {/* Active indicator with stronger gradient */}
                         {activeTab === tab.id && (
-                          <span className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-turquoise-500 to-primary rounded-t-full shadow-lg shadow-primary/50"></span>
+                          <span className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-turquoise-500 to-primary rounded-t-full shadow-xl shadow-primary/60"></span>
                         )}
                         {/* Hover effect */}
                         <span
-                          className={`absolute inset-0 bg-bg-muted rounded-t-xl transition-opacity duration-300 ${
+                          className={`absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent rounded-t-xl transition-opacity duration-300 ${
                             activeTab === tab.id
                               ? 'opacity-100'
                               : 'opacity-0 group-hover:opacity-50'
                           }`}
                         ></span>
-                        <span className="relative z-10 flex items-center gap-2">
-                          <span className="flex-shrink-0">{tab.icon}</span>
+                        <span className="relative z-10 flex items-center gap-2.5">
+                          <span className={`flex-shrink-0 ${activeTab === tab.id ? 'scale-110' : ''} transition-transform duration-300`}>
+                            {tab.icon}
+                          </span>
                           <span className="whitespace-nowrap">{tab.label}</span>
                           {activeTab === tab.id && (
                             <span
-                              className="ml-1 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"
+                              className="ml-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0 shadow-lg shadow-primary/50 animate-pulse"
                               aria-hidden
                             />
                           )}
@@ -435,7 +437,7 @@ export default function SettingsPage() {
                                   <H2 className="mb-1" fluid>
                                     {t('settings.testimonials.title')}
                                   </H2>
-                                  <p className="text-sm md:text-base text-fg-muted">
+                                  <p className="text-body-small md:text-body text-fg-muted">
                                     {t('settings.testimonials.subtitle')}
                                   </p>
                                 </div>
@@ -456,10 +458,10 @@ export default function SettingsPage() {
                                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
                                   <LockClosedIcon className="h-6 w-6 text-warning" />
                                 </div>
-                                <h3 className="mt-4 text-sm font-semibold text-fg">
+                                <h3 className="mt-4 text-body-small font-semibold text-fg">
                                   {t('settings.proFeatures.testimonials.upgradeTitle')}
                                 </h3>
-                                <p className="mt-2 text-xs text-fg-muted">
+                                <p className="mt-2 text-body-small text-fg-muted">
                                   {t('settings.proFeatures.testimonials.upgradeDescription')}
                                 </p>
                                 <Button

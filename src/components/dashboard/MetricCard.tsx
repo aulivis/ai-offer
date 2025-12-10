@@ -95,8 +95,8 @@ export function MetricCard({
 
   return (
     <Card
-      className={`group relative overflow-hidden p-5 sm:p-6 transition-all duration-200 ${
-        onClick ? 'cursor-pointer hover:shadow-lg hover:border-primary/30' : 'hover:shadow-lg'
+      className={`group relative overflow-hidden p-4 sm:p-5 transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5' : 'hover:shadow-lg'
       } ${isEmptyState ? 'opacity-75' : ''}`}
       onClick={onClick}
     >
@@ -104,7 +104,7 @@ export function MetricCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-2 sm:gap-3 mb-2.5 sm:mb-3">
             {icon && (
-              <div className={`flex-shrink-0 ${iconColors[color]} scale-90 sm:scale-100 mt-0.5`}>
+              <div className={`flex-shrink-0 ${iconColors[color]} mt-0.5`}>
                 {icon}
               </div>
             )}
@@ -121,8 +121,8 @@ export function MetricCard({
             </div>
           ) : (
             <>
-              <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 flex-wrap">
-                <p className="text-2xl sm:text-3xl font-bold text-fg break-words">{value}</p>
+              <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2 sm:mt-2.5 flex-wrap">
+                <p className="text-2xl sm:text-2xl font-bold text-fg break-words">{value}</p>
                 {trend && trendValue && (
                   <span
                     className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ${trendColors[trend]}`}

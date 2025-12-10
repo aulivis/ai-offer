@@ -192,7 +192,7 @@ function ResourcesPageContent() {
           <div className="max-w-6xl mx-auto">
             {/* Enhanced Breadcrumb */}
             <nav
-              className="text-sm mb-6 flex items-center gap-2 text-white/70"
+              className="text-body-small mb-6 flex items-center gap-2 text-white/70"
               aria-label="Breadcrumb"
             >
               <Link href="/" className="hover:text-white transition-colors">
@@ -210,7 +210,7 @@ function ResourcesPageContent() {
 
             {/* Hero Content */}
             <div className="mb-12">
-              <div className="inline-block px-4 py-2 bg-turquoise-500/20 backdrop-blur-sm rounded-full text-sm font-semibold text-turquoise-300 mb-6">
+              <div className="inline-block px-4 py-2 bg-turquoise-500/20 backdrop-blur-sm rounded-full text-body-small font-semibold text-turquoise-300 mb-6">
                 Erőforrások
               </div>
 
@@ -218,7 +218,7 @@ function ResourcesPageContent() {
                 Tanulj és fejlődj
               </H1>
 
-              <p className="text-xl text-white/80 mb-8 leading-relaxed max-w-3xl">
+              <p className="text-body-large md:text-h6 text-white mb-8 leading-typography-relaxed max-w-3xl">
                 Hozzáférés útmutatókhoz, videókhoz, cikkekhez és további tartalmakhoz az
                 ajánlatkészítéshez
               </p>
@@ -229,7 +229,7 @@ function ResourcesPageContent() {
                   href="/login?redirect=/new"
                   className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                 >
-                  <span className="relative z-10 text-base md:text-lg text-white">
+                  <span className="relative z-10 text-body md:text-body-large text-white">
                     Próbáld ki most ingyen
                   </span>
                   <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
@@ -251,26 +251,30 @@ function ResourcesPageContent() {
                   placeholder="Keress útmutatók, cikkek vagy videók között..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur text-white placeholder:text-white/50 focus:outline-none focus:ring-4 focus:ring-turquoise-100 focus:border-turquoise-500 transition-all text-base min-h-[44px]"
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur text-white placeholder:text-white/50 focus:outline-none focus:ring-4 focus:ring-turquoise-100 focus:border-turquoise-500 transition-all text-body min-h-[44px]"
                   aria-label="Keresés erőforrások között"
                 />
               </div>
             </div>
 
-            {/* Prominent Featured Card */}
+            {/* Prominent Featured Card - Enhanced hierarchy */}
             {featuredResource && (
-              <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-8 md:p-12 text-white shadow-2xl">
-                <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="relative bg-gradient-to-br from-teal-500 via-blue-600 to-purple-600 rounded-3xl p-10 md:p-14 text-white shadow-2xl border-4 border-white/20 overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" aria-hidden="true"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl" aria-hidden="true"></div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                   {/* Left - Featured badge and content */}
                   <div className="flex-1">
-                    <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                      <Star className="w-4 h-4 fill-current" />
-                      <span className="text-sm font-semibold">KIEMELT TARTALOM</span>
+                    <div className="inline-flex items-center gap-2 bg-white/30 backdrop-blur-sm px-5 py-2.5 rounded-full mb-6 border-2 border-white/30 shadow-lg">
+                      <Star className="w-5 h-5 fill-current" />
+                      <span className="text-body-small font-bold uppercase tracking-wide">KIEMELT TARTALOM</span>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                    <H2 className="mb-5 text-white" fluid>
                       {featuredResource.title}
-                    </h2>
-                    <p className="text-white/90 text-lg mb-6">
+                    </H2>
+                    <p className="text-white/95 text-body-large md:text-h6 mb-8 leading-typography-relaxed font-medium">
                       {featuredResource.excerpt || featuredResource.description}
                     </p>
                     <div className="flex flex-wrap gap-4 mb-6">
@@ -295,7 +299,7 @@ function ResourcesPageContent() {
                     </div>
                     <Link
                       href={featuredResource.href || `/resources/guides/${featuredResource.slug}`}
-                      className="inline-block bg-white text-teal-600 px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all min-h-[44px]"
+                      className="inline-block bg-white text-teal-600 px-10 py-5 rounded-xl font-bold text-body-large hover:shadow-2xl hover:scale-105 transition-all min-h-[56px] border-2 border-white/50"
                     >
                       Letöltöm ingyen
                     </Link>
@@ -345,7 +349,7 @@ function ResourcesPageContent() {
                 <span className="font-semibold">Szűrők</span>
                 <div className="flex items-center gap-2">
                   {activeFiltersCount > 0 && (
-                    <span className="bg-turquoise-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+                    <span className="bg-turquoise-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-body-small font-bold">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -365,7 +369,7 @@ function ResourcesPageContent() {
 
             {/* Enhanced Filter Visualization */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <span className="text-sm font-semibold text-gray-700">Szűrés:</span>
+              <span className="text-body-small font-semibold text-gray-700">Szűrés:</span>
 
               {/* Primary category filters - pill style */}
               {['Összes', 'Útmutatók', 'Blog cikkek', 'Videók'].map((type) => {
@@ -400,7 +404,7 @@ function ResourcesPageContent() {
 
               {/* Active filter count indicator */}
               {activeFiltersCount > 0 && (
-                <span className="ml-auto flex items-center gap-2 text-sm text-fg-muted">
+                <span className="ml-auto flex items-center gap-2 text-body-small text-fg-muted">
                   <span className="bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-semibold">
                     {activeFiltersCount} szűrő aktív
                   </span>
@@ -427,11 +431,11 @@ function ResourcesPageContent() {
 
               {/* Sort Options */}
               <div className="flex items-center gap-4">
-                <span className="text-sm text-fg-muted">Rendezés:</span>
+                <span className="text-body-small text-fg-muted">Rendezés:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 min-h-[44px]"
+                  className="px-4 py-2 border-2 border-gray-200 rounded-lg text-body-small font-medium focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 min-h-[44px]"
                   aria-label="Rendezési opciók"
                 >
                   <option value="newest">Legújabb</option>
@@ -573,7 +577,7 @@ function ResourcesPageContent() {
               <H2 className="text-white mb-6" fluid>
                 Szeretnéd elsőként kipróbálni az újdonságokat?
               </H2>
-              <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
+              <p className="text-body-large md:text-h6 text-white/90 leading-typography-relaxed max-w-3xl mx-auto text-pretty">
                 Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók indulásáról.
                 <br />
                 Csatlakozz több mint 200 vállalkozáshoz, akik már hatékonyabban dolgoznak az
@@ -597,18 +601,18 @@ function ResourcesPageContent() {
 
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+              <H2 className="mb-6 text-white text-balance" fluid>
                 {t('resources.ctaTitle')}
-              </h2>
+              </H2>
 
-              <p className="text-xl md:text-2xl text-white/90 mb-12 text-pretty">
+              <p className="text-body-large md:text-h6 text-white/90 mb-12 text-pretty leading-typography-relaxed">
                 {t('resources.ctaDescription')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-12 py-5 rounded-xl text-lg shadow-2xl transition-all transform hover:scale-105 inline-flex items-center gap-3 min-h-[44px]"
+                  className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-12 py-5 rounded-xl text-body-large shadow-2xl transition-all transform hover:scale-105 inline-flex items-center gap-3 min-h-[44px]"
                 >
                   {t('resources.ctaButton')}
                   <ArrowRight className="w-5 h-5" />
@@ -616,7 +620,7 @@ function ResourcesPageContent() {
 
                 <Link
                   href="/billing"
-                  className="bg-transparent hover:bg-white/10 text-white font-bold px-12 py-5 rounded-xl text-lg border-2 border-white transition-all inline-flex items-center gap-3 min-h-[44px]"
+                  className="bg-transparent hover:bg-white/10 text-white font-bold px-12 py-5 rounded-xl text-body-large border-2 border-white transition-all inline-flex items-center gap-3 min-h-[44px]"
                 >
                   Csomagok megtekintése
                 </Link>

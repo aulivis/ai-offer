@@ -180,3 +180,4 @@ Most service role usage is appropriate for system-level operations. A few areas 
 
 **Last Updated:** 2025-01-16
 **Next Review:** After RLS policy changes or new service role usage
+

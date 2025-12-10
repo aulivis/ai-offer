@@ -35,24 +35,24 @@ export const TYPOGRAPHY_SCALE = {
   },
   /** H1 - Main page headings */
   h1: {
-    size: '3rem', // 48px
-    lineHeight: '1.2',
+    size: '3.5rem', // 56px - Increased from 48px for stronger hierarchy
+    lineHeight: '1.15',
     fontWeight: '700',
-    letterSpacing: '-0.01em',
+    letterSpacing: '-0.02em',
   },
   /** H2 - Section headings */
   h2: {
-    size: '2.25rem', // 36px
-    lineHeight: '1.25',
-    fontWeight: '600',
-    letterSpacing: '-0.005em',
+    size: '2.5rem', // 40px - Increased from 36px for better contrast
+    lineHeight: '1.2',
+    fontWeight: '700', // Increased from 600 for stronger emphasis
+    letterSpacing: '-0.01em',
   },
   /** H3 - Subsection headings */
   h3: {
-    size: '1.875rem', // 30px
-    lineHeight: '1.3',
+    size: '2rem', // 32px - Increased from 30px
+    lineHeight: '1.25',
     fontWeight: '600',
-    letterSpacing: '-0.0025em',
+    letterSpacing: '-0.005em',
   },
   /** H4 - Minor headings */
   h4: {
