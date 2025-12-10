@@ -126,7 +126,13 @@ export default function Home() {
       />
       <main id="main" className="min-h-screen">
         {/* HERO SECTION - First Impression */}
-        <section className="relative bg-gradient-hero text-white min-h-screen flex flex-col overflow-hidden -mt-14 md:-mt-20">
+        <section
+          className="relative bg-gradient-hero text-white min-h-screen flex flex-col overflow-hidden -mt-14 md:-mt-20"
+          aria-labelledby="hero-heading"
+        >
+          <H1 id="hero-heading" className="sr-only">
+            Vyndi – AI-alapú ajánlatkészítő platform
+          </H1>
           {/* Enhanced decorative gradient blobs for visual depth */}
           <div
             className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
@@ -310,54 +316,103 @@ export default function Home() {
         </section>
 
         {/* HOW IT WORKS - Quick Process Overview */}
-        <ScrollReveal>
-          <HowItWorks />
-        </ScrollReveal>
+        <section aria-labelledby="how-it-works-heading">
+          <H2 id="how-it-works-heading" className="sr-only">
+            Hogyan működik
+          </H2>
+          <ScrollReveal>
+            <HowItWorks />
+          </ScrollReveal>
+        </section>
 
         {/* VIDEO DEMO - Show Don't Tell */}
-        <section id="product-demo" className="scroll-mt-20">
+        <section id="product-demo" className="scroll-mt-20" aria-labelledby="product-demo-heading">
+          <H2 id="product-demo-heading" className="sr-only">
+            Termék bemutató
+          </H2>
           <ScrollReveal delay={0.1}>
             <VideoDemoSection />
           </ScrollReveal>
         </section>
 
         {/* PROBLEM - Establish Pain Points */}
-        <ScrollReveal delay={0.2}>
-          <ProblemSection />
-        </ScrollReveal>
+        <section aria-labelledby="problem-heading">
+          <H2 id="problem-heading" className="sr-only">
+            Probléma
+          </H2>
+          <ScrollReveal delay={0.2}>
+            <ProblemSection />
+          </ScrollReveal>
+        </section>
 
         {/* SOLUTION - Your Answer with Before/After */}
-        <ScrollReveal delay={0.3}>
-          <SolutionSection />
-        </ScrollReveal>
+        <section aria-labelledby="solution-heading">
+          <H2 id="solution-heading" className="sr-only">
+            Megoldás
+          </H2>
+          <ScrollReveal delay={0.3}>
+            <SolutionSection />
+          </ScrollReveal>
+        </section>
 
         {/* COMPARISON TABLE - Why Choose Us */}
-        <ScrollReveal delay={0.4}>
-          <ComparisonTable />
-        </ScrollReveal>
+        <section aria-labelledby="comparison-heading">
+          <H2 id="comparison-heading" className="sr-only">
+            Összehasonlítás
+          </H2>
+          <ScrollReveal delay={0.4}>
+            <ComparisonTable />
+          </ScrollReveal>
+        </section>
 
         {/* ROI CALCULATOR - Personalized Value */}
-        <ScrollReveal delay={0.5}>
-          <ROICalculatorLanding />
-        </ScrollReveal>
+        <section aria-labelledby="roi-calculator-heading">
+          <H2 id="roi-calculator-heading" className="sr-only">
+            ROI kalkulátor
+          </H2>
+          <ScrollReveal delay={0.5}>
+            <ROICalculatorLanding />
+          </ScrollReveal>
+        </section>
 
         {/* TESTIMONIALS - Social Proof */}
-        <ScrollReveal delay={0.6}>
-          <TestimonialSection />
-        </ScrollReveal>
+        <section aria-labelledby="testimonials-heading">
+          <H2 id="testimonials-heading" className="sr-only">
+            Vélemények
+          </H2>
+          <ScrollReveal delay={0.6}>
+            <TestimonialSection />
+          </ScrollReveal>
+        </section>
 
         {/* INDUSTRY SOLUTIONS - Specific Use Cases */}
-        <ScrollReveal delay={0.7}>
-          <IndustrySolutions />
-        </ScrollReveal>
+        <section aria-labelledby="industry-solutions-heading">
+          <H2 id="industry-solutions-heading" className="sr-only">
+            Ipari megoldások
+          </H2>
+          <ScrollReveal delay={0.7}>
+            <IndustrySolutions />
+          </ScrollReveal>
+        </section>
 
         {/* FAQ - Address Objections */}
-        <ScrollReveal delay={0.8}>
-          <FAQSection />
-        </ScrollReveal>
+        <section aria-labelledby="faq-heading">
+          <H2 id="faq-heading" className="sr-only">
+            Gyakran ismételt kérdések
+          </H2>
+          <ScrollReveal delay={0.8}>
+            <FAQSection />
+          </ScrollReveal>
+        </section>
 
         {/* FINAL CTA - Last Conversion Opportunity */}
-        <section className="relative py-24 overflow-hidden">
+        <section
+          className="relative py-24 overflow-hidden"
+          aria-labelledby="newsletter-cta-heading"
+        >
+          <H2 id="newsletter-cta-heading" className="sr-only">
+            Hírlevél feliratkozás
+          </H2>
           {/* Enhanced gradient background with pattern overlay */}
           <div className="absolute inset-0 bg-gradient-cta">
             {/* Subtle pattern overlay */}
@@ -420,6 +475,66 @@ export default function Home() {
         <StickyCTABar />
         <LandingPageClient />
       </main>
+
+      {/* Footer */}
+      <footer className="bg-bg-muted border-t border-border py-12" aria-label="Lábléc">
+        <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <section aria-labelledby="footer-about-heading">
+              <h3 id="footer-about-heading" className="text-body font-bold text-fg mb-4">
+                Vyndi
+              </h3>
+              <p className="text-body-small text-fg-muted">
+                AI-alapú ajánlatkészítő platform professzionális vállalkozásoknak.
+              </p>
+            </section>
+            <nav aria-labelledby="footer-links-heading">
+              <h3 id="footer-links-heading" className="text-body font-bold text-fg mb-4">
+                Linkek
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/billing"
+                    className="text-body-small text-fg-muted hover:text-fg transition-colors"
+                  >
+                    Árazás
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/adatvedelem"
+                    className="text-body-small text-fg-muted hover:text-fg transition-colors"
+                  >
+                    Adatvédelem
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/felhasznalasi-feltetelek"
+                    className="text-body-small text-fg-muted hover:text-fg transition-colors"
+                  >
+                    Felhasználási feltételek
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+            <section aria-labelledby="footer-contact-heading">
+              <h3 id="footer-contact-heading" className="text-body font-bold text-fg mb-4">
+                Kapcsolat
+              </h3>
+              <p className="text-body-small text-fg-muted">
+                Kérdéseid esetén vedd fel velünk a kapcsolatot.
+              </p>
+            </section>
+          </div>
+          <div className="mt-8 pt-8 border-t border-border text-center">
+            <p className="text-body-small text-fg-muted">
+              © {new Date().getFullYear()} Vyndi. Minden jog fenntartva.
+            </p>
+          </div>
+        </div>
+      </footer>
     </PageErrorBoundary>
   );
 }

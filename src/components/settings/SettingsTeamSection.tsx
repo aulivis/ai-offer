@@ -425,7 +425,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                       onClick={() => handleRejectInvitation(invitation)}
                       variant="ghost"
                       size="sm"
-                      className="text-rose-600 hover:text-rose-700"
+                      className="text-danger hover:text-danger"
                     >
                       <XMarkIcon className="h-4 w-4" />
                       Elutasít
@@ -443,7 +443,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
         <div className="text-center py-8 text-fg-muted">Betöltés...</div>
       ) : teams.length === 0 ? (
         <div className="rounded-xl border-2 border-dashed border-border bg-bg-muted/50 p-12 text-center">
-          <UserGroupIcon className="mx-auto h-12 w-12 text-slate-400" />
+          <UserGroupIcon className="mx-auto h-12 w-12 text-fg-muted" />
           <p className="mt-4 text-sm font-medium text-fg-muted">Még nincs csapatod</p>
           <p className="mt-1 text-xs text-fg-muted">
             Hozz létre egy új csapatot, vagy várj egy meghívót.
@@ -465,7 +465,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                     loading={leavingTeamId === team.team_id}
                     variant="ghost"
                     size="sm"
-                    className="text-rose-600 hover:text-rose-700"
+                    className="text-danger hover:text-danger"
                   >
                     <TrashIcon className="h-4 w-4" />
                     Csapat elhagyása
@@ -474,7 +474,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
 
                 {/* Team Members */}
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-slate-700">Tagok</h4>
+                  <h4 className="mb-2 text-sm font-semibold text-fg">Tagok</h4>
                   <div className="space-y-2">
                     {team.members.map((member) => (
                       <div
@@ -501,7 +501,7 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
 
                 {/* Invite Member */}
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-slate-700">Tag meghívása</h4>
+                  <h4 className="mb-2 text-sm font-semibold text-fg">Tag meghívása</h4>
                   <div className="flex gap-2">
                     <Input
                       type="email"
@@ -528,16 +528,14 @@ export function SettingsTeamSection({ plan }: SettingsTeamSectionProps) {
                 {/* Pending Invitations */}
                 {pendingInvitations.filter((inv) => inv.team_id === team.team_id).length > 0 && (
                   <div>
-                    <h4 className="mb-2 text-sm font-semibold text-slate-700">
-                      Függőben lévő meghívók
-                    </h4>
+                    <h4 className="mb-2 text-sm font-semibold text-fg">Függőben lévő meghívók</h4>
                     <div className="space-y-2">
                       {pendingInvitations
                         .filter((inv) => inv.team_id === team.team_id)
                         .map((invitation) => (
                           <div
                             key={invitation.id}
-                            className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50/50 p-3"
+                            className="flex items-center justify-between rounded-lg border border-warning/30 bg-warning/10 p-3"
                           >
                             <div>
                               <p className="text-sm font-medium text-fg">{invitation.email}</p>

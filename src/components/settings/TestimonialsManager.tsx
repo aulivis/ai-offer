@@ -47,7 +47,7 @@ function StarRating({
         {stars.map((filled, i) => (
           <svg
             key={i}
-            className={`${sizeClass} ${filled ? 'text-yellow-400' : 'text-gray-300'}`}
+            className={`${sizeClass} ${filled ? 'text-warning' : 'text-border'}`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -64,7 +64,7 @@ function StarRating({
         {stars.map((filled, i) => (
           <svg
             key={i}
-            className={`${sizeClass} ${filled ? 'text-yellow-400' : 'text-gray-300'}`}
+            className={`${sizeClass} ${filled ? 'text-warning' : 'text-border'}`}
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
@@ -87,7 +87,7 @@ function StarRating({
       {stars.map((filled, i) => (
         <svg
           key={i}
-          className={`${sizeClass} ${filled ? 'text-yellow-500' : 'text-gray-300'}`}
+          className={`${sizeClass} ${filled ? 'text-warning' : 'text-border'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -222,7 +222,7 @@ export function TestimonialsManager({
       {/* Add New Testimonial */}
       {testimonials.length < MAX_TESTIMONIALS && (
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-slate-900">
+          <h3 className="mb-4 text-sm font-semibold text-fg">
             {t('settings.testimonials.addNew')}
           </h3>
           <div className="space-y-4">
@@ -249,7 +249,7 @@ export function TestimonialsManager({
             </Select>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <label className="block text-xs font-semibold uppercase tracking-wide text-fg-muted">
                   Csillag értékelés
                 </label>
                 <button
@@ -258,7 +258,7 @@ export function TestimonialsManager({
                     setNewTestimonial((prev) => ({ ...prev, showStars: !prev.showStars }))
                   }
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    newTestimonial.showStars ? 'bg-primary' : 'bg-slate-300'
+                    newTestimonial.showStars ? 'bg-primary' : 'bg-border'
                   }`}
                 >
                   <span
@@ -272,7 +272,7 @@ export function TestimonialsManager({
                 <>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-600">Értékelés:</span>
+                      <span className="text-xs text-fg-muted">Értékelés:</span>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((rating) => (
                           <button
@@ -282,22 +282,18 @@ export function TestimonialsManager({
                               setNewTestimonial((prev) => ({ ...prev, starRating: rating }))
                             }
                             className={`text-lg transition-colors ${
-                              newTestimonial.starRating >= rating
-                                ? 'text-yellow-400'
-                                : 'text-gray-300'
-                            } hover:text-yellow-500`}
+                              newTestimonial.starRating >= rating ? 'text-warning' : 'text-border'
+                            } hover:text-warning`}
                           >
                             ★
                           </button>
                         ))}
                       </div>
-                      <span className="text-xs text-slate-500">
-                        {newTestimonial.starRating} / 5
-                      </span>
+                      <span className="text-xs text-fg-muted">{newTestimonial.starRating} / 5</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-slate-600">Stílus:</span>
+                    <span className="text-xs text-fg-muted">Stílus:</span>
                     <div className="flex gap-2">
                       {STAR_STYLES.map((styleOption) => (
                         <button
@@ -308,8 +304,8 @@ export function TestimonialsManager({
                           }
                           className={`rounded border px-3 py-1.5 text-xs font-semibold transition-all ${
                             newTestimonial.starStyle === styleOption.value
-                              ? 'border-primary bg-primary text-white'
-                              : 'border-border bg-white text-slate-700 hover:border-primary/50'
+                              ? 'border-primary bg-primary text-primary-ink'
+                              : 'border-border bg-white text-fg hover:border-primary/50'
                           }`}
                         >
                           {styleOption.label}
@@ -338,7 +334,7 @@ export function TestimonialsManager({
       {testimonials.length > 0 ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-sm font-semibold text-fg">
               {t('settings.testimonials.listTitle', {
                 count: testimonials.length,
                 max: MAX_TESTIMONIALS,
@@ -362,9 +358,9 @@ export function TestimonialsManager({
                         />
                       </div>
                     )}
-                    <p className="text-sm text-slate-700">{testimonial.text}</p>
+                    <p className="text-sm text-fg">{testimonial.text}</p>
                     {testimonial.activity_id && (
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-fg-muted">
                         {t('settings.testimonials.linkedTo')}:{' '}
                         {getActivityName(testimonial.activity_id)}
                       </p>
@@ -374,7 +370,7 @@ export function TestimonialsManager({
                     type="button"
                     onClick={() => handleDelete(testimonial.id)}
                     disabled={deleting === testimonial.id}
-                    className="flex-shrink-0 rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-50"
+                    className="flex-shrink-0 rounded-lg p-2 text-danger transition-colors hover:bg-danger/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger disabled:opacity-50"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
@@ -384,12 +380,12 @@ export function TestimonialsManager({
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
-          <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-slate-400" />
-          <p className="mt-4 text-sm font-medium text-slate-600">
+        <div className="rounded-xl border-2 border-dashed border-border bg-bg p-12 text-center">
+          <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-fg-muted" />
+          <p className="mt-4 text-sm font-medium text-fg-muted">
             {t('settings.testimonials.empty')}
           </p>
-          <p className="mt-1 text-xs text-slate-500">{t('settings.testimonials.emptyHelper')}</p>
+          <p className="mt-1 text-xs text-fg-muted">{t('settings.testimonials.emptyHelper')}</p>
         </div>
       )}
     </div>

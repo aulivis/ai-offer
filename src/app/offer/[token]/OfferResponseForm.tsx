@@ -238,6 +238,7 @@ export default function OfferResponseForm({
             <div className="space-y-4">
               <Input
                 type="text"
+                label="Név (opcionális)"
                 placeholder="Név (opcionális)"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -245,12 +246,28 @@ export default function OfferResponseForm({
               />
               <Input
                 type="email"
+                label="Email (opcionális)"
                 placeholder="Email (opcionális)"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 className="w-full"
               />
+              <label htmlFor="comment-field" className="block text-sm font-medium text-fg mb-2">
+                {decision === 'question'
+                  ? 'Kérdés'
+                  : decision === 'accepted'
+                    ? 'Megjegyzés (opcionális)'
+                    : decision === 'rejected'
+                      ? 'Ok (opcionális)'
+                      : 'Megjegyzés (opcionális)'}
+                {decision === 'question' && (
+                  <span className="ml-1 text-danger" aria-label="required">
+                    *
+                  </span>
+                )}
+              </label>
               <textarea
+                id="comment-field"
                 className="w-full rounded-lg border border-border px-4 py-3 text-body-small transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 rows={4}
                 placeholder={
@@ -265,6 +282,7 @@ export default function OfferResponseForm({
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 required={decision === 'question'}
+                aria-required={decision === 'question'}
               />
             </div>
           </div>

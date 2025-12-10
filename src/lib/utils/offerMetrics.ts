@@ -65,8 +65,8 @@ export function getShareExpiryInfo(
   if (status === 'expired') {
     return {
       label: 'Lejárt',
-      color: 'text-rose-700',
-      bgColor: 'bg-rose-50 border-rose-200',
+      color: 'text-danger',
+      bgColor: 'bg-danger/10 border-danger/30',
       icon: 'expired',
     };
   }
@@ -80,29 +80,29 @@ export function getShareExpiryInfo(
       if (daysUntilExpiry <= 7) {
         return {
           label: `Lejár: ${daysUntilExpiry} nap`,
-          color: 'text-amber-700',
-          bgColor: 'bg-amber-50 border-amber-200',
+          color: 'text-warning',
+          bgColor: 'bg-warning/10 border-warning/30',
           icon: 'active',
         };
       }
       return {
         label: 'Aktív',
-        color: 'text-emerald-700',
-        bgColor: 'bg-emerald-50 border-emerald-200',
+        color: 'text-success',
+        bgColor: 'bg-success/10 border-success/30',
         icon: 'active',
       };
     }
     return {
       label: 'Aktív',
-      color: 'text-emerald-700',
-      bgColor: 'bg-emerald-50 border-emerald-200',
+      color: 'text-success',
+      bgColor: 'bg-success/10 border-success/30',
       icon: 'active',
     };
   }
   return {
     label: 'Nincs megosztás',
     color: 'text-fg-muted',
-    bgColor: 'bg-gray-50 border-gray-200',
+    bgColor: 'bg-bg-muted border-border',
     icon: 'none',
   };
 }

@@ -24,10 +24,10 @@ export function SettingsProFeaturesSection({ plan: _plan }: SettingsProFeaturesS
               <LockClosedIcon className="relative z-10 h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">
+              <h2 className="text-xl md:text-2xl font-bold text-fg mb-1">
                 {t('settings.proFeatures.title')}
               </h2>
-              <p className="text-sm md:text-base text-slate-500">
+              <p className="text-sm md:text-base text-fg-muted">
                 {t('settings.proFeatures.subtitle')}
               </p>
             </div>
@@ -35,8 +35,8 @@ export function SettingsProFeaturesSection({ plan: _plan }: SettingsProFeaturesS
         </CardHeader>
       }
     >
-      <div className="rounded-xl border-2 border-dashed border-border bg-slate-50/50 p-12 text-center">
-        <p className="text-sm text-slate-600">További Pro funkciók hamarosan...</p>
+      <div className="rounded-xl border-2 border-dashed border-border bg-bg p-12 text-center">
+        <p className="text-sm text-fg-muted">További Pro funkciók hamarosan...</p>
       </div>
     </Card>
   );

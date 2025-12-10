@@ -1110,7 +1110,7 @@ export default function NewOfferPage() {
                           {t('offers.wizard.aiText.heading')}
                         </h2>
                       </CardHeader>
-                      <div className="text-sm text-rose-600">{previewError}</div>
+                      <div className="text-sm text-danger">{previewError}</div>
                     </Card>
                   )}
                   {previewHtml &&

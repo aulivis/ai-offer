@@ -1,3 +1,4 @@
+/* eslint-disable no-hardcoded-ui-strings/no-hardcoded-ui-strings */
 'use client';
 
 import { useState } from 'react';

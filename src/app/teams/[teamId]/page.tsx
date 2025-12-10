@@ -289,7 +289,7 @@ function TeamDetailPageContent() {
                         Lejárat: {new Date(invitation.expires_at).toLocaleDateString('hu-HU')}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">
+                    <span className="text-xs px-2 py-1 rounded bg-warning/20 text-warning">
                       Függőben
                     </span>
                   </div>

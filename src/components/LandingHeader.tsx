@@ -154,7 +154,7 @@ export default function LandingHeader({ className }: LandingHeaderProps) {
                 />
               </div>
             ) : (
-              <div className="relative h-full aspect-square bg-gradient-to-br from-turquoise-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+              <div className="relative h-full aspect-square bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-md">
                 <span
                   aria-hidden="true"
                   className="text-lg font-bold text-white uppercase tracking-wide"

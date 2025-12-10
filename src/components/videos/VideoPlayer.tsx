@@ -123,7 +123,7 @@ export function VideoPlayer({
               className="w-20 h-20 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-2xl min-h-[44px] min-w-[44px]"
               aria-label="Lejátszás"
             >
-              <Play className="w-10 h-10 text-teal-600 ml-1" />
+              <Play className="w-10 h-10 text-primary ml-1" />
             </button>
           </div>
         )}
@@ -150,13 +150,13 @@ export function VideoPlayer({
             <div className="flex items-center gap-4">
               <button
                 onClick={togglePlay}
-                className="text-white hover:text-teal-400 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-white hover:text-primary transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label={isPlaying ? 'Szünet' : 'Lejátszás'}
               >
                 {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
               </button>
               <button
-                className="text-white hover:text-teal-400 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-white hover:text-primary transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Hangerő"
               >
                 <Volume2 className="w-6 h-6" />
@@ -184,7 +184,7 @@ export function VideoPlayer({
               </select>
 
               <button
-                className="text-white hover:text-teal-400 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-white hover:text-primary transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Beállítások"
               >
                 <Settings className="w-6 h-6" />
@@ -192,7 +192,7 @@ export function VideoPlayer({
 
               <button
                 onClick={toggleFullscreen}
-                className="text-white hover:text-teal-400 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-white hover:text-primary transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Teljes képernyő"
               >
                 <Maximize className="w-6 h-6" />

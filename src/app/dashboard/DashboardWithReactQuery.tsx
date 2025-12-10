@@ -137,7 +137,7 @@ export function DashboardWithReactQuery() {
     return (
       <AppFrame title={t('dashboard.title')}>
         <div className="p-6">
-          <div className="text-red-600">Hiba történt az ajánlatok betöltésekor.</div>
+          <div className="text-danger">Hiba történt az ajánlatok betöltésekor.</div>
         </div>
       </AppFrame>
     );

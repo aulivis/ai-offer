@@ -2066,7 +2066,7 @@ export default function NewOfferWizard() {
       }}
     >
       <div
-        className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50"
+        className="min-h-screen bg-gradient-to-br from-bg via-bg to-bg"
         style={{ pointerEvents: 'auto' }}
       >
         <AppFrame
@@ -2081,7 +2081,7 @@ export default function NewOfferWizard() {
             Ugrás a tartalomhoz
           </a>
           <div className="space-y-6 sm:space-y-8" id="wizard-content">
-            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-pop ring-1 ring-slate-900/5 sm:p-5 sm:space-y-6">
+            <Card className="space-y-4 border-none bg-white/95 p-4 shadow-pop ring-1 ring-border/20 sm:p-5 sm:space-y-6">
               <StepIndicator steps={wizardSteps} />
               <WizardProgressIndicator
                 step={step as WizardStep}
@@ -2135,7 +2135,7 @@ export default function NewOfferWizard() {
             )}
             {step === 1 && false && (
               <section className="space-y-6">
-                <Card className="space-y-8 border-none bg-white/95 p-6 shadow-pop ring-1 ring-slate-900/5 sm:p-8 md:space-y-10">
+                <Card className="space-y-8 border-none bg-white/95 p-6 shadow-pop ring-1 ring-border/20 sm:p-8 md:space-y-10">
                   <div className="space-y-3">
                     <h2 className="text-body-large font-semibold text-fg">
                       {t('offers.wizard.steps.details')}
@@ -2148,7 +2148,7 @@ export default function NewOfferWizard() {
                   <div
                     className={`rounded-2xl border p-4 transition ${
                       isQuotaExhausted
-                        ? 'border-rose-200 bg-rose-50/90 text-rose-700'
+                        ? 'border-danger/30 bg-danger/10 text-danger'
                         : 'border-border bg-bg-muted/90 text-fg'
                     }`}
                   >
@@ -2535,7 +2535,7 @@ export default function NewOfferWizard() {
                 }}
               >
                 <section className="space-y-5" aria-label="Összegzés és előnézet">
-                  <Card className="space-y-5 border-none bg-white/95 p-5 shadow-pop ring-1 ring-slate-900/5 sm:p-6">
+                  <Card className="space-y-5 border-none bg-white/95 p-5 shadow-pop ring-1 ring-border/20 sm:p-6">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-1">
                         <h2 className="text-lg font-bold text-fg">
@@ -2634,7 +2634,7 @@ export default function NewOfferWizard() {
                             type="button"
                             onClick={handlePickImage}
                             disabled={imageLimitReached || !previewLocked || previewLoading}
-                            className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-fg-muted transition hover:border-border hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                            className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-fg-muted transition hover:border-border hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-fg-muted"
                           >
                             {t('richTextEditor.imageSection.insert')}
                           </Button>
@@ -2679,7 +2679,7 @@ export default function NewOfferWizard() {
                                     <Button
                                       type="button"
                                       onClick={() => handleRemoveImage(asset.key)}
-                                      className="self-start text-[11px] font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                      className="self-start text-[11px] font-semibold text-danger transition hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                                     >
                                       Eltávolítás
                                     </Button>
@@ -2796,7 +2796,7 @@ export default function NewOfferWizard() {
                   {/* Preview and Summary Section - 2 Column Layout */}
                   <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-2">
                     {/* Left Column: Preview Section */}
-                    <Card className="space-y-4 border-none bg-white/95 p-5 shadow-pop ring-1 ring-slate-900/5 sm:p-6">
+                    <Card className="space-y-4 border-none bg-white/95 p-5 shadow-pop ring-1 ring-border/20 sm:p-6">
                       <div>
                         <h2 className="text-sm font-semibold text-fg">
                           {t('offers.wizard.previewTemplates.previewHeading')}
@@ -2813,7 +2813,7 @@ export default function NewOfferWizard() {
                         type="button"
                         onClick={() => setIsPreviewModalOpen(true)}
                         disabled={!previewDocumentHtml && !previewLoading}
-                        className="w-full rounded-2xl border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-pop focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-border disabled:bg-slate-300 disabled:text-fg-muted disabled:shadow-none"
+                        className="w-full rounded-2xl border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-pop focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-border disabled:bg-border disabled:text-fg-muted disabled:shadow-none"
                       >
                         {previewLoading && !previewDocumentHtml ? (
                           <span className="flex items-center gap-2">
@@ -2856,7 +2856,7 @@ export default function NewOfferWizard() {
                     </Card>
 
                     {/* Right Column: Summary Section */}
-                    <Card className="space-y-5 border-none bg-white/95 p-6 shadow-pop ring-1 ring-slate-900/5 sm:p-7">
+                    <Card className="space-y-5 border-none bg-white/95 p-6 shadow-pop ring-1 ring-border/20 sm:p-7">
                       <div>
                         <h2 className="text-sm font-semibold text-fg">
                           {t('offers.wizard.steps.summary')}
@@ -2911,14 +2911,14 @@ export default function NewOfferWizard() {
                             })
                           }
                           disabled={loading}
-                          className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-fg-muted transition hover:border-border hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                          className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-fg-muted transition hover:border-border hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-fg-muted"
                         >
                           {t('offers.wizard.forms.details.templates.saveAction')}
                         </Button>
                         <Button
                           onClick={generate}
                           disabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
-                          className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
+                          className="w-full rounded-full bg-fg px-5 py-2.5 text-sm font-semibold text-primary-ink shadow-sm transition hover:bg-fg/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-border"
                         >
                           {loading ? 'Generálás…' : 'PDF generálása és mentés'}
                         </Button>
@@ -3155,7 +3155,7 @@ export default function NewOfferWizard() {
                           setIsPreviewModalOpen(false);
                           setIsPreviewFullscreen(true);
                         }}
-                        className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 text-sm font-medium text-fg transition hover:bg-bg-muted hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 text-sm font-medium text-fg transition hover:bg-bg-muted hover:border-border focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                         aria-label={t('wizard.preview.fullscreenButton')}
                       >
                         <svg

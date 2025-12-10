@@ -98,7 +98,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </nav>
 
         {/* Hero section */}
-        <div className="mb-12">
+        <header className="mb-12">
           <div className="flex items-center gap-3 mb-4">
             <span className="bg-teal-500 text-white text-sm px-4 py-1.5 rounded-full font-semibold">
               Ajánlatkészítés
@@ -152,7 +152,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               />
             </div>
           )}
-        </div>
+        </header>
       </article>
 
       {/* Main Content with Two-Column Layout */}

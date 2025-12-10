@@ -29,15 +29,15 @@ export function VideoChapters({ chapters }: VideoChaptersProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 mb-12">
-      <div className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden">
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-          <h2 className="font-bold text-gray-900 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-teal-500" />
+      <div className="bg-bg-muted rounded-2xl border-2 border-border overflow-hidden">
+        <div className="bg-bg px-6 py-4 border-b border-border">
+          <h2 className="font-bold text-fg flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" />
             <span>Videó tartalma</span>
           </h2>
         </div>
 
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {chapters.map((chapter, index) => (
             <button
               key={index}
@@ -45,11 +45,11 @@ export function VideoChapters({ chapters }: VideoChaptersProps) {
                 seekToTime(chapter.time);
                 setActiveChapter(index);
               }}
-              className={`w-full flex items-center gap-4 p-4 hover:bg-teal-50 transition-colors group text-left ${
-                activeChapter === index ? 'bg-teal-50 border-l-4 border-teal-500' : ''
+              className={`w-full flex items-center gap-4 p-4 hover:bg-primary/10 transition-colors group text-left ${
+                activeChapter === index ? 'bg-primary/10 border-l-4 border-primary' : ''
               }`}
             >
-              <div className="flex-shrink-0 w-24 h-16 bg-gray-200 rounded-lg overflow-hidden relative">
+              <div className="flex-shrink-0 w-24 h-16 bg-border rounded-lg overflow-hidden relative">
                 {chapter.thumbnail ? (
                   <Image
                     src={chapter.thumbnail}
@@ -58,8 +58,8 @@ export function VideoChapters({ chapters }: VideoChaptersProps) {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center">
-                    <Play className="w-6 h-6 text-white" />
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+                    <Play className="w-6 h-6 text-primary-ink" />
                   </div>
                 )}
               </div>
@@ -67,26 +67,26 @@ export function VideoChapters({ chapters }: VideoChaptersProps) {
                 <div className="flex items-center gap-3 mb-1">
                   <span
                     className={`text-sm font-mono font-semibold ${
-                      activeChapter === index ? 'text-teal-600' : 'text-gray-500'
+                      activeChapter === index ? 'text-primary' : 'text-fg-muted'
                     }`}
                   >
                     {chapter.timeFormatted}
                   </span>
                   <h3
-                    className={`font-semibold group-hover:text-teal-600 transition-colors ${
-                      activeChapter === index ? 'text-teal-600' : 'text-gray-900'
+                    className={`font-semibold group-hover:text-primary transition-colors ${
+                      activeChapter === index ? 'text-primary' : 'text-fg'
                     }`}
                   >
                     {chapter.title}
                   </h3>
                 </div>
-                <p className="text-sm text-gray-600">{chapter.description}</p>
+                <p className="text-sm text-fg-muted">{chapter.description}</p>
               </div>
               <Play
                 className={`w-5 h-5 transition-opacity ${
                   activeChapter === index
-                    ? 'text-teal-500 opacity-100'
-                    : 'text-gray-400 opacity-0 group-hover:opacity-100'
+                    ? 'text-primary opacity-100'
+                    : 'text-fg-muted opacity-0 group-hover:opacity-100'
                 }`}
               />
             </button>

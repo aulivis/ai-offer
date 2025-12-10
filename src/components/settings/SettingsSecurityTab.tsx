@@ -102,7 +102,7 @@ export function SettingsSecurityTab({
       </div>
 
       {/* Google - Connected */}
-      <div className="mb-4 rounded-2xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-teal-50 p-6">
+      <div className="mb-4 rounded-2xl border-2 border-success/30 bg-gradient-to-br from-success/10 to-primary/10 p-6">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-md">
@@ -223,8 +223,8 @@ export function SettingsSecurityTab({
 
         <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
           <div className="flex items-start gap-3">
-            <InformationCircleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
-            <div className="text-sm text-blue-800">
+            <InformationCircleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+            <div className="text-sm text-fg">
               <p className="mb-1 font-semibold">
                 {t('settings.authMethods.magicLink.howItWorks.title')}
               </p>
@@ -270,10 +270,10 @@ export function SettingsSecurityTab({
       </div>
 
       {/* Info box about security */}
-      <div className="rounded-xl border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-6">
+      <div className="rounded-xl border-2 border-accent/30 bg-gradient-to-r from-accent/10 to-accent/5 p-6">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100">
-            <LockClosedIcon className="h-5 w-5 text-purple-600" />
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-accent/20">
+            <LockClosedIcon className="h-5 w-5 text-accent" />
           </div>
           <div>
             <h3 className="mb-2 font-bold text-fg">
@@ -283,19 +283,19 @@ export function SettingsSecurityTab({
               {t('settings.authMethods.security.whyNoPassword.description')}
             </p>
             <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-success">
                 <CheckCircleIcon className="h-4 w-4" />
                 <span className="font-semibold">
                   {t('settings.authMethods.security.whyNoPassword.safer')}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-success">
                 <CheckCircleIcon className="h-4 w-4" />
                 <span className="font-semibold">
                   {t('settings.authMethods.security.whyNoPassword.simpler')}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-success">
                 <CheckCircleIcon className="h-4 w-4" />
                 <span className="font-semibold">
                   {t('settings.authMethods.security.whyNoPassword.faster')}
@@ -313,7 +313,7 @@ export function SettingsSecurityTab({
         </h2>
         <p className="mb-6 text-fg-muted">{t('settings.authMethods.security.email.description')}</p>
 
-        <div className="rounded-2xl border-2 border-slate-200 bg-white p-6">
+        <div className="rounded-2xl border-2 border-border bg-white p-6">
           <label className="mb-2 block text-sm font-semibold text-fg">
             {t('settings.authMethods.security.email.primaryLabel')}
           </label>
@@ -321,7 +321,7 @@ export function SettingsSecurityTab({
             <input
               type="email"
               value={email || ''}
-              className="flex-1 rounded-xl border-2 border-slate-200 px-4 py-3 outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="flex-1 rounded-xl border-2 border-border px-4 py-3 outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
               disabled
               aria-label={t('settings.authMethods.security.email.primaryLabel')}
             />

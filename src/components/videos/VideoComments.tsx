@@ -36,15 +36,15 @@ export function VideoComments({ videoId: _videoId }: VideoCommentsProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 mb-12">
-      <div className="bg-white rounded-2xl border-2 border-gray-200 p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Hozzászólások <span className="text-gray-500 font-normal">({comments.length})</span>
+      <div className="bg-bg-muted rounded-2xl border-2 border-border p-8">
+        <h2 className="text-2xl font-bold text-fg mb-6">
+          Hozzászólások <span className="text-fg-muted font-normal">({comments.length})</span>
         </h2>
 
         {/* Add comment */}
         <div className="mb-8">
           <form onSubmit={handleSubmit} className="flex gap-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center text-primary-ink font-bold flex-shrink-0">
               U
             </div>
             <div className="flex-1">
@@ -52,13 +52,13 @@ export function VideoComments({ videoId: _videoId }: VideoCommentsProps) {
                 placeholder="Add hozzá a véleményedet..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="w-full p-4 border-2 border-gray-200 rounded-xl resize-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all min-h-[100px]"
+                className="w-full p-4 border-2 border-border rounded-xl resize-none focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all min-h-[100px]"
                 rows={3}
               ></textarea>
               <div className="flex justify-end mt-2">
                 <button
                   type="submit"
-                  className="bg-teal-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal-600 transition-colors min-h-[44px]"
+                  className="bg-primary text-primary-ink px-6 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-colors min-h-[44px]"
                 >
                   Hozzászólás
                 </button>
@@ -71,21 +71,21 @@ export function VideoComments({ videoId: _videoId }: VideoCommentsProps) {
         <div className="space-y-6">
           {comments.map((comment) => (
             <div key={comment.id} className="flex gap-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center text-primary-ink font-bold flex-shrink-0">
                 {comment.avatar}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-gray-900">{comment.author}</span>
-                  <span className="text-sm text-gray-500">{comment.timeAgo}</span>
+                  <span className="font-semibold text-fg">{comment.author}</span>
+                  <span className="text-sm text-fg-muted">{comment.timeAgo}</span>
                 </div>
-                <p className="text-gray-700 mb-2">{comment.text}</p>
+                <p className="text-fg mb-2">{comment.text}</p>
                 <div className="flex items-center gap-4">
-                  <button className="text-sm text-gray-600 hover:text-teal-600 flex items-center gap-1 min-h-[44px]">
+                  <button className="text-sm text-fg-muted hover:text-primary flex items-center gap-1 min-h-[44px]">
                     <ThumbsUp className="w-4 h-4" />
                     <span>{comment.likes}</span>
                   </button>
-                  <button className="text-sm text-gray-600 hover:text-teal-600 min-h-[44px]">
+                  <button className="text-sm text-fg-muted hover:text-primary min-h-[44px]">
                     Válasz
                   </button>
                 </div>

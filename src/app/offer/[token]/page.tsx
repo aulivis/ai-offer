@@ -439,15 +439,23 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
           {/* Offer HTML Content - fully self-contained with inline styles */}
           {/* The new template system generates complete HTML documents with inline styles */}
           {inlineStyles && <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />}
-          <OfferDisplay html={bodyHtml} />
+          <article aria-labelledby="offer-title">
+            <h1 id="offer-title" className="sr-only">
+              {safeTitle || defaultTitle}
+            </h1>
+            <OfferDisplay html={bodyHtml} />
+          </article>
 
           {/* Response Form - Enhanced prominence - hidden in PDF mode */}
           {!isPdfMode && (
-            <div className="mt-12 mb-8">
+            <section className="mt-12 mb-8" aria-labelledby="offer-response-heading">
+              <h2 id="offer-response-heading" className="sr-only">
+                Ajánlat válasz
+              </h2>
               {existingResponse ? (
                 <div className="rounded-2xl border-4 border-success/40 bg-gradient-to-br from-success/20 to-success/10 p-10 text-center shadow-2xl">
                   <H2 className="mb-4 text-success">Köszönjük a válaszát!</H2>
-                  <p className="text-green-800 text-body-large font-medium mb-3">
+                  <p className="text-success text-body-large font-medium mb-3">
                     Ön már{' '}
                     {existingResponse.decision === 'accepted'
                       ? 'elfogadta'
@@ -456,7 +464,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
                         : 'kérdést tett fel'}{' '}
                     ezt az ajánlatra.
                   </p>
-                  <p className="text-body text-green-700">
+                  <p className="text-body text-success">
                     Válasz ideje: {new Date(existingResponse.created_at).toLocaleString('hu-HU')}
                   </p>
                 </div>
@@ -488,7 +496,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
                   />
                 </div>
               )}
-            </div>
+            </section>
           )}
         </div>
       </div>

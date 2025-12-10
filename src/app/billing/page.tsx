@@ -332,7 +332,7 @@ function PlanCard({
       {/* Popular Badge - Enhanced */}
       {isPopular && !isCurrent && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 px-5 py-1.5 text-body-small font-bold text-white shadow-2xl animate-pulse border-2 border-white/30">
+          <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary via-accent to-accent px-5 py-1.5 text-body-small font-bold text-primary-ink shadow-2xl animate-pulse border-2 border-primary-ink/30">
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
@@ -656,7 +656,7 @@ function BillingPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-bg via-bg-muted to-bg">
       <AppFrame
         title={t('billing.title')}
         description={t('billing.description')}
@@ -668,7 +668,7 @@ function BillingPageContent() {
           <Breadcrumb items={[{ label: t('billing.title') }]} />
           {/* Status Messages */}
           {status === 'success' && (
-            <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-100/50 p-5 shadow-sm">
+            <div className="rounded-2xl border border-success/30 bg-gradient-to-r from-success/10 to-success/20 p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <svg
                   className="h-5 w-5 flex-shrink-0 text-success"
@@ -688,7 +688,7 @@ function BillingPageContent() {
             </div>
           )}
           {status === 'cancel' && (
-            <div className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-amber-100/50 p-5 shadow-sm">
+            <div className="rounded-2xl border border-warning/30 bg-gradient-to-r from-warning/10 to-warning/20 p-5 shadow-sm">
               <div className="flex items-start gap-3">
                 <svg
                   className="h-5 w-5 flex-shrink-0 text-warning"
@@ -709,7 +709,10 @@ function BillingPageContent() {
           )}
 
           {/* Current Plan Section */}
-          <div className="mb-12">
+          <section className="mb-12" aria-labelledby="current-plan-heading">
+            <h2 id="current-plan-heading" className="sr-only">
+              {t('billing.currentPlan.title')}
+            </h2>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-h2 font-bold text-fg mb-2">{t('billing.currentPlan.title')}</h2>
@@ -718,7 +721,7 @@ function BillingPageContent() {
               {isLoadingData ? (
                 <Skeleton className="h-8 w-32 rounded-full" />
               ) : (
-                <span className="px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-xl font-bold shadow-lg flex items-center gap-2">
+                <span className="px-4 py-2 bg-gradient-to-r from-primary to-primary rounded-xl font-bold text-primary-ink shadow-lg flex items-center gap-2">
                   <Crown className="w-5 h-5" />
                   {plan ? t(planLabelKeys[plan]) : '—'}
                 </span>
@@ -734,7 +737,7 @@ function BillingPageContent() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4">
                 {/* Card 1: Usage - Most important, make it prominent */}
-                <div className="bg-gradient-to-br from-teal-500 to-blue-600 text-white rounded-2xl p-6 shadow-xl">
+                <div className="bg-gradient-to-br from-primary to-primary text-primary-ink rounded-2xl p-6 shadow-xl">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
                       <FileText className="w-5 h-5" />
@@ -923,7 +926,7 @@ function BillingPageContent() {
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
           {/* Pro Benefits Showcase for Pro users, Comparison Table for others */}
           {plan === 'pro' ? (
@@ -950,9 +953,9 @@ function BillingPageContent() {
                 </div>
 
                 {/* Feature 2 */}
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
-                    <Sparkles className="w-6 h-6 text-white" />
+                <div className="bg-gradient-to-br from-accent/10 to-accent/20 rounded-2xl p-6 border-2 border-accent/30">
+                  <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent rounded-xl flex items-center justify-center mb-4">
+                    <Sparkles className="w-6 h-6 text-primary-ink" />
                   </div>
                   <h4 className="text-h5 font-bold text-fg mb-2">AI szövegírás</h4>
                   <p className="text-body-small text-fg-muted mb-4">
@@ -965,9 +968,9 @@ function BillingPageContent() {
                 </div>
 
                 {/* Feature 3 */}
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 border-2 border-orange-200">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center mb-4">
-                    <Palette className="w-6 h-6 text-white" />
+                <div className="bg-gradient-to-br from-warning/10 to-warning/20 rounded-2xl p-6 border-2 border-warning/30">
+                  <div className="w-12 h-12 bg-gradient-to-br from-warning to-warning rounded-xl flex items-center justify-center mb-4">
+                    <Palette className="w-6 h-6 text-primary-ink" />
                   </div>
                   <h4 className="text-h5 font-bold text-fg mb-2">Prémium sablonok</h4>
                   <p className="text-body-small text-fg-muted mb-4">
@@ -980,9 +983,9 @@ function BillingPageContent() {
                 </div>
 
                 {/* Feature 4 */}
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
-                    <Headphones className="w-6 h-6 text-white" />
+                <div className="bg-gradient-to-br from-success/10 to-success/20 rounded-2xl p-6 border-2 border-success/30">
+                  <div className="w-12 h-12 bg-gradient-to-br from-success to-success rounded-xl flex items-center justify-center mb-4">
+                    <Headphones className="w-6 h-6 text-primary-ink" />
                   </div>
                   <h4 className="text-h5 font-bold text-fg mb-2">Prioritásos support</h4>
                   <p className="text-body-small text-fg-muted mb-4">
@@ -995,9 +998,9 @@ function BillingPageContent() {
                 </div>
 
                 {/* Feature 5 */}
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border-2 border-blue-200">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4">
-                    <FileText className="w-6 h-6 text-white" />
+                <div className="bg-gradient-to-br from-primary/10 to-primary/20 rounded-2xl p-6 border-2 border-primary/30">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary rounded-xl flex items-center justify-center mb-4">
+                    <FileText className="w-6 h-6 text-primary-ink" />
                   </div>
                   <h4 className="text-h5 font-bold text-fg mb-2">PDF export márkázással</h4>
                   <p className="text-body-small text-fg-muted mb-4">
@@ -1010,9 +1013,9 @@ function BillingPageContent() {
                 </div>
 
                 {/* Feature 6 */}
-                <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-6 border-2 border-indigo-200">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center mb-4">
-                    <Target className="w-6 h-6 text-white" />
+                <div className="bg-gradient-to-br from-accent/10 to-accent/20 rounded-2xl p-6 border-2 border-accent/30">
+                  <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent rounded-xl flex items-center justify-center mb-4">
+                    <Target className="w-6 h-6 text-primary-ink" />
                   </div>
                   <h4 className="text-h5 font-bold text-fg mb-2">Haladó elemzések</h4>
                   <p className="text-body-small text-fg-muted mb-4">
@@ -1183,7 +1186,7 @@ function BillingPageContent() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Payment method card */}
-                <Card className="border-2 border-gray-200">
+                <Card className="border-2 border-border">
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <CreditCard className="w-6 h-6 text-fg" />
@@ -1191,8 +1194,8 @@ function BillingPageContent() {
                     </div>
 
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <CreditCard className="w-6 h-6 text-white" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+                        <CreditCard className="w-6 h-6 text-primary-ink" />
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-fg">Nincs mentett kártya</div>
@@ -1219,7 +1222,7 @@ function BillingPageContent() {
                 </Card>
 
                 {/* Billing frequency card */}
-                <Card className="border-2 border-gray-200">
+                <Card className="border-2 border-border">
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <Calendar className="w-6 h-6 text-fg" />
@@ -1242,7 +1245,7 @@ function BillingPageContent() {
                     </div>
 
                     {plan === 'pro' && (
-                      <div className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200 rounded-xl p-4 mb-4">
+                      <div className="bg-gradient-to-r from-success/10 to-success/20 border-2 border-success/30 rounded-xl p-4 mb-4">
                         <div className="flex items-start gap-3">
                           <TrendingDown className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                           <div>
@@ -1258,7 +1261,7 @@ function BillingPageContent() {
                     )}
 
                     <Button
-                      className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white"
+                      className="w-full bg-gradient-to-r from-success to-success hover:from-success/90 hover:to-success/90 text-primary-ink"
                       onClick={async () => {
                         try {
                           const response = await fetch('/api/stripe/update-subscription', {
@@ -1336,7 +1339,7 @@ function BillingPageContent() {
 
               {/* Next invoice info card */}
               {(plan === 'pro' || plan === 'standard') && (
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-6 max-w-lg mx-auto mb-6">
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/30 rounded-2xl p-6 max-w-lg mx-auto mb-6">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Calendar className="w-6 h-6 text-primary" />
@@ -1571,7 +1574,7 @@ function PublicBillingLanding() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-5xl mx-auto text-center w-full">
             {/* Limited time badge */}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-green-500 text-white px-5 py-2 rounded-full mb-6 animate-pulse">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-success text-primary-ink px-5 py-2 rounded-full mb-6 animate-pulse">
               <Sparkles className="w-4 h-4" />
               <span className="font-semibold text-body-small">
                 🎉 Különleges ajánlat: 30% kedvezmény az első 3 hónapra
@@ -1580,7 +1583,7 @@ function PublicBillingLanding() {
 
             <H1 className="mb-6" fluid>
               Készíts{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-green-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-success">
                 3x gyorsabban
               </span>{' '}
               professzionális ajánlatokat
@@ -1619,7 +1622,7 @@ function PublicBillingLanding() {
                   Kezdd el ingyen
                 </span>
                 <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
-                <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <span className="absolute inset-0 bg-gradient-to-r from-warning to-warning opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               </Link>
               <div className="flex flex-wrap justify-center gap-6 text-white/90">
                 <div className="flex items-center gap-2">
@@ -1655,7 +1658,7 @@ function PublicBillingLanding() {
       {/* Enhanced Pricing Cards Section */}
       <section
         id="compare"
-        className="bg-gradient-to-b from-gray-50 to-white py-20 -mt-10 relative z-20"
+        className="bg-gradient-to-b from-bg to-bg-muted py-20 -mt-10 relative z-20"
       >
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
@@ -1669,7 +1672,7 @@ function PublicBillingLanding() {
             </div>
             <div className="grid lg:grid-cols-3 gap-8 items-center max-w-7xl mx-auto mt-16">
               {/* Free Plan */}
-              <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
+              <div className="bg-bg-muted rounded-2xl border-2 border-border p-8 hover:border-border transition-all h-full flex flex-col">
                 <div className="mb-6">
                   <h3 className="text-h3 font-bold text-fg mb-2">Ingyenes</h3>
                   <p className="text-fg-muted text-body-small mb-6">
@@ -1722,7 +1725,7 @@ function PublicBillingLanding() {
               </div>
 
               {/* Standard Plan */}
-              <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
+              <div className="bg-bg-muted rounded-2xl border-2 border-border p-8 hover:border-border transition-all h-full flex flex-col">
                 <div className="mb-6">
                   <h3 className="text-h3 font-bold text-fg mb-2">Vyndi Standard</h3>
                   <p className="text-fg-muted text-body-small mb-6">
@@ -1910,7 +1913,7 @@ function PublicBillingLanding() {
                 </div>
               </div>
               <div className="relative hidden md:block">
-                <div className="bg-gradient-to-br from-turquoise-500/20 to-blue-500/20 rounded-3xl p-8 border border-turquoise-500/30 backdrop-blur">
+                <div className="bg-gradient-to-br from-primary/20 to-primary/20 rounded-3xl p-8 border border-primary/30 backdrop-blur">
                   <div className="space-y-6">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 bg-primary/30 rounded-2xl flex items-center justify-center">
@@ -1961,11 +1964,11 @@ function PublicBillingLanding() {
             </div>
 
             {/* Enhanced Comparison Table */}
-            <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-200 overflow-hidden">
+            <div className="bg-bg-muted rounded-3xl shadow-xl border-2 border-border overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gradient-to-r from-navy-900 to-navy-800 text-white">
+                    <tr className="bg-gradient-to-r from-fg to-fg text-primary-ink">
                       <th className="px-8 py-5 text-left font-bold text-h5">Funkció</th>
                       <th className="px-8 py-5 text-center font-bold">Ingyenes</th>
                       <th className="px-8 py-5 text-center font-bold bg-primary/30">Standard</th>
@@ -1974,7 +1977,7 @@ function PublicBillingLanding() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-border">
                     {(
                       [
                         {
@@ -2188,7 +2191,7 @@ function PublicBillingLanding() {
               </div>
 
               {/* Testimonial with time saved */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200">
+              <div className="bg-gradient-to-br from-accent/10 to-accent/20 rounded-2xl p-8 border-2 border-accent/30">
                 <div className="flex items-center justify-center gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <Star key={i} className="w-5 h-5 text-warning fill-warning" />
@@ -2261,7 +2264,7 @@ function PublicBillingLanding() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-orange-200">
+                <div className="mt-4 pt-4 border-t border-warning/30">
                   <div className="flex items-center justify-center gap-2 text-warning text-body-small">
                     <CheckCircle className="w-4 h-4" />
                     <span>Ellenőrzött vásárló</span>
@@ -2398,12 +2401,12 @@ function PublicBillingLanding() {
               ].map((benefit, idx) => (
                 <div key={idx} className="text-center group cursor-default">
                   {/* Icon */}
-                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-turquoise-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all">
-                    <benefit.icon className="w-10 h-10 text-white" />
+                  <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary to-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all">
+                    <benefit.icon className="w-10 h-10 text-primary-ink" />
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-bold text-navy-900 text-h5 mb-2 group-hover:text-turquoise-600 transition-colors">
+                  <h3 className="font-bold text-fg text-h5 mb-2 group-hover:text-primary transition-colors">
                     {benefit.title}
                   </h3>
 

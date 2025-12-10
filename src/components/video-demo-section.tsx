@@ -42,8 +42,8 @@ export function VideoDemoSection() {
                   className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors group"
                   aria-label="Play video"
                 >
-                  <div className="w-20 h-20 rounded-full bg-teal-500 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-                    <Play className="w-10 h-10 text-white ml-1" />
+                  <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                    <Play className="w-10 h-10 text-primary-ink ml-1" />
                   </div>
                 </button>
               </>
@@ -83,7 +83,7 @@ export function VideoDemoSection() {
                 </div>
               </div>
               <div className="text-2xl md:text-3xl font-bold text-navy-900 mb-1">200+</div>
-              <div className="text-sm text-gray-600 font-medium">Aktív vállalkozás</div>
+              <div className="text-sm text-fg-muted font-medium">Aktív vállalkozás</div>
             </div>
 
             {/* Rating */}
@@ -119,7 +119,7 @@ export function VideoDemoSection() {
 
           <div className="grid md:grid-cols-3 gap-6 relative pt-12">
             {/* Point 1 */}
-            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-border group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -144,7 +144,7 @@ export function VideoDemoSection() {
             </div>
 
             {/* Point 2 */}
-            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-border group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">
@@ -169,7 +169,7 @@ export function VideoDemoSection() {
             </div>
 
             {/* Point 3 */}
-            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-gray-100 group h-full flex flex-col">
+            <div className="relative bg-white rounded-3xl p-4 shadow-lg hover:shadow-2xl transition-all border border-border group h-full flex flex-col">
               {/* Number badge at top - reduced by 50% */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
                 <div className="relative">

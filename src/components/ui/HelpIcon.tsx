@@ -19,7 +19,7 @@ export function HelpIcon({ content, label }: HelpIconProps) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         onBlur={() => setIsOpen(false)}
-        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border/60 bg-white text-slate-500 transition hover:border-slate-400 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border/60 bg-white text-fg-muted transition hover:border-border hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         aria-label={label}
         aria-expanded={isOpen}
       >
@@ -37,7 +37,7 @@ export function HelpIcon({ content, label }: HelpIconProps) {
       </button>
       {isOpen && (
         <div
-          className="absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 rounded-lg border border-border bg-white px-3 py-2 text-xs text-slate-700 shadow-lg"
+          className="absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 rounded-lg border border-border bg-white px-3 py-2 text-xs text-fg shadow-lg"
           role="tooltip"
         >
           <p>{content}</p>

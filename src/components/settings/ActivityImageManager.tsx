@@ -250,33 +250,33 @@ export function ActivityImageManager({
   };
 
   return (
-    <div className="mt-4 space-y-3 rounded-lg border border-border/60 bg-slate-50/50 p-4">
+    <div className="mt-4 space-y-3 rounded-lg border border-border/60 bg-bg-muted/50 p-4">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-1.5">
-            <h4 className="text-xs font-semibold text-slate-900">
+            <h4 className="text-xs font-semibold text-fg">
               {t('settings.activities.images.title')}
             </h4>
             <div className="relative">
               <InformationCircleIcon
-                className="h-3.5 w-3.5 text-slate-400 cursor-help"
+                className="h-3.5 w-3.5 text-fg-muted cursor-help"
                 onMouseEnter={() => setShowInfoTooltip(true)}
                 onMouseLeave={() => setShowInfoTooltip(false)}
               />
               {showInfoTooltip && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 text-xs text-slate-700 bg-white border border-border rounded-lg shadow-lg z-10">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 text-xs text-fg bg-bg-muted border border-border rounded-lg shadow-lg z-10">
                   {t('settings.proFeatures.referencePhotos.description')}
                 </div>
               )}
             </div>
             {!enabled && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-warning/10 px-1.5 py-0.5 text-[10px] font-semibold text-warning">
                 <LockClosedIcon className="h-2.5 w-2.5" />
                 PRO
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-[10px] text-slate-500">
+          <p className="mt-0.5 text-[10px] text-fg-muted">
             {enabled
               ? t('settings.activities.images.description', {
                   current: imagePaths.length,
@@ -317,14 +317,14 @@ export function ActivityImageManager({
               className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-white"
             >
               {loadingUrls ? (
-                <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                <div className="flex h-full w-full items-center justify-center bg-bg">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
               ) : imageUrls[path] ? (
                 <>
                   <Image
                     src={imageUrls[path]}
-                    alt="Reference"
+                    alt={`Reference image ${imagePaths.indexOf(path) + 1} for activity`}
                     fill
                     className="object-cover"
                     unoptimized
@@ -339,14 +339,14 @@ export function ActivityImageManager({
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(path)}
-                      className="absolute right-1 top-1 z-20 rounded-full bg-rose-500 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute right-1 top-1 z-20 rounded-full bg-danger p-1 opacity-0 transition-opacity group-hover:opacity-100"
                     >
-                      <TrashIcon className="h-3 w-3 text-white" />
+                      <TrashIcon className="h-3 w-3 text-danger-ink" />
                     </button>
                   )}
                 </>
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-400">
+                <div className="flex h-full w-full items-center justify-center bg-bg text-fg-muted">
                   <XMarkIcon className="h-6 w-6" />
                 </div>
               )}
@@ -355,23 +355,18 @@ export function ActivityImageManager({
         </div>
       )}
 
-      <Modal
-        open={Boolean(previewUrl)}
-        onClose={() => setPreviewUrl(null)}
-        size="xl"
-        preventBodyScroll
-      >
+      <Modal open={Boolean(previewUrl)} onClose={() => setPreviewUrl(null)} size="xl">
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-lg font-bold text-fg">
               {t('settings.activities.images.previewTitle')}
             </h3>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-fg-muted">
               {t('settings.activities.images.previewSubtitle')}
             </p>
           </div>
           {previewUrl && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-slate-100">
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-bg">
               <Image
                 src={previewUrl}
                 alt={t('settings.activities.images.previewAlt')}

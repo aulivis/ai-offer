@@ -1221,17 +1221,20 @@ export default function DashboardPage() {
 
               {/* Skeleton Loaders - Mobile optimized */}
               {loading && (
-                <div
-                  className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-1 md:grid-cols-2"
+                <section
+                  aria-labelledby="loading-offers-heading"
                   aria-busy="true"
                   aria-live="polite"
-                  role="status"
-                  aria-label="Loading offers..."
                 >
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <OfferCardSkeleton key={i} />
-                  ))}
-                </div>
+                  <h2 id="loading-offers-heading" className="sr-only">
+                    Ajánlatok betöltése
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 sm:grid-cols-1 md:grid-cols-2">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <OfferCardSkeleton key={i} />
+                    ))}
+                  </div>
+                </section>
               )}
 
               {/* Enhanced Empty State - Improved accessibility and mobile design */}

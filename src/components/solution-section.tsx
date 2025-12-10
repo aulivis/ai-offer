@@ -7,8 +7,8 @@ export function SolutionSection() {
     {
       metric: 'Ajánlatkészítés ideje',
       icon: Clock,
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600',
+      iconBg: 'bg-primary/20',
+      iconColor: 'text-primary',
       before: { value: '2-4 óra', subtitle: 'lassú, manuális folyamat' },
       after: { value: '5-10 perc', subtitle: 'automatizált' },
       improvement: '~70% kevesebb idő',
@@ -16,8 +16,8 @@ export function SolutionSection() {
     {
       metric: 'Hibák aránya',
       icon: AlertTriangle,
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-600',
+      iconBg: 'bg-warning/20',
+      iconColor: 'text-warning',
       before: { value: 'Gyakori', subtitle: 'kézi ellenőrzést igényel' },
       after: { value: 'Automatikus hibaszűrés', subtitle: 'AI ellenőrzés' },
       improvement: '~95% pontosság',
@@ -25,8 +25,8 @@ export function SolutionSection() {
     {
       metric: 'Dizájn és márkahűség',
       icon: Palette,
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600',
+      iconBg: 'bg-accent/20',
+      iconColor: 'text-accent',
       before: { value: 'Kézi formázás', subtitle: 'eltérő megjelenés' },
       after: { value: 'Automatikus branding', subtitle: 'egységes sablonok' },
       improvement: '~100% márkahű',
@@ -36,13 +36,13 @@ export function SolutionSection() {
   return (
     <section
       id="solution"
-      className="py-20 bg-gradient-to-br from-turquoise-50 to-blue-50 scroll-mt-20"
+      className="py-20 bg-gradient-to-br from-primary/5 to-primary/5 scroll-mt-20"
     >
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
           {/* Enhanced badge with icon */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-full font-semibold text-sm mb-6 border border-primary/30">
             <Check className="w-4 h-4" />A MEGOLDÁS
           </div>
 
@@ -50,7 +50,7 @@ export function SolutionSection() {
             A Vyndi elkészíti helyetted az ajánlataidat – gyorsan, pontosan, egységesen
           </h2>
 
-          <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed text-pretty">
+          <p className="text-xl md:text-2xl text-fg-muted max-w-4xl mx-auto leading-relaxed text-pretty">
             Spórolj órákat minden projekten, és érj el akár 70%-os időmegtakarítást teljes
             automatizálással.
           </p>
@@ -66,13 +66,13 @@ export function SolutionSection() {
               transform: 'translateX(-50%)',
             }}
           >
-            <div className="bg-yellow-400 text-navy-900 font-bold text-body-small px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
+            <div className="bg-warning text-navy-900 font-bold text-body-small px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
               Ajánlott
             </div>
           </div>
 
           {/* Enhanced table with better visual hierarchy and shadows */}
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-border">
             <style
               dangerouslySetInnerHTML={{
                 __html: `
@@ -102,15 +102,15 @@ export function SolutionSection() {
                   {/* Traditional column with red accent */}
                   <div className="p-4 md:p-6 text-center border-l border-white/10">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-                        <X className="w-5 h-5 text-red-400" />
+                      <div className="w-8 h-8 bg-danger/20 rounded-full flex items-center justify-center">
+                        <X className="w-5 h-5 text-danger" />
                       </div>
                     </div>
                     <h3 className="font-bold text-base md:text-lg">Hagyományos</h3>
                   </div>
 
                   {/* Vyndi AI column with turquoise accent and highlight */}
-                  <div className="p-4 md:p-6 text-center border-l border-white/10 bg-turquoise-600 relative">
+                  <div className="p-4 md:p-6 text-center border-l border-white/10 bg-primary relative">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                         <Check className="w-5 h-5 text-white" />
@@ -122,8 +122,8 @@ export function SolutionSection() {
                   {/* Improvement column with green accent */}
                   <div className="p-4 md:p-6 text-center border-l border-white/10">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-green-400" />
+                      <div className="w-8 h-8 bg-success/20 rounded-full flex items-center justify-center">
+                        <TrendingUp className="w-5 h-5 text-success" />
                       </div>
                     </div>
                     <h3 className="font-bold text-base md:text-lg">Fejlődés</h3>
@@ -138,7 +138,7 @@ export function SolutionSection() {
                   return (
                     <div
                       key={index}
-                      className="grid border-t border-gray-200 hover:bg-gray-50 transition-colors solution-table-row"
+                      className="grid border-t border-border hover:bg-bg transition-colors solution-table-row"
                     >
                       {/* Row Label */}
                       <div className="p-4 md:p-6 flex items-center gap-3">
@@ -155,36 +155,36 @@ export function SolutionSection() {
                       </div>
 
                       {/* Traditional Value */}
-                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-gray-200 bg-red-50/50">
+                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-border bg-danger/10">
                         <div className="text-center">
                           <div
-                            className={`${isFirstRow ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-bold text-red-600 mb-1`}
+                            className={`${isFirstRow ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-bold text-danger mb-1`}
                           >
                             {item.before.value}
                           </div>
-                          <div className="text-xs md:text-sm text-gray-500">
+                          <div className="text-xs md:text-sm text-fg-muted">
                             {item.before.subtitle}
                           </div>
                         </div>
                       </div>
 
                       {/* Vyndi AI Value */}
-                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-gray-200 bg-turquoise-50">
+                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-border bg-primary/10">
                         <div className="text-center">
                           <div
-                            className={`${isFirstRow ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-bold text-turquoise-600 mb-1`}
+                            className={`${isFirstRow ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'} font-bold text-primary mb-1`}
                           >
                             {item.after.value}
                           </div>
-                          <div className="text-xs md:text-sm text-gray-600">
+                          <div className="text-xs md:text-sm text-fg-muted">
                             {item.after.subtitle}
                           </div>
                         </div>
                       </div>
 
                       {/* Improvement */}
-                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-gray-200">
-                        <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold border border-green-300">
+                      <div className="p-4 md:p-6 flex items-center justify-center border-l border-border">
+                        <div className="inline-flex items-center gap-2 bg-success/20 text-success px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold border border-success/30">
                           <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
                           {item.improvement}
                         </div>
@@ -196,7 +196,7 @@ export function SolutionSection() {
             </div>
 
             {/* Mobile scroll hint */}
-            <div className="md:hidden px-6 py-3 bg-gray-100 text-center text-sm text-gray-600 border-t border-gray-200">
+            <div className="md:hidden px-6 py-3 bg-bg text-center text-sm text-fg-muted border-t border-border">
               ← Görgess vízszintesen a teljes táblázatért →
             </div>
           </div>
@@ -204,7 +204,7 @@ export function SolutionSection() {
 
         {/* CTA Section */}
         <div className="text-center mt-16">
-          <p className="text-lg text-gray-600 mb-6 text-pretty">
+          <p className="text-lg text-fg-muted mb-6 text-pretty">
             Tapasztald meg, milyen gyors és egyszerű lehet az ajánlatkészítés. Készítsd el az első
             ajánlatodat még ma – ingyen.
           </p>

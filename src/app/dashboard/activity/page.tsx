@@ -194,15 +194,15 @@ function ActivityLogPageContent() {
   const getNotificationIcon = (type: string, decision?: string) => {
     if (type === 'response') {
       return decision === 'accepted' ? (
-        <CheckIcon className="h-5 w-5 text-green-600" />
+        <CheckIcon className="h-5 w-5 text-success" />
       ) : (
-        <XMarkIcon className="h-5 w-5 text-red-600" />
+        <XMarkIcon className="h-5 w-5 text-danger" />
       );
     }
     if (type === 'view') {
-      return <EyeIcon className="h-5 w-5 text-blue-600" />;
+      return <EyeIcon className="h-5 w-5 text-primary" />;
     }
-    return <LinkIcon className="h-5 w-5 text-purple-600" />;
+    return <LinkIcon className="h-5 w-5 text-accent" />;
   };
 
   // Group notifications by date
@@ -281,7 +281,7 @@ function ActivityLogPageContent() {
                     <Card
                       key={notification.id}
                       className={`p-4 transition ${
-                        !notification.isRead ? 'bg-blue-50/50 border-blue-200' : ''
+                        !notification.isRead ? 'bg-primary/10 border-primary/30' : ''
                       }`}
                     >
                       <div className="flex items-start gap-3">

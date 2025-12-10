@@ -397,7 +397,7 @@ export default function GuidePage() {
         {/* Section 7: Összegzés */}
         <section id="osszegzes" className="mb-12 scroll-mt-8">
           <H2 className="mb-4">7. Összegzés</H2>
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50">
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
             <p className="mb-4 text-lg font-semibold text-fg">
               A tökéletes ajánlat kulcsfontosságú elemei:
             </p>

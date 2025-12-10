@@ -114,11 +114,11 @@ export function TestimonialSection() {
   const currentTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section className="py-20 bg-gradient-to-br from-bg to-primary/5">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-turquoise-100 text-turquoise-700 rounded-full font-semibold text-sm mb-6 border border-turquoise-300">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-full font-semibold text-sm mb-6 border border-primary/30">
             <Star className="w-4 h-4" />
             ÜGYFELEINK MONDJÁK
           </div>
@@ -127,7 +127,7 @@ export function TestimonialSection() {
             Csatlakozz a Vyndi közösségéhez
           </h2>
 
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto text-pretty">
+          <p className="text-xl text-fg-muted max-w-3xl mx-auto text-pretty">
             Már 200+ vállalkozás készít professzionális ajánlatokat percek alatt a Vyndivel. Íme
             néhány tapasztalatuk.
           </p>
@@ -137,39 +137,39 @@ export function TestimonialSection() {
         {/* Enhanced stats with icons, cards, and larger numbers */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-20">
           {/* Stat 1: Active Users */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
-            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-              <Users className="w-7 h-7 text-blue-600" />
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-border text-center">
+            <div className="w-14 h-14 bg-primary/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <Users className="w-7 h-7 text-primary" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">200+</div>
-            <div className="text-gray-600 font-medium">Aktív felhasználó</div>
+            <div className="text-fg-muted font-medium">Aktív felhasználó</div>
           </div>
 
           {/* Stat 2: Proposals Created */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
-            <div className="w-14 h-14 bg-turquoise-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-              <FileCheck className="w-7 h-7 text-turquoise-600" />
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-border text-center">
+            <div className="w-14 h-14 bg-primary/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <FileCheck className="w-7 h-7 text-primary" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">10K+</div>
-            <div className="text-gray-600 font-medium">Létrehozott ajánlat</div>
+            <div className="text-fg-muted font-medium">Létrehozott ajánlat</div>
           </div>
 
           {/* Stat 3: Satisfaction Rate */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
-            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-              <ThumbsUp className="w-7 h-7 text-green-600" />
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-border text-center">
+            <div className="w-14 h-14 bg-success/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <ThumbsUp className="w-7 h-7 text-success" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">98%</div>
-            <div className="text-gray-600 font-medium">Elégedettségi mutató</div>
+            <div className="text-fg-muted font-medium">Elégedettségi mutató</div>
           </div>
 
           {/* Stat 4: Support */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 text-center">
-            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-              <Headphones className="w-7 h-7 text-purple-600" />
+          <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-border text-center">
+            <div className="w-14 h-14 bg-accent/20 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <Headphones className="w-7 h-7 text-accent" />
             </div>
             <div className="text-4xl md:text-5xl font-bold text-navy-900 mb-2">24/7</div>
-            <div className="text-gray-600 font-medium">Ügyfélszolgálat</div>
+            <div className="text-fg-muted font-medium">Ügyfélszolgálat</div>
           </div>
         </div>
 
@@ -177,21 +177,21 @@ export function TestimonialSection() {
         <div className="max-w-5xl mx-auto relative">
           {/* Enhanced testimonial card with better design and prominence */}
           <div
-            className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-200 relative overflow-hidden"
+            className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-border relative overflow-hidden"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
             {/* Decorative Quote Mark */}
             <div className="absolute top-8 right-8 opacity-10">
-              <Quote className="w-32 h-32 text-turquoise-500" />
+              <Quote className="w-32 h-32 text-primary" />
             </div>
 
             {/* Profile Section */}
             <div className="flex items-start gap-6 mb-8 relative z-10">
               {/* Avatar with Verification Badge */}
               <div className="relative flex-shrink-0">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden ring-4 ring-turquoise-100">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden ring-4 ring-primary/20">
                   <Image
                     src={currentTestimonial.image || '/placeholder.svg'}
                     alt={currentTestimonial.name}
@@ -202,8 +202,8 @@ export function TestimonialSection() {
                   />
                 </div>
                 {currentTestimonial.verified && (
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-turquoise-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                    <CheckCircle className="w-5 h-5 text-white" />
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                    <CheckCircle className="w-5 h-5 text-primary-ink" />
                   </div>
                 )}
               </div>
@@ -213,14 +213,14 @@ export function TestimonialSection() {
                 <h3 className="text-2xl md:text-3xl font-bold text-navy-900 mb-2 text-balance">
                   {currentTestimonial.name}
                 </h3>
-                <p className="text-gray-600 text-lg mb-4 text-pretty">
+                <p className="text-fg-muted text-lg mb-4 text-pretty">
                   {currentTestimonial.role} • {currentTestimonial.company}
                 </p>
 
                 {/* Larger, more prominent star rating */}
                 <div className="flex items-center gap-1">
                   {[...Array(currentTestimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-6 h-6 fill-warning text-warning" />
                   ))}
                 </div>
               </div>
@@ -228,7 +228,7 @@ export function TestimonialSection() {
 
             {/* Quote */}
             {/* Larger, more readable quote text */}
-            <blockquote className="text-xl md:text-2xl text-gray-700 leading-relaxed mb-8 relative z-10 italic text-pretty">
+            <blockquote className="text-xl md:text-2xl text-fg leading-relaxed mb-8 relative z-10 italic text-pretty">
               &ldquo;{currentTestimonial.quote}&rdquo;
             </blockquote>
 
@@ -240,7 +240,7 @@ export function TestimonialSection() {
                 return (
                   <div
                     key={index}
-                    className="inline-flex items-center gap-3 bg-turquoise-100 text-turquoise-700 px-6 py-3 rounded-full font-bold text-base border border-turquoise-300"
+                    className="inline-flex items-center gap-3 bg-primary/20 text-primary px-6 py-3 rounded-full font-bold text-base border border-primary/30"
                   >
                     <Icon className="w-5 h-5" />
                     {metric.label}
@@ -256,7 +256,7 @@ export function TestimonialSection() {
               {/* Better styled navigation buttons */}
               <button
                 onClick={goToPrevious}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200 z-20 min-h-[44px] min-w-[44px]"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-bg transition-colors border border-border z-20 min-h-[44px] min-w-[44px]"
                 aria-label="Previous testimonial"
               >
                 <ChevronLeft className="w-6 h-6 text-navy-900" />
@@ -264,7 +264,7 @@ export function TestimonialSection() {
 
               <button
                 onClick={goToNext}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200 z-20 min-h-[44px] min-w-[44px]"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-bg transition-colors border border-border z-20 min-h-[44px] min-w-[44px]"
                 aria-label="Next testimonial"
               >
                 <ChevronRight className="w-6 h-6 text-navy-900" />
@@ -281,8 +281,8 @@ export function TestimonialSection() {
                   onClick={() => setActiveIndex(index)}
                   className={`transition-all rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     index === activeIndex
-                      ? 'w-8 h-3 bg-turquoise-500'
-                      : 'w-3 h-3 bg-gray-300 hover:bg-gray-400'
+                      ? 'w-8 h-3 bg-primary'
+                      : 'w-3 h-3 bg-border hover:bg-border/80'
                   }`}
                   aria-label={`Go to testimonial ${index + 1}`}
                 />
@@ -294,7 +294,7 @@ export function TestimonialSection() {
         {/* Trust Indicators */}
         {/* Added trust indicators section */}
         <div className="mt-16 text-center">
-          <p className="text-gray-600 mb-6 text-lg text-pretty">
+          <p className="text-fg-muted mb-6 text-lg text-pretty">
             Csatlakozz a sikeres vállalkozások közösségéhez. Kezdd el ingyenes fiókkal, és készítsd
             el az első ajánlatodat 5 perc alatt.
           </p>

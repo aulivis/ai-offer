@@ -318,7 +318,14 @@ export default function SettingsPage() {
                   <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 w-full min-h-[400px]">
                     <TabsContent value="profile" className="mt-0">
                       {activeTab === 'profile' && (
-                        <div className="space-y-8 w-full">
+                        <section
+                          // eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings
+                          aria-labelledby="profile-settings-heading"
+                          className="space-y-8 w-full"
+                        >
+                          <h2 id="profile-settings-heading" className="sr-only">
+                            {t('settings.profile.heading')}
+                          </h2>
                           <SettingsCompanySection
                             profile={profile}
                             errors={errors.general}
@@ -358,19 +365,25 @@ export default function SettingsPage() {
                           <div className="border-t-2 border-border/60 pt-8">
                             <SettingsEmailSubscriptionSection />
                           </div>
-                        </div>
+                        </section>
                       )}
                     </TabsContent>
 
                     <TabsContent value="security" className="mt-0">
                       {activeTab === 'security' && (
                         <SectionErrorBoundary sectionName={t('settings.authMethods.title')}>
-                          <SettingsSecurityTab
-                            googleLinked={googleLinked}
-                            linkingGoogle={linkingGoogle}
-                            email={email}
-                            onLinkGoogle={startGoogleLink}
-                          />
+                          {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
+                          <section aria-labelledby="security-settings-heading">
+                            <h2 id="security-settings-heading" className="sr-only">
+                              {t('settings.security.heading')}
+                            </h2>
+                            <SettingsSecurityTab
+                              googleLinked={googleLinked}
+                              linkingGoogle={linkingGoogle}
+                              email={email}
+                              onLinkGoogle={startGoogleLink}
+                            />
+                          </section>
                         </SectionErrorBoundary>
                       )}
                     </TabsContent>
@@ -378,11 +391,17 @@ export default function SettingsPage() {
                     <TabsContent value="templates" className="mt-0">
                       {activeTab === 'templates' && (
                         <SectionErrorBoundary sectionName={t('settings.templates.title')}>
-                          <SettingsTemplatesSection
-                            selectedTemplateId={selectedTemplateId}
-                            plan={plan}
-                            onTemplateSelect={handleTemplateSelect}
-                          />
+                          {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
+                          <section aria-labelledby="templates-settings-heading">
+                            <h2 id="templates-settings-heading" className="sr-only">
+                              {t('settings.templates.heading')}
+                            </h2>
+                            <SettingsTemplatesSection
+                              selectedTemplateId={selectedTemplateId}
+                              plan={plan}
+                              onTemplateSelect={handleTemplateSelect}
+                            />
+                          </section>
                         </SectionErrorBoundary>
                       )}
                     </TabsContent>
@@ -390,71 +409,77 @@ export default function SettingsPage() {
                     <TabsContent value="activities" className="mt-0">
                       {activeTab === 'activities' && (
                         <SectionErrorBoundary sectionName={t('settings.activities.title')}>
-                          <SettingsActivitiesSection
-                            activities={acts}
-                            newActivity={newAct}
-                            saving={actSaving}
-                            deletingId={actDeletingId}
-                            plan={plan}
-                            defaultActivityId={profile.default_activity_id}
-                            onNewActivityChange={setNewAct}
-                            onAddActivity={addActivity}
-                            onDeleteActivity={deleteActivity}
-                            onActivityImagesChange={async (activityId, imagePaths) => {
-                              try {
-                                await updateActivityImages(activityId, imagePaths);
-                                showToast({
-                                  title: t('toasts.settings.saveSuccess'),
-                                  description: '',
-                                  variant: 'success',
-                                });
-                              } catch (error) {
-                                logger.error('Failed to save reference images', error, {
-                                  activityId,
-                                });
-                                showToast({
-                                  title: t('errors.settings.saveFailed', {
-                                    message: 'Nem sikerült menteni a referenciafotókat',
-                                  }),
-                                  description:
-                                    error instanceof Error ? error.message : 'Ismeretlen hiba',
-                                  variant: 'error',
-                                });
-                              }
-                            }}
-                            onDefaultActivityChange={async (activityId) => {
-                              if (!user) return;
-                              try {
-                                setProfile((p) => ({ ...p, default_activity_id: activityId }));
-                                const { error } = await supabase
-                                  .from('profiles')
-                                  .update({ default_activity_id: activityId })
-                                  .eq('id', user.id);
-                                if (error) {
-                                  throw error;
+                          {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
+                          <section aria-labelledby="activities-settings-heading">
+                            <h2 id="activities-settings-heading" className="sr-only">
+                              {t('settings.activities.heading')}
+                            </h2>
+                            <SettingsActivitiesSection
+                              activities={acts}
+                              newActivity={newAct}
+                              saving={actSaving}
+                              deletingId={actDeletingId}
+                              plan={plan}
+                              defaultActivityId={profile.default_activity_id}
+                              onNewActivityChange={setNewAct}
+                              onAddActivity={addActivity}
+                              onDeleteActivity={deleteActivity}
+                              onActivityImagesChange={async (activityId, imagePaths) => {
+                                try {
+                                  await updateActivityImages(activityId, imagePaths);
+                                  showToast({
+                                    title: t('toasts.settings.saveSuccess'),
+                                    description: '',
+                                    variant: 'success',
+                                  });
+                                } catch (error) {
+                                  logger.error('Failed to save reference images', error, {
+                                    activityId,
+                                  });
+                                  showToast({
+                                    title: t('errors.settings.saveFailed', {
+                                      message: 'Nem sikerült menteni a referenciafotókat',
+                                    }),
+                                    description:
+                                      error instanceof Error ? error.message : 'Ismeretlen hiba',
+                                    variant: 'error',
+                                  });
                                 }
-                                showToast({
-                                  title: t('toasts.settings.saveSuccess'),
-                                  description: '',
-                                  variant: 'success',
-                                });
-                              } catch (error) {
-                                logger.error('Failed to save default activity', error, {
-                                  activityId,
-                                });
-                                showToast({
-                                  title: t('errors.settings.saveFailed', {
-                                    message:
-                                      'Nem sikerült menteni az alapértelmezett tevékenységet',
-                                  }),
-                                  description:
-                                    error instanceof Error ? error.message : 'Ismeretlen hiba',
-                                  variant: 'error',
-                                });
-                              }
-                            }}
-                            onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
-                          />
+                              }}
+                              onDefaultActivityChange={async (activityId) => {
+                                if (!user) return;
+                                try {
+                                  setProfile((p) => ({ ...p, default_activity_id: activityId }));
+                                  const { error } = await supabase
+                                    .from('profiles')
+                                    .update({ default_activity_id: activityId })
+                                    .eq('id', user.id);
+                                  if (error) {
+                                    throw error;
+                                  }
+                                  showToast({
+                                    title: t('toasts.settings.saveSuccess'),
+                                    description: '',
+                                    variant: 'success',
+                                  });
+                                } catch (error) {
+                                  logger.error('Failed to save default activity', error, {
+                                    activityId,
+                                  });
+                                  showToast({
+                                    title: t('errors.settings.saveFailed', {
+                                      message:
+                                        'Nem sikerült menteni az alapértelmezett tevékenységet',
+                                    }),
+                                    description:
+                                      error instanceof Error ? error.message : 'Ismeretlen hiba',
+                                    variant: 'error',
+                                  });
+                                }
+                              }}
+                              onOpenPlanUpgradeDialog={openPlanUpgradeDialog}
+                            />
+                          </section>
                         </SectionErrorBoundary>
                       )}
                     </TabsContent>
@@ -462,16 +487,22 @@ export default function SettingsPage() {
                     <TabsContent value="guarantees" className="mt-0">
                       {activeTab === 'guarantees' && (
                         <SectionErrorBoundary sectionName={t('settings.guarantees.title')}>
-                          <SettingsGuaranteesSection
-                            activities={acts}
-                            guarantees={guarantees}
-                            addLoading={guaranteeAddLoading}
-                            busyGuaranteeId={guaranteeBusyId}
-                            onAddGuarantee={addGuaranteeEntry}
-                            onUpdateGuarantee={updateGuaranteeEntry}
-                            onDeleteGuarantee={deleteGuaranteeEntry}
-                            onToggleAttachment={toggleGuaranteeAttachment}
-                          />
+                          {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
+                          <section aria-labelledby="guarantees-settings-heading">
+                            <h2 id="guarantees-settings-heading" className="sr-only">
+                              {t('settings.guarantees.heading')}
+                            </h2>
+                            <SettingsGuaranteesSection
+                              activities={acts}
+                              guarantees={guarantees}
+                              addLoading={guaranteeAddLoading}
+                              busyGuaranteeId={guaranteeBusyId}
+                              onAddGuarantee={addGuaranteeEntry}
+                              onUpdateGuarantee={updateGuaranteeEntry}
+                              onDeleteGuarantee={deleteGuaranteeEntry}
+                              onToggleAttachment={toggleGuaranteeAttachment}
+                            />
+                          </section>
                         </SectionErrorBoundary>
                       )}
                     </TabsContent>
@@ -479,7 +510,14 @@ export default function SettingsPage() {
                     <TabsContent value="testimonials" className="mt-0">
                       {activeTab === 'testimonials' && (
                         <SectionErrorBoundary sectionName={t('settings.testimonials.title')}>
-                          <div className="space-y-8 w-full">
+                          <section
+                            // eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings
+                            aria-labelledby="testimonials-settings-heading"
+                            className="space-y-8 w-full"
+                          >
+                            <h2 id="testimonials-settings-heading" className="sr-only">
+                              {t('settings.testimonials.heading')}
+                            </h2>
                             <div className="mb-8">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
@@ -534,17 +572,21 @@ export default function SettingsPage() {
                                 </div>
                               )}
                             </div>
-                          </div>
+                          </section>
                         </SectionErrorBoundary>
                       )}
                     </TabsContent>
 
                     <TabsContent value="team" className="mt-0">
                       {activeTab === 'team' && (
-                        <SectionErrorBoundary
-                          sectionName={t('settings.team.title', { default: 'Csapatkezelés' })}
-                        >
-                          <SettingsTeamSection plan={plan} />
+                        <SectionErrorBoundary sectionName={t('settings.team.title')}>
+                          {/* eslint-disable-next-line no-hardcoded-ui-strings/no-hardcoded-ui-strings */}
+                          <section aria-labelledby="team-settings-heading">
+                            <h2 id="team-settings-heading" className="sr-only">
+                              {t('settings.team.heading')}
+                            </h2>
+                            <SettingsTeamSection plan={plan} />
+                          </section>
                         </SectionErrorBoundary>
                       )}
                     </TabsContent>
