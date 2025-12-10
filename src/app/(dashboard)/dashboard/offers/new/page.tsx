@@ -562,15 +562,11 @@ export default function NewOfferPage() {
                     <Card>
                       <CardHeader>
                         <h2 className="text-sm font-semibold text-slate-700">
-                          {t('offers.wizard.aiText.heading', {
-                            defaultValue: 'AI generált szöveg',
-                          })}
+                          {t('offers.wizard.aiText.heading')}
                         </h2>
                       </CardHeader>
                       <div className="text-sm text-slate-500">
-                        {t('offers.wizard.aiText.generating', {
-                          defaultValue: 'Szöveg generálása folyamatban...',
-                        })}
+                        {t('offers.wizard.aiText.generating')}
                       </div>
                     </Card>
                   )}
@@ -578,9 +574,7 @@ export default function NewOfferPage() {
                     <Card>
                       <CardHeader>
                         <h2 className="text-sm font-semibold text-slate-700">
-                          {t('offers.wizard.aiText.heading', {
-                            defaultValue: 'AI generált szöveg',
-                          })}
+                          {t('offers.wizard.aiText.heading')}
                         </h2>
                       </CardHeader>
                       <div className="text-sm text-rose-600">{previewError}</div>
@@ -592,9 +586,7 @@ export default function NewOfferPage() {
                       <Card>
                         <CardHeader>
                           <h2 className="text-sm font-semibold text-slate-700">
-                            {t('offers.wizard.aiText.heading', {
-                              defaultValue: 'AI generált szöveg',
-                            })}
+                            {t('offers.wizard.aiText.heading')}
                           </h2>
                         </CardHeader>
                         <div

@@ -1448,6 +1448,10 @@ export const hu = {
           'Az AI előnézet az Összegzés lépésben lesz elérhető, miután kitöltötted a szükséges adatokat.',
         loadingHint: 'Ez néhány másodpercet is igénybe vehet.',
       },
+      aiText: {
+        heading: 'AI generált szöveg',
+        generating: 'Szöveg generálása folyamatban...',
+      },
       quota: {
         availableTitle: 'Havi kvóta állapota',
         availableDescription: 'Az ajánlat generálása a havi keretedből foglal.',
