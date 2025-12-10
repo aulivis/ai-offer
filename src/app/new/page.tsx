@@ -695,7 +695,7 @@ export default function NewOfferWizard() {
     selectedGuaranteeIds,
     guarantees,
     scheduleItems,
-    selectedPdfTemplateId,
+    ...(selectedPdfTemplateId !== null && { selectedPdfTemplateId }),
     defaultTemplateId: availablePdfTemplates[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID,
   });
 

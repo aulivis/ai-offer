@@ -42,7 +42,7 @@ type UseWizardPreviewOptions = {
   selectedGuaranteeIds?: string[];
   guarantees?: Array<{ id: string; text: string }>;
   scheduleItems?: string[];
-  selectedPdfTemplateId?: string;
+  selectedPdfTemplateId?: string | undefined;
   defaultTemplateId?: string;
 };
 
