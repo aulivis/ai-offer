@@ -849,6 +849,10 @@ export default function NewOfferWizard() {
   }, [allPdfTemplates, availablePdfTemplates, selectedPdfTemplateId]);
   const selectedPdfTemplateLabel = selectedPdfTemplate?.name ?? null;
 
+  // Refs to store latest reload functions to avoid infinite loops in useEffect
+  const reloadActivitiesRef = useRef<(() => Promise<void>) | null>(null);
+  const reloadGuaranteesRef = useRef<(() => Promise<void>) | null>(null);
+
   // Reload activities function
   const reloadActivities = useCallback(async () => {
     if (!user) return;
@@ -882,6 +886,11 @@ export default function NewOfferWizard() {
       });
     }
   }, [sb, user, logger, showToast, updateActivitiesOptimistically]);
+
+  // Update refs whenever functions change
+  useEffect(() => {
+    reloadActivitiesRef.current = reloadActivities;
+  }, [reloadActivities]);
 
   const reloadGuarantees = useCallback(async () => {
     if (!user) return;
@@ -922,6 +931,11 @@ export default function NewOfferWizard() {
     }
   }, [sb, user, logger, showToast, updateGuaranteesOptimistically]);
 
+  // Update refs whenever functions change
+  useEffect(() => {
+    reloadGuaranteesRef.current = reloadGuarantees;
+  }, [reloadGuarantees]);
+
   // Load profile settings and activities on mount
   useEffect(() => {
     if (!user) return;
@@ -939,9 +953,13 @@ export default function NewOfferWizard() {
         });
       }
 
-      // Load activities
-      await reloadActivities();
-      await reloadGuarantees();
+      // Load activities using refs to avoid dependency issues
+      if (reloadActivitiesRef.current) {
+        await reloadActivitiesRef.current();
+      }
+      if (reloadGuaranteesRef.current) {
+        await reloadGuaranteesRef.current();
+      }
 
       // Initialize rows with default activity if available
       if (prof?.default_activity_id) {
@@ -974,7 +992,9 @@ export default function NewOfferWizard() {
         }
       }
     })();
-  }, [user, sb, reloadActivities, reloadGuarantees, handleActivityGuaranteeAttach]);
+    // Only depend on user, sb, and handleActivityGuaranteeAttach
+    // reloadActivities and reloadGuarantees are accessed via refs to prevent infinite loops
+  }, [user, sb, handleActivityGuaranteeAttach]);
 
   // auth + preload
   useEffect(() => {
@@ -1064,7 +1084,10 @@ export default function NewOfferWizard() {
           : (templatesForPlan[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID);
       setSelectedPdfTemplateId(initialTemplateId);
 
-      await reloadActivities();
+      // Load activities using ref to avoid dependency issues
+      if (reloadActivitiesRef.current) {
+        await reloadActivitiesRef.current();
+      }
 
       const { data: cl } = await sb
         .from('clients')
@@ -1082,8 +1105,10 @@ export default function NewOfferWizard() {
     return () => {
       active = false;
     };
+    // Only depend on allPdfTemplates, authStatus, sb, and user
+    // reloadActivities is accessed via ref to prevent infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allPdfTemplates, authStatus, reloadActivities, reloadGuarantees, sb, user]);
+  }, [allPdfTemplates, authStatus, sb, user]);
 
   useEffect(() => {
     setImageAssets((prev) => {

@@ -193,6 +193,7 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       'value_proposition',
       'scope',
       'deliverables',
+      'expected_outcomes',
       'assumptions',
       'next_steps',
       'closing',
@@ -245,12 +246,12 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       },
       expected_outcomes: {
         type: 'array',
-        minItems: 2,
+        minItems: 0,
         maxItems: 5,
         items: {
           type: 'string',
           description:
-            'Opcionális: Egy mérhető, konkrét várható eredmény vagy előny (pl. "30% növekedés", "2 hét alatt"). Legyen specifikus és kvantifikálható (min. 20, max. 100 karakter).',
+            'Opcionális: Egy mérhető, konkrét várható eredmény vagy előny (pl. "30% növekedés", "2 hét alatt"). Legyen specifikus és kvantifikálható (min. 20, max. 100 karakter). Ha nincs releváns várható eredmény, adj vissza üres tömböt.',
           minLength: 20,
           maxLength: 100,
         },
