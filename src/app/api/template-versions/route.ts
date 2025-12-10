@@ -55,10 +55,7 @@ export const POST = withAuth(
     // Check admin privileges
     const { isAdmin: userIsAdmin } = await requireAdmin(request.user.id);
     if (!userIsAdmin) {
-      return NextResponse.json(
-        { error: 'Admin privileges required' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -130,10 +127,7 @@ export const PATCH = withAuth(
     // Check admin privileges
     const { isAdmin: userIsAdmin } = await requireAdmin(request.user.id);
     if (!userIsAdmin) {
-      return NextResponse.json(
-        { error: 'Admin privileges required' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -167,10 +161,7 @@ export const DELETE = withAuth(
     // Check admin privileges
     const { isAdmin: userIsAdmin } = await requireAdmin(request.user.id);
     if (!userIsAdmin) {
-      return NextResponse.json(
-        { error: 'Admin privileges required' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 });
     }
 
     const searchParams = request.nextUrl.searchParams;
