@@ -48,7 +48,12 @@ export function useWizardValidation() {
       projectDetails: {},
     };
 
-    const hasPricingRow = rows.some((row) => row.name.trim().length > 0);
+    // Ensure rows is an array and check for at least one row with a non-empty name
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const hasPricingRow = safeRows.some((row) => {
+      const name = typeof row?.name === 'string' ? row.name.trim() : '';
+      return name.length > 0;
+    });
     if (!hasPricingRow) {
       errors.pricing = t('offers.wizard.validation.pricingRequired');
     }

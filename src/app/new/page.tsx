@@ -1002,7 +1002,26 @@ export default function NewOfferWizard() {
         });
       }
 
-      // Load activities using refs to avoid dependency issues
+      // Load activities directly to ensure they're loaded
+      try {
+        const { data: acts, error } = await sb
+          .from('activities')
+          .select('id,name,unit,default_unit_price,default_vat,reference_images')
+          .eq('user_id', user.id)
+          .order('name');
+
+        if (error) {
+          logger.error('Failed to load activities', error);
+        } else if (updateActivitiesOptimisticallyRef.current) {
+          await updateActivitiesOptimisticallyRef.current(acts || []);
+        }
+      } catch (error) {
+        logger.error('Error loading activities', error);
+      }
+
+      // Load activities using refs to avoid dependency issues (backup)
+      // Wait a bit to ensure refs are set
+      await new Promise((resolve) => setTimeout(resolve, 100));
       if (reloadActivitiesRef.current) {
         await reloadActivitiesRef.current();
       }
@@ -1044,9 +1063,9 @@ export default function NewOfferWizard() {
         }
       }
     })();
-    // Only depend on user and sb
+    // Only depend on user, sb, and logger
     // reloadActivities, reloadGuarantees, and handleActivityGuaranteeAttach are accessed via refs to prevent infinite loops
-  }, [user, sb]);
+  }, [user, sb, logger]);
 
   // auth + preload
   useEffect(() => {
@@ -1137,6 +1156,8 @@ export default function NewOfferWizard() {
       setSelectedPdfTemplateId(initialTemplateId);
 
       // Load activities using ref to avoid dependency issues
+      // Wait a bit to ensure refs are set
+      await new Promise((resolve) => setTimeout(resolve, 0));
       if (reloadActivitiesRef.current) {
         await reloadActivitiesRef.current();
       }

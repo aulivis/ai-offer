@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 
 type UseUnsavedChangesWarningOptions = {
   hasUnsavedChanges: boolean;
@@ -11,14 +10,14 @@ type UseUnsavedChangesWarningOptions = {
 
 /**
  * Hook to warn users before leaving the page with unsaved changes
- * Uses browser's beforeunload event and Next.js router events
+ * Uses browser's beforeunload event for browser navigation only
+ * Does NOT block Next.js router navigation (Link components, router.push, etc.)
  */
 export function useUnsavedChangesWarning({
   hasUnsavedChanges,
   message = 'Mentetlen változások vannak. Biztosan el szeretnél navigálni?',
   enabled = true,
 }: UseUnsavedChangesWarningOptions) {
-  const router = useRouter();
   const messageRef = useRef(message);
 
   // Update message ref when it changes
@@ -32,6 +31,7 @@ export function useUnsavedChangesWarning({
     }
 
     // Handle browser navigation (back/forward, closing tab, etc.)
+    // This does NOT block Next.js router navigation (Link, router.push, etc.)
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       // Modern browsers ignore custom messages, but we still need to set returnValue
@@ -39,13 +39,10 @@ export function useUnsavedChangesWarning({
       return messageRef.current;
     };
 
-    // Note: Next.js App Router doesn't have a direct router event system
-    // We'll need to intercept navigation attempts differently
-    // For now, we rely on beforeunload for browser navigation
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [enabled, hasUnsavedChanges, router]);
+  }, [enabled, hasUnsavedChanges]);
 }
