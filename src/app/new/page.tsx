@@ -852,6 +852,18 @@ export default function NewOfferWizard() {
   // Refs to store latest reload functions to avoid infinite loops in useEffect
   const reloadActivitiesRef = useRef<(() => Promise<void>) | null>(null);
   const reloadGuaranteesRef = useRef<(() => Promise<void>) | null>(null);
+  // Refs to store update functions to avoid infinite loops
+  const updateActivitiesOptimisticallyRef = useRef<typeof updateActivitiesOptimistically | null>(null);
+  const updateGuaranteesOptimisticallyRef = useRef<typeof updateGuaranteesOptimistically | null>(null);
+
+  // Update refs whenever update functions change
+  useEffect(() => {
+    updateActivitiesOptimisticallyRef.current = updateActivitiesOptimistically;
+  }, [updateActivitiesOptimistically]);
+
+  useEffect(() => {
+    updateGuaranteesOptimisticallyRef.current = updateGuaranteesOptimistically;
+  }, [updateGuaranteesOptimistically]);
 
   // Reload activities function
   const reloadActivities = useCallback(async () => {
@@ -873,9 +885,9 @@ export default function NewOfferWizard() {
         return;
       }
 
-      // Update activities through optimistic update hook
-      if (acts) {
-        await updateActivitiesOptimistically(acts);
+      // Update activities through optimistic update hook using ref to avoid infinite loops
+      if (acts && updateActivitiesOptimisticallyRef.current) {
+        await updateActivitiesOptimisticallyRef.current(acts);
       }
     } catch (error) {
       logger.error('Error reloading activities', error);
@@ -885,7 +897,7 @@ export default function NewOfferWizard() {
         variant: 'error',
       });
     }
-  }, [sb, user, logger, showToast, updateActivitiesOptimistically]);
+  }, [sb, user, logger, showToast]);
 
   // Update refs whenever functions change
   useEffect(() => {
@@ -919,8 +931,10 @@ export default function NewOfferWizard() {
             ?.map((link) => link.activity_id)
             .filter((id): id is string => typeof id === 'string') ?? [],
       }));
-      // Update guarantees through optimistic update hook
-      await updateGuaranteesOptimistically(formattedGuarantees);
+      // Update guarantees through optimistic update hook using ref to avoid infinite loops
+      if (updateGuaranteesOptimisticallyRef.current) {
+        await updateGuaranteesOptimisticallyRef.current(formattedGuarantees);
+      }
     } catch (error) {
       logger.error('Error reloading guarantees', error);
       showToast({
@@ -929,7 +943,7 @@ export default function NewOfferWizard() {
         variant: 'error',
       });
     }
-  }, [sb, user, logger, showToast, updateGuaranteesOptimistically]);
+  }, [sb, user, logger, showToast]);
 
   // Update refs whenever functions change
   useEffect(() => {
@@ -2374,7 +2388,9 @@ export default function NewOfferWizard() {
                       const updatedActivities = [...activities, newActivity].sort((a, b) =>
                         a.name.localeCompare(b.name),
                       );
-                      await updateActivitiesOptimistically(updatedActivities);
+                      if (updateActivitiesOptimisticallyRef.current) {
+                        await updateActivitiesOptimisticallyRef.current(updatedActivities);
+                      }
                     } else {
                       // Fallback to reload if no activity provided
                       await reloadActivities();
