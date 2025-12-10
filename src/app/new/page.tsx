@@ -344,10 +344,9 @@ export default function NewOfferWizard() {
   const [showClientDrop, setShowClientDrop] = useState(false);
 
   // 2) tevékenységek / árlista with optimistic updates
-  const {
-    value: activities,
-    update: updateActivitiesOptimistically,
-  } = useOptimisticUpdate<Activity[]>({
+  const { value: activities, update: updateActivitiesOptimistically } = useOptimisticUpdate<
+    Activity[]
+  >({
     initialValue: [],
     updateFn: async (newActivities) => {
       // This is used for optimistic updates when saving activities
@@ -362,10 +361,9 @@ export default function NewOfferWizard() {
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
   // Guarantees with optimistic updates
-  const {
-    value: guarantees,
-    update: updateGuaranteesOptimistically,
-  } = useOptimisticUpdate<GuaranteeDefinition[]>({
+  const { value: guarantees, update: updateGuaranteesOptimistically } = useOptimisticUpdate<
+    GuaranteeDefinition[]
+  >({
     initialValue: [],
     updateFn: async (newGuarantees) => {
       // This is used for optimistic updates when toggling guarantees
@@ -1825,7 +1823,15 @@ export default function NewOfferWizard() {
       }
       setStep(clampedStep);
     },
-    [handleGeneratePreview, isQuotaExhausted, quotaLoading, previewLoading, showToast, step, validationErrors],
+    [
+      handleGeneratePreview,
+      isQuotaExhausted,
+      quotaLoading,
+      previewLoading,
+      showToast,
+      step,
+      validationErrors,
+    ],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
