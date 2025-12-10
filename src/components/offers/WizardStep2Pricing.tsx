@@ -122,7 +122,9 @@ export function WizardStep2Pricing({
   >([]);
   const hasShownInitialModalRef = useRef(false);
   const [fullSizeImageUrl, setFullSizeImageUrl] = useState<string | null>(null);
-  const rowNameSet = useMemo(() => new Set(rows.map((row) => row.name)), [rows]);
+  // Defensive check: ensure rows is always an array
+  const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
+  const rowNameSet = useMemo(() => new Set(safeRows.map((row) => row.name)), [safeRows]);
   const activityNameMap = useMemo(() => {
     const map = new Map<string, string>();
     activities.forEach((activity) => {
@@ -188,9 +190,9 @@ export function WizardStep2Pricing({
 
   // Check if first row matches a default activity with reference images
   useEffect(() => {
-    if (hasShownInitialModalRef.current || rows.length === 0 || !enableReferencePhotos) return;
+    if (hasShownInitialModalRef.current || safeRows.length === 0 || !enableReferencePhotos) return;
 
-    const firstRow = rows[0];
+    const firstRow = safeRows[0];
     if (!firstRow?.name) return;
 
     const firstRowName: string = firstRow.name;
@@ -208,7 +210,7 @@ export function WizardStep2Pricing({
       setPendingActivity(matchingActivity);
       setShowImageModal(true);
     }
-  }, [rows, activities, enableReferencePhotos, showImageModal, selectedImages.length]);
+  }, [safeRows, activities, enableReferencePhotos, showImageModal, selectedImages.length]);
 
   // Load testimonials when component mounts or when testimonials are enabled
   useEffect(() => {
@@ -333,30 +335,46 @@ export function WizardStep2Pricing({
   }, [allReferenceImagePaths, enableReferencePhotos, imageUrlCache, supabase]);
 
   const handleActivityClick = async (activity: Activity) => {
-    // Add activity to rows
-    onRowsChange([
-      createPriceRow({
+    try {
+      // Add activity to rows
+      const newRow = createPriceRow({
         name: activity.name,
         qty: 1,
         unit: activity.unit || 'db',
         unitPrice: Number(activity.default_unit_price || 0),
         vat: Number(activity.default_vat || 27),
-      }),
-      ...rows,
-    ]);
-    onActivityGuaranteesAttach?.(activity.id);
+      });
 
-    // Check if activity has images and feature is enabled
-    const refImages = activity.reference_images as string[] | null | undefined;
-    const hasImages = enableReferencePhotos && Array.isArray(refImages) && refImages.length > 0;
+      // Ensure rows is always an array (defensive check)
+      const currentRows = Array.isArray(rows) ? rows : [];
+      onRowsChange([newRow, ...currentRows]);
 
-    if (hasImages) {
-      setPendingActivity(activity);
-      setShowImageModal(true);
-      // Don't return - let the modal's onClose handle testimonials
-    } else if (enableTestimonials) {
-      // If no images but testimonials enabled, show testimonials modal directly
-      setShowTestimonialsModal(true);
+      onActivityGuaranteesAttach?.(activity.id);
+
+      // Check if activity has images and feature is enabled
+      const refImages = activity.reference_images as string[] | null | undefined;
+      const hasImages = enableReferencePhotos && Array.isArray(refImages) && refImages.length > 0;
+
+      if (hasImages) {
+        setPendingActivity(activity);
+        setShowImageModal(true);
+        // Don't return - let the modal's onClose handle testimonials
+      } else if (enableTestimonials) {
+        // If no images but testimonials enabled, show testimonials modal directly
+        setShowTestimonialsModal(true);
+      }
+    } catch (error) {
+      logger.error('Error in handleActivityClick', error, { activityId: activity.id });
+      // Still try to add the row even if there's an error with modals
+      const newRow = createPriceRow({
+        name: activity.name,
+        qty: 1,
+        unit: activity.unit || 'db',
+        unitPrice: Number(activity.default_unit_price || 0),
+        vat: Number(activity.default_vat || 27),
+      });
+      const currentRows = Array.isArray(rows) ? rows : [];
+      onRowsChange([newRow, ...currentRows]);
     }
   };
 
@@ -789,7 +807,7 @@ export function WizardStep2Pricing({
           </h3>
         </div>
         <EditablePriceTable
-          rows={rows}
+          rows={safeRows}
           onChange={onRowsChange}
           activities={activities}
           onSaveActivity={handleSaveActivity}

@@ -65,22 +65,30 @@ export default function EditablePriceTable({
   onSaveActivity,
   savingActivityId = null,
 }: Props) {
+  // Defensive check: ensure rows is always an array
+  const safeRows = useMemo(() => (Array.isArray(rows) ? rows : []), [rows]);
+  
   const totals = useMemo(() => {
-    const net = rows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0);
-    const vat = rows.reduce(
+    const net = safeRows.reduce((s, r) => s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0), 0);
+    const vat = safeRows.reduce(
       (s, r) =>
         s + (Number(r.qty) || 0) * (Number(r.unitPrice) || 0) * ((Number(r.vat) || 0) / 100),
       0,
     );
     const gross = net + vat;
     return { net, vat, gross };
-  }, [rows]);
+  }, [safeRows]);
 
   const numberFormatter = useMemo(() => new Intl.NumberFormat('hu-HU'), []);
   const formatCurrency = (value: number) => `${numberFormatter.format(value)} Ft`;
 
   const update = (idx: number, key: keyof PriceRow, val: string | number) => {
-    const next = [...rows];
+    // Defensive check: ensure rows is always an array
+    const currentRows = Array.isArray(rows) ? rows : [];
+    if (idx < 0 || idx >= currentRows.length) {
+      return;
+    }
+    const next = [...currentRows];
     const value = isNumericKey(key)
       ? (Number(val) as PriceRow[typeof key])
       : (String(val) as PriceRow[typeof key]);
@@ -88,8 +96,14 @@ export default function EditablePriceTable({
     onChange(next);
   };
 
-  const addRow = () => onChange([...rows, createPriceRow()]);
-  const removeRow = (rowId: string) => onChange(rows.filter((row) => row.id !== rowId));
+  const addRow = () => {
+    const currentRows = Array.isArray(rows) ? rows : [];
+    onChange([...currentRows, createPriceRow()]);
+  };
+  const removeRow = (rowId: string) => {
+    const currentRows = Array.isArray(rows) ? rows : [];
+    onChange(currentRows.filter((row) => row.id !== rowId));
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-border">
@@ -132,7 +146,7 @@ export default function EditablePriceTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, idx) => {
+            {safeRows.map((r, idx) => {
               const lineNet = (Number(r.qty) || 0) * (Number(r.unitPrice) || 0);
               // Check if this row matches an existing activity
               const matchesActivity = activities.some(
