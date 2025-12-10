@@ -15,7 +15,6 @@ import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import { HttpStatus, createErrorResponse } from '@/lib/errorHandling';
 import { createLogger } from '@/lib/logger';
-import { envClient } from '@/env.client';
 
 const stripe = new Stripe(envServer.STRIPE_SECRET_KEY);
 
@@ -90,16 +89,21 @@ export const POST = withAuth(
     }
 
     // Determine target price ID based on current plan and desired billing interval
+    // NEXT_PUBLIC_ variables are available on both client and server
     const isPro = profile.plan === 'pro';
+    const PRO_PRICE_MONTHLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO;
+    const PRO_PRICE_ANNUAL = process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL;
+    const STANDARD_PRICE_MONTHLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER;
+    const STANDARD_PRICE_ANNUAL = process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL;
+
     const targetPriceId =
       billingInterval === 'annual'
         ? isPro
-          ? envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO_ANNUAL || envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO
-          : envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL ||
-            envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER
+          ? PRO_PRICE_ANNUAL || PRO_PRICE_MONTHLY
+          : STANDARD_PRICE_ANNUAL || STANDARD_PRICE_MONTHLY
         : isPro
-          ? envClient.NEXT_PUBLIC_STRIPE_PRICE_PRO
-          : envClient.NEXT_PUBLIC_STRIPE_PRICE_STARTER;
+          ? PRO_PRICE_MONTHLY
+          : STANDARD_PRICE_MONTHLY;
 
     if (!targetPriceId) {
       return createErrorResponse(

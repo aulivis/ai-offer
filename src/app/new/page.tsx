@@ -342,6 +342,7 @@ export default function NewOfferWizard() {
   const [clientList, setClientList] = useState<Client[]>([]);
   const [clientId, setClientId] = useState<string | undefined>(undefined);
   const [showClientDrop, setShowClientDrop] = useState(false);
+  const isCreatingClientRef = useRef(false);
 
   // 2) tevékenységek / árlista with optimistic updates
   const { value: activities, update: updateActivitiesOptimistically } = useOptimisticUpdate<
@@ -985,7 +986,7 @@ export default function NewOfferWizard() {
     reloadGuaranteesRef.current = reloadGuarantees;
   }, [reloadGuarantees]);
 
-  // Load profile settings and activities on mount
+  // Load profile settings on mount (separate from auth + preload to avoid duplication)
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -1000,72 +1001,34 @@ export default function NewOfferWizard() {
           enable_reference_photos: prof.enable_reference_photos ?? false,
           enable_testimonials: prof.enable_testimonials ?? false,
         });
-      }
 
-      // Load activities directly to ensure they're loaded
-      try {
-        const { data: acts, error } = await sb
-          .from('activities')
-          .select('id,name,unit,default_unit_price,default_vat,reference_images')
-          .eq('user_id', user.id)
-          .order('name');
-
-        if (error) {
-          logger.error('Failed to load activities', error);
-        } else if (updateActivitiesOptimisticallyRef.current) {
-          await updateActivitiesOptimisticallyRef.current(acts || []);
-        }
-      } catch (error) {
-        logger.error('Error loading activities', error);
-      }
-
-      // Load activities using refs to avoid dependency issues (backup)
-      // Wait a bit to ensure refs are set
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      if (reloadActivitiesRef.current) {
-        await reloadActivitiesRef.current();
-      }
-      if (reloadGuaranteesRef.current) {
-        await reloadGuaranteesRef.current();
-      }
-
-      // Initialize rows with default activity if available
-      if (prof?.default_activity_id) {
-        const { data: defaultActivity } = await sb
-          .from('activities')
-          .select('id,name,unit,default_unit_price,default_vat,reference_images')
-          .eq('id', prof.default_activity_id)
-          .eq('user_id', user.id)
-          .single();
-        if (defaultActivity) {
-          setRows([
-            createPriceRow({
-              name: defaultActivity.name,
-              qty: 1,
-              unit: defaultActivity.unit || 'db',
-              unitPrice: Number(defaultActivity.default_unit_price || 0),
-              vat: Number(defaultActivity.default_vat || 27),
-            }),
-          ]);
-          // Use ref to avoid dependency issues
-          if (handleActivityGuaranteeAttachRef.current) {
-            handleActivityGuaranteeAttachRef.current(defaultActivity.id);
-          }
-          // If default activity has reference images, show them
-          if (
-            prof.enable_reference_photos &&
-            defaultActivity.reference_images &&
-            Array.isArray(defaultActivity.reference_images) &&
-            defaultActivity.reference_images.length > 0
-          ) {
-            // The image modal will be shown when step 2 is rendered
+        // Initialize rows with default activity if available
+        if (prof.default_activity_id) {
+          const { data: defaultActivity } = await sb
+            .from('activities')
+            .select('id,name,unit,default_unit_price,default_vat,reference_images')
+            .eq('id', prof.default_activity_id)
+            .eq('user_id', user.id)
+            .single();
+          if (defaultActivity) {
+            setRows([
+              createPriceRow({
+                name: defaultActivity.name,
+                qty: 1,
+                unit: defaultActivity.unit || 'db',
+                unitPrice: Number(defaultActivity.default_unit_price || 0),
+                vat: Number(defaultActivity.default_vat || 27),
+              }),
+            ]);
+            // Use ref to avoid dependency issues
+            if (handleActivityGuaranteeAttachRef.current) {
+              handleActivityGuaranteeAttachRef.current(defaultActivity.id);
+            }
           }
         }
       }
     })();
-    // Only depend on user, sb, and logger
-    // reloadActivities, reloadGuarantees, and handleActivityGuaranteeAttach are accessed via refs to prevent infinite loops
-  }, [user, sb, logger]);
+  }, [user, sb]);
 
   // auth + preload
   useEffect(() => {
@@ -1155,11 +1118,12 @@ export default function NewOfferWizard() {
           : (templatesForPlan[0]?.id ?? DEFAULT_FREE_TEMPLATE_ID);
       setSelectedPdfTemplateId(initialTemplateId);
 
-      // Load activities using ref to avoid dependency issues
-      // Wait a bit to ensure refs are set
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Load activities and guarantees using refs to avoid dependency issues
       if (reloadActivitiesRef.current) {
         await reloadActivitiesRef.current();
+      }
+      if (reloadGuaranteesRef.current) {
+        await reloadGuaranteesRef.current();
       }
 
       const { data: cl } = await sb
@@ -1333,6 +1297,20 @@ export default function NewOfferWizard() {
   useEffect(() => {
     updatePreviewFrameHeight();
   }, [previewDocumentHtml, updatePreviewFrameHeight]);
+
+  // Cleanup abort controllers on unmount
+  useEffect(() => {
+    return () => {
+      if (previewDocumentAbortRef.current) {
+        previewDocumentAbortRef.current.abort();
+        previewDocumentAbortRef.current = null;
+      }
+      if (previewDocumentDebounceRef.current) {
+        window.clearTimeout(previewDocumentDebounceRef.current);
+        previewDocumentDebounceRef.current = null;
+      }
+    };
+  }, []);
   const imageLimitReached = imageAssets.length >= MAX_IMAGE_COUNT;
 
   // === Autocomplete (cég) ===
@@ -1542,10 +1520,24 @@ export default function NewOfferWizard() {
   async function ensureClient(): Promise<string | undefined> {
     const name = (client.company_name || '').trim();
     if (!name) return undefined;
+
     // meglévő?
     if (clientId) return clientId;
 
     if (!user) return undefined;
+
+    // Prevent concurrent client creation attempts
+    // If another call is in progress, wait briefly and check if it completed
+    if (isCreatingClientRef.current) {
+      // Use a short delay to allow the other concurrent call to complete
+      // This prevents duplicate client creation from race conditions
+      // The delay is intentionally small (100ms) to minimize user wait time
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Check again after delay - if clientId was set by concurrent call, return it
+      if (clientId) return clientId;
+      // If still creating after delay, proceed with our own attempt
+      // This handles edge cases where the ref wasn't properly reset
+    }
 
     // próbáljuk meglévő alapján
     const { data: match } = await sb
@@ -1554,24 +1546,71 @@ export default function NewOfferWizard() {
       .eq('user_id', user.id)
       .ilike('company_name', name)
       .maybeSingle();
-    if (match?.id) return match.id;
+    if (match?.id) {
+      setClientId(match.id);
+      return match.id;
+    }
+
+    // Validate email if provided
+    const email = client.email?.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      logger.warn('Invalid email format for client', { email });
+      showToast({
+        title: 'Érvénytelen e-mail cím',
+        description: 'Kérlek ellenőrizd az e-mail cím formátumát.',
+        variant: 'warning',
+      });
+      // Continue without email rather than failing completely
+    }
 
     // új felvitel
-    const ins = await sb
-      .from('clients')
-      .insert({
-        user_id: user.id,
-        company_name: name,
-        address: client.address || null,
-        tax_id: client.tax_id || null,
-        representative: client.representative || null,
-        phone: client.phone || null,
-        email: client.email || null,
-      })
-      .select('id')
-      .single();
+    isCreatingClientRef.current = true;
+    try {
+      const ins = await sb
+        .from('clients')
+        .insert({
+          user_id: user.id,
+          company_name: name,
+          address: client.address?.trim() || null,
+          tax_id: client.tax_id?.trim() || null,
+          representative: client.representative?.trim() || null,
+          phone: client.phone?.trim() || null,
+          email: email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null,
+        })
+        .select('id')
+        .single();
 
-    return ins.data?.id;
+      if (ins.data?.id) {
+        setClientId(ins.data.id);
+        return ins.data.id;
+      }
+      return undefined;
+    } catch (error: unknown) {
+      // Handle unique constraint violation (duplicate client)
+      if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+        // Race condition: another request created the client, try to fetch it
+        logger.warn('Client already exists, fetching existing client', { name });
+        const { data: existing } = await sb
+          .from('clients')
+          .select('id')
+          .eq('user_id', user.id)
+          .ilike('company_name', name)
+          .maybeSingle();
+        if (existing?.id) {
+          setClientId(existing.id);
+          return existing.id;
+        }
+      }
+      logger.error('Failed to create client', error);
+      showToast({
+        title: 'Nem sikerült létrehozni az ügyfelet',
+        description: error instanceof Error ? error.message : 'Ismeretlen hiba történt.',
+        variant: 'error',
+      });
+      throw error;
+    } finally {
+      isCreatingClientRef.current = false;
+    }
   }
 
   // Convert storage paths to base64 data URLs
@@ -1636,6 +1675,11 @@ export default function NewOfferWizard() {
   }
 
   async function generate() {
+    // Prevent double submission
+    if (loading) {
+      return;
+    }
+
     try {
       if (quotaLoading) {
         showToast({
@@ -1659,9 +1703,22 @@ export default function NewOfferWizard() {
           description: t('toasts.preview.backgroundGeneration.description'),
           variant: 'info',
         });
+        return;
       }
       setLoading(true);
-      const cid = await ensureClient();
+
+      // Ensure client is created/found before proceeding
+      let cid: string | undefined;
+      try {
+        cid = await ensureClient();
+      } catch (error) {
+        // Client creation failed - show error and abort submission
+        logger.error('Failed to ensure client before submission', error);
+        setLoading(false);
+        // Error toast is already shown by ensureClient()
+        return;
+      }
+
       let resp: Response;
       const baseHtml = previewLocked ? (editedHtml || previewHtml || '').trim() : '';
       let htmlForApi = baseHtml;
@@ -1853,13 +1910,8 @@ export default function NewOfferWizard() {
       // Only clear draft and redirect on successful completion
       clearDraft();
 
-      // Wait a moment for quota to be updated on the backend before redirecting
-      // This gives the PDF worker time to increment the quota counter
-      // The delay ensures the dashboard will show the updated quota
-      // Also trigger quota recalculation on dashboard by adding a refresh parameter
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       // Add a timestamp query parameter to force dashboard to refresh quota
+      // The dashboard will fetch fresh quota data on load
       const refreshParam = new URLSearchParams({ refresh: Date.now().toString() });
       router.replace(`/dashboard?${refreshParam.toString()}`);
     } finally {

@@ -469,18 +469,18 @@ export function WizardStep2Pricing({
     <div className="space-y-6" aria-label={t('wizard.pricing.ariaLabel')}>
       {/* Header */}
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-slate-900">{t('offers.wizard.steps.pricing')}</h2>
-        <p className="text-sm text-slate-600 leading-relaxed">
+        <h2 className="text-xl font-bold text-fg">{t('offers.wizard.steps.pricing')}</h2>
+        <p className="text-sm text-fg-muted leading-relaxed">
           {t('offers.wizard.forms.pricing.helper')}
         </p>
       </div>
 
       {/* Error Summary */}
       {validationError && (
-        <div className="rounded-xl border-2 border-rose-300 bg-rose-50/90 p-4">
+        <div className="rounded-xl border-2 border-danger/30 bg-danger/10 p-4">
           <div className="flex items-start gap-3">
             <svg
-              className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5"
+              className="h-5 w-5 flex-shrink-0 text-danger mt-0.5"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -490,7 +490,7 @@ export function WizardStep2Pricing({
                 clipRule="evenodd"
               />
             </svg>
-            <p className="text-sm font-semibold text-rose-900">{validationError}</p>
+            <p className="text-sm font-semibold text-danger">{validationError}</p>
           </div>
         </div>
       )}
@@ -500,7 +500,7 @@ export function WizardStep2Pricing({
         <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-fg">
                 {t('offers.wizard.forms.details.quickInsertTitle')}
               </h3>
             </div>
@@ -514,7 +514,7 @@ export function WizardStep2Pricing({
                 key={a.id}
                 type="button"
                 onClick={() => handleActivityClick(a)}
-                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary hover:bg-primary/5 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 touch-manipulation min-h-[44px]"
+                className="rounded-lg border border-border bg-bg-muted px-4 py-2.5 text-sm font-semibold text-fg transition hover:border-primary hover:bg-primary/5 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 touch-manipulation min-h-[44px]"
               >
                 + {a.name}
               </Button>
@@ -528,14 +528,14 @@ export function WizardStep2Pricing({
         <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-fg">
                 {t('offers.wizard.images.inlineTitle')}
               </h3>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-fg-muted mt-0.5">
                 {t('offers.wizard.images.inlineDescription')}
               </p>
             </div>
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="inline-flex items-center rounded-full bg-bg-muted px-3 py-1 text-xs font-semibold text-fg-muted">
               {t('offers.wizard.images.inlineSelectedCount', { count: selectedImages.length })}
             </span>
           </div>
@@ -552,14 +552,14 @@ export function WizardStep2Pricing({
                 >
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{activity.name}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm font-semibold text-fg">{activity.name}</p>
+                      <p className="text-xs text-fg-muted">
                         {t('offers.wizard.images.activityHelper', {
                           count: activity.reference_images.length,
                         })}
                       </p>
                     </div>
-                    <span className="text-xs font-semibold text-slate-600">
+                    <span className="text-xs font-semibold text-fg-muted">
                       {t('offers.wizard.images.activitySelectedCount', { count: selectedCount })}
                     </span>
                   </div>
@@ -591,8 +591,8 @@ export function WizardStep2Pricing({
                               />
                             </>
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                              <PhotoIcon className="h-8 w-8 text-slate-400" />
+                            <div className="flex h-full w-full items-center justify-center bg-bg-muted">
+                              <PhotoIcon className="h-8 w-8 text-fg-muted" />
                             </div>
                           )}
                           <button
@@ -604,7 +604,7 @@ export function WizardStep2Pricing({
                             className={`absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition shadow-md ${
                               isSelected
                                 ? 'border-primary bg-primary text-white shadow-lg'
-                                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-lg'
+                                : 'border-border bg-bg-muted text-fg hover:bg-bg shadow-lg'
                             }`}
                             aria-pressed={isSelected}
                           >
@@ -620,12 +620,12 @@ export function WizardStep2Pricing({
           </div>
 
           {orphanedSelectedImages.length > 0 && (
-            <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+            <div className="space-y-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
               <div>
-                <p className="text-sm font-semibold text-amber-900">
+                <p className="text-sm font-semibold text-warning">
                   {t('offers.wizard.images.orphanedTitle')}
                 </p>
-                <p className="text-xs text-amber-800">
+                <p className="text-xs text-warning/90">
                   {t('offers.wizard.images.orphanedDescription')}
                 </p>
               </div>
@@ -664,7 +664,7 @@ export function WizardStep2Pricing({
                           event.stopPropagation();
                           toggleReferenceImageSelection(path);
                         }}
-                        className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-amber-400 bg-white/90 text-xs font-semibold text-amber-900 transition hover:bg-white"
+                        className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-warning bg-bg-muted/90 text-xs font-semibold text-warning transition hover:bg-bg-muted"
                       >
                         ×
                       </button>
@@ -681,14 +681,14 @@ export function WizardStep2Pricing({
         <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-fg">
                 {t('offers.wizard.guarantees.sectionTitle')}
               </h3>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-fg-muted mt-0.5">
                 {t('offers.wizard.guarantees.sectionDescription')}
               </p>
             </div>
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="inline-flex items-center rounded-full bg-bg-muted px-3 py-1 text-xs font-semibold text-fg-muted">
               {totalGuaranteesSelected}/{guaranteeLimit}
             </span>
           </div>
@@ -712,9 +712,9 @@ export function WizardStep2Pricing({
                     isSelected ? 'border-primary bg-primary/5' : 'border-border bg-white'
                   }`}
                 >
-                  <p className="text-sm text-slate-900">{guarantee.text}</p>
+                  <p className="text-sm text-fg">{guarantee.text}</p>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-[11px] text-slate-500">{helperText}</p>
+                    <p className="text-[11px] text-fg-muted">{helperText}</p>
                     <Button
                       type="button"
                       size="sm"
@@ -738,15 +738,15 @@ export function WizardStep2Pricing({
         <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-base font-semibold text-fg">
                 {t('offers.wizard.testimonials.sectionTitle') || 'Ajánlások'}
               </h3>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-fg-muted mt-0.5">
                 {t('offers.wizard.testimonials.sectionDescription') ||
                   'Válassz ki ajánlásokat, amelyeket az ajánlatban szeretnél megjeleníteni.'}
               </p>
             </div>
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="inline-flex items-center rounded-full bg-bg-muted px-3 py-1 text-xs font-semibold text-fg-muted">
               {selectedTestimonials.length}/3
             </span>
           </div>

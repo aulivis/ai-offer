@@ -118,8 +118,8 @@ export function WizardStep1Details({
     >
       {/* Header */}
       <div className="space-y-2 mb-6">
-        <h2 className="text-xl font-bold text-slate-900">{t('offers.wizard.steps.details')}</h2>
-        <p className="text-sm text-slate-600 leading-relaxed">
+        <h2 className="text-xl font-bold text-fg">{t('offers.wizard.steps.details')}</h2>
+        <p className="text-sm text-fg-muted leading-relaxed">
           {t('offers.wizard.forms.details.sections.overviewHint')}
         </p>
       </div>
@@ -128,10 +128,10 @@ export function WizardStep1Details({
       {validationErrors &&
         (validationErrors.title ||
           Object.keys(validationErrors.projectDetails || {}).length > 0) && (
-          <div className="mb-6 rounded-xl border-2 border-rose-300 bg-rose-50/90 p-4">
+          <div className="mb-6 rounded-xl border-2 border-danger/30 bg-danger/10 p-4">
             <div className="flex items-start gap-3">
               <svg
-                className="h-5 w-5 flex-shrink-0 text-rose-600 mt-0.5"
+                className="h-5 w-5 flex-shrink-0 text-danger mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -142,10 +142,10 @@ export function WizardStep1Details({
                 />
               </svg>
               <div className="flex-1 space-y-2">
-                <p className="text-sm font-semibold text-rose-900">
+                <p className="text-sm font-semibold text-danger">
                   {t('offers.wizard.validation.errorSummaryTitle')}
                 </p>
-                <ul className="list-disc list-inside space-y-1 text-xs text-rose-800">
+                <ul className="list-disc list-inside space-y-1 text-xs text-danger/90">
                   {validationErrors.title && <li>{validationErrors.title}</li>}
                   {validationErrors.projectDetails?.overview && (
                     <li>{validationErrors.projectDetails.overview}</li>
@@ -219,12 +219,12 @@ export function WizardStep1Details({
                   </div>
                   <div className="flex-1 min-w-0">
                     <span
-                      className={`block text-sm font-bold ${active ? 'text-primary' : 'text-slate-700'}`}
+                      className={`block text-sm font-bold ${active ? 'text-primary' : 'text-fg'}`}
                     >
                       {option.label}
                     </span>
                     <span
-                      className={`block text-xs leading-relaxed mt-2 ${active ? 'text-slate-700' : 'text-slate-500'}`}
+                      className={`block text-xs leading-relaxed mt-2 ${active ? 'text-fg' : 'text-fg-muted'}`}
                     >
                       {option.description}
                     </span>
@@ -240,8 +240,8 @@ export function WizardStep1Details({
       <div
         className={`mb-6 rounded-xl border-2 p-4 transition-all ${
           quotaInfo.isExhausted
-            ? 'border-rose-300 bg-gradient-to-br from-rose-50 to-rose-100/50 text-rose-800'
-            : 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/30 text-slate-800'
+            ? 'border-danger/30 bg-gradient-to-br from-danger/10 to-danger/5 text-danger'
+            : 'border-success/20 bg-gradient-to-br from-success/10 to-success/5 text-fg'
         }`}
       >
         <div className="flex items-start justify-between gap-4">
@@ -249,14 +249,14 @@ export function WizardStep1Details({
             <div className="flex items-center gap-2">
               <p className="text-sm font-bold">{quotaInfo.title}</p>
               {quotaInfo.isExhausted && (
-                <span className="inline-flex items-center rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-900">
+                <span className="inline-flex items-center rounded-full bg-danger/20 px-2 py-0.5 text-[10px] font-bold text-danger">
                   {t('wizard.quota.exhaustedBadge')}
                 </span>
               )}
             </div>
             <p className="text-xs font-medium text-current/90">{quotaInfo.description}</p>
             {quotaInfo.remainingText && !quotaInfo.isExhausted && (
-              <p className="text-sm font-bold text-emerald-700">{quotaInfo.remainingText}</p>
+              <p className="text-sm font-bold text-success">{quotaInfo.remainingText}</p>
             )}
             {quotaInfo.pendingText && (
               <p className="text-[11px] font-medium text-current/80">{quotaInfo.pendingText}</p>
@@ -266,7 +266,7 @@ export function WizardStep1Details({
             <Button
               type="button"
               onClick={() => router.push('/billing')}
-              className="flex-shrink-0 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+              className="flex-shrink-0 rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-danger-ink shadow-sm transition hover:bg-danger/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
             >
               {t('wizard.quota.upgradeButton')}
             </Button>

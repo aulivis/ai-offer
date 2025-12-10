@@ -51,7 +51,8 @@ export function SettingsEmailSubscriptionSection() {
           setSubscribed(null);
         } else {
           // If no record exists or unsubscribed_at is null, user is subscribed
-          setSubscribed(data ? data.unsubscribed_at === null : null);
+          // If unsubscribed_at is set, user is unsubscribed
+          setSubscribed(data ? data.unsubscribed_at === null : true);
         }
       } catch (error) {
         logger.error('Error loading subscription status', error);

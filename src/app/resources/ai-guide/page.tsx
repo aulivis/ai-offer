@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
+import { H1, H2 } from '@/components/ui/Heading';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -32,12 +33,12 @@ export default function AIGuidePage() {
 
       {/* Hero Section */}
       <header className="mb-12">
-        <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/50 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-blue-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-primary">
           Útmutató
         </span>
-        <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+        <H1 className="mt-6" fluid>
           AI-alapú szöveg generálás használata
-        </h1>
+        </H1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
           Ismerd meg a Vyndi AI funkcióinak teljes potenciálját. Tanuld meg, hogyan készíthetsz
           professzionális, konverzióoptimalizált ajánlatokat percek alatt az AI segítségével.
@@ -72,7 +73,7 @@ export default function AIGuidePage() {
       <article className="prose prose-lg max-w-none">
         {/* Section 1: Bevezetés */}
         <section id="bevezetes" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">1. Mi az AI-alapú szöveg generálás?</h2>
+          <H2 className="mb-4">1. Mi az AI-alapú szöveg generálás?</H2>
           <p className="mb-4 text-lg leading-relaxed text-fg-muted">
             A Vyndi AI funkciója egy fejlett mesterséges intelligencia rendszer, amely segít neked
             professzionális ajánlat szövegeket generálni másodpercek alatt. Az AI megérti az üzleti
@@ -86,9 +87,9 @@ export default function AIGuidePage() {
           </ul>
 
           {/* Placeholder for AI feature screenshot */}
-          <div className="my-8 rounded-lg border-2 border-dashed border-border bg-gray-50 p-12 text-center">
+          <div className="my-8 rounded-lg border-2 border-dashed border-border bg-bg-muted p-12 text-center">
             <svg
-              className="mx-auto h-16 w-16 text-gray-400"
+              className="mx-auto h-16 w-16 text-fg-muted"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -100,10 +101,10 @@ export default function AIGuidePage() {
                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
               />
             </svg>
-            <p className="mt-4 text-sm font-medium text-gray-600">
+            <p className="mt-4 text-sm font-medium text-fg-muted">
               [Helyőrző: Képernyőkép a Vyndi AI szöveg generálás funkciójáról]
             </p>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-fg-muted">
               Mutasd be, hogyan néz ki az AI szöveg generálás felülete a Vyndi platformon
             </p>
           </div>
@@ -111,13 +112,13 @@ export default function AIGuidePage() {
 
         {/* Section 2: Előnyök */}
         <section id="elonyok" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">2. Előnyök és lehetőségek</h2>
+          <H2 className="mb-4">2. Előnyök és lehetőségek</H2>
 
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="border-l-4 border-l-green-500">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-success/10">
                 <svg
-                  className="h-6 w-6 text-green-600"
+                  className="h-6 w-6 text-success"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -138,9 +139,9 @@ export default function AIGuidePage() {
             </Card>
 
             <Card className="border-l-4 border-l-blue-500">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <svg
-                  className="h-6 w-6 text-blue-600"
+                  className="h-6 w-6 text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -210,7 +211,7 @@ export default function AIGuidePage() {
 
         {/* Section 3: Használat */}
         <section id="hasznalat" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">3. Hogyan használd hatékonyan?</h2>
+          <H2 className="mb-4">3. Hogyan használd hatékonyan?</H2>
 
           <div className="space-y-6">
             <Card>
@@ -240,9 +241,9 @@ export default function AIGuidePage() {
             </Card>
 
             {/* Placeholder for step-by-step tutorial */}
-            <div className="my-8 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
+            <div className="my-8 rounded-lg border-2 border-dashed border-border bg-bg-muted p-8 text-center">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-fg-muted"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -254,11 +255,11 @@ export default function AIGuidePage() {
                   d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                 />
               </svg>
-              <p className="mt-4 text-sm font-medium text-gray-600">
+              <p className="mt-4 text-sm font-medium text-fg-muted">
                 [Helyőrző: Videó vagy interaktív tutorial - &quot;Hogyan használd az AI szöveg
                 generálást lépésről lépésre&quot;]
               </p>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-fg-muted">
                 Ajánlott: 2-3 perces rövid videó bemutató a funkció használatáról
               </p>
             </div>
@@ -294,22 +295,22 @@ export default function AIGuidePage() {
 
         {/* Section 4: Pro tippek */}
         <section id="tippek" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">4. Pro tippek a legjobb eredményekhez</h2>
+          <H2 className="mb-4">4. Pro tippek a legjobb eredményekhez</H2>
 
           <div className="space-y-6">
-            <Card className="border-l-4 border-l-green-500 bg-green-50/30">
+            <Card className="border-l-4 border-l-success bg-success/10">
               <h3 className="mb-3 text-xl font-semibold text-fg">
                 💡 Tipp 1: Adj konkrét információkat
               </h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase text-red-700">
+                  <p className="mb-2 text-xs font-semibold uppercase text-danger">
                     ❌ Kevésbé hatékony
                   </p>
                   <p className="text-sm text-fg-muted">&quot;Írj egy bemutatkozást&quot;</p>
                 </div>
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase text-green-700">✅ Hatékony</p>
+                  <p className="mb-2 text-xs font-semibold uppercase text-success">✅ Hatékony</p>
                   <p className="text-sm text-fg-muted">
                     &quot;Írj egy bemutatkozást egy weboldal fejlesztési projektjéről, amely
                     hangsúlyozza a 10+ év tapasztalatot és a responsive design kiemelését&quot;
@@ -318,7 +319,7 @@ export default function AIGuidePage() {
               </div>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 bg-blue-50/30">
+            <Card className="border-l-4 border-l-primary bg-primary/10">
               <h3 className="mb-3 text-xl font-semibold text-fg">
                 💡 Tipp 2: Használj kulcsszavakat
               </h3>
@@ -326,8 +327,8 @@ export default function AIGuidePage() {
                 Ha vannak specifikus kifejezések vagy szakkifejezések, amelyeket használni
                 szeretnél, add meg azokat az AI-nak.
               </p>
-              <div className="rounded-lg bg-blue-100 p-4">
-                <p className="text-sm text-blue-900">
+              <div className="rounded-lg bg-primary/10 p-4 border border-primary/20">
+                <p className="text-sm text-primary/90">
                   <strong>Példa:</strong> &quot;Használd a következő kifejezéseket: &apos;agilis
                   fejlesztés&apos;, &apos;cloud-based megoldás&apos;, &apos;scalable
                   architektúra&apos;&quot;
@@ -360,7 +361,7 @@ export default function AIGuidePage() {
 
         {/* Section 5: Példák */}
         <section id="peldak" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">5. Gyakorlati példák</h2>
+          <H2 className="mb-4">5. Gyakorlati példák</H2>
 
           <div className="space-y-6">
             <Card>
@@ -424,10 +425,10 @@ export default function AIGuidePage() {
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-            <p className="mt-4 text-sm font-medium text-gray-600">
+            <p className="mt-4 text-sm font-medium text-fg-muted">
               [Helyőrző: További AI generálás példák interaktív formában]
             </p>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-fg-muted">
               Mutasd be további példákat különböző szekciókhoz és használati esetekhez
             </p>
           </div>
@@ -435,7 +436,7 @@ export default function AIGuidePage() {
 
         {/* Section 6: GYIK */}
         <section id="gyik" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">6. Gyakran ismételt kérdések</h2>
+          <H2 className="mb-4">6. Gyakran ismételt kérdések</H2>
 
           <div className="space-y-4">
             <Card>
@@ -494,7 +495,7 @@ export default function AIGuidePage() {
       {/* CTA Section */}
       <Card className="mt-16 border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Próbáld ki az AI funkciót még ma!</h2>
+          <H2 className="mb-4">Próbáld ki az AI funkciót még ma!</H2>
           <p className="mb-8 text-lg text-fg-muted">
             Kezdj el ajánlatokat készíteni az AI segítségével. Ingyenes próba, bankkártya nélkül.
           </p>
@@ -525,7 +526,9 @@ export default function AIGuidePage() {
 
       {/* Related Resources */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó erőforrások</h2>
+        <H2 className="mb-6" size="h3">
+          Kapcsolódó erőforrások
+        </H2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/guide">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">

@@ -50,7 +50,11 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
       trackEmailCapture(source);
     } catch (error) {
       setStatus('error');
-      setErrorMessage(error instanceof Error ? error.message : 'Hiba történt a feliratkozás során');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Hiba történt a feliratkozás során';
+      setErrorMessage(errorMessage);
+      // Log error for debugging
+      // Error is already handled via errorMessage display
     }
   };
 
@@ -58,9 +62,9 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
     return (
       <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-success/10 rounded-full mb-4">
             <svg
-              className="w-8 h-8 text-green-600"
+              className="w-8 h-8 text-success"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -73,8 +77,8 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
               />
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Köszönjük a feliratkozást!</h3>
-          <p className="text-gray-600">
+          <h3 className="text-2xl font-bold text-fg mb-2">Köszönjük a feliratkozást!</h3>
+          <p className="text-fg-muted">
             Hamarosan értesítünk az újdonságokról és hasznos tippekről.
           </p>
         </div>
@@ -86,7 +90,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
     <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8">
       {/* Value proposition above form */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-50 text-green-700 font-bold text-sm rounded-full mb-4 border-2 border-green-200">
+        <div className="inline-flex items-center gap-2 px-6 py-3 bg-success/10 text-success font-bold text-sm rounded-full mb-4 border-2 border-success/30">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -104,7 +108,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
         <div className="grid md:grid-cols-2 gap-4">
           {/* Name input */}
           <div>
-            <label htmlFor="cta-name" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="cta-name" className="block text-sm font-semibold text-fg mb-2">
               Név
             </label>
             <input
@@ -114,13 +118,13 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={status === 'loading'}
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-turquoise-500 focus:bg-white focus:outline-none text-gray-900 placeholder-gray-400 transition-all text-lg min-h-[44px] disabled:opacity-50"
+              className="w-full px-6 py-4 bg-bg-muted border-2 border-border rounded-xl focus:border-primary focus:bg-bg-muted focus:outline-none text-fg placeholder-fg-muted transition-all text-lg min-h-[44px] disabled:opacity-50"
             />
           </div>
 
           {/* Email input */}
           <div>
-            <label htmlFor="cta-email" className="block text-sm font-semibold text-gray-700 mb-2">
+            <label htmlFor="cta-email" className="block text-sm font-semibold text-fg mb-2">
               Email cím
             </label>
             <input
@@ -131,15 +135,15 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
               onChange={(e) => setEmail(e.target.value)}
               disabled={status === 'loading'}
               required
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-turquoise-500 focus:bg-white focus:outline-none text-gray-900 placeholder-gray-400 transition-all text-lg min-h-[44px] disabled:opacity-50"
+              className="w-full px-6 py-4 bg-bg-muted border-2 border-border rounded-xl focus:border-primary focus:bg-bg-muted focus:outline-none text-fg placeholder-fg-muted transition-all text-lg min-h-[44px] disabled:opacity-50"
             />
           </div>
         </div>
 
         {/* Error message */}
         {status === 'error' && errorMessage && (
-          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-            <p className="text-red-700 text-sm font-semibold">{errorMessage}</p>
+          <div className="bg-danger/10 border-2 border-danger/30 rounded-xl p-4">
+            <p className="text-danger text-sm font-semibold">{errorMessage}</p>
           </div>
         )}
 
@@ -147,7 +151,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="w-full py-4 px-8 bg-white hover:bg-gray-50 text-navy-900 text-lg font-bold rounded-xl border-2 border-gray-300 hover:border-turquoise-500 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3 group min-h-[44px]"
+          className="w-full py-4 px-8 bg-bg-muted hover:bg-bg text-fg text-lg font-bold rounded-xl border-2 border-border hover:border-primary transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3 group min-h-[44px]"
         >
           {status === 'loading' ? (
             <>
@@ -195,9 +199,9 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
       </form>
 
       {/* Trust signals below form */}
-      <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
+      <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-fg-muted">
         <div className="hidden md:flex items-center gap-2">
-          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -207,7 +211,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
           <span className="font-semibold">Heti 1 rövid e-mail</span>
         </div>
         <div className="flex items-center gap-2">
-          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -217,7 +221,7 @@ export function NewsletterSubscription({ source = 'landing_page' }: NewsletterSu
           <span className="font-semibold">Nincs spam, bármikor leiratkozhatsz</span>
         </div>
         <div className="hidden md:flex items-center gap-2">
-          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"

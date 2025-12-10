@@ -2,9 +2,11 @@
 
 import { t } from '@/copy';
 import Link from 'next/link';
-import { useEffect, useState, useMemo, FormEvent } from 'react';
+import { useEffect, useState, useMemo, FormEvent, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { clientLogger } from '@/lib/clientLogger';
+import { sanitizeInput } from '@/lib/sanitize';
+import { isValidEmailFormat, validateAndNormalizeEmail } from '@/lib/validation/email';
 import {
   Zap,
   Users,
@@ -24,15 +26,74 @@ import {
 } from 'lucide-react';
 
 const MAGIC_LINK_COOLDOWN_SECONDS = 60;
+const MAX_EMAIL_LENGTH = 254; // RFC 5321 maximum email length
+const GOOGLE_STATUS_RETRY_DELAY_MS = 2000; // 2 seconds
+const GOOGLE_STATUS_MAX_RETRIES = 2;
+
+/**
+ * Safely validates and sanitizes a redirect URL
+ * Only allows relative paths or same-origin URLs
+ * Prevents open redirect vulnerabilities
+ */
+function validateRedirectUrl(url: string | null): string {
+  if (!url) return '/dashboard';
+
+  // Safety check for SSR (shouldn't happen in client component, but defensive)
+  if (typeof window === 'undefined') {
+    return '/dashboard';
+  }
+
+  try {
+    const decoded = decodeURIComponent(url);
+    // If it's a relative path, allow it (but validate it's not protocol-relative)
+    if (decoded.startsWith('/') && !decoded.startsWith('//')) {
+      // Basic path validation - no protocol-relative or absolute URLs
+      // Additional check: ensure it doesn't contain dangerous patterns
+      if (decoded.includes('\0') || decoded.includes('\r') || decoded.includes('\n')) {
+        return '/dashboard';
+      }
+      return decoded;
+    }
+    // If it's an absolute URL, validate it's same origin
+    try {
+      const urlObj = new URL(decoded, window.location.origin);
+      if (urlObj.origin === window.location.origin) {
+        return urlObj.pathname + urlObj.search + urlObj.hash;
+      }
+    } catch {
+      // Invalid URL, fall back to default
+    }
+  } catch {
+    // Decode failed, fall back to default
+  }
+
+  return '/dashboard';
+}
+
+/**
+ * Extracts error message from API response payload
+ */
+function extractErrorMessage(payload: unknown, fallback: string): string {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'error' in payload &&
+    typeof (payload as { error?: unknown }).error === 'string'
+  ) {
+    return (payload as { error: string }).error;
+  }
+  return fallback;
+}
 
 export default function LoginClient() {
   const searchParams = useSearchParams();
   const redirectTo = useMemo(() => {
     const redirect = searchParams?.get('redirect');
-    return redirect ? decodeURIComponent(redirect) : '/dashboard';
+    return validateRedirectUrl(redirect);
   }, [searchParams]);
 
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMagicLoading, setIsMagicLoading] = useState(false);
@@ -41,32 +102,41 @@ export default function LoginClient() {
   const [googleStatusMessage, setGoogleStatusMessage] = useState<string | null>(null);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [rememberMe, setRememberMe] = useState(false);
+  const googleStatusRetryCount = useRef(0);
 
-  // Check for error in URL params
+  // Check for error in URL params (sanitized to prevent XSS)
   useEffect(() => {
     const errorParam = searchParams?.get('error');
     const messageParam = searchParams?.get('message');
 
     if (errorParam || messageParam) {
-      setError(
-        errorParam
+      try {
+        const rawMessage = errorParam
           ? decodeURIComponent(errorParam)
           : messageParam
             ? decodeURIComponent(messageParam)
-            : null,
-      );
+            : null;
 
-      const minCooldownAfterFailure = 15;
-      if (cooldownRemaining < minCooldownAfterFailure) {
-        setCooldownRemaining(minCooldownAfterFailure);
+        // Sanitize the error message to prevent XSS
+        const sanitizedMessage = rawMessage ? sanitizeInput(rawMessage) : null;
+        setError(sanitizedMessage);
+
+        const minCooldownAfterFailure = 15;
+        if (cooldownRemaining < minCooldownAfterFailure) {
+          setCooldownRemaining(minCooldownAfterFailure);
+        }
+      } catch {
+        // If decode fails, ignore the error param
+        setError(null);
       }
     }
   }, [searchParams, cooldownRemaining]);
 
   useEffect(() => {
     let ignore = false;
+    let retryTimeout: number | null = null;
 
-    async function loadGoogleStatus() {
+    async function loadGoogleStatus(retryAttempt = 0) {
       try {
         const response = await fetch('/api/auth/google/status');
         const payload: unknown = await response.json().catch(() => null);
@@ -91,11 +161,25 @@ export default function LoginClient() {
 
         setIsGoogleAvailable(enabled);
         setGoogleStatusMessage(enabled ? null : message);
+        googleStatusRetryCount.current = 0; // Reset on success
       } catch (e) {
         clientLogger.error('Failed to query Google sign-in availability', e);
         if (ignore) return;
-        setIsGoogleAvailable(false);
-        setGoogleStatusMessage(t('login.googleUnavailable'));
+
+        // Retry logic for transient network errors
+        if (retryAttempt < GOOGLE_STATUS_MAX_RETRIES) {
+          googleStatusRetryCount.current = retryAttempt + 1;
+          retryTimeout = window.setTimeout(() => {
+            if (!ignore) {
+              loadGoogleStatus(retryAttempt + 1);
+            }
+          }, GOOGLE_STATUS_RETRY_DELAY_MS);
+        } else {
+          // Max retries reached, treat as permanently unavailable
+          setIsGoogleAvailable(false);
+          setGoogleStatusMessage(t('login.googleUnavailable'));
+          googleStatusRetryCount.current = 0;
+        }
       }
     }
 
@@ -103,36 +187,66 @@ export default function LoginClient() {
 
     return () => {
       ignore = true;
+      if (retryTimeout !== null) {
+        window.clearTimeout(retryTimeout);
+      }
     };
   }, []);
+
+  // Validate email on change
+  useEffect(() => {
+    if (!email) {
+      setEmailError(null);
+      return;
+    }
+
+    if (email.length > MAX_EMAIL_LENGTH) {
+      setEmailError(`Email cím maximum ${MAX_EMAIL_LENGTH} karakter lehet.`);
+      return;
+    }
+
+    if (!isValidEmailFormat(email)) {
+      setEmailError('Kérjük, adj meg egy érvényes email címet.');
+      return;
+    }
+
+    setEmailError(null);
+  }, [email]);
 
   async function sendMagic(e?: FormEvent) {
     if (e) {
       e.preventDefault();
     }
+
     setError(null);
-    setSent(false);
-    if (!email) return;
+    setEmailError(null);
+
+    // Validate email before sending
+    const normalizedEmail = validateAndNormalizeEmail(email);
+    if (!normalizedEmail) {
+      setEmailError('Kérjük, adj meg egy érvényes email címet.');
+      return;
+    }
+
+    // Don't clear sent state here - let user see success message
     setIsMagicLoading(true);
     try {
       const response = await fetch('/api/auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ email, remember_me: rememberMe, redirect_to: redirectTo }),
+        body: JSON.stringify({
+          email: normalizedEmail,
+          remember_me: rememberMe,
+          redirect_to: redirectTo,
+        }),
       });
 
       if (!response.ok && response.status !== 202) {
         const payload: unknown = await response
           .json()
           .catch(() => ({ error: t('errors.network') }));
-        const message =
-          payload &&
-          typeof payload === 'object' &&
-          'error' in payload &&
-          typeof (payload as { error?: unknown }).error === 'string'
-            ? ((payload as { error: string }).error as string)
-            : t('errors.network');
+        const message = extractErrorMessage(payload, t('errors.network'));
 
         if (response.status === 429) {
           const retryAfter =
@@ -154,12 +268,12 @@ export default function LoginClient() {
 
       setSent(true);
       setCooldownRemaining(MAGIC_LINK_COOLDOWN_SECONDS);
+      setError(null); // Clear any previous errors on success
     } catch (e) {
       const message = e instanceof Error ? e.message : t('errors.unknown');
       setError(message);
-      if (cooldownRemaining === 0) {
-        setCooldownRemaining(5);
-      }
+      // Only set cooldown for rate limit errors (429), not for all errors
+      // The rate limit handler above already sets cooldown for 429 errors
     } finally {
       setIsMagicLoading(false);
     }
@@ -179,15 +293,9 @@ export default function LoginClient() {
     };
   }, [cooldownRemaining]);
 
-  useEffect(() => {
-    if (!sent) {
-      return;
-    }
-
-    if (cooldownRemaining === 0) {
-      setSent(false);
-    }
-  }, [cooldownRemaining, sent]);
+  // Don't auto-hide success message when cooldown reaches 0
+  // Let user manually dismiss or send again
+  // Removed the auto-hide effect to improve UX
 
   const isCooldownActive = cooldownRemaining > 0;
 
@@ -222,16 +330,16 @@ export default function LoginClient() {
           <div className="w-full">
             {/* GDPR Section - Moved to top */}
             <div className="flex flex-wrap items-center justify-center gap-6 mb-6">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+              <div className="flex items-center gap-2 text-sm text-fg-muted">
+                <CheckCircle className="w-5 h-5 text-success" />
                 <span>GDPR kompatibilis</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+              <div className="flex items-center gap-2 text-sm text-fg-muted">
+                <CheckCircle className="w-5 h-5 text-success" />
                 <span>Biztonságos infrastruktúra</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+              <div className="flex items-center gap-2 text-sm text-fg-muted">
+                <CheckCircle className="w-5 h-5 text-success" />
                 <span>99.9% elérhetőség</span>
               </div>
             </div>
@@ -249,14 +357,14 @@ export default function LoginClient() {
                 </div>
 
                 {/* Neutral, inclusive heading */}
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4">
                   {fromSource === 'cta' || fromSource === 'pricing'
                     ? 'Indítsd a 14 napos ingyenes próbát'
                     : 'Lépj be egy kattintással'}
                 </h1>
 
                 {/* Dual-purpose subtitle */}
-                <p className="text-lg text-gray-600 max-w-md mx-auto">
+                <p className="text-lg text-fg-muted max-w-md mx-auto">
                   {fromSource === 'cta' || fromSource === 'pricing' ? (
                     <>
                       Fiók létrehozása 30 másodperc alatt. Már meglévő fiókkal?{' '}
@@ -266,7 +374,7 @@ export default function LoginClient() {
                           setError(null);
                           setSent(false);
                         }}
-                        className="text-teal-600 font-semibold hover:underline"
+                        className="text-primary font-semibold hover:underline"
                       >
                         Jelentkezz be
                       </button>
@@ -275,7 +383,7 @@ export default function LoginClient() {
                     <>
                       Beléphetsz vagy új fiókot hozhatsz létre egyetlen kattintással.
                       <br />
-                      <span className="text-teal-600 font-semibold">
+                      <span className="text-primary font-semibold">
                         *Nincs jelszó, nincs bankkártya, nincs bonyolult regisztráció*
                       </span>
                     </>
@@ -285,14 +393,17 @@ export default function LoginClient() {
 
               {/* Primary method - Google (fastest) */}
               <div className="mb-6">
-                <div className="text-sm text-gray-600 mb-3 text-center font-semibold">
+                <div className="text-sm text-fg-muted mb-3 text-center font-semibold">
                   Leggyorsabb módszer:
                 </div>
                 <button
                   type="button"
                   onClick={signInWithGoogle}
                   disabled={isGoogleLoading || !isGoogleAvailable}
-                  className="group w-full bg-white border-2 border-gray-300 hover:border-gray-400 hover:shadow-xl text-gray-700 py-4 md:py-5 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                  aria-label="Bejelentkezés Google fiókkal"
+                  aria-busy={isGoogleLoading}
+                  aria-disabled={!isGoogleAvailable}
+                  className="group w-full bg-bg-muted border-2 border-border hover:border-primary hover:shadow-pop text-fg py-4 md:py-5 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
                 >
                   {isGoogleLoading ? (
                     <>
@@ -322,22 +433,23 @@ export default function LoginClient() {
                         </svg>
                         <span className="font-semibold">Google Bejelentkezés</span>
                       </div>
-                      <div className="ml-auto bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold relative z-10">
+                      <div className="ml-auto bg-success/10 text-success text-xs px-2 py-1 rounded-full font-bold relative z-10">
                         5 mp
                       </div>
-                      <span className="absolute inset-0 bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                      <span className="absolute inset-0 bg-bg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                     </>
                   )}
                 </button>
-                <p className="text-xs text-gray-500 text-center mt-2">
+                <p className="text-xs text-fg-muted text-center mt-2">
                   Automatikus fiók létrehozás az első bejelentkezéskor
                 </p>
                 {googleStatusMessage && (
                   <div
                     role="alert"
-                    className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700"
+                    aria-live="polite"
+                    className="mt-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning"
                   >
-                    {googleStatusMessage}
+                    {sanitizeInput(googleStatusMessage)}
                   </div>
                 )}
               </div>
@@ -348,40 +460,74 @@ export default function LoginClient() {
                   <div className="w-full border-t-2 border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white px-4 text-sm text-gray-500 font-medium">
+                  <span className="bg-bg-muted px-4 text-sm text-fg-muted font-medium">
                     vagy email címmel
                   </span>
                 </div>
               </div>
 
               {/* Secondary method - Magic Link */}
-              <form onSubmit={sendMagic} className="space-y-4">
+              <form onSubmit={sendMagic} className="space-y-4" noValidate>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-fg mb-2">
                     Email cím
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-fg-muted"
+                      aria-hidden="true"
+                    />
                     <input
                       id="email"
                       type="email"
+                      name="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.length <= MAX_EMAIL_LENGTH) {
+                          setEmail(value);
+                        }
+                      }}
                       placeholder="pelda@email.hu"
                       required
-                      className="w-full pl-12 pr-4 py-4 md:py-4 text-base md:text-lg border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all text-gray-900"
+                      maxLength={MAX_EMAIL_LENGTH}
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck="false"
+                      aria-label="Email cím"
+                      aria-required="true"
+                      aria-invalid={emailError ? 'true' : 'false'}
+                      aria-describedby={emailError ? 'email-error' : undefined}
+                      className={`w-full pl-12 pr-4 py-4 md:py-4 text-base md:text-lg border-2 rounded-xl focus:ring-4 focus:ring-teal-100 outline-none transition-all text-gray-900 ${
+                        emailError
+                          ? 'border-red-300 focus:border-red-500'
+                          : 'border-gray-200 focus:border-teal-500'
+                      }`}
                     />
                   </div>
+                  {emailError && (
+                    <p
+                      id="email-error"
+                      role="alert"
+                      aria-live="polite"
+                      className="mt-2 text-sm text-red-600"
+                    >
+                      {emailError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Stay logged in checkbox - more prominent */}
-                <label className="flex items-center gap-3 cursor-pointer group">
+                <label htmlFor="remember" className="flex items-center gap-3 cursor-pointer group">
                   <div className="relative">
                     <input
                       type="checkbox"
                       id="remember"
+                      name="remember"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
+                      aria-label="Maradok bejelentkezve"
                       className="w-5 h-5 text-teal-500 border-2 border-gray-300 rounded focus:ring-2 focus:ring-teal-200 cursor-pointer"
                     />
                   </div>
@@ -392,12 +538,19 @@ export default function LoginClient() {
 
                 {/* Error state */}
                 {error && (
-                  <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                  <div
+                    role="alert"
+                    aria-live="assertive"
+                    className="bg-red-50 border-2 border-red-200 rounded-xl p-4"
+                  >
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <AlertCircle
+                        className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+                        aria-hidden="true"
+                      />
                       <div>
                         <div className="font-bold text-red-900 mb-1">Hiba történt</div>
-                        <p className="text-sm text-red-700">{error}</p>
+                        <p className="text-sm text-red-700">{sanitizeInput(error)}</p>
                       </div>
                     </div>
                   </div>
@@ -405,17 +558,21 @@ export default function LoginClient() {
 
                 {/* Success state - Email sent */}
                 {sent && (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
+                  <div
+                    role="alert"
+                    aria-live="polite"
+                    className="bg-green-50 border-2 border-green-200 rounded-xl p-4"
+                  >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Check className="w-6 h-6 text-white" />
+                        <Check className="w-6 h-6 text-white" aria-hidden="true" />
                       </div>
                       <div>
                         <div className="font-bold text-green-900 mb-1">Email elküldve!</div>
                         <p className="text-sm text-green-700">
                           Nézd meg az emailjeidet és kattints a belépési linkre.{' '}
                           {isCooldownActive ? (
-                            <span className="font-semibold">
+                            <span className="font-semibold" aria-live="polite">
                               Új link {cooldownRemaining} másodperc múlva kérhető.
                             </span>
                           ) : (
@@ -423,9 +580,11 @@ export default function LoginClient() {
                               type="button"
                               onClick={() => {
                                 setSent(false);
+                                setError(null);
                                 sendMagic();
                               }}
-                              className="underline font-semibold"
+                              className="underline font-semibold hover:text-green-800"
+                              aria-label="Email újraküldése"
                             >
                               Küldés újra
                             </button>
@@ -439,7 +598,9 @@ export default function LoginClient() {
                 {/* Magic link CTA */}
                 <button
                   type="submit"
-                  disabled={!email || isCooldownActive || isMagicLoading}
+                  disabled={!email || isCooldownActive || isMagicLoading || !!emailError}
+                  aria-label="Belépés Magic Link-kel"
+                  aria-busy={isMagicLoading}
                   className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-4 md:py-5 px-6 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
                   {isMagicLoading ? (

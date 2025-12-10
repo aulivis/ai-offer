@@ -7,8 +7,10 @@ import { createClientLogger } from '@/lib/clientLogger';
 import AppFrame from '@/components/AppFrame';
 import StepIndicator, { type StepIndicatorStep } from '@/components/StepIndicator';
 import { OfferProjectDetailsSection } from '@/components/offers/OfferProjectDetailsSection';
-import { OfferPricingSection } from '@/components/offers/OfferPricingSection';
+import { WizardStep2Pricing } from '@/components/offers/WizardStep2Pricing';
 import { OfferSummarySection } from '@/components/offers/OfferSummarySection';
+import { useSupabase } from '@/components/SupabaseProvider';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { WizardActionBar } from '@/components/offers/WizardActionBar';
 import { WizardPreviewPanel } from '@/components/offers/WizardPreviewPanel';
 import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
@@ -30,6 +32,33 @@ import type { TemplateId } from '@/lib/offers/templates/types';
 import type { WizardStep } from '@/types/wizard';
 
 const PREVIEW_DEBOUNCE_MS = 600;
+
+// Type definitions moved outside component for better performance
+type _Activity = {
+  id: string;
+  name: string;
+  unit: string;
+  default_unit_price: number;
+  default_vat: number;
+  reference_images?: string[] | null;
+};
+type _ClientForm = {
+  company_name: string;
+  address?: string;
+  tax_id?: string;
+  representative?: string;
+  phone?: string;
+  email?: string;
+};
+type _Client = {
+  id: string;
+  company_name: string;
+  address?: string;
+  tax_id?: string;
+  representative?: string;
+  phone?: string;
+  email?: string;
+};
 
 export default function NewOfferPage() {
   const {
@@ -53,18 +82,49 @@ export default function NewOfferPage() {
   const { showToast } = useToast();
   const router = useRouter();
   const logger = useMemo(() => createClientLogger({ component: 'NewOfferPage' }), []);
+  const supabase = useSupabase();
+  const { user } = useRequireAuth();
 
-  // Draft persistence
+  // Preview hook - enabled from Step 2 onwards
+  const previewEnabled = step >= 2;
+  const {
+    previewHtml,
+    status: previewStatus,
+    error: previewError,
+    summary: previewSummary,
+    issues: previewIssues,
+    refresh: refreshPreview,
+    abort: abortPreview,
+  } = useOfferPreview({
+    title,
+    projectDetails,
+    projectDetailsText,
+    enabled: previewEnabled,
+    debounceMs: PREVIEW_DEBOUNCE_MS,
+  });
+
+  // Draft persistence - only save when step 3 is reached AND AI text is generated
+  const shouldSaveDraft = Boolean(
+    step === 3 &&
+      previewHtml.trim() &&
+      previewHtml !== `<p>${t('offers.wizard.preview.idle')}</p>` &&
+      previewStatus === 'success',
+  );
   const wizardData = useMemo(
     () => ({
       step,
       title,
       projectDetails,
       pricingRows,
+      previewHtml: shouldSaveDraft ? previewHtml : undefined,
     }),
-    [step, title, projectDetails, pricingRows],
+    [step, title, projectDetails, pricingRows, previewHtml, shouldSaveDraft],
   );
-  const { loadDraft, clearDraft } = useDraftPersistence('wizard-state', wizardData, true);
+  const { loadDraft, clearDraft } = useDraftPersistence(
+    'wizard-state',
+    wizardData,
+    shouldSaveDraft,
+  );
 
   // Load draft on mount
   useEffect(() => {
@@ -104,11 +164,15 @@ export default function NewOfferPage() {
           setPricingRows(validRows);
         }
       }
-      // Restore step after a brief delay to ensure state updates are processed
-      // This allows validation to run with the restored data
-      if (saved.step && typeof saved.step === 'number' && saved.step >= 1 && saved.step <= 3) {
+      // Only restore to step 3 if previewHtml was saved (AI text was generated)
+      if (saved.step && typeof saved.step === 'number' && saved.step === 3 && saved.previewHtml) {
         // Use restoreStep to bypass validation when restoring draft
         // Small delay ensures state updates are processed first
+        setTimeout(() => {
+          restoreStep(saved.step as WizardStep);
+        }, 0);
+      } else if (saved.step && typeof saved.step === 'number' && saved.step < 3) {
+        // Allow restoring to step 1 or 2 (but don't save drafts for these steps going forward)
         setTimeout(() => {
           restoreStep(saved.step as WizardStep);
         }, 0);
@@ -116,24 +180,6 @@ export default function NewOfferPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Preview hook - enabled from Step 2 onwards
-  const previewEnabled = step >= 2;
-  const {
-    previewHtml,
-    status: previewStatus,
-    error: previewError,
-    summary: previewSummary,
-    issues: previewIssues,
-    refresh: refreshPreview,
-    abort: abortPreview,
-  } = useOfferPreview({
-    title,
-    projectDetails,
-    projectDetailsText,
-    enabled: previewEnabled,
-    debounceMs: PREVIEW_DEBOUNCE_MS,
-  });
 
   const [activePreviewTab, setActivePreviewTab] = useState<OfferPreviewTab>('document');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -149,6 +195,251 @@ export default function NewOfferPage() {
   const [brandingPrimary, setBrandingPrimary] = useState('#1c274c');
   const [brandingSecondary, setBrandingSecondary] = useState('#e2e8f0');
   const [brandingLogoUrl, setBrandingLogoUrl] = useState('');
+
+  // Activities and profile settings state
+  type Activity = {
+    id: string;
+    name: string;
+    unit: string;
+    default_unit_price: number;
+    default_vat: number;
+    reference_images?: string[] | null;
+  };
+  type ClientForm = {
+    company_name: string;
+    address?: string;
+    tax_id?: string;
+    representative?: string;
+    phone?: string;
+    email?: string;
+  };
+  type Client = {
+    id: string;
+    company_name: string;
+    address?: string;
+    tax_id?: string;
+    representative?: string;
+    phone?: string;
+    email?: string;
+  };
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [profileSettings, setProfileSettings] = useState<{
+    enable_reference_photos: boolean;
+    enable_testimonials: boolean;
+  }>({
+    enable_reference_photos: false,
+    enable_testimonials: false,
+  });
+  const [client, setClient] = useState<ClientForm>({
+    company_name: '',
+  });
+  const [clientList, setClientList] = useState<Client[]>([]);
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedTestimonials, setSelectedTestimonials] = useState<string[]>([]);
+  const [selectedTestimonialsContent, setSelectedTestimonialsContent] = useState<
+    Array<{ id: string; text: string }>
+  >([]);
+  const [guarantees, setGuarantees] = useState<
+    Array<{
+      id: string;
+      text: string;
+      activity_ids: string[];
+    }>
+  >([]);
+  const [selectedGuaranteeIds, setSelectedGuaranteeIds] = useState<string[]>([]);
+  const isCreatingClientRef = useRef(false); // Prevent race condition in client creation
+
+  // Filter clients based on company name input
+  const filteredClients = useMemo(() => {
+    if (!client.company_name.trim()) {
+      return clientList.slice(0, 10);
+    }
+    const query = client.company_name.toLowerCase().trim();
+    return clientList
+      .filter(
+        (c) =>
+          c.company_name.toLowerCase().includes(query) ||
+          (c.email && c.email.toLowerCase().includes(query)),
+      )
+      .slice(0, 10);
+  }, [client.company_name, clientList]);
+
+  // Load activities and profile settings on mount - parallel loading for better performance
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+
+    (async () => {
+      // Load all data in parallel for better performance
+      const [profileResult, activitiesResult, clientsResult, guaranteesResult] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('enable_reference_photos, enable_testimonials')
+          .eq('id', user.id)
+          .single(),
+        supabase
+          .from('activities')
+          .select('id,name,unit,default_unit_price,default_vat,reference_images')
+          .eq('user_id', user.id)
+          .order('name'),
+        supabase
+          .from('clients')
+          .select('id,company_name,address,tax_id,representative,phone,email')
+          .eq('user_id', user.id)
+          .order('company_name')
+          .limit(100),
+        supabase
+          .from('guarantees')
+          .select('id, text, activity_guarantees(activity_id)')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true }),
+      ]);
+
+      if (!active) return;
+
+      // Handle profile settings
+      if (profileResult.data && !profileResult.error) {
+        setProfileSettings({
+          enable_reference_photos: profileResult.data.enable_reference_photos ?? false,
+          enable_testimonials: profileResult.data.enable_testimonials ?? false,
+        });
+      }
+
+      // Handle activities
+      if (activitiesResult.error) {
+        logger.error('Failed to load activities', activitiesResult.error);
+      } else {
+        setActivities(activitiesResult.data || []);
+      }
+
+      // Handle clients
+      if (clientsResult.error) {
+        logger.error('Failed to load clients', clientsResult.error);
+        // Show error but don't block - clients are optional
+      } else {
+        setClientList(clientsResult.data || []);
+      }
+
+      // Handle guarantees
+      if (guaranteesResult.error) {
+        logger.error('Failed to load guarantees', guaranteesResult.error);
+      } else {
+        const formattedGuarantees = (guaranteesResult.data || []).map((row) => ({
+          id: row.id,
+          text: row.text,
+          activity_ids:
+            row.activity_guarantees
+              ?.map((link: { activity_id: string }) => link.activity_id)
+              .filter((id): id is string => typeof id === 'string') ?? [],
+        }));
+        setGuarantees(formattedGuarantees);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [user, supabase, logger]);
+
+  // Fetch testimonials content when testimonials are selected
+  useEffect(() => {
+    if (!user || !profileSettings.enable_testimonials || selectedTestimonials.length === 0) {
+      setSelectedTestimonialsContent([]);
+      return;
+    }
+
+    let active = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('testimonials')
+          .select('id, text')
+          .eq('user_id', user.id)
+          .in('id', selectedTestimonials);
+
+        if (active && !error && data) {
+          setSelectedTestimonialsContent(
+            data.map((t) => ({ id: t.id, text: t.text })).filter((t) => t.text.trim().length > 0),
+          );
+        }
+      } catch (error) {
+        logger.error('Failed to fetch testimonials', error);
+        if (active) {
+          setSelectedTestimonialsContent([]);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [user, supabase, logger, profileSettings.enable_testimonials, selectedTestimonials]);
+
+  // Reload activities after saving a new one
+  const handleActivitySaved = useCallback(
+    async (newActivity?: Activity) => {
+      if (!newActivity || !user) return;
+      // Optimistically add to list
+      setActivities((prev) => {
+        const exists = prev.some((a) => a.id === newActivity.id);
+        if (exists) {
+          return prev.map((a) => (a.id === newActivity.id ? newActivity : a));
+        }
+        return [...prev, newActivity].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      // Reload from database to get accurate data
+      const { data: acts, error } = await supabase
+        .from('activities')
+        .select('id,name,unit,default_unit_price,default_vat,reference_images')
+        .eq('user_id', user.id)
+        .order('name');
+      if (!error && acts) {
+        setActivities(acts);
+      }
+    },
+    [user, supabase],
+  );
+
+  const handleClientSelect = useCallback((selectedClient: Client) => {
+    setClient({
+      company_name: selectedClient.company_name || '',
+      address: selectedClient.address || '',
+      tax_id: selectedClient.tax_id || '',
+      representative: selectedClient.representative || '',
+      phone: selectedClient.phone || '',
+      email: selectedClient.email || '',
+    });
+  }, []);
+
+  const handleToggleGuarantee = useCallback((guaranteeId: string) => {
+    setSelectedGuaranteeIds((prev) => {
+      if (prev.includes(guaranteeId)) {
+        return prev.filter((id) => id !== guaranteeId);
+      }
+      return [...prev, guaranteeId];
+    });
+  }, []);
+
+  const handleActivityGuaranteeAttach = useCallback(
+    (activityId: string) => {
+      const linkedGuarantees = guarantees
+        .filter((g) => g.activity_ids.includes(activityId))
+        .map((g) => g.id);
+      if (linkedGuarantees.length > 0) {
+        setSelectedGuaranteeIds((prev) => {
+          const next = [...prev];
+          for (const guaranteeId of linkedGuarantees) {
+            if (!next.includes(guaranteeId)) {
+              next.push(guaranteeId);
+            }
+          }
+          return next;
+        });
+      }
+    },
+    [guarantees],
+  );
 
   const { totals } = usePricingRows(pricingRows);
   const [previewDocumentHtml, setPreviewDocumentHtml] = useState('');
@@ -217,8 +508,14 @@ export default function NewOfferPage() {
         branding: brandingPayload,
         locale: 'hu',
         schedule: [],
-        testimonials: [],
-        guarantees: [],
+        testimonials: selectedTestimonialsContent
+          .map((t) => t.text.trim())
+          .filter((text) => text.length > 0)
+          .slice(0, 3), // Enforce max 3 testimonials
+        guarantees: selectedGuaranteeIds
+          .map((id) => guarantees.find((g) => g.id === id)?.text.trim())
+          .filter((text): text is string => Boolean(text && text.length > 0))
+          .slice(0, 5), // Enforce max 5 guarantees
         formality: 'tegeződés' as const, // Default formality for dashboard wizard
         tone: 'friendly' as const, // Default tone for dashboard wizard
       };
@@ -233,12 +530,22 @@ export default function NewOfferPage() {
             defaultErrorMessage: t('errors.preview.fetchUnknown'),
             errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
           });
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => '');
+            throw new Error(`Preview render failed: ${response.status} ${errorText}`);
+          }
+
           const html = await response.text();
           if (!controller.signal.aborted) {
             setPreviewDocumentHtml(html);
           }
         } catch (error) {
-          if (isAbortError(error)) {
+          if (isAbortError(error) || controller.signal.aborted) {
             return;
           }
           logger.error('Failed to render preview document', error, {
@@ -276,6 +583,9 @@ export default function NewOfferPage() {
     brandingLogoUrl,
     templateOptions,
     defaultTemplateId,
+    selectedTestimonialsContent,
+    selectedGuaranteeIds,
+    guarantees,
   ]);
 
   // Simplified mobile action bar - always visible on mobile
@@ -286,10 +596,13 @@ export default function NewOfferPage() {
     trackWizardEvent({ type: 'wizard_step_viewed', step });
   }, [step]);
 
-  // Track draft loading
+  // Track draft loading (only once on mount)
+  const hasTrackedDraftLoad = useRef(false);
   useEffect(() => {
+    if (hasTrackedDraftLoad.current) return;
     const saved = loadDraft();
     if (saved) {
+      hasTrackedDraftLoad.current = true;
       trackWizardEvent({ type: 'wizard_draft_loaded' });
     }
   }, [loadDraft]);
@@ -349,6 +662,20 @@ export default function NewOfferPage() {
       setActivePreviewTab('document');
     }
   }, [step]);
+
+  // Close client dropdown when navigating away from step 2
+  useEffect(() => {
+    if (step !== 2) {
+      setShowClientDropdown(false);
+    }
+  }, [step]);
+
+  // Abort preview generation on unmount
+  useEffect(() => {
+    return () => {
+      abortPreview();
+    };
+  }, [abortPreview]);
 
   const stepLabels = useMemo(
     () => ({
@@ -439,6 +766,126 @@ export default function NewOfferPage() {
         ? selectedTemplateId
         : defaultTemplateId;
 
+      // Get selected guarantee texts (with length limits for API safety)
+      const selectedGuaranteeTexts = selectedGuaranteeIds
+        .map((id) => guarantees.find((g) => g.id === id)?.text.trim())
+        .filter((text): text is string => Boolean(text && text.length > 0 && text.length <= 500))
+        .slice(0, 5); // Enforce max 5 guarantees
+
+      // Get testimonials texts (with length limits for API safety)
+      const testimonialsTexts = selectedTestimonialsContent
+        .map((t) => t.text.trim())
+        .filter((text) => text.length > 0 && text.length <= 1000)
+        .slice(0, 3); // Enforce max 3 testimonials
+
+      // Find or create client if company name is provided
+      let resolvedClientId: string | null = null;
+      if (client.company_name.trim()) {
+        // Try to find existing client (case-insensitive)
+        const trimmedCompanyName = client.company_name.trim();
+        const existingClient = clientList.find(
+          (c) => c.company_name.toLowerCase().trim() === trimmedCompanyName.toLowerCase(),
+        );
+        if (existingClient) {
+          resolvedClientId = existingClient.id;
+        } else if (!isCreatingClientRef.current) {
+          // Prevent race condition - only create if not already creating
+          isCreatingClientRef.current = true;
+          // Create new client - validate email format if provided
+          const trimmedEmail = client.email?.trim();
+          if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+            isCreatingClientRef.current = false;
+            showToast({
+              title: 'Érvénytelen e-mail cím',
+              description: 'Kérjük, adjon meg egy érvényes e-mail címet.',
+              variant: 'error',
+            });
+            setIsSubmitting(false);
+            return;
+          }
+
+          try {
+            const { data: newClient, error: createError } = await supabase
+              .from('clients')
+              .insert({
+                user_id: user?.id,
+                company_name: trimmedCompanyName,
+                address: client.address?.trim() || null,
+                tax_id: client.tax_id?.trim() || null,
+                representative: client.representative?.trim() || null,
+                phone: client.phone?.trim() || null,
+                email: trimmedEmail || null,
+              })
+              .select('id')
+              .single();
+
+            if (createError) {
+              logger.error('Failed to create client', createError);
+              // Check if it's a duplicate error (client already exists)
+              if (createError.code === '23505') {
+                // Unique constraint violation - client might have been created between check and insert
+                // Try to fetch it again
+                const { data: existing } = await supabase
+                  .from('clients')
+                  .select('id')
+                  .eq('user_id', user?.id)
+                  .ilike('company_name', trimmedCompanyName)
+                  .single();
+                if (existing) {
+                  resolvedClientId = existing.id;
+                } else {
+                  showToast({
+                    title: 'Nem sikerült létrehozni az ügyfelet',
+                    description: createError.message || 'Próbálja meg újra.',
+                    variant: 'error',
+                  });
+                  setIsSubmitting(false);
+                  return;
+                }
+              } else {
+                showToast({
+                  title: 'Nem sikerült létrehozni az ügyfelet',
+                  description:
+                    createError.message || 'A folytatáshoz nem szükséges az ügyfél adata.',
+                  variant: 'warning',
+                });
+                // Continue without client ID - non-critical
+              }
+            } else if (newClient) {
+              resolvedClientId = newClient.id;
+              // Update client list optimistically
+              setClientList((prev) => [
+                ...prev,
+                {
+                  id: newClient.id,
+                  company_name: trimmedCompanyName,
+                  ...(client.address?.trim() && { address: client.address.trim() }),
+                  ...(client.tax_id?.trim() && { tax_id: client.tax_id.trim() }),
+                  ...(client.representative?.trim() && {
+                    representative: client.representative.trim(),
+                  }),
+                  ...(client.phone?.trim() && { phone: client.phone.trim() }),
+                  ...(trimmedEmail && { email: trimmedEmail }),
+                },
+              ]);
+            }
+            isCreatingClientRef.current = false;
+          } catch (error) {
+            isCreatingClientRef.current = false;
+            logger.error('Failed to create client', error);
+            showToast({
+              title: 'Nem sikerült létrehozni az ügyfelet',
+              description:
+                error instanceof Error
+                  ? error.message
+                  : 'A folytatáshoz nem szükséges az ügyfél adata.',
+              variant: 'warning',
+            });
+            // Continue without client ID if creation fails - non-critical
+          }
+        }
+      }
+
       const response = await fetchWithSupabaseAuth('/api/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -453,16 +900,30 @@ export default function NewOfferPage() {
           prices: serializedPrices,
           aiOverrideHtml: trimmedPreview,
           templateId: resolvedTemplateId, // Explicitly pass template ID
-          clientId: null,
-          imageAssets: [],
+          clientId: resolvedClientId,
+          imageAssets: [], // Reference images not yet supported in dashboard wizard
           schedule: [],
-          testimonials: [],
-          guarantees: [],
+          testimonials: testimonialsTexts.slice(0, 3), // Enforce max 3 testimonials
+          guarantees: selectedGuaranteeTexts.slice(0, 5), // Enforce max 5 guarantees
         }),
         authErrorMessage: t('errors.offer.saveAuth'),
         errorMessageBuilder: (status) => t('errors.offer.saveStatus', { status }),
         defaultErrorMessage: t('errors.offer.saveUnknown'),
       });
+
+      // Check response status before parsing
+      if (!response.ok) {
+        let errorMessage = t('errors.offer.saveFailed');
+        try {
+          const errorData = await response.json().catch(() => ({}));
+          if (typeof errorData.error === 'string' && errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // Use default error message if parsing fails
+        }
+        throw new ApiError(errorMessage);
+      }
 
       type GenerateResponse = { ok?: boolean; error?: string | null } | null;
       const payload: GenerateResponse = await response
@@ -516,6 +977,14 @@ export default function NewOfferPage() {
     defaultTemplateId,
     selectedTemplateId,
     templateOptions,
+    selectedTestimonialsContent,
+    selectedGuaranteeIds,
+    guarantees,
+    client,
+    clientList,
+    user,
+    supabase,
+    logger,
   ]);
 
   useWizardKeyboardShortcuts({
@@ -585,10 +1054,31 @@ export default function NewOfferPage() {
 
             {step === 2 && (
               <StepErrorBoundary stepNumber={2}>
-                <OfferPricingSection
+                <WizardStep2Pricing
                   rows={pricingRows}
-                  onChange={setPricingRows}
-                  {...(pricingSectionError ? { error: pricingSectionError } : {})}
+                  onRowsChange={setPricingRows}
+                  activities={activities}
+                  {...(pricingSectionError ? { validationError: pricingSectionError } : {})}
+                  client={client}
+                  onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+                  clientList={clientList}
+                  onClientSelect={handleClientSelect}
+                  showClientDropdown={showClientDropdown}
+                  onClientDropdownToggle={setShowClientDropdown}
+                  filteredClients={filteredClients}
+                  onActivitySaved={handleActivitySaved}
+                  enableReferencePhotos={profileSettings.enable_reference_photos}
+                  enableTestimonials={profileSettings.enable_testimonials}
+                  selectedImages={selectedImages}
+                  onSelectedImagesChange={setSelectedImages}
+                  selectedTestimonials={selectedTestimonials}
+                  onSelectedTestimonialsChange={setSelectedTestimonials}
+                  guarantees={guarantees}
+                  selectedGuaranteeIds={selectedGuaranteeIds}
+                  onToggleGuarantee={handleToggleGuarantee}
+                  manualGuaranteeCount={0}
+                  guaranteeLimit={5}
+                  onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
                 />
               </StepErrorBoundary>
             )}
@@ -604,11 +1094,11 @@ export default function NewOfferPage() {
                   {previewStatus === 'loading' && (
                     <Card>
                       <CardHeader>
-                        <h2 className="text-sm font-semibold text-slate-700">
+                        <h2 className="text-sm font-semibold text-fg">
                           {t('offers.wizard.aiText.heading')}
                         </h2>
                       </CardHeader>
-                      <div className="text-sm text-slate-500">
+                      <div className="text-sm text-fg-muted">
                         {t('offers.wizard.aiText.generating')}
                       </div>
                     </Card>
@@ -616,7 +1106,7 @@ export default function NewOfferPage() {
                   {previewStatus === 'error' && previewError && (
                     <Card>
                       <CardHeader>
-                        <h2 className="text-sm font-semibold text-slate-700">
+                        <h2 className="text-sm font-semibold text-fg">
                           {t('offers.wizard.aiText.heading')}
                         </h2>
                       </CardHeader>
@@ -628,12 +1118,12 @@ export default function NewOfferPage() {
                     previewHtml !== `<p>${t('offers.wizard.preview.idle')}</p>` && (
                       <Card>
                         <CardHeader>
-                          <h2 className="text-sm font-semibold text-slate-700">
+                          <h2 className="text-sm font-semibold text-fg">
                             {t('offers.wizard.aiText.heading')}
                           </h2>
                         </CardHeader>
                         <div
-                          className="prose prose-sm max-w-none text-slate-700"
+                          className="prose prose-sm max-w-none text-fg"
                           dangerouslySetInnerHTML={{ __html: previewHtml }}
                         />
                       </Card>
@@ -649,8 +1139,12 @@ export default function NewOfferPage() {
                     brandingSecondary={brandingSecondary}
                     brandingLogoUrl={brandingLogoUrl}
                     scheduleItems={[]}
-                    testimonials={[]}
-                    guarantees={[]}
+                    testimonials={selectedTestimonialsContent
+                      .map((t) => t.text.trim())
+                      .filter((text) => text.length > 0)}
+                    guarantees={selectedGuaranteeIds
+                      .map((id) => guarantees.find((g) => g.id === id)?.text.trim())
+                      .filter((text): text is string => Boolean(text && text.length > 0))}
                     disabled={isSubmitting || isStreaming || !previewHtml.trim() || !hasPricingRows}
                   />
                 </div>

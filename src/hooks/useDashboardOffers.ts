@@ -8,6 +8,7 @@ import { t } from '@/copy';
 import { createClientLogger } from '@/lib/clientLogger';
 import type { Offer, OfferFilter } from '@/app/dashboard/types';
 import { PAGE_SIZE, mergeOfferPages } from '@/app/dashboard/offersPagination';
+import { DASHBOARD_CONFIG } from '@/constants/dashboard';
 
 type UseDashboardOffersOptions = {
   offerFilter: OfferFilter;
@@ -68,7 +69,7 @@ export function useDashboardOffers({
         throw new Error(errorMessage);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, DASHBOARD_CONFIG.SESSION_CHECK_DELAY_MS));
       const {
         data: { session },
         error: sessionError,
@@ -342,13 +343,17 @@ export function useDashboardOffers({
 
   useEffect(() => {
     let active = true;
+    const abortController = new AbortController();
+
     if (authStatus !== 'authenticated' || !user) {
       return () => {
         active = false;
+        abortController.abort();
       };
     }
 
     const loadInitialPage = async () => {
+      if (abortController.signal.aborted) return;
       setLoading(true);
       try {
         const memberIds = offerFilter === 'member' ? teamMemberFilter : [];
@@ -359,7 +364,7 @@ export function useDashboardOffers({
           memberIds,
           teamIds,
         );
-        if (!active) return;
+        if (!active || abortController.signal.aborted) return;
         setOffers(items);
         setPageIndex(0);
         setTotalCount(count);
@@ -416,17 +421,16 @@ export function useDashboardOffers({
 
     let wasHidden = false;
     let hiddenTimestamp = 0;
-    const VISIBILITY_REFRESH_THRESHOLD_MS = 5000;
 
     const handleVisibilityChange = () => {
-      if (!active) return;
+      if (!active || abortController.signal.aborted) return;
 
       if (document.visibilityState === 'hidden') {
         wasHidden = true;
         hiddenTimestamp = Date.now();
       } else if (document.visibilityState === 'visible' && wasHidden) {
         const hiddenDuration = Date.now() - hiddenTimestamp;
-        if (hiddenDuration > VISIBILITY_REFRESH_THRESHOLD_MS) {
+        if (hiddenDuration > DASHBOARD_CONFIG.VISIBILITY_REFRESH_THRESHOLD_MS) {
           loadInitialPage();
         }
         wasHidden = false;
@@ -437,10 +441,10 @@ export function useDashboardOffers({
 
     return () => {
       active = false;
+      abortController.abort();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStatus, user?.id, offerFilter, teamMemberFilter, teamIds]);
+  }, [authStatus, user, offerFilter, teamMemberFilter, teamIds, fetchPageRef, logger]);
 
   const hasMore = totalCount !== null ? offers.length < totalCount : false;
 

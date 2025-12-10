@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
+import { H1, H2 } from '@/components/ui/Heading';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -31,12 +32,12 @@ export default function GuidePage() {
 
       {/* Hero Section */}
       <header className="mb-12">
-        <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/50 bg-blue-50 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-blue-700">
+        <span className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-primary">
           Útmutató
         </span>
-        <h1 className="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+        <H1 className="mt-6" fluid>
           Ajánlatkészítési útmutató
-        </h1>
+        </H1>
         <p className="mt-4 text-xl leading-relaxed text-fg-muted">
           Tanulj meg professzionális, konverzióoptimalizált ajánlatokat készíteni, amelyek segítenek
           több megbízást szerezni és az üzleti növekedést gyorsítani.
@@ -71,7 +72,7 @@ export default function GuidePage() {
       <article className="prose prose-lg max-w-none">
         {/* Section 1: Bevezetés */}
         <section id="bevezetes" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">1. Bevezetés</h2>
+          <H2 className="mb-4">1. Bevezetés</H2>
           <p className="mb-4 text-lg leading-relaxed text-fg-muted">
             Az ajánlatkészítés nem csupán árak és szolgáltatások listája. Ez egy stratégiai üzleti
             dokumentum, amely bemutatja vállalkozásodat, kommunikálja az értéket, és meggyőzi a
@@ -83,9 +84,9 @@ export default function GuidePage() {
           </p>
 
           {/* Placeholder for hero image */}
-          <div className="my-8 rounded-lg border-2 border-dashed border-border bg-gray-50 p-12 text-center">
+          <div className="my-8 rounded-lg border-2 border-dashed border-border bg-bg-muted p-12 text-center">
             <svg
-              className="mx-auto h-16 w-16 text-gray-400"
+              className="mx-auto h-16 w-16 text-fg-muted"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -97,10 +98,10 @@ export default function GuidePage() {
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <p className="mt-4 text-sm font-medium text-gray-600">
+            <p className="mt-4 text-sm font-medium text-fg-muted">
               [Helyőrző: Kép egy professzionális ajánlatról, amely a Vyndi platformon készült]
             </p>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-fg-muted">
               Ajánlott méret: 1200x600px, formátum: WebP vagy PNG
             </p>
           </div>
@@ -108,7 +109,7 @@ export default function GuidePage() {
 
         {/* Section 2: Struktúra */}
         <section id="struktura" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">2. Az ajánlat struktúrája</h2>
+          <H2 className="mb-4">2. Az ajánlat struktúrája</H2>
           <p className="mb-6 text-lg leading-relaxed text-fg-muted">
             Minden hatékony ajánlat következetes struktúrát követ. Íme a legfontosabb részek:
           </p>
@@ -134,9 +135,9 @@ export default function GuidePage() {
                 Mutasd be, hogy érted az ügyfél problémáját és kihívásait. Ez bizalmat épít és
                 személyre szabott megoldást kínálsz.
               </p>
-              <div className="rounded-lg bg-blue-50 p-4">
-                <p className="text-sm font-medium text-blue-900">💡 Tipp:</p>
-                <p className="mt-1 text-sm text-blue-800">
+              <div className="rounded-lg bg-primary/10 p-4 border border-primary/20">
+                <p className="text-sm font-medium text-primary">💡 Tipp:</p>
+                <p className="mt-1 text-sm text-primary/90">
                   Kérdezd meg az ügyfelet a projekt indításakor, hogy mi a legnagyobb kihívásuk, és
                   használd ezt az ajánlatban!
                 </p>
@@ -165,7 +166,7 @@ export default function GuidePage() {
 
         {/* Section 3: Szövegírás */}
         <section id="szovegiras" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">3. Szövegírás és kommunikáció</h2>
+          <H2 className="mb-4">3. Szövegírás és kommunikáció</H2>
 
           <div className="space-y-6">
             <div>
@@ -178,15 +179,15 @@ export default function GuidePage() {
               </p>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <Card className="border-red-200 bg-red-50">
-                  <p className="mb-2 text-xs font-semibold uppercase text-red-700">❌ Kerüld</p>
-                  <p className="text-sm text-red-900">
+                <Card className="border-danger/30 bg-danger/10">
+                  <p className="mb-2 text-xs font-semibold uppercase text-danger">❌ Kerüld</p>
+                  <p className="text-sm text-danger/90">
                     &quot;Mi egy professzionális weboldalt készítünk Önnek.&quot;
                   </p>
                 </Card>
-                <Card className="border-green-200 bg-green-50">
-                  <p className="mb-2 text-xs font-semibold uppercase text-green-700">✅ Használd</p>
-                  <p className="text-sm text-green-900">
+                <Card className="border-success/30 bg-success/10">
+                  <p className="mb-2 text-xs font-semibold uppercase text-success">✅ Használd</p>
+                  <p className="text-sm text-success/90">
                     &quot;Ön egy professzionális weboldalt kap, amely növeli online
                     jelenlétét.&quot;
                   </p>
@@ -204,9 +205,9 @@ export default function GuidePage() {
               </p>
 
               {/* Placeholder for comparison chart */}
-              <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
+              <div className="my-6 rounded-lg border-2 border-dashed border-border bg-bg-muted p-8 text-center">
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
+                  className="mx-auto h-12 w-12 text-fg-muted"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -218,11 +219,11 @@ export default function GuidePage() {
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                   />
                 </svg>
-                <p className="mt-4 text-sm font-medium text-gray-600">
+                <p className="mt-4 text-sm font-medium text-fg-muted">
                   [Helyőrző: Infografika - &quot;Flozkulák vs. konkrét értékek&quot; összehasonlító
                   táblázat]
                 </p>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-fg-muted">
                   Ajánlott: interaktív, színes infografika konkrét példákkal
                 </p>
               </div>
@@ -254,7 +255,7 @@ export default function GuidePage() {
 
         {/* Section 4: Árazás */}
         <section id="arak" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">4. Árazás és csomagolás</h2>
+          <H2 className="mb-4">4. Árazás és csomagolás</H2>
 
           <div className="space-y-6">
             <Card>
@@ -288,9 +289,9 @@ export default function GuidePage() {
               </p>
 
               {/* Placeholder for pricing table example */}
-              <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
+              <div className="my-6 rounded-lg border-2 border-dashed border-border bg-bg-muted p-8 text-center">
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
+                  className="mx-auto h-12 w-12 text-fg-muted"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -302,10 +303,10 @@ export default function GuidePage() {
                     d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                   />
                 </svg>
-                <p className="mt-4 text-sm font-medium text-gray-600">
+                <p className="mt-4 text-sm font-medium text-fg-muted">
                   [Helyőrző: Képernyőkép egy professzionális árazási táblázatról a Vyndi sablonból]
                 </p>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-fg-muted">
                   Mutasd be, hogyan néz ki egy jól strukturált árazási táblázat
                 </p>
               </div>
@@ -315,7 +316,7 @@ export default function GuidePage() {
 
         {/* Section 5: Vizuális */}
         <section id="vizualis" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">5. Vizuális prezentáció</h2>
+          <H2 className="mb-4">5. Vizuális prezentáció</H2>
 
           <div className="space-y-6">
             <Card>
@@ -345,9 +346,9 @@ export default function GuidePage() {
               </p>
 
               {/* Placeholder for visual examples */}
-              <div className="my-6 rounded-lg border-2 border-dashed border-border bg-gray-50 p-8 text-center">
+              <div className="my-6 rounded-lg border-2 border-dashed border-border bg-bg-muted p-8 text-center">
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
+                  className="mx-auto h-12 w-12 text-fg-muted"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -359,11 +360,11 @@ export default function GuidePage() {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p className="mt-4 text-sm font-medium text-gray-600">
+                <p className="mt-4 text-sm font-medium text-fg-muted">
                   [Helyőrző: Kollázs különböző ajánlat sablonokról, infografikákról és vizuális
                   elemekről]
                 </p>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-fg-muted">
                   Mutasd be a Vyndi sablonok vizuális elemeit
                 </p>
               </div>
@@ -373,7 +374,7 @@ export default function GuidePage() {
 
         {/* Section 6: CTA */}
         <section id="kovetkezmenyek" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">6. Következő lépések és CTA</h2>
+          <H2 className="mb-4">6. Következő lépések és CTA</H2>
 
           <Card className="border-l-4 border-l-primary bg-primary/5">
             <h3 className="mb-3 text-xl font-semibold text-fg">Hatékony Call-to-Action (CTA)</h3>
@@ -395,7 +396,7 @@ export default function GuidePage() {
 
         {/* Section 7: Összegzés */}
         <section id="osszegzes" className="mb-12 scroll-mt-8">
-          <h2 className="mb-4 text-3xl font-bold text-fg">7. Összegzés</h2>
+          <H2 className="mb-4">7. Összegzés</H2>
           <Card className="bg-gradient-to-br from-blue-50 to-cyan-50">
             <p className="mb-4 text-lg font-semibold text-fg">
               A tökéletes ajánlat kulcsfontosságú elemei:
@@ -414,7 +415,7 @@ export default function GuidePage() {
       {/* CTA Section */}
       <Card className="mt-16 border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
         <div className="text-center">
-          <h2 className="mb-4 text-3xl font-bold text-fg">Készítsd el első ajánlatodat ma!</h2>
+          <H2 className="mb-4">Készítsd el első ajánlatodat ma!</H2>
           <p className="mb-8 text-lg text-fg-muted">
             A Vyndi segít neked professzionális ajánlatokat készíteni percek alatt. Próbáld ki
             ingyenesen!
@@ -440,7 +441,9 @@ export default function GuidePage() {
 
       {/* Related Resources */}
       <div className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold text-fg">Kapcsolódó erőforrások</h2>
+        <H2 className="mb-6" size="h3">
+          Kapcsolódó erőforrások
+        </H2>
         <div className="grid gap-4 md:grid-cols-2">
           <Link href="/resources/ai-guide">
             <Card className="group h-full border-2 border-border/60 transition-all hover:border-primary/40 hover:shadow-lg">

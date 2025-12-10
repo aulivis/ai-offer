@@ -31,7 +31,10 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const requested = url.searchParams.get('redirect_to');
   const finalRedirect = sanitizeOAuthRedirect(requested, '/dashboard');
-  const rememberMe = url.searchParams.get('remember_me') === 'true';
+
+  // Validate remember_me - accept 'true' string or boolean
+  const rememberMeParam = url.searchParams.get('remember_me');
+  const rememberMe = rememberMeParam === 'true' || rememberMeParam === '1';
 
   // 2) Callback URL (ezt adja vissza a Google a Supabase-en keresztül)
   const callbackUrl = new URL(envServer.SUPABASE_AUTH_EXTERNAL_GOOGLE_REDIRECT_URI);

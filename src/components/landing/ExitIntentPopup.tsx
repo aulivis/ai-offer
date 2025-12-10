@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
 import { trackConversion, trackEmailCapture } from '@/lib/analytics';
@@ -15,24 +15,50 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (show) {
       // Double-check sessionStorage before showing
       if (typeof window !== 'undefined') {
-        const popupShown = sessionStorage.getItem('exitIntentPopupShown');
-        if (popupShown === 'true') {
-          // Already shown, don't show again
-          onClose();
-          return;
+        try {
+          const popupShown = sessionStorage.getItem('exitIntentPopupShown');
+          if (popupShown === 'true') {
+            // Already shown, don't show again
+            onClose();
+            return;
+          }
+        } catch (error) {
+          // sessionStorage might not be available (private browsing, etc.)
+          clientLogger.warn('Could not access sessionStorage', error);
         }
         trackConversion('exit_intent_shown');
       }
       setIsVisible(true);
+      // Focus management for accessibility
+      setTimeout(() => {
+        emailInputRef.current?.focus();
+      }, 100);
     } else {
       setIsVisible(false);
     }
   }, [show, onClose]);
+
+  // Handle Escape key to close
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsVisible(false);
+        setTimeout(onClose, 300);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isVisible, onClose]);
 
   if (!show || !isVisible) return null;
 
@@ -80,19 +106,20 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity duration-300 motion-safe:duration-300"
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="exit-popup-title"
     >
       <Card
-        className="relative max-w-lg animate-in fade-in zoom-in-95 duration-300"
+        className="relative max-w-lg motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          ref={closeButtonRef}
           onClick={handleClose}
-          className="absolute right-4 top-4 rounded-full p-1 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg"
+          className="absolute right-4 top-4 rounded-full p-1 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           aria-label="Bezárás"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,9 +134,9 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
 
         {status === 'success' ? (
           <div className="p-8 text-center">
-            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
               <svg
-                className="h-8 w-8 text-green-600"
+                className="h-8 w-8 text-success"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -164,6 +191,7 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
 
             <form onSubmit={handleEmailSubmit} className="mb-4 space-y-3">
               <input
+                ref={emailInputRef}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -171,6 +199,8 @@ export default function ExitIntentPopup({ onClose, show }: ExitIntentPopupProps)
                 className="w-full rounded-lg border border-border bg-bg px-4 py-3 text-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 required
                 disabled={status === 'loading'}
+                aria-label="Email cím a hírlevélhez"
+                aria-required="true"
               />
               <button
                 type="submit"

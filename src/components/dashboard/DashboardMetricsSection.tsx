@@ -4,83 +4,62 @@ import { t } from '@/copy';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { MetricSkeleton } from '@/components/ui/Skeleton';
 import DocumentTextIcon from '@heroicons/react/24/outline/DocumentTextIcon';
-import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
-import DocumentCheckIcon from '@heroicons/react/24/outline/DocumentCheckIcon';
-import XCircleIcon from '@heroicons/react/24/outline/XCircleIcon';
 import ChartBarIcon from '@heroicons/react/24/outline/ChartBarIcon';
+import DocumentCheckIcon from '@heroicons/react/24/outline/DocumentCheckIcon';
+import PaperAirplaneIcon from '@heroicons/react/24/outline/PaperAirplaneIcon';
 import ClockIcon from '@heroicons/react/24/outline/ClockIcon';
 import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
+import XCircleIcon from '@heroicons/react/24/outline/XCircleIcon';
 import ArrowsPointingOutIcon from '@heroicons/react/24/outline/ArrowsPointingOutIcon';
 import ArrowsPointingInIcon from '@heroicons/react/24/outline/ArrowsPointingInIcon';
 import type { DashboardMetrics } from '@/hooks/useDashboardMetrics';
+import type { StatusFilterOption } from '@/app/dashboard/types';
 
 type DashboardMetricsSectionProps = {
-  stats: DashboardMetrics;
-  totalOffersCount: number;
-  quotaValue: string;
-  quotaSnapshot: {
-    plan: 'free' | 'standard' | 'pro';
-  } | null;
-  metricsViewMode: 'detailed' | 'compact';
   loading: boolean;
   isQuotaLoading: boolean;
-  onMetricClick: (filterStatus: 'all' | 'draft' | 'sent' | 'accepted' | 'lost') => void;
-  onToggleMetricsView: () => void;
+  totalOffersCount: number;
+  stats: DashboardMetrics;
+  metricsViewMode: 'detailed' | 'compact';
   kpiScope: 'personal' | 'team';
   teamIds: string[];
-  onToggleKpiScope: () => void;
+  quotaValue: string;
+  quotaSnapshot: {
+    plan: string;
+  } | null;
+  acceptanceLabel: string;
+  winRateLabel: string;
+  avgDecisionLabel: string;
+  totalHelper: string;
+  createdComparison?: {
+    label: string;
+    value: string;
+    trend: 'up' | 'down' | 'neutral';
+  };
+  onMetricsViewModeChange: (mode: 'detailed' | 'compact') => void;
+  onKpiScopeChange: (scope: 'personal' | 'team') => void;
+  onMetricClick: (filterStatus: StatusFilterOption) => void;
 };
 
 export function DashboardMetricsSection({
-  stats,
-  totalOffersCount,
-  quotaValue,
-  quotaSnapshot,
-  metricsViewMode,
   loading,
   isQuotaLoading,
-  onMetricClick,
-  onToggleMetricsView,
+  totalOffersCount,
+  stats,
+  metricsViewMode,
   kpiScope,
   teamIds,
-  onToggleKpiScope,
+  quotaValue,
+  quotaSnapshot,
+  acceptanceLabel,
+  winRateLabel,
+  avgDecisionLabel,
+  totalHelper,
+  createdComparison,
+  onMetricsViewModeChange,
+  onKpiScopeChange,
+  onMetricClick,
 }: DashboardMetricsSectionProps) {
-  const acceptanceLabel =
-    stats.acceptanceRate !== null
-      ? `${stats.acceptanceRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
-      : '—';
-  const winRateLabel =
-    stats.winRate !== null
-      ? `${stats.winRate.toLocaleString('hu-HU', { maximumFractionDigits: 1 })}%`
-      : '—';
-  const avgDecisionLabel =
-    stats.avgDecisionDays !== null
-      ? `${stats.avgDecisionDays.toLocaleString('hu-HU', { maximumFractionDigits: 1 })} nap`
-      : '—';
-
-  const monthlyHelper = t('dashboard.metrics.created.monthlyHelper', {
-    count: stats.createdThisMonth.toLocaleString('hu-HU'),
-  });
-  const totalHelper = t('dashboard.metrics.created.totalHelper', {
-    displayed: totalOffersCount.toLocaleString('hu-HU'),
-    total: totalOffersCount.toLocaleString('hu-HU'),
-    monthly: monthlyHelper,
-  });
-
-  const createdComparison =
-    stats.createdLastMonth > 0
-      ? {
-          label: 'Előző hónap',
-          value: stats.createdLastMonth.toLocaleString('hu-HU'),
-          trend:
-            stats.createdThisMonth > stats.createdLastMonth
-              ? ('up' as const)
-              : stats.createdThisMonth < stats.createdLastMonth
-                ? ('down' as const)
-                : ('neutral' as const),
-        }
-      : undefined;
-
   return (
     <div className="space-y-6 pb-8 border-b border-border/40">
       {/* Header with View Toggle */}
@@ -95,7 +74,10 @@ export function DashboardMetricsSection({
               <span className="text-sm text-fg-muted">Personal</span>
               <button
                 type="button"
-                onClick={onToggleKpiScope}
+                onClick={() => {
+                  const newScope = kpiScope === 'team' ? 'personal' : 'team';
+                  onKpiScopeChange(newScope);
+                }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   kpiScope === 'team' ? 'bg-primary' : 'bg-fg-muted'
                 }`}
@@ -113,7 +95,9 @@ export function DashboardMetricsSection({
           )}
           <button
             type="button"
-            onClick={onToggleMetricsView}
+            onClick={() =>
+              onMetricsViewModeChange(metricsViewMode === 'compact' ? 'detailed' : 'compact')
+            }
             className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
             title={
               metricsViewMode === 'compact'
@@ -136,10 +120,16 @@ export function DashboardMetricsSection({
         </div>
       </div>
 
-      {/* Conversion Funnel Group */}
-      <div className="relative" aria-busy={loading || isQuotaLoading} aria-live="polite">
+      {/* Conversion Funnel Group - Progressive disclosure based on offer count */}
+      <div
+        className="relative"
+        aria-busy={loading || isQuotaLoading}
+        aria-live="polite"
+        role="status"
+        aria-label={loading || isQuotaLoading ? t('common.loading') : undefined}
+      >
         <div
-          className={`grid gap-4 ${
+          className={`grid gap-3 sm:gap-4 ${
             totalOffersCount < 5
               ? 'grid-cols-1 sm:grid-cols-3'
               : metricsViewMode === 'compact'
@@ -208,7 +198,7 @@ export function DashboardMetricsSection({
               {/* Quota Card - Featured */}
               <div className="sm:col-span-2">
                 <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl h-full">
-                  <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
                       <ChartBarIcon className="w-6 h-6" />
                     </div>
@@ -216,16 +206,16 @@ export function DashboardMetricsSection({
                       {t('dashboard.metrics.quota.label')}
                     </div>
                   </div>
-                  <div className="text-4xl font-bold mb-4">{quotaValue}</div>
+                  <div className="text-4xl font-bold mb-2">{quotaValue}</div>
                   {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
                     <div className="text-sm opacity-80 flex items-center gap-2">
-                      <span>Pro csomag előny</span>
+                      <span>{t('dashboard.metrics.quota.proPlanAdvantage')}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Created Offers */}
+              {/* Created Offers - Funnel Start */}
               <MetricCard
                 label={t('dashboard.metrics.created.label')}
                 value={totalOffersCount.toLocaleString('hu-HU')}

@@ -57,7 +57,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
   if (tone === 'error') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-rose-600">
+      <span className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-danger">
         {t('stepIndicator.statuses.missing')}
       </span>
     );
@@ -65,7 +65,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
   if (step.status === 'completed') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-600">
+      <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-success">
         {t('stepIndicator.statuses.completed')}
       </span>
     );
@@ -73,7 +73,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
   if (step.status === 'current') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+      <span className="inline-flex items-center gap-1 rounded-full bg-bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
         {t('stepIndicator.statuses.current')}
       </span>
     );
@@ -99,19 +99,19 @@ export default function StepIndicator({ steps }: Props) {
   return (
     <div className="space-y-6" role="navigation" aria-label="Wizard steps">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-          <span className="inline-flex items-center gap-2 rounded-full bg-slate-900/5 px-3 py-1 text-[11px] font-semibold text-slate-800">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">
+          <span className="inline-flex items-center gap-2 rounded-full bg-fg/5 px-3 py-1 text-[11px] font-semibold text-fg">
             {t('offers.wizard.progressLabel', { current: currentStepNumber, total })}
           </span>
           {currentLabel ? (
-            <span className="text-slate-600 normal-case" aria-current="step">
+            <span className="text-fg-muted normal-case" aria-current="step">
               {currentLabel}
             </span>
           ) : null}
         </div>
         <div className="flex w-full items-center gap-3 lg:w-auto">
           <div
-            className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200 lg:w-64"
+            className="h-2.5 w-full overflow-hidden rounded-full bg-border lg:w-64"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
@@ -119,12 +119,12 @@ export default function StepIndicator({ steps }: Props) {
             aria-label={`Progress: ${Math.round(progress)}%`}
           >
             <div
-              className="h-full rounded-full bg-gradient-to-r from-slate-700 to-slate-900 transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-fg to-fg/80 transition-all duration-500 ease-out"
               style={{ width: `${Math.round(progress)}%` }}
               aria-hidden="true"
             />
           </div>
-          <span className="text-xs font-medium text-slate-500" aria-hidden="true">
+          <span className="text-xs font-medium text-fg-muted" aria-hidden="true">
             {Math.round(progress)}%
           </span>
         </div>
@@ -140,23 +140,23 @@ export default function StepIndicator({ steps }: Props) {
           const circleClasses = classNames(
             'grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border-2 text-xs font-semibold transition-all duration-200',
             tone === 'error'
-              ? 'border-rose-300 bg-rose-50 text-rose-600 ring-2 ring-rose-200'
+              ? 'border-danger/30 bg-danger/10 text-danger ring-2 ring-danger/20'
               : isCompleted
-                ? 'border-emerald-500 bg-emerald-500 text-white shadow-md ring-2 ring-emerald-200'
+                ? 'border-success bg-success text-primary-ink shadow-md ring-2 ring-success/20'
                 : isCurrent
-                  ? 'border-slate-900 bg-slate-900 text-white shadow-lg ring-4 ring-slate-200 animate-pulse'
-                  : 'border-slate-300 bg-white text-slate-400',
+                  ? 'border-fg bg-fg text-primary-ink shadow-lg ring-4 ring-fg/20 animate-pulse'
+                  : 'border-border bg-bg-muted text-fg-muted',
           );
 
           const labelClasses = classNames(
             'text-sm font-medium transition-colors',
             tone === 'error'
-              ? 'text-rose-600'
+              ? 'text-danger'
               : isCurrent
-                ? 'text-slate-900 font-semibold'
+                ? 'text-fg font-semibold'
                 : isCompleted
-                  ? 'text-slate-700'
-                  : 'text-slate-500',
+                  ? 'text-fg'
+                  : 'text-fg-muted',
           );
 
           const cardClasses = classNames(
@@ -166,12 +166,12 @@ export default function StepIndicator({ steps }: Props) {
               : 'cursor-default',
             !clickable && !isCurrent ? 'opacity-60' : undefined,
             tone === 'error'
-              ? 'border-rose-200 bg-rose-50/80 ring-2 ring-rose-100'
+              ? 'border-danger/20 bg-danger/10 ring-2 ring-danger/10'
               : isCurrent
-                ? 'border-slate-900 bg-slate-50 shadow-md ring-2 ring-slate-200'
+                ? 'border-fg bg-bg-muted shadow-md ring-2 ring-fg/20'
                 : isCompleted
-                  ? 'border-emerald-200 bg-emerald-50/80'
-                  : 'border-slate-200 bg-white/50',
+                  ? 'border-success/20 bg-success/10'
+                  : 'border-border bg-bg-muted/50',
           );
 
           const indicatorContent: ReactNode = (() => {

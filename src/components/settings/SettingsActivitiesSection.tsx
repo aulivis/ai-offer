@@ -18,6 +18,7 @@ type SettingsActivitiesSectionProps = {
   activities: ActivityRow[];
   newActivity: NewActivity;
   saving: boolean;
+  deletingId: string | null;
   plan: 'free' | 'standard' | 'pro';
   defaultActivityId: string | null | undefined;
   onNewActivityChange: (updater: (prev: NewActivity) => NewActivity) => void;
@@ -32,6 +33,7 @@ export function SettingsActivitiesSection({
   activities,
   newActivity,
   saving,
+  deletingId,
   plan,
   defaultActivityId,
   onNewActivityChange,
@@ -51,10 +53,10 @@ export function SettingsActivitiesSection({
             <CubeIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-fg mb-1">
               {t('settings.activities.title')}
             </h2>
-            <p className="text-sm md:text-base text-slate-600">
+            <p className="text-sm md:text-base text-fg-muted">
               {t('settings.activities.subtitle')}
             </p>
           </div>
@@ -64,19 +66,19 @@ export function SettingsActivitiesSection({
         {activities.length > 0 && (
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <InformationCircleIcon className="h-5 w-5 text-slate-500" />
-              <label className="block text-sm font-semibold text-slate-900">
+              <InformationCircleIcon className="h-5 w-5 text-fg-muted" />
+              <label className="block text-sm font-semibold text-fg">
                 Alapértelmezett tevékenység az ajánlatkészítőben
               </label>
             </div>
-            <p className="mb-4 text-xs text-slate-600">
+            <p className="mb-4 text-xs text-fg-muted">
               Ez a tevékenység jelenik meg alapértelmezetten az ajánlatkészítő 2. lépésében a
               &quot;Konzultáció&quot; helyett.
             </p>
             <select
               value={defaultActivityId || ''}
               onChange={(e) => onDefaultActivityChange(e.target.value || null)}
-              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-lg border border-border bg-bg-muted px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Nincs alapértelmezett tevékenység</option>
               {activities.map((activity) => (
@@ -89,7 +91,7 @@ export function SettingsActivitiesSection({
         )}
 
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-slate-900">
+          <h3 className="mb-4 text-sm font-semibold text-fg">
             {t('settings.activities.addNewHeading')}
           </h3>
           <div className="grid gap-4 lg:grid-cols-5">
@@ -111,18 +113,32 @@ export function SettingsActivitiesSection({
               label={t('settings.activities.fields.price')}
               type="number"
               min={0}
+              step="0.01"
               value={newActivity.price}
-              onChange={(e) =>
-                onNewActivityChange((a) => ({ ...a, price: Number(e.target.value) }))
-              }
+              onChange={(e) => {
+                const value = e.target.value;
+                const numValue = value === '' ? 0 : Number(value);
+                if (!isNaN(numValue) && numValue >= 0) {
+                  onNewActivityChange((a) => ({ ...a, price: numValue }));
+                }
+              }}
+              aria-label={t('settings.activities.fields.price')}
             />
             <Input
               label={t('settings.activities.fields.vat')}
               type="number"
               min={0}
               max={100}
+              step="0.1"
               value={newActivity.vat}
-              onChange={(e) => onNewActivityChange((a) => ({ ...a, vat: Number(e.target.value) }))}
+              onChange={(e) => {
+                const value = e.target.value;
+                const numValue = value === '' ? 0 : Number(value);
+                if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
+                  onNewActivityChange((a) => ({ ...a, vat: numValue }));
+                }
+              }}
+              aria-label={t('settings.activities.fields.vat')}
             />
           </div>
           <div className="mt-6">
@@ -142,8 +158,8 @@ export function SettingsActivitiesSection({
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
-                    <h3 className="text-sm font-semibold text-slate-900">{a.name}</h3>
-                    <p className="text-xs text-slate-600">
+                    <h3 className="text-sm font-semibold text-fg">{a.name}</h3>
+                    <p className="text-xs text-fg-muted">
                       {t('settings.activities.summary', {
                         unit: a.unit,
                         price: Number(a.default_unit_price || 0).toLocaleString('hu-HU'),
@@ -154,10 +170,29 @@ export function SettingsActivitiesSection({
                   <button
                     type="button"
                     onClick={() => onDeleteActivity(a.id)}
-                    className="flex-shrink-0 rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                    disabled={deletingId === a.id}
+                    className="flex-shrink-0 rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label={t('settings.activities.deleteAriaLabel', { name: a.name })}
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    {deletingId === a.id ? (
+                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    ) : (
+                      <TrashIcon className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
                 <ActivityImageManager

@@ -479,6 +479,14 @@ p {
     animation: float 4s ease-in-out 1s infinite;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-float-delayed,
+    .animate-float-slow {
+      animation: none;
+    }
+  }
+
   @keyframes scroll {
     0% {
       transform: translateX(0);

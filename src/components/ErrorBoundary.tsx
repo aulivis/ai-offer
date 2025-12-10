@@ -145,9 +145,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           aria-atomic="true"
         >
           <div className="space-y-4 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger/10">
               <svg
-                className="h-8 w-8 text-red-600"
+                className="h-8 w-8 text-danger"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

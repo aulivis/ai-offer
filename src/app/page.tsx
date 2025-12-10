@@ -1,19 +1,52 @@
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import type { Metadata } from 'next';
 import { HowItWorks } from '@/components/how-it-works';
 import { VideoDemoSection } from '@/components/video-demo-section';
 import { ProblemSection } from '@/components/problem-section';
 import { SolutionSection } from '@/components/solution-section';
 import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
+import { AnimatedStat } from '@/components/landing/AnimatedStat';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
-import { Sparkles, Check, Rocket, Award, CheckCircle, ArrowRight, ChevronDown } from 'lucide-react';
+import { H1, H2 } from '@/components/ui/Heading';
+import {
+  Sparkles,
+  Check,
+  Rocket,
+  Award,
+  CheckCircle,
+  ArrowRight,
+  ChevronDown,
+  Users,
+  ThumbsUp,
+  FileText,
+} from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Vyndi – AI-alapú ajánlatkészítő platform | Professzionális ajánlat percek alatt',
+  description:
+    'Automatizáld az ajánlatkészítést mesterséges intelligenciával. Készítsd el az első professzionális ajánlatod 5 perc alatt – ingyen, bankkártya nélkül.',
+  openGraph: {
+    title: 'Vyndi – AI-alapú ajánlatkészítő platform',
+    description:
+      'Automatizáld az ajánlatkészítést mesterséges intelligenciával. Készítsd el az első professzionális ajánlatod 5 perc alatt – ingyen, bankkártya nélkül.',
+    type: 'website',
+    locale: 'hu_HU',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Vyndi – AI-alapú ajánlatkészítő platform',
+    description:
+      'Automatizáld az ajánlatkészítést mesterséges intelligenciával. Készítsd el az első professzionális ajánlatod 5 perc alatt.',
+  },
+};
 
 // Dynamically import below-the-fold components to reduce initial bundle size
 // These components are not immediately visible and can be loaded on-demand
 const ComparisonTable = dynamic(
   () => import('@/components/comparison-table').then((mod) => ({ default: mod.ComparisonTable })),
   {
-    loading: () => <div className="h-64 animate-pulse bg-gray-100 rounded-lg" />,
+    loading: () => <div className="h-64 animate-pulse bg-bg-muted rounded-lg" />,
   },
 );
 const ROICalculatorLanding = dynamic(
@@ -22,27 +55,27 @@ const ROICalculatorLanding = dynamic(
       default: mod.ROICalculatorLanding,
     })),
   {
-    loading: () => <div className="h-96 animate-pulse bg-gray-100 rounded-lg" />,
+    loading: () => <div className="h-96 animate-pulse bg-bg-muted rounded-lg" />,
   },
 );
 const TestimonialSection = dynamic(
   () =>
     import('@/components/testimonial-section').then((mod) => ({ default: mod.TestimonialSection })),
   {
-    loading: () => <div className="h-64 animate-pulse bg-gray-100 rounded-lg" />,
+    loading: () => <div className="h-64 animate-pulse bg-bg-muted rounded-lg" />,
   },
 );
 const IndustrySolutions = dynamic(
   () =>
     import('@/components/industry-solutions').then((mod) => ({ default: mod.IndustrySolutions })),
   {
-    loading: () => <div className="h-64 animate-pulse bg-gray-100 rounded-lg" />,
+    loading: () => <div className="h-64 animate-pulse bg-bg-muted rounded-lg" />,
   },
 );
 const FAQSection = dynamic(
   () => import('@/components/faq-section').then((mod) => ({ default: mod.FAQSection })),
   {
-    loading: () => <div className="h-64 animate-pulse bg-gray-100 rounded-lg" />,
+    loading: () => <div className="h-64 animate-pulse bg-bg-muted rounded-lg" />,
   },
 );
 const StickyCTABar = dynamic(
@@ -62,18 +95,50 @@ const LandingPageClient = dynamic(
 );
 
 export default function Home() {
+  // Structured data for SEO
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Vyndi',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'HUF',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      ratingCount: '200',
+    },
+    description:
+      'Automatizáld az ajánlatkészítést mesterséges intelligenciával. Készítsd el az első professzionális ajánlatod 5 perc alatt – ingyen, bankkártya nélkül.',
+  };
+
   return (
     <PageErrorBoundary>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <main id="main" className="min-h-screen">
         {/* HERO SECTION - First Impression */}
         <section className="relative bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white min-h-screen flex flex-col overflow-hidden -mt-14 md:-mt-20">
           {/* Enhanced decorative gradient blobs for visual depth */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl opacity-20 animate-pulse"></div>
           <div
-            className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse"
-            style={{ animationDelay: '1s' }}
+            className="absolute top-0 right-0 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
+            aria-hidden="true"
           ></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500 rounded-full blur-3xl opacity-10"></div>
+          <div
+            className="absolute bottom-0 left-0 w-96 h-96 bg-accent rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
+            style={{ animationDelay: '1s' }}
+            aria-hidden="true"
+          ></div>
+          <div
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary rounded-full blur-3xl opacity-10"
+            aria-hidden="true"
+          ></div>
 
           <div className="container mx-auto px-4 md:px-6 relative z-10 flex-1 flex flex-col justify-center max-w-7xl pt-14 md:pt-20">
             <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -89,11 +154,11 @@ export default function Home() {
                     </span>
                   </span>
                 </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight text-balance">
+                <H1 className="mb-6 text-balance" fluid>
                   Professzionális ajánlatkészítés{' '}
                   <span className="text-turquoise-400">percek alatt</span>
-                </h1>
-                <p className="text-lg md:text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
+                </H1>
+                <p className="text-lg md:text-lg lg:text-xl text-white/80 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
                   <span className="md:hidden">
                     Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
                   </span>
@@ -109,22 +174,22 @@ export default function Home() {
                 <div className="space-y-4 mt-6 mb-8">
                   {/* Mobile: single combined feature */}
                   <div className="flex items-center gap-3 justify-center lg:justify-start md:hidden">
-                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                     <span className="text-sm md:text-base">
                       Kezdd el ingyen, azonnal, bankkártya nélkül
                     </span>
                   </div>
                   {/* Desktop: three separate features */}
                   <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                     <span className="text-sm md:text-base">Kezdd el teljesen ingyen</span>
                   </div>
                   <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                     <span className="text-sm md:text-base">Nem kérünk bankkártyát</span>
                   </div>
                   <div className="hidden md:flex items-center gap-3 justify-center lg:justify-start">
-                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                     <span className="text-sm md:text-base">Kész ajánlat 5 perc alatt</span>
                   </div>
                 </div>
@@ -133,17 +198,17 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                   <Link
                     href="/login?redirect=/new"
-                    className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                    className="group bg-primary hover:bg-primary/90 text-primary-ink font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-pop hover:shadow-pop transition-all duration-300 active:scale-95 relative overflow-hidden"
                   >
-                    <span className="relative z-10 text-base md:text-lg text-white">
+                    <span className="relative z-10 text-base md:text-lg text-primary-ink">
                       Próbáld ki most ingyen
                     </span>
-                    <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
-                    <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-primary-ink transition-transform duration-300 group-hover:translate-x-1" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   </Link>
                   <a
                     href="#product-demo"
-                    className="border-2 border-white text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors flex items-center justify-center"
+                    className="border-2 border-white text-white font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-primary hover:text-primary bg-transparent transition-colors flex items-center justify-center"
                   >
                     További információ
                   </a>
@@ -154,9 +219,13 @@ export default function Home() {
               <div className="relative hidden lg:block">
                 {/* Main Dashboard Image with Glow Effect */}
                 <div className="relative z-10">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 via-transparent to-blue-500/20 blur-3xl" />
-                  <div className="relative bg-white rounded-xl shadow-2xl p-8 aspect-video flex items-center justify-center">
-                    <div className="text-gray-400 text-center">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/20 blur-3xl" />
+                  <div
+                    className="relative bg-bg-muted rounded-2xl shadow-pop p-8 aspect-video flex items-center justify-center"
+                    role="img"
+                    aria-label="Vyndi dashboard előnézet"
+                  >
+                    <div className="text-fg-muted text-center">
                       <p className="text-lg font-semibold">Dashboard Preview</p>
                       <p className="text-sm mt-2">Placeholder image</p>
                     </div>
@@ -164,47 +233,57 @@ export default function Home() {
                 </div>
 
                 {/* Floating Card 1 - Top Left - Speed Indicator */}
-                <div className="absolute -top-4 -left-4 z-20 animate-float hidden lg:block">
-                  <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100 backdrop-blur-sm">
+                <div
+                  className="absolute -top-4 -left-4 z-20 motion-safe:animate-float hidden lg:block"
+                  role="img"
+                  aria-label="Ajánlat generálva 5 perc alatt"
+                >
+                  <div className="bg-bg-muted rounded-lg shadow-pop p-4 border border-border backdrop-blur-sm">
                     <div className="flex items-center gap-3">
-                      <div className="bg-green-100 p-2 rounded-lg">
-                        <Check className="w-5 h-5 text-green-600" />
+                      <div className="bg-success/10 p-2 rounded-lg" aria-hidden="true">
+                        <Check className="w-5 h-5 text-success" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">Ajánlat generálva</p>
-                        <p className="text-xs text-gray-500">5 perc alatt</p>
+                        <p className="text-sm font-semibold text-fg">Ajánlat generálva</p>
+                        <p className="text-xs text-fg-muted">5 perc alatt</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Floating Card 2 - Top Right - Free Start */}
-                <div className="absolute -top-6 -right-6 z-20 animate-float-delayed hidden lg:block">
-                  <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100 backdrop-blur-sm">
+                <div
+                  className="absolute -top-6 -right-6 z-20 motion-safe:animate-float-delayed hidden lg:block"
+                  role="img"
+                  aria-label="Ingyenes kezdés bankkártya nélkül"
+                >
+                  <div className="bg-bg-muted rounded-lg shadow-pop p-4 border border-border backdrop-blur-sm">
                     <div className="flex items-center gap-3">
-                      <div className="bg-blue-100 p-2 rounded-lg">
-                        <Rocket className="w-5 h-5 text-blue-600" />
+                      <div className="bg-primary/10 p-2 rounded-lg" aria-hidden="true">
+                        <Rocket className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">Ingyenes kezdés</p>
-                        <p className="text-xs text-gray-500">Bankkártya nélkül</p>
+                        <p className="text-sm font-semibold text-fg">Ingyenes kezdés</p>
+                        <p className="text-xs text-fg-muted">Bankkártya nélkül</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Floating Card 3 - Bottom Left - Professional Appearance */}
-                <div className="absolute -bottom-6 left-8 z-20 animate-float-slow hidden lg:block">
-                  <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100 backdrop-blur-sm">
+                <div
+                  className="absolute -bottom-6 left-8 z-20 motion-safe:animate-float-slow hidden lg:block"
+                  role="img"
+                  aria-label="Professzionális megjelenés egységes dizájnnál"
+                >
+                  <div className="bg-bg-muted rounded-lg shadow-pop p-4 border border-border backdrop-blur-sm">
                     <div className="flex items-center gap-3">
-                      <div className="bg-purple-100 p-2 rounded-lg">
-                        <Award className="w-5 h-5 text-purple-600" />
+                      <div className="bg-accent/10 p-2 rounded-lg" aria-hidden="true">
+                        <Award className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          Professzionális megjelenés
-                        </p>
-                        <p className="text-xs text-gray-500">Egységes dizájn</p>
+                        <p className="text-sm font-semibold text-fg">Professzionális megjelenés</p>
+                        <p className="text-xs text-fg-muted">Egységes dizájn</p>
                       </div>
                     </div>
                   </div>
@@ -273,9 +352,9 @@ export default function Home() {
             <div className="max-w-4xl mx-auto">
               {/* Compelling headline with better messaging */}
               <div className="text-center mb-12">
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+                <H2 className="text-white mb-6 text-balance" fluid>
                   Szeretnéd elsőként kipróbálni az újdonságokat?
-                </h2>
+                </H2>
                 <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
                   Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók
                   indulásáról.
@@ -288,67 +367,29 @@ export default function Home() {
               {/* Newsletter subscription form */}
               <NewsletterSubscription source="landing_page" />
 
-              {/* Social proof stats - redesigned for better visibility */}
-              <div className="grid grid-cols-3 gap-6 md:gap-8">
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">200+</div>
-                  <div className="text-white/90 font-medium">Aktív vállalkozás</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">98%</div>
-                  <div className="text-white/90 font-medium">Elégedettség</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-3">
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">10K+</div>
-                  <div className="text-white/90 font-medium">Ajánlat készült</div>
-                </div>
+              {/* Social proof stats - redesigned for better visibility with scroll animations */}
+              <div className="grid grid-cols-3 gap-6 md:gap-8" role="list">
+                <AnimatedStat
+                  value="200+"
+                  label="Aktív vállalkozás"
+                  ariaLabel="Több mint 200 aktív vállalkozás"
+                  icon={<Users className="w-8 h-8 text-white" />}
+                  duration={2000}
+                />
+                <AnimatedStat
+                  value="98%"
+                  label="Elégedettség"
+                  ariaLabel="98 százalék elégedettség"
+                  icon={<ThumbsUp className="w-8 h-8 text-white" />}
+                  duration={2000}
+                />
+                <AnimatedStat
+                  value="10K+"
+                  label="Ajánlat készült"
+                  ariaLabel="Több mint 10 ezer ajánlat készült"
+                  icon={<FileText className="w-8 h-8 text-white" />}
+                  duration={2000}
+                />
               </div>
             </div>
           </div>

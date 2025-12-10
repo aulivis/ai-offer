@@ -53,9 +53,10 @@ export function VideoDemoSection() {
                 <iframe
                   className="w-full h-full"
                   src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  title="Vyndi Demo Video"
+                  title="Vyndi bemutató videó - Hogyan készül el egy ajánlat percek alatt"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
+                  loading="lazy"
                 />
               </div>
             )}

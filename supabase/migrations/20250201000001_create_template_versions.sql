@@ -119,3 +119,4 @@ create trigger update_template_versions_updated_at
   for each row
   execute function public.update_template_versions_updated_at();
 
+

@@ -22,18 +22,26 @@ export function StickyCTABar() {
 
     // Check if user has previously dismissed the bar
     if (typeof window !== 'undefined') {
-      const dismissed = localStorage.getItem('ctaBarDismissed');
-      if (dismissed === 'true') {
-        setIsDismissed(true);
-        return;
+      try {
+        const dismissed = localStorage.getItem('ctaBarDismissed');
+        if (dismissed === 'true') {
+          setIsDismissed(true);
+          return;
+        }
+      } catch (_error) {
+        // localStorage might not be available (private browsing, etc.)
+        // Silently handle localStorage errors
       }
     }
 
-    // Show bar after user scrolls past hero section (800px)
+    // Show bar after user scrolls past hero section
+    // Using viewport height as threshold instead of magic number
+    const HERO_SECTION_THRESHOLD = typeof window !== 'undefined' ? window.innerHeight * 0.8 : 800;
+
     const handleScroll = () => {
-      if (window.scrollY > 800 && !isDismissed) {
+      if (window.scrollY > HERO_SECTION_THRESHOLD && !isDismissed) {
         setIsVisible(true);
-      } else if (window.scrollY <= 800) {
+      } else if (window.scrollY <= HERO_SECTION_THRESHOLD) {
         setIsVisible(false);
       }
     };
@@ -59,7 +67,12 @@ export function StickyCTABar() {
     setIsVisible(false);
     setIsDismissed(true);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('ctaBarDismissed', 'true');
+      try {
+        localStorage.setItem('ctaBarDismissed', 'true');
+      } catch (_error) {
+        // localStorage might not be available (private browsing, etc.)
+        // Silently handle localStorage errors
+      }
     }
   };
 
@@ -67,9 +80,10 @@ export function StickyCTABar() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-turquoise-400 to-turquoise-500 shadow-2xl transform transition-transform duration-500 ease-out animate-in slide-in-from-bottom"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-turquoise-400 to-turquoise-500 shadow-2xl transform transition-transform duration-500 ease-out motion-safe:animate-in motion-safe:slide-in-from-bottom"
       role="region"
       aria-label={t('landing.stickyBar.ariaLabel') || 'Call to action'}
+      aria-live="polite"
     >
       <div className="container mx-auto px-4 py-3 sm:py-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
@@ -85,7 +99,7 @@ export function StickyCTABar() {
             <Link
               href="/login?redirect=/new"
               onClick={() => trackCTAClick('free_trial', 'sticky_bar')}
-              className="w-full sm:w-auto bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-6 py-2.5 rounded-lg shadow-lg transition-all transform hover:scale-105 whitespace-nowrap min-h-[44px] flex items-center justify-center"
+              className="w-full sm:w-auto bg-bg-muted hover:bg-bg text-primary font-bold px-6 py-2.5 rounded-lg shadow-lg transition-all transform hover:scale-105 whitespace-nowrap min-h-[44px] flex items-center justify-center"
             >
               {t('landing.stickyBar.ctaPrimary')}
             </Link>

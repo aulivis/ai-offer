@@ -271,6 +271,7 @@ export const hu = {
         loading: 'Betöltés…',
         unlimitedValue: 'Korlátlan',
         value: '{remaining} / {limit}',
+        proPlanAdvantage: 'Pro csomag előny',
         helperUnlimited:
           'Ebben a hónapban {confirmed} ajánlat készült, {pending} folyamatban. Korlátlan ajánlatok – csak Pro csomaggal.',
         helperLimitedWithReset:
@@ -340,7 +341,7 @@ export const hu = {
     filters: {
       search: {
         label: 'Keresés',
-        placeholder: 'Ajánlat cím vagy cég…',
+        placeholder: 'Keresés ajánlat címe vagy cég neve alapján...',
       },
       status: {
         label: 'Állapot',
@@ -661,7 +662,7 @@ export const hu = {
     },
     authMethods: {
       title: 'Bejelentkezési módok',
-      subtitle: 'Kapcsold össze a Google fiókodat a gyorsabb belépéshez.',
+      subtitle: 'Két egyszerű és biztonságos módszer a bejelentkezésre',
       googleLinked: {
         title: 'A Google fiókod már össze van kapcsolva.',
         description: 'A következő bejelentkezéskor használhatod a Google fiókodat is.',
@@ -674,6 +675,60 @@ export const hu = {
       },
       googleLinking: 'Átirányítás…',
       connectGoogle: 'Google összekapcsolása',
+      google: {
+        account: 'Google fiók',
+        active: 'Aktív',
+        notConnected: 'Nincs csatlakoztatva',
+        secureLogin: 'Biztonságos bejelentkezés',
+        fastAndSecure: 'Gyors és biztonságos',
+        disconnect: 'Leválasztás',
+        processing: 'Feldolgozás...',
+        connect: 'Csatlakoztatás',
+      },
+      magicLink: {
+        title: 'Varázslatos link (Magic Link)',
+        description: 'Jelszó nélküli bejelentkezés email linkkel',
+        available: 'Elérhető',
+        howItWorks: {
+          title: 'Hogyan működik?',
+          description:
+            'A bejelentkezési oldalon add meg az email címed, és egy egyedi linket küldünk, amivel egyetlen kattintással bejelentkezhetsz. Nincs szükség jelszóra.',
+        },
+        sendTest: 'Próba magic link küldése',
+        sending: 'Küldés...',
+        sent: {
+          title: 'Magic link elküldve',
+          description: 'Ellenőrizd az email fiókodat ({email}). A link néhány percig érvényes.',
+        },
+        errors: {
+          emailRequired: {
+            title: 'Email cím szükséges',
+            description: 'Nincs beállítva email cím a magic link küldéséhez.',
+          },
+          sendFailed: 'Nem sikerült elküldeni a magic linket',
+          unknown: 'Ismeretlen hiba',
+          generic: 'Hiba történt',
+        },
+      },
+      security: {
+        whyNoPassword: {
+          title: 'Miért nincs jelszó?',
+          description:
+            'A jelszavak biztonsági kockázatot jelentenek. A Google OAuth és a magic link modernebb, biztonságosabb módszerek, amiket nem lehet elfelejteni vagy ellopni.',
+          safer: 'Biztonságosabb',
+          simpler: 'Egyszerűbb',
+          faster: 'Gyorsabb',
+        },
+        email: {
+          title: 'Email cím',
+          description:
+            'Ez az email cím a magic link bejelentkezéshez és értesítésekhez használatos',
+          primaryLabel: 'Elsődleges email cím',
+          modify: 'Módosítás',
+          modifyHelper:
+            'Email cím módosításához megerősítő linket küldünk a régi és az új címre is',
+        },
+      },
     },
     company: {
       title: 'Cégadatok',
@@ -1978,6 +2033,18 @@ export const hu = {
         description:
           'Nem sikerült letölteni a PDF-et. Próbáld újra, vagy használd a megnyitás gombot.',
       },
+      regeneratePdfFailed: {
+        title: 'PDF újragenerálás sikertelen',
+        description: 'Nem sikerült újragenerálni a PDF-et.',
+      },
+      regeneratePdfStarted: {
+        title: 'PDF újragenerálás elindítva',
+        description: 'A PDF hamarosan elérhető lesz.',
+      },
+      error: {
+        title: 'Hiba',
+        description: 'Ismeretlen hiba történt.',
+      },
       missingDetails: {
         title: 'Hiányzó adatok',
         description: 'Add meg az ajánlat címét és a projekt áttekintést a mentéshez.',
@@ -2104,6 +2171,8 @@ export const hu = {
       validationRequired: 'Kérjük, javítsd a piros mezőket.',
       saveFailed: 'Nem sikerült menteni: {message}',
       saveUnknown: 'Ismeretlen hiba történt a mentés közben.',
+      deleteFailed: 'Nem sikerült törölni az elemet.',
+      activityNameRequired: 'A tevékenység neve kötelező.',
       logoUploadFailed: 'Nem sikerült feltölteni a logót. Próbáld újra.',
       logoUploadMissingUrl: 'A Supabase nem adott vissza használható URL-t a logóhoz.',
       logoInvalidType: 'Csak {types} fájl tölthető fel.',
@@ -2112,7 +2181,6 @@ export const hu = {
       logoTooLarge: 'A fájl mérete túl nagy. Maximum 4 MB.',
       logoStorageUnavailable: 'A tárhely jelenleg nem elérhető. Kérjük, próbáld újra később.',
       autoSaveFailed: 'Nem sikerült automatikusan menteni.',
-      activityNameRequired: 'Add meg a tevékenység nevét.',
     },
     preview: {
       authError: 'Nem sikerült hitelesíteni az előnézet lekérését. Jelentkezz be újra.',

@@ -37,11 +37,24 @@ export function SettingsGuaranteesSection({
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const nextDrafts: Record<string, string> = {};
-    guarantees.forEach((guarantee) => {
-      nextDrafts[guarantee.id] = guarantee.text;
+    // Only initialize drafts for new guarantees, preserve existing drafts for guarantees being edited
+    setDrafts((prevDrafts) => {
+      const nextDrafts: Record<string, string> = { ...prevDrafts };
+      guarantees.forEach((guarantee) => {
+        // Only set draft if it doesn't exist or if the guarantee text has changed externally
+        // (e.g., after a successful save from another tab/device)
+        if (!(guarantee.id in nextDrafts) || prevDrafts[guarantee.id] === guarantee.text) {
+          nextDrafts[guarantee.id] = guarantee.text;
+        }
+      });
+      // Remove drafts for guarantees that no longer exist
+      Object.keys(nextDrafts).forEach((id) => {
+        if (!guarantees.some((g) => g.id === id)) {
+          delete nextDrafts[id];
+        }
+      });
+      return nextDrafts;
     });
-    setDrafts(nextDrafts);
   }, [guarantees]);
 
   const handleAdd = () => {
@@ -63,10 +76,10 @@ export function SettingsGuaranteesSection({
             <ShieldCheckIcon className="relative z-10 h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-bold text-fg mb-1">
               {t('settings.guarantees.title')}
             </h2>
-            <p className="text-sm md:text-base text-slate-600">
+            <p className="text-sm md:text-base text-fg-muted">
               {t('settings.guarantees.subtitle')}
             </p>
           </div>
@@ -95,16 +108,14 @@ export function SettingsGuaranteesSection({
               {t('settings.guarantees.addButton')}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-slate-500">{t('settings.guarantees.helper')}</p>
+          <p className="mt-2 text-xs text-fg-muted">{t('settings.guarantees.helper')}</p>
         </div>
 
         {guarantees.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-border bg-white/70 p-10 text-center">
-            <ShieldCheckIcon className="mx-auto h-10 w-10 text-slate-400" />
-            <p className="mt-3 text-sm font-medium text-slate-700">
-              {t('settings.guarantees.empty')}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">{t('settings.guarantees.emptyHelper')}</p>
+            <ShieldCheckIcon className="mx-auto h-10 w-10 text-fg-muted" />
+            <p className="mt-3 text-sm font-medium text-fg">{t('settings.guarantees.empty')}</p>
+            <p className="mt-1 text-xs text-fg-muted">{t('settings.guarantees.emptyHelper')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -138,7 +149,7 @@ export function SettingsGuaranteesSection({
                     <Button
                       type="button"
                       variant="ghost"
-                      className="text-rose-600 hover:text-rose-700"
+                      className="text-danger hover:text-danger/90"
                       disabled={isBusy}
                       onClick={() => onDeleteGuarantee(guarantee.id)}
                     >
@@ -147,11 +158,11 @@ export function SettingsGuaranteesSection({
                     </Button>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-fg-muted">
                       {t('settings.guarantees.attachLabel')}
                     </p>
                     {activities.length === 0 ? (
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-fg-muted">
                         {t('settings.guarantees.attachDisabled')}
                       </p>
                     ) : (
@@ -169,7 +180,7 @@ export function SettingsGuaranteesSection({
                               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                 attached
                                   ? 'border-primary bg-primary text-white'
-                                  : 'border-border bg-slate-50 text-slate-700 hover:border-primary/40 hover:bg-white'
+                                  : 'border-border bg-bg-muted text-fg hover:border-primary/40 hover:bg-bg-muted'
                               }`}
                             >
                               {attached ? '✓' : '+'} {activity.name}
@@ -178,7 +189,7 @@ export function SettingsGuaranteesSection({
                         })}
                       </div>
                     )}
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-fg-muted">
                       {t('settings.guarantees.attachHelper')}
                     </p>
                   </div>

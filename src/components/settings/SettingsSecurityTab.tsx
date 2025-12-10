@@ -32,8 +32,8 @@ export function SettingsSecurityTab({
   const handleSendTestMagicLink = async () => {
     if (!email) {
       showToast({
-        title: 'Email cím szükséges',
-        description: 'Nincs beállítva email cím a magic link küldéséhez.',
+        title: t('settings.authMethods.magicLink.errors.emailRequired.title'),
+        description: t('settings.authMethods.magicLink.errors.emailRequired.description'),
         variant: 'error',
       });
       return;
@@ -49,27 +49,30 @@ export function SettingsSecurityTab({
       });
 
       if (!response.ok && response.status !== 202) {
-        const payload: unknown = await response.json().catch(() => ({ error: 'Hiba történt' }));
+        const payload: unknown = await response.json().catch(() => ({
+          error: t('settings.authMethods.magicLink.errors.generic'),
+        }));
         const message =
           payload &&
           typeof payload === 'object' &&
           'error' in payload &&
           typeof (payload as { error?: unknown }).error === 'string'
             ? ((payload as { error: string }).error as string)
-            : 'Nem sikerült elküldeni a magic linket';
+            : t('settings.authMethods.magicLink.errors.sendFailed');
 
         throw new Error(message);
       }
 
       showToast({
-        title: 'Magic link elküldve',
-        description: `Ellenőrizd az email fiókodat (${email}). A link néhány percig érvényes.`,
+        title: t('settings.authMethods.magicLink.sent.title'),
+        description: t('settings.authMethods.magicLink.sent.description', { email }),
         variant: 'success',
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Ismeretlen hiba';
+      const message =
+        error instanceof Error ? error.message : t('settings.authMethods.magicLink.errors.unknown');
       showToast({
-        title: 'Hiba történt',
+        title: t('settings.authMethods.magicLink.errors.generic'),
         description: message,
         variant: 'error',
       });
@@ -92,7 +95,7 @@ export function SettingsSecurityTab({
               {t('settings.authMethods.title')}
             </h2>
             <p className="text-sm md:text-base text-slate-600">
-              Két egyszerű és biztonságos módszer a bejelentkezésre
+              {t('settings.authMethods.subtitle')}
             </p>
           </div>
         </div>
@@ -124,15 +127,17 @@ export function SettingsSecurityTab({
             </div>
             <div className="flex-1">
               <div className="mb-1 flex items-center gap-2">
-                <h3 className="text-lg font-bold text-slate-900">Google fiók</h3>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {t('settings.authMethods.google.account')}
+                </h3>
                 {googleLinked ? (
                   <span className="flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-bold text-white">
                     <CheckCircleIcon className="h-3 w-3" />
-                    Aktív
+                    {t('settings.authMethods.google.active')}
                   </span>
                 ) : (
                   <span className="rounded-full bg-slate-200 px-2 py-1 text-xs font-bold text-slate-600">
-                    Nincs csatlakoztatva
+                    {t('settings.authMethods.google.notConnected')}
                   </span>
                 )}
               </div>
@@ -146,11 +151,13 @@ export function SettingsSecurityTab({
                   <>
                     <div className="flex items-center gap-2 text-slate-600">
                       <ShieldCheckIcon className="h-4 w-4 text-green-600" />
-                      <span>Biztonságos bejelentkezés</span>
+                      <span>{t('settings.authMethods.google.secureLogin')}</span>
                     </div>
                     <div className="flex items-center gap-2 rounded-lg bg-green-100 px-3 py-1 text-green-700">
                       <BoltIcon className="h-4 w-4" />
-                      <span className="font-semibold">Gyors és biztonságos</span>
+                      <span className="font-semibold">
+                        {t('settings.authMethods.google.fastAndSecure')}
+                      </span>
                     </div>
                   </>
                 )}
@@ -164,8 +171,11 @@ export function SettingsSecurityTab({
               disabled={linkingGoogle}
               variant="secondary"
               size="sm"
+              aria-label={t('settings.authMethods.google.disconnect')}
             >
-              {linkingGoogle ? 'Feldolgozás...' : 'Leválasztás'}
+              {linkingGoogle
+                ? t('settings.authMethods.google.processing')
+                : t('settings.authMethods.google.disconnect')}
             </Button>
           ) : (
             <Button
@@ -174,8 +184,11 @@ export function SettingsSecurityTab({
               disabled={linkingGoogle}
               variant="primary"
               size="sm"
+              aria-label={t('settings.authMethods.google.connect')}
             >
-              {linkingGoogle ? 'Átirányítás...' : 'Csatlakoztatás'}
+              {linkingGoogle
+                ? t('settings.authMethods.googleLinking')
+                : t('settings.authMethods.google.connect')}
             </Button>
           )}
         </div>
@@ -190,10 +203,10 @@ export function SettingsSecurityTab({
             </div>
             <div>
               <h3 className="mb-1 text-lg font-bold text-slate-900">
-                Varázslatos link (Magic Link)
+                {t('settings.authMethods.magicLink.title')}
               </h3>
               <p className="mb-3 text-sm text-slate-600">
-                Jelszó nélküli bejelentkezés email linkkel
+                {t('settings.authMethods.magicLink.description')}
               </p>
               {email && (
                 <div className="flex items-center gap-2 text-sm text-slate-700">
@@ -204,7 +217,7 @@ export function SettingsSecurityTab({
             </div>
           </div>
           <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700">
-            Elérhető
+            {t('settings.authMethods.magicLink.available')}
           </span>
         </div>
 
@@ -212,11 +225,10 @@ export function SettingsSecurityTab({
           <div className="flex items-start gap-3">
             <InformationCircleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
             <div className="text-sm text-blue-800">
-              <p className="mb-1 font-semibold">Hogyan működik?</p>
-              <p>
-                A bejelentkezési oldalon add meg az email címed, és egy egyedi linket küldünk,
-                amivel egyetlen kattintással bejelentkezhetsz. Nincs szükség jelszóra.
+              <p className="mb-1 font-semibold">
+                {t('settings.authMethods.magicLink.howItWorks.title')}
               </p>
+              <p>{t('settings.authMethods.magicLink.howItWorks.description')}</p>
             </div>
           </div>
         </div>
@@ -227,6 +239,7 @@ export function SettingsSecurityTab({
           disabled={sendingTestMagicLink || !email}
           variant="primary"
           className="mt-4 w-full"
+          aria-label={t('settings.authMethods.magicLink.sendTest')}
         >
           {sendingTestMagicLink ? (
             <>
@@ -245,12 +258,12 @@ export function SettingsSecurityTab({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Küldés...
+              {t('settings.authMethods.magicLink.sending')}
             </>
           ) : (
             <>
               <EnvelopeIcon className="h-5 w-5" />
-              Próba magic link küldése
+              {t('settings.authMethods.magicLink.sendTest')}
             </>
           )}
         </Button>
@@ -263,23 +276,30 @@ export function SettingsSecurityTab({
             <LockClosedIcon className="h-5 w-5 text-purple-600" />
           </div>
           <div>
-            <h3 className="mb-2 font-bold text-slate-900">Miért nincs jelszó?</h3>
+            <h3 className="mb-2 font-bold text-slate-900">
+              {t('settings.authMethods.security.whyNoPassword.title')}
+            </h3>
             <p className="mb-3 text-sm text-slate-700">
-              A jelszavak biztonsági kockázatot jelentenek. A Google OAuth és a magic link
-              modernebb, biztonságosabb módszerek, amiket nem lehet elfelejteni vagy ellopni.
+              {t('settings.authMethods.security.whyNoPassword.description')}
             </p>
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-2 text-green-700">
                 <CheckCircleIcon className="h-4 w-4" />
-                <span className="font-semibold">Biztonságosabb</span>
+                <span className="font-semibold">
+                  {t('settings.authMethods.security.whyNoPassword.safer')}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-green-700">
                 <CheckCircleIcon className="h-4 w-4" />
-                <span className="font-semibold">Egyszerűbb</span>
+                <span className="font-semibold">
+                  {t('settings.authMethods.security.whyNoPassword.simpler')}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-green-700">
                 <CheckCircleIcon className="h-4 w-4" />
-                <span className="font-semibold">Gyorsabb</span>
+                <span className="font-semibold">
+                  {t('settings.authMethods.security.whyNoPassword.faster')}
+                </span>
               </div>
             </div>
           </div>
@@ -288,14 +308,16 @@ export function SettingsSecurityTab({
 
       {/* Email for magic link */}
       <div>
-        <h2 className="mb-2 text-2xl font-bold text-slate-900">Email cím</h2>
+        <h2 className="mb-2 text-2xl font-bold text-slate-900">
+          {t('settings.authMethods.security.email.title')}
+        </h2>
         <p className="mb-6 text-slate-600">
-          Ez az email cím a magic link bejelentkezéshez és értesítésekhez használatos
+          {t('settings.authMethods.security.email.description')}
         </p>
 
         <div className="rounded-2xl border-2 border-slate-200 bg-white p-6">
           <label className="mb-2 block text-sm font-semibold text-slate-700">
-            Elsődleges email cím
+            {t('settings.authMethods.security.email.primaryLabel')}
           </label>
           <div className="flex items-center gap-3">
             <input
@@ -303,13 +325,19 @@ export function SettingsSecurityTab({
               value={email || ''}
               className="flex-1 rounded-xl border-2 border-slate-200 px-4 py-3 outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
               disabled
+              aria-label={t('settings.authMethods.security.email.primaryLabel')}
             />
-            <Button type="button" variant="primary" disabled>
-              Módosítás
+            <Button
+              type="button"
+              variant="primary"
+              disabled
+              aria-label={t('settings.authMethods.security.email.modify')}
+            >
+              {t('settings.authMethods.security.email.modify')}
             </Button>
           </div>
           <p className="mt-2 text-xs text-slate-500">
-            Email cím módosításához megerősítő linket küldünk a régi és az új címre is
+            {t('settings.authMethods.security.email.modifyHelper')}
           </p>
         </div>
       </div>

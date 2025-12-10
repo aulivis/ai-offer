@@ -85,7 +85,7 @@ const CARD_BRANDS: CardBrand[] = [
     name: 'Discover',
     render: () => (
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DISCOVER</span>
+        <span className="text-xs font-semibold tracking-[0.2em] text-fg">DISCOVER</span>
         <span
           aria-hidden
           className="h-5 w-5 rounded-full bg-gradient-to-br from-[#f15a29] to-[#fbb040]"
@@ -97,7 +97,7 @@ const CARD_BRANDS: CardBrand[] = [
     name: 'Diners Club',
     render: () => (
       <div className="flex items-center gap-1.5">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-slate-50">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-bg-muted">
           <span aria-hidden className="h-3 w-3 rounded-full bg-[#0a3a66]" />
         </span>
         <span className="text-xs font-semibold tracking-[0.2em] text-slate-700">DINERS</span>
@@ -355,7 +355,7 @@ function PlanCard({
       {/* Downgrade Badge - Previous Plan */}
       {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
         <div className="absolute top-6 right-6">
-          <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-bold">
+          <span className="px-3 py-1 bg-bg-muted text-fg rounded-full text-sm font-bold">
             Korábbi csomag
           </span>
         </div>
@@ -364,23 +364,23 @@ function PlanCard({
       <div className="flex flex-1 flex-col">
         {/* Plan Badge */}
         {!isCurrent && (
-          <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-muted">
             {planType === 'standard' ? t('billing.plans.standard.badge') : ''}
           </div>
         )}
 
         {/* Plan Name */}
-        <h3 className="text-2xl font-bold tracking-tight text-slate-900">{data.name}</h3>
+        <h3 className="text-2xl font-bold tracking-tight text-fg">{data.name}</h3>
 
         {/* Description */}
-        <p className="mt-3 text-sm leading-relaxed text-slate-600">{data.description}</p>
+        <p className="mt-3 text-sm leading-relaxed text-fg-muted">{data.description}</p>
 
         {/* Downgrade Warning - Enhanced for Pro users viewing Standard */}
         {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
-          <div className="mt-4 bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
+          <div className="mt-4 bg-warning/10 border-2 border-warning/30 rounded-xl p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-900">
+              <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-warning">
                 <p className="font-semibold mb-1">Visszalépés esetén elveszíted:</p>
                 <ul className="space-y-1 text-xs">
                   <li>• Korlátlan ajánlatok (csak 5/hó)</li>
@@ -395,8 +395,8 @@ function PlanCard({
 
         {/* Standard downgrade warning for other cases */}
         {isDowngrade && !isCurrent && !(plan === 'pro' && planType === 'standard') && (
-          <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3">
-            <p className="text-xs font-medium text-amber-800">
+          <div className="mt-3 rounded-lg bg-warning/10 border border-warning/30 p-3">
+            <p className="text-xs font-medium text-warning/90">
               {t(
                 (planType === 'standard'
                   ? 'billing.plans.standard.downgradeHelper'
@@ -409,8 +409,8 @@ function PlanCard({
         {/* Price */}
         <div className="mt-6">
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-bold text-slate-900">{data.price}</span>
-            <span className="text-sm font-medium text-slate-500">
+            <span className="text-4xl font-bold text-fg">{data.price}</span>
+            <span className="text-sm font-medium text-fg-muted">
               {billingInterval === 'annual' ? 'Ft/év' : 'Ft/hó'}
             </span>
           </div>
@@ -836,7 +836,12 @@ function BillingPageContent() {
                     </div>
                   </div>
                   <div className="text-4xl font-bold text-gray-900 mb-2">
-                    {plan === 'pro' ? '6 990' : plan === 'standard' ? '1 490' : '0'} Ft
+                    {plan === 'pro'
+                      ? formatPrice(MONTHLY_PRICES.pro)
+                      : plan === 'standard'
+                        ? formatPrice(MONTHLY_PRICES.standard)
+                        : '0'}{' '}
+                    Ft
                   </div>
                   <div className="text-sm text-gray-600 mb-4">havonta számlázva</div>
 
@@ -1198,7 +1203,10 @@ function BillingPageContent() {
                       <div>
                         <div className="font-semibold text-gray-900">Havi fizetés</div>
                         <div className="text-sm text-gray-600">
-                          {plan === 'pro' ? '6 990' : '1 490'} Ft / hónap
+                          {plan === 'pro'
+                            ? formatPrice(MONTHLY_PRICES.pro)
+                            : formatPrice(MONTHLY_PRICES.standard)}{' '}
+                          Ft / hónap
                         </div>
                       </div>
                       <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-bold">
@@ -1224,12 +1232,45 @@ function BillingPageContent() {
 
                     <Button
                       className="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white"
-                      onClick={() => {
-                        showToast({
-                          title: 'Éves fizetésre váltás',
-                          description: 'Ez a funkció hamarosan elérhető lesz.',
-                          variant: 'info',
-                        });
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/stripe/update-subscription', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ billingInterval: 'annual' }),
+                          });
+
+                          const data = await response.json();
+
+                          if (!response.ok) {
+                            showToast({
+                              title: 'Hiba történt',
+                              description: data.error || 'Nem sikerült átállítani az előfizetést.',
+                              variant: 'error',
+                            });
+                            return;
+                          }
+
+                          showToast({
+                            title: 'Sikeres váltás',
+                            description:
+                              'Az előfizetésedet éves számlázásra állítottuk. A változás azonnal érvénybe lép.',
+                            variant: 'success',
+                          });
+
+                          // Reload page to show updated billing info
+                          setTimeout(() => {
+                            window.location.reload();
+                          }, 1500);
+                        } catch (_error) {
+                          showToast({
+                            title: 'Hiba történt',
+                            description: 'Nem sikerült kapcsolódni a szerverhez.',
+                            variant: 'error',
+                          });
+                        }
                       }}
                     >
                       Váltás éves fizetésre
@@ -1285,7 +1326,10 @@ function BillingPageContent() {
                         <div className="flex items-center justify-between">
                           <span className="text-gray-600">Összeg:</span>
                           <span className="font-semibold text-gray-900">
-                            {plan === 'pro' ? '6 990' : '1 490'} Ft
+                            {plan === 'pro'
+                              ? formatPrice(MONTHLY_PRICES.pro)
+                              : formatPrice(MONTHLY_PRICES.standard)}{' '}
+                            Ft
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
@@ -1485,9 +1529,9 @@ function PublicBillingLanding() {
     }
   };
 
-  // Pricing
-  const standardMonthly = 1490;
-  const proMonthly = 6990;
+  // Pricing - use constants from above
+  const standardMonthly = MONTHLY_PRICES.standard;
+  const proMonthly = MONTHLY_PRICES.pro;
 
   return (
     <main id="main" className="flex flex-col pb-24">
@@ -1680,7 +1724,7 @@ function PublicBillingLanding() {
                 <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">10 ajánlat / hónap</span>
+                    <span className="text-gray-700 text-sm">5 ajánlat / hónap</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -1903,7 +1947,7 @@ function PublicBillingLanding() {
                         {
                           feature: 'Ajánlatok / hó',
                           free: '2',
-                          standard: '10',
+                          standard: '5',
                           pro: 'Korlátlan',
                           type: 'text' as const,
                         },
@@ -2315,8 +2359,8 @@ function PublicBillingLanding() {
                 },
                 {
                   icon: TrendingUp,
-                  title: '99.9% elérhető',
-                  description: 'Magas rendelkezésre állás',
+                  title: 'Folyamatos fejlesztés',
+                  description: 'Rendszeres új funkciók és frissítések',
                 },
               ].map((benefit, idx) => (
                 <div key={idx} className="text-center group cursor-default">

@@ -156,12 +156,12 @@ export function OfferCard({
         <div
           className={`absolute top-0 left-0 right-0 h-1.5 ${
             offer.status === 'draft'
-              ? 'bg-amber-400'
+              ? 'bg-warning'
               : offer.status === 'sent'
-                ? 'bg-blue-400'
+                ? 'bg-primary'
                 : offer.status === 'accepted'
-                  ? 'bg-emerald-400'
-                  : 'bg-rose-400'
+                  ? 'bg-success'
+                  : 'bg-danger'
           }`}
         />
 
@@ -217,7 +217,7 @@ export function OfferCard({
           <div className="flex flex-wrap gap-2 mb-4">
             {/* View Count */}
             <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-3 py-2 flex-1 min-w-[120px]">
-              <EyeIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              <EyeIcon className="h-4 w-4 text-primary flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
                   Megtekintés
@@ -231,7 +231,7 @@ export function OfferCard({
             {/* Acceptance Time */}
             {offer.status === 'accepted' && offer.acceptance_time_days !== null && (
               <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white/80 px-3 py-2 flex-1 min-w-[120px]">
-                <ClockIcon className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                <ClockIcon className="h-4 w-4 text-success flex-shrink-0" />
                 <div className="min-w-0">
                   <p className="text-[10px] font-medium uppercase tracking-wide text-fg-muted truncate">
                     Elfogadás
@@ -275,7 +275,7 @@ export function OfferCard({
                   variant="secondary"
                   size="sm"
                   onClick={() => window.open(offer.pdf_url!, '_blank')}
-                  className="h-9 px-3 text-xs rounded-lg border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  className="h-9 px-3 text-xs rounded-lg border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
                   aria-label={openLabel}
                   title={openLabel}
                 >
@@ -287,7 +287,7 @@ export function OfferCard({
                   size="sm"
                   onClick={() => onDownload(offer)}
                   disabled={isBusy}
-                  className="h-9 px-3 text-xs rounded-lg border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  className="h-9 px-3 text-xs rounded-lg border-success/30 bg-success/10 text-success hover:bg-success/20"
                   aria-label={downloadLabel}
                   title={downloadLabel}
                 >
@@ -306,7 +306,7 @@ export function OfferCard({
                   size="sm"
                   onClick={() => onRegeneratePdf(offer)}
                   disabled={isBusy}
-                  className="h-9 px-3 text-xs rounded-lg border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                  className="h-9 px-3 text-xs rounded-lg border-warning/30 bg-warning/10 text-warning hover:bg-warning/20"
                   aria-label={regenerateLabel}
                   title={regenerateLabel}
                 >
@@ -324,14 +324,14 @@ export function OfferCard({
               size="sm"
               onClick={copyShareUrl}
               disabled={isBusy || isLoadingShareUrl}
-              className="h-9 px-3 text-xs rounded-lg border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100"
+              className="h-9 px-3 text-xs rounded-lg border-accent/30 bg-accent/10 text-accent hover:bg-accent/20"
               aria-label={shareLabel}
               title={defaultShareUrl ? 'Megosztási link másolása' : shareLabel}
             >
               {isLoadingShareUrl ? (
                 <ArrowPathIcon className="h-4 w-4 mr-1.5 animate-spin" />
               ) : shareUrlCopied ? (
-                <CheckIcon className="h-4 w-4 mr-1.5 text-green-600" />
+                <CheckIcon className="h-4 w-4 mr-1.5 text-success" />
               ) : (
                 <LinkIcon className="h-4 w-4 mr-1.5" />
               )}
@@ -342,7 +342,7 @@ export function OfferCard({
               size="sm"
               onClick={() => setIsShareModalOpen(true)}
               disabled={isBusy}
-              className="h-9 px-3 text-xs rounded-lg border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+              className="h-9 px-3 text-xs rounded-lg border-accent/30 bg-accent/10 text-accent hover:bg-accent/20"
               aria-label="Megosztási beállítások"
               title="Megosztási beállítások"
             >
@@ -354,7 +354,7 @@ export function OfferCard({
               size="sm"
               onClick={() => onDelete(offer)}
               disabled={isBusy}
-              className="h-9 px-3 text-xs rounded-lg border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+              className="h-9 px-3 text-xs rounded-lg border-danger/30 bg-danger/10 text-danger hover:bg-danger/20"
               aria-label={deleteLabel}
               title={deleteLabel}
             >
@@ -439,8 +439,8 @@ export function OfferCard({
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
                             offer.status === 'accepted'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-rose-50 text-rose-700'
+                              ? 'bg-success/10 text-success'
+                              : 'bg-danger/10 text-danger'
                           }`}
                         >
                           {offer.status === 'accepted'
@@ -519,10 +519,10 @@ export default OfferCard;
 
 function StatusBadge({ status, className }: { status: Offer['status']; className?: string }) {
   const map: Record<Offer['status'], string> = {
-    draft: 'border-amber-200 bg-amber-100/70 text-amber-700',
-    sent: 'border-blue-200 bg-blue-100/70 text-blue-700',
-    accepted: 'border-emerald-300 bg-emerald-100/70 text-emerald-800',
-    lost: 'border-rose-200 bg-rose-100/70 text-rose-700',
+    draft: 'border-warning/30 bg-warning/10 text-warning',
+    sent: 'border-primary/30 bg-primary/10 text-primary',
+    accepted: 'border-success/30 bg-success/10 text-success',
+    lost: 'border-danger/30 bg-danger/10 text-danger',
   };
 
   return (
@@ -538,24 +538,24 @@ const STATUS_CARD_THEMES: Record<
   { container: string; accentText: string; accentIcon: string }
 > = {
   draft: {
-    container: 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-amber-100/40',
-    accentText: 'text-amber-600',
-    accentIcon: 'text-amber-500',
+    container: 'border-warning/30 bg-gradient-to-br from-warning/10 via-bg-muted to-warning/5',
+    accentText: 'text-warning',
+    accentIcon: 'text-warning',
   },
   sent: {
-    container: 'border-sky-200 bg-gradient-to-br from-sky-50 via-white to-sky-100/40',
-    accentText: 'text-sky-600',
-    accentIcon: 'text-sky-500',
+    container: 'border-primary/30 bg-gradient-to-br from-primary/10 via-bg-muted to-primary/5',
+    accentText: 'text-primary',
+    accentIcon: 'text-primary',
   },
   accepted: {
-    container: 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-emerald-100/40',
-    accentText: 'text-emerald-700',
-    accentIcon: 'text-emerald-600',
+    container: 'border-success/30 bg-gradient-to-br from-success/10 via-bg-muted to-success/5',
+    accentText: 'text-success',
+    accentIcon: 'text-success',
   },
   lost: {
-    container: 'border-rose-200 bg-gradient-to-br from-rose-50 via-white to-rose-100/40',
-    accentText: 'text-rose-700',
-    accentIcon: 'text-rose-600',
+    container: 'border-danger/30 bg-gradient-to-br from-danger/10 via-bg-muted to-danger/5',
+    accentText: 'text-danger',
+    accentIcon: 'text-danger',
   },
 };
 

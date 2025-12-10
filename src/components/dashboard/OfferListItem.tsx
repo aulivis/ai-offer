@@ -75,12 +75,12 @@ export function OfferListItem({
       <div
         className={`absolute top-0 left-0 right-0 h-1 ${
           offer.status === 'draft'
-            ? 'bg-amber-400'
+            ? 'bg-warning'
             : offer.status === 'sent'
-              ? 'bg-blue-400'
+              ? 'bg-primary'
               : offer.status === 'accepted'
-                ? 'bg-emerald-400'
-                : 'bg-rose-400'
+                ? 'bg-success'
+                : 'bg-danger'
         }`}
       />
 
@@ -131,14 +131,14 @@ export function OfferListItem({
               {/* Metrics Row */}
               <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-1.5 text-xs text-fg-muted">
-                  <EyeIcon className="h-3.5 w-3.5 text-blue-600" />
+                  <EyeIcon className="h-3.5 w-3.5 text-primary" />
                   <span className="font-medium">
                     {formatViewCount(offer.view_count)} megtekintés
                   </span>
                 </div>
                 {offer.status === 'accepted' && offer.acceptance_time_days !== null && (
                   <div className="flex items-center gap-1.5 text-xs text-fg-muted">
-                    <ClockIcon className="h-3.5 w-3.5 text-emerald-600" />
+                    <ClockIcon className="h-3.5 w-3.5 text-success" />
                     <span className="font-medium">
                       {formatAcceptanceTime(offer.acceptance_time_days)} alatt elfogadva
                     </span>
@@ -170,7 +170,7 @@ export function OfferListItem({
           {offer.pdf_url ? (
             <>
               <a
-                className={`${actionButtonClass} hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600`}
+                className={`${actionButtonClass} hover:bg-primary/10 hover:border-primary/50 hover:text-primary`}
                 href={offer.pdf_url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -184,7 +184,7 @@ export function OfferListItem({
                 type="button"
                 onClick={() => onDownload(offer)}
                 disabled={isBusy}
-                className={`${actionButtonClass} hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+                className={`${actionButtonClass} hover:bg-success/10 hover:border-success/50 hover:text-success ${isBusy ? actionButtonDisabledClass : ''}`}
                 aria-label={downloadLabel}
                 title={downloadLabel}
               >
@@ -201,7 +201,7 @@ export function OfferListItem({
             type="button"
             onClick={() => setIsShareModalOpen(true)}
             disabled={isBusy}
-            className={`${actionButtonClass} hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+            className={`${actionButtonClass} hover:bg-accent/10 hover:border-accent/50 hover:text-accent ${isBusy ? actionButtonDisabledClass : ''}`}
             aria-label={shareLabel}
             title={shareLabel}
           >
@@ -212,7 +212,7 @@ export function OfferListItem({
             type="button"
             onClick={() => onDelete(offer)}
             disabled={isBusy}
-            className={`${actionButtonClass} hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 ${isBusy ? actionButtonDisabledClass : ''}`}
+            className={`${actionButtonClass} hover:bg-danger/10 hover:border-danger/50 hover:text-danger ${isBusy ? actionButtonDisabledClass : ''}`}
             aria-label={deleteLabel}
             title={deleteLabel}
           >
@@ -263,8 +263,8 @@ export function OfferListItem({
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
                       offer.status === 'accepted'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-rose-50 text-rose-700'
+                        ? 'bg-success/10 text-success'
+                        : 'bg-danger/10 text-danger'
                     }`}
                   >
                     {offer.status === 'accepted'
@@ -310,10 +310,10 @@ export function OfferListItem({
 
 function StatusBadge({ status, className }: { status: Offer['status']; className?: string }) {
   const map: Record<Offer['status'], string> = {
-    draft: 'border-amber-200 bg-amber-100/70 text-amber-700',
-    sent: 'border-blue-200 bg-blue-100/70 text-blue-700',
-    accepted: 'border-emerald-300 bg-emerald-100/70 text-emerald-800',
-    lost: 'border-rose-200 bg-rose-100/70 text-rose-700',
+    draft: 'border-warning/30 bg-warning/10 text-warning',
+    sent: 'border-primary/30 bg-primary/10 text-primary',
+    accepted: 'border-success/30 bg-success/10 text-success',
+    lost: 'border-danger/30 bg-danger/10 text-danger',
   };
 
   return (
