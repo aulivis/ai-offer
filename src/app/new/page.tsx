@@ -911,8 +911,9 @@ export default function NewOfferWizard() {
       }
 
       // Update activities through optimistic update hook using ref to avoid infinite loops
-      if (acts && updateActivitiesOptimisticallyRef.current) {
-        await updateActivitiesOptimisticallyRef.current(acts);
+      // Always update, even if acts is empty array, to ensure UI reflects the current state
+      if (updateActivitiesOptimisticallyRef.current) {
+        await updateActivitiesOptimisticallyRef.current(acts || []);
       }
     } catch (error) {
       logger.error('Error reloading activities', error);
@@ -1991,7 +1992,7 @@ export default function NewOfferWizard() {
         });
       }}
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-50" style={{ pointerEvents: 'auto' }}>
         <AppFrame
           title={t('offers.wizard.pageTitle')}
           description={t('offers.wizard.pageDescription')}

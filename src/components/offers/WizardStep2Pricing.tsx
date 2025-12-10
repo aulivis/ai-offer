@@ -185,7 +185,11 @@ export function WizardStep2Pricing({
   );
 
   const filteredActivities = useMemo(() => {
-    return activities;
+    // Ensure activities is an array and filter out any invalid entries
+    if (!Array.isArray(activities)) {
+      return [];
+    }
+    return activities.filter((a) => a && a.id && a.name);
   }, [activities]);
 
   // Check if first row matches a default activity with reference images

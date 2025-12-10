@@ -58,6 +58,7 @@ export const WizardActionBar = memo(function WizardActionBar({
       className="sticky bottom-0 left-0 right-0 z-30 border-t border-border/70 bg-white/98 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.12)] backdrop-blur-sm transition-all duration-300 ease-out sm:static sm:mx-0 sm:mb-0 sm:border-none sm:bg-transparent sm:p-0 sm:shadow-none"
       role="navigation"
       aria-label="Wizard navigation"
+      style={{ pointerEvents: 'auto' }}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button
