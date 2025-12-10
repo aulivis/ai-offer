@@ -7,7 +7,8 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { t } from '@/copy';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useDashboardOffersReactQuery } from '@/hooks/queries/useDashboardOffersReactQuery';
 import { useDashboardQuota } from '@/app/dashboard/hooks/useDashboardQuota';
@@ -16,6 +17,7 @@ import { useTeamMemberships } from '@/hooks/useTeamMemberships';
 import AppFrame from '@/components/AppFrame';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { OfferCardSkeleton } from '@/components/ui/Skeleton';
+import type { Offer } from '@/app/dashboard/types';
 import dynamic from 'next/dynamic';
 
 // Lazy load components
@@ -50,6 +52,12 @@ export function DashboardWithReactQuery() {
   const { quotaSnapshot } = useDashboardQuota();
   const filters = useOfferFilters();
 
+  // State for tracking operations
+  const [updatingId, _setUpdatingId] = useState<string | null>(null);
+  const [downloadingId, _setDownloadingId] = useState<string | null>(null);
+  const [deletingId, _setDeletingId] = useState<string | null>(null);
+  const [regeneratingId, _setRegeneratingId] = useState<string | null>(null);
+
   // Use React Query for offers
   const { offers, loading, isLoadingMore, hasMore, loadMore, error } = useDashboardOffersReactQuery(
     {
@@ -59,6 +67,29 @@ export function DashboardWithReactQuery() {
       userId: user?.id,
     },
   );
+
+  // Stub handlers for OffersCardGrid (to be implemented in full migration)
+  const handleMarkSent = (_offer: Offer, _date?: string) => {
+    // TODO: Implement mark sent functionality
+  };
+  const handleMarkDecision = (_offer: Offer, _decision: 'accepted' | 'lost', _date?: string) => {
+    // TODO: Implement mark decision functionality
+  };
+  const handleRevertToSent = (_offer: Offer) => {
+    // TODO: Implement revert to sent functionality
+  };
+  const handleRevertToDraft = (_offer: Offer) => {
+    // TODO: Implement revert to draft functionality
+  };
+  const handleDelete = (_offer: Offer) => {
+    // TODO: Implement delete functionality
+  };
+  const handleDownload = (_offer: Offer) => {
+    // TODO: Implement download functionality
+  };
+  const handleRegeneratePdf = (_offer: Offer) => {
+    // TODO: Implement regenerate PDF functionality
+  };
 
   // Filter and sort offers (client-side filtering for now)
   const filteredOffers = useMemo(() => {
@@ -104,7 +135,7 @@ export function DashboardWithReactQuery() {
 
   if (error) {
     return (
-      <AppFrame>
+      <AppFrame title={t('dashboard.title')}>
         <div className="p-6">
           <div className="text-red-600">Hiba történt az ajánlatok betöltésekor.</div>
         </div>
@@ -113,7 +144,7 @@ export function DashboardWithReactQuery() {
   }
 
   return (
-    <AppFrame>
+    <AppFrame title={t('dashboard.title')}>
       <div className="p-6 space-y-6">
         {/* Quota Bar */}
         {quotaSnapshot && (
@@ -168,7 +199,20 @@ export function DashboardWithReactQuery() {
           <EmptyState />
         ) : (
           <>
-            <OffersCardGrid offers={filteredOffers} />
+            <OffersCardGrid
+              offers={filteredOffers}
+              updatingId={updatingId}
+              downloadingId={downloadingId}
+              deletingId={deletingId}
+              regeneratingId={regeneratingId}
+              onMarkSent={handleMarkSent}
+              onMarkDecision={handleMarkDecision}
+              onRevertToSent={handleRevertToSent}
+              onRevertToDraft={handleRevertToDraft}
+              onDelete={handleDelete}
+              onDownload={handleDownload}
+              onRegeneratePdf={handleRegeneratePdf}
+            />
             {hasMore && (
               <button
                 onClick={loadMore}
