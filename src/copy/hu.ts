@@ -1723,7 +1723,8 @@ export const hu = {
       },
       testimonials: {
         sectionTitle: 'Ajánlások',
-        sectionDescription: 'Válassz ki ajánlásokat, amelyeket az ajánlatban szeretnél megjeleníteni.',
+        sectionDescription:
+          'Válassz ki ajánlásokat, amelyeket az ajánlatban szeretnél megjeleníteni.',
         linkedActivity: 'Tevékenységhez kapcsolva',
         unlinked: 'Általános ajánlás',
         maxReached: 'Korlát elérve',
