@@ -80,13 +80,20 @@ function _normalizeUsageLimitError(
 // struktúrált mezőkből.
 const SYSTEM_PROMPT = `
 Te egy tapasztalt magyar üzleti ajánlatíró asszisztens vagy, aki professzionális, 
-magas színvonalú ajánlatokat készít magyar vállalkozások számára.
+magas színvonalú ajánlatokat készít magyar vállalkozások számára, amelyek magas konverziós arányt érnek el.
 
-ÉRTÉKPROPOZÍCIÓ ÉS HASZNOK:
+ÉRTÉKPROPOZÍCIÓ ÉS HASZNOK (2025 Best Practices):
 - Mindig a hasznokra és előnyökre fókuszálj, ne a funkciókra vagy jellemzőkre!
 - Mutasd be, hogyan oldja meg az ajánlat a vevő problémáját vagy igényét.
-- Használj konkrét, mérhető eredményeket és előnyöket, ahol lehetséges.
-- A value_proposition mezőben (ha van) hangsúlyozd ki az egyedi értéket.
+- Használj konkrét, mérhető eredményeket és előnyöket, ahol lehetséges:
+  * Számokkal: "30% növekedés", "50% időmegtakarítás", "100+ ügyfél"
+  * Időkeretekkel: "2 hét alatt", "1 hónapon belül", "3 napos válaszidő"
+  * Minőségi javulásokkal: "professzionális megjelenés", "növelt megbízhatóság"
+- A value_proposition mezőben (ha van) hangsúlyozd ki:
+  * Mi az egyedi érték, amit ez az ajánlat nyújt?
+  * Miért ez a megoldás jobb, mint más alternatívák?
+  * Milyen konkrét előnyöket élvez a vevő?
+- Használj "probléma-megoldás-eredmény" keretrendszert a projekt összefoglalóban.
 
 NYELVI MINŐSÉG:
 - Használj természetes, gördülékeny magyar üzleti nyelvet (ne tükörfordítást)!
@@ -97,34 +104,59 @@ NYELVI MINŐSÉG:
 - Használj történetmesélést és konkrét példákat a bizalom építéséhez, ahol releváns.
 
 SZERKEZET ÉS TARTALOM:
-- A bevezető köszöntse a címzettet (névvel, ha elérhető) és mutassa be az ajánlat célját.
+- A bevezető mutassa be az ajánlat célját (2-3 mondat). Fontos: A címzés (pl. "Tisztelt Kovács Úr") külön blokkban jelenik meg a címzett neve és hangnem alapján - ne szerepeljen a bevezetőben!
 - A projekt összefoglaló következzen a probléma-megoldás-eredmény keretrendszerben:
   * Mutasd be a problémát vagy igényt, amit a projekt megold
   * Ismertesd a javasolt megoldást
-  * Vázold fel a várható eredményeket és előnyöket
+  * Vázold fel a várható eredményeket és előnyöket mérhető formában
 - A felsorolásokban használj rövid, lényegretörő, konkrét pontokat.
 - Minden szakasz legyen tartalmas és releváns a projekt kontextusához.
 - A deliverables mezőben említsd meg a minőségi követelményeket vagy szabványokat, ahol releváns.
-- A schedule mezőben használj konkrét dátumokat vagy időkereteket (pl. "2025. február 15-ig", "2 hét alatt").
+- Fontos: Az időbeosztás (schedule), garantia, testimonials és határidő külön blokkokban jelennek meg a beállításokból - ne generálj ezekre hivatkozásokat vagy tartalmat a szövegben!
 - A zárás legyen udvarias, értékösszefoglaló és erősen cselekvésre ösztönző.
 
-CSELEKVÉSRE ÖSZTÖNZÉS (CTA):
+CSELEKVÉSRE ÖSZTÖNZÉS (CTA) - Optimalizálva 2025-re:
 - A next_steps szakaszban használj konkrét, akcióorientált kifejezéseket:
-  * "Kérjük, jelezze vissza a véleményét 2025. február 10-ig"
-  * "Várjuk a visszajelzését a következő 3 munkanapon belül"
-  * "Kérjük, erősítse meg az elfogadást e-mailben"
-- A zárásban szerepeljen egyértelmű következő lépés javaslat.
+  * Határidővel: "Kérjük, jelezze vissza a véleményét 2025. február 10-ig"
+  * Időkerettel: "Várjuk a visszajelzését a következő 3 munkanapon belül"
+  * Konkrét akcióval: "Kérjük, erősítse meg az elfogadást e-mailben"
+  * Könnyű lépéssel: "Válaszoljon erre az e-mailre az elfogadáshoz"
+- A zárásban szerepeljen egyértelmű következő lépés javaslat:
+  * "Várjuk a visszajelzését" helyett "Kérjük, jelezze vissza véleményét [konkrét dátumig]"
+  * Használj cselekvő igéket: "jelezze", "erősítse", "válaszoljon", "hívjon"
+  * Kerüld a passzív vagy bizonytalan kifejezéseket: "lehet", "esetleg", "talán"
 - Használj olyan kifejezéseket, amelyek konkrét cselekedetre ösztönöznek.
 
-SZEMÉLYRE SZABÁS ÉS URGENS:
+SZEMÉLYRE SZABÁS:
 - Ha a vevő neve vagy cégneve elérhető, használd a bevezetőben (pl. "Tisztelt Kovács Úr" vagy "Tisztelt ABC Kft.").
-- Ha határidő van megadva, természetesen építsd be az urgensséget a szövegbe (de ne legyél tolakodó vagy agresszív).
-- A határidőt említsd meg a schedule és next_steps szakaszokban is, ahol releváns.
+- Ha a projekt részletekben van információ a vevő iparágáról vagy szektoráról, használd:
+  * Releváns iparági példákat és referenciákat
+  * Iparági specifikus terminológiát (de érthetően)
+
+SZÓLÍTÁS KÖVETKEZETESSÉGE (KRITIKUS):
+- A szólítás (tegeződés/magázódás) KÖVETKEZETESEN alkalmazandó a TELJES szövegben:
+  * Minden bekezdésben, minden mondatban
+  * A felsorolásokban, a next_steps-ben, a closing-ben
+  * Nincs keverés: vagy teljesen tegeződés, vagy teljesen magázódás
+- Példák tegeződésre: "te", "ti", "tiétek", "neked", "nektek", "kapsz", "kaptok"
+- Példák magázódásra: "Ön", "Önök", "Önöké", "Önnek", "Önöknek", "kap", "kapnak"
+- Figyelj a ragozásokra is: "készítettem neked" (tegeződés) vs "készítettem Önnek" (magázódás)
+- A szólítás választása a felhasználó beállításai alapján történik - ezt KÖTELEZŐEN kövesd!
 
 BIZALOM ÉS HITELESSÉG:
-- Ha testimonials mező van megadva, használd őket a bizalom építéséhez.
-- Ha guarantees mező van megadva, említsd meg őket a zárásban vagy külön szakaszban.
-- Az expected_outcomes mezőben használj mérhető, konkrét eredményeket (pl. "30% növekedés", "2 hét alatt").
+- Az expected_outcomes mezőben KÖTELEZŐEN használj mérhető, konkrét eredményeket (pl. "30% növekedés", "2 hét alatt")
+- Használj bizalomépítő kifejezéseket: "biztosítjuk", "garantáljuk", "tapasztalatunk alapján"
+- Fontos: A garantia, testimonials és időbeosztás (schedule) külön blokkokban jelennek meg, ne generálj ezekre hivatkozásokat a szövegben!
+
+MÉRHETŐ EREDMÉNYEK ÉS METRIKÁK:
+- Minden szakaszban, ahol lehetséges, használj konkrét, mérhető eredményeket:
+  * Számokkal: "30% növekedés", "50% időmegtakarítás", "100+ ügyfél"
+  * Időkeretekkel: "2 hét alatt", "1 hónapon belül", "3 napos válaszidő"
+  * Minőségi javulásokkal: "professzionális megjelenés", "növelt megbízhatóság"
+- Az expected_outcomes mezőben KÖTELEZŐEN használj mérhető eredményeket
+- A value_proposition-ben említsd meg a konkrét előnyöket számokkal
+- A project_summary-ben vázold fel a várható eredményeket mérhető formában
+- Használj olyan metrikákat, amelyek a vevő számára érthetőek és relevánsak
 
 FORMÁZÁS:
 - A megadott JSON sémát töltsd ki: minden mező magyar szöveg legyen, HTML jelölés nélkül.
@@ -168,7 +200,7 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       introduction: {
         type: 'string',
         description:
-          'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely köszönti a címzettet (névvel vagy cégnévvel, ha elérhető) és bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet.',
+          'Rövid, udvarias bevezető bekezdés (2-3 mondat), amely bemutatja az ajánlat célját. Használj természetes, professzionális magyar nyelvet. Fontos: A címzés (pl. "Tisztelt Kovács Úr") külön blokkban jelenik meg - ne szerepeljen itt! A szólítást (tegeződés/magázódás) következetesen alkalmazd.',
         minLength: 50,
         maxLength: 300,
       },
@@ -636,6 +668,10 @@ const aiGenerateRequestSchema = z
       (value) => (value === null || value === undefined ? [] : value),
       z.array(z.string().trim()).default([]),
     ),
+    previewOnly: z.preprocess(
+      (value) => value === true || value === 'true',
+      z.boolean().default(false),
+    ),
   })
   .strict();
 
@@ -770,6 +806,7 @@ export const POST = withAuth(
           testimonials,
           schedule,
           guarantees,
+          previewOnly,
         } = parsed.data;
 
         const sb = await supabaseServer();
@@ -866,54 +903,61 @@ export const POST = withAuth(
           }
         }
 
-        // Check quota for offer generation
-        if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
-          const quotaCheck = await checkQuotaWithPending(sb, user.id, planLimit, usagePeriodStart);
-          if (!quotaCheck.allowed) {
-            log.warn('Quota limit exceeded', {
-              userId: user.id,
-              plan,
-              limit: planLimit,
-              confirmed: quotaCheck.confirmedCount,
-              pending: quotaCheck.pendingCount,
-              total: quotaCheck.totalCount,
-              periodStart: usagePeriodStart,
-            });
-            const translator = createTranslator(req.headers.get('accept-language'));
-            return NextResponse.json(
-              { error: translator.t('quotaWarningBar.message.user') },
-              { status: 402 },
+        // Check quota for offer generation (skip if previewOnly)
+        if (!previewOnly) {
+          if (typeof planLimit === 'number' && Number.isFinite(planLimit)) {
+            const quotaCheck = await checkQuotaWithPending(
+              sb,
+              user.id,
+              planLimit,
+              usagePeriodStart,
             );
+            if (!quotaCheck.allowed) {
+              log.warn('Quota limit exceeded', {
+                userId: user.id,
+                plan,
+                limit: planLimit,
+                confirmed: quotaCheck.confirmedCount,
+                pending: quotaCheck.pendingCount,
+                total: quotaCheck.totalCount,
+                periodStart: usagePeriodStart,
+              });
+              const translator = createTranslator(req.headers.get('accept-language'));
+              return NextResponse.json(
+                { error: translator.t('quotaWarningBar.message.user') },
+                { status: 402 },
+              );
+            }
+            // Update usageSnapshot with atomic values for logging
+            usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
           }
-          // Update usageSnapshot with atomic values for logging
-          usageSnapshot.offersGenerated = quotaCheck.confirmedCount;
-        }
 
-        const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
-        if (deviceLimit !== null && deviceId) {
-          const deviceQuotaCheck = await checkDeviceQuotaWithPending(
-            sb,
-            user.id,
-            deviceId,
-            deviceLimit,
-            usagePeriodStart,
-          );
-          if (!deviceQuotaCheck.allowed) {
-            log.warn('Device quota limit exceeded', {
-              userId: user.id,
+          const deviceLimit = plan === 'free' && typeof planLimit === 'number' ? 3 : null;
+          if (deviceLimit !== null && deviceId) {
+            const deviceQuotaCheck = await checkDeviceQuotaWithPending(
+              sb,
+              user.id,
               deviceId,
-              plan,
-              limit: deviceLimit,
-              confirmed: deviceQuotaCheck.confirmedCount,
-              pending: deviceQuotaCheck.pendingCount,
-              total: deviceQuotaCheck.totalCount,
-              periodStart: usagePeriodStart,
-            });
-            const deviceTranslator = createTranslator(req.headers.get('accept-language'));
-            return NextResponse.json(
-              { error: deviceTranslator.t('quotaWarningBar.message.device') },
-              { status: 402 },
+              deviceLimit,
+              usagePeriodStart,
             );
+            if (!deviceQuotaCheck.allowed) {
+              log.warn('Device quota limit exceeded', {
+                userId: user.id,
+                deviceId,
+                plan,
+                limit: deviceLimit,
+                confirmed: deviceQuotaCheck.confirmedCount,
+                pending: deviceQuotaCheck.pendingCount,
+                total: deviceQuotaCheck.totalCount,
+                periodStart: usagePeriodStart,
+              });
+              const deviceTranslator = createTranslator(req.headers.get('accept-language'));
+              return NextResponse.json(
+                { error: deviceTranslator.t('quotaWarningBar.message.device') },
+                { status: 402 },
+              );
+            }
           }
         }
 
@@ -1056,24 +1100,18 @@ export const POST = withAuth(
 
             // Sanitize user inputs before passing to OpenAI
             const safeProjectDetails = formatProjectDetailsForPrompt(sanitizedDetails);
-            const safeDeadline = sanitizeInput(deadline || '—');
 
             const clientInfo = clientCompanyName
               ? `Ügyfél/Cég neve: ${sanitizeInput(clientCompanyName)}\n`
               : '';
-            const deadlineGuidance =
-              safeDeadline && safeDeadline !== '—'
-                ? `\nFontos: A határidő (${safeDeadline}) természetesen építsd be a schedule és next_steps szakaszokba, és használd az urgensség kifejezésére, de ne legyél tolakodó.`
-                : '';
 
-            // Include testimonials in prompt if provided
-            const testimonialsSection =
-              testimonials && testimonials.length > 0
-                ? `\n\nVásárlói visszajelzések (kötelezően használd fel a testimonials szakaszban, maximum ${testimonials.length} darab):\n${testimonials.map((t, i) => `${i + 1}. ${sanitizeInput(t)}`).join('\n')}\n\nFontos: A testimonials mezőben helyezd el ezeket a visszajelzéseket, de formázd őket úgy, hogy természetesek és meggyőzőek legyenek. Ne változtass a szövegükön, csak az elrendezést és formázást alakítsd ki.`
-                : '';
+            // Note: Testimonials, guarantees, schedule, and deadline are NOT included in the prompt
+            // They are separate blocks that will be inserted from settings as-is
+            // The AI should only generate the base text content
 
             const userPrompt = `
-Feladat: Készíts egy professzionális magyar üzleti ajánlatot az alábbi információk alapján.
+Feladat: Készíts egy professzionális magyar üzleti ajánlat ALAP SZÖVEGÉT az alábbi információk alapján. 
+Fontos: Csak a szöveges tartalmat generáld - a garantia, testimonials, időbeosztás és határidő külön blokkokban jelennek meg a beállításokból.
 
 Nyelv: ${normalizedLanguage}
 ${toneGuidance}
@@ -1082,20 +1120,21 @@ Ajánlat címe: ${safeTitle}
 ${clientInfo}Projekt részletek:
 ${safeProjectDetails || '—'}
 
-Határidő: ${safeDeadline}${deadlineGuidance}
-${testimonialsSection}
-
 ${styleAddon}
 
-Különös figyelmet fordít a következőkre:
+Különös figyelmet fordít a következőkre (2025 conversion rate optimization best practices):
 - Használj természetes, folyékony magyar nyelvet, kerülve az anglicizmusokat
 - Minden szakasz legyen logikusan felépített és egymásra épülő
 - A felsorolások pontjai legyenek konkrétak, mérhetők és érthetők
+- Használj mérhető eredményeket mindenhol, ahol lehetséges (számok, időkeretek)
 - A szöveg legyen meggyőző, de nem túlzottan marketinges
 - Ne találj ki árakat, az árképzés külön jelenik meg az alkalmazásban
 - Ha ügyfél/cég neve van megadva, használd a bevezetőben a személyre szabáshoz
-- A szólítást következetesen alkalmazd a teljes szövegben
-${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelzések, használd fel őket a testimonials szakaszban' : ''}
+- A szólítást (tegeződés/magázódás) KÖVETKEZETESEN alkalmazd a TELJES szövegben - minden mondatban, minden bekezdésben
+- A value_proposition-ben hangsúlyozd ki az egyedi értéket és konkrét előnyöket
+- Az expected_outcomes-ben KÖTELEZŐEN használj mérhető eredményeket
+- A next_steps-ben használj konkrét, akcióorientált kifejezéseket
+- Fontos: Ne hivatkozz garantia, testimonials vagy időbeosztás blokkokra - ezek külön jelennek meg!
 `;
 
             try {
@@ -1275,6 +1314,31 @@ ${testimonials && testimonials.length > 0 ? '- Ha vannak vásárlói visszajelz�
           htmlWithImagePlaceholders,
           sanitizedImageAssets,
         );
+
+        // If previewOnly, return just the AI HTML without saving
+        if (previewOnly) {
+          log.info('Preview-only mode: returning AI HTML without saving', {
+            userId: user.id,
+            title: safeTitle,
+          });
+
+          const response = NextResponse.json({
+            ok: true,
+            previewHtml: aiHtmlForStorage,
+            structuredSections: structuredSections || null,
+          });
+
+          // Add rate limit headers to response
+          if (rateLimitResult) {
+            const { addRateLimitHeaders } = await import('@/lib/rateLimitMiddleware');
+            addRateLimitHeaders(response, rateLimitResult);
+          }
+
+          // Add request ID to response headers
+          response.headers.set('x-request-id', requestId);
+
+          return response;
+        }
 
         // Prepare AI blocks for storage (if we have structured sections)
         let aiBlocksForStorage: unknown = {};

@@ -6,11 +6,20 @@ React Query (TanStack Query) has been integrated into the application to provide
 
 ## Installation
 
-⚠️ **Important**: The React Query packages need to be installed first:
+✅ **Status**: React Query is enabled and active in the application.
+
+The required packages are installed:
+
+- `@tanstack/react-query` - Core React Query library
+- `@tanstack/react-query-devtools` - Development tools (auto-excluded from production)
+
+**For local development**, ensure packages are installed:
 
 ```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
+pnpm install
 ```
+
+**Note**: DevTools are automatically excluded from production builds (only enabled in development mode).
 
 ## Architecture
 
@@ -159,3 +168,36 @@ useOffers(params, {
   refetchOnWindowFocus: false,
 });
 ```
+
+## Verification
+
+### Check if React Query is Working
+
+1. **Development Mode:**
+   - Open browser console
+   - Look for React Query DevTools icon in bottom-right
+   - No console errors about missing React Query
+
+2. **Use React Query Hooks:**
+
+   ```tsx
+   import { useOffers } from '@/hooks/queries/useOffers';
+
+   // This will now work with React Query caching
+   const { data, isLoading } = useOffers({ filter: 'all' });
+   ```
+
+## Troubleshooting
+
+### Build Errors
+
+If you see errors about React Query imports:
+
+1. Ensure packages are installed: `pnpm install`
+2. Clear cache: `rm -rf node_modules .next pnpm-lock.yaml && pnpm install`
+3. Rebuild: `pnpm build`
+
+### DevTools Not Showing
+
+- DevTools only appear in development mode (`NODE_ENV !== 'production'`)
+- Ensure you're running `pnpm dev`, not `pnpm build && pnpm start`

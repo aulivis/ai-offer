@@ -22,7 +22,7 @@ import { useDraftPersistence } from '@/hooks/useDraftPersistence';
 import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
 import { trackWizardEvent } from '@/lib/analytics/wizard';
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { Card } from '@/components/ui/Card';
+import { Card, CardHeader } from '@/components/ui/Card';
 import type { OfferPreviewTab } from '@/types/preview';
 import { listTemplates } from '@/lib/offers/templates/index';
 import type { TemplateId } from '@/lib/offers/templates/types';
@@ -176,6 +176,8 @@ export default function NewOfferPage() {
         schedule: [],
         testimonials: [],
         guarantees: [],
+        formality: 'tegeződés' as const, // Default formality for dashboard wizard
+        tone: 'friendly' as const, // Default tone for dashboard wizard
       };
 
       (async () => {
@@ -556,6 +558,51 @@ export default function NewOfferPage() {
                     projectDetails={projectDetails}
                     totals={totals}
                   />
+                  {previewStatus === 'loading' && (
+                    <Card>
+                      <CardHeader>
+                        <h2 className="text-sm font-semibold text-slate-700">
+                          {t('offers.wizard.aiText.heading', {
+                            defaultValue: 'AI generált szöveg',
+                          })}
+                        </h2>
+                      </CardHeader>
+                      <div className="text-sm text-slate-500">
+                        {t('offers.wizard.aiText.generating', {
+                          defaultValue: 'Szöveg generálása folyamatban...',
+                        })}
+                      </div>
+                    </Card>
+                  )}
+                  {previewStatus === 'error' && previewError && (
+                    <Card>
+                      <CardHeader>
+                        <h2 className="text-sm font-semibold text-slate-700">
+                          {t('offers.wizard.aiText.heading', {
+                            defaultValue: 'AI generált szöveg',
+                          })}
+                        </h2>
+                      </CardHeader>
+                      <div className="text-sm text-rose-600">{previewError}</div>
+                    </Card>
+                  )}
+                  {previewHtml &&
+                    previewHtml.trim() &&
+                    previewHtml !== `<p>${t('offers.wizard.preview.idle')}</p>` && (
+                      <Card>
+                        <CardHeader>
+                          <h2 className="text-sm font-semibold text-slate-700">
+                            {t('offers.wizard.aiText.heading', {
+                              defaultValue: 'AI generált szöveg',
+                            })}
+                          </h2>
+                        </CardHeader>
+                        <div
+                          className="prose prose-sm max-w-none text-slate-700"
+                          dangerouslySetInnerHTML={{ __html: previewHtml }}
+                        />
+                      </Card>
+                    )}
                   <PreviewAsCustomerButton
                     title={title}
                     projectDetails={projectDetails}

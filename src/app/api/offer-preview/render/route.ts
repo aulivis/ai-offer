@@ -90,6 +90,9 @@ const previewRequestSchema = z
       )
       .optional(),
     templateId: optionalTrimmedString, // Support template selection
+    formality: z.enum(['tegeződés', 'magázódás']).optional(),
+    tone: z.enum(['friendly', 'formal']).optional(),
+    customerName: optionalTrimmedString, // Customer name for welcome line
   })
   .strict();
 
@@ -201,6 +204,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
     guarantees,
     images,
     templateId,
+    formality,
+    tone,
+    customerName,
   } = parsed.data;
 
   const safeBody = sanitizeHTML((bodyHtml ?? '').trim() || '<p>(nincs előnézet)</p>');
@@ -258,6 +264,9 @@ async function handlePost(req: AuthenticatedNextRequest) {
           },
         }),
         ...(templateId && { templateId: templateId as TemplateId }),
+        ...(formality && { formality: formality as 'tegeződés' | 'magázódás' }),
+        ...(tone && { tone: tone as 'friendly' | 'formal' }),
+        ...(customerName && { customerName }),
       },
       translator,
     );

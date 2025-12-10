@@ -41,6 +41,11 @@ export interface OfferRenderData {
     logoUrl?: string | null;
   };
   templateId?: string; // Can be old format (free.minimal.html@1.0.0) or new (free.minimal)
+  // Formality and tone for welcome line generation
+  formality?: 'tegeződés' | 'magázódás';
+  tone?: 'friendly' | 'formal';
+  // Customer name for welcome line (can be different from contactName)
+  customerName?: string | null;
 }
 
 /**
@@ -73,6 +78,9 @@ export function renderOfferHtml(data: OfferRenderData, _i18n: Translator): strin
     images = [],
     branding = {},
     templateId,
+    formality = 'tegeződés',
+    tone = 'friendly',
+    customerName,
   } = data;
 
   // Resolve template ID (support both old and new formats)
@@ -113,6 +121,13 @@ export function renderOfferHtml(data: OfferRenderData, _i18n: Translator): strin
       secondaryColor,
       logoUrl,
     },
+    formality: formality || 'tegeződés',
+    tone: tone || 'friendly',
+    customerName: customerName
+      ? sanitizeInput(customerName)
+      : contactName
+        ? sanitizeInput(contactName)
+        : null,
   };
 
   // Render using the selected template

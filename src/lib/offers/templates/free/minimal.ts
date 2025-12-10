@@ -6,6 +6,7 @@
 import type { TemplateContext } from '../types';
 import { sanitizeInput } from '@/lib/sanitize';
 import { calculateTotals, generatePricingTable, hexToHsl, embedVideoLinks } from '../shared/utils';
+import { generateWelcomeLine } from '../shared/welcome';
 
 export function renderMinimal(ctx: TemplateContext): string {
   const { primaryColor, secondaryColor, logoUrl } = ctx.branding;
@@ -104,6 +105,17 @@ export function renderMinimal(ctx: TemplateContext): string {
     .body-content ul, .body-content ol { margin: 1rem 0 1rem 2rem; }
     .body-content li { margin-bottom: 0.5rem; }
     .body-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem 0; }
+    .welcome-section {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .welcome-line {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: hsl(var(--primary));
+      margin: 0;
+    }
     .pricing-table {
       width: 100%;
       border-collapse: collapse;
@@ -660,6 +672,17 @@ export function renderMinimal(ctx: TemplateContext): string {
         <ul class="toc-list" id="toc-list" role="list"></ul>
       </nav>
       <div class="main-content">
+      ${(() => {
+        // Generate welcome line as separate block (not AI generated)
+        const welcomeLine = generateWelcomeLine(
+          ctx.customerName || ctx.contactName,
+          ctx.formality || 'tegeződés',
+          ctx.tone || 'friendly',
+        );
+        return welcomeLine
+          ? `<section class="welcome-section section-anchor" id="welcome-section">${welcomeLine}</section>`
+          : '';
+      })()}
       <section class="body-section section-anchor" id="body-section" aria-labelledby="body-section-title">
         <h2 id="body-section-title" class="sr-only">Ajánlat részletei</h2>
         <div class="body-content" role="article">
@@ -689,6 +712,19 @@ export function renderMinimal(ctx: TemplateContext): string {
         <h2 class="section-title" id="schedule-section-title">Projekt mérföldkövek</h2>
         <ul>
           ${ctx.schedule.map((item) => `<li>${sanitizeInput(item)}</li>`).join('')}
+        </ul>
+      </section>
+      `
+          : ''
+      }
+
+      ${
+        ctx.testimonials && Array.isArray(ctx.testimonials) && ctx.testimonials.length > 0
+          ? `
+      <section class="list-section section-anchor" id="testimonials-section" aria-labelledby="testimonials-section-title">
+        <h2 class="section-title" id="testimonials-section-title">Vásárlói visszajelzések</h2>
+        <ul>
+          ${ctx.testimonials.map((item) => `<li>${sanitizeInput(item)}</li>`).join('')}
         </ul>
       </section>
       `

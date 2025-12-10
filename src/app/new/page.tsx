@@ -1091,6 +1091,9 @@ export default function NewOfferWizard() {
         schedule: scheduleItems,
         testimonials: testimonialTexts,
         guarantees: guaranteeItems,
+        formality: form.formality,
+        tone: form.brandVoice,
+        customerName: client.company_name || undefined,
       };
 
       (async () => {
@@ -1136,6 +1139,8 @@ export default function NewOfferWizard() {
   }, [
     form.language,
     form.title,
+    form.formality,
+    form.brandVoice,
     pdfBranding.logoUrl,
     pdfBranding.primaryColor,
     pdfBranding.secondaryColor,
@@ -1147,6 +1152,7 @@ export default function NewOfferWizard() {
     scheduleItems,
     testimonialTexts,
     guaranteeItems,
+    client.company_name,
   ]);
 
   useEffect(() => {

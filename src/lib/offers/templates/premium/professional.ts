@@ -5,7 +5,8 @@
 
 import type { TemplateContext } from '../types';
 import { sanitizeInput } from '@/lib/sanitize';
-import { calculateTotals, generatePricingTable, hexToHsl } from '../shared/utils';
+import { calculateTotals, generatePricingTable, hexToHsl, embedVideoLinks } from '../shared/utils';
+import { generateWelcomeLine } from '../shared/welcome';
 
 export function renderProfessional(ctx: TemplateContext): string {
   const { primaryColor, secondaryColor, logoUrl } = ctx.branding;
@@ -129,6 +130,19 @@ export function renderProfessional(ctx: TemplateContext): string {
     .body-content ul, .body-content ol { margin: 1.5rem 0 1.5rem 2rem; }
     .body-content li { margin-bottom: 0.75rem; }
     .body-content img { max-width: 100%; height: auto; border-radius: 12px; margin: 2rem 0; border: 2px solid var(--border); }
+    .welcome-section {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .welcome-line {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: hsl(var(--accent));
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
     .pricing-table {
       width: 100%;
       border-collapse: collapse;
@@ -283,9 +297,17 @@ export function renderProfessional(ctx: TemplateContext): string {
     </header>
 
     <main class="main">
+      ${(() => {
+        const welcomeLine = generateWelcomeLine(
+          ctx.customerName || ctx.contactName,
+          ctx.formality || 'tegeződés',
+          ctx.tone || 'friendly',
+        );
+        return welcomeLine ? `<section class="welcome-section">${welcomeLine}</section>` : '';
+      })()}
       <section class="body-section">
         <div class="body-content">
-          ${ctx.bodyHtml}
+          ${embedVideoLinks(ctx.bodyHtml)}
         </div>
       </section>
 
@@ -324,6 +346,19 @@ export function renderProfessional(ctx: TemplateContext): string {
         <h2 class="section-title">Garanciák</h2>
         <ul>
           ${ctx.guarantees.map((item) => `<li>${sanitizeInput(item)}</li>`).join('')}
+        </ul>
+      </section>
+      `
+          : ''
+      }
+
+      ${
+        ctx.testimonials && Array.isArray(ctx.testimonials) && ctx.testimonials.length > 0
+          ? `
+      <section class="list-section">
+        <h2 class="section-title">Vásárlói visszajelzések</h2>
+        <ul>
+          ${ctx.testimonials.map((item) => `<li>${sanitizeInput(item)}</li>`).join('')}
         </ul>
       </section>
       `

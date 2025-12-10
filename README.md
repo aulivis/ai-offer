@@ -166,12 +166,17 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Quota System](./docs/QUOTA_SYSTEM.md)** - Quota management system design
 - **[API Versioning Strategy](./docs/API_VERSIONING_STRATEGY.md)** - API versioning guidelines and implementation
 - **[Sentry Setup](./docs/SENTRY_SETUP.md)** - Error tracking setup and configuration
+- **[React Query Setup](./docs/REACT_QUERY_SETUP.md)** - React Query integration guide and usage examples
+- **[Template System Improvements](./docs/IMPLEMENTATION_SUMMARY.md)** - Template system architecture and improvements
+- **[Block Structure Implementation](./docs/BLOCK_STRUCTURE_IMPLEMENTATION_COMPLETE.md)** - Offer block structure and rendering system
 
 ### Best Practices & Reviews
 
 - **[Best Practices Comparison](./docs/BEST_PRACTICES_COMPARISON_2025.md)** - Industry best practices analysis and recommendations
 - **[UI/UX Review](./docs/UI_UX_REVIEW_2025.md)** - Frontend UI/UX review and recommendations
 - **[Codebase Improvements](./docs/CODEBASE_IMPROVEMENTS.md)** - Historical codebase improvement summary
+- **[Implementation Status](./docs/IMPLEMENTATION_STATUS.md)** - Complete status of all codebase improvements and implementations
+- **[TODO Items](./docs/TODO_ITEMS.md)** - Current feature tracking and pending infrastructure setup
 
 ### Implemented Features
 

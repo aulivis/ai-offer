@@ -28,6 +28,11 @@ export interface TemplateContext {
     secondaryColor: string;
     logoUrl?: string | null;
   };
+  // Formality and tone for welcome line generation
+  formality?: 'tegeződés' | 'magázódás';
+  tone?: 'friendly' | 'formal';
+  // Customer name for welcome line (can be different from contactName)
+  customerName?: string | null;
 }
 
 export type TemplateId =

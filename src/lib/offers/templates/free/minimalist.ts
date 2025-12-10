@@ -5,7 +5,8 @@
 
 import type { TemplateContext } from '../types';
 import { sanitizeInput } from '@/lib/sanitize';
-import { calculateTotals, generatePricingTable, hexToHsl } from '../shared/utils';
+import { calculateTotals, generatePricingTable, hexToHsl, embedVideoLinks } from '../shared/utils';
+import { generateWelcomeLine } from '../shared/welcome';
 
 export function renderMinimalist(ctx: TemplateContext): string {
   const { primaryColor, secondaryColor, logoUrl } = ctx.branding;
@@ -100,6 +101,18 @@ export function renderMinimalist(ctx: TemplateContext): string {
     .body-content ul, .body-content ol { margin: 2rem 0 2rem 1.5rem; }
     .body-content li { margin-bottom: 0.75rem; }
     .body-content img { max-width: 100%; height: auto; margin: 2rem 0; }
+    .welcome-section {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .welcome-line {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--text);
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
     .pricing-table {
       width: 100%;
       border-collapse: collapse;
@@ -230,9 +243,17 @@ export function renderMinimalist(ctx: TemplateContext): string {
     </header>
 
     <main class="main">
+      ${(() => {
+        const welcomeLine = generateWelcomeLine(
+          ctx.customerName || ctx.contactName,
+          ctx.formality || 'tegeződés',
+          ctx.tone || 'friendly',
+        );
+        return welcomeLine ? `<section class="welcome-section">${welcomeLine}</section>` : '';
+      })()}
       <section class="body-section">
         <div class="body-content">
-          ${ctx.bodyHtml}
+          ${embedVideoLinks(ctx.bodyHtml)}
         </div>
       </section>
 
@@ -271,6 +292,19 @@ export function renderMinimalist(ctx: TemplateContext): string {
         <h2 class="section-title">Garanciák</h2>
         <ul>
           ${ctx.guarantees.map((item) => `<li>${sanitizeInput(item)}</li>`).join('')}
+        </ul>
+      </section>
+      `
+          : ''
+      }
+
+      ${
+        ctx.testimonials && Array.isArray(ctx.testimonials) && ctx.testimonials.length > 0
+          ? `
+      <section class="list-section">
+        <h2 class="section-title">Vásárlói visszajelzések</h2>
+        <ul>
+          ${ctx.testimonials.map((item) => `<li>${sanitizeInput(item)}</li>`).join('')}
         </ul>
       </section>
       `

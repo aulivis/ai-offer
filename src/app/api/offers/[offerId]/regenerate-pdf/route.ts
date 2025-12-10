@@ -142,6 +142,16 @@ export const POST = withAuth(
         (typeof inputs.templateId === 'string' ? inputs.templateId : null) || 'free.minimal';
       const locale = (typeof inputs.language === 'string' ? inputs.language : 'hu') || 'hu';
       const resolvedLocale = resolveLocale(locale);
+      const formality = (
+        inputs.formality === 'magázódás' || inputs.formality === 'tegeződés'
+          ? inputs.formality
+          : 'tegeződés'
+      ) as 'tegeződés' | 'magázódás';
+      const tone = (
+        inputs.brandVoice === 'formal' || inputs.brandVoice === 'friendly'
+          ? inputs.brandVoice
+          : 'friendly'
+      ) as 'friendly' | 'formal';
 
       // Map template ID to HTML template format
       const templateId = mapTemplateId(rawTemplateId);
@@ -243,6 +253,9 @@ export const POST = withAuth(
           guarantees: guaranteesList.length ? guaranteesList : null,
           pricingRows: normalizedRows,
           images: [],
+          formality,
+          tone,
+          customerName: customerName ? sanitizeInput(customerName) : null,
           ...(normalizedBranding && { branding: normalizedBranding }),
         },
         translator,

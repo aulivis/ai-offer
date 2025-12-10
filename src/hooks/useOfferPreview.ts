@@ -5,6 +5,7 @@ import { t } from '@/copy';
 import type { ProjectDetails } from '@/lib/projectDetails';
 import type { PreviewIssue } from '@/types/preview';
 import { useToast } from '@/components/ToastProvider';
+import { fetchWithSupabaseAuth, isAbortError, ApiError } from '@/lib/api';
 
 export type OfferPreviewStatus = 'idle' | 'loading' | 'streaming' | 'success' | 'error' | 'aborted';
 
@@ -14,7 +15,7 @@ const PREVIEW_DEBOUNCE_MS = 600;
 
 export function useOfferPreview({
   title,
-  projectDetails: _projectDetails,
+  projectDetails,
   projectDetailsText,
   enabled,
   debounceMs = PREVIEW_DEBOUNCE_MS,
@@ -25,7 +26,7 @@ export function useOfferPreview({
   enabled: boolean;
   debounceMs?: number;
 }) {
-  const { showToast: _showToast } = useToast();
+  const { showToast } = useToast();
   const [previewHtml, setPreviewHtml] = useState<string>(DEFAULT_PREVIEW_HTML);
   const [status, setStatus] = useState<OfferPreviewStatus>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +34,8 @@ export function useOfferPreview({
   const [issues, setIssues] = useState<PreviewIssue[]>([]);
 
   const debounceRef = useRef<number | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // AI preview feature has been removed - this is now a no-op
   const callPreview = useCallback(async () => {
     const trimmedTitle = title.trim();
     const trimmedDetails = projectDetailsText.trim();
@@ -48,13 +49,96 @@ export function useOfferPreview({
       return;
     }
 
-    // Preview functionality removed - set to idle state
-    setPreviewHtml(DEFAULT_PREVIEW_HTML);
-    setStatus('idle');
+    // Abort any previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setStatus('loading');
     setError(null);
-    setSummary([]);
-    setIssues([]);
-  }, [title, projectDetailsText]);
+
+    try {
+      const normalizedDetails = Object.fromEntries(
+        Object.entries(projectDetails).map(([key, value]) => [key, value.trim()]),
+      ) as ProjectDetails;
+
+      const response = await fetchWithSupabaseAuth('/api/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: trimmedTitle,
+          industry: 'Egyedi projekt',
+          projectDetails: normalizedDetails,
+          deadline: '',
+          language: 'hu',
+          brandVoice: 'professional',
+          style: 'detailed',
+          prices: [],
+          previewOnly: true,
+          clientId: null,
+          imageAssets: [],
+          schedule: [],
+          testimonials: [],
+          guarantees: [],
+        }),
+        signal: controller.signal,
+        defaultErrorMessage: t('errors.preview.fetchUnknown'),
+        errorMessageBuilder: (status) => t('errors.preview.fetchStatus', { status }),
+      });
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage =
+          typeof errorData.error === 'string' ? errorData.error : t('errors.preview.fetchUnknown');
+        throw new ApiError(errorMessage);
+      }
+
+      const data = await response.json();
+
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (data.ok && data.previewHtml) {
+        setPreviewHtml(data.previewHtml);
+        setStatus('success');
+        setError(null);
+      } else {
+        throw new ApiError(data.error || t('errors.preview.fetchUnknown'));
+      }
+    } catch (err) {
+      if (controller.signal.aborted || isAbortError(err)) {
+        setStatus('aborted');
+        return;
+      }
+
+      const errorMessage =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : t('errors.preview.fetchUnknown');
+
+      setStatus('error');
+      setError(errorMessage);
+      showToast({
+        title: t('toasts.preview.error.title'),
+        description: errorMessage,
+        variant: 'error',
+      });
+    } finally {
+      if (!controller.signal.aborted) {
+        abortControllerRef.current = null;
+      }
+    }
+  }, [title, projectDetails, projectDetailsText, showToast]);
 
   const refresh = useCallback(() => {
     if (debounceRef.current) {
@@ -65,10 +149,12 @@ export function useOfferPreview({
   }, [callPreview]);
 
   const abort = useCallback(() => {
-    // Preview functionality removed - no-op
-    setStatus('idle');
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setStatus('aborted');
     setError(null);
-    setPreviewHtml(DEFAULT_PREVIEW_HTML);
     setSummary([]);
     setIssues([]);
   }, []);
@@ -79,6 +165,10 @@ export function useOfferPreview({
         window.clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
       setStatus('idle');
       setError(null);
       setPreviewHtml(DEFAULT_PREVIEW_HTML);
@@ -87,25 +177,27 @@ export function useOfferPreview({
       return;
     }
 
+    // Debounce the API call
     if (debounceRef.current) {
       window.clearTimeout(debounceRef.current);
       debounceRef.current = null;
     }
 
-    // Preview functionality removed - set to idle state
-    setStatus('idle');
-    setError(null);
-    setPreviewHtml(DEFAULT_PREVIEW_HTML);
-    setSummary([]);
-    setIssues([]);
+    debounceRef.current = window.setTimeout(() => {
+      void callPreview();
+    }, debounceMs);
 
     return () => {
       if (debounceRef.current) {
         window.clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
     };
-  }, [enabled, title, projectDetailsText, debounceMs]);
+  }, [enabled, title, projectDetailsText, debounceMs, callPreview]);
 
   // Auto-hide success status after 4 seconds
   useEffect(() => {
@@ -126,6 +218,10 @@ export function useOfferPreview({
       if (debounceRef.current) {
         window.clearTimeout(debounceRef.current);
         debounceRef.current = null;
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     },
     [],

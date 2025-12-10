@@ -108,6 +108,16 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   const inputs = (offer.inputs as Record<string, unknown>) || {};
   const priceRows = (offer.price_json as Array<unknown>) || [];
   const locale = (inputs.language as string) || 'hu';
+  const formality = (
+    inputs.formality === 'magázódás' || inputs.formality === 'tegeződés'
+      ? inputs.formality
+      : 'tegeződés'
+  ) as 'tegeződés' | 'magázódás';
+  const tone = (
+    inputs.brandVoice === 'formal' || inputs.brandVoice === 'friendly'
+      ? inputs.brandVoice
+      : 'friendly'
+  ) as 'friendly' | 'formal';
 
   // Check user plan
   const plan: SubscriptionPlan = resolveEffectivePlan(
@@ -291,12 +301,37 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
   const testimonialsList = sanitizeList(offer.testimonials);
   const guaranteesList = sanitizeList(offer.guarantees);
 
+  // Get customer name for welcome line (from recipient if available)
+  // Load recipient if recipient_id exists
+  let customerName: string | null = null;
+  if (offer.recipient_id) {
+    try {
+      const { data: recipient } = await sb
+        .from('clients')
+        .select('company_name, name')
+        .eq('id', offer.recipient_id)
+        .maybeSingle();
+      if (recipient) {
+        customerName = recipient.company_name || recipient.name || null;
+      }
+    } catch (error) {
+      // Silently fail - customer name is optional
+      logger.debug('Failed to load recipient for welcome line', {
+        recipientId: offer.recipient_id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
   // Render complete HTML document with new modern template system
   const fullHtml = renderOfferHtml(
     {
       title: safeTitle || defaultTitle,
       companyName: sanitizeInput(profile?.company_name || ''),
       bodyHtml: aiHtml,
+      formality,
+      tone,
+      customerName: customerName ? sanitizeInput(customerName) : null,
       locale: resolvedLocale,
       issueDate: sanitizeInput(formatOfferIssueDate(new Date(offer.created_at), resolvedLocale)),
       contactName: sanitizeInput(
