@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseServer } from '@/app/lib/supabaseServer';
 import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import { requireAdmin } from '@/lib/admin';
 import type { TemplateId } from '@/lib/offers/templates/types';
@@ -16,7 +16,7 @@ import type { TemplateId } from '@/lib/offers/templates/types';
  * Get template versions (all users can read)
  */
 export const GET = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,
@@ -55,7 +55,7 @@ export const GET = withAuthenticatedErrorHandling(async (request: NextRequest) =
  * Create a new template version (admin only)
  */
 export const POST = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,
@@ -130,7 +130,7 @@ export const POST = withAuthenticatedErrorHandling(async (request: NextRequest) 
  * Update a template version (admin only)
  */
 export const PATCH = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,
@@ -167,7 +167,7 @@ export const PATCH = withAuthenticatedErrorHandling(async (request: NextRequest)
  * Delete a template version (admin only)
  */
 export const DELETE = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,

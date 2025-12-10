@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseServer } from '@/app/lib/supabaseServer';
 import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import type { OfferBlockSettings } from '@/lib/offers/blockCustomization';
 
@@ -14,7 +14,7 @@ import type { OfferBlockSettings } from '@/lib/offers/blockCustomization';
  * Get block customization preferences for user or offer
  */
 export const GET = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,
@@ -59,7 +59,7 @@ export const GET = withAuthenticatedErrorHandling(async (request: NextRequest) =
  * Create or update block customization preferences
  */
 export const POST = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,
@@ -124,7 +124,7 @@ export const POST = withAuthenticatedErrorHandling(async (request: NextRequest) 
  * Delete block customization preferences
  */
 export const DELETE = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await createClient();
+  const supabase = await supabaseServer();
   const {
     data: { user },
     error: authError,
