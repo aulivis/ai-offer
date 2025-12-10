@@ -18,6 +18,9 @@ import AppFrame from '@/components/AppFrame';
 import { WizardStep1Details } from '@/components/offers/WizardStep1Details';
 import { WizardStep2Pricing } from '@/components/offers/WizardStep2Pricing';
 import { WizardActionBar } from '@/components/offers/WizardActionBar';
+import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
+import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
+import { useOptimisticUpdate } from '@/hooks/useOptimisticUpdates';
 import { useWizardValidation } from '@/hooks/useWizardValidation';
 import { useWizardKeyboardShortcuts } from '@/hooks/useWizardKeyboardShortcuts';
 import { useRealTimeValidation } from '@/hooks/useRealTimeValidation';
@@ -340,12 +343,39 @@ export default function NewOfferWizard() {
   const [clientId, setClientId] = useState<string | undefined>(undefined);
   const [showClientDrop, setShowClientDrop] = useState(false);
 
-  // 2) tevékenységek / árlista
-  const [activities, setActivities] = useState<Activity[]>([]);
+  // 2) tevékenységek / árlista with optimistic updates
+  const {
+    value: activities,
+    update: updateActivitiesOptimistically,
+  } = useOptimisticUpdate<Activity[]>({
+    initialValue: [],
+    updateFn: async (newActivities) => {
+      // This is used for optimistic updates when saving activities
+      // The actual save happens in handleSaveActivity, this just updates the list
+      return newActivities;
+    },
+    onError: (error) => {
+      logger.error('Error updating activities optimistically', error);
+    },
+  });
   const [rows, setRows] = useState<PriceRow[]>([
     createPriceRow({ name: 'Konzultáció', qty: 1, unit: 'óra', unitPrice: 15000, vat: 27 }),
   ]);
-  const [guarantees, setGuarantees] = useState<GuaranteeDefinition[]>([]);
+  // Guarantees with optimistic updates
+  const {
+    value: guarantees,
+    update: updateGuaranteesOptimistically,
+  } = useOptimisticUpdate<GuaranteeDefinition[]>({
+    initialValue: [],
+    updateFn: async (newGuarantees) => {
+      // This is used for optimistic updates when toggling guarantees
+      // The actual save happens in the toggle handler, this just updates the list
+      return newGuarantees;
+    },
+    onError: (error) => {
+      logger.error('Error updating guarantees optimistically', error);
+    },
+  });
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedTestimonials, setSelectedTestimonials] = useState<string[]>([]);
   const [selectedTestimonialsContent, setSelectedTestimonialsContent] = useState<
@@ -824,32 +854,75 @@ export default function NewOfferWizard() {
   // Reload activities function
   const reloadActivities = useCallback(async () => {
     if (!user) return;
-    const { data: acts } = await sb
-      .from('activities')
-      .select('id,name,unit,default_unit_price,default_vat,reference_images')
-      .eq('user_id', user.id)
-      .order('name');
-    setActivities(acts || []);
-  }, [sb, user]);
+    try {
+      const { data: acts, error } = await sb
+        .from('activities')
+        .select('id,name,unit,default_unit_price,default_vat,reference_images')
+        .eq('user_id', user.id)
+        .order('name');
+
+      if (error) {
+        logger.error('Failed to reload activities', error);
+        showToast({
+          title: t('errors.settings.activityNameRequired') || 'Hiba',
+          description: 'Nem sikerült betölteni a tevékenységeket.',
+          variant: 'error',
+        });
+        return;
+      }
+
+      // Update activities through optimistic update hook
+      if (acts) {
+        await updateActivitiesOptimistically(acts);
+      }
+    } catch (error) {
+      logger.error('Error reloading activities', error);
+      showToast({
+        title: t('errors.settings.activityNameRequired') || 'Hiba',
+        description: 'Nem sikerült betölteni a tevékenységeket.',
+        variant: 'error',
+      });
+    }
+  }, [sb, user, logger, showToast, updateActivitiesOptimistically]);
 
   const reloadGuarantees = useCallback(async () => {
     if (!user) return;
-    const { data } = await sb
-      .from('guarantees')
-      .select('id, text, activity_guarantees(activity_id)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
-    setGuarantees(
-      (data || []).map((row) => ({
+    try {
+      const { data, error } = await sb
+        .from('guarantees')
+        .select('id, text, activity_guarantees(activity_id)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        logger.error('Failed to reload guarantees', error);
+        showToast({
+          title: t('errors.settings.activityNameRequired') || 'Hiba',
+          description: 'Nem sikerült betölteni a garantíákat.',
+          variant: 'error',
+        });
+        return;
+      }
+
+      const formattedGuarantees = (data || []).map((row) => ({
         id: row.id,
         text: row.text,
         activity_ids:
           row.activity_guarantees
             ?.map((link) => link.activity_id)
             .filter((id): id is string => typeof id === 'string') ?? [],
-      })),
-    );
-  }, [sb, user]);
+      }));
+      // Update guarantees through optimistic update hook
+      await updateGuaranteesOptimistically(formattedGuarantees);
+    } catch (error) {
+      logger.error('Error reloading guarantees', error);
+      showToast({
+        title: t('errors.settings.activityNameRequired') || 'Hiba',
+        description: 'Nem sikerült betölteni a garantíákat.',
+        variant: 'error',
+      });
+    }
+  }, [sb, user, logger, showToast, updateGuaranteesOptimistically]);
 
   // Load profile settings and activities on mount
   useEffect(() => {
@@ -870,7 +943,6 @@ export default function NewOfferWizard() {
 
       // Load activities
       await reloadActivities();
-      await reloadGuarantees();
       await reloadGuarantees();
 
       // Initialize rows with default activity if available
@@ -1520,21 +1592,33 @@ export default function NewOfferWizard() {
         }
       }
 
-      // Ensure testimonials are loaded
+      // Ensure testimonials are loaded before submission
       let testimonialsData = selectedTestimonialsContent;
-      if (
-        selectedTestimonials.length > 0 &&
-        profileSettings.enable_testimonials &&
-        selectedTestimonialsContent.length !== selectedTestimonials.length
-      ) {
+      if (selectedTestimonials.length > 0 && profileSettings.enable_testimonials) {
+        // Always fetch fresh testimonials to ensure we have the latest data
+        // This prevents race conditions where testimonials might not be loaded yet
         try {
-          testimonialsData = await fetchTestimonialsByIds(selectedTestimonials);
-          setSelectedTestimonialsContent(testimonialsData);
+          const fetched = await fetchTestimonialsByIds(selectedTestimonials);
+          if (fetched.length !== selectedTestimonials.length) {
+            logger.warn('Some testimonials could not be loaded', {
+              requested: selectedTestimonials.length,
+              loaded: fetched.length,
+            });
+          }
+          testimonialsData = fetched;
+          setSelectedTestimonialsContent(fetched);
         } catch (error) {
           logger.error('Failed to fetch testimonials', error, {
             selectedIds: selectedTestimonials,
           });
-          testimonialsData = [];
+          // Use existing content if available, otherwise empty array
+          testimonialsData =
+            selectedTestimonialsContent.length > 0 ? selectedTestimonialsContent : [];
+          showToast({
+            title: 'Nem sikerült betölteni az ajánlásokat',
+            description: 'Próbáld újra később.',
+            variant: 'warning',
+          });
         }
       }
 
@@ -1735,12 +1819,13 @@ export default function NewOfferWizard() {
         }
       }
 
-      if (step === 1 && clampedStep > 1) {
+      // Only trigger preview generation if not already loading and moving forward from step 1
+      if (step === 1 && clampedStep > 1 && !previewLoading) {
         handleGeneratePreview();
       }
       setStep(clampedStep);
     },
-    [handleGeneratePreview, isQuotaExhausted, quotaLoading, showToast, step, validationErrors],
+    [handleGeneratePreview, isQuotaExhausted, quotaLoading, previewLoading, showToast, step, validationErrors],
   );
 
   const wizardSteps: StepIndicatorStep[] = [
@@ -1784,6 +1869,26 @@ export default function NewOfferWizard() {
     step2: 1, // at least one pricing row
     step3: 1, // preview generated
   };
+
+  // Detect unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    // Consider changes unsaved if:
+    // 1. Form has been modified (title or project details filled)
+    // 2. Autosave has failed or is pending
+    // 3. There's content that hasn't been saved yet
+    const hasFormContent =
+      form.title.trim().length > 0 || form.projectDetails.overview.trim().length > 0;
+    const hasUnsavedData =
+      hasFormContent && (autosaveStatus === 'error' || autosaveStatus === 'saving');
+    return hasUnsavedData;
+  }, [form.title, form.projectDetails.overview, autosaveStatus]);
+
+  // Warn before leaving with unsaved changes
+  useUnsavedChangesWarning({
+    hasUnsavedChanges,
+    message: 'Mentetlen változások vannak. Biztosan el szeretnél navigálni?',
+    enabled: !loading && step > 1, // Only enable after step 1
+  });
 
   // Keyboard shortcuts
   useWizardKeyboardShortcuts({
@@ -1836,30 +1941,38 @@ export default function NewOfferWizard() {
             />
 
             {step === 1 && (
-              <section className="space-y-6">
-                <WizardStep1Details
-                  form={form}
-                  onFormChange={(updates) => setForm((prev) => ({ ...prev, ...updates }))}
-                  client={client}
-                  onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
-                  clientList={clientList}
-                  onClientSelect={pickClient}
-                  validationErrors={validationErrors}
-                  showClientDropdown={showClientDrop}
-                  onClientDropdownToggle={setShowClientDrop}
-                  filteredClients={filteredClients}
-                  textTemplates={textTemplates.map((t) => ({ id: t.id, name: t.name }))}
-                  selectedTemplateId={selectedTemplateId}
-                  onTemplateSelect={handleTemplateSelect}
-                  quotaInfo={{
-                    title: quotaTitle,
-                    description: quotaDescription,
-                    remainingText: quotaRemainingText,
-                    pendingText: quotaPendingText,
-                    isExhausted: isQuotaExhausted,
-                  }}
-                />
-              </section>
+              <StepErrorBoundary
+                stepNumber={1}
+                onRetry={() => {
+                  // Retry by reloading the page or resetting state
+                  window.location.reload();
+                }}
+              >
+                <section className="space-y-6">
+                  <WizardStep1Details
+                    form={form}
+                    onFormChange={(updates) => setForm((prev) => ({ ...prev, ...updates }))}
+                    client={client}
+                    onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+                    clientList={clientList}
+                    onClientSelect={pickClient}
+                    validationErrors={validationErrors}
+                    showClientDropdown={showClientDrop}
+                    onClientDropdownToggle={setShowClientDrop}
+                    filteredClients={filteredClients}
+                    textTemplates={textTemplates.map((t) => ({ id: t.id, name: t.name }))}
+                    selectedTemplateId={selectedTemplateId}
+                    onTemplateSelect={handleTemplateSelect}
+                    quotaInfo={{
+                      title: quotaTitle,
+                      description: quotaDescription,
+                      remainingText: quotaRemainingText,
+                      pendingText: quotaPendingText,
+                      isExhausted: isQuotaExhausted,
+                    }}
+                  />
+                </section>
+              </StepErrorBoundary>
             )}
             {step === 1 && false && (
               <section className="space-y-6">
@@ -2204,431 +2317,462 @@ export default function NewOfferWizard() {
               </section>
             )}
             {step === 2 && (
-              <WizardStep2Pricing
-                rows={rows}
-                onRowsChange={setRows}
-                activities={activities}
-                {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
-                client={client}
-                onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
-                clientList={clientList}
-                onClientSelect={pickClient}
-                showClientDropdown={showClientDrop}
-                onClientDropdownToggle={setShowClientDrop}
-                filteredClients={filteredClients}
-                onActivitySaved={reloadActivities}
-                enableReferencePhotos={enableReferencePhotosForWizard}
-                enableTestimonials={profileSettings.enable_testimonials}
-                selectedImages={selectedImages}
-                onSelectedImagesChange={setSelectedImages}
-                selectedTestimonials={selectedTestimonials}
-                onSelectedTestimonialsChange={setSelectedTestimonials}
-                guarantees={guarantees}
-                selectedGuaranteeIds={selectedGuaranteeIds}
-                onToggleGuarantee={handleToggleGuarantee}
-                manualGuaranteeCount={manualGuaranteeCount}
-                guaranteeLimit={MAX_GUARANTEE_ITEMS}
-                onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
-              />
+              <StepErrorBoundary
+                stepNumber={2}
+                onRetry={() => {
+                  // Retry by reloading activities and guarantees
+                  void reloadActivities();
+                  void reloadGuarantees();
+                }}
+              >
+                <WizardStep2Pricing
+                  rows={rows}
+                  onRowsChange={setRows}
+                  activities={activities}
+                  {...(validationErrors.pricing && { validationError: validationErrors.pricing })}
+                  client={client}
+                  onClientChange={(updates) => setClient((prev) => ({ ...prev, ...updates }))}
+                  clientList={clientList}
+                  onClientSelect={pickClient}
+                  showClientDropdown={showClientDrop}
+                  onClientDropdownToggle={setShowClientDrop}
+                  filteredClients={filteredClients}
+                  onActivitySaved={async (newActivity?: Activity) => {
+                    // Optimistically add the new activity to the list
+                    if (newActivity) {
+                      const updatedActivities = [...activities, newActivity].sort((a, b) =>
+                        a.name.localeCompare(b.name),
+                      );
+                      await updateActivitiesOptimistically(updatedActivities);
+                    } else {
+                      // Fallback to reload if no activity provided
+                      await reloadActivities();
+                    }
+                  }}
+                  enableReferencePhotos={enableReferencePhotosForWizard}
+                  enableTestimonials={profileSettings.enable_testimonials}
+                  selectedImages={selectedImages}
+                  onSelectedImagesChange={setSelectedImages}
+                  selectedTestimonials={selectedTestimonials}
+                  onSelectedTestimonialsChange={setSelectedTestimonials}
+                  guarantees={guarantees}
+                  selectedGuaranteeIds={selectedGuaranteeIds}
+                  onToggleGuarantee={handleToggleGuarantee}
+                  manualGuaranteeCount={manualGuaranteeCount}
+                  guaranteeLimit={MAX_GUARANTEE_ITEMS}
+                  onActivityGuaranteesAttach={handleActivityGuaranteeAttach}
+                />
+              </StepErrorBoundary>
             )}
 
             {step === 3 && (
-              <section className="space-y-5" aria-label="Összegzés és előnézet">
-                <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="space-y-1">
-                      <h2 className="text-lg font-bold text-slate-900">
-                        {t('offers.wizard.steps.summary')}
-                      </h2>
-                      <p className="text-xs text-slate-600">
-                        {t('offers.wizard.previewTemplates.contentGoesToPdf')}
-                      </p>
-                    </div>
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                      {t('offers.wizard.previewTemplates.livePreview')}
-                    </span>
-                  </div>
-                  {/* Tips for text editing */}
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-primary text-base">💡</span>
-                      <p className="text-xs font-semibold text-slate-900">
-                        {t('wizard.preview.tipsTitle')}
-                      </p>
-                    </div>
-                    <ul className="list-disc list-inside space-y-1 text-xs text-slate-700 ml-3">
-                      <li>{t('richTextEditor.placeholderReminder')}</li>
-                      <li>{t('wizard.preview.tipsItems.useLists')}</li>
-                      <li>{t('wizard.preview.tipsItems.highlight')}</li>
-                      <li>{t('wizard.preview.tipsItems.keepShort')}</li>
-                      <li>{t('wizard.preview.tipsItems.useHeadings')}</li>
-                    </ul>
-                  </div>
-
-                  <div className="relative">
-                    {previewLoading && !previewHtml ? (
-                      <div className="rounded-xl border border-slate-200 bg-white p-6">
-                        <SkeletonLoader />
-                        <div className="mt-4 flex items-center gap-2 text-center text-xs text-slate-500">
-                          <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          <span>{t('offers.wizard.preview.loading')}</span>
-                        </div>
+              <StepErrorBoundary
+                stepNumber={3}
+                onRetry={() => {
+                  // Retry by regenerating preview
+                  void handleGeneratePreview();
+                }}
+              >
+                <section className="space-y-5" aria-label="Összegzés és előnézet">
+                  <Card className="space-y-5 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-1">
+                        <h2 className="text-lg font-bold text-slate-900">
+                          {t('offers.wizard.steps.summary')}
+                        </h2>
+                        <p className="text-xs text-slate-600">
+                          {t('offers.wizard.previewTemplates.contentGoesToPdf')}
+                        </p>
                       </div>
-                    ) : (
-                      <>
-                        <RichTextEditor
-                          ref={richTextEditorRef}
-                          value={editedHtml || previewHtml}
-                          onChange={(html) => {
-                            setEditedHtml(html);
-                          }}
-                          placeholder={t('richTextEditor.placeholderHint')}
-                          aria-label={t('richTextEditor.placeholderHint')}
-                        />
-                        {/* Content length warning */}
-                        {(() => {
-                          const textLength = (editedHtml || previewHtml || '').replace(
-                            /<[^>]*>/g,
-                            '',
-                          ).length;
-                          if (textLength > 4000) {
-                            return (
-                              <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2">
-                                <p className="text-xs font-medium text-amber-800">
-                                  {t('wizard.preview.longContentWarning', { length: textLength })}
+                      <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                        {t('offers.wizard.previewTemplates.livePreview')}
+                      </span>
+                    </div>
+                    {/* Tips for text editing */}
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-primary text-base">💡</span>
+                        <p className="text-xs font-semibold text-slate-900">
+                          {t('wizard.preview.tipsTitle')}
+                        </p>
+                      </div>
+                      <ul className="list-disc list-inside space-y-1 text-xs text-slate-700 ml-3">
+                        <li>{t('richTextEditor.placeholderReminder')}</li>
+                        <li>{t('wizard.preview.tipsItems.useLists')}</li>
+                        <li>{t('wizard.preview.tipsItems.highlight')}</li>
+                        <li>{t('wizard.preview.tipsItems.keepShort')}</li>
+                        <li>{t('wizard.preview.tipsItems.useHeadings')}</li>
+                      </ul>
+                    </div>
+
+                    <div className="relative">
+                      {previewLoading && !previewHtml ? (
+                        <div className="rounded-xl border border-slate-200 bg-white p-6">
+                          <SkeletonLoader />
+                          <div className="mt-4 flex items-center gap-2 text-center text-xs text-slate-500">
+                            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span>{t('offers.wizard.preview.loading')}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <RichTextEditor
+                            ref={richTextEditorRef}
+                            value={editedHtml || previewHtml}
+                            onChange={(html) => {
+                              setEditedHtml(html);
+                            }}
+                            placeholder={t('richTextEditor.placeholderHint')}
+                            aria-label={t('richTextEditor.placeholderHint')}
+                          />
+                          {/* Content length warning */}
+                          {(() => {
+                            const textLength = (editedHtml || previewHtml || '').replace(
+                              /<[^>]*>/g,
+                              '',
+                            ).length;
+                            if (textLength > 4000) {
+                              return (
+                                <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2">
+                                  <p className="text-xs font-medium text-amber-800">
+                                    {t('wizard.preview.longContentWarning', { length: textLength })}
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                          {previewLoading && previewHtml ? (
+                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
+                              <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
+                              <div className="space-y-0.5 text-center">
+                                <p className="text-xs font-medium text-slate-700">
+                                  {t('offers.wizard.preview.loading')}
+                                </p>
+                                <p className="text-[11px] text-slate-500">
+                                  {t('offers.wizard.preview.loadingHint')}
                                 </p>
                               </div>
-                            );
-                          }
-                          return null;
-                        })()}
-                        {previewLoading && previewHtml ? (
-                          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-white/80 backdrop-blur">
-                            <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-slate-600" />
-                            <div className="space-y-0.5 text-center">
-                              <p className="text-xs font-medium text-slate-700">
-                                {t('offers.wizard.preview.loading')}
-                              </p>
-                              <p className="text-[11px] text-slate-500">
-                                {t('offers.wizard.preview.loadingHint')}
-                              </p>
                             </div>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                    {isProPlan ? (
+                      <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-700">
+                              {t('richTextEditor.imageSection.heading')}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {t('richTextEditor.imageSection.description')}
+                            </p>
                           </div>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                  {isProPlan ? (
-                    <div className="space-y-4 rounded-2xl border border-dashed border-border/70 bg-slate-50/70 p-5">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-700">
-                            {t('richTextEditor.imageSection.heading')}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {t('richTextEditor.imageSection.description')}
-                          </p>
+                          <Button
+                            type="button"
+                            onClick={handlePickImage}
+                            disabled={imageLimitReached || !previewLocked || previewLoading}
+                            className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                          >
+                            {t('richTextEditor.imageSection.insert')}
+                          </Button>
                         </div>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handleImageInputChange}
+                        />
+                        {!previewLocked ? (
+                          <p className="text-[11px] text-slate-500">
+                            {t('richTextEditor.imageSection.notAvailable')}
+                          </p>
+                        ) : null}
+                        {imageAssets.length > 0 ? (
+                          <ul className="grid gap-2 sm:grid-cols-2">
+                            {imageAssets.map((asset) => {
+                              const sizeKb = Math.max(1, Math.ceil(asset.size / 1024));
+                              return (
+                                <li
+                                  key={asset.key}
+                                  className="flex gap-2 rounded-xl border border-border/70 bg-white p-2 shadow-sm"
+                                >
+                                  <Image
+                                    src={asset.dataUrl}
+                                    alt={asset.alt}
+                                    width={48}
+                                    height={48}
+                                    className="h-12 w-12 rounded-lg object-cover shadow-sm"
+                                    unoptimized
+                                  />
+                                  <div className="flex flex-1 flex-col justify-between text-[11px] text-slate-500">
+                                    <div>
+                                      <p className="font-semibold text-slate-700">{asset.name}</p>
+                                      <p className="mt-0.5">
+                                        {sizeKb} KB • alt: {asset.alt}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      onClick={() => handleRemoveImage(asset.key)}
+                                      className="self-start text-[11px] font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                    >
+                                      Eltávolítás
+                                    </Button>
+                                  </div>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        ) : (
+                          <p className="text-[11px] text-slate-500">
+                            Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben
+                            jelennek meg.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2 rounded-xl border border-dashed border-border/70 bg-slate-50/60 p-3">
+                        <p className="text-[11px] text-slate-500">
+                          {t('richTextEditor.imageSection.proUpsell')}
+                        </p>
                         <Button
                           type="button"
-                          onClick={handlePickImage}
-                          disabled={imageLimitReached || !previewLocked || previewLoading}
-                          className="rounded-full border border-border/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                          size="sm"
+                          onClick={() =>
+                            openPlanUpgradeDialog({
+                              description: t('app.planUpgradeModal.reasons.previewImages'),
+                            })
+                          }
+                          className="self-start"
                         >
-                          {t('richTextEditor.imageSection.insert')}
+                          {t('app.planUpgradeModal.primaryCta')}
                         </Button>
                       </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={handleImageInputChange}
-                      />
-                      {!previewLocked ? (
-                        <p className="text-[11px] text-slate-500">
-                          {t('richTextEditor.imageSection.notAvailable')}
-                        </p>
-                      ) : null}
-                      {imageAssets.length > 0 ? (
-                        <ul className="grid gap-2 sm:grid-cols-2">
-                          {imageAssets.map((asset) => {
-                            const sizeKb = Math.max(1, Math.ceil(asset.size / 1024));
-                            return (
-                              <li
-                                key={asset.key}
-                                className="flex gap-2 rounded-xl border border-border/70 bg-white p-2 shadow-sm"
-                              >
-                                <Image
-                                  src={asset.dataUrl}
-                                  alt={asset.alt}
-                                  width={48}
-                                  height={48}
-                                  className="h-12 w-12 rounded-lg object-cover shadow-sm"
-                                  unoptimized
-                                />
-                                <div className="flex flex-1 flex-col justify-between text-[11px] text-slate-500">
-                                  <div>
-                                    <p className="font-semibold text-slate-700">{asset.name}</p>
-                                    <p className="mt-0.5">
-                                      {sizeKb} KB • alt: {asset.alt}
-                                    </p>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    onClick={() => handleRemoveImage(asset.key)}
-                                    className="self-start text-[11px] font-semibold text-rose-600 transition hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                                  >
-                                    Eltávolítás
-                                  </Button>
-                                </div>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      ) : (
-                        <p className="text-[11px] text-slate-500">
-                          Még nem adtál hozzá képeket. A beszúrt képek csak a kész PDF-ben jelennek
-                          meg.
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-2 rounded-xl border border-dashed border-border/70 bg-slate-50/60 p-3">
-                      <p className="text-[11px] text-slate-500">
-                        {t('richTextEditor.imageSection.proUpsell')}
-                      </p>
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() =>
-                          openPlanUpgradeDialog({
-                            description: t('app.planUpgradeModal.reasons.previewImages'),
-                          })
-                        }
-                        className="self-start"
-                      >
-                        {t('app.planUpgradeModal.primaryCta')}
-                      </Button>
-                    </div>
-                  )}
-
-                  <div className="space-y-6 rounded-2xl border border-slate-200 bg-white/90 p-5">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {t('offers.wizard.customSections.scheduleTitle')}
-                        </p>
-                        <span className="text-[11px] text-slate-500">
-                          {scheduleItems.length}/{MAX_SCHEDULE_ITEMS}
-                        </span>
-                      </div>
-                      <Textarea
-                        value={scheduleInput}
-                        onChange={(event) => setScheduleInput(event.target.value)}
-                        rows={3}
-                        placeholder={t('offers.wizard.customSections.schedulePlaceholder')}
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        {t('offers.wizard.customSections.scheduleDescription', {
-                          count: MAX_SCHEDULE_ITEMS,
-                        })}
-                      </p>
-                      {scheduleItems.length > 0 ? (
-                        <ul className="list-disc list-inside text-sm text-slate-700">
-                          {scheduleItems.map((item, index) => (
-                            <li key={`schedule-${index}`}>{item}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {t('offers.wizard.customSections.guaranteeTitle')}
-                        </p>
-                        <span className="text-[11px] text-slate-500">
-                          {guaranteeItems.length}/{MAX_GUARANTEE_ITEMS}
-                        </span>
-                      </div>
-                      <Textarea
-                        value={guaranteeInput}
-                        onChange={(event) => setGuaranteeInput(event.target.value)}
-                        rows={2}
-                        placeholder={t('offers.wizard.customSections.guaranteePlaceholder')}
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        {t('offers.wizard.customSections.guaranteeDescription', {
-                          count: MAX_GUARANTEE_ITEMS,
-                        })}
-                      </p>
-                      {guaranteeItems.length > 0 ? (
-                        <ul className="list-disc list-inside text-sm text-slate-700">
-                          {guaranteeItems.map((item, index) => (
-                            <li key={`guarantee-${index}`}>{item}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-slate-900">
-                        {t('offers.wizard.customSections.testimonialsTitle')}
-                      </p>
-                      {testimonialTexts.length > 0 ? (
-                        <ul className="list-disc list-inside text-sm text-slate-700">
-                          {testimonialTexts.map((text, index) => (
-                            <li key={`testimonial-${index}`}>{text}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-[11px] text-slate-500">
-                          {t('offers.wizard.customSections.testimonialsEmpty')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Preview and Summary Section - 2 Column Layout */}
-                <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-2">
-                  {/* Left Column: Preview Section */}
-                  <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-900">
-                        {t('offers.wizard.previewTemplates.previewHeading')}
-                      </h2>
-                      {selectedPdfTemplate && (
-                        <p className="mt-0.5 text-xs text-slate-600">
-                          Sablon: <span className="font-semibold">{selectedPdfTemplate.name}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={() => setIsPreviewModalOpen(true)}
-                      disabled={!previewDocumentHtml && !previewLoading}
-                      className="w-full rounded-lg border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
-                    >
-                      {previewLoading && !previewDocumentHtml ? (
-                        <span className="flex items-center gap-2">
-                          <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          {t('offers.wizard.preview.loading')}
-                        </span>
-                      ) : previewDocumentHtml ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                          {t('wizard.preview.openPreview')}
-                        </span>
-                      ) : (
-                        t('wizard.preview.noPreview')
-                      )}
-                    </Button>
-
-                    {previewDocumentHtml && (
-                      <p className="text-xs text-slate-500 text-center">
-                        {t('offers.wizard.previewTemplates.previewHint')}
-                      </p>
                     )}
+
+                    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white/90 p-5">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold text-slate-900">
+                            {t('offers.wizard.customSections.scheduleTitle')}
+                          </p>
+                          <span className="text-[11px] text-slate-500">
+                            {scheduleItems.length}/{MAX_SCHEDULE_ITEMS}
+                          </span>
+                        </div>
+                        <Textarea
+                          value={scheduleInput}
+                          onChange={(event) => setScheduleInput(event.target.value)}
+                          rows={3}
+                          placeholder={t('offers.wizard.customSections.schedulePlaceholder')}
+                        />
+                        <p className="text-[11px] text-slate-500">
+                          {t('offers.wizard.customSections.scheduleDescription', {
+                            count: MAX_SCHEDULE_ITEMS,
+                          })}
+                        </p>
+                        {scheduleItems.length > 0 ? (
+                          <ul className="list-disc list-inside text-sm text-slate-700">
+                            {scheduleItems.map((item, index) => (
+                              <li key={`schedule-${index}`}>{item}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold text-slate-900">
+                            {t('offers.wizard.customSections.guaranteeTitle')}
+                          </p>
+                          <span className="text-[11px] text-slate-500">
+                            {guaranteeItems.length}/{MAX_GUARANTEE_ITEMS}
+                          </span>
+                        </div>
+                        <Textarea
+                          value={guaranteeInput}
+                          onChange={(event) => setGuaranteeInput(event.target.value)}
+                          rows={2}
+                          placeholder={t('offers.wizard.customSections.guaranteePlaceholder')}
+                        />
+                        <p className="text-[11px] text-slate-500">
+                          {t('offers.wizard.customSections.guaranteeDescription', {
+                            count: MAX_GUARANTEE_ITEMS,
+                          })}
+                        </p>
+                        {guaranteeItems.length > 0 ? (
+                          <ul className="list-disc list-inside text-sm text-slate-700">
+                            {guaranteeItems.map((item, index) => (
+                              <li key={`guarantee-${index}`}>{item}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {t('offers.wizard.customSections.testimonialsTitle')}
+                        </p>
+                        {testimonialTexts.length > 0 ? (
+                          <ul className="list-disc list-inside text-sm text-slate-700">
+                            {testimonialTexts.map((text, index) => (
+                              <li key={`testimonial-${index}`}>{text}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-[11px] text-slate-500">
+                            {t('offers.wizard.customSections.testimonialsEmpty')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </Card>
 
-                  {/* Right Column: Summary Section */}
-                  <Card className="space-y-5 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-900">
-                        {t('offers.wizard.steps.summary')}
-                      </h2>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {t('wizard.preview.afterGeneration')}
-                      </p>
-                    </div>
-                    <dl className="space-y-3 text-sm text-slate-600">
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-slate-500">Cím</dt>
-                        <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
+                  {/* Preview and Summary Section - 2 Column Layout */}
+                  <div className="grid grid-cols-1 gap-5 md:gap-6 lg:grid-cols-2">
+                    {/* Left Column: Preview Section */}
+                    <Card className="space-y-4 border-none bg-white/95 p-5 shadow-lg ring-1 ring-slate-900/5 sm:p-6">
+                      <div>
+                        <h2 className="text-sm font-semibold text-slate-900">
+                          {t('offers.wizard.previewTemplates.previewHeading')}
+                        </h2>
+                        {selectedPdfTemplate && (
+                          <p className="mt-0.5 text-xs text-slate-600">
+                            Sablon:{' '}
+                            <span className="font-semibold">{selectedPdfTemplate.name}</span>
+                          </p>
+                        )}
                       </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-slate-500">Címzett</dt>
-                        <dd className="font-medium text-slate-800">{client.company_name || '—'}</dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-slate-500">Stílus</dt>
-                        <dd className="font-medium text-slate-800">
-                          {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
-                        </dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-slate-500">
-                          {t('offers.wizard.previewTemplates.summaryLabel')}
-                        </dt>
-                        <dd className="font-medium text-slate-800">
-                          {selectedPdfTemplateLabel || availablePdfTemplates[0]?.name || '—'}
-                        </dd>
-                      </div>
-                    </dl>
-                    <div className="rounded-2xl border border-border/70 bg-slate-50 px-4 py-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Bruttó összesen</span>
-                        <span className="text-base font-semibold text-slate-900">
-                          {totals.gross.toLocaleString('hu-HU')} Ft
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-3">
+
                       <Button
                         type="button"
-                        onClick={() =>
-                          handleOpenTemplateModal({
-                            title: form.title,
-                            projectDetails: form.projectDetails,
-                            deadline: form.deadline,
-                            language: form.language,
-                            brandVoice: form.brandVoice,
-                            style: form.style,
-                          })
-                        }
-                        disabled={loading}
-                        className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                        onClick={() => setIsPreviewModalOpen(true)}
+                        disabled={!previewDocumentHtml && !previewLoading}
+                        className="w-full rounded-lg border-2 border-primary bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg focus:outline-none focus:ring-3 focus:ring-primary/50 focus:ring-offset-1 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
                       >
-                        {t('offers.wizard.forms.details.templates.saveAction')}
+                        {previewLoading && !previewDocumentHtml ? (
+                          <span className="flex items-center gap-2">
+                            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            {t('offers.wizard.preview.loading')}
+                          </span>
+                        ) : previewDocumentHtml ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                            {t('wizard.preview.openPreview')}
+                          </span>
+                        ) : (
+                          t('wizard.preview.noPreview')
+                        )}
                       </Button>
-                      <Button
-                        onClick={generate}
-                        disabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
-                        className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
-                      >
-                        {loading ? 'Generálás…' : 'PDF generálása és mentés'}
-                      </Button>
-                      {!previewLocked && !previewLoading && (
-                        <p className="text-[11px] text-slate-500 text-center">
-                          Az AI előnézet betöltése után lesz elérhető a PDF generálás.
+
+                      {previewDocumentHtml && (
+                        <p className="text-xs text-slate-500 text-center">
+                          {t('offers.wizard.previewTemplates.previewHint')}
                         </p>
                       )}
-                    </div>
-                  </Card>
-                </div>
-              </section>
+                    </Card>
+
+                    {/* Right Column: Summary Section */}
+                    <Card className="space-y-5 border-none bg-white/95 p-6 shadow-xl ring-1 ring-slate-900/5 sm:p-7">
+                      <div>
+                        <h2 className="text-sm font-semibold text-slate-900">
+                          {t('offers.wizard.steps.summary')}
+                        </h2>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {t('wizard.preview.afterGeneration')}
+                        </p>
+                      </div>
+                      <dl className="space-y-3 text-sm text-slate-600">
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-slate-500">Cím</dt>
+                          <dd className="font-medium text-slate-800">{form.title || '—'}</dd>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-slate-500">Címzett</dt>
+                          <dd className="font-medium text-slate-800">
+                            {client.company_name || '—'}
+                          </dd>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-slate-500">Stílus</dt>
+                          <dd className="font-medium text-slate-800">
+                            {form.style === 'compact' ? 'Kompakt' : 'Részletes'}
+                          </dd>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-slate-500">
+                            {t('offers.wizard.previewTemplates.summaryLabel')}
+                          </dt>
+                          <dd className="font-medium text-slate-800">
+                            {selectedPdfTemplateLabel || availablePdfTemplates[0]?.name || '—'}
+                          </dd>
+                        </div>
+                      </dl>
+                      <div className="rounded-2xl border border-border/70 bg-slate-50 px-4 py-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-500">Bruttó összesen</span>
+                          <span className="text-base font-semibold text-slate-900">
+                            {totals.gross.toLocaleString('hu-HU')} Ft
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            handleOpenTemplateModal({
+                              title: form.title,
+                              projectDetails: form.projectDetails,
+                              deadline: form.deadline,
+                              language: form.language,
+                              brandVoice: form.brandVoice,
+                              style: form.style,
+                            })
+                          }
+                          disabled={loading}
+                          className="w-full rounded-full border border-border/70 bg-white px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:border-border disabled:text-slate-300"
+                        >
+                          {t('offers.wizard.forms.details.templates.saveAction')}
+                        </Button>
+                        <Button
+                          onClick={generate}
+                          disabled={loading || isQuotaExhausted || quotaLoading || !previewLocked}
+                          className="w-full rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:bg-slate-300"
+                        >
+                          {loading ? 'Generálás…' : 'PDF generálása és mentés'}
+                        </Button>
+                        {!previewLocked && !previewLoading && (
+                          <p className="text-[11px] text-slate-500 text-center">
+                            Az AI előnézet betöltése után lesz elérhető a PDF generálás.
+                          </p>
+                        )}
+                      </div>
+                    </Card>
+                  </div>
+                </section>
+              </StepErrorBoundary>
             )}
 
             <WizardActionBar

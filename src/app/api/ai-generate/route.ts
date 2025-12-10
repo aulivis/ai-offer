@@ -169,7 +169,7 @@ FORMÁZÁS:
 type OfferSections = {
   introduction: string;
   project_summary: string;
-  value_proposition?: string;
+  value_proposition: string; // Now required but can be empty string
   scope: string[];
   deliverables: string[];
   expected_outcomes?: string[];
@@ -190,6 +190,7 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
     required: [
       'introduction',
       'project_summary',
+      'value_proposition',
       'scope',
       'deliverables',
       'assumptions',
@@ -214,8 +215,8 @@ const OFFER_SECTIONS_FORMAT: ResponseFormatTextJSONSchemaConfig = {
       value_proposition: {
         type: 'string',
         description:
-          'Opcionális: Az egyedi értékpropozíció és főbb előnyök rövid összefoglalása (2-3 mondat). Hangsúlyozd ki, hogyan oldja meg az ajánlat a vevő problémáját és milyen konkrét előnyöket nyújt. Használj mérhető eredményeket, ahol lehetséges.',
-        minLength: 80,
+          'Az egyedi értékpropozíció és főbb előnyök rövid összefoglalása (2-3 mondat). Hangsúlyozd ki, hogyan oldja meg az ajánlat a vevő problémáját és milyen konkrét előnyöket nyújt. Használj mérhető eredményeket, ahol lehetséges. Ha nincs konkrét értékpropozíció, használj egy üres stringet.',
+        minLength: 0,
         maxLength: 300,
       },
       scope: {
@@ -353,7 +354,7 @@ function sectionsToHtml(
 
   if (style === 'compact') {
     const overviewParts: string[] = [sections.introduction, sections.project_summary];
-    if (sections.value_proposition) {
+    if (sections.value_proposition && sections.value_proposition.trim()) {
       overviewParts.push(sections.value_proposition);
     }
     const overviewContent = safeParagraphGroup(overviewParts);
@@ -404,7 +405,7 @@ function sectionsToHtml(
         ${safeParagraphGroup(overviewParts)}
       </section>
       ${
-        sections.value_proposition
+        sections.value_proposition && sections.value_proposition.trim()
           ? `<section class="offer-doc__section">
             ${renderSectionHeading(labels.valueProposition, 'valueProposition')}
             ${safeParagraphGroup([sections.value_proposition])}
@@ -446,6 +447,7 @@ function _sanitizeSectionsOutput(sections: OfferSections): OfferSections {
   const sanitized: OfferSections = {
     introduction: sanitizeInput((sections.introduction || '').trim()),
     project_summary: sanitizeInput((sections.project_summary || '').trim()),
+    value_proposition: sanitizeInput((sections.value_proposition || '').trim()),
     scope: (sections.scope || []).map((item) => sanitizeInput((item || '').trim())).filter(Boolean),
     deliverables: (sections.deliverables || [])
       .map((item) => sanitizeInput((item || '').trim()))
@@ -459,10 +461,7 @@ function _sanitizeSectionsOutput(sections: OfferSections): OfferSections {
     closing: sanitizeInput((sections.closing || '').trim()),
   };
 
-  // Conditionally add optional properties only if they have values (for exactOptionalPropertyTypes)
-  if (sections.value_proposition) {
-    sanitized.value_proposition = sanitizeInput((sections.value_proposition || '').trim());
-  }
+  // Conditionally add other optional properties only if they have values (for exactOptionalPropertyTypes)
   if (sections.expected_outcomes && sections.expected_outcomes.length > 0) {
     sanitized.expected_outcomes = sections.expected_outcomes
       .map((item) => sanitizeInput((item || '').trim()))

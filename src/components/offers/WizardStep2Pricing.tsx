@@ -54,7 +54,7 @@ type WizardStep2PricingProps = {
   showClientDropdown: boolean;
   onClientDropdownToggle: (show: boolean) => void;
   filteredClients: Client[];
-  onActivitySaved?: () => void;
+  onActivitySaved?: (newActivity?: Activity) => void | Promise<void>;
   enableReferencePhotos: boolean;
   enableTestimonials: boolean;
   selectedImages: string[];
@@ -214,15 +214,45 @@ export function WizardStep2Pricing({
   useEffect(() => {
     if (enableTestimonials && user) {
       (async () => {
-        const { data } = await supabase
-          .from('testimonials')
-          .select('id, text, activity_id')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        setAvailableTestimonials((data as typeof availableTestimonials) || []);
+        try {
+          const { data, error } = await supabase
+            .from('testimonials')
+            .select('id, text, activity_id')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            logger.error('Failed to load testimonials', error);
+            setAvailableTestimonials([]);
+            return;
+          }
+
+          // Type guard for testimonials data
+          if (Array.isArray(data)) {
+            const validTestimonials = data.filter(
+              (item): item is { id: string; text: string; activity_id?: string | null } =>
+                typeof item === 'object' &&
+                item !== null &&
+                typeof item.id === 'string' &&
+                typeof item.text === 'string' &&
+                (item.activity_id === null ||
+                  item.activity_id === undefined ||
+                  typeof item.activity_id === 'string'),
+            );
+            setAvailableTestimonials(validTestimonials);
+          } else {
+            setAvailableTestimonials([]);
+          }
+        } catch (error) {
+          logger.error('Error loading testimonials', error);
+          setAvailableTestimonials([]);
+        }
       })();
+    } else {
+      // Clear testimonials when feature is disabled
+      setAvailableTestimonials([]);
     }
-  }, [enableTestimonials, user, supabase]);
+  }, [enableTestimonials, user, supabase, logger]);
 
   // Load image URLs when image modal is opened
   useEffect(() => {
@@ -340,6 +370,20 @@ export function WizardStep2Pricing({
       return;
     }
 
+    // Create optimistic activity (temporary ID, will be replaced with real ID)
+    const tempId = `temp-${Date.now()}`;
+    const optimisticActivity: Activity = {
+      id: tempId,
+      name: row.name.trim(),
+      unit: row.unit || 'db',
+      default_unit_price: Number(row.unitPrice) || 0,
+      default_vat: Number(row.vat) || 27,
+      reference_images: null,
+    };
+
+    // Optimistically add activity to list immediately
+    await onActivitySaved?.(optimisticActivity);
+
     try {
       setSavingActivityId(row.id);
       const ins = await supabase
@@ -357,6 +401,17 @@ export function WizardStep2Pricing({
         throw ins.error;
       }
 
+      // Replace optimistic activity with real one
+      const realActivity: Activity = {
+        id: ins.data[0].id,
+        name: row.name.trim(),
+        unit: row.unit || 'db',
+        default_unit_price: Number(row.unitPrice) || 0,
+        default_vat: Number(row.vat) || 27,
+        reference_images: null,
+      };
+      await onActivitySaved?.(realActivity);
+
       showToast({
         title: t('toasts.settings.activitySaved.title') || 'Tevékenység mentve',
         description:
@@ -364,9 +419,6 @@ export function WizardStep2Pricing({
           'A tevékenység sikeresen mentve a beállításokba.',
         variant: 'success',
       });
-
-      // Notify parent to reload activities
-      onActivitySaved?.();
     } catch (error) {
       logger.error('Failed to save activity', error, { activityName: row.name });
       showToast({
