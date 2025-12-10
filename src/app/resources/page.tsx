@@ -26,6 +26,7 @@ import { Resource, ResourceFilters } from '@/types/resource';
 import { ResourceCard } from '@/components/resource-card';
 import { ResourceFiltersComponent } from '@/components/resource-filters';
 import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
+import { H1, H2, H3 } from '@/components/ui/Heading';
 
 type SortOption = 'newest' | 'popular' | 'most-helpful';
 
@@ -213,9 +214,9 @@ function ResourcesPageContent() {
                 Erőforrások
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              <H1 className="mb-6" fluid>
                 Tanulj és fejlődj
-              </h1>
+              </H1>
 
               <p className="text-xl text-white/80 mb-8 leading-relaxed max-w-3xl">
                 Hozzáférés útmutatókhoz, videókhoz, cikkekhez és további tartalmakhoz az
@@ -388,8 +389,8 @@ function ResourcesPageContent() {
                     aria-controls="resources-panel"
                     className={`px-6 py-2.5 rounded-full font-medium shadow-sm transition-all min-h-[44px] ${
                       isActive
-                        ? 'bg-teal-500 text-white'
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-teal-500'
+                        ? 'bg-teal-500 text-white shadow-md ring-2 ring-teal-500/30 scale-105'
+                        : 'bg-white text-fg border-2 border-border hover:border-teal-500 hover:bg-bg-muted'
                     }`}
                   >
                     {type}
@@ -399,7 +400,7 @@ function ResourcesPageContent() {
 
               {/* Active filter count indicator */}
               {activeFiltersCount > 0 && (
-                <span className="ml-auto flex items-center gap-2 text-sm text-gray-600">
+                <span className="ml-auto flex items-center gap-2 text-sm text-fg-muted">
                   <span className="bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-semibold">
                     {activeFiltersCount} szűrő aktív
                   </span>
@@ -426,7 +427,7 @@ function ResourcesPageContent() {
 
               {/* Sort Options */}
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">Rendezés:</span>
+                <span className="text-sm text-fg-muted">Rendezés:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -446,7 +447,7 @@ function ResourcesPageContent() {
                   className={`p-2 rounded transition-colors min-h-[44px] min-w-[44px] ${
                     viewMode === 'grid'
                       ? 'bg-turquoise-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : 'text-fg-muted hover:bg-gray-100'
                   }`}
                   aria-label="Rács nézet"
                   aria-pressed={viewMode === 'grid'}
@@ -458,7 +459,7 @@ function ResourcesPageContent() {
                   className={`p-2 rounded transition-colors min-h-[44px] min-w-[44px] ${
                     viewMode === 'list'
                       ? 'bg-turquoise-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      : 'text-fg-muted hover:bg-gray-100'
                   }`}
                   aria-label="Lista nézet"
                   aria-pressed={viewMode === 'list'}
@@ -480,9 +481,9 @@ function ResourcesPageContent() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <Flame className="w-6 h-6 text-orange-500" />
-                    <h2 className="text-2xl font-bold text-gray-900">Népszerű tartalmak</h2>
+                    <H2>Népszerű tartalmak</H2>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-fg-muted">
                     A legtöbbet megtekintett és letöltött erőforrások az elmúlt 30 napban
                   </p>
                 </div>
@@ -510,10 +511,8 @@ function ResourcesPageContent() {
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Összes erőforrás ({regularResources.length})
-                  </h2>
-                  <p className="text-gray-600">Böngészd az összes elérhető tartalmat</p>
+                  <H2 className="mb-2">Összes erőforrás ({regularResources.length})</H2>
+                  <p className="text-fg-muted">Böngészd az összes elérhető tartalmat</p>
                 </div>
               </div>
 
@@ -539,8 +538,8 @@ function ResourcesPageContent() {
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Nincs találat</h3>
-              <p className="text-gray-600 mb-6">
+              <H3 className="mb-2">Nincs találat</H3>
+              <p className="text-fg-muted mb-6">
                 Próbáld meg módosítani a szűrőket vagy a keresési kifejezést
               </p>
               <button
@@ -571,9 +570,9 @@ function ResourcesPageContent() {
           <div className="max-w-4xl mx-auto">
             {/* Compelling headline with better messaging */}
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight text-balance">
+              <H2 className="text-white mb-6" fluid>
                 Szeretnéd elsőként kipróbálni az újdonságokat?
-              </h2>
+              </H2>
               <p className="text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto text-pretty">
                 Iratkozz fel, és értesülj az újdonságokról, tippekről és az új funkciók indulásáról.
                 <br />

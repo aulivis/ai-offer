@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { createClientLogger } from '@/lib/clientLogger';
 import Link from 'next/link';
+import { Users } from 'lucide-react';
 
 type Team = {
   team_id: string;
@@ -112,7 +113,7 @@ export default function TeamsPage() {
         title="Csapatok"
         description="Kezeld a csapatokat és hívj meg más Pro felhasználókat."
         actions={
-          <Button onClick={handleCreateTeam} variant="primary">
+          <Button onClick={handleCreateTeam} variant="primary" size="lg">
             Új csapat
           </Button>
         }
@@ -124,14 +125,21 @@ export default function TeamsPage() {
             ))}
           </div>
         ) : teams.length === 0 ? (
-          <Card className="p-8 text-center">
-            <h3 className="text-lg font-semibold text-fg mb-2">Még nincs csapatod</h3>
-            <p className="text-fg-muted mb-4">
-              Hozz létre egy új csapatot és hívj meg más Pro felhasználókat!
-            </p>
-            <Button onClick={handleCreateTeam} variant="primary">
-              Új csapat létrehozása
-            </Button>
+          <Card className="p-12 text-center">
+            <div className="flex flex-col items-center gap-6 max-w-md mx-auto">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl flex items-center justify-center">
+                <Users className="w-8 h-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-fg">Még nincs csapatod</h3>
+                <p className="text-fg-muted">
+                  Hozz létre egy új csapatot és hívj meg más Pro felhasználókat!
+                </p>
+              </div>
+              <Button onClick={handleCreateTeam} variant="primary" size="lg">
+                Új csapat létrehozása
+              </Button>
+            </div>
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

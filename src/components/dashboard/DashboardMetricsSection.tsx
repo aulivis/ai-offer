@@ -61,11 +61,11 @@ export function DashboardMetricsSection({
   onMetricClick,
 }: DashboardMetricsSectionProps) {
   return (
-    <div className="space-y-6 pb-8 border-b border-border/40">
+    <div className="space-y-6 pb-8 border-b-2 border-border/60">
       {/* Header with View Toggle */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
+          <h2 className="text-xl font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
           <p className="text-sm text-fg-muted mt-1">{t('dashboard.metricsView.description')}</p>
         </div>
         <div className="flex items-center gap-3">

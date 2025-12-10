@@ -244,7 +244,7 @@ function ActivityLogPageContent() {
         {/* Header with actions */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-fg">Összes értesítés</h2>
+            <h2 className="text-xl font-bold text-fg">Összes értesítés</h2>
             {unreadCount > 0 && (
               <p className="text-sm text-fg-muted mt-1">{unreadCount} olvasatlan értesítés</p>
             )}

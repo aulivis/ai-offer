@@ -9,7 +9,7 @@ import type { Offer } from '@/app/dashboard/types';
 
 type UseDashboardOfferActionsOptions = {
   setOffers: React.Dispatch<React.SetStateAction<Offer[]>>;
-  userId?: string;
+  userId?: string | undefined;
 };
 
 export function useDashboardOfferActions({ setOffers, userId }: UseDashboardOfferActionsOptions) {

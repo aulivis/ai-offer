@@ -2,7 +2,7 @@
 
 import { t } from '@/copy';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
 import { useToast } from '@/components/ToastProvider';
 import { LoadMoreButton, PAGE_SIZE } from './offersPagination';
@@ -1108,7 +1108,7 @@ export default function DashboardPage() {
               ) : null}
               <Link
                 href="/new"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-ink shadow-sm transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-lg transition hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 {t('dashboard.actions.newOffer')}
               </Link>
@@ -1119,7 +1119,7 @@ export default function DashboardPage() {
           {hasNoOffers ? (
             <EmptyState />
           ) : (
-            <>
+            <Fragment>
               {/* Enhanced KPI Dashboard with Visual Funnel */}
               <PageErrorBoundary>
                 <DashboardMetricsSection
@@ -1144,40 +1144,44 @@ export default function DashboardPage() {
               </PageErrorBoundary>
 
               {/* Enhanced Search & Filters */}
-              <DashboardFiltersSection
-                searchQuery={q}
-                sanitizedQuery={sanitizedQ}
-                statusFilter={statusFilter}
-                offerFilter={offerFilter}
-                sortBy={sortBy}
-                sortDir={sortDir}
-                viewMode={viewMode}
-                teamIds={teamIds}
-                teamMembers={teamMembers}
-                teamMemberFilter={teamMemberFilter}
-                statusFilterCounts={statusFilterCounts}
-                filteredCount={filtered.length}
-                onSearchChange={setQ}
-                onStatusFilterChange={setStatusFilter}
-                onOfferFilterChange={setOfferFilter}
-                onTeamMemberFilterChange={setTeamMemberFilter}
-                onSortByChange={setSortBy}
-                onSortDirChange={setSortDir}
-                onViewModeChange={setViewMode}
-                onClearFilters={() => {
-                  setQ('');
-                  setStatusFilter('all');
-                }}
-                isSortByValue={isSortByValue}
-                isSortDirectionValue={isSortDirectionValue}
-              />
+              <div className="pt-6">
+                <DashboardFiltersSection
+                  searchQuery={q}
+                  sanitizedQuery={sanitizedQ}
+                  statusFilter={statusFilter}
+                  offerFilter={offerFilter}
+                  sortBy={sortBy}
+                  sortDir={sortDir}
+                  viewMode={viewMode}
+                  teamIds={teamIds}
+                  teamMembers={teamMembers}
+                  teamMemberFilter={teamMemberFilter}
+                  statusFilterCounts={statusFilterCounts}
+                  filteredCount={filtered.length}
+                  onSearchChange={setQ}
+                  onStatusFilterChange={setStatusFilter}
+                  onOfferFilterChange={setOfferFilter}
+                  onTeamMemberFilterChange={setTeamMemberFilter}
+                  onSortByChange={setSortBy}
+                  onSortDirChange={setSortDir}
+                  onViewModeChange={setViewMode}
+                  onClearFilters={() => {
+                    setQ('');
+                    setStatusFilter('all');
+                  }}
+                  isSortByValue={isSortByValue}
+                  isSortDirectionValue={isSortDirectionValue}
+                />
+              </div>
 
               {/* Skeleton Loaders - Mobile optimized */}
               {loading && (
                 <div
-                  className="grid grid-cols-1 gap-4 md:grid-cols-2"
+                  className="grid grid-cols-1 gap-6 md:grid-cols-2"
                   aria-busy="true"
                   aria-live="polite"
+                  role="status"
+                  aria-label="Loading offers..."
                 >
                   {Array.from({ length: 6 }).map((_, i) => (
                     <OfferCardSkeleton key={i} />
@@ -1293,7 +1297,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               )}
-            </>
+            </Fragment>
           )}
         </AppFrame>
 

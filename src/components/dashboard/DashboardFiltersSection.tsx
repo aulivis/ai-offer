@@ -163,8 +163,8 @@ export function DashboardFiltersSection({
                 }`}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                   statusFilter === status
-                    ? 'bg-primary text-primary-ink shadow-sm'
-                    : 'bg-bg-muted text-fg border-2 border-border hover:border-primary/50'
+                    ? 'bg-primary text-primary-ink shadow-md ring-2 ring-primary/30 scale-105'
+                    : 'bg-bg-muted text-fg border-2 border-border hover:border-primary/50 hover:bg-bg-muted/80'
                 }`}
               >
                 {status === 'all' ? (

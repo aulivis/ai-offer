@@ -16,6 +16,7 @@ import OfferResponseForm from './OfferResponseForm';
 import { DownloadPdfButton } from './DownloadPdfButton';
 import { OfferDisplay } from './OfferDisplay';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
+import { H2 } from '@/components/ui/Heading';
 
 type PageProps = {
   params: Promise<{
@@ -418,8 +419,10 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
           {/* Download PDF Button - hidden in PDF mode */}
           {!isPdfMode && (
-            <div className="mb-8 flex justify-center">
-              <DownloadPdfButton token={token} offerId={offer.id} />
+            <div className="mb-12 flex justify-center">
+              <div className="relative">
+                <DownloadPdfButton token={token} offerId={offer.id} />
+              </div>
             </div>
           )}
 
@@ -432,10 +435,8 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
           {!isPdfMode && (
             <div className="mt-8">
               {existingResponse ? (
-                <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center shadow-sm">
-                  <h2 className="mb-2 text-xl font-semibold text-green-800">
-                    Köszönjük a válaszát!
-                  </h2>
+                <div className="rounded-xl border-2 border-success/30 bg-success/10 p-8 text-center shadow-lg">
+                  <H2 className="mb-3 text-success">Köszönjük a válaszát!</H2>
                   <p className="text-green-700">
                     Ön már{' '}
                     {existingResponse.decision === 'accepted'

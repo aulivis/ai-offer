@@ -57,8 +57,9 @@ export function DownloadPdfButton({ token, offerId }: DownloadPdfButtonProps) {
         type="button"
         onClick={handleDownload}
         disabled={downloading}
-        variant="secondary"
-        className="w-full sm:w-auto"
+        variant="primary"
+        size="lg"
+        className="w-full sm:w-auto shadow-lg"
       >
         {downloading ? (
           <>

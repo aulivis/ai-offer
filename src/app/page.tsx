@@ -158,7 +158,7 @@ export default function Home() {
                   Professzionális ajánlatkészítés{' '}
                   <span className="text-turquoise-400">percek alatt</span>
                 </H1>
-                <p className="text-lg md:text-lg lg:text-xl text-white/80 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
+                <p className="text-lg md:text-lg lg:text-xl text-white/90 mb-8 leading-relaxed text-pretty max-w-xl mx-auto lg:mx-0">
                   <span className="md:hidden">
                     Automatizált megoldás, ami 70%-kal csökkenti az ajánlatkészítés idejét
                   </span>
@@ -198,7 +198,7 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                   <Link
                     href="/login?redirect=/new"
-                    className="group bg-primary hover:bg-primary/90 text-primary-ink font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-pop hover:shadow-pop transition-all duration-300 active:scale-95 relative overflow-hidden"
+                    className="group bg-primary hover:bg-primary/90 text-primary-ink font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
                   >
                     <span className="relative z-10 text-base md:text-lg text-primary-ink">
                       Próbáld ki most ingyen

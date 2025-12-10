@@ -22,7 +22,7 @@ export function Skeleton({
   height,
   animate = true,
 }: SkeletonProps) {
-  const baseClasses = 'bg-border';
+  const baseClasses = 'bg-gradient-to-r from-border via-border/80 to-border';
   const variantClasses = {
     text: 'rounded',
     circular: 'rounded-full',
@@ -35,13 +35,23 @@ export function Skeleton({
 
   return (
     <div
-      className={cn(baseClasses, variantClasses[variant], animate && 'animate-pulse', className)}
+      className={cn(
+        baseClasses,
+        variantClasses[variant],
+        animate && 'animate-pulse',
+        'relative overflow-hidden',
+        className,
+      )}
       style={style}
       aria-busy="true"
       aria-label="Loading..."
       role="status"
       aria-live="polite"
-    />
+    >
+      {animate && (
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      )}
+    </div>
   );
 }
 
@@ -88,7 +98,12 @@ export function SkeletonCard({ className }: { className?: string }) {
  */
 export function MetricSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('rounded-xl border border-border bg-bg-muted p-5 sm:p-6', className)}>
+    <div
+      className={cn(
+        'rounded-xl border-2 border-border/60 bg-bg-muted p-5 sm:p-6 shadow-sm',
+        className,
+      )}
+    >
       <div className="flex items-start justify-between mb-2.5 sm:mb-3">
         <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
           <Skeleton variant="circular" width={28} height={28} className="flex-shrink-0 mt-0.5" />

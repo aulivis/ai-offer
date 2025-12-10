@@ -37,7 +37,7 @@ export function DashboardEmptyState({
         </div>
       </div>
       <div className="space-y-3 max-w-md">
-        <h3 className="text-lg md:text-xl font-bold text-fg">{message}</h3>
+        <h3 className="text-xl md:text-2xl font-bold text-fg">{message}</h3>
         {isEmpty ? (
           <>
             <p className="text-sm md:text-base leading-relaxed text-fg-muted">

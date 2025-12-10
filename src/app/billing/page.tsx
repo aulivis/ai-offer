@@ -44,6 +44,7 @@ import { Button } from '@/components/ui/Button';
 import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { H1 } from '@/components/ui/Heading';
 import { useToast } from '@/components/ToastProvider';
 import { getAuthorImage } from '@/lib/testimonial-images';
 import {
@@ -418,7 +419,7 @@ function PlanCard({
           {/* Annual billing: show effective monthly price and savings */}
           {billingInterval === 'annual' && savings && (
             <div className="mt-2 space-y-1">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-fg-muted">
                 Effektíve {formatPrice(effectiveMonthlyPrice)} Ft/hó
               </p>
               <p className="text-xs font-semibold text-teal-600">
@@ -429,7 +430,7 @@ function PlanCard({
 
           {/* Monthly billing: show per month */}
           {billingInterval === 'monthly' && (
-            <p className="mt-1 text-xs text-gray-500">havonta számlázva</p>
+            <p className="mt-1 text-xs text-fg-muted">havonta számlázva</p>
           )}
         </div>
 
@@ -452,11 +453,11 @@ function PlanCard({
             <>
               <li className="flex items-start gap-3">
                 <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
-                <span className="text-sm text-gray-400 line-through">Korlátlan ajánlatok</span>
+                <span className="text-sm text-fg-muted/60 line-through">Korlátlan ajánlatok</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
-                <span className="text-sm text-gray-400 line-through">AI generált szövegek</span>
+                <span className="text-sm text-fg-muted/60 line-through">AI generált szövegek</span>
               </li>
             </>
           )}
@@ -774,7 +775,7 @@ function BillingPageContent() {
                         </svg>
                       )}
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+                    <div className="text-xs font-bold uppercase tracking-wide text-fg-muted">
                       {planLimit === null
                         ? 'Felhasználási keret'
                         : t('billing.currentPlan.remaining.title')}
@@ -803,7 +804,7 @@ function BillingPageContent() {
                     <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
                       <Calendar className="w-5 h-5 text-purple-600" />
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+                    <div className="text-xs font-bold uppercase tracking-wide text-fg-muted">
                       Következő fizetés
                     </div>
                   </div>
@@ -818,7 +819,7 @@ function BillingPageContent() {
                     const diffTime = resetDate.getTime() - today.getTime();
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     return (
-                      <div className="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                      <div className="text-xs text-fg-muted bg-bg-muted px-3 py-2 rounded-lg">
                         {diffDays > 0 ? `${diffDays} nap múlva` : 'Ma'} • Automatikus megújulás
                       </div>
                     );
@@ -831,7 +832,7 @@ function BillingPageContent() {
                     <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                       <CreditCard className="w-5 h-5 text-green-600" />
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+                    <div className="text-xs font-bold uppercase tracking-wide text-fg-muted">
                       Havi díjszabás
                     </div>
                   </div>
@@ -1423,7 +1424,7 @@ function BillingPageContent() {
                       </div>
                       <div>
                         <div className="font-bold text-gray-900 mb-1">Visszalépés Standard-ra</div>
-                        <p className="text-sm text-gray-600">5 500 Ft/hó megtakarítás</p>
+                        <p className="text-sm text-fg-muted">5 500 Ft/hó megtakarítás</p>
                       </div>
                     </button>
                   )}
@@ -1444,7 +1445,7 @@ function BillingPageContent() {
                     </div>
                     <div>
                       <div className="font-bold text-gray-900 mb-1">Előfizetés szüneteltetése</div>
-                      <p className="text-sm text-gray-600">Ideiglenesen leállítás</p>
+                      <p className="text-sm text-fg-muted">Ideiglenesen leállítás</p>
                     </div>
                   </button>
 
@@ -1471,7 +1472,7 @@ function BillingPageContent() {
                     </div>
                     <div>
                       <div className="font-bold text-gray-900 mb-1">Előfizetés lemondása</div>
-                      <p className="text-sm text-gray-600">Véglegesen leállítás</p>
+                      <p className="text-sm text-fg-muted">Véglegesen leállítás</p>
                     </div>
                   </button>
                 </div>
@@ -1549,13 +1550,13 @@ function PublicBillingLanding() {
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-balance">
+            <H1 className="mb-6" fluid>
               Készíts{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-green-400">
                 3x gyorsabban
               </span>{' '}
               professzionális ajánlatokat
-            </h1>
+            </H1>
 
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed text-pretty">
               Már több mint 200 vállalkozás használja a Vyndit márkahű ajánlatok készítésére.

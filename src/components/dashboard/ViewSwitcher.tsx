@@ -25,7 +25,7 @@ export function ViewSwitcher({ value, onChange, className }: ViewSwitcherProps) 
         aria-pressed={value === 'card'}
         className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
           value === 'card'
-            ? 'bg-primary text-primary-ink shadow-sm'
+            ? 'bg-primary text-primary-ink shadow-md ring-2 ring-primary/30'
             : 'text-fg-muted hover:text-fg hover:bg-bg-muted'
         }`}
         aria-label={t('dashboard.viewSwitcher.cardView')}
@@ -39,7 +39,7 @@ export function ViewSwitcher({ value, onChange, className }: ViewSwitcherProps) 
         aria-pressed={value === 'list'}
         className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
           value === 'list'
-            ? 'bg-primary text-primary-ink shadow-sm'
+            ? 'bg-primary text-primary-ink shadow-md ring-2 ring-primary/30'
             : 'text-fg-muted hover:text-fg hover:bg-bg-muted'
         }`}
         aria-label={t('dashboard.viewSwitcher.listView')}

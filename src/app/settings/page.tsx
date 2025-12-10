@@ -33,6 +33,7 @@ import { SectionErrorBoundary } from '@/components/settings/SectionErrorBoundary
 import type { Profile as _Profile } from '@/components/settings/types';
 import { ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/Button';
+import { H2 } from '@/components/ui/Heading';
 
 export default function SettingsPage() {
   const supabase = useSupabase();
@@ -183,13 +184,15 @@ export default function SettingsPage() {
                         type="button"
                         onClick={() => handleTabChange(tab.id)}
                         className={`group relative flex items-center gap-2 whitespace-nowrap px-4 sm:px-6 py-4 font-semibold transition-all duration-300 flex-shrink-0 ${
-                          activeTab === tab.id ? 'text-primary' : 'text-fg-muted hover:text-fg'
+                          activeTab === tab.id
+                            ? 'text-primary scale-105'
+                            : 'text-fg-muted hover:text-fg hover:scale-105'
                         }`}
                         aria-label={tab.label}
                       >
                         {/* Active indicator with gradient */}
                         {activeTab === tab.id && (
-                          <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-turquoise-500 to-primary rounded-t-full"></span>
+                          <span className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-turquoise-500 to-primary rounded-t-full shadow-lg shadow-primary/50"></span>
                         )}
                         {/* Hover effect */}
                         <span
@@ -215,7 +218,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Tab content */}
-                <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10 w-full">
+                <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10 w-full min-h-[400px]">
                   <div
                     className={`transition-all duration-300 ${
                       activeTab === 'profile' ? 'opacity-100 translate-y-0' : 'hidden'
@@ -230,7 +233,7 @@ export default function SettingsPage() {
                           onSave={() => saveProfile('all')}
                           saving={profileSaving}
                         />
-                        <div className="border-t border-slate-200 pt-8">
+                        <div className="border-t-2 border-border/60 pt-8">
                           <SettingsBrandingSection
                             profile={profile}
                             plan={plan}
@@ -259,7 +262,7 @@ export default function SettingsPage() {
                             }}
                           />
                         </div>
-                        <div className="border-t border-slate-200 pt-8">
+                        <div className="border-t-2 border-border/60 pt-8">
                           <SettingsEmailSubscriptionSection />
                         </div>
                       </div>
@@ -268,7 +271,9 @@ export default function SettingsPage() {
 
                   <div
                     className={`transition-all duration-300 w-full ${
-                      activeTab === 'security' ? 'opacity-100 translate-y-0' : 'hidden'
+                      activeTab === 'security'
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 pointer-events-none absolute'
                     }`}
                   >
                     {activeTab === 'security' && (
@@ -285,7 +290,9 @@ export default function SettingsPage() {
 
                   <div
                     className={`transition-all duration-300 w-full ${
-                      activeTab === 'templates' ? 'opacity-100 translate-y-0' : 'hidden'
+                      activeTab === 'templates'
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 pointer-events-none absolute'
                     }`}
                   >
                     {activeTab === 'templates' && (
@@ -301,7 +308,9 @@ export default function SettingsPage() {
 
                   <div
                     className={`transition-all duration-300 w-full ${
-                      activeTab === 'activities' ? 'opacity-100 translate-y-0' : 'hidden'
+                      activeTab === 'activities'
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 pointer-events-none absolute'
                     }`}
                   >
                     {activeTab === 'activities' && (
@@ -384,7 +393,9 @@ export default function SettingsPage() {
 
                   <div
                     className={`transition-all duration-300 w-full ${
-                      activeTab === 'guarantees' ? 'opacity-100 translate-y-0' : 'hidden'
+                      activeTab === 'guarantees'
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 pointer-events-none absolute'
                     }`}
                   >
                     {activeTab === 'guarantees' && (
@@ -405,7 +416,9 @@ export default function SettingsPage() {
 
                   <div
                     className={`transition-all duration-300 w-full ${
-                      activeTab === 'testimonials' ? 'opacity-100 translate-y-0' : 'hidden'
+                      activeTab === 'testimonials'
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 pointer-events-none absolute'
                     }`}
                   >
                     {activeTab === 'testimonials' && (
@@ -419,9 +432,9 @@ export default function SettingsPage() {
                                   <ChatBubbleLeftRightIcon className="relative z-10 h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                  <h2 className="text-2xl md:text-3xl font-bold text-fg mb-1">
+                                  <H2 className="mb-1" fluid>
                                     {t('settings.testimonials.title')}
-                                  </h2>
+                                  </H2>
                                   <p className="text-sm md:text-base text-fg-muted">
                                     {t('settings.testimonials.subtitle')}
                                   </p>
@@ -472,7 +485,9 @@ export default function SettingsPage() {
 
                   <div
                     className={`transition-all duration-300 w-full ${
-                      activeTab === 'team' ? 'opacity-100 translate-y-0' : 'hidden'
+                      activeTab === 'team'
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 pointer-events-none absolute'
                     }`}
                   >
                     {activeTab === 'team' && (

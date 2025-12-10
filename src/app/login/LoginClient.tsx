@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { clientLogger } from '@/lib/clientLogger';
 import { sanitizeInput } from '@/lib/sanitize';
 import { isValidEmailFormat, validateAndNormalizeEmail } from '@/lib/validation/email';
+import { H1, H2 } from '@/components/ui/Heading';
 import {
   Zap,
   Users,
@@ -357,11 +358,11 @@ export default function LoginClient() {
                 </div>
 
                 {/* Neutral, inclusive heading */}
-                <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4">
+                <H1 className="mb-4" fluid>
                   {fromSource === 'cta' || fromSource === 'pricing'
                     ? 'Indítsd a 14 napos ingyenes próbát'
                     : 'Lépj be egy kattintással'}
-                </h1>
+                </H1>
 
                 {/* Dual-purpose subtitle */}
                 <p className="text-lg text-fg-muted max-w-md mx-auto">
@@ -645,9 +646,7 @@ export default function LoginClient() {
               <div className="space-y-8">
                 {/* What you get after signup */}
                 <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 border-2 border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Mit kapsz azonnal a regisztráció után?
-                  </h2>
+                  <H2 className="mb-4">Mit kapsz azonnal a regisztráció után?</H2>
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
