@@ -739,6 +739,12 @@ export const hu = {
         },
       },
     },
+    security: {
+      heading: 'Biztonsági beállítások',
+    },
+    profile: {
+      heading: 'Profil beállítások',
+    },
     company: {
       title: 'Cégadatok',
       subtitle: 'Töltsd ki a számlázási és kapcsolatfelvételi adatokat.',
@@ -805,6 +811,7 @@ export const hu = {
       title: 'Ajánlat sablonok',
       subtitle:
         'Válaszd ki, milyen stílusban készüljön el a PDF ajánlat. A sablonok automatikusan a megadott márkaszíneket használják.',
+      heading: 'Ajánlat sablonok',
       activeBadge: 'Aktív',
       proBadge: 'Pro',
       proOnly: 'Pro előfizetéssel érhető el.',
@@ -815,6 +822,7 @@ export const hu = {
       title: 'Tevékenységek',
       subtitle:
         'Adj meg előre gyakori tételeket mértékegységgel, díjjal és kapcsolódó iparágakkal.',
+      heading: 'Tevékenységek',
       toggle: {
         collapse: 'Kártya elrejtése',
         expand: 'Kártya megnyitása',
@@ -868,6 +876,7 @@ export const hu = {
     guarantees: {
       title: 'Garanciák',
       subtitle: 'Mentsd el a gyakran használt garanciákat, és kösd össze őket a tevékenységeiddel.',
+      heading: 'Garanciák',
       toggle: {
         collapse: 'Kártya elrejtése',
         expand: 'Kártya megnyitása',
@@ -917,6 +926,7 @@ export const hu = {
     testimonials: {
       title: 'Vásárlói visszajelzések',
       subtitle: 'Kezeld az ügyfelek visszajelzéseit és véleményeit.',
+      heading: 'Vásárlói visszajelzések',
       addNew: 'Új visszajelzés hozzáadása',
       textLabel: 'Visszajelzés szövege',
       textPlaceholder: 'Írd ide az ügyfél visszajelzését...',
@@ -936,6 +946,9 @@ export const hu = {
       addFailed: 'Nem sikerült hozzáadni a visszajelzést',
       deleteSuccess: 'Visszajelzés sikeresen törölve',
       deleteFailed: 'Nem sikerült törölni a visszajelzést',
+    },
+    team: {
+      heading: 'Csapat beállítások',
     },
     validation: {
       phone: 'Magyar formátumú telefonszámot adj meg (pl. +36301234567).',
