@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
   useForm,
   FormProvider,
+  useFormContext,
   type UseFormReturn,
   type FieldValues,
   type DefaultValues,
@@ -54,8 +55,8 @@ export function Form<T extends FieldValues>({
   className = '',
 }: FormProps<T>) {
   const methods = useForm<T>({
-    resolver: schema ? zodResolver(schema) : undefined,
-    defaultValues,
+    ...(schema && { resolver: zodResolver(schema) }),
+    ...(defaultValues && { defaultValues }),
   });
 
   const handleSubmit = methods.handleSubmit(async (data) => {
