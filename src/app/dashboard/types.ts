@@ -28,6 +28,10 @@ export type Offer = {
 
 export type OfferFilter = 'my' | 'team' | 'all' | 'member';
 
+export type StatusFilterOption = 'all' | 'draft' | 'sent' | 'accepted' | 'lost';
+export type SortByOption = 'created' | 'status' | 'title' | 'recipient';
+export type SortDirectionOption = 'desc' | 'asc';
+
 export const STATUS_LABEL_KEYS: Record<OfferStatus, CopyKey> = {
   draft: 'dashboard.status.labels.draft',
   sent: 'dashboard.status.labels.sent',
