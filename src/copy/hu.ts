@@ -948,6 +948,7 @@ export const hu = {
       deleteFailed: 'Nem sikerült törölni a visszajelzést',
     },
     team: {
+      title: 'Csapat beállítások',
       heading: 'Csapat beállítások',
     },
     validation: {
