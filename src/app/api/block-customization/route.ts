@@ -59,7 +59,8 @@ export const POST = withAuth(
   withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
     const supabase = await supabaseServer();
     const body = await request.json();
-    const { offerId, blockSettings }: { offerId?: string; blockSettings: OfferBlockSettings } = body;
+    const { offerId, blockSettings }: { offerId?: string; blockSettings: OfferBlockSettings } =
+      body;
 
     if (!blockSettings) {
       return NextResponse.json({ error: 'blockSettings is required' }, { status: 400 });
