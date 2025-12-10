@@ -27,7 +27,11 @@ export function AnimatedSuccess({
       exit={reducedMotion ? {} : { opacity: 0, scale: 0.8 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={`inline-flex items-center gap-2 rounded-lg bg-success/10 border border-success/30 px-3 py-2 text-sm text-success ${className}`}
-      onAnimationComplete={onAnimationComplete}
+      {...(onAnimationComplete && {
+        onAnimationComplete: () => {
+          onAnimationComplete();
+        },
+      })}
       role="alert"
       aria-live="polite"
     >
