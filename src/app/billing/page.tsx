@@ -63,7 +63,7 @@ type CardBrand = {
 const CARD_BRANDS: CardBrand[] = [
   {
     name: 'Visa',
-    render: () => <span className="text-lg font-black tracking-[0.35em] text-navy-900">VISA</span>,
+    render: () => <span className="text-h5 font-bold tracking-[0.35em] text-navy-900">VISA</span>,
   },
   {
     name: 'Mastercard',
@@ -372,7 +372,7 @@ function PlanCard({
         )}
 
         {/* Plan Name */}
-        <h3 className="text-2xl font-bold tracking-tight text-fg">{data.name}</h3>
+        <h3 className="text-h3 font-bold tracking-tight text-fg">{data.name}</h3>
 
         {/* Description */}
         <p className="mt-3 text-body-small leading-typography-relaxed text-fg-muted">
@@ -413,7 +413,7 @@ function PlanCard({
         {/* Price */}
         <div className="mt-6">
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-bold text-fg">{data.price}</span>
+            <span className="text-h1 font-bold text-fg">{data.price}</span>
             <span className="text-body-small font-medium text-fg-muted">
               {billingInterval === 'annual' ? 'Ft/év' : 'Ft/hó'}
             </span>
@@ -695,7 +695,7 @@ function BillingPageContent() {
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <h2 className="text-h2 font-bold text-gray-900 mb-2">
                   {t('billing.currentPlan.title')}
                 </h2>
                 <p className="text-gray-600">{t('billing.currentPlan.subtitle')}</p>
@@ -728,7 +728,7 @@ function BillingPageContent() {
                       Havi használat
                     </div>
                   </div>
-                  <div className="text-5xl font-bold mb-2">{offersThisMonth}</div>
+                  <div className="text-display font-bold mb-2">{offersThisMonth}</div>
                   <div className="text-body-small opacity-90 mb-4">
                     ajánlat készítve ebben a hónapban
                   </div>
@@ -792,7 +792,7 @@ function BillingPageContent() {
                         : t('billing.currentPlan.remaining.title')}
                     </div>
                   </div>
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-h1 font-bold text-gray-900 mb-2">
                     {planLimit === null ? 'Korlátlan' : remainingQuotaLabel}
                   </div>
                   <div className="text-body-small text-gray-600 mb-4">
@@ -819,7 +819,7 @@ function BillingPageContent() {
                       Következő fizetés
                     </div>
                   </div>
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-h1 font-bold text-gray-900 mb-2">
                     {resetDate.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}
                   </div>
                   <div className="text-body-small text-gray-600 mb-4">{resetLabel}</div>
@@ -847,7 +847,7 @@ function BillingPageContent() {
                       Havi díjszabás
                     </div>
                   </div>
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-h1 font-bold text-gray-900 mb-2">
                     {plan === 'pro'
                       ? formatPrice(MONTHLY_PRICES.pro)
                       : plan === 'standard'
@@ -899,7 +899,7 @@ function BillingPageContent() {
                           });
                         }
                       }}
-                      className="text-sm text-teal-600 font-semibold hover:underline flex items-center gap-1"
+                      className="text-body-small text-teal-600 font-semibold hover:underline flex items-center gap-1"
                     >
                       Éves fizetésre váltás
                       <ArrowRight className="w-4 h-4" />
@@ -914,7 +914,7 @@ function BillingPageContent() {
           {plan === 'pro' ? (
             <div className="mb-12">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">A Vyndi Pro előnyei</h3>
+                <h3 className="text-h3 font-bold text-gray-900 mb-3">A Vyndi Pro előnyei</h3>
                 <p className="text-gray-600">Nézd meg, mit kapsz a Pro csomagban</p>
               </div>
 
@@ -924,11 +924,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
                     <Infinity className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Korlátlan ajánlatok</h4>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Korlátlan ajánlatok</h4>
+                  <p className="text-body-small text-gray-700 mb-4">
                     Készíts annyi ajánlatot, amennyit csak szeretnél. Nincs havi limit.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-teal-700">
+                  <div className="flex items-center gap-2 text-body-small text-teal-700">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -939,11 +939,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
                     <Sparkles className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">AI szövegírás</h4>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-gray-900 mb-2">AI szövegírás</h4>
+                  <p className="text-body-small text-gray-700 mb-4">
                     Generálj professzionális ajánlatszövegeket mesterséges intelligenciával.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-purple-700">
+                  <div className="flex items-center gap-2 text-body-small text-purple-700">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -954,11 +954,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center mb-4">
                     <Palette className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Prémium sablonok</h4>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Prémium sablonok</h4>
+                  <p className="text-body-small text-gray-700 mb-4">
                     Hozzáférés 15+ exkluzív, professzionális ajánlat sablonhoz.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-orange-700">
+                  <div className="flex items-center gap-2 text-body-small text-orange-700">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -969,11 +969,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
                     <Headphones className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Prioritásos support</h4>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Prioritásos support</h4>
+                  <p className="text-body-small text-gray-700 mb-4">
                     1 órán belüli válaszidő minden kérdésedre és problémádra.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-green-700">
+                  <div className="flex items-center gap-2 text-body-small text-green-700">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -984,11 +984,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mb-4">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">PDF export márkázással</h4>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-gray-900 mb-2">PDF export márkázással</h4>
+                  <p className="text-body-small text-gray-700 mb-4">
                     Töltsd le ajánlataidat professzionális PDF formátumban, saját logóval.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-blue-700">
+                  <div className="flex items-center gap-2 text-body-small text-blue-700">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -999,11 +999,11 @@ function BillingPageContent() {
                   <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center mb-4">
                     <Target className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Haladó elemzések</h4>
-                  <p className="text-sm text-gray-700 mb-4">
+                  <h4 className="text-h5 font-bold text-gray-900 mb-2">Haladó elemzések</h4>
+                  <p className="text-body-small text-gray-700 mb-4">
                     Részletes statisztikák az ajánlataidról és az ügyfél interakciókról.
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-indigo-700">
+                  <div className="flex items-center gap-2 text-body-small text-indigo-700">
                     <Check className="w-4 h-4" />
                     <span className="font-semibold">Aktív előnyöd</span>
                   </div>
@@ -1015,13 +1015,15 @@ function BillingPageContent() {
               as="section"
               header={
                 <CardHeader>
-                  <h2 className="text-xl font-bold text-fg">{t('billing.comparison.title')}</h2>
-                  <p className="mt-1 text-sm text-fg-muted">{t('billing.comparison.subtitle')}</p>
+                  <h2 className="text-h4 font-bold text-fg">{t('billing.comparison.title')}</h2>
+                  <p className="mt-1 text-body-small text-fg-muted leading-typography-normal">
+                    {t('billing.comparison.subtitle')}
+                  </p>
                 </CardHeader>
               }
             >
               <div className="overflow-x-auto -mx-6 px-6">
-                <table className="w-full text-sm">
+                <table className="w-full text-body-small">
                   <thead>
                     <tr className="border-b-2 border-border">
                       <th className="pb-4 text-left font-semibold text-fg">
@@ -1092,8 +1094,8 @@ function BillingPageContent() {
           {/* Plan Selection Cards */}
           <section>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-fg">Válassz csomagot</h2>
-              <p className="mt-1 text-sm text-fg-muted">
+              <h2 className="text-h4 font-bold text-fg">Válassz csomagot</h2>
+              <p className="mt-1 text-body-small text-fg-muted leading-typography-normal">
                 Válaszd ki a számodra megfelelő előfizetést
               </p>
 
@@ -1103,7 +1105,7 @@ function BillingPageContent() {
                   <button
                     type="button"
                     onClick={() => setBillingInterval('monthly')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                    className={`px-4 py-2 text-body-small font-semibold rounded-lg transition-all ${
                       billingInterval === 'monthly'
                         ? 'bg-primary text-white shadow-md'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1162,7 +1164,7 @@ function BillingPageContent() {
           {/* Subscription Management Section */}
           {(plan === 'pro' || plan === 'standard') && (
             <div className="mb-12">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Előfizetés kezelése</h3>
+              <h3 className="text-h3 font-bold text-gray-900 mb-6">Előfizetés kezelése</h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Payment method card */}
@@ -1170,7 +1172,7 @@ function BillingPageContent() {
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <CreditCard className="w-6 h-6 text-gray-900" />
-                      <h4 className="text-lg font-bold text-gray-900">Fizetési mód</h4>
+                      <h4 className="text-h5 font-bold text-gray-900">Fizetési mód</h4>
                     </div>
 
                     <div className="flex items-center gap-4 mb-4">
@@ -1179,7 +1181,7 @@ function BillingPageContent() {
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">Nincs mentett kártya</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-body-small text-gray-600 leading-typography-normal">
                           A fizetés a Stripe-en keresztül történik
                         </div>
                       </div>
@@ -1206,7 +1208,7 @@ function BillingPageContent() {
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                       <Calendar className="w-6 h-6 text-gray-900" />
-                      <h4 className="text-lg font-bold text-gray-900">Számlázási gyakoriság</h4>
+                      <h4 className="text-h5 font-bold text-gray-900">Számlázási gyakoriság</h4>
                     </div>
 
                     <div className="flex items-center justify-between mb-4">
@@ -1297,7 +1299,7 @@ function BillingPageContent() {
             header={
               <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-fg">{t('billing.invoices.title')}</h2>
+                  <h2 className="text-h5 font-semibold text-fg">{t('billing.invoices.title')}</h2>
                   <p className="text-xs text-fg-muted">{t('billing.invoices.subtitle')}</p>
                 </div>
               </CardHeader>
@@ -1310,7 +1312,7 @@ function BillingPageContent() {
               </div>
 
               {/* Message */}
-              <h4 className="text-xl font-bold text-gray-900 mb-3 text-center">
+              <h4 className="text-h4 font-bold text-gray-900 mb-3 text-center">
                 {t('billing.invoices.emptyState.title')}
               </h4>
               <p className="text-gray-600 mb-8 max-w-md mx-auto text-center">
@@ -1376,7 +1378,7 @@ function BillingPageContent() {
             className="bg-gradient-to-br from-slate-50 to-white"
             header={
               <CardHeader>
-                <h2 className="text-lg font-semibold text-fg">
+                <h2 className="text-h5 font-semibold text-fg">
                   {t('billing.stripeSecurity.title')}
                 </h2>
               </CardHeader>
@@ -1409,7 +1411,7 @@ function BillingPageContent() {
           {(plan === 'pro' || plan === 'standard') && (
             <div className="mb-12">
               <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Előfizetés módosítása</h3>
+                <h3 className="text-h4 font-bold text-gray-900 mb-6">Előfizetés módosítása</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Downgrade to Standard */}
@@ -1569,7 +1571,7 @@ function PublicBillingLanding() {
               professzionális ajánlatokat
             </H1>
 
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed text-pretty">
+            <p className="text-h6 text-gray-300 mb-8 max-w-3xl mx-auto leading-typography-relaxed text-pretty">
               Már több mint 200 vállalkozás használja a Vyndit márkahű ajánlatok készítésére.
               Indítsd el ingyen — nincs bankkártya, nincs kockázat.
             </p>
@@ -1577,17 +1579,17 @@ function PublicBillingLanding() {
             {/* Social proof numbers */}
             <div className="flex items-center justify-center gap-8 mb-8 text-white flex-wrap">
               <div>
-                <div className="text-3xl font-bold text-teal-400">10K+</div>
+                <div className="text-h2 font-bold text-teal-400">10K+</div>
                 <div className="text-gray-300 text-sm">Ajánlat készült</div>
               </div>
               <div className="w-px h-12 bg-gray-600"></div>
               <div>
-                <div className="text-3xl font-bold text-teal-400">150K+</div>
+                <div className="text-h2 font-bold text-teal-400">150K+</div>
                 <div className="text-gray-300 text-sm">Sor generált tartalom</div>
               </div>
               <div className="w-px h-12 bg-gray-600"></div>
               <div>
-                <div className="text-3xl font-bold text-teal-400">4.9★</div>
+                <div className="text-h2 font-bold text-teal-400">4.9★</div>
                 <div className="text-gray-300 text-sm">Átlagos értékelés</div>
               </div>
             </div>
@@ -1598,7 +1600,7 @@ function PublicBillingLanding() {
                 href="/login?redirect=/new"
                 className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
               >
-                <span className="relative z-10 text-base md:text-lg text-white">
+                <span className="relative z-10 text-body md:text-h5 text-white">
                   Kezdd el ingyen
                 </span>
                 <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
@@ -1643,10 +1645,10 @@ function PublicBillingLanding() {
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+              <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Válassz csomagot
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto text-pretty">
+              <p className="text-h6 text-gray-600 max-w-2xl mx-auto text-pretty leading-typography-relaxed">
                 Minden csomag 30 napos pénzvisszafizetési garanciával
               </p>
             </div>
@@ -1654,14 +1656,14 @@ function PublicBillingLanding() {
               {/* Free Plan */}
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Ingyenes</h3>
+                  <h3 className="text-h3 font-bold text-gray-900 mb-2">Ingyenes</h3>
                   <p className="text-gray-600 text-sm mb-6">
                     Kezdd el kockázat nélkül — ideális az első ajánlatokhoz
                   </p>
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-bold text-gray-900">0 Ft</span>
+                      <span className="text-display font-bold text-gray-900">0 Ft</span>
                     </div>
                     <p className="text-gray-600 text-sm mt-2">Örökre ingyenes</p>
                   </div>
@@ -1705,7 +1707,7 @@ function PublicBillingLanding() {
               {/* Standard Plan */}
               <div className="bg-white rounded-2xl border-2 border-gray-200 p-8 hover:border-gray-300 transition-all h-full flex flex-col">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Vyndi Standard</h3>
+                  <h3 className="text-h3 font-bold text-gray-900 mb-2">Vyndi Standard</h3>
                   <p className="text-gray-600 text-sm mb-6">
                     A legjobb választás kisvállalkozásoknak, akik rendszeresen készítenek
                     ajánlatokat
@@ -1713,10 +1715,10 @@ function PublicBillingLanding() {
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-bold text-gray-900">
+                      <span className="text-display font-bold text-gray-900">
                         {standardMonthly.toLocaleString('hu-HU')}
                       </span>
-                      <span className="text-gray-600 text-lg">Ft/hó</span>
+                      <span className="text-gray-600 text-h5">Ft/hó</span>
                     </div>
                     <p className="text-gray-600 text-sm mt-2">Havi számlázás</p>
                   </div>
@@ -1768,23 +1770,23 @@ function PublicBillingLanding() {
                 </div>
 
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-2">Vyndi Pro</h3>
+                  <h3 className="text-h3 font-bold text-white mb-2">Vyndi Pro</h3>
                   <p className="text-teal-100 text-sm mb-6">
                     Haladó funkciók csapatoknak és ügynökségeknek
                   </p>
 
                   <div className="mb-2">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-bold text-white">
+                      <span className="text-display font-bold text-white">
                         {proMonthly.toLocaleString('hu-HU')}
                       </span>
-                      <span className="text-teal-100 text-lg">Ft/hó</span>
+                      <span className="text-teal-100 text-h5">Ft/hó</span>
                     </div>
                   </div>
 
                   <Link
                     href="/login?redirect=/billing"
-                    className="w-full bg-white text-teal-600 py-4 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all text-center min-h-[44px] flex items-center justify-center"
+                    className="w-full bg-white text-teal-600 py-4 rounded-xl font-bold text-h5 hover:shadow-2xl hover:scale-105 transition-all text-center min-h-[44px] flex items-center justify-center"
                   >
                     Pro előfizetés indítása
                   </Link>
@@ -1849,10 +1851,10 @@ function PublicBillingLanding() {
                   <Building2 className="w-4 h-4" />
                   Vállalatoknak
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-balance">
+                <h2 className="text-h1 md:text-display font-bold mb-6 leading-typography-tight text-balance">
                   Nagyobb csapatban dolgoztok? Egyedi igényeitek vannak?
                 </h2>
-                <p className="text-xl text-gray-300 mb-8 leading-relaxed text-pretty">
+                <p className="text-h6 text-gray-300 mb-8 leading-typography-relaxed text-pretty">
                   Kérj személyre szabott ajánlatot a Vyndi Business csomagra.
                 </p>
                 <ul className="space-y-4 mb-10">
@@ -1868,14 +1870,14 @@ function PublicBillingLanding() {
                         className="mt-0.5 h-6 w-6 flex-shrink-0 text-turquoise-400"
                         strokeWidth={3}
                       />
-                      <span className="text-lg text-gray-200 text-pretty">{feature}</span>
+                      <span className="text-h5 text-gray-200 text-pretty">{feature}</span>
                     </li>
                   ))}
                 </ul>
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="mailto:info@vyndi.com?subject=Enterprise megoldás érdeklődés"
-                    className="inline-flex items-center justify-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
+                    className="inline-flex items-center justify-center gap-2 bg-turquoise-600 hover:bg-turquoise-700 text-white font-bold px-8 py-4 rounded-xl text-h5 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 min-h-[44px]"
                   >
                     Lépj kapcsolatba velünk
                     <ArrowRight className="w-5 h-5" />
@@ -1925,7 +1927,7 @@ function PublicBillingLanding() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+              <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Hasonlítsd össze a Vyndi csomagokat
               </h2>
               <p className="text-xl text-gray-600 text-pretty">
@@ -1939,7 +1941,7 @@ function PublicBillingLanding() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-navy-900 to-navy-800 text-white">
-                      <th className="px-8 py-5 text-left font-bold text-lg">Funkció</th>
+                      <th className="px-8 py-5 text-left font-bold text-h5">Funkció</th>
                       <th className="px-8 py-5 text-center font-bold">Ingyenes</th>
                       <th className="px-8 py-5 text-center font-bold bg-turquoise-600/30">
                         Standard
@@ -2108,7 +2110,7 @@ function PublicBillingLanding() {
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+              <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Mit mondanak a Vyndiről a felhasználóink?
               </h2>
               <p className="text-xl text-gray-600 text-pretty">
@@ -2129,7 +2131,7 @@ function PublicBillingLanding() {
 
                 {/* Specific metric callout */}
                 <div className="bg-white rounded-xl p-4 mb-4 border border-teal-200 text-center">
-                  <div className="text-3xl font-bold text-teal-600 mb-1">+75%</div>
+                  <div className="text-h2 font-bold text-teal-600 mb-1">+75%</div>
                   <div className="text-sm text-gray-600">több elfogadott ajánlat</div>
                 </div>
 
@@ -2171,7 +2173,7 @@ function PublicBillingLanding() {
                 </div>
 
                 <div className="bg-white rounded-xl p-4 mb-4 border border-purple-200 text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-1">15 óra</div>
+                  <div className="text-h2 font-bold text-purple-600 mb-1">15 óra</div>
                   <div className="text-sm text-gray-600">megtakarítás hetente</div>
                 </div>
 
@@ -2212,7 +2214,7 @@ function PublicBillingLanding() {
                 </div>
 
                 <div className="bg-white rounded-xl p-4 mb-4 border border-orange-200 text-center">
-                  <div className="text-3xl font-bold text-orange-600 mb-1">5M Ft</div>
+                  <div className="text-h2 font-bold text-orange-600 mb-1">5M Ft</div>
                   <div className="text-sm text-gray-600">új bevétel ajánlatokból</div>
                 </div>
 
@@ -2253,7 +2255,7 @@ function PublicBillingLanding() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-navy-900 mb-4 text-balance">
+              <h2 className="text-h1 md:text-display font-bold text-navy-900 mb-4 text-balance">
                 Gyakori kérdések az árazásról és a csomagokról
               </h2>
             </div>
@@ -2270,7 +2272,7 @@ function PublicBillingLanding() {
                     <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
                       <Shield className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-bold text-gray-900 text-left text-lg">
+                    <span className="font-bold text-gray-900 text-left text-h5">
                       Van pénz-visszafizetési garancia?
                     </span>
                   </div>
@@ -2328,7 +2330,7 @@ function PublicBillingLanding() {
             {/* Still have questions CTA */}
             <div className="mt-12 text-center bg-gray-50 rounded-2xl p-8">
               <MessageCircle className="w-12 h-12 text-teal-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Még maradt kérdésed?</h3>
+              <h3 className="text-h4 font-bold text-gray-900 mb-2">Még maradt kérdésed?</h3>
               <p className="text-gray-600 mb-6">
                 Írj nekünk bátran — segítünk kiválasztani a vállalkozásodhoz legjobban illő
                 csomagot.
@@ -2378,7 +2380,7 @@ function PublicBillingLanding() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-bold text-navy-900 text-lg mb-2 group-hover:text-turquoise-600 transition-colors">
+                  <h3 className="font-bold text-navy-900 text-h5 mb-2 group-hover:text-turquoise-600 transition-colors">
                     {benefit.title}
                   </h3>
 

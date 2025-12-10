@@ -828,12 +828,12 @@ export default function DashboardPage() {
             if (exists) return prev;
 
             // Safe recipient handling
-            let recipientValue = null;
+            let recipientValue: Offer['recipient'] = null;
             if (inserted.recipient !== undefined) {
               if (Array.isArray(inserted.recipient)) {
                 recipientValue = inserted.recipient[0] ?? null;
               } else if (inserted.recipient && typeof inserted.recipient === 'object') {
-                recipientValue = inserted.recipient as typeof recipientValue;
+                recipientValue = inserted.recipient as Offer['recipient'];
               }
             }
 

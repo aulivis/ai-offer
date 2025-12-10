@@ -57,7 +57,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
   if (tone === 'error') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-danger">
+      <span className="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-body-small font-semibold uppercase tracking-wide text-danger">
         {t('stepIndicator.statuses.missing')}
       </span>
     );
@@ -65,7 +65,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
   if (step.status === 'completed') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-success">
+      <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-body-small font-semibold uppercase tracking-wide text-success">
         {t('stepIndicator.statuses.completed')}
       </span>
     );
@@ -73,7 +73,7 @@ function renderBadge(step: StepIndicatorStep): ReactNode {
 
   if (step.status === 'current') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-bg-muted px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
+      <span className="inline-flex items-center gap-1 rounded-full bg-bg-muted px-2 py-0.5 text-body-small font-semibold uppercase tracking-wide text-fg-muted">
         {t('stepIndicator.statuses.current')}
       </span>
     );
@@ -102,11 +102,11 @@ export default function StepIndicator({ steps }: Props) {
       <div className="bg-gradient-to-br from-primary/10 via-turquoise-50 to-primary/5 rounded-2xl p-6 border-2 border-primary/20 shadow-lg">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary text-white px-4 py-2 text-sm font-bold shadow-md">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary text-white px-4 py-2 text-body-small font-bold shadow-md">
               {t('offers.wizard.progressLabel', { current: currentStepNumber, total })}
             </span>
             {currentLabel ? (
-              <span className="text-lg font-bold text-fg normal-case" aria-current="step">
+              <span className="text-h5 font-bold text-fg normal-case" aria-current="step">
                 {currentLabel}
               </span>
             ) : null}
@@ -127,7 +127,7 @@ export default function StepIndicator({ steps }: Props) {
               />
             </div>
             <span
-              className="text-lg font-bold text-primary min-w-[3rem] text-right"
+              className="text-h5 font-bold text-primary min-w-[3rem] text-right"
               aria-hidden="true"
             >
               {Math.round(progress)}%
@@ -155,7 +155,7 @@ export default function StepIndicator({ steps }: Props) {
           );
 
           const labelClasses = classNames(
-            'text-sm font-medium transition-colors',
+            'text-body-small font-medium transition-colors',
             tone === 'error'
               ? 'text-danger'
               : isCurrent

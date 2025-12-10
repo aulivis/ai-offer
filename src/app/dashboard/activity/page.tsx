@@ -244,9 +244,11 @@ function ActivityLogPageContent() {
         {/* Header with actions */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-fg">Összes értesítés</h2>
+            <h2 className="text-h4 font-bold text-fg">Összes értesítés</h2>
             {unreadCount > 0 && (
-              <p className="text-sm text-fg-muted mt-1">{unreadCount} olvasatlan értesítés</p>
+              <p className="text-body-small text-fg-muted mt-1 leading-typography-normal">
+                {unreadCount} olvasatlan értesítés
+              </p>
             )}
           </div>
           {unreadCount > 0 && (
@@ -271,7 +273,7 @@ function ActivityLogPageContent() {
           <div className="space-y-6">
             {Object.entries(groupedNotifications).map(([groupKey, groupNotifications]) => (
               <div key={groupKey}>
-                <h3 className="text-sm font-semibold text-fg-muted mb-3 uppercase tracking-wider">
+                <h3 className="text-body-small font-semibold text-fg-muted mb-3 uppercase tracking-wider">
                   {groupKey}
                 </h3>
                 <div className="space-y-2">
@@ -292,9 +294,13 @@ function ActivityLogPageContent() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-fg">{notification.title}</p>
-                              <p className="text-sm text-fg-muted mt-1">{notification.message}</p>
-                              <p className="text-xs text-fg-muted mt-2">
+                              <p className="text-body-small font-semibold text-fg">
+                                {notification.title}
+                              </p>
+                              <p className="text-body-small text-fg-muted mt-1 leading-typography-normal">
+                                {notification.message}
+                              </p>
+                              <p className="text-caption text-fg-muted mt-2 leading-typography-normal">
                                 {formatTimeAgo(notification.createdAt)}
                               </p>
                             </div>
@@ -302,7 +308,7 @@ function ActivityLogPageContent() {
                               <button
                                 type="button"
                                 onClick={() => markAsRead(notification.id)}
-                                className="flex-shrink-0 text-xs text-primary hover:text-primary/80"
+                                className="flex-shrink-0 text-caption text-primary hover:text-primary/80"
                               >
                                 Olvasottként
                               </button>

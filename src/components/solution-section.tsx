@@ -66,7 +66,7 @@ export function SolutionSection() {
               transform: 'translateX(-50%)',
             }}
           >
-            <div className="bg-yellow-400 text-navy-900 font-extrabold text-sm px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
+            <div className="bg-yellow-400 text-navy-900 font-bold text-body-small px-6 py-2.5 rounded-full shadow-2xl border-4 border-white whitespace-nowrap">
               Ajánlott
             </div>
           </div>

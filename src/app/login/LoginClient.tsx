@@ -8,6 +8,8 @@ import { clientLogger } from '@/lib/clientLogger';
 import { sanitizeInput } from '@/lib/sanitize';
 import { isValidEmailFormat, validateAndNormalizeEmail } from '@/lib/validation/email';
 import { H1, H2 } from '@/components/ui/Heading';
+import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
 import {
   Zap,
   Users,
@@ -346,7 +348,7 @@ export default function LoginClient() {
             </div>
 
             {/* Form card with prominent styling */}
-            <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-100 p-6 md:p-8">
+            <Card size="lg" variant="elevated" className="p-6 md:p-8">
               {/* Adaptive hero section */}
               <div className="text-center mb-8">
                 {/* Universal badge */}
@@ -469,54 +471,33 @@ export default function LoginClient() {
 
               {/* Secondary method - Magic Link */}
               <form onSubmit={sendMagic} className="space-y-4" noValidate>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-fg mb-2">
-                    Email cím
-                  </label>
-                  <div className="relative">
-                    <Mail
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-fg-muted"
-                      aria-hidden="true"
-                    />
-                    <input
-                      id="email"
-                      type="email"
-                      name="email"
-                      value={email}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value.length <= MAX_EMAIL_LENGTH) {
-                          setEmail(value);
-                        }
-                      }}
-                      placeholder="pelda@email.hu"
-                      required
-                      maxLength={MAX_EMAIL_LENGTH}
-                      autoComplete="email"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      spellCheck="false"
-                      aria-label="Email cím"
-                      aria-required="true"
-                      aria-invalid={emailError ? 'true' : 'false'}
-                      aria-describedby={emailError ? 'email-error' : undefined}
-                      className={`w-full pl-12 pr-4 py-4 md:py-4 text-base md:text-lg border-2 rounded-xl focus:ring-4 focus:ring-teal-100 outline-none transition-all text-gray-900 ${
-                        emailError
-                          ? 'border-red-300 focus:border-red-500'
-                          : 'border-gray-200 focus:border-teal-500'
-                      }`}
-                    />
-                  </div>
-                  {emailError && (
-                    <p
-                      id="email-error"
-                      role="alert"
-                      aria-live="polite"
-                      className="mt-2 text-sm text-red-600"
-                    >
-                      {emailError}
-                    </p>
-                  )}
+                <div className="relative">
+                  <Mail
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-fg-muted pointer-events-none z-10"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    id="email"
+                    type="email"
+                    name="email"
+                    label="Email cím"
+                    value={email}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= MAX_EMAIL_LENGTH) {
+                        setEmail(value);
+                      }
+                    }}
+                    placeholder="pelda@email.hu"
+                    required
+                    maxLength={MAX_EMAIL_LENGTH}
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    error={emailError || undefined}
+                    className="pl-12"
+                  />
                 </div>
 
                 {/* Stay logged in checkbox - more prominent */}
@@ -532,9 +513,7 @@ export default function LoginClient() {
                       className="w-5 h-5 text-teal-500 border-2 border-gray-300 rounded focus:ring-2 focus:ring-teal-200 cursor-pointer"
                     />
                   </div>
-                  <span className="text-sm text-gray-700 group-hover:text-gray-900">
-                    Maradok bejelentkezve
-                  </span>
+                  <span className="text-sm text-fg group-hover:text-fg">Maradok bejelentkezve</span>
                 </label>
 
                 {/* Error state */}
@@ -602,7 +581,7 @@ export default function LoginClient() {
                   disabled={!email || isCooldownActive || isMagicLoading || !!emailError}
                   aria-label="Belépés Magic Link-kel"
                   aria-busy={isMagicLoading}
-                  className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-4 md:py-5 px-6 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-primary to-turquoise-600 hover:from-primary/90 hover:to-turquoise-700 text-primary-ink py-4 md:py-5 px-6 rounded-full font-semibold text-ui transition-all shadow-md hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
                   {isMagicLoading ? (
                     <>
@@ -637,7 +616,7 @@ export default function LoginClient() {
                   Felhasználási feltételeket
                 </Link>
               </p>
-            </div>
+            </Card>
           </div>
 
           {/* Right Column - Content */}

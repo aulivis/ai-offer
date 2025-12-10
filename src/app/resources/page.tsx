@@ -27,6 +27,8 @@ import { ResourceCard } from '@/components/resource-card';
 import { ResourceFiltersComponent } from '@/components/resource-filters';
 import { NewsletterSubscription } from '@/components/landing/NewsletterSubscription';
 import { H1, H2, H3 } from '@/components/ui/Heading';
+import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
 
 type SortOption = 'newest' | 'popular' | 'most-helpful';
 
@@ -187,7 +189,7 @@ function ResourcesPageContent() {
       </a>
 
       {/* Enhanced Hero Section */}
-      <section className="py-12 lg:py-16 bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white -mt-14 md:-mt-20">
+      <section className="py-12 lg:py-16 bg-gradient-hero text-white -mt-14 md:-mt-20">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             {/* Enhanced Breadcrumb */}
@@ -227,31 +229,34 @@ function ResourcesPageContent() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="group bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                  className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-primary)] to-turquoise-600 text-[var(--color-primary-ink)] hover:from-[var(--color-primary)]/90 hover:via-[var(--color-primary)]/90 hover:to-turquoise-700 hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 shadow-md w-full md:w-auto"
+                  style={
+                    {
+                      '--color-primary': 'var(--color-turquoise-600)',
+                      '--color-primary-ink': '#ffffff',
+                    } as React.CSSProperties
+                  }
                 >
-                  <span className="relative z-10 text-body md:text-body-large text-white">
-                    Próbáld ki most ingyen
-                  </span>
-                  <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-white transition-transform duration-300 group-hover:translate-x-1" />
-                  <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                  Próbáld ki most ingyen
+                  <ArrowRight className="w-5 h-5" />
                 </Link>
                 <a
                   href="#main-content"
-                  className="border-2 border-white text-white font-semibold rounded-xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-orange-500 hover:text-orange-500 bg-transparent transition-colors flex items-center justify-center"
+                  className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] border-2 border-white text-white hover:border-primary hover:text-primary bg-transparent transition-all w-full md:w-auto"
                 >
                   További információ
                 </a>
               </div>
 
               {/* Enhanced Search Bar */}
-              <div className="relative mb-8 max-w-2xl">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
+              <div className="mb-8 max-w-2xl relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-fg-muted pointer-events-none z-10" />
+                <Input
                   type="text"
                   placeholder="Keress útmutatók, cikkek vagy videók között..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur text-white placeholder:text-white/50 focus:outline-none focus:ring-4 focus:ring-turquoise-100 focus:border-turquoise-500 transition-all text-body min-h-[44px]"
+                  className="pl-12 bg-white/10 backdrop-blur text-white placeholder:text-white/50 border-white/20 focus:border-primary/50"
                   aria-label="Keresés erőforrások között"
                 />
               </div>
@@ -259,7 +264,11 @@ function ResourcesPageContent() {
 
             {/* Prominent Featured Card - Enhanced hierarchy */}
             {featuredResource && (
-              <div className="relative bg-gradient-to-br from-teal-500 via-blue-600 to-purple-600 rounded-3xl p-10 md:p-14 text-white shadow-2xl border-4 border-white/20 overflow-hidden">
+              <Card
+                size="lg"
+                variant="elevated"
+                className="relative bg-gradient-cta text-white border-4 border-white/20 overflow-hidden"
+              >
                 {/* Decorative elements */}
                 <div
                   className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"
@@ -307,7 +316,7 @@ function ResourcesPageContent() {
                     </div>
                     <Link
                       href={featuredResource.href || `/resources/guides/${featuredResource.slug}`}
-                      className="inline-block bg-white text-teal-600 px-10 py-5 rounded-xl font-bold text-body-large hover:shadow-2xl hover:scale-105 transition-all min-h-[56px] border-2 border-white/50"
+                      className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-bg-muted text-primary hover:scale-105 hover:shadow-lg active:scale-95 transition-all border-2 border-white/50"
                     >
                       Letöltöm ingyen
                     </Link>
@@ -330,7 +339,7 @@ function ResourcesPageContent() {
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
             )}
           </div>
         </div>
@@ -339,7 +348,7 @@ function ResourcesPageContent() {
       {/* Enhanced Filter & Search Section */}
       <section
         id="main-content"
-        className="py-8 bg-gray-50 border-b border-gray-200 sticky top-0 z-40 backdrop-blur-lg bg-gray-50/95"
+        className="py-8 bg-bg border-b border-border sticky top-0 z-40 backdrop-blur-lg bg-bg/95"
       >
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -351,13 +360,13 @@ function ResourcesPageContent() {
                   const filterSection = document.getElementById('filter-section');
                   filterSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="w-full flex items-center justify-between bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-turquoise-500 transition-colors"
+                className="w-full flex items-center justify-between bg-bg-muted border-2 border-border rounded-2xl p-4 hover:border-primary transition-colors"
                 aria-label="Szűrők megnyitása"
               >
                 <span className="font-semibold">Szűrők</span>
                 <div className="flex items-center gap-2">
                   {activeFiltersCount > 0 && (
-                    <span className="bg-turquoise-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-body-small font-bold">
+                    <span className="bg-primary text-primary-ink w-6 h-6 rounded-full flex items-center justify-center text-body-small font-bold">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -401,8 +410,8 @@ function ResourcesPageContent() {
                     aria-controls="resources-panel"
                     className={`px-6 py-2.5 rounded-full font-medium shadow-sm transition-all min-h-[44px] ${
                       isActive
-                        ? 'bg-teal-500 text-white shadow-md ring-2 ring-teal-500/30 scale-105'
-                        : 'bg-white text-fg border-2 border-border hover:border-teal-500 hover:bg-bg-muted'
+                        ? 'bg-primary text-primary-ink shadow-md ring-2 ring-primary/30 scale-105'
+                        : 'bg-bg-muted text-fg border-2 border-border hover:border-primary hover:bg-bg'
                     }`}
                   >
                     {type}
@@ -413,12 +422,12 @@ function ResourcesPageContent() {
               {/* Active filter count indicator */}
               {activeFiltersCount > 0 && (
                 <span className="ml-auto flex items-center gap-2 text-body-small text-fg-muted">
-                  <span className="bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-semibold">
+                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full font-semibold">
                     {activeFiltersCount} szűrő aktív
                   </span>
                   <button
                     onClick={clearFilters}
-                    className="text-teal-600 hover:underline font-semibold"
+                    className="text-primary hover:underline font-semibold"
                   >
                     Törlés
                   </button>
@@ -443,7 +452,7 @@ function ResourcesPageContent() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="px-4 py-2 border-2 border-gray-200 rounded-lg text-body-small font-medium focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 min-h-[44px]"
+                  className="px-4 py-2 border-2 border-border rounded-2xl text-body-small font-medium focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[44px]"
                   aria-label="Rendezési opciók"
                 >
                   <option value="newest">Legújabb</option>
@@ -456,10 +465,10 @@ function ResourcesPageContent() {
               <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded transition-colors min-h-[44px] min-w-[44px] ${
+                  className={`p-2 rounded-full transition-colors min-h-[44px] min-w-[44px] ${
                     viewMode === 'grid'
-                      ? 'bg-turquoise-600 text-white'
-                      : 'text-fg-muted hover:bg-gray-100'
+                      ? 'bg-primary text-primary-ink'
+                      : 'text-fg-muted hover:bg-bg-muted'
                   }`}
                   aria-label="Rács nézet"
                   aria-pressed={viewMode === 'grid'}
@@ -547,7 +556,7 @@ function ResourcesPageContent() {
         <section className="py-20 bg-white">
           <div className="container mx-auto px-4 text-center">
             <div className="max-w-md mx-auto">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-24 h-24 bg-bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
               <H3 className="mb-2">Nincs találat</H3>
@@ -556,7 +565,7 @@ function ResourcesPageContent() {
               </p>
               <button
                 onClick={clearFilters}
-                className="text-teal-600 font-semibold hover:underline min-h-[44px]"
+                className="text-primary font-semibold hover:underline min-h-[44px]"
               >
                 Összes szűrő törlése
               </button>
@@ -568,7 +577,7 @@ function ResourcesPageContent() {
       {/* Enhanced Newsletter Section */}
       <section className="relative py-24 overflow-hidden">
         {/* Enhanced gradient background with pattern overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-turquoise-500 via-turquoise-600 to-blue-600">
+        <div className="absolute inset-0 bg-gradient-cta">
           {/* Subtle pattern overlay */}
           <div
             className="absolute inset-0 opacity-10"
@@ -601,7 +610,7 @@ function ResourcesPageContent() {
 
       {/* Bottom CTA */}
       {!isAuthenticated && (
-        <section className="py-20 bg-gradient-to-br from-turquoise-500 to-blue-500 relative overflow-hidden">
+        <section className="py-20 bg-gradient-cta relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
             <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
@@ -620,7 +629,7 @@ function ResourcesPageContent() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                 <Link
                   href="/login?redirect=/new"
-                  className="bg-white hover:bg-gray-50 text-turquoise-600 font-bold px-12 py-5 rounded-xl text-body-large shadow-2xl transition-all transform hover:scale-105 inline-flex items-center gap-3 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-bg-muted text-primary hover:scale-105 hover:shadow-lg active:scale-95 transition-all"
                 >
                   {t('resources.ctaButton')}
                   <ArrowRight className="w-5 h-5" />
@@ -628,7 +637,7 @@ function ResourcesPageContent() {
 
                 <Link
                   href="/billing"
-                  className="bg-transparent hover:bg-white/10 text-white font-bold px-12 py-5 rounded-xl text-body-large border-2 border-white transition-all inline-flex items-center gap-3 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-transparent hover:bg-white/10 text-white border-2 border-white transition-all"
                 >
                   Csomagok megtekintése
                 </Link>

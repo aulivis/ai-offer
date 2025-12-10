@@ -65,13 +65,15 @@ export function DashboardMetricsSection({
       {/* Header with View Toggle */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
-          <p className="text-sm text-fg-muted mt-1">{t('dashboard.metricsView.description')}</p>
+          <h2 className="text-h4 font-bold text-fg">{t('dashboard.metricsView.title')}</h2>
+          <p className="text-body-small text-fg-muted mt-1 leading-typography-normal">
+            {t('dashboard.metricsView.description')}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           {teamIds.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-fg-muted">Personal</span>
+              <span className="text-body-small text-fg-muted">Personal</span>
               <button
                 type="button"
                 onClick={() => {
@@ -90,7 +92,7 @@ export function DashboardMetricsSection({
                   }`}
                 />
               </button>
-              <span className="text-sm text-fg-muted">Team</span>
+              <span className="text-body-small text-fg-muted">Team</span>
             </div>
           )}
           <button
@@ -98,7 +100,7 @@ export function DashboardMetricsSection({
             onClick={() =>
               onMetricsViewModeChange(metricsViewMode === 'compact' ? 'detailed' : 'compact')
             }
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-body-small font-semibold text-fg transition hover:border-fg hover:bg-bg/80"
             title={
               metricsViewMode === 'compact'
                 ? t('dashboard.metricsView.detailedTitle')
@@ -206,13 +208,13 @@ export function DashboardMetricsSection({
                       <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
                         <ChartBarIcon className="w-7 h-7" />
                       </div>
-                      <div className="text-sm font-bold uppercase tracking-wide opacity-95">
+                      <div className="text-body-small font-bold uppercase tracking-wide opacity-95">
                         {t('dashboard.metrics.quota.label')}
                       </div>
                     </div>
-                    <div className="text-5xl font-bold mb-3 tracking-tight">{quotaValue}</div>
+                    <div className="text-display font-bold mb-3 tracking-tight">{quotaValue}</div>
                     {quotaSnapshot && quotaSnapshot.plan === 'pro' && (
-                      <div className="text-sm font-semibold opacity-90 flex items-center gap-2">
+                      <div className="text-body-small font-semibold opacity-90 flex items-center gap-2">
                         <span>{t('dashboard.metrics.quota.proPlanAdvantage')}</span>
                       </div>
                     )}
@@ -224,7 +226,7 @@ export function DashboardMetricsSection({
               <div className="col-span-full sm:col-span-2 lg:col-span-4">
                 <div className="relative">
                   {/* Primary metric badge */}
-                  <div className="absolute -top-2 -left-2 z-10 bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-lg">
+                  <div className="absolute -top-2 -left-2 z-10 bg-primary text-white text-caption font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-lg">
                     Fő Mutató
                   </div>
                   <MetricCard

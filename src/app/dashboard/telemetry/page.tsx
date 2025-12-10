@@ -65,9 +65,11 @@ function MetricCard({
 }) {
   return (
     <Card className="p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-fg">{value}</p>
-      {helper ? <p className="mt-2 text-xs text-fg-muted">{helper}</p> : null}
+      <p className="text-caption font-semibold uppercase tracking-[0.3em] text-fg-muted">{label}</p>
+      <p className="mt-3 text-h3 font-semibold text-fg">{value}</p>
+      {helper ? (
+        <p className="mt-2 text-caption text-fg-muted leading-typography-normal">{helper}</p>
+      ) : null}
     </Card>
   );
 }
@@ -156,7 +158,7 @@ export default function TemplateTelemetryPage() {
       actions={
         <div className="flex flex-wrap items-center gap-3">
           {formattedGeneratedAt ? (
-            <span className="text-xs font-medium uppercase tracking-[0.3em] text-fg-muted">
+            <span className="text-caption font-medium uppercase tracking-[0.3em] text-fg-muted">
               {t('adminTelemetry.lastUpdated', { time: formattedGeneratedAt })}
             </span>
           ) : null}
@@ -192,11 +194,15 @@ export default function TemplateTelemetryPage() {
 
       <Card as="section" aria-busy={isLoading} className="overflow-hidden">
         <div className="border-b border-border bg-bg/70 px-5 py-4">
-          <h2 className="text-sm font-semibold text-fg">{t('adminTelemetry.table.title')}</h2>
-          <p className="mt-1 text-xs text-fg-muted">{t('adminTelemetry.table.description')}</p>
+          <h2 className="text-body-small font-semibold text-fg">
+            {t('adminTelemetry.table.title')}
+          </h2>
+          <p className="mt-1 text-caption text-fg-muted leading-typography-normal">
+            {t('adminTelemetry.table.description')}
+          </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border text-sm">
+          <table className="min-w-full divide-y divide-border text-body-small">
             <thead className="bg-bg-muted/50 text-left uppercase tracking-[0.2em] text-[0.65rem] text-fg-muted">
               <tr>
                 <th scope="col" className="px-5 py-3 font-semibold">
@@ -222,14 +228,14 @@ export default function TemplateTelemetryPage() {
             <tbody className="divide-y divide-border/70">
               {isEmpty ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-6 text-center text-sm text-fg-muted">
+                  <td colSpan={6} className="px-5 py-6 text-center text-body-small text-fg-muted">
                     {t('adminTelemetry.table.empty')}
                   </td>
                 </tr>
               ) : (
                 rows.map((row) => (
                   <tr key={row.templateId}>
-                    <td className="whitespace-nowrap px-5 py-4 font-mono text-xs text-fg">
+                    <td className="whitespace-nowrap px-5 py-4 font-mono text-caption text-fg">
                       {row.templateId}
                     </td>
                     <td className="px-5 py-4 text-fg">

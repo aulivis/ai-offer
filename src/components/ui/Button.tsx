@@ -56,9 +56,9 @@ const variantStyles: Record<NonNullable<Props['variant']>, CSSVarStyle> = {
 };
 
 const sizes = {
-  sm: 'px-4 py-2.5 text-sm min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
-  md: 'px-5 py-3 text-sm min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
-  lg: 'px-7 py-4 text-base min-h-[48px]', // Enhanced for primary CTAs
+  sm: 'px-4 py-2.5 text-ui-small min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
+  md: 'px-5 py-3 text-ui-small min-h-[44px]', // WCAG 2.1 AAA: minimum 44x44px touch target
+  lg: 'px-7 py-4 text-ui min-h-[48px]', // Enhanced for primary CTAs
 };
 
 /**

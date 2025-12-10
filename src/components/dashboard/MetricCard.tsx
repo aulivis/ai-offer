@@ -106,24 +106,24 @@ export function MetricCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-2 sm:gap-3 mb-2.5 sm:mb-3">
             {icon && <div className={`flex-shrink-0 ${iconColors[color]} mt-0.5`}>{icon}</div>}
-            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted leading-tight break-words min-w-0 flex-1">
+            <p className="text-caption sm:text-caption font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted leading-typography-tight break-words min-w-0 flex-1">
               {label}
             </p>
           </div>
           {isEmptyState && emptyMessage ? (
             <div className="mt-2.5 sm:mt-3">
-              <p className="text-base sm:text-lg font-semibold text-fg-muted">{value}</p>
-              <p className="mt-1.5 sm:mt-2 text-[11px] sm:text-xs leading-relaxed text-fg-muted break-words">
+              <p className="text-body sm:text-body-large font-semibold text-fg-muted">{value}</p>
+              <p className="mt-1.5 sm:mt-2 text-body-small leading-typography-relaxed text-fg-muted break-words">
                 {emptyMessage}
               </p>
             </div>
           ) : (
             <>
               <div className="flex items-baseline gap-1.5 sm:gap-2 mt-2 sm:mt-2.5 flex-wrap">
-                <p className="text-2xl sm:text-2xl font-bold text-fg break-words">{value}</p>
+                <p className="text-h3 sm:text-h3 font-bold text-fg break-words">{value}</p>
                 {trend && trendValue && (
                   <span
-                    className={`text-xs sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ${trendColors[trend]}`}
+                    className={`text-body-small sm:text-body font-semibold flex items-center gap-0.5 sm:gap-1 flex-shrink-0 ${trendColors[trend]}`}
                   >
                     {trend === 'up' ? (
                       <svg
@@ -176,7 +176,7 @@ export function MetricCard({
                 )}
               </div>
               {comparison && (
-                <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs flex-wrap">
+                <div className="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 text-caption sm:text-body-small flex-wrap">
                   <span className="text-fg-muted">{comparison.label}:</span>
                   <span
                     className={`font-semibold flex items-center gap-0.5 sm:gap-1 ${
@@ -194,7 +194,7 @@ export function MetricCard({
               )}
               {progressPercentage !== null && progress && (
                 <div className="mt-3 sm:mt-4 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                  <div className="flex items-center justify-between text-caption sm:text-body-small">
                     <span className="text-fg-muted">{progress.label || 'Usage'}</span>
                     <span className="font-semibold text-fg break-words">
                       {progress.used.toLocaleString()} / {progress.limit?.toLocaleString()}
@@ -220,7 +220,7 @@ export function MetricCard({
                 </div>
               )}
               {helper && (
-                <p className="mt-2.5 sm:mt-3 text-[11px] sm:text-xs leading-relaxed text-fg-muted break-words hyphens-auto">
+                <p className="mt-2.5 sm:mt-3 text-body-small leading-typography-relaxed text-fg-muted break-words hyphens-auto">
                   {helper}
                 </p>
               )}
@@ -235,7 +235,7 @@ export function MetricCard({
                 e.stopPropagation();
                 quickAction.onClick();
               }}
-              className="inline-flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border/60 bg-white/90 px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-fg shadow-sm transition-colors hover:bg-primary/10 hover:border-primary/60 hover:text-primary min-h-[44px] sm:min-h-0"
+              className="inline-flex items-center gap-1 sm:gap-1.5 rounded-lg border border-border/60 bg-white/90 px-1.5 sm:px-2.5 py-1 sm:py-1.5 text-caption sm:text-body-small font-semibold text-fg shadow-sm transition-colors hover:bg-primary/10 hover:border-primary/60 hover:text-primary min-h-[44px] sm:min-h-0"
               title={quickAction.label}
               aria-label={quickAction.label}
             >

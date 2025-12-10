@@ -9,6 +9,7 @@ import { NewsletterSubscription } from '@/components/landing/NewsletterSubscript
 import { AnimatedStat } from '@/components/landing/AnimatedStat';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { H1, H2 } from '@/components/ui/Heading';
+import { Card } from '@/components/ui/Card';
 import {
   Sparkles,
   Check,
@@ -124,7 +125,7 @@ export default function Home() {
       />
       <main id="main" className="min-h-screen">
         {/* HERO SECTION - First Impression */}
-        <section className="relative bg-gradient-to-br from-navy-900 via-navy-800 to-turquoise-900 text-white min-h-screen flex flex-col overflow-hidden -mt-14 md:-mt-20">
+        <section className="relative bg-gradient-hero text-white min-h-screen flex flex-col overflow-hidden -mt-14 md:-mt-20">
           {/* Enhanced decorative gradient blobs for visual depth */}
           <div
             className="absolute top-0 right-0 w-96 h-96 bg-turquoise-500 rounded-full blur-3xl opacity-20 motion-safe:animate-pulse"
@@ -198,17 +199,20 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                   <Link
                     href="/login?redirect=/new"
-                    className="group bg-primary hover:bg-primary/90 text-primary-ink font-semibold rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 relative overflow-hidden"
+                    className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-primary)] to-turquoise-600 text-[var(--color-primary-ink)] hover:from-[var(--color-primary)]/90 hover:via-[var(--color-primary)]/90 hover:to-turquoise-700 hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-300 shadow-md w-full md:w-auto"
+                    style={
+                      {
+                        '--color-primary': 'var(--color-turquoise-600)',
+                        '--color-primary-ink': '#ffffff',
+                      } as React.CSSProperties
+                    }
                   >
-                    <span className="relative z-10 text-body md:text-body-large text-primary-ink">
-                      Próbáld ki most ingyen
-                    </span>
-                    <ArrowRight className="w-5 h-5 flex-shrink-0 relative z-10 text-primary-ink transition-transform duration-300 group-hover:translate-x-1" />
-                    <span className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    Próbáld ki most ingyen
+                    <ArrowRight className="w-5 h-5" />
                   </Link>
                   <a
                     href="#product-demo"
-                    className="border-2 border-white/50 text-white font-medium rounded-2xl px-8 py-4 min-h-[56px] w-full md:w-auto hover:border-white/80 hover:bg-white/10 bg-transparent transition-all flex items-center justify-center backdrop-blur-sm"
+                    className="inline-flex items-center justify-center gap-2 rounded-full font-semibold px-7 py-4 text-ui min-h-[48px] border-2 border-white/50 text-white hover:border-white/80 hover:bg-white/10 bg-transparent transition-all backdrop-blur-sm w-full md:w-auto"
                   >
                     További információ
                   </a>
@@ -220,8 +224,10 @@ export default function Home() {
                 {/* Main Dashboard Image with Glow Effect */}
                 <div className="relative z-10">
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/20 blur-3xl" />
-                  <div
-                    className="relative bg-bg-muted rounded-2xl shadow-pop p-8 aspect-video flex items-center justify-center"
+                  <Card
+                    size="lg"
+                    variant="elevated"
+                    className="relative aspect-video flex items-center justify-center"
                     role="img"
                     aria-label="Vyndi dashboard előnézet"
                   >
@@ -229,7 +235,7 @@ export default function Home() {
                       <p className="text-body-large font-semibold">Dashboard Preview</p>
                       <p className="text-body-small mt-2">Placeholder image</p>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
                 {/* Floating Card 1 - Top Left - Speed Indicator */}
@@ -238,7 +244,7 @@ export default function Home() {
                   role="img"
                   aria-label="Ajánlat generálva 5 perc alatt"
                 >
-                  <div className="bg-bg-muted rounded-lg shadow-pop p-4 border border-border backdrop-blur-sm">
+                  <Card size="sm" variant="elevated" className="backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <div className="bg-success/10 p-2 rounded-lg" aria-hidden="true">
                         <Check className="w-5 h-5 text-success" />
@@ -248,7 +254,7 @@ export default function Home() {
                         <p className="text-body-small text-fg-muted">5 perc alatt</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
                 {/* Floating Card 2 - Top Right - Free Start */}
@@ -257,7 +263,7 @@ export default function Home() {
                   role="img"
                   aria-label="Ingyenes kezdés bankkártya nélkül"
                 >
-                  <div className="bg-bg-muted rounded-lg shadow-pop p-4 border border-border backdrop-blur-sm">
+                  <Card size="sm" variant="elevated" className="backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <div className="bg-primary/10 p-2 rounded-lg" aria-hidden="true">
                         <Rocket className="w-5 h-5 text-primary" />
@@ -267,7 +273,7 @@ export default function Home() {
                         <p className="text-body-small text-fg-muted">Bankkártya nélkül</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
                 {/* Floating Card 3 - Bottom Left - Professional Appearance */}
@@ -276,7 +282,7 @@ export default function Home() {
                   role="img"
                   aria-label="Professzionális megjelenés egységes dizájnnál"
                 >
-                  <div className="bg-bg-muted rounded-lg shadow-pop p-4 border border-border backdrop-blur-sm">
+                  <Card size="sm" variant="elevated" className="backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <div className="bg-accent/10 p-2 rounded-lg" aria-hidden="true">
                         <Award className="w-5 h-5 text-accent" />
@@ -288,7 +294,7 @@ export default function Home() {
                         <p className="text-body-small text-fg-muted">Egységes dizájn</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
               </div>
             </div>
@@ -340,7 +346,7 @@ export default function Home() {
         {/* FINAL CTA - Last Conversion Opportunity */}
         <section className="relative py-24 overflow-hidden">
           {/* Enhanced gradient background with pattern overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-turquoise-500 via-turquoise-600 to-blue-600">
+          <div className="absolute inset-0 bg-gradient-cta">
             {/* Subtle pattern overlay */}
             <div
               className="absolute inset-0 opacity-10"

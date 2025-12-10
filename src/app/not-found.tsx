@@ -32,10 +32,10 @@ export default async function NotFound() {
                 <div className="relative">
                   {/* Large 404 number with gradient */}
                   <div className="relative">
-                    <h1 className="text-9xl font-black leading-none text-transparent bg-clip-text bg-gradient-to-br from-primary via-accent to-primary md:text-[12rem]">
+                    <h1 className="text-9xl font-bold leading-none text-transparent bg-clip-text bg-gradient-to-br from-primary via-accent to-primary md:text-[12rem]">
                       404
                     </h1>
-                    <div className="absolute inset-0 text-9xl font-black leading-none text-primary/10 blur-2xl md:text-[12rem]">
+                    <div className="absolute inset-0 text-9xl font-bold leading-none text-primary/10 blur-2xl md:text-[12rem]">
                       404
                     </div>
                   </div>
@@ -63,17 +63,17 @@ export default async function NotFound() {
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="text-3xl font-bold text-slate-900 md:text-4xl lg:text-5xl">
+                  <h2 className="text-h2 font-bold text-slate-900 md:text-h1 lg:text-display">
                     {t('app.notFound.heading')}
                   </h2>
-                  <p className="text-lg leading-relaxed text-slate-600 md:text-xl">
+                  <p className="text-h6 leading-typography-relaxed text-slate-600 md:text-h5">
                     {t('app.notFound.description')}
                   </p>
                 </div>
 
                 {/* Suggestions */}
                 <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-6">
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-700">
+                  <h3 className="mb-4 text-body-small font-semibold uppercase tracking-wider text-slate-700">
                     {t('app.notFound.suggestions.title')}
                   </h3>
                   <ul className="space-y-3 text-left">
@@ -96,7 +96,9 @@ export default async function NotFound() {
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <span className="text-sm text-slate-700">{suggestion}</span>
+                        <span className="text-body-small text-slate-700 leading-typography-normal">
+                          {suggestion}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -106,7 +108,7 @@ export default async function NotFound() {
                 <div className="flex flex-wrap items-center gap-4 pt-4">
                   <Link
                     href="/"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-body font-semibold text-primary-ink shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -120,7 +122,7 @@ export default async function NotFound() {
                   </Link>
                   <Link
                     href="/dashboard"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-bg px-7 py-3 text-base font-semibold text-fg transition-all duration-200 hover:border-primary hover:bg-bgMuted hover:scale-105 active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-bg px-7 py-3 text-body font-semibold text-fg transition-all duration-200 hover:border-primary hover:bg-bgMuted hover:scale-105 active:scale-95"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
@@ -152,7 +154,7 @@ export default async function NotFound() {
                     unoptimized
                   />
                 </div>
-                <span className="text-lg font-bold text-slate-900 transition-colors group-hover:text-primary">
+                <span className="text-h5 font-bold text-slate-900 transition-colors group-hover:text-primary">
                   Vyndi
                 </span>
               </Link>

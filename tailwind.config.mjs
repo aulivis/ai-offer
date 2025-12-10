@@ -73,6 +73,14 @@ const config = {
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
+        'gradient-hero':
+          'linear-gradient(to bottom right, var(--color-navy-900), var(--color-navy-800), var(--color-turquoise-900))',
+        'gradient-cta':
+          'linear-gradient(to bottom right, var(--color-turquoise-500), var(--color-turquoise-600), var(--color-blue-600))',
+        'gradient-settings':
+          'linear-gradient(to bottom right, var(--color-navy-50), var(--color-slate-50), var(--color-turquoise-50))',
+        'gradient-offer':
+          'linear-gradient(to bottom right, var(--color-slate-50), var(--color-white), var(--color-slate-100))',
       },
       fontFamily: {
         display: [

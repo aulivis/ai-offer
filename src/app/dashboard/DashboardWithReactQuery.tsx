@@ -154,7 +154,7 @@ export function DashboardWithReactQuery() {
                 Használat: {quotaSnapshot.used} / {quotaSnapshot.limit ?? '∞'}
               </span>
               {quotaSnapshot.pending > 0 && (
-                <span className="text-sm text-text-muted">
+                <span className="text-body-small text-text-muted leading-typography-normal">
                   Folyamatban: {quotaSnapshot.pending}
                 </span>
               )}

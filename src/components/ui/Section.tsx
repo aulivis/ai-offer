@@ -63,7 +63,11 @@ export function SectionHeader({
     >
       <div className="flex-1">
         <HeadingComponent>{title}</HeadingComponent>
-        {description && <p className="mt-2 text-sm text-fg-muted max-w-2xl">{description}</p>}
+        {description && (
+          <p className="mt-2 text-body-small text-fg-muted max-w-2xl leading-typography-normal">
+            {description}
+          </p>
+        )}
       </div>
       {actions && <div className="flex items-center gap-2 mt-2 md:mt-0">{actions}</div>}
     </div>

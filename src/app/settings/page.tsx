@@ -147,7 +147,7 @@ export default function SettingsPage() {
 
   return (
     <PageErrorBoundary>
-      <div className="relative min-h-screen bg-gradient-to-br from-navy-50 via-slate-50 to-turquoise-50 overflow-hidden">
+      <div className="relative min-h-screen bg-gradient-settings overflow-hidden">
         {/* Decorative gradient blobs - subtle version for settings */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-turquoise-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
         <div

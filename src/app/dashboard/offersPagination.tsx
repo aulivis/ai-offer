@@ -52,7 +52,7 @@ export function LoadMoreButton({
         const isCurrent = page === currentPage;
         const isFuture = page > currentPage;
         const cls = [
-          'h-9 w-9 rounded-full text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+          'h-9 w-9 rounded-full text-body-small font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
           isCurrent ? 'bg-primary text-primary-ink' : 'border border-border',
           isFuture ? 'text-fg-muted' : 'text-fg hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)]',
         ]
@@ -79,7 +79,7 @@ export function LoadMoreButton({
           onClick={onClick}
           disabled={disabled || isLoading}
           aria-busy={isLoading || undefined}
-          className="h-9 w-9 rounded-full border border-border text-sm font-semibold text-fg transition hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-9 w-9 rounded-full border border-border text-body-small font-semibold text-fg transition hover:bg-[rgb(var(--color-bg-muted-rgb)/0.6)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading
             ? t('offers.dashboard.loadMoreButton.loading')
