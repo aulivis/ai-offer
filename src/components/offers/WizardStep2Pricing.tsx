@@ -692,7 +692,8 @@ export function WizardStep2Pricing({
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-[11px] text-slate-500">
                       {testimonial.activity_id
-                        ? t('offers.wizard.testimonials.linkedActivity') || 'Tevékenységhez kapcsolva'
+                        ? t('offers.wizard.testimonials.linkedActivity') ||
+                          'Tevékenységhez kapcsolva'
                         : t('offers.wizard.testimonials.unlinked') || 'Általános ajánlás'}
                     </p>
                     <Button

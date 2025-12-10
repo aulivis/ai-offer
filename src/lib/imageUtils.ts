@@ -55,4 +55,3 @@ export function generateGradientBlurPlaceholder(
     return `data:image/svg+xml;base64,${base64}`;
   }
 }
-
