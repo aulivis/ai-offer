@@ -15,7 +15,7 @@ interface UseDashboardOffersReactQueryOptions {
   offerFilter: OfferFilter;
   teamMemberFilter: string[];
   teamIds: string[];
-  userId?: string;
+  userId: string | undefined;
 }
 
 /**

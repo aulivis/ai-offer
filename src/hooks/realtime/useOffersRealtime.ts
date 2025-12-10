@@ -11,7 +11,7 @@ import { useSupabase } from '@/components/SupabaseProvider';
 import type { Offer } from '@/app/dashboard/types';
 
 interface UseOffersRealtimeOptions {
-  userId?: string;
+  userId?: string | undefined;
   teamIds?: string[];
   enabled?: boolean;
   onOfferInserted?: (offer: Offer) => void;
