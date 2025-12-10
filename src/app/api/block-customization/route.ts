@@ -4,8 +4,9 @@
  * Handles CRUD operations for block customization preferences
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/app/lib/supabaseServer';
+import { withAuth, type AuthenticatedNextRequest } from '@/middleware/auth';
 import { withAuthenticatedErrorHandling } from '@/lib/errorHandling';
 import type { OfferBlockSettings } from '@/lib/offers/blockCustomization';
 
@@ -13,141 +14,129 @@ import type { OfferBlockSettings } from '@/lib/offers/blockCustomization';
  * GET /api/block-customization
  * Get block customization preferences for user or offer
  */
-export const GET = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await supabaseServer();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+export const GET = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const supabase = await supabaseServer();
+    const searchParams = request.nextUrl.searchParams;
+    const offerId = searchParams.get('offerId');
 
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    let query = supabase
+      .from('block_customization_preferences')
+      .select('*')
+      .eq('user_id', request.user.id);
 
-  const searchParams = request.nextUrl.searchParams;
-  const offerId = searchParams.get('offerId');
-
-  let query = supabase.from('block_customization_preferences').select('*').eq('user_id', user.id);
-
-  if (offerId) {
-    query = query.eq('offer_id', offerId);
-  } else {
-    query = query.is('offer_id', null); // Get default preferences
-  }
-
-  const { data, error } = await query.single();
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // No preferences found, return default
-      return NextResponse.json({
-        preferences: null,
-        default: true,
-      });
+    if (offerId) {
+      query = query.eq('offer_id', offerId);
+    } else {
+      query = query.is('offer_id', null); // Get default preferences
     }
-    throw error;
-  }
 
-  return NextResponse.json({
-    preferences: data,
-    default: false,
-  });
-});
+    const { data, error } = await query.single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No preferences found, return default
+        return NextResponse.json({
+          preferences: null,
+          default: true,
+        });
+      }
+      throw error;
+    }
+
+    return NextResponse.json({
+      preferences: data,
+      default: false,
+    });
+  }),
+);
 
 /**
  * POST /api/block-customization
  * Create or update block customization preferences
  */
-export const POST = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await supabaseServer();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+export const POST = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const supabase = await supabaseServer();
+    const body = await request.json();
+    const { offerId, blockSettings }: { offerId?: string; blockSettings: OfferBlockSettings } = body;
 
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    if (!blockSettings) {
+      return NextResponse.json({ error: 'blockSettings is required' }, { status: 400 });
+    }
 
-  const body = await request.json();
-  const { offerId, blockSettings }: { offerId?: string; blockSettings: OfferBlockSettings } = body;
-
-  if (!blockSettings) {
-    return NextResponse.json({ error: 'blockSettings is required' }, { status: 400 });
-  }
-
-  // Check if preferences already exist
-  let query = supabase.from('block_customization_preferences').select('id').eq('user_id', user.id);
-
-  if (offerId) {
-    query = query.eq('offer_id', offerId);
-  } else {
-    query = query.is('offer_id', null);
-  }
-
-  const { data: existing } = await query.single();
-
-  if (existing) {
-    // Update existing preferences
-    const { data, error } = await supabase
+    // Check if preferences already exist
+    let query = supabase
       .from('block_customization_preferences')
-      .update({
-        block_settings: blockSettings,
-      })
-      .eq('id', existing.id)
-      .select()
-      .single();
+      .select('id')
+      .eq('user_id', request.user.id);
 
-    if (error) throw error;
+    if (offerId) {
+      query = query.eq('offer_id', offerId);
+    } else {
+      query = query.is('offer_id', null);
+    }
 
-    return NextResponse.json({ preferences: data });
-  } else {
-    // Create new preferences
-    const { data, error } = await supabase
-      .from('block_customization_preferences')
-      .insert({
-        user_id: user.id,
-        offer_id: offerId || null,
-        block_settings: blockSettings,
-      })
-      .select()
-      .single();
+    const { data: existing } = await query.single();
 
-    if (error) throw error;
+    if (existing) {
+      // Update existing preferences
+      const { data, error } = await supabase
+        .from('block_customization_preferences')
+        .update({
+          block_settings: blockSettings,
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
 
-    return NextResponse.json({ preferences: data }, { status: 201 });
-  }
-});
+      if (error) throw error;
+
+      return NextResponse.json({ preferences: data });
+    } else {
+      // Create new preferences
+      const { data, error } = await supabase
+        .from('block_customization_preferences')
+        .insert({
+          user_id: request.user.id,
+          offer_id: offerId || null,
+          block_settings: blockSettings,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return NextResponse.json({ preferences: data }, { status: 201 });
+    }
+  }),
+);
 
 /**
  * DELETE /api/block-customization
  * Delete block customization preferences
  */
-export const DELETE = withAuthenticatedErrorHandling(async (request: NextRequest) => {
-  const supabase = await supabaseServer();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+export const DELETE = withAuth(
+  withAuthenticatedErrorHandling(async (request: AuthenticatedNextRequest) => {
+    const supabase = await supabaseServer();
+    const searchParams = request.nextUrl.searchParams;
+    const offerId = searchParams.get('offerId');
 
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    let query = supabase
+      .from('block_customization_preferences')
+      .delete()
+      .eq('user_id', request.user.id);
 
-  const searchParams = request.nextUrl.searchParams;
-  const offerId = searchParams.get('offerId');
+    if (offerId) {
+      query = query.eq('offer_id', offerId);
+    } else {
+      query = query.is('offer_id', null);
+    }
 
-  let query = supabase.from('block_customization_preferences').delete().eq('user_id', user.id);
+    const { error } = await query;
 
-  if (offerId) {
-    query = query.eq('offer_id', offerId);
-  } else {
-    query = query.is('offer_id', null);
-  }
+    if (error) throw error;
 
-  const { error } = await query;
-
-  if (error) throw error;
-
-  return NextResponse.json({ success: true });
-});
+    return NextResponse.json({ success: true });
+  }),
+);
