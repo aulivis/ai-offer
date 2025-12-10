@@ -261,15 +261,23 @@ function ResourcesPageContent() {
             {featuredResource && (
               <div className="relative bg-gradient-to-br from-teal-500 via-blue-600 to-purple-600 rounded-3xl p-10 md:p-14 text-white shadow-2xl border-4 border-white/20 overflow-hidden">
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" aria-hidden="true"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl" aria-hidden="true"></div>
-                
+                <div
+                  className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"
+                  aria-hidden="true"
+                ></div>
+                <div
+                  className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl"
+                  aria-hidden="true"
+                ></div>
+
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                   {/* Left - Featured badge and content */}
                   <div className="flex-1">
                     <div className="inline-flex items-center gap-2 bg-white/30 backdrop-blur-sm px-5 py-2.5 rounded-full mb-6 border-2 border-white/30 shadow-lg">
                       <Star className="w-5 h-5 fill-current" />
-                      <span className="text-body-small font-bold uppercase tracking-wide">KIEMELT TARTALOM</span>
+                      <span className="text-body-small font-bold uppercase tracking-wide">
+                        KIEMELT TARTALOM
+                      </span>
                     </div>
                     <H2 className="mb-5 text-white" fluid>
                       {featuredResource.title}

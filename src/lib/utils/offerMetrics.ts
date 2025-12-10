@@ -134,4 +134,3 @@ export function formatRelativeDate(date: string | null | undefined): string {
   const years = Math.floor(diffDays / 365);
   return years === 1 ? '1 éve' : `${years} éve`;
 }
-

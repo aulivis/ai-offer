@@ -282,7 +282,9 @@ export default function Home() {
                         <Award className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <p className="text-body-small font-semibold text-fg">Professzionális megjelenés</p>
+                        <p className="text-body-small font-semibold text-fg">
+                          Professzionális megjelenés
+                        </p>
                         <p className="text-body-small text-fg-muted">Egységes dizájn</p>
                       </div>
                     </div>

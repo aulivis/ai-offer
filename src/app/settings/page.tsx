@@ -203,7 +203,9 @@ export default function SettingsPage() {
                           }`}
                         ></span>
                         <span className="relative z-10 flex items-center gap-2.5">
-                          <span className={`flex-shrink-0 ${activeTab === tab.id ? 'scale-110' : ''} transition-transform duration-300`}>
+                          <span
+                            className={`flex-shrink-0 ${activeTab === tab.id ? 'scale-110' : ''} transition-transform duration-300`}
+                          >
                             {tab.icon}
                           </span>
                           <span className="whitespace-nowrap">{tab.label}</span>

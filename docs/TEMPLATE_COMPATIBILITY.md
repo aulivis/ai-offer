@@ -137,4 +137,3 @@ All templates have been verified to:
 - New unified renderer is used as fallback
 - No breaking changes to existing functionality
 - All 6 templates continue to work as before
-

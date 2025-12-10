@@ -10,4 +10,3 @@ import type { ReactNode } from 'react';
 export function PageErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary>{children}</ErrorBoundary>;
 }
-

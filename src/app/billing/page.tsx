@@ -375,7 +375,9 @@ function PlanCard({
         <h3 className="text-2xl font-bold tracking-tight text-fg">{data.name}</h3>
 
         {/* Description */}
-        <p className="mt-3 text-body-small leading-typography-relaxed text-fg-muted">{data.description}</p>
+        <p className="mt-3 text-body-small leading-typography-relaxed text-fg-muted">
+          {data.description}
+        </p>
 
         {/* Downgrade Warning - Enhanced for Pro users viewing Standard */}
         {isDowngrade && !isCurrent && plan === 'pro' && planType === 'standard' && (
@@ -454,11 +456,15 @@ function PlanCard({
             <>
               <li className="flex items-start gap-3">
                 <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
-                <span className="text-body-small text-fg-muted/60 line-through">Korlátlan ajánlatok</span>
+                <span className="text-body-small text-fg-muted/60 line-through">
+                  Korlátlan ajánlatok
+                </span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
-                <span className="text-body-small text-fg-muted/60 line-through">AI generált szövegek</span>
+                <span className="text-body-small text-fg-muted/60 line-through">
+                  AI generált szövegek
+                </span>
               </li>
             </>
           )}
@@ -678,7 +684,9 @@ function BillingPageContent() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-body-small font-medium text-amber-800">{t('billing.status.cancel')}</p>
+                <p className="text-body-small font-medium text-amber-800">
+                  {t('billing.status.cancel')}
+                </p>
               </div>
             </div>
           )}
@@ -721,7 +729,9 @@ function BillingPageContent() {
                     </div>
                   </div>
                   <div className="text-5xl font-bold mb-2">{offersThisMonth}</div>
-                  <div className="text-body-small opacity-90 mb-4">ajánlat készítve ebben a hónapban</div>
+                  <div className="text-body-small opacity-90 mb-4">
+                    ajánlat készítve ebben a hónapban
+                  </div>
 
                   <div className="bg-white/10 backdrop-blur rounded-lg p-3">
                     <div className="flex items-center justify-between text-body-small mb-2">

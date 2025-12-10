@@ -1124,7 +1124,7 @@ export default function DashboardPage() {
             <Fragment>
               {/* Main Page Heading */}
               <H1 className="sr-only">{t('dashboard.title')}</H1>
-              
+
               {/* Enhanced KPI Dashboard with Visual Funnel */}
               <PageErrorBoundary>
                 <section aria-labelledby="dashboard-metrics-heading">
@@ -1132,24 +1132,24 @@ export default function DashboardPage() {
                     Mérőszámok
                   </H2>
                   <DashboardMetricsSection
-                  loading={loading}
-                  isQuotaLoading={isQuotaLoading}
-                  totalOffersCount={totalOffersCount}
-                  stats={stats}
-                  metricsViewMode={metricsViewMode}
-                  kpiScope={kpiScope}
-                  teamIds={teamIds}
-                  quotaValue={quotaValue}
-                  quotaSnapshot={quotaSnapshot}
-                  acceptanceLabel={acceptanceLabel}
-                  winRateLabel={winRateLabel}
-                  avgDecisionLabel={avgDecisionLabel}
-                  totalHelper={totalHelper}
-                  createdComparison={createdComparison}
-                  onMetricsViewModeChange={setMetricsViewMode}
-                  onKpiScopeChange={setKpiScope}
-                  onMetricClick={handleMetricClick}
-                />
+                    loading={loading}
+                    isQuotaLoading={isQuotaLoading}
+                    totalOffersCount={totalOffersCount}
+                    stats={stats}
+                    metricsViewMode={metricsViewMode}
+                    kpiScope={kpiScope}
+                    teamIds={teamIds}
+                    quotaValue={quotaValue}
+                    quotaSnapshot={quotaSnapshot}
+                    acceptanceLabel={acceptanceLabel}
+                    winRateLabel={winRateLabel}
+                    avgDecisionLabel={avgDecisionLabel}
+                    totalHelper={totalHelper}
+                    createdComparison={createdComparison}
+                    onMetricsViewModeChange={setMetricsViewMode}
+                    onKpiScopeChange={setKpiScope}
+                    onMetricClick={handleMetricClick}
+                  />
                 </section>
               </PageErrorBoundary>
 

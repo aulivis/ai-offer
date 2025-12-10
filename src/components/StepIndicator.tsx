@@ -126,7 +126,10 @@ export default function StepIndicator({ steps }: Props) {
                 aria-hidden="true"
               />
             </div>
-            <span className="text-lg font-bold text-primary min-w-[3rem] text-right" aria-hidden="true">
+            <span
+              className="text-lg font-bold text-primary min-w-[3rem] text-right"
+              aria-hidden="true"
+            >
               {Math.round(progress)}%
             </span>
           </div>

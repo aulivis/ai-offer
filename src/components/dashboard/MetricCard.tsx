@@ -96,18 +96,16 @@ export function MetricCard({
   return (
     <Card
       className={`group relative overflow-hidden p-4 sm:p-5 transition-all duration-200 ${
-        onClick ? 'cursor-pointer hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5' : 'hover:shadow-lg'
+        onClick
+          ? 'cursor-pointer hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5'
+          : 'hover:shadow-lg'
       } ${isEmptyState ? 'opacity-75' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-2 sm:gap-3 mb-2.5 sm:mb-3">
-            {icon && (
-              <div className={`flex-shrink-0 ${iconColors[color]} mt-0.5`}>
-                {icon}
-              </div>
-            )}
+            {icon && <div className={`flex-shrink-0 ${iconColors[color]} mt-0.5`}>{icon}</div>}
             <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted leading-tight break-words min-w-0 flex-1">
               {label}
             </p>

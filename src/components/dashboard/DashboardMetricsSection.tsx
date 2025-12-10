@@ -197,7 +197,10 @@ export function DashboardMetricsSection({
               <div className="col-span-full sm:col-span-2 lg:col-span-4">
                 <div className="bg-gradient-to-br from-teal-500 via-teal-600 to-blue-600 rounded-2xl p-6 text-white shadow-2xl h-full relative overflow-hidden">
                   {/* Decorative pattern */}
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl" aria-hidden="true"></div>
+                  <div
+                    className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"
+                    aria-hidden="true"
+                  ></div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
@@ -250,7 +253,6 @@ export function DashboardMetricsSection({
 
               {/* SECONDARY METRICS - Smaller cards in grid */}
               <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-
                 {/* Active Offers (In Review) */}
                 <MetricCard
                   label={t('dashboard.metrics.inReview.label')}

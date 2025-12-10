@@ -453,9 +453,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
               ) : (
                 <div className="bg-gradient-to-br from-primary/10 via-turquoise-50 to-primary/5 rounded-2xl border-2 border-primary/20 p-8 shadow-xl">
                   <div className="mb-6 text-center">
-                    <H2 className="mb-2 text-fg">
-                      Válasz az ajánlatra
-                    </H2>
+                    <H2 className="mb-2 text-fg">Válasz az ajánlatra</H2>
                     <p className="text-fg-muted text-body-large">
                       Fogadja el, utasítsa el, vagy tegyen fel kérdést
                     </p>
