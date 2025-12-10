@@ -83,7 +83,30 @@ export const WizardActionBar = memo(function WizardActionBar({
             {nextButtonLabel} →
             <span className="ml-2 hidden text-xs opacity-70 sm:inline">(Ctrl+Enter)</span>
           </Button>
-        ) : null}
+        ) : (
+          _onSubmit && (
+            <Button
+              ref={nextButtonRef}
+              onClick={_onSubmit}
+              disabled={_isSubmitDisabled || isDisabled}
+              loading={_isSubmitting}
+              className="w-full rounded-full bg-gradient-to-r from-primary to-turquoise-600 px-8 py-4 text-base font-bold text-primary-ink shadow-lg transition-all hover:from-primary/90 hover:to-turquoise-700 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation min-h-[52px] sm:w-auto"
+              aria-label="Generate offer and save"
+            >
+              {_isSubmitting ? (
+                <>
+                  <span className="mr-2">Generálás...</span>
+                </>
+              ) : (
+                <>
+                  <span className="mr-2">✓</span>
+                  Ajánlat létrehozása és mentés
+                  <span className="ml-2 hidden text-xs opacity-80 sm:inline">(Ctrl+Enter)</span>
+                </>
+              )}
+            </Button>
+          )
+        )}
       </div>
     </div>
   );

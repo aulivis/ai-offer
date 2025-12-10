@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import AppFrame from '@/components/AppFrame';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { fetchWithSupabaseAuth } from '@/lib/api';
@@ -76,9 +76,10 @@ export default function TeamsPage() {
       });
       if (response.ok) {
         await response.json();
+        const teamData = await response.json();
         showToast({
           title: 'Siker',
-          description: 'Csapat létrehozva!',
+          description: 'Csapat létrehozva! Most már meghívhatsz tagokat.',
           variant: 'success',
         });
         // Reload teams
@@ -86,6 +87,12 @@ export default function TeamsPage() {
         if (teamsResponse.ok) {
           const teamsData = await teamsResponse.json();
           setTeams(teamsData.teams || []);
+          // Navigate to team detail page if team was created
+          if (teamData.team_id) {
+            setTimeout(() => {
+              window.location.href = `/teams/${teamData.team_id}`;
+            }, 1000);
+          }
         }
       } else {
         const error = await response.json();
@@ -113,8 +120,9 @@ export default function TeamsPage() {
         title="Csapatok"
         description="Kezeld a csapatokat és hívj meg más Pro felhasználókat."
         actions={
-          <Button onClick={handleCreateTeam} variant="primary" size="lg">
-            Új csapat
+          <Button onClick={handleCreateTeam} variant="primary" size="lg" className="min-w-[160px]">
+            <Users className="h-5 w-5 mr-2" />
+            Új csapat létrehozása
           </Button>
         }
       >
@@ -136,7 +144,13 @@ export default function TeamsPage() {
                   Hozz létre egy új csapatot és hívj meg más Pro felhasználókat!
                 </p>
               </div>
-              <Button onClick={handleCreateTeam} variant="primary" size="lg">
+              <Button
+                onClick={handleCreateTeam}
+                variant="primary"
+                size="lg"
+                className="min-w-[200px]"
+              >
+                <Users className="h-5 w-5 mr-2" />
                 Új csapat létrehozása
               </Button>
             </div>

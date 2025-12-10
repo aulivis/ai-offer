@@ -6,7 +6,7 @@ import AppFrame from '@/components/AppFrame';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { t } from '@/copy';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { clientLogger } from '@/lib/clientLogger';
 
 interface TelemetryRow {

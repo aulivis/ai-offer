@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { t } from '@/copy';
 import { useSupabase } from '@/components/SupabaseProvider';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import {
   PhotoIcon,
   XMarkIcon,

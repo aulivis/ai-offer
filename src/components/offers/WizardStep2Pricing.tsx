@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import EditablePriceTable, { createPriceRow, type PriceRow } from '@/components/EditablePriceTable';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { PhotoIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { createClientLogger } from '@/lib/clientLogger';

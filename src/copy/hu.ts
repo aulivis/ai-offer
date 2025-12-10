@@ -131,7 +131,6 @@ export const hu = {
   },
   toast: {
     dismiss: 'Bezárás',
-    providerError: 'useToast csak ToastProvider kontextusában használható.',
   },
   a11y: {
     richText: {
@@ -659,6 +658,16 @@ export const hu = {
     loading: 'Betöltés…',
     actions: {
       loggedInAs: 'Belépve:',
+      saveAll: 'Minden mentése',
+      saving: 'Mentés...',
+    },
+    successMessage: {
+      title: 'Minden rendben! ✓',
+      description:
+        'A beállításaid sikeresen mentve lettek. Most már használhatod az új beállításokat.',
+      backToDashboard: 'Vissza a dashboardra',
+      createNewOffer: 'Új ajánlat létrehozása',
+      closeAriaLabel: 'Üzenet bezárása',
     },
     authMethods: {
       title: 'Bejelentkezési módok',

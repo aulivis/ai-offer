@@ -423,7 +423,7 @@ export default async function PublicOfferPage({ params, searchParams }: PageProp
           {!isPdfMode && (
             <div className="mb-6 flex flex-col gap-4">
               <BackButton variant="link" label="Vissza" />
-              <Breadcrumb items={[{ label: 'Ajánlat', href: undefined }]} showHome={false} />
+              <Breadcrumb items={[{ label: 'Ajánlat' }]} showHome={false} />
             </div>
           )}
 

@@ -62,22 +62,45 @@ export function DashboardEmptyState({
         {isEmpty ? (
           <Link
             href="/new"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[44px]"
+            className="inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-primary to-turquoise-600 px-8 md:px-10 py-4 md:py-5 text-base md:text-lg font-bold text-primary-ink shadow-xl transition-all hover:from-primary/90 hover:to-turquoise-700 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 min-h-[56px]"
           >
-            <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
-            {t('dashboard.actions.newOffer')}
+            <DocumentTextIcon className="h-6 w-6" aria-hidden="true" />
+            <span>Első ajánlatom létrehozása</span>
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7l5 5m0 0l-5 5m5-5H6"
+              />
+            </svg>
           </Link>
         ) : (
-          onClearFilters && (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClearFilters}
-              className="min-w-[140px]"
+          <>
+            {onClearFilters && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onClearFilters}
+                className="min-w-[140px]"
+              >
+                {t('dashboard.filters.clearAll')}
+              </Button>
+            )}
+            <Link
+              href="/new"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-ink shadow-lg transition-all hover:brightness-110 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[44px]"
             >
-              {t('dashboard.filters.clearAll')}
-            </Button>
-          )
+              <DocumentTextIcon className="h-5 w-5" aria-hidden="true" />
+              {t('dashboard.actions.newOffer')}
+            </Link>
+          </>
         )}
       </div>
     </Card>

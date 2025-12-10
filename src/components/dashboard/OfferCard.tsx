@@ -20,7 +20,7 @@ import LinkIcon from '@heroicons/react/24/outline/LinkIcon';
 import ClipboardIcon from '@heroicons/react/24/outline/ClipboardIcon';
 import { ShareModal } from './ShareModal';
 import { fetchWithSupabaseAuth } from '@/lib/api';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { createClientLogger } from '@/lib/clientLogger';
 import {
   formatViewCount,

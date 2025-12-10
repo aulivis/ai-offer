@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { t } from '@/copy';
 import { createClientLogger } from '@/lib/clientLogger';
 import type { Offer, OfferFilter } from '@/app/dashboard/types';

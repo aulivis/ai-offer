@@ -10,7 +10,7 @@ import {
   LockClosedIcon,
   BoltIcon,
 } from '@heroicons/react/24/outline';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { useState } from 'react';
 
 type SettingsSecurityTabProps = {

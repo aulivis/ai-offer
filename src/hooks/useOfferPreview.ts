@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '@/copy';
 import type { ProjectDetails } from '@/lib/projectDetails';
 import type { PreviewIssue } from '@/types/preview';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { fetchWithSupabaseAuth, isAbortError, ApiError } from '@/lib/api';
 
 export type OfferPreviewStatus = 'idle' | 'loading' | 'streaming' | 'success' | 'error' | 'aborted';

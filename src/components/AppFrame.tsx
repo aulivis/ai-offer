@@ -4,7 +4,7 @@ import { t } from '@/copy';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useState, useMemo } from 'react';
 
-import { useToast } from './ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { BottomSheet } from '@/components/ui/BottomSheet';
 import { createClientLogger } from '@/lib/clientLogger';

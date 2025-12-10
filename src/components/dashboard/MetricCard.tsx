@@ -97,10 +97,23 @@ export function MetricCard({
     <Card
       className={`group relative overflow-hidden p-4 sm:p-5 transition-all duration-200 ${
         onClick
-          ? 'cursor-pointer hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5'
+          ? 'cursor-pointer hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5 ring-1 ring-transparent hover:ring-primary/20'
           : 'hover:shadow-lg'
       } ${isEmptyState ? 'opacity-75' : ''}`}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? `${label}: ${value}. Kattintson a szűréshez.` : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
@@ -108,6 +121,14 @@ export function MetricCard({
             {icon && <div className={`flex-shrink-0 ${iconColors[color]} mt-0.5`}>{icon}</div>}
             <p className="text-caption sm:text-caption font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-fg-muted leading-typography-tight break-words min-w-0 flex-1">
               {label}
+              {onClick && (
+                <span
+                  className="ml-2 text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-hidden="true"
+                >
+                  (kattintás a szűréshez)
+                </span>
+              )}
             </p>
           </div>
           {isEmptyState && emptyMessage ? (

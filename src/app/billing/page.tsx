@@ -46,7 +46,7 @@ import type { ButtonProps } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { H1 } from '@/components/ui/Heading';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { getAuthorImage } from '@/lib/testimonial-images';
 import {
   calculateAnnualPrice,
@@ -557,10 +557,24 @@ function BillingPageContent() {
 
     const cta: PlanCta = {
       label,
-      disabled: isCurrentPlan || isLoading,
-      variant,
+      disabled: isLoading,
+      variant: isCurrentPlan ? 'secondary' : variant,
     };
-    if (!isCurrentPlan && !isLoading) {
+    if (isCurrentPlan) {
+      // For current plan, scroll to management section
+      cta.onClick = () => {
+        const managementSection = document.getElementById('subscription-management');
+        if (managementSection) {
+          managementSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          showToast({
+            title: 'Előfizetés kezelése',
+            description: 'Görgessen le az előfizetés kezelése szekcióhoz.',
+            variant: 'info',
+          });
+        }
+      };
+    } else if (!isLoading) {
       cta.onClick = () => startCheckout(priceId);
     }
     return cta;
@@ -1166,7 +1180,7 @@ function BillingPageContent() {
 
           {/* Subscription Management Section */}
           {(plan === 'pro' || plan === 'standard') && (
-            <div className="mb-12">
+            <div id="subscription-management" className="mb-12 scroll-mt-8">
               <h3 className="text-h3 font-bold text-gray-900 mb-6">Előfizetés kezelése</h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

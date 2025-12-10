@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import EyeIcon from '@heroicons/react/24/outline/EyeIcon';
 import ArrowPathIcon from '@heroicons/react/24/outline/ArrowPathIcon';

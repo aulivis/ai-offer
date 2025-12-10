@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { t } from '@/copy';
 import { useSupabase } from '@/components/SupabaseProvider';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';

@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { t } from '@/copy';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { getCsrfToken } from '@/lib/api';
 import { clientLogger } from '@/lib/clientLogger';
 import { getSupabaseClient, resetSessionState } from '@/lib/supabaseClient';

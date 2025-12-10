@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { createClientLogger } from '@/lib/clientLogger';
 import { t } from '@/copy';

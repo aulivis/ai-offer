@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { useBlockCustomization } from '@/hooks/useBlockCustomization';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import type { BlockId } from '@/lib/offers/blockCustomization';
 import {
   getBlocksInOrder,

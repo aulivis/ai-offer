@@ -5,7 +5,7 @@ import { EnvelopeIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect, useMemo } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { fetchWithSupabaseAuth } from '@/lib/api';
 import { createClientLogger } from '@/lib/clientLogger';
 

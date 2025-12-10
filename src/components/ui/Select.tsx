@@ -1,9 +1,11 @@
 import * as React from 'react';
+import * as SelectPrimitive from '@radix-ui/react-select';
+import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from './LoadingSpinner';
 
 type FieldMessage = React.ReactNode;
 
-type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
+type Props = {
   error?: FieldMessage;
   help?: FieldMessage;
   label?: React.ReactNode;
@@ -11,10 +13,21 @@ type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
   wrapperClassName?: string;
   /** Show loading state (disables select and shows spinner) */
   loading?: boolean;
+  disabled?: boolean;
+  placeholder?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  children: React.ReactNode;
+  className?: string;
+  name?: string;
+  /** For React Hook Form integration */
+  register?: ReturnType<typeof import('react-hook-form').useForm>['register'];
 };
 
 /**
- * Select component with error handling, help text, and loading state support
+ * Standard Select component using Radix UI
+ * Provides accessible dropdown functionality
  *
  * @example
  * ```tsx
@@ -23,9 +36,10 @@ type Props = React.SelectHTMLAttributes<HTMLSelectElement> & {
  *   error={errors.country}
  *   help="Select your country"
  *   loading={isLoadingCountries}
+ *   placeholder="Select a country..."
  * >
- *   <option value="">Select...</option>
- *   <option value="us">United States</option>
+ *   <SelectItem value="us">United States</SelectItem>
+ *   <SelectItem value="uk">United Kingdom</SelectItem>
  * </Select>
  * ```
  */
@@ -39,9 +53,14 @@ export function Select({
   wrapperClassName,
   loading,
   disabled,
-  ...props
+  placeholder = 'Select...',
+  value,
+  onValueChange,
+  onChange,
+  name,
+  register,
 }: Props) {
-  const selectId = id || props.name || 'select-' + Math.random().toString(36).slice(2);
+  const selectId = id || name || 'select-' + Math.random().toString(36).slice(2);
   const describedByIds: string[] = [];
 
   if (help) {
@@ -57,45 +76,92 @@ export function Select({
   }
 
   const describedBy = describedByIds.length > 0 ? describedByIds.join(' ') : undefined;
-
   const wrapperClasses = wrapperClassName ?? 'flex flex-col gap-2';
   const isDisabled = disabled || loading;
 
+  // Convert option elements to SelectItem for backward compatibility
+  const normalizedChildren = React.Children.map(children, (child) => {
+    if (React.isValidElement(child) && child.type === 'option') {
+      const optionProps = child.props as React.OptionHTMLAttributes<HTMLOptionElement>;
+      return (
+        <SelectItem
+          key={optionProps.value}
+          value={String(optionProps.value || '')}
+          disabled={optionProps.disabled}
+        >
+          {optionProps.children || optionProps.value}
+        </SelectItem>
+      );
+    }
+    return child;
+  });
+
+  const handleValueChange = (newValue: string) => {
+    if (onValueChange) {
+      onValueChange(newValue);
+    }
+    // Support legacy onChange handler
+    if (onChange) {
+      const syntheticEvent = {
+        target: { value: newValue },
+      } as React.ChangeEvent<HTMLSelectElement>;
+      onChange(syntheticEvent);
+    }
+  };
+
   return (
-    <label htmlFor={selectId} className={wrapperClasses}>
-      {label && <span className="text-sm font-medium text-fg">{label}</span>}
-      <div className="relative">
-        <select
+    <div className={wrapperClasses}>
+      {label && (
+        <label htmlFor={selectId} className="text-sm font-medium text-fg">
+          {label}
+        </label>
+      )}
+      <SelectPrimitive.Root
+        value={value}
+        onValueChange={handleValueChange}
+        disabled={isDisabled}
+        name={name}
+        {...(register ? register(name || '') : {})}
+      >
+        <SelectPrimitive.Trigger
           id={selectId}
-          aria-invalid={!!error}
-          aria-describedby={describedBy}
-          aria-busy={loading}
-          disabled={isDisabled}
           className={[
-            'w-full rounded-2xl border px-4 py-2.5 text-base',
-            'bg-bg text-fg placeholder:text-fg-muted border-border',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-            error ? 'border-danger focus-visible:ring-danger' : '',
+            'flex h-10 w-full items-center justify-between rounded-2xl border border-border bg-bg px-4 py-2.5 text-base',
+            'text-fg placeholder:text-fg-muted',
+            'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+            error ? 'border-danger focus:ring-danger' : '',
             loading ? 'pr-10' : '',
-            isDisabled ? 'cursor-not-allowed opacity-60' : '',
+            isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
             className,
           ]
             .filter(Boolean)
             .join(' ')}
-          {...props}
+          aria-invalid={!!error}
+          aria-describedby={describedBy}
+          aria-busy={loading}
         >
-          {children}
-        </select>
-        {loading && (
-          <div
-            id={`${selectId}-loading`}
-            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            aria-hidden="true"
-          >
-            <LoadingSpinner size="sm" />
-          </div>
-        )}
-      </div>
+          <SelectPrimitive.Value placeholder={placeholder} />
+          <SelectPrimitive.Icon className="text-fg-muted">
+            <ChevronDownIcon className="h-4 w-4" />
+          </SelectPrimitive.Icon>
+          {loading && (
+            <div
+              id={`${selectId}-loading`}
+              className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none"
+              aria-hidden="true"
+            >
+              <LoadingSpinner size="sm" />
+            </div>
+          )}
+        </SelectPrimitive.Trigger>
+        <SelectPrimitive.Portal>
+          <SelectPrimitive.Content className="relative z-50 min-w-[8rem] overflow-hidden rounded-2xl border border-border bg-bg shadow-pop">
+            <SelectPrimitive.Viewport className="p-1">
+              {normalizedChildren}
+            </SelectPrimitive.Viewport>
+          </SelectPrimitive.Content>
+        </SelectPrimitive.Portal>
+      </SelectPrimitive.Root>
       {help && (
         <span id={`${selectId}-help`} className="block text-xs text-fg-muted">
           {help}
@@ -106,6 +172,34 @@ export function Select({
           {error}
         </span>
       )}
-    </label>
+    </div>
   );
 }
+
+export const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => {
+  return (
+    <SelectPrimitive.Item
+      ref={ref}
+      className={[
+        'relative flex w-full cursor-pointer select-none items-center rounded-xl py-2 pl-8 pr-2 text-sm outline-none',
+        'focus:bg-bg-muted focus:text-fg',
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...props}
+    >
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <CheckIcon className="h-4 w-4" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  );
+});
+SelectItem.displayName = 'SelectItem';

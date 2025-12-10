@@ -1,18 +1,22 @@
 'use client';
 
-import { t } from '@/copy';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import * as React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { t } from '@/copy';
 
-const FOCUSABLE_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'textarea:not([disabled])',
-  'input:not([type="hidden"]):not([disabled])',
-  'select:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
+const Dialog = DialogPrimitive.Root;
+const DialogTrigger = DialogPrimitive.Trigger;
+const DialogPortal = DialogPrimitive.Portal;
+const DialogClose = DialogPrimitive.Close;
+
+const sizeClasses = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  full: 'max-w-full mx-4',
+};
 
 export type ModalProps = {
   /** Whether the modal is open */
@@ -24,27 +28,18 @@ export type ModalProps = {
   /** ID of element that describes the modal */
   describedBy?: string;
   /** Modal content */
-  children: ReactNode;
+  children: React.ReactNode;
   /** Additional className for the modal panel */
   className?: string;
   /** Show close button (default: true) */
   showCloseButton?: boolean;
-  /** Prevent body scroll when open (default: true) */
-  preventBodyScroll?: boolean;
   /** Modal size */
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 };
 
-const sizeClasses = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
-  full: 'max-w-full mx-4',
-};
-
 /**
- * Modal component with focus trap, keyboard navigation, and accessibility support
+ * Standard Modal component using Radix UI Dialog
+ * Provides accessible modal functionality with focus trap and keyboard navigation
  *
  * @example
  * ```tsx
@@ -69,166 +64,30 @@ export function Modal({
   children,
   className = '',
   showCloseButton = true,
-  preventBodyScroll = true,
   size = 'md',
 }: ModalProps) {
-  const [mounted, setMounted] = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Prevent body scroll when open
-  useEffect(() => {
-    if (!preventBodyScroll || !mounted) return;
-
-    if (open) {
-      // Save current scroll position
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-    } else {
-      // Restore scroll position
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
-    }
-
-    return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-    };
-  }, [open, preventBodyScroll, mounted]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-
-    previouslyFocusedElement.current = document.activeElement as HTMLElement | null;
-
-    const getFocusableElements = () => {
-      const elements = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      return elements ? Array.from(elements).filter((el) => !el.hasAttribute('disabled')) : [];
-    };
-
-    const focusFirstElement = () => {
-      const [firstFocusable] = getFocusableElements();
-      if (firstFocusable) {
-        firstFocusable.focus();
-      } else {
-        panelRef.current?.focus();
-      }
-    };
-
-    window.setTimeout(focusFirstElement, 0);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== 'Tab') return;
-
-      const focusableElements = getFocusableElements();
-
-      if (!focusableElements.length) {
-        event.preventDefault();
-        panelRef.current?.focus();
-        return;
-      }
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-      const current = document.activeElement as HTMLElement | null;
-
-      if (event.shiftKey) {
-        if (!current || current === first || !panelRef.current?.contains(current)) {
-          event.preventDefault();
-          last.focus();
-        }
-      } else if (current === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      previouslyFocusedElement.current?.focus?.();
-    };
-  }, [onClose, open]);
-
-  if (!mounted || !open) {
-    return null;
-  }
-
-  const handleOverlayMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.target === overlayRef.current) {
-      onClose();
-    }
-  };
-
-  // Determine max width based on size prop or className
   const hasCustomMaxWidth = className?.includes('max-w-');
   const sizeMaxWidth = hasCustomMaxWidth ? '' : sizeClasses[size];
 
-  // Check for reduced motion preference
-  const prefersReducedMotion =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  return createPortal(
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-fg/20 p-0 backdrop-blur-sm sm:items-center sm:p-4 md:p-6"
-      role="presentation"
-      onMouseDown={handleOverlayMouseDown}
-      onClick={(e) => {
-        // Close on overlay click (mobile-friendly)
-        if (e.target === overlayRef.current) {
-          onClose();
-        }
-      }}
-      aria-hidden={!open}
-    >
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={labelledBy}
-        aria-describedby={describedBy}
-        className={`relative w-full ${sizeMaxWidth} max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl md:rounded-3xl border border-border bg-bg p-4 sm:p-5 md:p-6 shadow-pop focus:outline-none transition-transform duration-300 ease-out ${className || ''}`}
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          animation: open && !prefersReducedMotion ? 'slideUp 300ms ease-out' : undefined,
-        }}
-      >
-        {showCloseButton && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-4 top-4 z-10 rounded-full p-2 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label={t('modal.close') || 'Close'}
-          >
-            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-          </button>
-        )}
-        <div className={showCloseButton ? 'pr-10' : ''}>{children}</div>
-      </div>
-    </div>,
-    document.body,
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogPortal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-fg/20 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          className={`fixed left-[50%] top-[50%] z-50 grid w-full ${sizeMaxWidth} translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-bg p-4 sm:p-5 md:p-6 shadow-pop duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-2xl md:rounded-3xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto ${className}`}
+          aria-labelledby={labelledBy}
+          aria-describedby={describedBy}
+        >
+          {showCloseButton && (
+            <DialogPrimitive.Close className="absolute right-4 top-4 z-10 rounded-full p-2 text-fg-muted transition-colors hover:bg-bg-muted hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">{t('modal.close') || 'Close'}</span>
+            </DialogPrimitive.Close>
+          )}
+          <div className={showCloseButton ? 'pr-10' : ''}>{children}</div>
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </Dialog>
   );
 }
 
@@ -278,3 +137,5 @@ export function ModalFooter({
     </div>
   );
 }
+
+export { Dialog, DialogTrigger, DialogClose };

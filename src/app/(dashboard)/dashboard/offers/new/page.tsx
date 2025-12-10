@@ -16,7 +16,7 @@ import { WizardPreviewPanel } from '@/components/offers/WizardPreviewPanel';
 import { StepErrorBoundary } from '@/components/offers/StepErrorBoundary';
 import { PreviewAsCustomerButton } from '@/components/offers/PreviewAsCustomerButton';
 import { DEFAULT_OFFER_TEMPLATE_ID } from '@/app/lib/offerTemplates';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { useOfferWizard } from '@/hooks/useOfferWizard';
 import { usePricingRows } from '@/hooks/usePricingRows';
 import { useOfferPreview } from '@/hooks/useOfferPreview';

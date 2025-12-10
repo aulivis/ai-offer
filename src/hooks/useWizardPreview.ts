@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useRef } from 'react';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { t } from '@/copy';
 import type { ProjectDetails } from '@/lib/projectDetails';
 import {

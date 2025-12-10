@@ -551,10 +551,12 @@ export default function LoginClient() {
                       </div>
                       <div>
                         <div className="font-bold text-success mb-1">Email elküldve!</div>
-                        <p className="text-body-small text-success">
-                          Nézd meg az emailjeidet és kattints a belépési linkre.{' '}
+                        <p className="text-body-small text-success mb-3">
+                          Nézd meg az emailjeidet és kattints a belépési linkre.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                           {isCooldownActive ? (
-                            <span className="font-semibold" aria-live="polite">
+                            <span className="font-semibold text-body-small" aria-live="polite">
                               Új link {cooldownRemaining} másodperc múlva kérhető.
                             </span>
                           ) : (
@@ -565,13 +567,43 @@ export default function LoginClient() {
                                 setError(null);
                                 sendMagic();
                               }}
-                              className="underline font-semibold hover:text-green-800"
+                              className="inline-flex items-center gap-2 rounded-lg border-2 border-success/30 bg-success/10 px-4 py-2 text-body-small font-semibold text-success transition-all hover:bg-success/20 hover:border-success/50"
                               aria-label="Email újraküldése"
                             >
+                              <Mail className="w-4 h-4" />
                               Küldés újra
                             </button>
                           )}
-                        </p>
+                          {isGoogleAvailable && (
+                            <button
+                              type="button"
+                              onClick={signInWithGoogle}
+                              disabled={isGoogleLoading}
+                              className="inline-flex items-center gap-2 rounded-lg border-2 border-primary/30 bg-primary/10 px-4 py-2 text-body-small font-semibold text-primary transition-all hover:bg-primary/20 hover:border-primary/50 disabled:opacity-50"
+                              aria-label="Google bejelentkezés próbálása"
+                            >
+                              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                                <path
+                                  fill="#4285F4"
+                                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                />
+                                <path
+                                  fill="#34A853"
+                                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                />
+                                <path
+                                  fill="#FBBC05"
+                                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                />
+                                <path
+                                  fill="#EA4335"
+                                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                />
+                              </svg>
+                              Próbáld Google-lal
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

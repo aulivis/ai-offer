@@ -4,7 +4,7 @@ import { t } from '@/copy';
 import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppFrame from '@/components/AppFrame';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { LoadMoreButton, PAGE_SIZE } from './offersPagination';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -12,7 +12,6 @@ import { useInfiniteScroll } from '@/hooks/useIntersectionObserver';
 import { useDashboardOffers } from '@/hooks/useDashboardOffers';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { YouAreHere } from '@/components/ui/YouAreHere';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { currentMonthStart } from '@/lib/utils/dateHelpers';
@@ -1144,10 +1143,9 @@ export default function DashboardPage() {
             </div>
           }
         >
-          {/* Breadcrumb Navigation and You Are Here Indicator */}
+          {/* Breadcrumb Navigation */}
           <div className="flex flex-col gap-4">
             <Breadcrumb items={[{ label: t('dashboard.title') }]} />
-            <YouAreHere label={t('dashboard.title')} />
           </div>
 
           {/* Progressive Disclosure: Empty State for New Users */}

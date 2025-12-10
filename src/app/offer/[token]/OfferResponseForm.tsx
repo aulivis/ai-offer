@@ -176,47 +176,56 @@ export default function OfferResponseForm({
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg md:p-8">
-      <h2 className="mb-6 text-2xl font-semibold text-gray-900">Válasz az ajánlatra</h2>
+      <div className="mb-6">
+        <h2 className="mb-2 text-2xl font-semibold text-gray-900">Válasz az ajánlatra</h2>
+        <p className="text-sm text-gray-600">
+          Válasszon egyet az alábbi lehetőségek közül. A válaszát rögzítjük és értesítjük az ajánlat
+          készítőjét.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Decision buttons */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <button
-            type="button"
-            onClick={() => setDecision('accepted')}
-            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              decision === 'accepted'
-                ? 'border-green-600 bg-green-600 text-white shadow-md focus:ring-green-500'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 hover:shadow-sm focus:ring-green-300'
-            }`}
-          >
-            <span className="text-2xl">✓</span>
-            <span className="text-base">Elfogadom</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDecision('question')}
-            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              decision === 'question'
-                ? 'border-yellow-500 bg-yellow-500 text-white shadow-md focus:ring-yellow-400'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-sm focus:ring-yellow-300'
-            }`}
-          >
-            <span className="text-2xl">?</span>
-            <span className="text-base">Kérdésem van</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDecision('rejected')}
-            className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              decision === 'rejected'
-                ? 'border-red-600 bg-red-600 text-white shadow-md focus:ring-red-500'
-                : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50 hover:shadow-sm focus:ring-red-300'
-            }`}
-          >
-            <span className="text-2xl">✗</span>
-            <span className="text-base">Elutasítom</span>
-          </button>
+        <div className="space-y-3">
+          <p className="text-sm font-semibold text-gray-700 mb-3">Válassza ki a döntését:</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => setDecision('accepted')}
+              className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                decision === 'accepted'
+                  ? 'border-green-600 bg-green-600 text-white shadow-md focus:ring-green-500'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-green-400 hover:bg-green-50 hover:shadow-sm focus:ring-green-300'
+              }`}
+            >
+              <span className="text-2xl">✓</span>
+              <span className="text-base">Elfogadom</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDecision('question')}
+              className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                decision === 'question'
+                  ? 'border-yellow-500 bg-yellow-500 text-white shadow-md focus:ring-yellow-400'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-400 hover:bg-yellow-50 hover:shadow-sm focus:ring-yellow-300'
+              }`}
+            >
+              <span className="text-2xl">?</span>
+              <span className="text-base">Kérdésem van</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDecision('rejected')}
+              className={`flex items-center justify-center gap-3 rounded-lg border-2 p-5 font-semibold transition-all min-h-[70px] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                decision === 'rejected'
+                  ? 'border-red-600 bg-red-600 text-white shadow-md focus:ring-red-500'
+                  : 'border-gray-300 bg-white text-gray-700 hover:border-red-400 hover:bg-red-50 hover:shadow-sm focus:ring-red-300'
+              }`}
+            >
+              <span className="text-2xl">✗</span>
+              <span className="text-base">Elutasítom</span>
+            </button>
+          </div>
         </div>
 
         {/* Optional fields - only show after decision is made */}

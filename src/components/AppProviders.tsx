@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, type ReactNode } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 import { SupabaseProvider } from '@/components/SupabaseProvider';
-import { ToastProvider } from '@/components/ToastProvider';
 import { PlanUpgradeDialogProvider } from '@/components/PlanUpgradeDialogProvider';
 import { BrandingProvider } from '@/components/BrandingProvider';
 import { getSupabaseClient } from '@/lib/supabaseClient';
@@ -20,11 +20,36 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryProvider>
       <SupabaseProvider client={supabase}>
-        <ToastProvider>
-          <PlanUpgradeDialogProvider>
-            <BrandingProvider>{children}</BrandingProvider>
-          </PlanUpgradeDialogProvider>
-        </ToastProvider>
+        <PlanUpgradeDialogProvider>
+          <BrandingProvider>
+            {children}
+            <Toaster
+              position="bottom-center"
+              toastOptions={{
+                duration: 6000,
+                style: {
+                  background: 'var(--color-bg)',
+                  color: 'var(--color-fg)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '1rem',
+                  padding: '1rem',
+                },
+                success: {
+                  iconTheme: {
+                    primary: 'var(--color-success)',
+                    secondary: 'var(--color-bg)',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: 'var(--color-danger)',
+                    secondary: 'var(--color-bg)',
+                  },
+                },
+              }}
+            />
+          </BrandingProvider>
+        </PlanUpgradeDialogProvider>
       </SupabaseProvider>
     </QueryProvider>
   );

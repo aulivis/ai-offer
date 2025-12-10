@@ -14,7 +14,7 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { fetchWithSupabaseAuth } from '@/lib/api';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { useSupabase } from '@/components/SupabaseProvider';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';

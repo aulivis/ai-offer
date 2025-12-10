@@ -57,7 +57,7 @@ const RichTextEditor = dynamic(
   },
 );
 import { ApiError, fetchWithSupabaseAuth, isAbortError } from '@/lib/api';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { resolveEffectivePlan } from '@/lib/subscription';
 import { getBrandLogoUrl } from '@/lib/branding';
 import { Button } from '@/components/ui/Button';

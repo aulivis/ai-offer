@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { usePlanUpgradeDialog } from '@/components/PlanUpgradeDialogProvider';
 import { useQuotaManagement } from '@/hooks/useQuotaManagement';
 import { fetchWithSupabaseAuth } from '@/lib/api';

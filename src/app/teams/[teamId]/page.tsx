@@ -5,7 +5,7 @@ import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { useParams, useRouter } from 'next/navigation';
 import AppFrame from '@/components/AppFrame';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/hooks/useToast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
