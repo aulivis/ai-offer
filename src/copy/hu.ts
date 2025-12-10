@@ -1722,13 +1722,19 @@ export const hu = {
         limitReached: 'Legfeljebb {count} garancia adható hozzá.',
       },
       testimonials: {
+        sectionTitle: 'Ajánlások',
+        sectionDescription: 'Válassz ki ajánlásokat, amelyeket az ajánlatban szeretnél megjeleníteni.',
+        linkedActivity: 'Tevékenységhez kapcsolva',
+        unlinked: 'Általános ajánlás',
+        maxReached: 'Korlát elérve',
+        maxReachedDescription: 'Legfeljebb 3 ajánlást választhatsz ki.',
+        selected: 'Kiválasztva',
+        select: 'Kiválasztás',
         modalTitle: 'Vásárlói visszajelzések hozzáadása',
         modalDescription:
           'Válassz ki maximum 3 visszajelzést, amelyeket az ajánlatban szeretnél megjeleníteni.',
         noTestimonials: 'Még nincs elérhető visszajelzés.',
-        maxReached: 'Maximum elérve',
-        maxReachedDescription: 'Maximum 3 visszajelzés választható ki.',
-        selectedCount: 'Kiválasztva: {current} / {max}',
+        selectedCount: '{current}/{max} kiválasztva',
       },
       summarySidebar: {
         priceTotals: {
