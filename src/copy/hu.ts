@@ -2206,7 +2206,8 @@ export const hu = {
       autoSaveFailed: 'Nem sikerült automatikusan menteni.',
       sectionError: {
         title: 'Hiba történt a {section} szekció betöltésekor',
-        description: 'Nem sikerült betölteni ezt a szekciót. Kérjük, frissítsd az oldalt vagy próbáld újra később.',
+        description:
+          'Nem sikerült betölteni ezt a szekciót. Kérjük, frissítsd az oldalt vagy próbáld újra később.',
         retry: 'Újrapróbálás',
       },
     },
